@@ -84,6 +84,8 @@ findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", 
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.6.0" }
 otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
 otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha"}
+otel-sdk = {module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0"}
+otel-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha"}
 
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]

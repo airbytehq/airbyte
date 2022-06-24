@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.oracle;
 
-import static io.airbyte.integrations.util.HostPortResolver.resolveHost;
 import static io.airbyte.integrations.util.HostPortResolver.resolvePort;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +21,6 @@ import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
@@ -37,6 +35,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   private final String schemaName = "TEST_ORCL";
 
   private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
+
+  private static final Network network = Network.newNetwork();
 
   private OracleContainer db;
 
@@ -55,7 +55,10 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
 
   public ImmutableMap.Builder<Object, Object> getBasicOracleDbConfigBuilder(final OracleContainer db) {
     return ImmutableMap.builder()
-        .put("host", resolveHost(db))
+        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+            .getNetworks()
+            .get(((Network.NetworkImpl) network).getName())
+            .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", resolvePort(db))
@@ -144,7 +147,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void startTestContainers() {
-    sshBastionContainer.initAndStartBastion();
+    sshBastionContainer.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
@@ -153,7 +156,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()
-        .withNetwork(sshBastionContainer.getNetWork());
+        .withNetwork(network);
     db.start();
   }
 

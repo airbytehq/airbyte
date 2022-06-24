@@ -2,18 +2,14 @@
 @use "../../../scss/variables";
 @forward "./CatalogTree.module.scss";
 
-.removedStream {
-  color: colors.$dangerColor;
-}
-
 .icon {
   margin-right: 7px;
   margin-top: -1px;
   &.plus {
-    color: colors.$successColor;
+    color: colors.$green;
   }
   &.minus {
-    color: colors.$dangerColor;
+    color: colors.$red;
   }
 }
 
@@ -25,7 +21,7 @@
 }
 
 .streamHeaderContent {
-  background: colors.$greyColor0;
+  background: colors.$grey-50;
   transition: background-color variables.$transition;
   width: 100%;
   padding: 2px;
@@ -48,17 +44,17 @@
 }
 
 .redBackground {
-  background-color: colors.$dangerColor14;
+  background-color: colors.$red-50;
 }
 
 .greenBackground {
-  background-color: colors.$successColor14;
+  background-color: colors.$green-50;
 }
 
 .redBorder {
-  border: 1px solid colors.$dangerColor;
+  border: 1px solid colors.$red;
 }
 
 .purpleBackground {
-  background-color: colors.$primaryColor10;
+  background-color: colors.$blue-transparent;
 }
