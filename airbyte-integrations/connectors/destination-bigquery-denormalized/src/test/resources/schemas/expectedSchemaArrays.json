@@ -1,17 +1,11 @@
 {
-  "type": [
-    "object"
-  ],
+  "type": ["object"],
   "properties": {
     "object_with_arrays": {
-      "type": [
-        "object"
-      ],
+      "type": ["object"],
       "properties": {
         "array_3": {
-          "type": [
-            "array"
-          ],
+          "type": ["array"],
           "items": {
             "type": "integer"
           }
@@ -19,23 +13,15 @@
       }
     },
     "simple_string": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     },
     "array_1": {
-      "type": [
-        "array"
-      ],
+      "type": ["array"],
       "items": {
-        "type": [
-          "object"
-        ],
+        "type": ["object"],
         "properties": {
           "big_query_array": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
               "type": "integer"
             }
@@ -44,27 +30,17 @@
       }
     },
     "array_4": {
-      "type": [
-        "array"
-      ],
+      "type": ["array"],
       "items": {
-        "type": [
-          "object"
-        ],
+        "type": ["object"],
         "properties": {
           "big_query_array": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
-              "type": [
-                "object"
-              ],
+              "type": ["object"],
               "properties": {
                 "big_query_array": {
-                  "type": [
-                    "array"
-                  ],
+                  "type": ["array"],
                   "items": {
                     "type": "integer"
                   }
@@ -76,36 +52,22 @@
       }
     },
     "array_5": {
-      "type": [
-        "array"
-      ],
+      "type": ["array"],
       "items": {
-        "type": [
-          "object"
-        ],
+        "type": ["object"],
         "properties": {
           "big_query_array": {
-            "type": [
-              "array"
-            ],
+            "type": ["array"],
             "items": {
-              "type": [
-                "object"
-              ],
+              "type": ["object"],
               "properties": {
                 "big_query_array": {
-                  "type": [
-                    "array"
-                  ],
+                  "type": ["array"],
                   "items": {
-                    "type": [
-                      "object"
-                    ],
+                    "type": ["object"],
                     "properties": {
                       "big_query_array": {
-                        "type": [
-                          "array"
-                        ],
+                        "type": ["array"],
                         "items": {
                           "type": "integer"
                         }

@@ -115,7 +115,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
         jsonNode -> {
           if (isAirbyteArray(jsonNode.get(ARRAY_ITEMS_FIELD))) {
             final ObjectNode arrayNode = jsonNode.get(ARRAY_ITEMS_FIELD).deepCopy();
-            final ObjectNode originalNode = (ObjectNode)jsonNode;
+            final ObjectNode originalNode = (ObjectNode) jsonNode;
 
             originalNode.remove(ARRAY_ITEMS_FIELD);
             final ObjectNode itemsNode = originalNode.putObject(ARRAY_ITEMS_FIELD);
@@ -176,8 +176,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
     if (!dateTimeFields.isEmpty() && !root.isNull()) {
       if (root.isArray()) {
-        root.forEach(jsonNode ->
-          BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) jsonNode));
+        root.forEach(jsonNode -> BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) jsonNode));
       } else {
         BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
       }

@@ -248,8 +248,10 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-    var actualValue = LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
+        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+    var actualValue =
+        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     assertEquals(expectedValue, actualValue);
 
     final Schema expectedSchema = Schema.of(

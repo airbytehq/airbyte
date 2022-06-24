@@ -238,8 +238,7 @@ public class BigQueryDenormalizedUtilsTest {
         arguments(getSchemaWithReferenceDefinition(), getExpectedSchemaWithReferenceDefinition()),
         arguments(getSchemaWithNestedDatetimeInsideNullObject(),
             getExpectedSchemaWithNestedDatetimeInsideNullObject()),
-        arguments(getSchemaArrays(), getExpectedSchemaArrays())
-    );
+        arguments(getSchemaArrays(), getExpectedSchemaArrays()));
   }
 
 }
