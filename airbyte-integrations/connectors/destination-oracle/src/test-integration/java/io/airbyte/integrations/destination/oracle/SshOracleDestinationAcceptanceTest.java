@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.oracle;
 
-import static io.airbyte.integrations.util.HostPortResolver.resolvePort;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -61,7 +59,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("port", resolvePort(db))
+        .put("port", db.getExposedPorts().get(0))
         .put("sid", db.getSid())
         .put("schemas", List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
