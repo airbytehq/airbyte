@@ -26,7 +26,6 @@ import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
-import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
@@ -42,7 +41,6 @@ import io.airbyte.api.client.model.generated.OperatorNormalization;
 import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.SourceCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionCreate;
-import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
@@ -65,7 +63,6 @@ import java.net.Inet4Address;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -110,14 +107,6 @@ public class AirbyteAcceptanceTestHarness {
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
 
-  private static final Charset UTF8 = StandardCharsets.UTF_8;
-  private static final boolean IS_KUBE = System.getenv().containsKey("KUBE");
-  private static final boolean IS_MINIKUBE = System.getenv().containsKey("IS_MINIKUBE");
-  private static final boolean IS_GKE = System.getenv().containsKey("IS_GKE");
-  private static final boolean IS_MAC = System.getProperty("os.name").startsWith("Mac");
-  private static final boolean USE_EXTERNAL_DEPLOYMENT =
-      System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
-
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
   private static final String OUTPUT_STREAM_PREFIX = "output_table_";
@@ -129,6 +118,12 @@ public class AirbyteAcceptanceTestHarness {
   private static final String SOURCE_USERNAME = "sourceusername";
   public static final String SOURCE_PASSWORD = "hunter2";
 
+  private static boolean isKube;
+  private static boolean isMinikube;
+  private static boolean isGke;
+  private static boolean isMac;
+  private static boolean useExternalDeployment;
+
   /**
    * When the acceptance tests are run against a local instance of docker-compose or KUBE then these
    * test containers are used. When we run these tests in GKE, we spawn a source and destination
@@ -138,7 +133,7 @@ public class AirbyteAcceptanceTestHarness {
   private PostgreSQLContainer destinationPsql;
   private AirbyteTestContainer airbyteTestContainer;
   private AirbyteApiClient apiClient;
-  private final UUID workspaceId;
+  private final UUID defaultWorkspaceId;
 
   private KubernetesClient kubernetesClient = null;
 
@@ -164,11 +159,17 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient) throws URISyntaxException, IOException, InterruptedException, ApiException {
-    if (IS_GKE && !IS_KUBE) {
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+      throws URISyntaxException, IOException, InterruptedException, ApiException {
+    // reads env vars to assign static variables
+    assignEnvVars();
+    this.apiClient = apiClient;
+    this.defaultWorkspaceId = defaultWorkspaceId;
+
+    if (isGke && !isKube) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
-    if (!IS_GKE) {
+    if (!isGke) {
       sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
@@ -178,12 +179,12 @@ public class AirbyteAcceptanceTestHarness {
       destinationPsql.start();
     }
 
-    if (IS_KUBE) {
+    if (isKube) {
       kubernetesClient = new DefaultKubernetesClient();
     }
 
     // by default use airbyte deployment governed by a test container.
-    if (!USE_EXTERNAL_DEPLOYMENT) {
+    if (!useExternalDeployment) {
       LOGGER.info("Using deployment of airbyte managed by test containers.");
       airbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
           .setEnv(MoreProperties.envFileToProperties(ENV_FILE))
@@ -200,27 +201,10 @@ public class AirbyteAcceptanceTestHarness {
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
-
-    this.apiClient = apiClient;
-
-    // todo, move this up??
-    // work in whatever default workspace is present.
-    workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
-    LOGGER.info("workspaceId = " + workspaceId);
-
-    // log which connectors are being used.
-    final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
-        .getSourceDefinition(new SourceDefinitionIdRequestBody()
-            .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
-    final DestinationDefinitionRead destinationDef = apiClient.getDestinationDefinitionApi()
-        .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
-            .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
-    LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
-    LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
   }
 
   public void stopDbAndContainers() {
-    if (!IS_GKE) {
+    if (!isGke) {
       sourcePsql.stop();
       destinationPsql.stop();
     }
@@ -236,12 +220,12 @@ public class AirbyteAcceptanceTestHarness {
     destinationIds = Lists.newArrayList();
     operationIds = Lists.newArrayList();
 
-    if (IS_GKE) {
+    if (isGke) {
       // seed database.
       final Database database = getSourceDatabase();
       final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
       final StringBuilder query = new StringBuilder();
-      for (final String line : java.nio.file.Files.readAllLines(path, UTF8)) {
+      for (final String line : java.nio.file.Files.readAllLines(path, StandardCharsets.UTF_8)) {
         if (line != null && !line.isEmpty()) {
           query.append(line);
         }
@@ -278,6 +262,15 @@ public class AirbyteAcceptanceTestHarness {
     } catch (final Exception e) {
       LOGGER.error("Error tearing down test fixtures:", e);
     }
+  }
+
+  private void assignEnvVars() {
+    isKube = System.getenv().containsKey("KUBE");
+    isMinikube = System.getenv().containsKey("IS_MINIKUBE");
+    isGke = System.getenv().containsKey("IS_GKE");
+    isMac = System.getProperty("os.name").startsWith("Mac");
+    useExternalDeployment =
+        System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
   }
 
   private WorkflowClient getWorkflowClient() {
@@ -331,14 +324,14 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public Database getSourceDatabase() {
-    if (IS_KUBE && IS_GKE) {
+    if (isKube && isGke) {
       return GKEPostgresConfig.getSourceDatabase();
     }
     return getDatabase(sourcePsql);
   }
 
   private Database getDestinationDatabase() {
-    if (IS_KUBE && IS_GKE) {
+    if (isKube && isGke) {
       return GKEPostgresConfig.getDestinationDatabase();
     }
     return getDatabase(destinationPsql);
@@ -457,7 +450,7 @@ public class AirbyteAcceptanceTestHarness {
   public DestinationRead createDestination() throws ApiException {
     return createDestination(
         "AccTestDestination-" + UUID.randomUUID(),
-        workspaceId,
+        defaultWorkspaceId,
         getDestinationDefId(),
         getDestinationDbConfig());
   }
@@ -480,7 +473,7 @@ public class AirbyteAcceptanceTestHarness {
             OperatorNormalization.OptionEnum.BASIC));
 
     final OperationCreate operationCreate = new OperationCreate()
-        .workspaceId(workspaceId)
+        .workspaceId(defaultWorkspaceId)
         .name("AccTestDestination-" + UUID.randomUUID()).operatorConfiguration(normalizationConfig);
 
     final OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
@@ -542,7 +535,7 @@ public class AirbyteAcceptanceTestHarness {
 
   public JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
     try {
-      final Map<Object, Object> dbConfig = (IS_KUBE && IS_GKE) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
+      final Map<Object, Object> dbConfig = (isKube && isGke) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
           : localConfig(psql, hiddenPassword, withSchema);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
@@ -554,15 +547,15 @@ public class AirbyteAcceptanceTestHarness {
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
-    if (IS_KUBE) {
-      if (IS_MINIKUBE) {
+    if (isKube) {
+      if (isMinikube) {
         // used with minikube driver=none instance
         dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
         dbConfig.put("host", "host.docker.internal");
       }
-    } else if (IS_MAC) {
+    } else if (isMac) {
       dbConfig.put("host", "host.docker.internal");
     } else {
       dbConfig.put("host", "localhost");
@@ -604,7 +597,7 @@ public class AirbyteAcceptanceTestHarness {
   public SourceRead createPostgresSource() throws ApiException {
     return createSource(
         "acceptanceTestDb-" + UUID.randomUUID(),
-        workspaceId,
+        defaultWorkspaceId,
         getPostgresSourceDefinitionId(),
         getSourceDbConfig());
   }

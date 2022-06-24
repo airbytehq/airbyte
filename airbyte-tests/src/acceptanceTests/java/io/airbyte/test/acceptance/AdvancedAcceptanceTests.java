@@ -25,6 +25,7 @@ import io.airbyte.api.client.model.generated.AirbyteStream;
 import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
@@ -34,6 +35,7 @@ import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
 import io.airbyte.api.client.model.generated.LogType;
 import io.airbyte.api.client.model.generated.LogsRequestBody;
+import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.api.client.model.generated.SyncMode;
@@ -107,7 +109,18 @@ public class AdvancedAcceptanceTests {
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
-    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient);
+
+    // log which connectors are being used.
+    final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
+        .getSourceDefinition(new SourceDefinitionIdRequestBody()
+            .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
+    final DestinationDefinitionRead destinationDef = apiClient.getDestinationDefinitionApi()
+        .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
+            .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
+    LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
+    LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
+
+    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
     kubernetesClient = airbyteAcceptanceTestHelper.getKubernetesClient();
   }
 

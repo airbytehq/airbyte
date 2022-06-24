@@ -72,7 +72,18 @@ public class BasicAcceptanceTests {
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
-    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient);
+
+    // log which connectors are being used.
+    final SourceDefinitionRead sourceDef = apiClient.getSourceDefinitionApi()
+        .getSourceDefinition(new SourceDefinitionIdRequestBody()
+            .sourceDefinitionId(UUID.fromString("decd338e-5647-4c0b-adf4-da0e75f5a750")));
+    final DestinationDefinitionRead destinationDef = apiClient.getDestinationDefinitionApi()
+        .getDestinationDefinition(new DestinationDefinitionIdRequestBody()
+            .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
+    LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
+    LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
+
+    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
     sourcePsql = airbyteAcceptanceTestHelper.getSourcePsql();
   }
 
