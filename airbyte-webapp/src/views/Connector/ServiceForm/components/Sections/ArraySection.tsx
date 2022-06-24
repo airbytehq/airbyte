@@ -6,7 +6,6 @@ import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
-import { useServiceForm } from "../../serviceFormContext";
 import { SectionContainer } from "./common";
 import { VariableInputFieldForm } from "./VariableInputFieldForm";
 
@@ -46,8 +45,6 @@ const getItemDescription = (item: Record<string, string>, properties: FormBlock[
 };
 
 export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {
-  const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
-
   const [field, , fieldHelper] = useField(path);
   const [editIndex, setEditIndex] = useState<number>();
 
@@ -71,8 +68,6 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     };
   }, [items, formField.properties]);
 
-  const unfinishedFlow = unfinishedFlows[path];
-
   return (
     <GroupControls
       name={path}
@@ -86,13 +81,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
           render={(arrayHelpers) => (
             <ArrayOfObjectsEditor
               editableItemIndex={editIndex}
-              onStartEdit={(index) => {
-                setEditIndex(index);
-                addUnfinishedFlow(path, {
-                  id: index,
-                  startValue: index < items.length ? items : null,
-                });
-              }}
+              onStartEdit={setEditIndex}
               onRemove={arrayHelpers.remove}
               items={items}
               renderItemName={renderItemName}
@@ -107,20 +96,15 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
                   disabled={disabled}
                   item={item}
                   onDone={(updatedItem) => {
-                    // Edit or Create
-                    const updatedValue = unfinishedFlow.startValue
-                      ? items.map((item: unknown, index: number) => (index === editIndex ? updatedItem : item))
-                      : [...items, updatedItem];
+                    const updatedValue =
+                      editIndex !== undefined && editIndex < items.length
+                        ? items.map((item: unknown, index: number) => (index === editIndex ? updatedItem : item))
+                        : [...items, updatedItem];
 
                     fieldHelper.setValue(updatedValue);
-                    removeUnfinishedFlow(path);
                     setEditIndex(undefined);
                   }}
                   onCancel={() => {
-                    if (unfinishedFlow.startValue) {
-                      fieldHelper.setValue(unfinishedFlow.startValue);
-                    }
-                    removeUnfinishedFlow(path);
                     setEditIndex(undefined);
                   }}
                 />

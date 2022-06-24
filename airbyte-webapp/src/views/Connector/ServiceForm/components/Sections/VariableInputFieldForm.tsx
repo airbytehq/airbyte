@@ -11,8 +11,7 @@ import { FormSection } from "./FormSection";
 interface VariableInputFormProps {
   formField: FormObjectArrayItem;
   path: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  item?: any;
+  item?: unknown;
   disabled?: boolean;
   onDone: (value: unknown) => void;
   onCancel: () => void;
