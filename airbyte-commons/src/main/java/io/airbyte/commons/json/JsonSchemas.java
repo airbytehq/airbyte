@@ -190,12 +190,12 @@ public class JsonSchemas {
         // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
         case ARRAY_TYPE -> {
           final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.list());
-          if(jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)){
+          if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
             // hit every node.
             traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
-          } else{
+          } else {
             throw new IllegalArgumentException(
-                    "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
+                "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
           }
         }
         case OBJECT_TYPE -> {
