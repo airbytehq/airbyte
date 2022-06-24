@@ -79,7 +79,7 @@ class XolaStream(HttpStream, ABC):
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         headers: Dict[str, str] = {
             "Accept": "application/json",
-            "X-API-VERSION": "2017-06-10",
+            "X-API-VERSION": "2018-06-26",
             "X-API-KEY": self.x_api_key,
             "sort": "-id"
         }
@@ -267,11 +267,11 @@ class Customers(IncrementalXolaStream):
         raw_response = response.json()["data"]
         modified_response = []
         
-        email_userid_name_dict  = {}
-        
         for data in raw_response:
             try:
-                organiserAdded = False
+                email_userid_name_dict  = {}
+                
+                non_sorted_customer_list = []
                 
                 user_resp = {}
                 
@@ -285,12 +285,13 @@ class Customers(IncrementalXolaStream):
                 if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
                 if "phone" in data.keys(): user_resp["phone"] = data["phone"]
                 if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
+                
                 user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
                 user_resp["customer_type"] = "organizer"
                 
-                email_userid_name_dict[user_resp["customerEmail"].lower()] = {
+                email_userid_name_dict[user_resp["customerEmail"].lower().trim()] = {
                     "user_id" : user_resp["user_id"],
-                    "customerName" : user_resp["customerName"].lower(),
+                    "customerName" : user_resp["customerName"].lower().trim(),
                     "phone" : user_resp["phone"] 
                 }
                 
@@ -300,8 +301,8 @@ class Customers(IncrementalXolaStream):
                         if "participants" in waiver.keys():   
                             for participant in waiver["participants"]:
                                 resp = {}
-
                                 resp["order_id"] = data["id"]
+                                
                                 try:
                                     if isinstance(waiver["createdAt"], dict):
                                         resp["waiver_createdAt"] = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(waiver["createdAt"]["sec"])) + "+00:00"
@@ -329,38 +330,48 @@ class Customers(IncrementalXolaStream):
                                 resp["user_id"] = participant["traveler"]["$id"]["$id"] if "traveler" in participant.keys() and "$id" in participant["traveler"].keys() else ""
                                 resp["customer_type"] = "participant"
                                 
-                                lowerEmail = resp["customerEmail"].lower()
-                                lowerName = resp["customerName"].lower()
+                                non_sorted_customer_list.append(resp)
                                 
-                                if lowerEmail in email_userid_name_dict.keys():
+                                lowerEmail = resp["customerEmail"].lower().trim()
+                                lowerName = resp["customerName"].lower().trim()
+                                
+                                if lowerName == user_resp["customerName"].lower().trim() and lowerEmail == user_resp["customerEmail"].lower().trim(): 
+                                    user_resp["dateOfBirth"] = resp["dateOfBirth"]
+                                    user_resp["customer_type"] = "organizer,participant"
                                     
-                                    user_id = email_userid_name_dict[lowerEmail]["user_id"]
-                                    name = email_userid_name_dict[lowerEmail]["customerName"]
-                                    phone = email_userid_name_dict[lowerEmail]["phone"]
-                                    
-                                    if name != lowerName:
-                                        resp["customerEmail"] = ""
-                                        if resp["user_id"] == user_id: resp["user_id"] = ""
-                                        if re.sub('\\D+','',resp["phone"]) == re.sub('\\D+','',phone): resp["phone"] = ""
-                                        modified_response.append(resp)
-                                        
-                                    if lowerName == user_resp["customerName"].lower() and lowerEmail == user_resp["customerEmail"].lower(): 
-                                        user_resp["dateOfBirth"] = resp["dateOfBirth"]
-                                        user_resp["customer_type"] = "organizer,participant"
-                                    
-                                else:
-                                    email_userid_name_dict[resp["customerEmail"].lower()] = {
-                                        "user_id" : resp["user_id"],
-                                        "customerName" : resp["customerName"].lower(),
-                                        "phone" : resp["phone"]
-                                    }
-                                    modified_response.append(resp)
                 
+                sorted_customer_list = sorted(non_sorted_customer_list, key = lambda customer: customer.get('dateOfBirth', "NA"))
                 
+                # add organizer details in response
                 modified_response.append(user_resp)
+                
+                for customer in sorted_customer_list: 
+                    
+                    lowerEmail = customer["customerEmail"].lower().trim()
+                    lowerName = customer["customerName"].lower().trim()
+                    
+                    if lowerEmail in email_userid_name_dict.keys():
+                        
+                        user_id = email_userid_name_dict[lowerEmail]["user_id"]
+                        name = email_userid_name_dict[lowerEmail]["customerName"]
+                        phone = email_userid_name_dict[lowerEmail]["phone"]
+                        
+                        if name != lowerName:
+                            customer["customerEmail"] = ""
+                            if customer["user_id"] == user_id: customer["user_id"] = ""
+                            if re.sub('\\D+','',customer["phone"]) == re.sub('\\D+','',phone): customer["phone"] = ""
+                            modified_response.append(customer)
+                    else:
+                        email_userid_name_dict[customer["customerEmail"].lower().trim()] = {
+                            "user_id" : customer["user_id"],
+                            "customerName" : customer["customerName"].lower().trim(),
+                            "phone" : customer["phone"]
+                        }
+                        modified_response.append(customer)
+                
             except:
                 pass
-        return modified_response
+        return modified_response    
     
 class Transactions(IncrementalXolaStream):
     primary_key = "id"
