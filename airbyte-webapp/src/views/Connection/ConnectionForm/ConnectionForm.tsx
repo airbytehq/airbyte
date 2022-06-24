@@ -1,7 +1,8 @@
-import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
+import { Field, FieldProps, Form, Formik, FormikHelpers, useFormikContext } from "formik";
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
+import { useDebounce } from "react-use";
 import styled from "styled-components";
 
 import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
@@ -93,6 +94,20 @@ interface ConnectionFormSubmitResult {
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
+// eslint-disable-next-line react/function-component-definition
+function FormValuesChangeTracker<T>({ onChangeValues }: { onChangeValues?: (values: T) => void }) {
+  // Grab values from context
+  const { values } = useFormikContext<T>();
+  useDebounce(
+    () => {
+      onChangeValues?.(values);
+    },
+    200,
+    [values, onChangeValues]
+  );
+  return null;
+}
+
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
   className?: string;
@@ -101,6 +116,7 @@ interface ConnectionFormProps {
   onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
+  onChangeValues?: (values: FormikConnectionFormValues) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   editSchemeMode?: boolean;
@@ -124,6 +140,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   editSchemeMode,
   additionalSchemaControl,
   connection,
+  onChangeValues,
 }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
@@ -204,6 +221,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
+          <FormValuesChangeTracker onChangeValues={onChangeValues} />
           {!isEditMode && (
             <StyledSection>
               <Field name="name">
