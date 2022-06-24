@@ -106,6 +106,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -198,7 +199,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         workerEnvironment,
         logConfigs,
         eventRunner);
-    stateHandler = new StateHandler(configRepository);
+    stateHandler = new StateHandler(new StatePersistence(configsDatabase));
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
@@ -732,7 +733,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return getStateType(connectionIdRequestBody);
+    return execute(() -> stateHandler.getStateType(connectionIdRequestBody));
   }
 
   // SCHEDULER
