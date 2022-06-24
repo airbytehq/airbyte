@@ -530,10 +530,18 @@
   icon: marketo.svg
   sourceType: api
   releaseStage: alpha
+- name: Metabase
+  sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
+  dockerRepository: airbyte/source-metabase
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/metabase
+  icon: metabase.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -581,7 +589,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.5.13
+  dockerImageTag: 0.5.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -723,7 +731,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.26
+  dockerImageTag: 0.4.28
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -995,6 +1003,7 @@
   dockerRepository: airbyte/source-webflow
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/webflow
+  icon: webflow.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat

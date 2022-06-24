@@ -180,7 +180,7 @@ public class StateGeneratorUtils {
                 .withStreamState(Jsons.jsonNode(s)))
             .collect(
                 Collectors.toList()));
-    return new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
+    return new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
   }
 
   /**
@@ -192,7 +192,7 @@ public class StateGeneratorUtils {
    */
   public static List<AirbyteStateMessage> convertGlobalStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
     return airbyteStateMessage.getGlobal().getStreamStates().stream()
-        .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState().withStreamDescriptor(s.getStreamDescriptor()).withStreamState(s.getStreamState())))
         .collect(Collectors.toList());
   }
@@ -206,7 +206,7 @@ public class StateGeneratorUtils {
    */
   public static List<AirbyteStateMessage> convertLegacyStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
     return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
-        .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                 .withStreamState(Jsons.jsonNode(s))))

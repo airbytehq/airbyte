@@ -27,12 +27,14 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import org.jooq.SQLDialect;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
+  private static final Network network = Network.newNetwork();
   private static JsonNode config;
   private final SshBastionContainer bastion = new SshBastionContainer();
   private PostgreSQLContainer<?> db;
@@ -78,12 +80,12 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
-    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(bastion.getNetWork());
+    db = new PostgreSQLContainer<>("postgres:13-alpine").withNetwork(network);
     db.start();
   }
 
