@@ -1460,7 +1460,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.8"
+- dockerImage: "airbyte/destination-gcs:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1472,7 +1472,6 @@
       - "gcs_bucket_path"
       - "credential"
       - "format"
-      additionalProperties: false
       properties:
         gcs_bucket_name:
           title: "GCS Bucket Name"
@@ -3860,7 +3859,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.8"
+- dockerImage: "airbyte/destination-s3:0.3.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3872,7 +3871,6 @@
       - "s3_bucket_path"
       - "s3_bucket_region"
       - "format"
-      additionalProperties: false
       properties:
         access_key_id:
           type: "string"
