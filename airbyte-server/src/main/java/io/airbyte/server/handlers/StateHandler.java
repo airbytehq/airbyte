@@ -1,33 +1,36 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.config.State;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.persistence.StatePersistence;
+import io.airbyte.server.converters.StateConverter;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 public class StateHandler {
-  private final ConfigRepository configRepository;
 
-  public StateHandler(final ConfigRepository configRepository) {
-    this.configRepository = configRepository;
+  private final StatePersistence statePersistence;
+
+  public StateHandler(final StatePersistence statePersistence) {
+    this.statePersistence = statePersistence;
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
-
-    final ConnectionState connectionState = new ConnectionState()
-        .connectionId(connectionIdRequestBody.getConnectionId());
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-
-    return connectionState;
+    final UUID connectionId = connectionIdRequestBody.getConnectionId();
+    final Optional<StateWrapper> currentState = statePersistence.getCurrentState(connectionId);
+    return StateConverter.toApi(connectionId, currentState.orElse(null));
   }
 
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
     return Enums.convertTo(getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
   }
+
 }
