@@ -135,6 +135,7 @@ public class WorkerApp {
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
   private final StreamResetPersistence streamResetPersistence;
+  private final FeatureFlags featureFlags;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -266,7 +267,8 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        featureFlags.useStreamCapableState());
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
@@ -464,7 +466,8 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker,
-        streamResetPersistence).start();
+        streamResetPersistence,
+        featureFlags).start();
   }
 
   public static void main(final String[] args) {

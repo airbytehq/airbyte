@@ -22,13 +22,13 @@ public class StateMessageHelperTest {
 
   @Test
   public void testEmpty() {
-    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(null);
+    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(null, true);
     Assertions.assertThat(stateWrapper).isEmpty();
   }
 
   @Test
   public void testLegacy() {
-    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.emptyObject());
+    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.emptyObject(), true);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
   }
@@ -37,7 +37,8 @@ public class StateMessageHelperTest {
   public void testLegacyInList() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(
         Lists.newArrayList(
-            Map.of("Any", "value"))));
+            Map.of("Any", "value"))),
+        true);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
   }
@@ -52,7 +53,7 @@ public class StateMessageHelperTest {
                 .withStreamStates(Lists.newArrayList(
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()),
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()))));
-    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage)));
+    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage)), true);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.GLOBAL);
     Assertions.assertThat(stateWrapper.get().getGlobal()).isEqualTo(stateMessage);
@@ -68,7 +69,8 @@ public class StateMessageHelperTest {
         .withType(AirbyteStateType.STREAM)
         .withStream(
             new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()));
-    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)));
+    final Optional<StateWrapper> stateWrapper =
+        StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)), true);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.STREAM);
     Assertions.assertThat(stateWrapper.get().getStateMessages()).containsExactlyInAnyOrder(stateMessage1, stateMessage2);
@@ -88,7 +90,7 @@ public class StateMessageHelperTest {
                 .withStreamStates(Lists.newArrayList(
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()),
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()))));
-    Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2))))
+    Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)), true))
         .isInstanceOf(IllegalStateException.class);
   }
 
@@ -110,13 +112,13 @@ public class StateMessageHelperTest {
                 .withStreamStates(Lists.newArrayList(
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a")).withStreamState(Jsons.emptyObject()),
                     new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()))));
-    Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2))))
+    Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList(stateMessage1, stateMessage2)), true))
         .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   public void testEmptyStateList() {
-    Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList())))
+    Assertions.assertThatThrownBy(() -> StateMessageHelper.getTypedState(Jsons.jsonNode(Lists.newArrayList()), true))
         .isInstanceOf(IllegalStateException.class);
   }
 
