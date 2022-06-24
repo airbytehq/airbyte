@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
+from typing import List, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -16,7 +16,7 @@ from jello import lib as jello_lib
 class JelloExtractor(HttpExtractor):
     default_transform = "."
 
-    def __init__(self, transform: str, decoder: Decoder = None, config=None, kwargs=None):
+    def __init__(self, transform: str, decoder: Optional[Decoder] = None, config=None, kwargs=None):
         self._interpolator = JinjaInterpolation()
         self._transform = transform
         self._decoder = decoder or JsonDecoder()
