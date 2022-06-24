@@ -611,7 +611,7 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
-    final List<io.airbyte.config.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
+    final List<io.airbyte.protocol.models.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
     when(configRepository.getAllStreamsForConnection(expected.getConnectionId())).thenReturn(connectionStreams);
 
     final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();

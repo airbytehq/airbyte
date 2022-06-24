@@ -4,7 +4,7 @@
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.config.StreamDescriptor;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.util.List;
 import java.util.Set;

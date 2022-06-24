@@ -10,8 +10,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
