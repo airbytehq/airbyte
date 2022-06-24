@@ -7,17 +7,30 @@ from typing import Any, List, Mapping, Optional
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.types import Config
 
 
 class NextPageUrlPaginator(Paginator):
+    """
+    A paginator wrapper that delegates to an inner paginator and removes the base url from the next_page_token to only return the path to the next page
+    """
+
     def __init__(
         self,
         url_base: str = None,
-        interpolated_paginator: InterpolatedPaginator = None,
-        next_page_token_template=None,
-        kwargs=None,
-        config=None,
+        interpolated_paginator: Optional[InterpolatedPaginator] = None,
+        next_page_token_template: Optional[Mapping[str, str]] = None,
+        kwargs: Optional[Mapping[str, Any]] = None,
+        config: Optional[Config] = None,
     ):
+        """
+
+        :param url_base: url base to remove from the token
+        :param interpolated_paginator: optional paginator to delegate to
+        :param next_page_token_template: optional mapping to delegate to if interpolated_paginator is None
+        :param kwargs:
+        :param config:
+        """
         if next_page_token_template and interpolated_paginator:
             raise ValueError(
                 f"Only one of next_page_token_template and interpolated_paginator is expected. Got {next_page_token_template} and {interpolated_paginator}"
@@ -28,6 +41,7 @@ class NextPageUrlPaginator(Paginator):
         self._interpolated_paginator = (
             interpolated_paginator
             or kwargs.get("interpolated_paginator")
+            # Create paginator from next_page_token_template if no paginator passed as parameter
             or InterpolatedPaginator(next_page_token_template=next_page_token_template, config=config)
         )
 
