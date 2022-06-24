@@ -25,6 +25,7 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -34,6 +35,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
@@ -128,14 +130,14 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     startAndInitJdbcContainer();
   }
 
   private void startAndInitJdbcContainer() throws Exception {
     final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer<>(mcsImage)
-        .withNetwork(bastion.getNetWork());
+        .withNetwork(network);
     db.start();
 
     final String createUser = String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());

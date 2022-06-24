@@ -137,10 +137,10 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         final AirbyteGlobalState globalState = new AirbyteGlobalState()
             .withSharedState(Jsons.jsonNode(new CdcState()))
             .withStreamStates(List.of());
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
       } else {
         return List.of(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.STREAM)
+            .withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()));
       }
     }
