@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import math
@@ -260,7 +260,7 @@ class StripeSubStream(StripeStream, ABC):
 
         return params
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, sync_mode: SyncMode, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
 
         parent_stream = self.parent(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
         for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh):
@@ -452,34 +452,83 @@ class BankAccounts(StripeSubStream):
         return params
 
 
-class CheckoutSessions(StripeStream):
+class CheckoutSessions(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/checkout/sessions/list
     """
 
     name = "checkout_sessions"
 
+    cursor_field = "expires_at"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # https://stripe.com/docs/api/checkout/sessions/create#create_checkout_session-expires_at
+        # 'expires_at' - can be anywhere from 1 to 24 hours after Checkout Session creation.
+        # thus we should always add 1 day to lookback window to avoid possible checkout_sessions losses
+        self.lookback_window_days = self.lookback_window_days + 1
+
     def path(self, **kwargs):
         return "checkout/sessions"
 
+    def request_params(self, stream_state: Mapping[str, Any] = None, **kwargs):
+        params = super().request_params(stream_state=stream_state, **kwargs)
+        # remove odd param, not supported by checkout_sessions api
+        params.pop("created[gte]", None)
+        return params
 
-class CheckoutSessionsLineItems(StripeStream):
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        since_date = self.get_start_timestamp(stream_state)
+        for item in super().parse_response(response, **kwargs):
+            # Filter out too old items
+            expires_at = item.get(self.cursor_field)
+            if expires_at and expires_at > since_date:
+                yield item
+
+
+class CheckoutSessionsLineItems(IncrementalStripeStream):
     """
     API docs: https://stripe.com/docs/api/checkout/sessions/line_items
     """
 
     name = "checkout_sessions_line_items"
 
+    cursor_field = "checkout_session_expires_at"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # https://stripe.com/docs/api/checkout/sessions/create#create_checkout_session-expires_at
+        # 'expires_at' - can be anywhere from 1 to 24 hours after Checkout Session creation.
+        # thus we should always add 1 day to lookback window to avoid possible checkout_sessions losses
+        self.lookback_window_days = self.lookback_window_days + 1
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         return f"checkout/sessions/{stream_slice['checkout_session_id']}/line_items"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
         checkout_session_stream = CheckoutSessions(authenticator=self.authenticator, account_id=self.account_id, start_date=self.start_date)
-        for checkout_session in checkout_session_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"checkout_session_id": checkout_session["id"]}, **kwargs)
+
+        checkout_session_state = None
+        if stream_state:
+            checkout_session_state = {"expires_at": stream_state["checkout_session_expires_at"]}
+
+        for checkout_session in checkout_session_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=checkout_session_state):
+            stream_slice = {
+                "checkout_session_id": checkout_session["id"],
+                "expires_at": checkout_session["expires_at"],
+            }
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_slice=stream_slice, **kwargs)
+
+        # remove odd param, not supported by checkout_sessions api
+        params.pop("created[gte]", None)
+
         params["expand[]"] = ["data.discounts", "data.taxes"]
         return params
 
@@ -496,9 +545,12 @@ class CheckoutSessionsLineItems(StripeStream):
         response_json = response.json()
         data = response_json.get("data", [])
         if data and stream_slice:
+            print(f"stream_slice: {stream_slice}")
             cs_id = stream_slice.get("checkout_session_id", None)
+            cs_expires_at = stream_slice.get("expires_at", None)
             for e in data:
                 e["checkout_session_id"] = cs_id
+                e["checkout_session_expires_at"] = cs_expires_at
         yield from data
 
 

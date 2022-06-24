@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -22,7 +22,6 @@ from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import DateTime
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
-from source_amazon_ads.spec import AmazonAdsConfig
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 
 logger = AirbyteLogger()
@@ -101,14 +100,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     REPORT_DATE_FORMAT = "YYYYMMDD"
     cursor_field = "reportDate"
 
-    def __init__(self, config: AmazonAdsConfig, profiles: List[Profile], authenticator: Oauth2Authenticator):
+    def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = timedelta(minutes=config.report_wait_timeout).total_seconds
-        self.report_generation_maximum_retries = config.report_generation_max_retries
+        self.report_wait_timeout = timedelta(minutes=config.get("report_wait_timeout", 30)).total_seconds
+        self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         # Set start date from config file, should be in UTC timezone.
-        self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
+        self._start_date = pendulum.parse(config.get("start_date")).set(tz="UTC") if config.get("start_date") else None
         super().__init__(config, profiles)
 
     @property

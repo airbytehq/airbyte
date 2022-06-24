@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import abc
@@ -325,8 +325,10 @@ class ConnectionRenderer(BaseRenderer):
         return self.TEMPLATE.render(
             {
                 "connection_name": self.resource_name,
-                "source_id": self.source.resource_id,
-                "destination_id": self.destination.resource_id,
+                "source_configuration_path": self.source.configuration_path,
+                "destination_configuration_path": self.destination.configuration_path,
                 "catalog": yaml_catalog,
+                "supports_normalization": self.destination.definition.supports_normalization,
+                "supports_dbt": self.destination.definition.supports_dbt,
             }
         )

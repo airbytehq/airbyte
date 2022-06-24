@@ -21,13 +21,16 @@ export const destinationsKeys = {
   detail: (destinationId: string) => [...destinationsKeys.all, "details", destinationId] as const,
 };
 
-type ValuesProps = {
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
-};
+}
 
-type ConnectorProps = { name: string; destinationDefinitionId: string };
+interface ConnectorProps {
+  name: string;
+  destinationDefinitionId: string;
+}
 
 function useDestinationService() {
   const { apiUrl } = useConfig();
@@ -35,7 +38,9 @@ function useDestinationService() {
   return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type DestinationList = { destinations: DestinationRead[] };
+interface DestinationList {
+  destinations: DestinationRead[];
+}
 
 const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();

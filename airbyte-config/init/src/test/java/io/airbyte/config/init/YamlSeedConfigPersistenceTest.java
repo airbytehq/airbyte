@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.init;
@@ -29,7 +29,7 @@ class YamlSeedConfigPersistenceTest {
 
   @BeforeAll
   static void setup() throws IOException {
-    persistence = YamlSeedConfigPersistence.getDefault();
+    persistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
   @Test

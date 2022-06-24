@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -7,7 +7,6 @@ package io.airbyte.workers.internal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
@@ -53,7 +52,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(s2);
 
     assertEquals(3, messageTracker.getTotalRecordsEmitted());
-    assertEquals(3 * Jsons.serialize(r1.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getTotalBytesEmitted());
+    assertEquals(3L * Jsons.getEstimatedByteSize(r1.getRecord().getData()), messageTracker.getTotalBytesEmitted());
     assertEquals(2, messageTracker.getTotalStateMessagesEmitted());
   }
 
@@ -112,9 +111,9 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessage r2 = AirbyteMessageUtils.createRecordMessage(STREAM_2, 2);
     final AirbyteMessage r3 = AirbyteMessageUtils.createRecordMessage(STREAM_3, 3);
 
-    final long r1Bytes = Jsons.serialize(r1.getRecord().getData()).getBytes(Charsets.UTF_8).length;
-    final long r2Bytes = Jsons.serialize(r2.getRecord().getData()).getBytes(Charsets.UTF_8).length;
-    final long r3Bytes = Jsons.serialize(r3.getRecord().getData()).getBytes(Charsets.UTF_8).length;
+    final long r1Bytes = Jsons.getEstimatedByteSize(r1.getRecord().getData());
+    final long r2Bytes = Jsons.getEstimatedByteSize(r2.getRecord().getData());
+    final long r3Bytes = Jsons.getEstimatedByteSize(r3.getRecord().getData());
 
     messageTracker.acceptFromSource(r1);
     messageTracker.acceptFromSource(r2);

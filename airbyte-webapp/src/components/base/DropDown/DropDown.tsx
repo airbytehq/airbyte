@@ -14,13 +14,14 @@ import { SelectContainer } from "./SelectContainer";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OptionType = any;
-type DropdownProps = Props<OptionType> & {
+
+export interface DropdownProps extends Props<OptionType> {
   withBorder?: boolean;
   fullText?: boolean;
   error?: boolean;
-};
+}
 
-const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
+export const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   const propsComponents = props.components;
 
   const components = React.useMemo<SelectComponentsConfig<OptionType, boolean>>(
@@ -77,8 +78,6 @@ const DropDown: React.FC<DropdownProps> = React.forwardRef((props, ref) => {
   );
 });
 
-const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
+export const defaultDataItemSort = naturalComparatorBy<IDataItem>((dataItem) => dataItem.label || "");
 
 export default DropDown;
-export { DropDown, defaultDataItemSort };
-export type { DropdownProps };

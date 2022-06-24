@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -132,6 +132,11 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
   }
 
 }

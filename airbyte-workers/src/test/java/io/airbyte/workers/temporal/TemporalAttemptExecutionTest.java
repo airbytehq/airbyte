@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -16,6 +16,7 @@ import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
@@ -71,7 +72,7 @@ class TemporalAttemptExecutionTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setup() throws IOException {
+  void setup() throws IOException, DatabaseInitializationException {
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     final Database jobDatabase = databaseProviders.createNewJobsDatabase();
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);

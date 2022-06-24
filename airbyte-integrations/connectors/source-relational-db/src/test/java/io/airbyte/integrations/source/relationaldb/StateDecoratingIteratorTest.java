@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -40,6 +41,11 @@ class StateDecoratingIteratorTest {
       .withType(Type.RECORD)
       .withRecord(new AirbyteRecordMessage()
           .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "def"))));
+
+  private static final AirbyteMessage RECORD_MESSAGE3 = new AirbyteMessage()
+      .withType(Type.RECORD)
+      .withRecord(new AirbyteRecordMessage()
+          .withData(Jsons.jsonNode(ImmutableMap.of(UUID_FIELD_NAME, "abc\u0000"))));
 
   private static Iterator<AirbyteMessage> messageIterator;
   private StateManager stateManager;
@@ -126,6 +132,24 @@ class StateDecoratingIteratorTest {
         null,
         JsonSchemaPrimitive.STRING);
 
+    assertEquals(stateMessage, iterator.next().getState());
+    assertFalse(iterator.hasNext());
+  }
+
+  @Test
+  void testUnicodeNull() {
+    messageIterator = MoreIterators.of(RECORD_MESSAGE3);
+    when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, "abc")).thenReturn(stateMessage);
+
+    final StateDecoratingIterator iterator = new StateDecoratingIterator(
+        messageIterator,
+        stateManager,
+        NAME_NAMESPACE_PAIR,
+        UUID_FIELD_NAME,
+        null,
+        JsonSchemaPrimitive.STRING);
+
+    assertEquals(RECORD_MESSAGE3, iterator.next());
     assertEquals(stateMessage, iterator.next().getState());
     assertFalse(iterator.hasNext());
   }

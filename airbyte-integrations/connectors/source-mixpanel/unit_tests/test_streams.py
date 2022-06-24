@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from datetime import timedelta
@@ -9,7 +9,7 @@ import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
-from source_mixpanel.source import (
+from source_mixpanel.streams import (
     Annotations,
     CohortMembers,
     Cohorts,

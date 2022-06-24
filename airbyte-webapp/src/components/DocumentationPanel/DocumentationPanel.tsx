@@ -1,7 +1,5 @@
 import type { Url } from "url";
 
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useIntl } from "react-intl";
@@ -14,7 +12,6 @@ import urls from "rehype-urls";
 import styled from "styled-components";
 
 import { LoadingPage, PageTitle } from "components";
-import { Button } from "components/base";
 import Markdown from "components/Markdown/Markdown";
 
 import { useConfig } from "config";
@@ -46,17 +43,16 @@ export const DocumentationPanel: React.FC = () => {
         if (element.tagName === "img") {
           // In images replace relative URLs with links to our bundled assets
           return url.path.replace("../../", `${config.integrationUrl}/`);
-        } else {
-          // In links replace with a link to the external documentation instead
-          // The external path is the markdown URL without the "../../" prefix and the .md extension
-          const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
-          return `${config.ui.docsLink}/${docPath}`;
         }
+        // In links replace with a link to the external documentation instead
+        // The external path is the markdown URL without the "../../" prefix and the .md extension
+        const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
+        return `${config.links.docsLink}/${docPath}`;
       }
       return url.href;
     };
     return [[urls, sanitizeLinks], [rehypeSlug]];
-  }, [config.integrationUrl, config.ui.docsLink]);
+  }, [config.integrationUrl, config.links.docsLink]);
 
   const location = useLocation();
 
@@ -64,24 +60,11 @@ export const DocumentationPanel: React.FC = () => {
     setDocumentationPanelOpen(false);
   }, [setDocumentationPanelOpen, location.pathname]);
 
-  return isLoading ? (
+  return isLoading || documentationUrl === "" ? (
     <LoadingPage />
   ) : docs ? (
     <DocumentationContainer>
-      <PageTitle
-        withLine
-        title={<FormattedMessage id="connector.setupGuide" />}
-        endComponent={
-          <Button
-            onClick={() => {
-              setDocumentationPanelOpen(false);
-            }}
-            iconOnly={true}
-          >
-            <FontAwesomeIcon icon={faTimes} />
-          </Button>
-        }
-      />
+      <PageTitle withLine title={<FormattedMessage id="connector.setupGuide" />} />
       {!docs.includes("<!DOCTYPE html>") ? (
         <DocumentationContent content={docs} rehypePlugins={urlReplacerPlugin} />
       ) : (
