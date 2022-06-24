@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "source_name": {
+      "type": ["null", "string"]
+    },
+    "SellerOrderNumber": {
+      "type": ["null", "string"]
+    },
+    "SellerID": {
+      "type": ["null", "string"]
+    },
+    "OrderNumber": {
+      "type": ["null", "string"]
+    },
+    "OrderDownloaded": {
+      "type": ["null", "string"]
+    },
+    "OrderDate": {
+      "type": ["null", "string"]
+    },
+    "OrderStatus": {
+      "type": ["null", "string"]
+    },
+    "OrderStatusDescription": {
+      "type": ["null", "string"]
+    },
+    "CustomerName": {
+      "type": ["null", "string"]
+    },
+    "CustomerPhoneNumber": {
+      "type": ["null", "string"]
+    },
+    "CustomerEmailAddress": {
+      "type": ["null", "string"]
+    },
+    "ShipToAddress1": {
+      "type": ["null", "string"]
+    },
+    "ShipToAddress2": {
+      "type": ["null", "string"]
+    },
+    "ShipToCityName": {
+      "type": ["null", "string"]
+    },
+    "ShipToStateCode": {
+      "type": ["null", "string"]
+    },
+    "ShipToZipCode": {
+      "type": ["null", "string"]
+    },
+    "ShipToCountryCode": {
+      "type": ["null", "string"]
+    },
+    "ShipService": {
+      "type": ["null", "string"]
+    },
+    "ShipToFirstName": {
+      "type": ["null", "string"]
+    },
+    "ShipToLastName": {
+      "type": ["null", "string"]
+    },
+    "ShipToCompany": {
+      "type": ["null", "string"]
+    },
+    "OrderItemAmount": {
+      "type": ["null", "string"]
+    },
+    "ShippingAmount": {
+      "type": ["null", "string"]
+    },
+    "DiscountAmount": {
+      "type": ["null", "string"]
+    },
+    "RefundAmount": {
+      "type": ["null", "string"]
+    },
+    "SalesTax": {
+      "type": ["null", "string"]
+    },
+    "RecyclingFeeAmount": {
+      "type": ["null", "string"]
+    },
+    "OrderTotalAmount": {
+      "type": ["null", "string"]
+    },
+    "OrderQty": {
+      "type": ["null", "string"]
+    },
+    "IsAutoVoid": {
+      "type": ["null", "string"]
+    },
+    "SalesChannel": {
+      "type": ["null", "string"]
+    },
+    "FulfillmentOption": {
+      "type": ["null", "string"]
+    },
+    "ItemInfoList": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "SellerPartNumber": {
+            "type": ["null", "string"]
+          },
+          "NeweggItemNumber": {
+            "type": ["null", "string"]
+          },
+          "MfrPartNumber": {
+            "type": ["null", "string"]
+          },
+          "UPCCode": {
+            "type": ["null", "string"]
+          },
+          "Description": {
+            "type": ["null", "string"]
+          },
+          "OrderedQty": {
+            "type": ["null", "string"]
+          },
+          "ShippedQty": {
+            "type": ["null", "string"]
+          },
+          "UnitPrice": {
+            "type": ["null", "string"]
+          },
+          "ExtendUnitPrice": {
+            "type": ["null", "string"]
+          },
+          "ExtendShippingCharge": {
+            "type": ["null", "string"]
+          },
+          "ExtendSalesTax": {
+            "type": ["null", "string"]
+          },
+          "Status": {
+            "type": ["null", "string"]
+          },
+          "StatusDescription": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "PackageInfoList": {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "PackageType": {
+            "type": ["null", "string"]
+          },
+          "ShipCarrier": {
+            "type": ["null", "string"]
+          },
+          "ShipService": {
+            "type": ["null", "string"]
+          },
+          "TrackingNumber": {
+            "type": ["null", "string"]
+          },
+          "ShipDate": {
+            "type": ["null", "string"]
+          },
+          "ItemInfoList": {
+            "type": "array",
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "SellerPartNumber": {
+                  "type": ["null", "string"]
+                },
+                "MfrPartNumber": {
+                  "type": ["null", "string"]
+                },
+                "ShippedQty": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
