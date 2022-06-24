@@ -12,7 +12,6 @@ import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,7 +68,7 @@ public class StateMessageHelper {
     return switch (stateWrapper.getStateType()) {
       case LEGACY -> new State().withState(stateWrapper.getLegacyState());
       case STREAM -> new State().withState(Jsons.jsonNode(stateWrapper.getStateMessages()));
-      case GLOBAL -> new State().withState(Jsons.jsonNode(Collections.singletonList(stateWrapper.getGlobal())));
+      case GLOBAL -> new State().withState(Jsons.jsonNode(List.of(stateWrapper.getGlobal())));
       default -> throw new RuntimeException("Unexpected StateType " + stateWrapper.getStateType());
     };
   }
