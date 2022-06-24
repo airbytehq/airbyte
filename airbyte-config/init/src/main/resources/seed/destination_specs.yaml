@@ -497,7 +497,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.9"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -538,7 +538,6 @@
           order: 2
           oneOf:
           - title: "Standard Inserts"
-            additionalProperties: false
             required:
             - "method"
             properties:
@@ -546,7 +545,6 @@
                 type: "string"
                 const: "Standard"
           - title: "GCS Staging"
-            additionalProperties: false
             type: "object"
             required:
             - "method"
