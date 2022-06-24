@@ -7,40 +7,11 @@ import copy
 import importlib
 from typing import Any, Mapping, get_type_hints
 
-from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
-from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.create_partial import create
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
-from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
-from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
+from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
 from airbyte_cdk.sources.declarative.types import Config
-
-class_registry = {
-    "jq": "airbyte_cdk.sources.declarative.extractors.jq.JqExtractor",
-    "NextPageUrlPaginator": "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator",
-    "InterpolatedPaginator": "airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator.InterpolatedPaginator",
-    "TokenAuthenticator": "airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator",
-}
-
-default_implementations_registry = {
-    Requester: HttpRequester,
-    Retriever: SimpleRetriever,
-    SchemaLoader: JsonSchema,
-    HttpExtractor: JelloExtractor,
-    ConnectionChecker: CheckStream,
-    Retrier: DefaultRetrier,
-    Decoder: JsonDecoder,
-}
 
 
 class DeclarativeComponentFactory:
@@ -88,14 +59,14 @@ class DeclarativeComponentFactory:
         elif isinstance(v, dict) and "type" in v:
             v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
             object_type = v.pop("type")
-            class_name = class_registry[object_type]
+            class_name = CLASS_TYPES_REGISTRY[object_type]
             v["class_name"] = class_name
             return self.create_component(v, config)()
         elif isinstance(v, dict):
             t = k
             type_hints = get_type_hints(parent_class.__init__)
             interface = type_hints.get(t)
-            expected_type = default_implementations_registry.get(interface)
+            expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
             if expected_type:
                 v["class_name"] = expected_type
                 v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
