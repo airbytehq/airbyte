@@ -1,9 +1,0 @@
-{
-  "endpoint": "a",
-  "authenticationMethod":
-  {
-    "method": "b",
-    "username": "c",
-    "password": "d"
-  }
-}
