@@ -1460,7 +1460,7 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.8"
+- dockerImage: "airbyte/destination-gcs:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1472,7 +1472,6 @@
       - "gcs_bucket_path"
       - "credential"
       - "format"
-      additionalProperties: false
       properties:
         gcs_bucket_name:
           title: "GCS Bucket Name"
