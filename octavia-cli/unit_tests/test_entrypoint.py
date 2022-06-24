@@ -217,7 +217,6 @@ def test_available_commands():
     assert entrypoint.AVAILABLE_COMMANDS == [
         entrypoint.list_commands._list,
         entrypoint.get_commands.get,
-        entrypoint.update_commands.update,
         entrypoint.init_commands.init,
         entrypoint.generate_commands.generate,
         entrypoint.apply_commands.apply,
