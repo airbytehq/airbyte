@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.relationaldb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,14 +105,21 @@ public class AbstractDbSourceTest {
     }
 
     @Override
-    public AutoCloseableIterator<JsonNode> queryTableIncremental(final AbstractDatabase database, final List columnNames, final String schemaName, final String tableName,
-        final String cursorField, final Object cursorFieldType, final String cursor) {
+    public AutoCloseableIterator<JsonNode> queryTableIncremental(final AbstractDatabase database,
+                                                                 final List columnNames,
+                                                                 final String schemaName,
+                                                                 final String tableName,
+                                                                 final String cursorField,
+                                                                 final Object cursorFieldType,
+                                                                 final String cursor) {
       return null;
     }
 
     @Override
-    public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final AbstractDatabase database, final List columnNames, final String schemaName,
-        final String tableName) {
+    public AutoCloseableIterator<JsonNode> queryTableFullRefresh(final AbstractDatabase database,
+                                                                 final List columnNames,
+                                                                 final String schemaName,
+                                                                 final String tableName) {
       return null;
     }
 
@@ -121,5 +132,7 @@ public class AbstractDbSourceTest {
     public void close() throws Exception {
 
     }
+
   }
+
 }

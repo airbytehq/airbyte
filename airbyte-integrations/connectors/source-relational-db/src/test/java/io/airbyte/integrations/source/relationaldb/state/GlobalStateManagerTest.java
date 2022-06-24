@@ -214,4 +214,5 @@ public class GlobalStateManagerTest {
     assertEquals(AirbyteStateType.GLOBAL, airbyteStateMessage.getType());
     assertEquals(0, airbyteStateMessage.getGlobal().getStreamStates().size());
   }
+
 }

@@ -148,7 +148,8 @@ public class StateGeneratorUtils {
    * Tests whether the provided {@link StreamDescriptor} is valid. A valid descriptor is defined as
    * one that has a non-{@code null} name.
    *
-   * See https://github.com/airbytehq/airbyte/blob/e63458fabb067978beb5eaa74d2bc130919b419f/docs/understanding-airbyte/airbyte-protocol.md
+   * See
+   * https://github.com/airbytehq/airbyte/blob/e63458fabb067978beb5eaa74d2bc130919b419f/docs/understanding-airbyte/airbyte-protocol.md
    * for more details
    *
    * @param streamDescriptor A {@link StreamDescriptor} to be validated.

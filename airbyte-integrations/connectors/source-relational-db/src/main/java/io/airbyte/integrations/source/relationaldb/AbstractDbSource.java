@@ -13,7 +13,6 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
@@ -523,21 +522,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
-    final Optional<StateWrapper> state = StateMessageHelper.getTypedState(initialStateJson);
-    if (state.isEmpty()) {
-      return generateEmptyInitialState(config);
-    } else {
-      final StateWrapper stateWrapper = state.get();
-      switch(stateWrapper.getStateType()) {
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson);
+    return typedState.map((state) -> {
+      switch (state.getStateType()) {
         case GLOBAL:
-          return List.of(stateWrapper.getGlobal());
+          return List.of(state.getGlobal());
         case STREAM:
-          return stateWrapper.getStateMessages();
+          return state.getStateMessages();
         case LEGACY:
         default:
-          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(stateWrapper.getLegacyState()));
+          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(state.getLegacyState()));
       }
-    }
+    }).orElse(generateEmptyInitialState(config));
   }
 
   /**
