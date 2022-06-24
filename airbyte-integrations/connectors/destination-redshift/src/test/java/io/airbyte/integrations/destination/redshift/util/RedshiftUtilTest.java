@@ -50,10 +50,6 @@ public class RedshiftUtilTest {
   }
 
   @Test
-
-
-
-
   @DisplayName("Should return false when all S3 required fields are not null or empty")
   public void testAllS3RequiredAreNotNullOrEmptyThenReturnFalse() {
     JsonNode jsonNode = mock(JsonNode.class);
