@@ -30,12 +30,9 @@
          },
           "type":{
              "type":["null","string"]
-          },
+         },
          "createdBy":{
             "type":["null","string"]
-         },
-         "quantity":{
-            "type":["null","integer"]
          },
          "createdAt": {
           "type":["null","string"]
@@ -45,15 +42,6 @@
         },
         "event":{
             "type":["null","string"]
-        },
-        "arrivalDatetime":{
-        	"type":["null","string"]
-        },
-        "status":{
-        	"type":["null","string"]
-        },
-        "guestStatus":{
-        	"type":["null","string"]
         }
       }
 }

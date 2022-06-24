@@ -13,6 +13,7 @@ from datetime import datetime
 import time
 import logging
 import traceback
+import re
 
 LOGGER = logging.getLogger()
 
@@ -211,21 +212,18 @@ class Orders(IncrementalXolaStream):
                 else:
                     resp["createdBy"] = ""
                 
-                if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
+                #if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
                 if "event" in data.keys(): resp["event"] = data["event"]
                 if "amount" in data.keys(): resp["amount"] = data["amount"]
                 if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
                 if "type" in data.keys(): resp["type"] = data["type"]
-                if "arrivalDatetime" in data.keys(): resp["arrivalDatetime"] = data["arrivalDatetime"]
-                if "status" in data.keys(): resp["status"] = data["status"]
-                if "guestStatus" in data.keys(): resp["guestStatus"] = data["guestStatus"]
                 
                 modified_response.append(resp)
             except:
                 pass
         return modified_response
 
-class Users(IncrementalXolaStream):
+class Customers(IncrementalXolaStream):
     primary_key = "id"
     cursor_field = "order_updatedAt"
     seller_id = None
@@ -239,7 +237,7 @@ class Users(IncrementalXolaStream):
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
-        should return "users". Required.
+        should return "orders". Required.
         """
         return "orders"
 
@@ -288,9 +286,13 @@ class Users(IncrementalXolaStream):
                 if "phone" in data.keys(): user_resp["phone"] = data["phone"]
                 if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
                 user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
+                user_resp["customer_type"] = "organizer"
                 
-                modified_response.append(user_resp)
-                email_userid_name_dict[user_resp["customerEmail"].lower()] = user_resp["user_id"] + "|" + user_resp["customerName"].lower()
+                email_userid_name_dict[user_resp["customerEmail"].lower()] = {
+                    "user_id" : user_resp["user_id"],
+                    "customerName" : user_resp["customerName"].lower(),
+                    "phone" : user_resp["phone"] 
+                }
                 
                 ## Fetch waivers information.
                 if "waivers" in data.keys():
@@ -312,35 +314,50 @@ class Users(IncrementalXolaStream):
                                         resp["waiver_updatedAt"] = waiver["updatedAt"] 
                                 except Exception as e:
                                     traceback.print_exc()
-                                    LOGGER.info("Error occurred while parsing waiver createdAt and updatedAt", e)
+                                    LOGGER.info("Error occurred while parsing waiver createdAt and updatedAt, Going ahead with wrong value of createdAt and updatedAt.", e)
+                                    resp["waiver_createdAt"] = str(waiver["createdAt"])
+                                    resp["waiver_updatedAt"] = str(waiver["updatedAt"])
                                 
                                 resp["order_updatedAt"] = data["updatedAt"]
                                 resp["order_createdAt"] = data["createdAt"]
-
+                                
                                 if "customerName" in participant.keys(): resp["customerName"] = participant["customerName"]
                                 if "customerEmail" in participant.keys() and participant["customerEmail"]: resp["customerEmail"] = participant["customerEmail"]
                                 if "phone" in participant.keys(): resp["phone"] = participant["phone"]
                                 if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
                                 
                                 resp["user_id"] = participant["traveler"]["$id"]["$id"] if "traveler" in participant.keys() and "$id" in participant["traveler"].keys() else ""
+                                resp["customer_type"] = "participant"
                                 
                                 lowerEmail = resp["customerEmail"].lower()
                                 lowerName = resp["customerName"].lower()
                                 
                                 if lowerEmail in email_userid_name_dict.keys():
                                     
-                                    userid_name_array = email_userid_name_dict[lowerEmail].split("|", 1)
-                                    
-                                    user_id = userid_name_array[0]
-                                    name = userid_name_array[1]
+                                    user_id = email_userid_name_dict[lowerEmail]["user_id"]
+                                    name = email_userid_name_dict[lowerEmail]["customerName"]
+                                    phone = email_userid_name_dict[lowerEmail]["phone"]
                                     
                                     if name != lowerName:
                                         resp["customerEmail"] = ""
                                         if resp["user_id"] == user_id: resp["user_id"] = ""
+                                        if re.sub('\\D+','',resp["phone"]) == re.sub('\\D+','',phone): resp["phone"] = ""
                                         modified_response.append(resp)
+                                        
+                                    if lowerName == user_resp["customerName"].lower() and lowerEmail == user_resp["customerEmail"].lower(): 
+                                        user_resp["dateOfBirth"] = resp["dateOfBirth"]
+                                        user_resp["customer_type"] = "organizer,participant"
+                                    
                                 else:
-                                    email_userid_name_dict[resp["customerEmail"].lower()] = resp["user_id"] + "|" + resp["customerName"].lower()
+                                    email_userid_name_dict[resp["customerEmail"].lower()] = {
+                                        "user_id" : resp["user_id"],
+                                        "customerName" : resp["customerName"].lower(),
+                                        "phone" : resp["phone"]
+                                    }
                                     modified_response.append(resp)
+                
+                
+                modified_response.append(user_resp)
             except:
                 pass
         return modified_response
@@ -467,5 +484,5 @@ class SourceXola(AbstractSource):
         return [
             Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
             Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Users(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Customers(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]

@@ -52,7 +52,7 @@
         "string"
       ]
     },
-     "dateOfBirth": {
+    "dateOfBirth": {
       "type": [
         "null",
         "string"
@@ -60,6 +60,12 @@
     },
     "user_id": {
       "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customer_type": {
+    	"type": [
         "null",
         "string"
       ]
