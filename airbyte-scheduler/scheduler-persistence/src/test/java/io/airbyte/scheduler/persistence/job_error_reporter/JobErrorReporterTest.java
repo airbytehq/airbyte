@@ -7,6 +7,7 @@ package io.airbyte.scheduler.persistence.job_error_reporter;
 import static org.mockito.Mockito.mock;
 
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
@@ -26,6 +27,7 @@ import org.mockito.Mockito;
 public class JobErrorReporterTest {
 
   private static final UUID CONNECTION_ID = UUID.randomUUID();
+  private static final DeploymentMode DEPLOYMENT_MODE = DeploymentMode.OSS;
   private static final String AIRBYTE_VERSION = "0.1.40";
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final String SOURCE_DEFINITION_NAME = "stripe";
@@ -44,7 +46,7 @@ public class JobErrorReporterTest {
   void setup() {
     configRepository = mock(ConfigRepository.class);
     jobErrorReportingClient = mock(JobErrorReportingClient.class);
-    jobErrorReporter = new JobErrorReporter(configRepository, AIRBYTE_VERSION, jobErrorReportingClient);
+    jobErrorReporter = new JobErrorReporter(configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, jobErrorReportingClient);
   }
 
   @Test
@@ -90,6 +92,7 @@ public class JobErrorReporterTest {
 
     final Map<String, String> expectedSourceMetadata = Map.of(
         "connection_id", CONNECTION_ID.toString(),
+        "deployment_mode", DEPLOYMENT_MODE.name(),
         "airbyte_version", AIRBYTE_VERSION,
         "failure_origin", "source",
         "failure_type", "system_error",
@@ -99,6 +102,7 @@ public class JobErrorReporterTest {
 
     final Map<String, String> expectedDestinationMetadata = Map.of(
         "connection_id", CONNECTION_ID.toString(),
+        "deployment_mode", DEPLOYMENT_MODE.name(),
         "airbyte_version", AIRBYTE_VERSION,
         "failure_origin", "destination",
         "failure_type", "system_error",

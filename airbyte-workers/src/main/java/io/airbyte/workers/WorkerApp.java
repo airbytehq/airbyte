@@ -441,7 +441,8 @@ public class WorkerApp {
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
-    final JobErrorReporter jobErrorReporter = new JobErrorReporter(configRepository, configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
+    final JobErrorReporter jobErrorReporter =
+        new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
     new WorkerApp(

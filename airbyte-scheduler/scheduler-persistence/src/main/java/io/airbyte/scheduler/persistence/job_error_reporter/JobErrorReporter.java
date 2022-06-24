@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
 import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobSyncConfig;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class JobErrorReporter {
 
   private static final String FROM_TRACE_MESSAGE = "from_trace_message";
+  private static final String DEPLOYMENT_MODE_META_KEY = "deployment_mode";
   private static final String AIRBYTE_VERSION_META_KEY = "airbyte_version";
   private static final String FAILURE_ORIGIN_META_KEY = "failure_origin";
   private static final String FAILURE_TYPE_META_KEY = "failure_type";
@@ -28,14 +30,17 @@ public class JobErrorReporter {
   private static final String CONNECTOR_RELEASE_STAGE_META_KEY = "connector_release_stage";
 
   private final ConfigRepository configRepository;
+  private final DeploymentMode deploymentMode;
   private final String airbyteVersion;
   private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
+                          final DeploymentMode deploymentMode,
                           final String airbyteVersion,
                           final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
+    this.deploymentMode = deploymentMode;
     this.airbyteVersion = airbyteVersion;
     this.jobErrorReportingClient = jobErrorReportingClient;
   }
@@ -60,6 +65,7 @@ public class JobErrorReporter {
       final HashMap<String, String> metadata = new HashMap<>();
       metadata.put(CONNECTION_ID_META_KEY, connectionId.toString());
       metadata.put(AIRBYTE_VERSION_META_KEY, airbyteVersion);
+      metadata.put(DEPLOYMENT_MODE_META_KEY, deploymentMode.name());
       metadata.put(FAILURE_ORIGIN_META_KEY, failureOrigin.value());
       metadata.put(FAILURE_TYPE_META_KEY, failureReason.getFailureType().value());
 
