@@ -791,6 +791,12 @@ def test_stream_reviews_incremental_read():
     assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:01Z"}}
     assert len(responses.calls) == 4
 
+    responses.calls.reset()
+    records = read_incremental(stream, stream_state)
+    assert [r["id"] for r in records] == [1000, 1007, 1009]
+    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:02Z"}}
+    assert len(responses.calls) == 4
+
 
 @responses.activate
 def test_stream_team_members_full_refresh():
