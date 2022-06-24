@@ -4,7 +4,11 @@
 
 package io.airbyte.integrations.destination.oracle;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.airbyte.integrations.util.HostPortResolver.resolveHost;
+import static io.airbyte.integrations.util.HostPortResolver.resolvePort;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,13 +25,13 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.jooq.DSLContext;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -44,8 +48,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   private JsonNode getConfig(final OracleContainer db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(db))
-        .put("port", HostPortResolver.resolvePort(db))
+        .put("host", resolveHost(db))
+        .put("port", resolvePort(db))
         .put("sid", db.getSid())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -63,9 +67,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv env,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema)
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -106,8 +110,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env,
-                                                     final String streamName,
-                                                     final String namespace)
+      final String streamName,
+      final String namespace)
       throws Exception {
     final String tableName = namingResolver.getIdentifier(streamName);
     return retrieveRecordsFromTable(tableName, namespace);
@@ -124,11 +128,9 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
       throws SQLException {
     try (final DSLContext dslContext = getDSLContext(config)) {
       final List<org.jooq.Record> result = getDatabase(dslContext)
-          .query(ctx -> ctx.fetch(
+          .query(ctx -> new ArrayList<>(ctx.fetch(
               String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                  OracleDestination.COLUMN_NAME_EMITTED_AT))
-              .stream()
-              .collect(Collectors.toList()));
+                  OracleDestination.COLUMN_NAME_EMITTED_AT))));
       return result
           .stream()
           .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
@@ -194,8 +196,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
-    assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
-        .contains("Oracle Advanced Security: encryption"));
+    assertThat(collect.get(1).get("NETWORK_SERVICE_BANNER").asText(),
+        is(equalTo("Encryption service for Linux: Version 18.0.0.0.0 - Production")));
   }
 
 }
