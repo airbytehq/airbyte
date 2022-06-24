@@ -37,11 +37,9 @@ public class StreamResetActivityTest {
   private final DeleteStreamResetRecordsForJobInput input = new DeleteStreamResetRecordsForJobInput(UUID.randomUUID(), Long.valueOf("123"));
   private final DeleteStreamResetRecordsForJobInput noJobIdInput = new DeleteStreamResetRecordsForJobInput(UUID.randomUUID(), null);
 
-  static Job jobMock;
-
   @Test
   public void testDeleteStreamResetRecordsForJob() throws IOException {
-    jobMock = mock(Job.class, RETURNS_DEEP_STUBS);
+    final Job jobMock = mock(Job.class, RETURNS_DEEP_STUBS);
     when(jobPersistence.getJob(input.getJobId())).thenReturn(jobMock);
 
     when(jobMock.getConfig().getConfigType()).thenReturn(ConfigType.RESET_CONNECTION);
@@ -53,7 +51,7 @@ public class StreamResetActivityTest {
 
   @Test
   public void testIncorrectConfigType() throws IOException {
-    jobMock = mock(Job.class, RETURNS_DEEP_STUBS);
+    final Job jobMock = mock(Job.class, RETURNS_DEEP_STUBS);
     when(jobPersistence.getJob(input.getJobId())).thenReturn(jobMock);
 
     when(jobMock.getConfig().getConfigType()).thenReturn(ConfigType.SYNC);
