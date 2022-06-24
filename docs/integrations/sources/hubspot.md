@@ -1,6 +1,6 @@
 # HubSpot
 
-This page guides you through the process of setting up the HubSpot source connector.
+This page guides you through setting up the HubSpot source connector.
 
 ## Prerequisite
 
@@ -39,8 +39,8 @@ You can use OAuth or an API key to authenticate your HubSpot account. If you cho
 4. Enter a name for your source.
 5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
-    - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
-    - To authenticate using API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
+    - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
+    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
     :::
@@ -119,10 +119,17 @@ Example of the output message when trying to read `workflows` stream with missin
 
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 
+## Tutorials
+
+Now that you have set up the Mailchimp source connector, check out the following Hubspot tutorial:
+
+[Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.71  | 2022-06-24 | [14102](https://github.com/airbytehq/airbyte/pull/14102) | Removed legacy `AirbyteSentry` dependency from the code  
 | 0.1.70  | 2022-06-16 | [13837](https://github.com/airbytehq/airbyte/pull/13837) | Fix the missing data in CRM streams issue                                                                                                      |
 | 0.1.69  | 2022-06-10 | [13691](https://github.com/airbytehq/airbyte/pull/13691) | Fix the `URI Too Long` issue                                                                                                                   |
 | 0.1.68  | 2022-06-08 | [13596](https://github.com/airbytehq/airbyte/pull/13596) | Fix for the `property_history` which did not emit records                                                                                      |

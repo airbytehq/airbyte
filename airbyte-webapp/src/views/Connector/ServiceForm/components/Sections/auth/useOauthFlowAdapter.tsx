@@ -50,7 +50,7 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
       const oauthInputProperties =
         (
           connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification as {
-            properties: { path_in_connector_config: string[] }[];
+            properties: Array<{ path_in_connector_config: string[] }>;
           }
         )?.properties ?? {};
 

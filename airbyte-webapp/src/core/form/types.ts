@@ -33,7 +33,7 @@ type FormGroupItem = {
 
 type FormConditionItem = {
   _type: "formCondition";
-  conditions: { [key: string]: FormGroupItem | FormBaseItem };
+  conditions: Record<string, FormGroupItem | FormBaseItem>;
 } & FormItem;
 
 type FormObjectArrayItem = {
@@ -46,12 +46,8 @@ type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectAr
 export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface WidgetConfig {
-  [key: string]: any;
-}
-export interface WidgetConfigMap {
-  [key: string]: WidgetConfig;
-}
+export type WidgetConfig = Record<string, any>;
+export type WidgetConfigMap = Record<string, WidgetConfig>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FormComponentOverrideProps = Record<string, any>;

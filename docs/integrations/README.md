@@ -46,6 +46,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Db2](sources/db2.md)                                                                       | Alpha                | No                  |
 | [Delighted](sources/delighted.md)                                                           | Alpha                | Yes                 |
 | [Dixa](sources/dixa.md)                                                                     | Alpha                | Yes                 |
+| [Dockerhub](sources/dockerhub.md)                                                           | Alpha                | No                  |
 | [Drift](sources/drift.md)                                                                   | Alpha                | No                  |
 | [Drupal](sources/drupal.md)                                                                 | Alpha                | No                  |
 | [End-to-End Testing](sources/e2e-test.md)                                                   | Alpha                | Yes                 |
@@ -54,6 +55,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Facebook Pages](sources/facebook-pages.md)                                                 | Alpha                | No                  |
 | [Faker](sources/faker.md)                                                                   | Alpha                | Yes                 |
 | [File](sources/file.md)                                                                     | Alpha                | Yes                 |
+| [Firebolt](sources/firebolt.md)                                                             | Alpha                | Yes                 |
 | [Flexport](sources/flexport.md)                                                             | Alpha                | No                  |
 | [Freshdesk](sources/freshdesk.md)                                                           | Alpha                | Yes                 |
 | [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |
@@ -87,6 +89,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Magento](sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
 | [Marketo](sources/marketo.md)                                                               | Alpha                | Yes                 |
+| [Metabase](sources/metabase.md)                                                             | Alpha                | No                  |
 | [Microsoft Dynamics AX](sources/microsoft-dynamics-ax.md)                                   | Alpha                | No                  |
 | [Microsoft Dynamics Customer Engagement](sources/microsoft-dynamics-customer-engagement.md) | Alpha                | No                  |
 | [Microsoft Dynamics GP](sources/microsoft-dynamics-gp.md)                                   | Alpha                | No                  |
