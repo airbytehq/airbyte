@@ -324,6 +324,14 @@
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
+- name: Google Analytics Data API
+  sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
+  dockerRepository: airbyte/source-google-analytics-data-api
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-data-api
+  icon: google-analytics.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
