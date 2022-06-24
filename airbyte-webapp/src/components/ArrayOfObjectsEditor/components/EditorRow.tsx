@@ -33,7 +33,7 @@ interface EditorRowProps {
   disabled?: boolean;
 }
 
-const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
+export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
   const { formatMessage } = useIntl();
 
   const row = (
@@ -41,6 +41,7 @@ const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, on
       <div>{name || id}</div>
       <div>
         <Button
+          type="button"
           iconOnly
           arial-label={formatMessage({ id: "form.edit" })}
           onClick={() => onEdit(id)}
@@ -49,6 +50,7 @@ const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, on
           <FontAwesomeIcon icon={faPencil} fixedWidth />
         </Button>
         <Button
+          type="button"
           iconOnly
           aria-label={formatMessage({ id: "form.delete" })}
           onClick={() => onRemove(id)}
@@ -62,5 +64,3 @@ const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, on
 
   return description ? <ToolTip control={row}>{description}</ToolTip> : row;
 };
-
-export { EditorRow };
