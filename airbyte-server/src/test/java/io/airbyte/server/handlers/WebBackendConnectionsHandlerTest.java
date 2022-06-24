@@ -859,7 +859,7 @@ class WebBackendConnectionsHandlerTest {
     assertTrue(
         resultList.stream().anyMatch(
             transformType -> transformType == TransformTypeEnum.UPDATE_STREAM));
-    assertFalse(
+    assertTrue(
         resultList.stream().anyMatch(
             transformType -> transformType == TransformTypeEnum.REMOVE_STREAM));
   }
