@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.jdbc;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
-import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -104,7 +103,7 @@ public class JdbcBufferedConsumerFactory {
   /**
    * Defer to the {@link AirbyteStream}'s namespace. If this is not set, use the destination's default
    * schema. This namespace is source-provided, and can be potentially empty.
-   *
+   * <p>
    * The logic here matches the logic in the catalog_process.py for Normalization. Any modifications
    * need to be reflected there and vice versa.
    */
@@ -159,7 +158,7 @@ public class JdbcBufferedConsumerFactory {
       // copy data
       if (!hasFailed) {
         final List<String> queryList = new ArrayList<>();
-        sqlOperations.onDestinationCloseOperations(database, writeConfigs.stream().map(WriteConfig::getOutputSchemaName).collect(toSet()));
+        sqlOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Finalizing tables in destination started for {} streams", writeConfigs.size());
         for (final WriteConfig writeConfig : writeConfigs) {
           final String schemaName = writeConfig.getOutputSchemaName();
@@ -193,7 +192,9 @@ public class JdbcBufferedConsumerFactory {
         sqlOperations.dropTableIfExists(database, schemaName, tmpTableName);
       }
       LOGGER.info("Cleaning tmp tables in destination completed.");
-    };
+    }
+
+    ;
   }
 
   private static AirbyteStreamNameNamespacePair toNameNamespacePair(final WriteConfig config) {
