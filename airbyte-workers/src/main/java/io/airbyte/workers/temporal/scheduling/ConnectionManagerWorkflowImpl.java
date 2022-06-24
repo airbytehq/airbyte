@@ -380,6 +380,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB);
   }
 
+  // reset the ConnectionUpdaterInput back to a default state
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
     connectionUpdaterInput.setJobId(null);
     connectionUpdaterInput.setAttemptNumber(1);

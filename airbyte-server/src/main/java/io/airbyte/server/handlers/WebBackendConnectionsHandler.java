@@ -46,10 +46,14 @@ import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -302,12 +306,22 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (needReset) {
-      eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-      eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+          webBackendConnectionUpdate.getConnectionId(),
+          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
+      verifyManualOperationResult(manualOperationResult);
+      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      verifyManualOperationResult(manualOperationResult);
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
     return buildWebBackendConnectionRead(connectionRead);
+  }
+
+  private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
+    if (manualOperationResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+    }
   }
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)
