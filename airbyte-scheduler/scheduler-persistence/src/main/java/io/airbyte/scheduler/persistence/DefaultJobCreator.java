@@ -101,7 +101,10 @@ public class DefaultJobCreator implements JobCreator {
       configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
       if (streamsToReset.contains(streamDescriptor)) {
         // The Reset Source will emit no record messages for any streams, so setting the destination sync
-        // mode to OVERWRITE will empty out this stream in the destination
+        // mode to OVERWRITE will empty out this stream in the destination.
+        // Note: streams in streamsToReset that are NOT in this configured catalog (i.e. deleted streams)
+        // will still have their state reset by the Reset Source, but will not be modified in the
+        // destination since they are not present in the catalog that is sent to the destination.
         configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
       } else {
         // Set streams that are not being reset to APPEND so that they are not modified in the destination
