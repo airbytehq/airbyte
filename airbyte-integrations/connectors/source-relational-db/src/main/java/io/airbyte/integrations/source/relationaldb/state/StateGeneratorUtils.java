@@ -184,20 +184,6 @@ public class StateGeneratorUtils {
   }
 
   /**
-   * Converts a {@link AirbyteStateType#GLOBAL} state message into a list of
-   * {@link AirbyteStateType#STREAM} messages.
-   *
-   * @param airbyteStateMessage A {@link AirbyteStateType#GLOBAL} state message.
-   * @return A list {@link AirbyteStateType#STREAM} state messages.
-   */
-  public static List<AirbyteStateMessage> convertGlobalStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
-    return airbyteStateMessage.getGlobal().getStreamStates().stream()
-        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState().withStreamDescriptor(s.getStreamDescriptor()).withStreamState(s.getStreamState())))
-        .collect(Collectors.toList());
-  }
-
-  /**
    * Converts a {@link AirbyteStateType#LEGACY} state message into a list of
    * {@link AirbyteStateType#STREAM} messages.
    *

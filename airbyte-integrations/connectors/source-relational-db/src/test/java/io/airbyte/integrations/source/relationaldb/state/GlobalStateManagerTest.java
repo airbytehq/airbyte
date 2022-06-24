@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
@@ -202,4 +203,15 @@ public class GlobalStateManagerTest {
     assertEquals(expected, actualFirstEmission);
   }
 
+  @Test
+  void testToStateWithNoState() {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();
+    final StateManager stateManager =
+        new GlobalStateManager(new AirbyteStateMessage(), catalog);
+
+    final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
+    assertNotNull(airbyteStateMessage);
+    assertEquals(AirbyteStateType.GLOBAL, airbyteStateMessage.getType());
+    assertEquals(0, airbyteStateMessage.getGlobal().getStreamStates().size());
+  }
 }
