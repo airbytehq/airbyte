@@ -80,7 +80,7 @@ public class CatalogHelpers {
         configuredCatalog.getStreams()
             .stream()
             .map(ConfiguredAirbyteStream::getStream)
-            .collect(Collectors.toList()));
+            .toList());
   }
 
   /**
@@ -122,7 +122,7 @@ public class CatalogHelpers {
   public static List<StreamDescriptor> extractStreamDescriptors(final AirbyteCatalog catalog) {
     return catalog.getStreams()
         .stream()
-        .map(abStream -> new StreamDescriptor().withName(abStream.getName()).withNamespace(abStream.getNamespace()))
+        .map(CatalogHelpers::extractDescriptor)
         .toList();
   }
 
@@ -138,7 +138,7 @@ public class CatalogHelpers {
         .withStreams(catalog.getStreams()
             .stream()
             .map(CatalogHelpers::toDefaultConfiguredStream)
-            .collect(Collectors.toList()));
+            .toList());
   }
 
   public static ConfiguredAirbyteStream toDefaultConfiguredStream(final AirbyteStream stream) {

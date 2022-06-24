@@ -24,7 +24,7 @@ interface ITableDataItem {
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ConnectionSchedule | undefined;
+  schedule?: ConnectionSchedule;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;

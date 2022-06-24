@@ -45,7 +45,7 @@ public class StreamStateManagerTest {
   @Test
   void testCreationFromInvalidState() {
     final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.STREAM)
+        .withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState()
             .withStreamDescriptor(new StreamDescriptor().withName(STREAM_NAME1).withNamespace(NAMESPACE))
             .withStreamState(Jsons.jsonNode("Not a state object")));
@@ -162,7 +162,7 @@ public class StreamStateManagerTest {
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
     final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.of(airbyteStreamNameNamespacePair));
     assertNotNull(airbyteStateMessage);
-    assertEquals(AirbyteStateType.STREAM, airbyteStateMessage.getStateType());
+    assertEquals(AirbyteStateType.STREAM, airbyteStateMessage.getType());
     assertNotNull(airbyteStateMessage.getStream());
   }
 
@@ -182,7 +182,7 @@ public class StreamStateManagerTest {
     final StateManager stateManager = new StreamStateManager(createDefaultState(), catalog);
     final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
     assertNotNull(airbyteStateMessage);
-    assertEquals(AirbyteStateType.STREAM, airbyteStateMessage.getStateType());
+    assertEquals(AirbyteStateType.STREAM, airbyteStateMessage.getType());
     assertNotNull(airbyteStateMessage.getStream());
     assertNull(airbyteStateMessage.getStream().getStreamState());
   }
@@ -221,12 +221,12 @@ public class StreamStateManagerTest {
   void testCdcStateManager() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
     final StateManager stateManager = new StreamStateManager(
-        List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState())), catalog);
+        List.of(new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState())), catalog);
     Assertions.assertThrows(UnsupportedOperationException.class, () -> stateManager.getCdcStateManager());
   }
 
   private List<AirbyteStateMessage> createDefaultState() {
-    return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState()));
+    return List.of(new AirbyteStateMessage().withType(AirbyteStateType.STREAM).withStream(new AirbyteStreamState()));
   }
 
   private AirbyteStateMessage createStreamState(final String name,
@@ -246,7 +246,7 @@ public class StreamStateManagerTest {
     }
 
     return new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.STREAM)
+        .withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState()
             .withStreamDescriptor(new StreamDescriptor().withName(name).withNamespace(namespace))
             .withStreamState(Jsons.jsonNode(dbStreamState)));
