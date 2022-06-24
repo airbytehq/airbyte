@@ -229,7 +229,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()
