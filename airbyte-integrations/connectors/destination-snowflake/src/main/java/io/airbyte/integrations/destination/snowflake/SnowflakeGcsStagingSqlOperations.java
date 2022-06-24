@@ -28,6 +28,7 @@ import java.nio.channels.Channels;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -190,7 +191,14 @@ public class SnowflakeGcsStagingSqlOperations extends SnowflakeSqlOperations imp
 
   private void dropBucketObject() {
     if (!fullObjectKeys.isEmpty()) {
-      fullObjectKeys.forEach(this::removeBlob);
+      Iterator<String> iterator = fullObjectKeys.iterator();
+      while (iterator.hasNext()) {
+        String element = iterator.next();
+        if (element != null) {
+          removeBlob(element);
+          iterator.remove();
+        }
+      }
     }
   }
 

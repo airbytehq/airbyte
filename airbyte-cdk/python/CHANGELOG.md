@@ -1,7 +1,13 @@
 # Changelog
 
-## 0.1.61
+## 0.1.63
 - Define `namespace` property on the `Stream` class inside `core.py`.
+
+## 0.1.62
+Bugfix: Correctly obfuscate nested secrets and secrets specified inside oneOf blocks inside the connector's spec.
+ 
+## 0.1.61
+- Remove legacy sentry code
 
 ## 0.1.60
 - Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried

@@ -38,12 +38,12 @@ public class StateMessageHelper {
       if (stateMessages.stream().anyMatch(streamMessage -> !streamMessage.getAdditionalProperties().isEmpty())) {
         return Optional.of(getLegacyStateWrapper(state));
       }
-      if (stateMessages.size() == 1 && stateMessages.get(0).getStateType() == AirbyteStateType.GLOBAL) {
+      if (stateMessages.size() == 1 && stateMessages.get(0).getType() == AirbyteStateType.GLOBAL) {
         return Optional.of(new StateWrapper()
             .withStateType(StateType.GLOBAL)
             .withGlobal(stateMessages.get(0)));
       } else if (stateMessages.size() >= 1
-          && stateMessages.stream().allMatch(stateMessage -> stateMessage.getStateType() == AirbyteStateType.STREAM)) {
+          && stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
         return Optional.of(new StateWrapper()
             .withStateType(StateType.STREAM)
             .withStateMessages(stateMessages));
