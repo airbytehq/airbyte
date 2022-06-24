@@ -4,10 +4,9 @@
 
 
 from collections import Mapping
-from typing import List, Any, Dict
+from typing import Any, Dict, List
 
-from google.analytics.data_v1beta import Dimension, Metric, RunReportRequest, OrderBy, DateRange, \
-    BetaAnalyticsDataClient, RunReportResponse
+from google.analytics.data_v1beta import BetaAnalyticsDataClient, DateRange, Dimension, Metric, OrderBy, RunReportRequest, RunReportResponse
 from google.oauth2 import service_account
 
 DEFAULT_CURSOR_FIELD = "date"
@@ -34,11 +33,10 @@ class Client:
             order_bys=[
                 OrderBy(
                     dimension=OrderBy.DimensionOrderBy(
-                        dimension_name=DEFAULT_CURSOR_FIELD,
-                        order_type=OrderBy.DimensionOrderBy.OrderType.ALPHANUMERIC
+                        dimension_name=DEFAULT_CURSOR_FIELD, order_type=OrderBy.DimensionOrderBy.OrderType.ALPHANUMERIC
                     )
                 )
-            ]
+            ],
         )
 
         return client.run_report(request)

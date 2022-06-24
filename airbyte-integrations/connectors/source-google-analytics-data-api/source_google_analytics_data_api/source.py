@@ -6,7 +6,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Generator, Any, MutableMapping, Mapping
+from typing import Any, Generator, Mapping, MutableMapping
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -14,15 +14,16 @@ from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
+    AirbyteStateMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
-    Type, SyncMode, AirbyteStateMessage,
+    SyncMode,
+    Type,
 )
 from airbyte_cdk.sources import Source
 from google.analytics.data_v1beta import RunReportResponse
-
-from source_google_analytics_data_api.client import Client, DEFAULT_CURSOR_FIELD
+from source_google_analytics_data_api.client import DEFAULT_CURSOR_FIELD, Client
 
 
 class SourceGoogleAnalyticsDataApi(Source):
@@ -39,9 +40,7 @@ class SourceGoogleAnalyticsDataApi(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            property_id = config.get("property_id")
-
-            response = self._run_report(config)
+            self._run_report(config)
 
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
@@ -89,7 +88,7 @@ class SourceGoogleAnalyticsDataApi(Source):
             json_schema=json_schema,
             supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
             source_defined_primary_key=primary_key,
-            default_cursor_field=[DEFAULT_CURSOR_FIELD]
+            default_cursor_field=[DEFAULT_CURSOR_FIELD],
         )
         return AirbyteCatalog(streams=[stream])
 
