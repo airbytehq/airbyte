@@ -499,19 +499,7 @@ public class WebBackendConnectionsHandler {
   }
 
   public static List<TransformTypeEnum> getStreamsToReset(final CatalogDiff catalogDiff) {
-    final List<TransformTypeEnum> streamsToReset = catalogDiff.getTransforms().stream()
-        .filter(streamTransform ->
-            TransformTypeEnum.ADD_STREAM == streamTransform.getTransformType() ||
-                TransformTypeEnum.UPDATE_STREAM == streamTransform.getTransformType())
-        .map(sT -> sT.getTransformType()).toList();
-
-//    catalogDiff.getTransforms().forEach(stream -> {
-//      final TransformTypeEnum transformType = stream.getTransformType();
-//      if(TransformTypeEnum.ADD_STREAM == transformType || TransformTypeEnum.UPDATE_STREAM == transformType){
-//        streamsToReset.add(stream.getTransformType());
-//      };
-//    });
-    return streamsToReset;
+    return catalogDiff.getTransforms().stream().map(sT -> sT.getTransformType()).toList();
   }
 
   /**
