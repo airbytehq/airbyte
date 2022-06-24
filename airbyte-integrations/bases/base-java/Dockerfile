@@ -13,8 +13,6 @@ ENV AIRBYTE_DISCOVER_CMD "/airbyte/javabase.sh --discover"
 ENV AIRBYTE_READ_CMD "/airbyte/javabase.sh --read"
 ENV AIRBYTE_WRITE_CMD "/airbyte/javabase.sh --write"
 
-ENV SENTRY_DSN="https://981e729cf92840628b29121e96e958f7@o1009025.ingest.sentry.io/6173659"
-
 ENV AIRBYTE_ENTRYPOINT "/airbyte/base.sh"
 ENTRYPOINT ["/airbyte/base.sh"]
 
