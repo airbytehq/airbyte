@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -13,22 +14,20 @@ import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.*;
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.DocWriteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
-
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -36,9 +35,10 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchSourceAcceptanceTest.class);
   private static final ObjectMapper mapper = MoreMappers.initMapper();
+  private static final String index = "sample";
   private static ElasticsearchContainer container;
-  private static final String index = "sample_data";
   private RestHighLevelClient client;
+  private JsonNode config;
 
   @Override
   protected String getImageName() {
@@ -64,20 +64,9 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
             .withExposedPorts(9200)
             .withStartupTimeout(Duration.ofSeconds(60));
     container.start();
-
-
-    client = new RestHighLevelClient(RestClient.builder(new HttpHost("localhost", 9200, "http")));
-
-
-    // create index
-    if(createIndex()) {
-      LOGGER.info("Index creation successful");
-    }
-    // insert document
-    if(insertDocument()) {
-      LOGGER.info("Insert document successful");
-    }
-
+    getRestHighLevelClient(container);
+    createIndex(client);
+    addDocument(client);
   }
 
   @Override
@@ -93,11 +82,8 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
-    final ConfiguredAirbyteStream streams =
-            CatalogHelpers.createConfiguredAirbyteStream(index, null, Field.of("value", JsonSchemaType.STRING));
-    streams.setSyncMode(SyncMode.FULL_REFRESH);
-    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(streams));
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() throws IOException {
+    return Jsons.deserialize(MoreResources.readResource("configured_catalog.json"), ConfiguredAirbyteCatalog.class);
   }
 
   @Override
@@ -105,29 +91,28 @@ public class ElasticsearchSourceAcceptanceTest extends SourceAcceptanceTest {
     return Jsons.jsonNode(new HashMap<>());
   }
 
-  private boolean createIndex() throws IOException {
-    CreateIndexRequest request = new CreateIndexRequest(index);
-    request.mapping(
-            """
-                    {
-                      "properties": {
-                        "message": {
-                          "type": "text"
-                        }
-                      }
-                    }""",
-            XContentType.JSON);
-    CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
-    return createIndexResponse.isAcknowledged();
+  private void getRestHighLevelClient(ElasticsearchContainer container) {
+    RestClientBuilder restClientBuilder = RestClient.builder(HttpHost.create(container.getHttpHostAddress())).setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder);
+    client = new RestHighLevelClient(restClientBuilder);
   }
 
-  private boolean insertDocument() throws IOException {
+
+  private void createIndex(final RestHighLevelClient client) throws IOException {
+    CreateIndexRequest request = new CreateIndexRequest(index);
+    CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
+    if(createIndexResponse.isAcknowledged()) {
+      LOGGER.info("Successfully created index: {}", index);
+    }
+  }
+
+  private void addDocument(final RestHighLevelClient client) throws IOException {
     IndexRequest indexRequest = new IndexRequest(index)
             .id("1")
-            .source("message", "testing");
+            .source("user", "kimchy",
+                    "postDate", new Date(),
+                    "message", "trying out Elasticsearch");
     IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
-    return (indexResponse.getResult() == DocWriteResponse.Result.CREATED);
+    LOGGER.info("Index response status: {}", indexResponse.status());
   }
-
 
 }
