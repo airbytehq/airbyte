@@ -301,10 +301,8 @@ public class TemporalClient {
           Optional.empty());
     }
 
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {
-      connectionManagerWorkflow =
-          ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync);
+      ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't sync a deleted connection.", e);
       return new ManualOperationResult(
@@ -320,11 +318,11 @@ public class TemporalClient {
             Optional.of("Didn't managed to start a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (!connectionManagerWorkflow.getState().isRunning());
+    } while (!ConnectionManagerUtils.isWorkflowStateRunning(client, connectionId));
 
     log.info("end of manual schedule");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
 
     return new ManualOperationResult(
         Optional.empty(),
@@ -377,10 +375,8 @@ public class TemporalClient {
     // get the job ID before the reset, defaulting to NON_RUNNING_JOB_ID if workflow is unreachable
     final long oldJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
 
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {
-      connectionManagerWorkflow =
-          ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
+      ConnectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't reset a deleted workflow", e);
       return new ManualOperationResult(
@@ -396,11 +392,11 @@ public class TemporalClient {
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == oldJobId);
 
     log.info("end of reset submission");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
 
     return new ManualOperationResult(
         Optional.empty(),
@@ -419,9 +415,8 @@ public class TemporalClient {
       return resetResult;
     }
 
-    final ConnectionManagerWorkflow connectionManagerWorkflow;
     try {
-      connectionManagerWorkflow = ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
+      ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
     } catch (final Exception e) {
       log.error("Encountered exception retrieving workflow after reset.", e);
       return new ManualOperationResult(
@@ -429,7 +424,7 @@ public class TemporalClient {
           Optional.empty());
     }
 
-    final long oldJobId = connectionManagerWorkflow.getJobInformation().getJobId();
+    final long oldJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
 
     do {
       try {
@@ -439,11 +434,11 @@ public class TemporalClient {
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (connectionManagerWorkflow.getJobInformation().getJobId() == oldJobId);
+    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == oldJobId);
 
     log.info("End of reset");
 
-    final long jobId = connectionManagerWorkflow.getJobInformation().getJobId();
+    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
 
     return new ManualOperationResult(
         Optional.empty(),
