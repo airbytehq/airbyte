@@ -23,11 +23,25 @@ import static org.mockito.Mockito.verify;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigWithMetadata;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
+import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.Schedule;
+import io.airbyte.config.Schedule.TimeUnit;
+import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
+import io.airbyte.config.StandardSourceDefinition.SourceType;
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.State;
+import io.airbyte.config.StateType;
+import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -36,8 +50,11 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.db.instance.development.DevDatabaseMigrator;
 import io.airbyte.db.instance.development.MigrationDevHelper;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -45,6 +62,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,6 +98,109 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   void tearDown() throws Exception {
     dslContext.close();
     DataSourceFactory.close(dataSource);
+  }
+
+  @Test
+  void testState() throws JsonValidationException, IOException {
+    final UUID connectionId1 = UUID.randomUUID();
+    final UUID connectionId2 = UUID.randomUUID();
+    final JsonNode stateJson = Jsons.deserialize("{\"ads\": {}, \"ad_sets\": {} }");
+    final State state = new State().withState(stateJson);
+    // Jsons.deserialize("{\"state\": {\"ads\": {}, \"ad_sets\": {}, \"campaigns\": {},
+    // \"ads_insights\": {}, \"ads_insights_dma\": {}, \"ads_insights_region\": {},
+    // \"ads_insights_country\": {}, \"ads_insights_action_type\": {}, \"ads_insights_age_and_gender\":
+    // {}, \"ads_insights_platform_and_device\": {}}}")
+
+    // final StandardSyncState connectionState = new
+    // StandardSyncState().withConnectionId(connectionId).withState(state);
+    // configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(),
+    // connectionState);
+
+    final ConfigRepository configRepository = new ConfigRepository(configPersistence, database);
+    final StatePersistence statePersistence = new StatePersistence(database);
+
+    final StandardSourceDefinition actorDef = new StandardSourceDefinition()
+        .withSourceDefinitionId(connectionId1)
+        .withSourceType(SourceType.API)
+        .withName("random-source-1")
+        .withDockerImageTag("tag-1")
+        .withDockerRepository("repository-1")
+        .withDocumentationUrl("documentation-url-1")
+        .withIcon("icon-1")
+        .withSpec(new ConnectorSpecification())
+        .withTombstone(false)
+        .withPublic(true)
+        .withCustom(false)
+        .withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(new ResourceRequirements().withCpuRequest("2")));
+    final StandardWorkspace workspace1 = new StandardWorkspace()
+        .withWorkspaceId(connectionId1)
+        .withCustomerId(connectionId1)
+        .withName("test-workspace")
+        .withSlug("random-string")
+        .withEmail("abc@xyz.com")
+        .withInitialSetupComplete(true)
+        .withAnonymousDataCollection(true)
+        .withNews(true)
+        .withSecurityUpdates(true)
+        .withDisplaySetupWizard(true)
+        .withTombstone(false)
+        .withNotifications(Collections.emptyList())
+        .withFirstCompletedSync(true)
+        .withFeedbackDone(true);
+    final SourceConnection sourceConnection1 = new SourceConnection()
+        .withName("source-1")
+        .withTombstone(false)
+        .withSourceDefinitionId(connectionId1)
+        .withWorkspaceId(connectionId1)
+        .withConfiguration(Jsons.emptyObject())
+        .withSourceId(connectionId1);
+
+    final DestinationConnection destinationConnection1 = new DestinationConnection()
+        .withName("destination-1")
+        .withTombstone(false)
+        .withDestinationDefinitionId(connectionId1)
+        .withWorkspaceId(connectionId1)
+        .withConfiguration(Jsons.emptyObject())
+        .withDestinationId(connectionId1);
+
+    final ResourceRequirements resourceRequirements = new ResourceRequirements()
+        .withCpuRequest("1")
+        .withCpuLimit("1")
+        .withMemoryRequest("1")
+        .withMemoryLimit("1");
+    final Schedule schedule = new Schedule().withTimeUnit(TimeUnit.DAYS).withUnits(1L);
+    final StandardSync standardSync1 = new StandardSync()
+        .withConnectionId(connectionId1)
+        .withSourceId(connectionId1)
+        .withDestinationId(connectionId1)
+        .withCatalog(new ConfiguredAirbyteCatalog())
+        .withName("standard-sync-1")
+        .withManual(true)
+        .withNamespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)
+        .withNamespaceFormat("")
+        .withPrefix("")
+        .withResourceRequirements(resourceRequirements)
+        .withStatus(Status.ACTIVE)
+        .withSchedule(schedule);
+    final StandardSync standardSync2 = Jsons.clone(standardSync1).withConnectionId(connectionId2);
+
+    configRepository.writeStandardSourceDefinition(actorDef);
+    configRepository.writeStandardWorkspace(workspace1);
+    configRepository.writeSourceConnectionNoSecrets(sourceConnection1);
+    configRepository.writeDestinationConnectionNoSecrets(destinationConnection1);
+    // connectionId 1
+    configRepository.writeStandardSync(standardSync1);
+    configRepository.updateConnectionState(connectionId1, state);
+    final Optional<State> state1 = configRepository.getConnectionState(connectionId1);
+    final Optional<StateWrapper> state2 = statePersistence.getCurrentState(connectionId1);
+    assertEquals(state1.get().getState(), state2.get().getLegacyState().get("state"));
+
+    // connectionId 2
+    configRepository.writeStandardSync(standardSync2);
+    statePersistence.updateOrCreateState(connectionId2, new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(stateJson));
+    final Optional<State> state3 = configRepository.getConnectionState(connectionId2);
+    final Optional<StateWrapper> state4 = statePersistence.getCurrentState(connectionId2);
+    assertEquals(state3.get().getState(), state4.get().getLegacyState());
   }
 
   @Test
