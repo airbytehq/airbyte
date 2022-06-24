@@ -16,8 +16,12 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JobErrorReporter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(JobErrorReporter.class);
 
   private static final String FROM_TRACE_MESSAGE = "from_trace_message";
   private static final String DEPLOYMENT_MODE_META_KEY = "deployment_mode";
@@ -69,24 +73,28 @@ public class JobErrorReporter {
       metadata.put(FAILURE_ORIGIN_META_KEY, failureOrigin.value());
       metadata.put(FAILURE_TYPE_META_KEY, failureReason.getFailureType().value());
 
-      if (failureOrigin == FailureOrigin.SOURCE) {
-        final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-        final String dockerImage = jobSyncConfig.getSourceDockerImage();
+      try {
+        if (failureOrigin == FailureOrigin.SOURCE) {
+          final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
+          final String dockerImage = jobSyncConfig.getSourceDockerImage();
 
-        metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString());
-        metadata.put(CONNECTOR_NAME_META_KEY, sourceDefinition.getName());
-        metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
+          metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString());
+          metadata.put(CONNECTOR_NAME_META_KEY, sourceDefinition.getName());
+          metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
 
-        jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
-      } else if (failureOrigin == FailureOrigin.DESTINATION) {
-        final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-        final String dockerImage = jobSyncConfig.getDestinationDockerImage();
+          jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        } else if (failureOrigin == FailureOrigin.DESTINATION) {
+          final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+          final String dockerImage = jobSyncConfig.getDestinationDockerImage();
 
-        metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, destinationDefinition.getDestinationDefinitionId().toString());
-        metadata.put(CONNECTOR_NAME_META_KEY, destinationDefinition.getName());
-        metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value());
+          metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, destinationDefinition.getDestinationDefinitionId().toString());
+          metadata.put(CONNECTOR_NAME_META_KEY, destinationDefinition.getName());
+          metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value());
 
-        jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+          jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        }
+      } catch (final Exception e) {
+        LOGGER.error("Error when reporting job failure reason: {}", failureReason, e);
       }
     }
   }

@@ -20,6 +20,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -114,6 +115,33 @@ public class JobErrorReporterTest {
     Mockito.verify(jobErrorReportingClient).reportJobFailureReason(mWorkspace, destinationFailureReason, DESTINATION_DOCKER_IMAGE,
         expectedDestinationMetadata);
     Mockito.verifyNoMoreInteractions(jobErrorReportingClient);
+  }
+
+  @Test
+  void testReportSyncJobFailureDoesNotThrow() {
+    final AttemptFailureSummary mFailureSummary = Mockito.mock(AttemptFailureSummary.class);
+    final JobSyncConfig mJobSyncConfig = Mockito.mock(JobSyncConfig.class);
+
+    final FailureReason sourceFailureReason = new FailureReason()
+        .withMetadata(new Metadata().withAdditionalProperty("from_trace_message", true))
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.SYSTEM_ERROR);
+
+    Mockito.when(mFailureSummary.getFailures()).thenReturn(List.of(sourceFailureReason));
+
+    Mockito.when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
+        .thenReturn(new StandardSourceDefinition()
+            .withReleaseStage(SOURCE_RELEASE_STAGE)
+            .withSourceDefinitionId(SOURCE_DEFINITION_ID)
+            .withName(SOURCE_DEFINITION_NAME));
+
+    Mockito.doThrow(new RuntimeException("some exception"))
+        .when(jobErrorReportingClient)
+        .reportJobFailureReason(Mockito.any(), Mockito.eq(sourceFailureReason), Mockito.any(), Mockito.any());
+
+    Assertions.assertDoesNotThrow(() -> jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, mJobSyncConfig));
+    Mockito.verify(jobErrorReportingClient, Mockito.times(1))
+        .reportJobFailureReason(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
   }
 
 }
