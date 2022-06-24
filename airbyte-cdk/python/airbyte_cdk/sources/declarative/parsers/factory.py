@@ -92,27 +92,16 @@ class DeclarativeComponentFactory:
             v["class_name"] = class_name
             return self.create_component(v, config)()
         elif isinstance(v, dict):
-            # FIXME: remove try/catch
-            try:
-                t = k
-                type_hints = get_type_hints(parent_class.__init__)
-                interface = type_hints.get(t)
-                expected_type = default_implementations_registry.get(interface)
-                print(f"parent_class: {parent_class}")
-                print(f"k: {k}")
-                print(f"v: {v}")
-                print(f"type_hints: {type_hints}")
-                print(f"interface: {interface}")
-                print(f"expected_type: {expected_type}")
-                if expected_type:
-                    v["class_name"] = expected_type
-                    v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
-                    return self.create_component(v, config)()
-                else:
-                    return v
-            except Exception as e:
-                print(f"failed to create {k}: {v} ({e})")
-            return v
+            t = k
+            type_hints = get_type_hints(parent_class.__init__)
+            interface = type_hints.get(t)
+            expected_type = default_implementations_registry.get(interface)
+            if expected_type:
+                v["class_name"] = expected_type
+                v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
+                return self.create_component(v, config)()
+            else:
+                return v
         elif isinstance(v, list):
             return [
                 self._create_subcomponent(
@@ -123,7 +112,8 @@ class DeclarativeComponentFactory:
         else:
             return v
 
-    def _get_subcomponent_options(self, sub: Any):
+    @staticmethod
+    def _get_subcomponent_options(sub: Any):
         if isinstance(sub, dict):
             return sub.get("options", {})
         else:
