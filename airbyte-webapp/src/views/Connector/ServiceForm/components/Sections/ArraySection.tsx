@@ -1,15 +1,14 @@
 import { FieldArray, useField } from "formik";
-import React, { useMemo } from "react";
-import { FormattedMessage } from "react-intl";
+import React, { useMemo, useState } from "react";
 
-import { ArrayOfObjectsEditor, Button, ModalBody, ModalFooter } from "components";
+import { ArrayOfObjectsEditor } from "components";
 import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { SectionContainer } from "./common";
-import { FormSection } from "./FormSection";
+import { VariableInputFieldForm } from "./VariableInputFieldForm";
 
 interface ArraySectionProps {
   formField: FormObjectArrayItem;
@@ -48,7 +47,9 @@ const getItemDescription = (item: Record<string, string>, properties: FormBlock[
 
 export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {
   const { addUnfinishedFlow, removeUnfinishedFlow, unfinishedFlows } = useServiceForm();
-  const [field, , form] = useField(path);
+
+  const [field, , fieldHelper] = useField(path);
+  const [editIndex, setEditIndex] = useState<number>();
 
   const items = useMemo(() => field.value ?? [], [field.value]);
 
@@ -70,7 +71,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     };
   }, [items, formField.properties]);
 
-  const flow = unfinishedFlows[path];
+  const unfinishedFlow = unfinishedFlows[path];
 
   return (
     <GroupControls
@@ -84,13 +85,14 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
           name={path}
           render={(arrayHelpers) => (
             <ArrayOfObjectsEditor
-              editableItemIndex={flow?.id}
-              onStartEdit={(index) =>
+              editableItemIndex={editIndex}
+              onStartEdit={(index) => {
+                setEditIndex(index);
                 addUnfinishedFlow(path, {
                   id: index,
                   startValue: index < items.length ? items : null,
-                })
-              }
+                });
+              }}
               onRemove={arrayHelpers.remove}
               items={items}
               renderItemName={renderItemName}
@@ -98,39 +100,30 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
               disabled={disabled}
               editModalSize="sm"
             >
-              {() => (
-                <ModalBody maxHeight={300}>
-                  <FormSection
-                    blocks={formField.properties}
-                    path={`${path}.${flow.id}`}
-                    disabled={disabled}
-                    skipAppend
-                  />
-                  <ModalFooter>
-                    <Button
-                      onClick={() => {
-                        removeUnfinishedFlow(path);
+              {(item) => (
+                <VariableInputFieldForm
+                  formField={formField}
+                  path={`hidden.${path}`}
+                  disabled={disabled}
+                  item={item}
+                  onDone={(updatedItem) => {
+                    // Edit or Create
+                    const updatedValue = unfinishedFlow.startValue
+                      ? items.map((item: unknown, index: number) => (index === editIndex ? updatedItem : item))
+                      : [...items, updatedItem];
 
-                        if (flow.startValue) {
-                          form.setValue(flow.startValue);
-                        }
-                      }}
-                      type="button"
-                      secondary
-                      disabled={disabled}
-                    >
-                      <FormattedMessage id="form.cancel" />
-                    </Button>
-                    <Button
-                      onClick={() => removeUnfinishedFlow(path)}
-                      type="button"
-                      data-testid="done-button"
-                      disabled={disabled}
-                    >
-                      <FormattedMessage id="form.done" />
-                    </Button>
-                  </ModalFooter>
-                </ModalBody>
+                    fieldHelper.setValue(updatedValue);
+                    removeUnfinishedFlow(path);
+                    setEditIndex(undefined);
+                  }}
+                  onCancel={() => {
+                    if (unfinishedFlow.startValue) {
+                      fieldHelper.setValue(unfinishedFlow.startValue);
+                    }
+                    removeUnfinishedFlow(path);
+                    setEditIndex(undefined);
+                  }}
+                />
               )}
             </ArrayOfObjectsEditor>
           )}
