@@ -230,6 +230,16 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connection).catalogDiff(diff);
   }
 
+  /**
+   * Applies existing configurations to a newly discovered catalog. For example, if the users stream
+   * is in the old and new catalog, any configuration that was previously set for users, we add to the
+   * new catalog.
+   *
+   * @param original fully configured, original catalog
+   * @param discovered newly discovered catalog, no configurations set
+   * @return merged catalog, most up-to-date schema with most up-to-date configurations from old
+   *         catalog
+   */
   @VisibleForTesting
   protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog original, final AirbyteCatalog discovered) {
     // We can't directly use s.getStream() as the key, because it contains a bunch of other fields

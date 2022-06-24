@@ -173,6 +173,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final FileTtlManager archiveTtlManager,
                           final Database configsDatabase,
                           final Database jobsDatabase,
+                          final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
@@ -199,7 +200,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         workerEnvironment,
         logConfigs,
         eventRunner);
-    stateHandler = new StateHandler(new StatePersistence(configsDatabase));
+    stateHandler = new StateHandler(statePersistence);
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
