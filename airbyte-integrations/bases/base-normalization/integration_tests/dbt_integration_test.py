@@ -423,7 +423,7 @@ class DbtIntegrationTest(object):
         normalization_image: str = self.get_normalization_image(destination_type)
         # Compile dbt models files into destination sql dialect, then run the transformation queries
         assert self.run_dbt_run_operation(normalization_image, test_root_dir, macro, macro_args)
-    
+
     def run_check_dbt_command(self, normalization_image: str, command: str, cwd: str, force_full_refresh: bool = False) -> bool:
         """
         Run dbt subprocess while checking and counting for "ERROR", "FAIL" or "WARNING" printed in its outputs
