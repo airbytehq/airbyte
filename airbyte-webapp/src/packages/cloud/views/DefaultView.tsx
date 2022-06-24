@@ -12,7 +12,7 @@ export const DefaultView: React.FC = () => {
   return (
     <Navigate
       to={
-        workspaces.length > 1
+        workspaces.length !== 1
           ? `/${CloudRoutes.SelectWorkspace}`
           : `/${RoutePaths.Workspaces}/${workspaces[0].workspaceId}`
       }

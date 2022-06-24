@@ -4,12 +4,12 @@ interface EntityTableDataItem {
   entityId: string;
   entityName: string;
   connectorName: string;
-  connectEntities: {
+  connectEntities: Array<{
     name: string;
     connector: string;
     status: string;
     lastSyncStatus: string | null;
-  }[];
+  }>;
   enabled: boolean;
   lastSync?: number | null;
   connectorIcon?: string;
@@ -24,7 +24,7 @@ interface ITableDataItem {
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ConnectionSchedule | undefined;
+  schedule?: ConnectionSchedule;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;

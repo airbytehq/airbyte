@@ -22,7 +22,7 @@
 }
 
 .container > *:last-child {
-  padding-bottom: variables.$defaultBottomMargin;
+  padding-bottom: variables.$spacing-page-bottom;
 }
 
 .noScroll {
@@ -32,10 +32,6 @@
 
 .fullHeight {
   height: 100%;
-}
-
-.scroll {
-  overflow: scroll;
 }
 
 .lightOverlay {
@@ -62,5 +58,5 @@
 .grabberHandleIcon {
   margin: auto;
   height: 25px;
-  color: colors.$greyColor20;
+  color: colors.$grey-100;
 }
