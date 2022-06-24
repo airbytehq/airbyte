@@ -33,7 +33,7 @@ class SourceRecurly(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = self._client(api_key=config["api_key"])
 
-        args = {"client": client, "begin_time": config.get("begin_time")}
+        args = {"client": client, "begin_time": config.get("start_date")}
 
         return [
             Accounts(**args),

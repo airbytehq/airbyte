@@ -7,7 +7,7 @@
     "required": ["api_key"],
     "additionalProperties": false,
     "properties": {
-      "begin_time": {
+      "start_date": {
         "type": "string",
         "description": "ISO8601 timestamp from which the replication from Recurly API will start from.",
         "examples": ["2021-12-01T00:00:00"],
