@@ -124,7 +124,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
         EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
