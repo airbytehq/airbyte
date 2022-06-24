@@ -301,7 +301,7 @@ class Transactions(PaypalTransactionStream):
             "page_size": self.page_size,
             "page": page_number,
         }
-
+    
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         if isinstance(original_value, str) and field_schema["type"] == "number":
