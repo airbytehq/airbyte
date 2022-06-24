@@ -98,12 +98,13 @@ public class DefaultJobCreator implements JobCreator {
       final StreamDescriptor streamDescriptor = new StreamDescriptor()
           .withName(configuredAirbyteStream.getStream().getName())
           .withNamespace(configuredAirbyteStream.getStream().getNamespace());
+      configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
       if (streamsToReset.contains(streamDescriptor)) {
-        configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
+        // The Reset Source will emit no record messages for any streams, so setting the destination sync
+        // mode to OVERWRITE will empty out this stream in the destination
         configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
       } else {
-        // set sync mode to full_refresh/append so that these streams are NOT affected in the destination
-        configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
+        // Set streams that are not being reset to APPEND so that they are not modified in the destination
         configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.APPEND);
       }
     });
