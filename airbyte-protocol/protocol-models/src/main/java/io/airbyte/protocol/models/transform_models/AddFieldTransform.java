@@ -5,8 +5,6 @@
 package io.airbyte.protocol.models.transform_models;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -19,12 +17,7 @@ import lombok.ToString;
 @ToString
 public class AddFieldTransform {
 
-  private final List<String> fieldName;
   private final JsonNode schema;
-
-  public List<String> getFieldName() {
-    return new ArrayList<>(fieldName);
-  }
 
   public JsonNode getSchema() {
     return schema;
