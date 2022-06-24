@@ -3,7 +3,6 @@
 #
 
 import abc
-import collections.abc
 import os
 from typing import Any, Callable, List
 
@@ -16,15 +15,6 @@ from .definitions import BaseDefinition, ConnectionDefinition
 from .yaml_dumpers import CatalogDumper
 
 JINJA_ENV = Environment(loader=PackageLoader(__package__), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
-
-
-def update_nested_dict(d, u):
-    for k, v in u.items():
-        if isinstance(v, collections.abc.Mapping):
-            d[k] = update_nested_dict(d.get(k, {}), v)
-        else:
-            d[k] = v
-    return d
 
 
 class FieldToRender:
@@ -195,29 +185,6 @@ class BaseRenderer(abc.ABC):
 
         with open(output_path, "w") as f:
             f.write(rendered)
-        return output_path
-
-    def update_configuration(self, project_path: str, configuration: dict) -> str:
-        """Update configuration from the YAML file in local project path.
-        Resource must be generated prior to updating.
-
-        Args:
-            project_path (str): Path to directory hosting the octavia project.
-            configuration (dict): Configuraton of the resource.
-
-        Returns:
-            str: Path to the rendered specification.
-        """
-        output_path = self._get_output_path(project_path, self.definition.type)
-
-        with open(output_path) as f:
-            data = yaml.safe_load(f)
-
-        data["configuration"] = update_nested_dict(data["configuration"], configuration)
-
-        with open(output_path, "wb") as f:
-            yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
-
         return output_path
 
 
