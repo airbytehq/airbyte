@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping, get_type_hints
+from typing import Any, Mapping, Type, Union, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -29,11 +29,11 @@ class DeclarativeComponentFactory:
         class_name = kwargs.pop("class_name")
         return self.build(class_name, config, **kwargs)
 
-    def build(self, class_name: str, config, **kwargs):
-        if isinstance(class_name, str):
-            class_ = self._get_class_from_fully_qualified_class_name(class_name)
+    def build(self, class_or_class_name: Union[str, Type], config, **kwargs):
+        if isinstance(class_or_class_name, str):
+            class_ = self._get_class_from_fully_qualified_class_name(class_or_class_name)
         else:
-            class_ = class_name
+            class_ = class_or_class_name
 
         # create components in options before propagating them
         if "options" in kwargs:
@@ -54,38 +54,51 @@ class DeclarativeComponentFactory:
     def _merge_dicts(d1, d2):
         return {**d1, **d2}
 
-    def _create_subcomponent(self, k, v, kwargs, config, parent_class):
-        if isinstance(v, dict) and "class_name" in v:
+    def _create_subcomponent(self, key, definition, kwargs, config, parent_class):
+        if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
-            v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
+            definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
 
-            return self.create_component(v, config)()
-        elif isinstance(v, dict) and "type" in v:
-            v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
-            object_type = v.pop("type")
+            return self.create_component(definition, config)()
+        elif self.is_object_definition_with_type(definition):
+            definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
+            object_type = definition.pop("type")
             class_name = CLASS_TYPES_REGISTRY[object_type]
-            v["class_name"] = class_name
-            return self.create_component(v, config)()
-        elif isinstance(v, dict):
-            t = k
-            type_hints = get_type_hints(parent_class.__init__)
-            interface = type_hints.get(t)
-            expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
+            definition["class_name"] = class_name
+            return self.create_component(definition, config)()
+        elif isinstance(definition, dict):
+            # Try to infer object type
+            expected_type = self.get_default_type(key, parent_class)
             if expected_type:
-                v["class_name"] = expected_type
-                v["options"] = self._merge_dicts(kwargs.get("options", dict()), v.get("options", dict()))
-                return self.create_component(v, config)()
+                definition["class_name"] = expected_type
+                definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
+                return self.create_component(definition, config)()
             else:
-                return v
-        elif isinstance(v, list):
+                return definition
+        elif isinstance(definition, list):
             return [
                 self._create_subcomponent(
-                    k, sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config, parent_class
+                    key, sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config, parent_class
                 )
-                for sub in v
+                for sub in definition
             ]
         else:
-            return v
+            return definition
+
+    @staticmethod
+    def is_object_definition_with_class_name(definition):
+        return isinstance(definition, dict) and "class_name" in definition
+
+    @staticmethod
+    def is_object_definition_with_type(definition):
+        return isinstance(definition, dict) and "type" in definition
+
+    @staticmethod
+    def get_default_type(parameter_name, parent_class):
+        type_hints = get_type_hints(parent_class.__init__)
+        interface = type_hints.get(parameter_name)
+        expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
+        return expected_type
 
     @staticmethod
     def _get_subcomponent_options(sub: Any):
