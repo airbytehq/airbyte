@@ -4082,6 +4082,7 @@ components:
       type: object
       required:
         - transformType
+        - streamDescriptor
       properties:
         transformType:
           type: string
@@ -4089,9 +4090,7 @@ components:
             - add_stream
             - remove_stream
             - update_stream
-        addStream:
-          $ref: "#/components/schemas/StreamDescriptor"
-        removeStream:
+        streamDescriptor:
           $ref: "#/components/schemas/StreamDescriptor"
         updateStream:
           type: array
@@ -4103,6 +4102,7 @@ components:
       description: "Describes the difference between two Streams."
       required:
         - transformType
+        - fieldName
       properties:
         transformType:
           type: string
@@ -4110,39 +4110,39 @@ components:
             - add_field
             - remove_field
             - update_field_schema
+        fieldName:
+          $ref: "#/components/schemas/FieldName"
         addField:
-          $ref: "#/components/schemas/FieldNameAndSchema"
+          $ref: "#/components/schemas/FieldAdd"
         removeField:
-          $ref: "#/components/schemas/FieldNameAndSchema"
+          $ref: "#/components/schemas/FieldRemove"
         updateFieldSchema:
           $ref: "#/components/schemas/FieldSchemaUpdate"
-    FieldNameAndSchema:
+    FieldAdd:
       type: object
-      required:
-        - fieldName
-        - fieldSchema
       properties:
-        fieldName:
-          type: array
-          items:
-            type: string
-        fieldSchema:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldRemove:
+      type: object
+      properties:
+        schema:
           $ref: "#/components/schemas/FieldSchema"
     FieldSchemaUpdate:
       type: object
       required:
-        - fieldName
         - oldSchema
         - newSchema
       properties:
-        fieldName:
-          type: array
-          items:
-            type: string
         oldSchema:
           $ref: "#/components/schemas/FieldSchema"
         newSchema:
           $ref: "#/components/schemas/FieldSchema"
+    FieldName:
+      description: A field name is a list of strings that form the path to the field.
+      type: array
+      items:
+        type: string
     FieldSchema:
       description: JSONSchema representation of the field
       type: object

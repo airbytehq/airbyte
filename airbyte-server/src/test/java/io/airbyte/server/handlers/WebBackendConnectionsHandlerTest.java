@@ -231,7 +231,7 @@ class WebBackendConnectionsHandlerTest {
         .isSyncing(expected.getIsSyncing())
         .catalogDiff(new CatalogDiff().transforms(List.of(
             new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
-                .addStream(new StreamDescriptor().name("users-data1"))
+                .streamDescriptor(new StreamDescriptor().name("users-data1"))
                 .updateStream(null))))
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
