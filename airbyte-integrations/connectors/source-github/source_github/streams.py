@@ -699,6 +699,9 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         if "errors" in response_json:
             raise Exception(str(response_json["errors"]))
 
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
@@ -708,7 +711,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
                 record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
                 record["comments"] = record["comments"]["totalCount"]
                 record["commits"] = record["commits"]["totalCount"]
-                record["repository"] = record["repository"]["name"]
+                record["repository"] = self._get_name(repository)
                 if record["merged_by"]:
                     record["merged_by"]["type"] = record["merged_by"].pop("__typename")
                 yield record
@@ -734,7 +737,9 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         organization, name = stream_slice["repository"].split("/")
         if next_page_token:
             next_page_token = next_page_token["after"]
-        query = get_query_pull_requests(owner=organization, name=name, first=self.page_size, after=next_page_token)
+        query = get_query_pull_requests(
+            owner=organization, name=name, first=self.page_size, after=next_page_token, direction=self.is_sorted.upper()
+        )
         return {"query": query}
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:

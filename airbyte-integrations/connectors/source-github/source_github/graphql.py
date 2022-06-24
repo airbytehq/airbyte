@@ -11,13 +11,16 @@ _schema = github_schema
 _schema_root = _schema.github_schema
 
 
-def get_query_pull_requests(owner, name, first, after):
-    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": "ASC"}}
+def get_query_pull_requests(owner, name, first, after, direction):
+    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": direction}}
     if after:
         kwargs["after"] = after
 
     op = sgqlc.operation.Operation(_schema_root.query_type)
-    pull_requests = op.repository(owner=owner, name=name).pull_requests(**kwargs)
+    repository = op.repository(owner=owner, name=name)
+    repository.name()
+    repository.owner.login()
+    pull_requests = repository.pull_requests(**kwargs)
     pull_requests.nodes.__fields__(
         id="node_id",
         database_id="id",
@@ -32,7 +35,6 @@ def get_query_pull_requests(owner, name, first, after):
         maintainer_can_modify="maintainer_can_modify",
         merge_state_status="merge_state_status",
     )
-    pull_requests.nodes.repository.__fields__(name=True)
     pull_requests.nodes.comments.__fields__(total_count=True)
     pull_requests.nodes.commits.__fields__(total_count=True)
     reviews = pull_requests.nodes.reviews(first=100, __alias__="review_comments")
