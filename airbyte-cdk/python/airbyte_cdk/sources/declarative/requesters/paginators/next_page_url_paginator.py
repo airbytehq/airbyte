@@ -20,7 +20,6 @@ class NextPageUrlPaginator(Paginator):
         url_base: str = None,
         interpolated_paginator: Optional[InterpolatedPaginator] = None,
         next_page_token_template: Optional[Mapping[str, str]] = None,
-        kwargs: Optional[Mapping[str, Any]] = None,
         config: Optional[Config] = None,
     ):
         """
@@ -28,19 +27,15 @@ class NextPageUrlPaginator(Paginator):
         :param url_base: url base to remove from the token
         :param interpolated_paginator: optional paginator to delegate to
         :param next_page_token_template: optional mapping to delegate to if interpolated_paginator is None
-        :param kwargs:
-        :param config:
+        :param config: connection config
         """
         if next_page_token_template and interpolated_paginator:
             raise ValueError(
                 f"Only one of next_page_token_template and interpolated_paginator is expected. Got {next_page_token_template} and {interpolated_paginator}"
             )
-        if kwargs is None:
-            kwargs = dict()
-        self._url_base = url_base or kwargs.get("url_base")
+        self._url_base = url_base
         self._interpolated_paginator = (
             interpolated_paginator
-            or kwargs.get("interpolated_paginator")
             # Create paginator from next_page_token_template if no paginator passed as parameter
             or InterpolatedPaginator(next_page_token_template=next_page_token_template, config=config)
         )
