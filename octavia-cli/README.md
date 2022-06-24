@@ -5,7 +5,6 @@
 The project is in **alpha** version.
 Readers can refer to our [opened GitHub issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Foctavia-cli) to check the ongoing work on this project.
 
-
 ## What is `octavia` CLI?
 
 Octavia CLI is a tool to manage Airbyte configurations in YAML.
@@ -44,7 +43,7 @@ Feel free to share your use cases with the community in [#octavia-cli](https://a
 
 ### 1. Generate local YAML files for sources or destinations
 
-1. Retrieve the *definition id* of the connector you want to use using `octavia list command`.
+1. Retrieve the _definition id_ of the connector you want to use using `octavia list command`.
 2. Generate YAML configuration running `octavia generate source <DEFINITION_ID> <SOURCE_NAME>` or `octavia generate destination <DEFINITION_ID> <DESTINATION_NAME>`.
 
 ### 2. Edit your local YAML configurations
@@ -67,7 +66,7 @@ Feel free to share your use cases with the community in [#octavia-cli](https://a
 
 ### 6. Update your configurations
 
-Changes in your local configurations can be propagated to your Airbyte instance using `octavia apply`.  You will be prompted for validation of changes. You can bypass the validation step using the `--force` flag.
+Changes in your local configurations can be propagated to your Airbyte instance using `octavia apply`. You will be prompted for validation of changes. You can bypass the validation step using the `--force` flag.
 
 ## Secret management
 
@@ -79,7 +78,7 @@ configuration:
   password: ${MY_PASSWORD}
 ```
 
-If you have set a  `MY_PASSWORD` environment variable, `octavia apply` will load its value into the `password` field.
+If you have set a `MY_PASSWORD` environment variable, `octavia apply` will load its value into the `password` field.
 
 ## Install
 
@@ -138,27 +137,32 @@ docker-compose run octavia-cli <command>`
 
 ### `octavia` command flags
 
-| **Flag**                                   | **Description**                                                                   | **Env Variable**             | **Default**                                            |
-|--------------------------------------------|-----------------------------------------------------------------------------------|------------------------------|--------------------------------------------------------|
-| `--airbyte-url`                            | Airbyte instance URL.                                                             | `AIRBYTE_URL`                | `http://localhost:8000`                                |
-| `--workspace-id`                           | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`       | The first workspace id found on your Airbyte instance. |
-| `--enable-telemetry/--disable-telemetry`   | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY`   | True                                                   |
-| `--api-http-header`                        | HTTP Header value pairs passed while calling Airbyte's API | not supported.       | None                         | None                                                   |
-| `--api-http-headers-file-path`             | Path to the YAML file that contains custom HTTP Headers to send to Airbyte's API. | None                         | None                                                   |
+| **Flag**                                 | **Description**                                                                   | **Env Variable**           | **Default**                                            |
+| ---------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ | ---- |
+| `--airbyte-url`                          | Airbyte instance URL.                                                             | `AIRBYTE_URL`              | `http://localhost:8000`                                |
+| `--workspace-id`                         | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
+| `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
+| `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | not supported.             | None                                                   | None |
+| `--api-http-headers-file-path`           | Path to the YAML file that contains custom HTTP Headers to send to Airbyte's API. | None                       | None                                                   |
 
 #### Using custom HTTP headers
-You can set custom HTTP headers to send to Airbyte's API with options:          
+
+You can set custom HTTP headers to send to Airbyte's API with options:
+
 ```bash
 octavia --api-http-header Header-Name Header-Value --api-http-header Header-Name-2 Header-Value-2 list connectors sources
 ```
 
 You can also use a custom YAML file (one is already created on init in `api_http_headers.yaml`) to declare the HTTP headers to send to the API:
+
 ```yaml
 headers:
   Authorization: Basic foobar==
   User-Agent: octavia-cli/0.0.0
 ```
+
 Environment variable expansion is available in this Yaml file
+
 ```yaml
 headers:
   Authorization: Bearer ${MY_API_TOKEN}
@@ -168,20 +172,17 @@ headers:
 
 ### `octavia` subcommands
 
-| **Command**                             | **Usage**                                                                           |
-|-----------------------------------------|-------------------------------------------------------------------------------------|
+| **Command**                               | **Usage**                                                                         |
+| ----------------------------------------- | --------------------------------------------------------------------------------- |
 | **`octavia init`**                        | Initialize required directories for the project.                                  |
 | **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.             |
 | **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.        |
 | **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                           |
 | **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                      |
 | **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                       |
-| **`octavia get workspace source`**      | Get an existing source in current the Airbyte workspace.                           |
-| **`octavia get workspace destination`** | Get an existing destination in the current Airbyte workspace.                      |
-| **`octavia get workspace connection`**  | Get an existing connection in the current Airbyte workspace.                       |
-| **`octavia update workspace source`**      | Update a local YAML configuration of an existing source in current the Airbyte workspace.                           |
-| **`octavia update workspace destination`** | Update a local YAML configuration of an existing destination in the current Airbyte workspace.                      |
-| **`octavia update workspace connection`**  | Update a local YAML configuration of an existing connection in the current Airbyte workspace.                       |
+| **`octavia get workspace source`**        | Get an existing source in current the Airbyte workspace.                          |
+| **`octavia get workspace destination`**   | Get an existing destination in the current Airbyte workspace.                     |
+| **`octavia get workspace connection`**    | Get an existing connection in the current Airbyte workspace.                      |
 | **`octavia generate source`**             | Generate a local YAML configuration for a new source.                             |
 | **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                        |
 | **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                         |
@@ -274,9 +275,9 @@ weather_to_pg  a4491317-153e-436f-b646-0b39338f9aab  active  c4aa8550-2122-4a33-
 
 Get an existing source in current the Airbyte workspace
 
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
-| `SOURCE_ID` | The source connector id. Can be retrieved using `octavia list workspace sources`. |
+| **Argument** | **Description**                                                                   |
+| ------------ | --------------------------------------------------------------------------------- |
+| `SOURCE_ID`  | The source connector id. Can be retrieved using `octavia list workspace sources`. |
 
 **Example**:
 
@@ -296,8 +297,8 @@ $ octavia get source c0c977c2-48e7-46fe-9f57-576285c26d42
 
 Get an existing destination in current the Airbyte workspace
 
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
+| **Argument**     | **Description**                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------- |
 | `DESTINATION_ID` | The destination connector id. Can be retrieved using `octavia list workspace destinations`. |
 
 **Example**:
@@ -320,8 +321,8 @@ $ octavia get destination c0c977c2-48e7-46fe-9f57-576285c26d42
 
 Get an existing connection in current the Airbyte workspace
 
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
+| **Argument**    | **Description**                                                                           |
+| --------------- | ----------------------------------------------------------------------------------------- |
 | `CONNECTION_ID` | The connection connector id. Can be retrieved using `octavia list workspace connections`. |
 
 **Example**:
@@ -391,58 +392,13 @@ $ octavia get connection c0c977c2-48e7-46fe-9f57-576285c26d42
 }
 ```
 
-#### `octavia update source <SOURCE_ID>`
-
-Update a local YAML configuration of an existing source in current the Airbyte workspace.
-
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
-| `SOURCE_ID` | The source connector id. Can be retrieved using `octavia list workspace sources`. |
-
-**Example**:
-
-```bash
-$ octavia update source c0c977c2-48e7-46fe-9f57-576285c26d42
-✅ - Updated the source template for weather_to_pg in ./source/weather_to_pg/configuration.yaml.
-```
-
-#### `octavia update destination <DESTINATION_ID>`
-
-Update a local YAML configuration of an existing destination in current the Airbyte workspace.
-
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
-| `DESTINATION_ID` | The destination connector id. Can be retrieved using `octavia list workspace destinations`. |
-
-**Example**:
-
-```bash
-$ octavia update destination c0c977c2-48e7-46fe-9f57-576285c26d42
-✅ - Updated the destination template for weather_to_pg in ./destination/weather_to_pg/configuration.yaml.
-```
-
-#### `octavia update conection <CONNECTION_ID>`
-
-Update a local YAML configuration of an existing connection in current the Airbyte workspace.
-
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
-| `CONNECTION_ID` | The connection connector id. Can be retrieved using `octavia list workspace connections`. |
-
-**Example**:
-
-```bash
-$ octavia update connection c0c977c2-48e7-46fe-9f57-576285c26d42
-✅ - Updated the connection template for weather_to_pg in ./connection/weather_to_pg/configuration.yaml.
-```
-
 #### `octavia generate source <DEFINITION_ID> <SOURCE_NAME>`
 
 Generate a YAML configuration for a source.
 The YAML file will be stored at `./sources/<resource_name>/configuration.yaml`.
 
-| **Argument**    | **Description**                                                                              |
-|-----------------|-----------------------------------------------------------------------------------------------|
+| **Argument**    | **Description**                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------- |
 | `DEFINITION_ID` | The source connector definition id. Can be retrieved using `octavia list connectors sources`. |
 | `SOURCE_NAME`   | The name you want to give to this source in Airbyte.                                          |
 
@@ -459,7 +415,7 @@ Generate a YAML configuration for a destination.
 The YAML file will be stored at `./destinations/<destination_name>/configuration.yaml`.
 
 | **Argument**       | **Description**                                                                                         |
-|--------------------|---------------------------------------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
 | `DEFINITION_ID`    | The destination connector definition id. Can be retrieved using `octavia list connectors destinations`. |
 | `DESTINATION_NAME` | The name you want to give to this destination in Airbyte.                                               |
 
@@ -475,13 +431,13 @@ $ octavia generate destination 25c5221d-dce2-4163-ade9-739ef790f503 my_db
 Generate a YAML configuration for a connection.
 The YAML file will be stored at `./connections/<connection_name>/configuration.yaml`.
 
-| **Option**        | **Required** | **Description**                                                                            |
-|-------------------|--------------|--------------------------------------------------------------------------------------------|
-| `--source`        | Yes          | Path to the YAML configuration file of the source you want to create a connection from.    |
-| `--destination`   | Yes          | Path to the YAML configuration file of the destination you want to create a connection to. |
+| **Option**      | **Required** | **Description**                                                                            |
+| --------------- | ------------ | ------------------------------------------------------------------------------------------ |
+| `--source`      | Yes          | Path to the YAML configuration file of the source you want to create a connection from.    |
+| `--destination` | Yes          | Path to the YAML configuration file of the destination you want to create a connection to. |
 
 | **Argument**      | **Description**                                          |
-|-------------------|----------------------------------------------------------|
+| ----------------- | -------------------------------------------------------- |
 | `CONNECTION_NAME` | The name you want to give to this connection in Airbyte. |
 
 **Example**:
@@ -498,10 +454,10 @@ If the resource was not found on your Airbyte instance, **apply** will **create*
 If the resource was found on your Airbyte instance, **apply** will prompt you for validation of the changes and will run an **update** of your resource.
 Please note that if a secret field was updated on your configuration, **apply** will run this change without prompt.
 
-| **Option**      | **Required** | **Description**                                                                            |
-|-----------------|--------------|--------------------------------------------------------------------------------------------|
-| `--file`        | No           | Path to the YAML configuration files you want to create or update.                         |
-| `--force`       | No           | Run update without prompting for changes validation.                                       |
+| **Option** | **Required** | **Description**                                                    |
+| ---------- | ------------ | ------------------------------------------------------------------ |
+| `--file`   | No           | Path to the YAML configuration files you want to create or update. |
+| `--force`  | No           | Run update without prompting for changes validation.               |
 
 **Example**:
 
@@ -545,23 +501,25 @@ $ octavia apply
 7. Make sure the build passes (step 0) before opening a PR.
 
 ## Telemetry
+
 This CLI has some telemetry tooling to send Airbyte some data about the usage of this tool.
 We will use this data to improve the CLI and measure its adoption.
 The telemetry sends data about:
-* Which command was run (not the arguments or options used).
-* Success or failure of the command run and the error type (not the error payload).
-* The current Airbyte workspace id if the user has not set the *anonymous data collection* on their Airbyte instance.
+
+- Which command was run (not the arguments or options used).
+- Success or failure of the command run and the error type (not the error payload).
+- The current Airbyte workspace id if the user has not set the _anonymous data collection_ on their Airbyte instance.
 
 You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment variable to `False` or using the `--disable-telemetry` flag.
 
 ## Changelog
 
-| Version  | Date       | Description                                        | PR                                                       |
-|----------|------------|----------------------------------------------------|----------------------------------------------------------|
-| 0.39.19  | 2022-06-16 | Allow connection management on multiple workspaces | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
-| 0.39.19  | 2022-06-15 | Allow users to set custom HTTP headers             | [#12893](https://github.com/airbytehq/airbyte/pull/12893)  |
-| 0.39.14  | 2022-05-12 | Enable normalization on connection                 | [#12727](https://github.com/airbytehq/airbyte/pull/12727)|
-| 0.37.0   | 2022-05-05 | Use snake case in connection fields                | [#12133](https://github.com/airbytehq/airbyte/pull/12133)|
-| 0.35.68  | 2022-04-15 | Improve telemetry                                  | [#12072](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.68  | 2022-04-12 | Add telemetry                                      | [#11896](https://github.com/airbytehq/airbyte/issues/11896)|
-| 0.35.61  | 2022-04-07 | Alpha release                                      | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)|
+| Version | Date       | Description                                        | PR                                                          |
+| ------- | ---------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
+| 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers             | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
+| 0.39.14 | 2022-05-12 | Enable normalization on connection                 | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
+| 0.37.0  | 2022-05-05 | Use snake case in connection fields                | [#12133](https://github.com/airbytehq/airbyte/pull/12133)   |
+| 0.35.68 | 2022-04-15 | Improve telemetry                                  | [#12072](https://github.com/airbytehq/airbyte/issues/11896) |
+| 0.35.68 | 2022-04-12 | Add telemetry                                      | [#11896](https://github.com/airbytehq/airbyte/issues/11896) |
+| 0.35.61 | 2022-04-07 | Alpha release                                      | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)   |
