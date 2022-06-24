@@ -7,7 +7,7 @@ package io.airbyte.test.utils;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.test.utils.AirbyteAcceptanceTestHelper.Type;
+import io.airbyte.test.utils.AirbyteAcceptanceTestHarness.Type;
 import java.util.HashMap;
 import java.util.Map;
 import org.jooq.SQLDialect;

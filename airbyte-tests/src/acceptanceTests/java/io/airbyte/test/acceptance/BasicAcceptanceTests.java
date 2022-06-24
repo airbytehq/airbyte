@@ -5,11 +5,11 @@
 package io.airbyte.test.acceptance;
 
 import static io.airbyte.api.client.model.generated.ConnectionSchedule.TimeUnitEnum.MINUTES;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.COLUMN_ID;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.COLUMN_NAME;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.STREAM_NAME;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitForSuccessfulJob;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitWhileJobHasStatus;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_ID;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STREAM_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForSuccessfulJob;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobHasStatus;
 import static java.lang.Thread.sleep;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,7 +24,7 @@ import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.*;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.test.utils.AirbyteAcceptanceTestHelper;
+import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.test.utils.SchemaTableNamePair;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
@@ -57,7 +57,7 @@ public class BasicAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
-  private static final AirbyteAcceptanceTestHelper airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHelper();
+  private static AirbyteAcceptanceTestHarness airbyteAcceptanceTestHelper;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
   private static PostgreSQLContainer sourcePsql;
@@ -72,7 +72,7 @@ public class BasicAcceptanceTests {
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
-    airbyteAcceptanceTestHelper.init(apiClient);
+    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient);
     sourcePsql = airbyteAcceptanceTestHelper.getSourcePsql();
   }
 

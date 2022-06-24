@@ -4,11 +4,11 @@
 
 package io.airbyte.test.acceptance;
 
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.COLUMN_ID;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.SOURCE_PASSWORD;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitForConnectionState;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitForSuccessfulJob;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHelper.waitWhileJobHasStatus;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_ID;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.SOURCE_PASSWORD;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForConnectionState;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForSuccessfulJob;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobHasStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -40,7 +40,7 @@ import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.container_orchestrator.ContainerOrchestratorApp;
-import io.airbyte.test.utils.AirbyteAcceptanceTestHelper;
+import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -91,7 +91,7 @@ public class AdvancedAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
 
-  private static final AirbyteAcceptanceTestHelper airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHelper();
+  private static AirbyteAcceptanceTestHarness airbyteAcceptanceTestHelper;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
   private static KubernetesClient kubernetesClient;
@@ -107,7 +107,7 @@ public class AdvancedAcceptanceTests {
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
-    airbyteAcceptanceTestHelper.init(apiClient);
+    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient);
     kubernetesClient = airbyteAcceptanceTestHelper.getKubernetesClient();
   }
 

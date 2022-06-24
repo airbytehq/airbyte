@@ -88,9 +88,20 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class AirbyteAcceptanceTestHelper {
+/**
+ * This class contains containers used for acceptance tests. Some of those containers/states are
+ * only used when the test are ran without being connected to GKE.
+ *
+ * Containers and states included: - source postgres SQL - destination postgres SQL -
+ * {@link AirbyteTestContainer} - kubernetes client - lists of UUIDS representing IDs of sources,
+ * destinations, connections, and operations
+ *
+ * This class is put in a separate module to be easily pulled in as a dependency for Airbyte Cloud
+ * Acceptance Tests.
+ */
+public class AirbyteAcceptanceTestHarness {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteAcceptanceTestHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteAcceptanceTestHarness.class);
 
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
   // assume env file is one directory level up from airbyte-tests.
@@ -127,7 +138,7 @@ public class AirbyteAcceptanceTestHelper {
   private PostgreSQLContainer destinationPsql;
   private AirbyteTestContainer airbyteTestContainer;
   private AirbyteApiClient apiClient;
-  private UUID workspaceId;
+  private final UUID workspaceId;
 
   private KubernetesClient kubernetesClient = null;
 
@@ -153,7 +164,7 @@ public class AirbyteAcceptanceTestHelper {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  public void init(final AirbyteApiClient apiClient) throws URISyntaxException, IOException, InterruptedException, ApiException {
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient) throws URISyntaxException, IOException, InterruptedException, ApiException {
     if (IS_GKE && !IS_KUBE) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
@@ -192,6 +203,7 @@ public class AirbyteAcceptanceTestHelper {
 
     this.apiClient = apiClient;
 
+    // todo, move this up??
     // work in whatever default workspace is present.
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();
     LOGGER.info("workspaceId = " + workspaceId);
@@ -268,7 +280,7 @@ public class AirbyteAcceptanceTestHelper {
     }
   }
 
-  public WorkflowClient getWorkflowClient() {
+  private WorkflowClient getWorkflowClient() {
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(
         TemporalUtils.getAirbyteTemporalOptions("localhost:7233"),
         TemporalUtils.DEFAULT_NAMESPACE);
@@ -352,7 +364,7 @@ public class AirbyteAcceptanceTestHelper {
         });
   }
 
-  public Set<SchemaTableNamePair> addAirbyteGeneratedTables(final boolean withScdTable, final Set<SchemaTableNamePair> sourceTables) {
+  private Set<SchemaTableNamePair> addAirbyteGeneratedTables(final boolean withScdTable, final Set<SchemaTableNamePair> sourceTables) {
     return sourceTables.stream().flatMap(x -> {
       final String cleanedNameStream = x.tableName.replace(".", "_");
       final List<SchemaTableNamePair> explodedStreamNames = new ArrayList<>(List.of(
@@ -493,7 +505,7 @@ public class AirbyteAcceptanceTestHelper {
         .collect(Collectors.toList());
   }
 
-  public List<JsonNode> retrieveDestinationRecords(final Database database, final String table) throws SQLException {
+  private List<JsonNode> retrieveDestinationRecords(final Database database, final String table) throws SQLException {
     return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
@@ -505,7 +517,7 @@ public class AirbyteAcceptanceTestHelper {
         .collect(Collectors.toList());
   }
 
-  public List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
+  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
@@ -538,7 +550,7 @@ public class AirbyteAcceptanceTestHelper {
     }
   }
 
-  public Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
@@ -617,7 +629,7 @@ public class AirbyteAcceptanceTestHelper {
         .getSourceDefinitionId();
   }
 
-  public void clearSourceDbData() throws SQLException {
+  private void clearSourceDbData() throws SQLException {
     final Database database = getSourceDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
@@ -625,7 +637,7 @@ public class AirbyteAcceptanceTestHelper {
     }
   }
 
-  public void clearDestinationDbData() throws SQLException {
+  private void clearDestinationDbData() throws SQLException {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
@@ -633,7 +645,7 @@ public class AirbyteAcceptanceTestHelper {
     }
   }
 
-  public void disableConnection(final UUID connectionId) throws ApiException {
+  private void disableConnection(final UUID connectionId) throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final ConnectionUpdate connectionUpdate =
         new ConnectionUpdate()
@@ -646,15 +658,15 @@ public class AirbyteAcceptanceTestHelper {
     apiClient.getConnectionApi().updateConnection(connectionUpdate);
   }
 
-  public void deleteSource(final UUID sourceId) throws ApiException {
+  private void deleteSource(final UUID sourceId) throws ApiException {
     apiClient.getSourceApi().deleteSource(new SourceIdRequestBody().sourceId(sourceId));
   }
 
-  public void deleteDestination(final UUID destinationId) throws ApiException {
+  private void deleteDestination(final UUID destinationId) throws ApiException {
     apiClient.getDestinationApi().deleteDestination(new DestinationIdRequestBody().destinationId(destinationId));
   }
 
-  public void deleteOperation(final UUID destinationId) throws ApiException {
+  private void deleteOperation(final UUID destinationId) throws ApiException {
     apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
