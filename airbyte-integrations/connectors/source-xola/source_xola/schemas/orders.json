@@ -6,17 +6,7 @@
       "additionalProperties": false,
       "properties":{
          "tags":{
-            "type":["null","array"],
-            "default":[],
-            "items":{
-               "type":["null","object"],
-               "properties":{
-                  "id":{
-                     "title":"Id",
-                     "type":["null","string"]
-                  }
-               }
-            }
+            "type":["null","string"]
          },
          "order_id":{
             "type":["null","string"]
@@ -33,28 +23,16 @@
             "type":["null","string"]
          },
          "travelers":{
-            "type":"array",
-            "default":[],
-            "items":{
-               "properties":{
-                  "id":{
-                     "title":"Id",
-                     "type":["null","string"]
-                  }
-               }
-            }
+            "type":["null","string"]
          },
          "source":{
             "type":["null","string"]
          },
           "type":{
              "type":["null","string"]
-          },
+         },
          "createdBy":{
             "type":["null","string"]
-         },
-         "quantity":{
-            "type":["null","integer"]
          },
          "createdAt": {
           "type":["null","string"]
@@ -62,9 +40,9 @@
         "updatedAt": {
             "type": ["null", "string"]
         },
-         "event":{
+        "event":{
             "type":["null","string"]
-         }
+        }
       }
 }
 

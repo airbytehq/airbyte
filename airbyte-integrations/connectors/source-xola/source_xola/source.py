@@ -9,7 +9,13 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from urllib.parse import urlparse
 from urllib.parse import parse_qs
+from datetime import datetime
+import time
+import logging
+import traceback
+import re
 
+LOGGER = logging.getLogger()
 
 # Basic full refresh stream
 class XolaStream(HttpStream, ABC):
@@ -73,7 +79,7 @@ class XolaStream(HttpStream, ABC):
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         headers: Dict[str, str] = {
             "Accept": "application/json",
-            "X-API-VERSION": "2017-06-10",
+            "X-API-VERSION": "2018-06-26",
             "X-API-KEY": self.x_api_key,
             "sort": "-id"
         }
@@ -179,28 +185,194 @@ class Orders(IncrementalXolaStream):
         for data in raw_response:
             try:
                 # Tags._id
-                resp = {"tags": []}
-                for tag in data["tags"]:
-                    resp["tags"].append({"id": tag["id"]})
-
+                resp = {}
+                
+                if "tags" in data.keys():
+                    resp["tags"] = ",".join([tag['id'] for tag in data["tags"]])
+                else:
+                    resp["tags"] = ""
+            
                 resp["order_id"] = data["id"]
-
                 if "createdAt" in data.keys(): resp["createdAt"] = data["createdAt"]
                 if "customerName" in data.keys(): resp["customerName"] = data["customerName"]
                 if "customerEmail" in data.keys(): resp["customerEmail"] = data["customerEmail"]
-                if "travelers" in data.keys(): resp["travelers"] = data["travelers"]
+                
+                if "travelers" in data.keys(): 
+                    resp["travelers"] = ",".join([traveler['id'] for traveler in data["travelers"]])
+                else:
+                    resp["travelers"] = ""
+                
                 if "source" in data.keys(): resp["source"] = data["source"]
-                if "createdBy" in data.keys(): resp["createdBy"] = data["createdBy"]
-                if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
+                
+                if "createdBy" in data.keys():
+                    if isinstance(data["createdBy"], dict):
+                        resp["createdBy"] = data["createdBy"]["id"]
+                    else:
+                        resp["createdBy"] = data["createdBy"]
+                else:
+                    resp["createdBy"] = ""
+                
+                #if "quantity" in data.keys(): resp["quantity"] = data["quantity"]
                 if "event" in data.keys(): resp["event"] = data["event"]
                 if "amount" in data.keys(): resp["amount"] = data["amount"]
                 if "updatedAt" in data.keys(): resp["updatedAt"] = data["updatedAt"]
                 if "type" in data.keys(): resp["type"] = data["type"]
+                
                 modified_response.append(resp)
             except:
                 pass
         return modified_response
 
+class Customers(IncrementalXolaStream):
+    primary_key = "id"
+    cursor_field = "order_updatedAt"
+    seller_id = None
+
+    def __init__(self, seller_id: str, x_api_key: str, **kwargs):
+        super().__init__(x_api_key, **kwargs)
+        self.seller_id = seller_id
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "orders". Required.
+        """
+        return "orders"
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        seller id is returned as a form of parameters
+        """
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        
+        if self.cursor_field in stream_state.keys():
+            params[self.cursor_field + '[gt]'] = stream_state[self.cursor_field]
+            
+        params['seller'] = self.seller_id
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        raw_response = response.json()["data"]
+        modified_response = []
+        
+        for data in raw_response:
+            try:
+                email_userid_name_dict  = {}
+                
+                non_sorted_customer_list = []
+                
+                user_resp = {}
+                
+                user_resp["order_id"] = data["id"]
+                user_resp["waiver_createdAt"] = data["createdAt"]
+                user_resp["waiver_updatedAt"] = data["updatedAt"]
+                user_resp["order_createdAt"] = data["createdAt"]
+                user_resp["order_updatedAt"] = data["updatedAt"]
+                
+                if "customerName" in data.keys(): user_resp["customerName"] = data["customerName"]
+                if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
+                if "phone" in data.keys(): user_resp["phone"] = data["phone"]
+                if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
+                
+                user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
+                user_resp["customer_type"] = "organizer"
+                
+                email_userid_name_dict[user_resp["customerEmail"].lower().trim()] = {
+                    "user_id" : user_resp["user_id"],
+                    "customerName" : user_resp["customerName"].lower().trim(),
+                    "phone" : user_resp["phone"] 
+                }
+                
+                ## Fetch waivers information.
+                if "waivers" in data.keys():
+                    for waiver in data["waivers"]:
+                        if "participants" in waiver.keys():   
+                            for participant in waiver["participants"]:
+                                resp = {}
+                                resp["order_id"] = data["id"]
+                                
+                                try:
+                                    if isinstance(waiver["createdAt"], dict):
+                                        resp["waiver_createdAt"] = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(waiver["createdAt"]["sec"])) + "+00:00"
+                                    else:
+                                        resp["waiver_createdAt"] = waiver["createdAt"]
+                                    
+                                    if isinstance(waiver["updatedAt"], dict):
+                                        resp["waiver_updatedAt"] = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(waiver["updatedAt"]["sec"])) + "+00:00"
+                                    else:
+                                        resp["waiver_updatedAt"] = waiver["updatedAt"] 
+                                except Exception as e:
+                                    traceback.print_exc()
+                                    LOGGER.info("Error occurred while parsing waiver createdAt and updatedAt, Going ahead with wrong value of createdAt and updatedAt.", e)
+                                    resp["waiver_createdAt"] = str(waiver["createdAt"])
+                                    resp["waiver_updatedAt"] = str(waiver["updatedAt"])
+                                
+                                resp["order_updatedAt"] = data["updatedAt"]
+                                resp["order_createdAt"] = data["createdAt"]
+                                
+                                if "customerName" in participant.keys(): resp["customerName"] = participant["customerName"]
+                                if "customerEmail" in participant.keys() and participant["customerEmail"]: resp["customerEmail"] = participant["customerEmail"]
+                                if "phone" in participant.keys(): resp["phone"] = participant["phone"]
+                                if "dateOfBirth" in participant.keys(): resp["dateOfBirth"] = participant["dateOfBirth"]
+                                
+                                resp["user_id"] = participant["traveler"]["$id"]["$id"] if "traveler" in participant.keys() and "$id" in participant["traveler"].keys() else ""
+                                resp["customer_type"] = "participant"
+                                
+                                non_sorted_customer_list.append(resp)
+                                
+                                lowerEmail = resp["customerEmail"].lower().trim()
+                                lowerName = resp["customerName"].lower().trim()
+                                
+                                if lowerName == user_resp["customerName"].lower().trim() and lowerEmail == user_resp["customerEmail"].lower().trim(): 
+                                    user_resp["dateOfBirth"] = resp["dateOfBirth"]
+                                    user_resp["customer_type"] = "organizer,participant"
+                                    
+                
+                sorted_customer_list = sorted(non_sorted_customer_list, key = lambda customer: customer.get('dateOfBirth', "NA"))
+                
+                # add organizer details in response
+                modified_response.append(user_resp)
+                
+                for customer in sorted_customer_list: 
+                    
+                    lowerEmail = customer["customerEmail"].lower().trim()
+                    lowerName = customer["customerName"].lower().trim()
+                    
+                    if lowerEmail in email_userid_name_dict.keys():
+                        
+                        user_id = email_userid_name_dict[lowerEmail]["user_id"]
+                        name = email_userid_name_dict[lowerEmail]["customerName"]
+                        phone = email_userid_name_dict[lowerEmail]["phone"]
+                        
+                        if name != lowerName:
+                            customer["customerEmail"] = ""
+                            if customer["user_id"] == user_id: customer["user_id"] = ""
+                            if re.sub('\\D+','',customer["phone"]) == re.sub('\\D+','',phone): customer["phone"] = ""
+                            modified_response.append(customer)
+                    else:
+                        email_userid_name_dict[customer["customerEmail"].lower().trim()] = {
+                            "user_id" : customer["user_id"],
+                            "customerName" : customer["customerName"].lower().trim(),
+                            "phone" : customer["phone"]
+                        }
+                        modified_response.append(customer)
+                
+            except:
+                pass
+        return modified_response    
+    
 class Transactions(IncrementalXolaStream):
     primary_key = "id"
     seller_id = None
@@ -215,7 +387,7 @@ class Transactions(IncrementalXolaStream):
             next_page_token: Mapping[str, Any] = None
     ) -> str:
         """
-        should return "orders". Required.
+        should return "transactions". Required.
         """
         return "transactions"
 
@@ -322,5 +494,6 @@ class SourceXola(AbstractSource):
         
         return [
             Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
+            Customers(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]

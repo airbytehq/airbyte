@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Items",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+  	"order_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "waiver_createdAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "waiver_updatedAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "order_createdAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "order_updatedAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customerName": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customerEmail": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "phone": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "dateOfBirth": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "user_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "customer_type": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
