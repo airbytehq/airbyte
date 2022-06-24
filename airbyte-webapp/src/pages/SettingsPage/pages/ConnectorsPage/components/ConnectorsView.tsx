@@ -18,7 +18,7 @@ import { Block, FormContentTitle, Title } from "./PageComponents";
 import UpgradeAllButton from "./UpgradeAllButton";
 import VersionCell from "./VersionCell";
 
-type ConnectorsViewProps = {
+interface ConnectorsViewProps {
   type: "sources" | "destinations";
   isUpdateSuccess: boolean;
   hasNewConnectorVersion?: boolean;
@@ -29,7 +29,7 @@ type ConnectorsViewProps = {
   onUpdate: () => void;
   onUpdateVersion: ({ id, version }: { id: string; version: string }) => void;
   feedbackList: Record<string, string>;
-};
+}
 
 const defaultSorting = [{ id: "name" }];
 

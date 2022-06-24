@@ -82,22 +82,24 @@ const SetDefaultName: React.FC = () => {
   const { selectedService } = useServiceForm();
 
   useEffect(() => {
-    if (selectedService) {
-      const timeout = setTimeout(() => {
-        // We need to push this out one execution slot, so the form isn't still in its
-        // initialization status and won't react to this call but would just take the initialValues instead.
-        setFieldValue("name", selectedService.name);
-      });
-      return () => clearTimeout(timeout);
+    if (!selectedService) {
+      return;
     }
-    return;
+
+    const timeout = setTimeout(() => {
+      // We need to push this out one execution slot, so the form isn't still in its
+      // initialization status and won't react to this call but would just take the initialValues instead.
+      setFieldValue("name", selectedService.name);
+    });
+    return () => clearTimeout(timeout);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService]);
 
   return null;
 };
 
-export type ServiceFormProps = {
+export interface ServiceFormProps {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
@@ -114,7 +116,7 @@ export type ServiceFormProps = {
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
   testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
-};
+}
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const formId = useUniqueFormId();
@@ -156,9 +158,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
-  useMemo(() => {
+  useEffect(() => {
     if (!selectedConnectorDefinitionSpecification) {
-      return undefined;
+      return;
     }
 
     const selectedServiceDefinition = availableServices.find((service) => {
@@ -168,17 +170,15 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           isSourceDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
           serviceDefinitionId === selectedConnectorDefinitionSpecification.sourceDefinitionId
         );
-      } else {
-        const serviceDefinitionId = service.destinationDefinitionId;
-        return (
-          isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
-          serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
-        );
       }
+      const serviceDefinitionId = service.destinationDefinitionId;
+      return (
+        isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
+        serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
+      );
     });
     setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
     setDocumentationPanelOpen(true);
-    return;
   }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
 
   const uiOverrides = useMemo(
@@ -232,8 +232,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   return (
     <Formik
-      validateOnBlur={true}
-      validateOnChange={true}
+      validateOnBlur
+      validateOnChange
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}

@@ -5,12 +5,12 @@ import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
-type Props = {
+interface Props {
   connectionName: string;
   icon?: string;
   connectorName: string;
   releaseStage?: ReleaseStage;
-};
+}
 
 const MainComponent = styled.div`
   display: flex;
@@ -52,7 +52,7 @@ const ConnectorName = styled.div`
   text-align: left;
 `;
 
-function ConnectorCard(props: Props) {
+const ConnectorCard = (props: Props) => {
   const { connectionName, connectorName, icon, releaseStage } = props;
 
   return (
@@ -67,6 +67,6 @@ function ConnectorCard(props: Props) {
       </Details>
     </MainComponent>
   );
-}
+};
 
 export default ConnectorCard;

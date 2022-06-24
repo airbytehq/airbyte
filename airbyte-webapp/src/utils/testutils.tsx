@@ -10,15 +10,15 @@ import { ServicesProvider } from "core/servicesProvider";
 import { FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
 
-type WrapperProps = {
+interface WrapperProps {
   children?: React.ReactElement;
-};
+}
 
 export async function render<
   Q extends Queries = typeof queries,
   Container extends Element | DocumentFragment = HTMLElement
 >(ui: React.ReactNode, renderOptions?: RenderOptions<Q, Container>): Promise<RenderResult<Q, Container>> {
-  function Wrapper({ children }: WrapperProps) {
+  const Wrapper = ({ children }: WrapperProps) => {
     const queryClient = new QueryClient();
 
     return (
@@ -36,7 +36,7 @@ export async function render<
         </ConfigContext.Provider>
       </TestWrapper>
     );
-  }
+  };
 
   let renderResult: RenderResult<Q, Container>;
   await act(async () => {

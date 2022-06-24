@@ -4,10 +4,12 @@
 
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
-from airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider import (
-    InterpolatedRequestParameterProvider,
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -17,7 +19,7 @@ factory = DeclarativeComponentFactory()
 
 parser = YamlParser()
 
-input_config = {"apikey": "verysecrettoken"}
+input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}
 
 
 def test_factory():
@@ -26,15 +28,19 @@ def test_factory():
     offset_request_parameters:
       offset: "{{ next_page_token['offset'] }}"
       limit: "*ref(limit)"
-    offset_pagination_request_parameters:
-      class_name: airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider
+    request_options:
+      class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
       request_parameters: "*ref(offset_request_parameters)"
+      request_body_json:
+        body_offset: "{{ next_page_token['offset'] }}"
     """
     config = parser.parse(content)
-    offset_pagination_request_parameters = factory.create_component(config["offset_pagination_request_parameters"], input_config)()
-    assert type(offset_pagination_request_parameters) == InterpolatedRequestParameterProvider
-    assert offset_pagination_request_parameters._interpolator._config == input_config
-    assert offset_pagination_request_parameters._interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
+    request_options_provider = factory.create_component(config["request_options"], input_config)()
+    assert type(request_options_provider) == InterpolatedRequestOptionsProvider
+    assert request_options_provider._parameter_interpolator._config == input_config
+    assert request_options_provider._parameter_interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
+    assert request_options_provider._body_json_interpolator._config == input_config
+    assert request_options_provider._body_json_interpolator._interpolator._mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
 def test_interpolate_config():
@@ -48,13 +54,47 @@ authenticator:
     assert authenticator._tokens == ["verysecrettoken"]
 
 
+def test_list_based_stream_slicer_with_values_refd():
+    content = """
+    repositories: ["airbyte", "airbyte-cloud"]
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "*ref(repositories)"
+      slice_definition:
+        repository: "{{ slice_value }}"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
+def test_list_based_stream_slicer_with_values_defined_in_config():
+    content = """
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      slice_definition:
+        repository: "{{ slice_value }}"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
 def test_full_config():
     content = """
 decoder:
   class_name: "airbyte_cdk.sources.declarative.decoders.json_decoder.JsonDecoder"
 extractor:
-  class_name: airbyte_cdk.sources.declarative.extractors.jq.JqExtractor
+  class_name: airbyte_cdk.sources.declarative.extractors.jello.JelloExtractor
   decoder: "*ref(decoder)"
+selector:
+  class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+  extractor:
+    decoder: "*ref(decoder)"
+  record_filter:
+    class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
+    condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
   class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
   next_page_token_template:
@@ -62,8 +102,8 @@ metadata_paginator:
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
-request_parameters_provider:
-  class_name: airbyte_cdk.sources.declarative.requesters.request_params.interpolated_request_parameter_provider.InterpolatedRequestParameterProvider
+request_options_provider:
+  class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
   name: "{{ options['name'] }}"
@@ -72,7 +112,7 @@ requester:
   authenticator:
     class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
     token: "{{ config['apikey'] }}"
-  request_parameters_provider: "*ref(request_parameters_provider)"
+  request_parameters_provider: "*ref(request_options_provider)"
   retrier:
     class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
 retriever:
@@ -108,6 +148,8 @@ list_stream:
         default: "marketing/lists"
     paginator:
       ref: "*ref(metadata_paginator)"
+    record_selector:
+      ref: "*ref(selector)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -125,8 +167,11 @@ check:
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert type(stream._retriever._extractor._decoder) == JsonDecoder
-    assert stream._retriever._extractor._transform == ".result[]"
+    assert type(stream._retriever._record_selector) == RecordSelector
+    assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
+    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert type(stream._retriever._record_selector._record_filter) == RecordFilter
+    assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
 
     checker = factory.create_component(config["check"], input_config)()
