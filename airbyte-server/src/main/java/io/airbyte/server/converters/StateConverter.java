@@ -62,7 +62,7 @@ public class StateConverter {
         && stateWrapper.getStateType() == StateType.GLOBAL
         && stateWrapper.getGlobal() != null
         && stateWrapper.getGlobal().getGlobal() != null) {
-      return Optional.ofNullable(new GlobalState()
+      return Optional.of(new GlobalState()
           .sharedState(stateWrapper.getGlobal().getGlobal().getSharedState())
           .streamStates(stateWrapper.getGlobal().getGlobal().getStreamStates()
               .stream()
