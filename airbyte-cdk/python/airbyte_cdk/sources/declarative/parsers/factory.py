@@ -31,11 +31,7 @@ class DeclarativeComponentFactory:
 
     def build(self, class_name: str, config, **kwargs):
         if isinstance(class_name, str):
-            fqcn = class_name
-            split = fqcn.split(".")
-            module = ".".join(split[:-1])
-            class_name = split[-1]
-            class_ = getattr(importlib.import_module(module), class_name)
+            class_ = self._get_class_from_fully_qualified_class_name(class_name)
         else:
             class_ = class_name
 
@@ -47,7 +43,15 @@ class DeclarativeComponentFactory:
 
         return create(class_, config=config, **updated_kwargs)
 
-    def _merge_dicts(self, d1, d2):
+    @staticmethod
+    def _get_class_from_fully_qualified_class_name(class_name: str):
+        split = class_name.split(".")
+        module = ".".join(split[:-1])
+        class_name = split[-1]
+        return getattr(importlib.import_module(module), class_name)
+
+    @staticmethod
+    def _merge_dicts(d1, d2):
         return {**d1, **d2}
 
     def _create_subcomponent(self, k, v, kwargs, config, parent_class):
