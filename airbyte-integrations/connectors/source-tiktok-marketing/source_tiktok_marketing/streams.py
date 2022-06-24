@@ -417,19 +417,23 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     primary_key = None
     schema_name = "basic_reports"
+    report_granularity = None
+
+    def __init__(self, **kwargs):
+        report_granularity = kwargs.pop("report_granularity", None)
+        super().__init__(**kwargs)
+
+        # Important:
+        # for >= 0.1.13 - granularity is set via inheritance
+        # for < 0.1.13 - granularity is set via init param
+        if report_granularity:
+            self.report_granularity = report_granularity
 
     @property
     @abstractmethod
     def report_level(self) -> ReportLevel:
         """
         Returns a necessary level value
-        """
-
-    @property
-    @abstractmethod
-    def report_granularity(self) -> ReportGranularity:
-        """
-        Returns a necessary report_granularity value
         """
 
     @property
@@ -463,7 +467,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
         elif granularity == ReportGranularity.LIFETIME:
             max_interval = 364
         else:
-            raise ValueError("Unsupported reporting granularity, must be one of DAY, HOUR, LIFETIME")
+            raise ValueError(f"Unsupported reporting granularity: {granularity}, must be one of DAY, HOUR, LIFETIME")
 
         # for incremental sync with abnormal state produce at least one state message
         # by producing at least one stream slice from today

@@ -10,7 +10,7 @@ from typing import Union
 from jsonschema import RefResolver
 from pydantic import BaseModel, Field
 
-from .streams import DEFAULT_START_DATE
+from .streams import DEFAULT_START_DATE, ReportGranularity
 
 
 class OauthCredSpec(BaseModel):
@@ -63,6 +63,16 @@ class SourceTiktokMarketingSpec(BaseModel):
             "Not setting this option will result in always syncing the data till the current date."
         ),
         order=2,
+    )
+
+    report_granularity: str = Field(
+        None,
+        title="Report Aggregation Granularity",
+        description="The granularity used for aggregating performance data in reports. See <a "
+        'href="https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation">the docs</a>.',
+        enum=[g.value for g in ReportGranularity],
+        order=3,
+        airbyte_hidden=True
     )
 
     @classmethod
