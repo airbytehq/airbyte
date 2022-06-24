@@ -667,14 +667,8 @@ public class BasicAcceptanceTests {
 
     testHarness.terminateTemporalWorkflow(connectionId);
 
-    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-
-    LOGGER.info("Waiting for workflow to be recreated...");
-    Thread.sleep(500);
-
-    final WorkflowState workflowState = testHarness.getWorkflowState(connectionId);
-    assertTrue(workflowState.isRunning());
-    assertTrue(workflowState.isResetConnection());
+    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(JobConfigType.RESET_CONNECTION, jobInfoRead.getJob().getConfigType());
   }
 
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.

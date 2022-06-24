@@ -217,7 +217,13 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(2);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SUCCESS)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DONE_WAITING && changedStateEvent.isValue())
+          .hasSize(2);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
+              && changedStateEvent.getField() != StateField.SUCCESS
+              && changedStateEvent.getField() != StateField.DONE_WAITING)
               && changedStateEvent.isValue())
           .isEmpty();
     }
@@ -252,7 +258,13 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING && changedStateEvent.getField() != StateField.SUCCESS)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DONE_WAITING && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
+              && changedStateEvent.getField() != StateField.SUCCESS
+              && changedStateEvent.getField() != StateField.DONE_WAITING)
               && changedStateEvent.isValue())
           .isEmpty();
     }
@@ -292,10 +304,15 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
 
       Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DONE_WAITING && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Assertions.assertThat(events)
           .filteredOn(
               changedStateEvent -> (changedStateEvent.getField() != StateField.RUNNING
                   && changedStateEvent.getField() != StateField.SKIPPED_SCHEDULING
-                  && changedStateEvent.getField() != StateField.SUCCESS)
+                  && changedStateEvent.getField() != StateField.SUCCESS
+                  && changedStateEvent.getField() != StateField.DONE_WAITING)
                   && changedStateEvent.isValue())
           .isEmpty();
     }
@@ -335,9 +352,14 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
 
       Assertions.assertThat(events)
-          .filteredOn(
-              changedStateEvent -> (changedStateEvent.getField() != StateField.UPDATED && changedStateEvent.getField() != StateField.SUCCESS)
-                  && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DONE_WAITING && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> (changedStateEvent.getField() != StateField.UPDATED
+              && changedStateEvent.getField() != StateField.SUCCESS
+              && changedStateEvent.getField() != StateField.DONE_WAITING)
+              && changedStateEvent.isValue())
           .isEmpty();
 
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
@@ -421,8 +443,14 @@ public class ConnectionManagerWorkflowTest {
           .hasSize(1);
 
       Assertions.assertThat(events)
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.DONE_WAITING && changedStateEvent.isValue())
+          .hasSize(1);
+
+      Assertions.assertThat(events)
           .filteredOn(
-              changedStateEvent -> changedStateEvent.getField() != StateField.DELETED && changedStateEvent.getField() != StateField.SUCCESS
+              changedStateEvent -> changedStateEvent.getField() != StateField.DELETED
+                  && changedStateEvent.getField() != StateField.SUCCESS
+                  && changedStateEvent.getField() != StateField.DONE_WAITING
                   && changedStateEvent.isValue())
           .isEmpty();
 
@@ -613,7 +641,7 @@ public class ConnectionManagerWorkflowTest {
     @RepeatedTest(10)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
-    @DisplayName("Test that resetting a non-running workflow starts a reset")
+    @DisplayName("Test that resetting a non-running workflow starts a reset job")
     public void resetStart() throws InterruptedException {
 
       final UUID testId = UUID.randomUUID();
@@ -637,7 +665,7 @@ public class ConnectionManagerWorkflowTest {
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
       Assertions.assertThat(events)
-          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.CANCELLED_FOR_RESET && changedStateEvent.isValue())
+          .filteredOn(changedStateEvent -> changedStateEvent.getField() == StateField.SKIPPED_SCHEDULING && changedStateEvent.isValue())
           .hasSizeGreaterThanOrEqualTo(1);
 
     }
@@ -716,7 +744,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
-    @DisplayName("Test workflow which receives an update signal waits for the current run and reports the job status")
+    @DisplayName("Test that running workflow which receives an update signal waits for the current run and reports the job status")
     public void updatedSignalReceivedWhileRunning() throws InterruptedException {
 
       final UUID testId = UUID.randomUUID();

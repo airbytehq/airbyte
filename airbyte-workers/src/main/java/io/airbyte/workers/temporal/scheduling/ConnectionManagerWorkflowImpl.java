@@ -170,7 +170,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         workflowState = connectionUpdaterInput.getWorkflowState();
       }
 
-      workflowState.setSkipScheduling(connectionUpdaterInput.isSkipScheduling());
+      if (connectionUpdaterInput.isSkipScheduling()) {
+        workflowState.setSkipScheduling(true);
+      }
 
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
       // This catches cases where the temporal workflow was terminated and restarted while a job was
@@ -181,6 +183,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       Workflow.await(timeToWait,
           () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+
+      workflowState.setDoneWaiting(true);
 
       if (workflowState.isDeleted()) {
         log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
@@ -421,7 +425,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void resetConnection() {
-    if (workflowState.isRunning()) {
+    // Assumes that the streams_reset has already been populated with streams to reset for this
+    // connection
+
+    if (workflowState.isDoneWaiting()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
     } else {
@@ -730,7 +737,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
   private void reportCancelledAndContinueWith(final boolean skipSchedulingNextRun, final ConnectionUpdaterInput connectionUpdaterInput) {
-    if (workflowInternalState.getJobId() != null) {
+    if (workflowInternalState.getJobId() != null && workflowInternalState.getAttemptNumber() != null) {
       reportCancelled();
     }
     resetNewConnectionInput(connectionUpdaterInput);

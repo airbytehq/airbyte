@@ -38,6 +38,7 @@ public class WorkflowState {
   private boolean cancelledForReset = false;
   @Deprecated
   private final boolean resetWithScheduling = false;
+  private boolean doneWaiting = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -119,6 +120,14 @@ public class WorkflowState {
     this.cancelledForReset = cancelledForReset;
   }
 
+  public void setDoneWaiting(final boolean doneWaiting) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.DONE_WAITING,
+        doneWaiting);
+    stateChangedListener.addEvent(id, event);
+    this.doneWaiting = doneWaiting;
+  }
+
   // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
   // event.
   public void reset() {
@@ -131,6 +140,7 @@ public class WorkflowState {
     this.setRetryFailedActivity(false);
     this.setSuccess(false);
     this.setQuarantined(false);
+    this.setDoneWaiting(false);
   }
 
 }
