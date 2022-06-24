@@ -28,15 +28,20 @@ import org.junit.jupiter.api.Test;
  */
 public class OracleSpecTest {
 
-  private static final String CONFIGURATION = "{  "
-      + "\"host\" : \"localhost\",  "
-      + "\"port\" : 1521,  "
-      + "\"sid\" : \"ora_db\",  "
-      + "\"username\" : \"ora\",  "
-      + "\"password\" : \"pwd\",  "
-      + "\"schemas\" : [\"public\"],  "
-      + "\"jdbc_url_params\" : \"property1=pValue1&property2=pValue2\"  "
-      + "}";
+  private static final String CONFIGURATION = """
+                                              {
+                                                "host": "localhost",
+                                                "port": 1521,
+                                                "sid": "ora_db",
+                                                "username": "ora",
+                                                "password": "pwd",
+                                                "schemas": [
+                                                  "public"
+                                                ],
+                                                "jdbc_url_params": "property1=pValue1&property2=pValue2"
+                                              }
+                                              """;
+
   private static JsonNode schema;
   private static JsonSchemaValidator validator;
 
