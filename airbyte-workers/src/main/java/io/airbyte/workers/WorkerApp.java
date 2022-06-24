@@ -399,7 +399,6 @@ public class WorkerApp {
     final StatePersistence statePersistence = new StatePersistence(configDatabase);
     final DefaultJobCreator jobCreator = new DefaultJobCreator(
         jobPersistence,
-        configRepository,
         defaultWorkerConfigs.getResourceRequirements(),
         statePersistence);
 
