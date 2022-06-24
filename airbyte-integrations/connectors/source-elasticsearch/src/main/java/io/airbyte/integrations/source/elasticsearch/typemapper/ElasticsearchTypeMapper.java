@@ -106,7 +106,7 @@ public class ElasticsearchTypeMapper {
     public static JsonNode formatJSONSchema(JsonNode node) throws UnsupportedDatatypeException {
         if(node.isObject()) {
             if(!node.has("type") || node.has("properties")) {
-                ((ObjectNode)node).set("type", mapper.valueToTree(Arrays.asList("object", "array")));
+                ((ObjectNode)node).put("type", "object");
             }
             else if(node.has("type") && node.get("type").getNodeType()== JsonNodeType.STRING) {
                 retainAirbyteFieldsOnly(node);

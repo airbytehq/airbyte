@@ -6,5 +6,5 @@
           "type": ["string","array"]
         }
     },
-  "type": ["object", "array"]
+  "type": "object"
 }
