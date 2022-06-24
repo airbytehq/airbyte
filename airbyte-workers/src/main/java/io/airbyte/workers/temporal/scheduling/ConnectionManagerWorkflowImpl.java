@@ -421,8 +421,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void resetConnection() {
-    workflowState.setCancelledForReset(true);
-    cancellableSyncWorkflow.cancel();
+    if (workflowState.isRunning()) {
+      workflowState.setCancelledForReset(true);
+      cancellableSyncWorkflow.cancel();
+    } else {
+      workflowState.setSkipScheduling(true);
+    }
   }
 
   @Override
