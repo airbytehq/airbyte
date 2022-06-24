@@ -92,6 +92,7 @@ public class SentryJobErrorReportingClientTest {
     assertEquals(List.of("{{ default }}", "airbyte-source-stripe"), actualEvent.getFingerprints());
     assertEquals("some_metadata_value", actualEvent.getTag("some_metadata"));
     assertNull(actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
+    assertNull(actualEvent.getExceptions());
 
     final User sentryUser = actualEvent.getUser();
     assertNotNull(sentryUser);
@@ -130,18 +131,23 @@ public class SentryJobErrorReportingClientTest {
   @Test
   void testReportJobFailureReasonWithInvalidStacktrace() {
     final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
+    final String invalidStacktrace = "Invalid stacktrace\nRuntimeError: Something went wrong";
 
-    when(mockSentryExceptionHelper.buildSentryExceptions("Invalid stacktrace")).thenReturn(Optional.empty());
+    when(mockSentryExceptionHelper.buildSentryExceptions(invalidStacktrace)).thenReturn(Optional.empty());
 
     final FailureReason failureReason = new FailureReason()
-        .withInternalMessage("RuntimeError: Something went wrong")
-        .withStacktrace("Invalid stacktrace");
+        .withInternalMessage("Something went wrong")
+        .withStacktrace(invalidStacktrace);
 
     sentryErrorReportingClient.reportJobFailureReason(workspace, failureReason, DOCKER_IMAGE, Map.of());
 
     verify(mockSentryHub).captureEvent(eventCaptor.capture());
     final SentryEvent actualEvent = eventCaptor.getValue();
     assertEquals("1", actualEvent.getTag(STACKTRACE_PARSE_ERROR_TAG_KEY));
+    final List<SentryException> exceptions = actualEvent.getExceptions();
+    assertNotNull(exceptions);
+    assertEquals(1, exceptions.size());
+    assertEquals("Invalid stacktrace, RuntimeError: ", exceptions.get(0).getValue());
   }
 
 }

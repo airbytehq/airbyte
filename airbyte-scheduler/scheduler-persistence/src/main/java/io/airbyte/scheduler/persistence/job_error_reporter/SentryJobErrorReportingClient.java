@@ -94,12 +94,21 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
 
     // attach failure reason stack trace
     final String failureStackTrace = failureReason.getStacktrace();
-    if (failureStackTrace != null) {
+    if (failureStackTrace != null && !failureStackTrace.isBlank()) {
       final Optional<List<SentryException>> parsedExceptions = exceptionHelper.buildSentryExceptions(failureStackTrace);
       if (parsedExceptions.isPresent()) {
         event.setExceptions(parsedExceptions.get());
       } else {
         event.setTag(STACKTRACE_PARSE_ERROR_TAG_KEY, "1");
+
+        // We couldn't parse the stacktrace, but we can still give it to Sentry for (less accurate) grouping
+        final String normalizedStacktrace = failureStackTrace
+            .replace("\n", ", ")
+            .replace(failureReason.getInternalMessage(), "");
+
+        final SentryException sentryException = new SentryException();
+        sentryException.setValue(normalizedStacktrace);
+        event.setExceptions(List.of(sentryException));
       }
     }
 

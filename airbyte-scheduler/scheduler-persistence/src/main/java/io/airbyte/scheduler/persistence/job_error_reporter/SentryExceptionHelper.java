@@ -21,7 +21,7 @@ public class SentryExceptionHelper {
    * Processes a raw stacktrace string into structured SentryExceptions
    * <p>
    * Currently, Java and Python stacktraces are supported. If an unsupported stacktrace format is
-   * encountered, an empty optional will be returned, in which case we can fall back to message-based
+   * encountered, an empty optional will be returned, in which case we can fall back to alternate
    * grouping.
    */
   public Optional<List<SentryException>> buildSentryExceptions(final String stacktrace) {
