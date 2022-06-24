@@ -118,7 +118,7 @@ def test_namespace_set_to_empty_string():
     test_stream = StreamStubFullRefresh()
     test_stream.namespace = ""
 
-    assert test_stream.namespace == None    
+    assert test_stream.namespace is None
 
 
 def test_namespace_not_set():
@@ -127,7 +127,7 @@ def test_namespace_not_set():
     """
     test_stream = StreamStubFullRefresh()
 
-    assert test_stream.namespace == None
+    assert test_stream.namespace is None
 
 
 @pytest.mark.parametrize(
