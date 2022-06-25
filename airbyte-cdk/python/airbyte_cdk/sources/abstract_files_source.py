@@ -10,7 +10,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.abstract_source import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
 
@@ -73,7 +73,7 @@ class AbstractFilesSource(AbstractSource, ABC):
             logger.error(format_exc())
             return False, e
 
-        logger.warn("Found 0 files (but connection is valid).")
+        logger.warning("Found 0 files (but connection is valid).")
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:

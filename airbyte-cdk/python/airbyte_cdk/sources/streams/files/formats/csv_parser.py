@@ -10,7 +10,11 @@ from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO,
 import pyarrow
 import pyarrow as pa
 import six  # type: ignore[import]
-from files.utils import get_value_or_json_if_empty_string, json_schema_to_pyarrow_schema, run_in_external_process
+from airbyte_cdk.sources.streams.files.utils import (
+    get_value_or_json_if_empty_string,
+    json_schema_to_pyarrow_schema,
+    run_in_external_process,
+)
 from pyarrow import csv as pa_csv
 
 from .abstract_file_parser import AbstractFileParser

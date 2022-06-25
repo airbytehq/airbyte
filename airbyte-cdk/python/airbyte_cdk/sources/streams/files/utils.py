@@ -93,7 +93,7 @@ def json_type_to_pyarrow_type(typ: str, logger: logging.Logger, reverse: bool = 
         return "string"  # default type if unspecified in map
 
 
-def json_schema_to_pyarrow_schema(schema: Mapping[str, Any], reverse: bool = False) -> Mapping[str, Any]:
+def json_schema_to_pyarrow_schema(schema: Mapping[str, Any], logger: logging.Logger, reverse: bool = False) -> Mapping[str, Any]:
     """
     Converts a schema with JsonSchema datatypes to one with PyArrow types (or the other way if reverse=True)
     This utilises json_type_to_pyarrow_type() to convert each datatype
@@ -102,4 +102,4 @@ def json_schema_to_pyarrow_schema(schema: Mapping[str, Any], reverse: bool = Fal
     :param reverse: switch to True for PyArrow schema -> Json schema, defaults to False
     :return: converted schema dict
     """
-    return {column: json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}
+    return {column: json_type_to_pyarrow_type(json_type, logger, reverse=reverse) for column, json_type in schema.items()}

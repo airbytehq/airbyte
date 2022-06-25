@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from .files_stream import FileStream, IncrementalFileStream
+from .file_info import FileInfo
+from .files_spec import FilesSpec
+from .files_stream import FilesStream, IncrementalFilesStream
 
-__all__ = ["FileStream", "IncrementalFileStream"]
+__all__ = ["FileInfo", "FilesStream", "IncrementalFilesStream", "FilesSpec"]

@@ -6,7 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
-from files.file_info import FileInfo
+from airbyte_cdk.sources.streams.files.file_info import FileInfo
 
 
 class AbstractFileParser(ABC):
