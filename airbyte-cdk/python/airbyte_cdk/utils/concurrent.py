@@ -138,7 +138,7 @@ class ConcurrentStreamReader:
 
     def __iter__(self):
         while True:
-            message = self.to_iterator.get(timeout=300)
+            message = self.to_iterator.get()
             if isinstance(message, MessageDone):
                 break
             if isinstance(message, MessageFail):
