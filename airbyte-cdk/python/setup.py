@@ -13,9 +13,38 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+main_deps = [
+    "backoff",
+    "dpath~=2.0.1",
+    "jsonschema~=3.2.0",
+    "jsonref~=0.2",
+    "pendulum",
+    "pydantic~=1.6",
+    "PyYAML~=5.4",
+    "requests",
+    "vcrpy",
+    "Deprecated~=1.2",
+    "Jinja2~=3.1.2",
+    "jello~=1.5.2",
+]
+files_source_deps = [
+    "pyarrow~=8.0.0",
+    "wcmatch~=8.2",
+    "dill~=0.3.5",
+    "fastavro~=1.4.11",
+    "python-snappy~=0.6.1",
+    "pandas~=1.3.1",
+    "avro~=1.11.0",
+]
+sphinx_deps = ["Sphinx~=4.2", "sphinx-rtd-theme~=1.0"]
+test_deps = ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "pytest-order", "requests-mock", "pytest-httpserver"]
+
+dev_deps = main_deps + sphinx_deps + test_deps
+files_dev_deps = dev_deps + files_source_deps
+
 setup(
     name="airbyte-cdk",
-    version="0.1.62",
+    version="0.2.0",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -42,33 +71,7 @@ setup(
         "Tracker": "https://github.com/airbytehq/airbyte/issues",
     },
     packages=find_packages(exclude=("unit_tests",)),
-    install_requires=[
-        "backoff",
-        "dpath~=2.0.1",
-        "jsonschema~=3.2.0",
-        "jsonref~=0.2",
-        "pendulum",
-        "pydantic~=1.6",
-        "PyYAML~=5.4",
-        "requests",
-        "vcrpy",
-        "Deprecated~=1.2",
-        "Jinja2~=3.1.2",
-        "jello~=1.5.2",
-    ],
+    install_requires=main_deps,
     python_requires=">=3.9",
-    extras_require={
-        "dev": [
-            "MyPy~=0.812",
-            "pytest",
-            "pytest-cov",
-            "pytest-mock",
-            "requests-mock",
-            "pytest-httpserver",
-        ],
-        "sphinx-docs": [
-            "Sphinx~=4.2",
-            "sphinx-rtd-theme~=1.0",
-        ],
-    },
+    extras_require={"files-source": files_source_deps, "sphinx-docs": sphinx_deps, "dev": dev_deps, "files-dev": files_dev_deps},
 )
