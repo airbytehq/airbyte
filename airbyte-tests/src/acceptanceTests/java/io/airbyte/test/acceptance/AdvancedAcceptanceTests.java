@@ -93,14 +93,14 @@ public class AdvancedAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
 
-  private static AirbyteAcceptanceTestHarness airbyteAcceptanceTestHelper;
+  private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
   private static KubernetesClient kubernetesClient;
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
+  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -120,50 +120,50 @@ public class AdvancedAcceptanceTests {
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
 
-    airbyteAcceptanceTestHelper = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
-    kubernetesClient = airbyteAcceptanceTestHelper.getKubernetesClient();
+    testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
+    kubernetesClient = testHarness.getKubernetesClient();
   }
 
   @AfterAll
   public static void end() {
-    airbyteAcceptanceTestHelper.stopDbAndContainers();
+    testHarness.stopDbAndContainers();
   }
 
   @BeforeEach
   public void setup() throws URISyntaxException, IOException, SQLException {
-    airbyteAcceptanceTestHelper.setup();
+    testHarness.setup();
   }
 
   @AfterEach
   public void tearDown() {
-    airbyteAcceptanceTestHelper.cleanup();
+    testHarness.cleanup();
   }
 
   @RetryingTest(3)
   @Order(1)
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
-    final UUID destinationId = airbyteAcceptanceTestHelper.createDestination().getDestinationId();
-    final UUID operationId = airbyteAcceptanceTestHelper.createOperation().getOperationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    airbyteAcceptanceTestHelper.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(false);
   }
 
   @RetryingTest(3)
   @Order(2)
   public void testCheckpointing() throws Exception {
-    final SourceDefinitionRead sourceDefinition = airbyteAcceptanceTestHelper.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = airbyteAcceptanceTestHelper.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
-    final SourceRead source = airbyteAcceptanceTestHelper.createSource(
+    final SourceRead source = testHarness.createSource(
         "E2E Test Source -" + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
@@ -172,7 +172,7 @@ public class AdvancedAcceptanceTests {
             .put("throw_after_n_records", 100)
             .build()));
 
-    final DestinationRead destination = airbyteAcceptanceTestHelper.createDestination(
+    final DestinationRead destination = testHarness.createDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
@@ -181,7 +181,7 @@ public class AdvancedAcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = destination.getDestinationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
 
     assertEquals(
@@ -196,7 +196,7 @@ public class AdvancedAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -249,10 +249,10 @@ public class AdvancedAcceptanceTests {
   @RetryingTest(3)
   @Order(4)
   public void testBackpressure() throws Exception {
-    final SourceDefinitionRead sourceDefinition = airbyteAcceptanceTestHelper.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = airbyteAcceptanceTestHelper.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
-    final SourceRead source = airbyteAcceptanceTestHelper.createSource(
+    final SourceRead source = testHarness.createSource(
         "E2E Test Source -" + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
@@ -261,7 +261,7 @@ public class AdvancedAcceptanceTests {
             .put("max_records", 5000)
             .build()));
 
-    final DestinationRead destination = airbyteAcceptanceTestHelper.createDestination(
+    final DestinationRead destination = testHarness.createDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
@@ -273,10 +273,10 @@ public class AdvancedAcceptanceTests {
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
     final UUID destinationId = destination.getDestinationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-        airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
             .getConnectionId();
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -312,9 +312,9 @@ public class AdvancedAcceptanceTests {
                                 matches = "true")
   public void testDowntimeDuringSync() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
-    final UUID destinationId = airbyteAcceptanceTestHelper.createDestination().getDestinationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
@@ -323,7 +323,7 @@ public class AdvancedAcceptanceTests {
       LOGGER.info("Checking " + input);
 
       final UUID connectionId =
-          airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
+          testHarness.createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
 
       JobInfoRead connectionSyncRead = null;
 
@@ -382,15 +382,15 @@ public class AdvancedAcceptanceTests {
                                 matches = "true")
   public void testCancelSyncWithInterruption() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
-    final UUID destinationId = airbyteAcceptanceTestHelper.createDestination().getDestinationId();
-    final UUID operationId = airbyteAcceptanceTestHelper.createOperation().getOperationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.RUNNING));
@@ -413,17 +413,17 @@ public class AdvancedAcceptanceTests {
                                 matches = "true")
   public void testCuttingOffPodBeforeFilesTransfer() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
-    final UUID destinationId = airbyteAcceptanceTestHelper.createDestination().getDestinationId();
-    final UUID operationId = airbyteAcceptanceTestHelper.createOperation().getOperationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
     LOGGER.info("Creating connection...");
     final UUID connectionId =
-        airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
 
@@ -457,17 +457,17 @@ public class AdvancedAcceptanceTests {
                                 matches = "true")
   public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
     final String connectionName = "test-connection";
-    final UUID sourceId = airbyteAcceptanceTestHelper.createPostgresSource().getSourceId();
-    final UUID destinationId = airbyteAcceptanceTestHelper.createDestination().getDestinationId();
-    final UUID operationId = airbyteAcceptanceTestHelper.createOperation().getOperationId();
-    final AirbyteCatalog catalog = airbyteAcceptanceTestHelper.discoverSourceSchema(sourceId);
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
     LOGGER.info("Creating connection...");
     final UUID connectionId =
-        airbyteAcceptanceTestHelper.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
 
     LOGGER.info("Waiting for connection to be available in Temporal...");
 
