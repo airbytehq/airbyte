@@ -30,6 +30,7 @@ import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -61,6 +62,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final ConfigRepository configRepository;
   private final JobCreator jobCreator;
   private final StreamResetPersistence streamResetPersistence;
+  private final JobErrorReporter jobErrorReporter;
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -199,6 +201,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
+          .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync()));
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -224,6 +230,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
             MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
+
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
