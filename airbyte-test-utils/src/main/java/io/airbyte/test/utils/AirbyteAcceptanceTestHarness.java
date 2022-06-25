@@ -89,13 +89,16 @@ import org.testcontainers.utility.MountableFile;
  * This class contains containers used for acceptance tests. Some of those containers/states are
  * only used when the test are run without GKE. Specific environmental variables govern what types
  * of containers are run.
- *
- * Containers and states include: - source postgres SQL - destination postgres SQL -
- * {@link AirbyteTestContainer} - kubernetes client - lists of UUIDS representing IDs of sources,
- * destinations, connections, and operations
- *
+ * <p>
  * This class is put in a separate module to be easily pulled in as a dependency for Airbyte Cloud
  * Acceptance Tests.
+ * <p>
+ * Containers and states include:
+ * <li>source postgres SQL</li>
+ * <li>destination postgres SQL</li>
+ * <li>{@link AirbyteTestContainer}</li>
+ * <li>kubernetes client</li>
+ * <li>lists of UUIDS representing IDs of sources, destinations, connections, and operations</li>
  */
 public class AirbyteAcceptanceTestHarness {
 
