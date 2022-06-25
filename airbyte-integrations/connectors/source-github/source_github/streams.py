@@ -806,6 +806,7 @@ class PullRequestCommits(GithubStream):
     """
 
     primary_key = "sha"
+    max_workers = 5
 
     def __init__(self, parent: HttpStream, **kwargs):
         super().__init__(**kwargs)
