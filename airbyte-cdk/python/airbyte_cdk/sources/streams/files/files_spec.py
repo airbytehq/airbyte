@@ -12,9 +12,9 @@ from pydantic import BaseModel, Field
 
 from .formats import AvroFormat, CsvFormat, ParquetFormat
 
-# To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
+# To implement your provider specific spec, inherit from FilesSpec and add provider-specific settings e.g.:
 
-# class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
+# class SourceS3Spec(FilesSpec, BaseModel):
 #     class Config:
 #         title="S3 Source Spec"
 
@@ -74,8 +74,7 @@ class FilesSpec(BaseModel):
         order=30,
     )
 
-    @staticmethod
-    def change_format_to_oneOf(schema: dict) -> dict:
+    def _change_format_to_oneOf(schema: dict) -> dict:
         props_to_change = ["format"]
         for prop in props_to_change:
             schema["properties"][prop]["type"] = "object"
@@ -84,13 +83,11 @@ class FilesSpec(BaseModel):
             schema["properties"][prop]["oneOf"] = schema["properties"][prop].pop("anyOf")
         return schema
 
-    @staticmethod
-    def check_provider_added(schema: dict) -> None:
+    def _check_provider_added(schema: dict) -> None:
         if "provider" not in schema["properties"]:
             raise RuntimeError("You must add the 'provider' property in your child spec class")
 
-    @staticmethod
-    def resolve_refs(schema: dict) -> dict:
+    def _resolve_refs(schema: dict) -> dict:
         json_schema_ref_resolver = RefResolver.from_schema(schema)
         str_schema = json.dumps(schema)
         for ref_block in re.findall(r'{"\$ref": "#\/definitions\/.+?(?="})"}', str_schema):
@@ -104,7 +101,7 @@ class FilesSpec(BaseModel):
     def schema(cls, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         """we're overriding the schema classmethod to enable some post-processing"""
         schema = super().schema(*args, **kwargs)
-        cls.check_provider_added(schema)
-        schema = cls.change_format_to_oneOf(schema)
-        schema = cls.resolve_refs(schema)
+        cls._check_provider_added(schema)
+        schema = cls._change_format_to_oneOf(schema)
+        schema = cls._resolve_refs(schema)
         return schema

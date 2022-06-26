@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import bz2
+import gzip
 import linecache
 import logging
 import os
@@ -9,6 +11,7 @@ import random
 import sys
 import tracemalloc
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 from functools import lru_cache, wraps
 from typing import Any, Callable, List, Mapping
@@ -115,20 +118,43 @@ class AbstractParserTests(ABC):
     @classmethod
     @abstractmethod
     def cases(cls) -> Mapping[str, Any]:
-        """return a map of test_file dicts in structure:
+        """return a map of test cases in this structure:
         {
-           "small_file": {"AbstractFileParser": CsvParser(format, master_schema), "filepath": "...", "num_records": 5, "inferred_schema": {...}, line_checks:{}, fails: []},
-           "big_file": {"AbstractFileParser": CsvParser(format, master_schema), "filepath": "...", "num_records": 16, "inferred_schema": {...}, line_checks:{}, fails: []}
-        ]
+           "test_name": {
+                "AbstractFileParser": SpecificParserClass(
+                    format={format dict as expected by the parser},  # e.g. {"filetype": "csv", "encoding": "big5"}
+                    master_schema={dict of actual schema of test file}  # e.g. {"id": "integer", "name": "string"}
+                ),
+                "filepath": "{point at path to test file}",
+                "num_records": {integer value for number of rows to expect from file},
+                "inferred_schema": {expected schema from parser inference},  # e.g. {"id": "integer", "name": "string"}
+                "line_checks": {check specific lines are parsed correctly},  # e.g. {4: {"id": 4, "name": "bingo"} }
+                "fails": []  # empty for pass. Add "test_get_inferred_schema" and/or "test_stream_records" to test fails
+            },
+           "test_2": etc.
+        }
         note: line_checks index is 1-based to align with row numbers
         """
 
     def _get_readmode(self, file_info: Mapping[str, Any]) -> str:
         return "rb" if file_info["AbstractFileParser"].is_binary else "r"
 
+    @contextmanager
+    def _open_and_handle_decompress(self, filepath: str, readmode: str):
+        if filepath.endswith(".gz"):
+            resource = gzip.open(filepath, readmode)
+        elif filepath.endswith(".bz2"):
+            resource = bz2.open(filepath, readmode)
+        else:
+            resource = open(filepath, readmode)
+        try:
+            yield resource
+        finally:
+            resource.close()
+
     @memory_limit(1024)
     def test_suite_inferred_schema(self, file_info: Mapping[str, Any]) -> None:
-        with open(file_info["filepath"], self._get_readmode(file_info)) as f:
+        with self._open_and_handle_decompress(file_info["filepath"], self._get_readmode(file_info)) as f:
             if "test_get_inferred_schema" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
                     file_info["AbstractFileParser"].get_inferred_schema(f)
@@ -140,7 +166,7 @@ class AbstractParserTests(ABC):
     def test_stream_suite_records(self, file_info: Mapping[str, Any]) -> None:
         filepath = file_info["filepath"]
         self.logger.info(f"read the file: {filepath}, size: {os.stat(filepath).st_size / (1024 ** 2)}Mb")
-        with open(filepath, self._get_readmode(file_info)) as f:
+        with self._open_and_handle_decompress(filepath, self._get_readmode(file_info)) as f:
             if "test_stream_records" in file_info["fails"]:
                 with pytest.raises(Exception) as e_info:
                     [print(r) for r in file_info["AbstractFileParser"].stream_records(f)]

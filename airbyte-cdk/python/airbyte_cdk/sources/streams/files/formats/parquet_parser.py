@@ -55,7 +55,7 @@ class ParquetParser(AbstractFileParser):
         options["memory_map"] = True
         return pq.ParquetFile(file, **options)
 
-    def _parse_field_type(needed_logical_type: str, need_physical_type: str = None) -> Tuple[str, str]:
+    def _parse_field_type(self, needed_logical_type: str, need_physical_type: str = None) -> Tuple[str, str]:
         """Pyarrow can parse/support non-JSON types
         Docs: https://github.com/apache/arrow/blob/5aa2901beddf6ad7c0a786ead45fdb7843bfcccd/python/pyarrow/_parquet.pxd#L56
         """

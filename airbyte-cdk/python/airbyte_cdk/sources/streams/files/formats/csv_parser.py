@@ -4,7 +4,6 @@
 
 import csv
 import json
-import tempfile
 from typing import Any, BinaryIO, Callable, Iterator, Mapping, Optional, TextIO, Tuple, Union
 
 import pyarrow
@@ -21,7 +20,6 @@ from .abstract_file_parser import AbstractFileParser
 from .csv_spec import CsvFormat
 
 MAX_CHUNK_SIZE = 50.0 * 1024**2  # in bytes
-TMP_FOLDER = tempfile.mkdtemp()
 
 
 class CsvParser(AbstractFileParser):
@@ -72,7 +70,7 @@ class CsvParser(AbstractFileParser):
         """
         check_utf8 = self.format.encoding.lower().replace("-", "") == "utf8"
         additional_reader_options = get_value_or_json_if_empty_string(self.format.additional_reader_options)
-        convert_schema = json_schema_to_pyarrow_schema(json_schema) if json_schema is not None else None
+        convert_schema = json_schema_to_pyarrow_schema(json_schema, self.logger) if json_schema is not None else None
         return {
             **{"check_utf8": check_utf8, "column_types": convert_schema},
             **json.loads(additional_reader_options),
@@ -121,7 +119,7 @@ class CsvParser(AbstractFileParser):
         # we're reading block_size*2 bytes here, which we can then pass in and infer schema from block_size bytes
         # the *2 is to give us a buffer as pyarrow figures out where lines actually end so it gets schema correct
         schema_dict = self._get_schema_dict(file, infer_schema_process)
-        return json_schema_to_pyarrow_schema(schema_dict, reverse=True)  # type: ignore[no-any-return]
+        return json_schema_to_pyarrow_schema(schema_dict, self.logger, reverse=True)  # type: ignore[no-any-return]
 
     def _get_schema_dict(self, file: Union[TextIO, BinaryIO], infer_schema_process: Callable) -> Mapping[str, Any]:
         if not self.format.infer_datatypes:

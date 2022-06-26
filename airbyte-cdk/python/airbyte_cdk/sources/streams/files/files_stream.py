@@ -141,7 +141,7 @@ class FilesStream(Stream, ABC):
     @lru_cache(maxsize=None)
     def get_time_ordered_file_infos(self) -> List[FileInfo]:
         """
-        Iterates through pattern_matched_filepath_iterator(), acquiring FileInfo objects
+        Iterates through pattern_matched_file_iterator(), acquiring FileInfo objects
         with last_modified property of each file to return in time ascending order.
         Caches results after first run of method to avoid repeating network calls as this is used more than once
 
