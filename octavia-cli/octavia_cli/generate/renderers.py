@@ -187,6 +187,29 @@ class BaseRenderer(abc.ABC):
             f.write(rendered)
         return output_path
 
+    def import_configuration(self, project_path: str, configuration: dict) -> str:
+        """Import configuration from the YAML file in local project path.
+        If local configuration.yaml file exists, it is replaced.
+
+        Args:
+            project_path (str): Path to directory hosting the octavia project.
+            configuration (dict): Configuraton of the resource.
+
+        Returns:
+            str: Path to the rendered specification.
+        """
+        output_path = self.write_yaml(project_path)
+
+        with open(output_path) as f:
+            data = yaml.safe_load(f)
+
+        data["configuration"] = configuration
+
+        with open(output_path, "wb") as f:
+            yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
+
+        return output_path
+
 
 class ConnectorSpecificationRenderer(BaseRenderer):
     TEMPLATE = JINJA_ENV.get_template("source_or_destination.yaml.j2")
@@ -222,6 +245,40 @@ class ConnectorSpecificationRenderer(BaseRenderer):
         return self.TEMPLATE.render(
             {"resource_name": self.resource_name, "definition": self.definition, "configuration_fields": parsed_schema}
         )
+
+
+class ConnectorRenderer(BaseRenderer):
+    TEMPLATE = JINJA_ENV.get_template("source_or_destination.yaml.j2")
+
+    def __init__(self, resource_id: str, definition: BaseDefinition) -> None:
+        """Connector specification renderer constructor.
+
+        Args:
+            resource_id (str): ID of the existing source or destination.
+            definition (BaseDefinition): The definition related to a source or a destination.
+        """
+        super().__init__(resource_id)
+        self.definition = definition
+
+    def _parse_connection_specification(self, schema: dict) -> List[List["FieldToRender"]]:
+        """Create a renderable structure from the specification schema
+
+        Returns:
+            List[List["FieldToRender"]]: List of list of fields to render.
+        """
+        if schema.get("oneOf"):
+            roots = []
+            for one_of_value in schema.get("oneOf"):
+                required_fields = one_of_value.get("required", [])
+                roots.append(parse_fields(required_fields, one_of_value["properties"]))
+            return roots
+        else:
+            required_fields = schema.get("required", [])
+            return [parse_fields(required_fields, schema["properties"])]
+
+    def _render(self) -> str:
+        parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
+        return self.TEMPLATE.render({"resource_id": self.resource_id, "definition": self.definition, "configuration_fields": parsed_schema})
 
 
 class ConnectionRenderer(BaseRenderer):

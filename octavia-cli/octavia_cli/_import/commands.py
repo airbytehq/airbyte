@@ -8,10 +8,11 @@ from typing import List, Type, Union
 import airbyte_api_client
 import click
 from octavia_cli.base_commands import OctaviaCommand
+from octavia_cli.generate import definitions
 from octavia_cli.generate.renderers import ConnectorSpecificationRenderer
 from octavia_cli.get.commands import get_json_representation
-from octavia_cli.get.resources import Connection, Destination, Source
-from slugify import slugify
+from octavia_cli.get.resources import Destination, Source
+from octavia_cli.list.listings import Destinations, Sources
 
 COMMON_HELP_MESSAGE_PREFIX = "Import a JSON representation of a remote"
 
@@ -31,7 +32,7 @@ def build_help_message(resource_type: str) -> str:
 def import_resource(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
-    ResourceCls: Type[Union[Source, Destination, Connection]],
+    ResourceCls: Type[Union[Source, Destination]],
     resource_to_get: str,
 ) -> str:
     """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
@@ -40,7 +41,7 @@ def import_resource(
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
         workspace_id (str): Current workspace id.
-        ResourceCls (Type[Union[Source, Destination, Connection]]): Resource class to use
+        ResourceCls (Type[Union[Source, Destination]]): Resource class to use
         resource_to_get (str): resource name or id to get JSON representation for.
 
     Returns:
@@ -48,12 +49,14 @@ def import_resource(
     """
     config = json.loads(get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get))
 
-    config["name"] = slugify(config["name"])
+    resource_type = ResourceCls.__name__.lower()
 
-    renderer = ConnectorSpecificationRenderer(ResourceCls.__name__, config["source_definition_id"])
+    definition = definitions.factory(resource_type, api_client, workspace_id, config[f"{resource_type}_definition_id"])
+
+    renderer = ConnectorSpecificationRenderer(config["name"], definition)
 
     output_path = renderer.import_configuration(project_path=".", configuration=config["connection_configuration"])
-    message = f"✅ - Imported {ResourceCls.__name__} in {output_path}."
+    message = f"✅ - Imported {resource_type} in {output_path}."
     click.echo(click.style(message, fg="green"))
 
 
@@ -73,6 +76,15 @@ def source(ctx: click.Context, resource: str):
     click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Source, resource))
 
 
+@_import.command(cls=OctaviaCommand, name="sources", help=build_help_message("source"))
+@click.pass_context
+def sources(ctx: click.Context):
+    sources = Sources(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"])
+
+    for _, _, source_id in sources.get_listing():
+        import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Source, source_id)
+
+
 @_import.command(cls=OctaviaCommand, name="destination", help=build_help_message("destination"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
@@ -80,11 +92,26 @@ def destination(ctx: click.Context, resource: str):
     click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Destination, resource))
 
 
+@_import.command(cls=OctaviaCommand, name="destinations", help=build_help_message("destination"))
+@click.pass_context
+def destinations(ctx: click.Context):
+    destinations = Destinations(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"])
+
+    for _, _, destination_id in destinations.get_listing():
+        import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Destination, destination_id)
+
+
 @_import.command(cls=OctaviaCommand, name="connection", help=build_help_message("connection"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
 def connection(ctx: click.Context, resource: str):
-    click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Connection, resource))
+    pass
+
+
+@_import.command(cls=OctaviaCommand, name="connections", help=build_help_message("connection"))
+@click.pass_context
+def connections(ctx: click.Context):
+    pass
 
 
 AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]
