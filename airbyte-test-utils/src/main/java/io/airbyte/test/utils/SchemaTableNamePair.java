@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.test.acceptance;
+package io.airbyte.test.utils;
 
 import java.util.Objects;
 
