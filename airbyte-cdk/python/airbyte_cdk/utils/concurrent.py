@@ -3,6 +3,7 @@
 #
 
 
+import itertools
 import queue
 import threading
 from dataclasses import dataclass
@@ -20,16 +21,22 @@ class StopException(Exception):
 @total_ordering
 class Message:
     prio = 0
+    number = 0
+    counter = itertools.count()
 
     def __eq__(self, other):
         if not isinstance(other, Message):
             return TypeError
-        return self.prio == other.prio
+        return (self.prio, self.number) == (other.prio, other.number)
 
     def __lt__(self, other):
         if not isinstance(other, Message):
             return TypeError
-        return self.prio < other.prio
+        return (self.prio, self.number) < (other.prio, other.number)
+
+    def set_number(self):
+        self.number = next(self.counter)
+        return self
 
 
 @dataclass(eq=False)
@@ -77,7 +84,7 @@ class ConcurrentStreamReader:
             pass
         except Exception as e:
             self.logger.exception(e)
-            self.to_iterator.put(MessageFail(exception=e))
+            self.to_iterator.put(MessageFail(exception=e).set_number())
 
     def _q_put(self, Q, message):
         while True:
@@ -127,14 +134,14 @@ class ConcurrentStreamReader:
         while True:
             message = self._q_get(self.to_consumer)
             if isinstance(message, MessageDone):
-                self._q_put(self.to_iterator, message)
+                self._q_put(self.to_iterator, message.set_number())
                 break
             queue = message.record["queue"]
             while True:
                 message = self._q_get(queue)
                 if isinstance(message, MessageDone):
                     break
-                self._q_put(self.to_iterator, message)
+                self._q_put(self.to_iterator, message.set_number())
 
     def __iter__(self):
         while True:
