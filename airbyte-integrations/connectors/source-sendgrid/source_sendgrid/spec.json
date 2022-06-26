@@ -19,13 +19,6 @@
         "examples": [
           1558359837
         ]
-      },
-      "end_time": {
-        "type": "integer",
-        "description": "End time in timestamp integer format. Any data after this timestamp will not be replicated. If a value is not placed, it will be updated to the last current date",
-        "examples": [
-          1558359837
-        ]
       }
     }
   }

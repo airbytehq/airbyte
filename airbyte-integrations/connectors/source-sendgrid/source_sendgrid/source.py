@@ -19,7 +19,6 @@ from .streams import (
     InvalidEmails,
     Lists,
     Messages,
-    MessagesDetails,
     Scopes,
     Segments,
     SingleSends,
@@ -27,7 +26,6 @@ from .streams import (
     StatsAutomations,
     SuppressionGroupMembers,
     SuppressionGroups,
-    TemplateDetails,
     Templates,
 )
 
@@ -45,8 +43,6 @@ class SourceSendgrid(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = TokenAuthenticator(config["apikey"])
 
-        messages = Messages(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"])
-        templates = Templates(authenticator=authenticator)
         streams = [
             Lists(authenticator=authenticator),
             Campaigns(authenticator=authenticator),
@@ -54,17 +50,15 @@ class SourceSendgrid(AbstractSource):
             StatsAutomations(authenticator=authenticator),
             Segments(authenticator=authenticator),
             SingleSends(authenticator=authenticator),
-            templates,
-            messages,
-            MessagesDetails(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"], parent=messages),
-            TemplateDetails(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"], parent=templates),
-            GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"]),
+            Templates(authenticator=authenticator),
+            Messages(authenticator=authenticator, start_time=config["start_time"]),
+            GlobalSuppressions(authenticator=authenticator, start_time=config["start_time"]),
             SuppressionGroups(authenticator=authenticator),
             SuppressionGroupMembers(authenticator=authenticator),
-            Blocks(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"]),
-            Bounces(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"]),
-            InvalidEmails(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"]),
-            SpamReports(authenticator=authenticator, start_time=config["start_time"], end_time=config["end_time"]),
+            Blocks(authenticator=authenticator, start_time=config["start_time"]),
+            Bounces(authenticator=authenticator, start_time=config["start_time"]),
+            InvalidEmails(authenticator=authenticator, start_time=config["start_time"]),
+            SpamReports(authenticator=authenticator, start_time=config["start_time"]),
         ]
 
         return streams
