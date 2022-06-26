@@ -247,40 +247,6 @@ class ConnectorSpecificationRenderer(BaseRenderer):
         )
 
 
-class ConnectorRenderer(BaseRenderer):
-    TEMPLATE = JINJA_ENV.get_template("source_or_destination.yaml.j2")
-
-    def __init__(self, resource_id: str, definition: BaseDefinition) -> None:
-        """Connector specification renderer constructor.
-
-        Args:
-            resource_id (str): ID of the existing source or destination.
-            definition (BaseDefinition): The definition related to a source or a destination.
-        """
-        super().__init__(resource_id)
-        self.definition = definition
-
-    def _parse_connection_specification(self, schema: dict) -> List[List["FieldToRender"]]:
-        """Create a renderable structure from the specification schema
-
-        Returns:
-            List[List["FieldToRender"]]: List of list of fields to render.
-        """
-        if schema.get("oneOf"):
-            roots = []
-            for one_of_value in schema.get("oneOf"):
-                required_fields = one_of_value.get("required", [])
-                roots.append(parse_fields(required_fields, one_of_value["properties"]))
-            return roots
-        else:
-            required_fields = schema.get("required", [])
-            return [parse_fields(required_fields, schema["properties"])]
-
-    def _render(self) -> str:
-        parsed_schema = self._parse_connection_specification(self.definition.specification.connection_specification)
-        return self.TEMPLATE.render({"resource_id": self.resource_id, "definition": self.definition, "configuration_fields": parsed_schema})
-
-
 class ConnectionRenderer(BaseRenderer):
 
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
