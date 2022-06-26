@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.25-alpha
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.39.24-alpha
 ```
 
 ### Using `docker-compose`
@@ -172,21 +172,21 @@ headers:
 
 ### `octavia` subcommands
 
-| **Command**                               | **Usage**                                                                         |
-| ----------------------------------------- | --------------------------------------------------------------------------------- |
-| **`octavia init`**                        | Initialize required directories for the project.                                  |
-| **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.             |
-| **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.        |
-| **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                           |
-| **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                      |
-| **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                       |
-| **`octavia get workspace source`**        | Get an existing source in current the Airbyte workspace.                          |
-| **`octavia get workspace destination`**   | Get an existing destination in the current Airbyte workspace.                     |
-| **`octavia get workspace connection`**    | Get an existing connection in the current Airbyte workspace.                      |
-| **`octavia generate source`**             | Generate a local YAML configuration for a new source.                             |
-| **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                        |
-| **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                         |
-| **`octavia apply`**                       | Create or update Airbyte remote resources according to local YAML configurations. |
+| **Command**                               | **Usage**                                                                                |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **`octavia init`**                        | Initialize required directories for the project.                                         |
+| **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.                    |
+| **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.               |
+| **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                                  |
+| **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                             |
+| **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                              |
+| **`octavia get source`**                  | Get the JSON representation of an existing source in current the Airbyte workspace.      |
+| **`octavia get destination`**             | Get the JSON representation of an existing destination in the current Airbyte workspace. |
+| **`octavia get connection`**              | Get the JSON representation of an existing connection in the current Airbyte workspace.  |
+| **`octavia generate source`**             | Generate a local YAML configuration for a new source.                                    |
+| **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                               |
+| **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                                |
+| **`octavia apply`**                       | Create or update Airbyte remote resources according to local YAML configurations.        |
 
 #### `octavia init`
 
@@ -271,15 +271,16 @@ NAME           CONNECTION ID                         STATUS  SOURCE ID          
 weather_to_pg  a4491317-153e-436f-b646-0b39338f9aab  active  c4aa8550-2122-4a33-9a21-adbfaa638544  c0c977c2-48e7-46fe-9f57-576285c26d42
 ```
 
-#### `octavia get source <SOURCE_ID>`
+#### `octavia get source <SOURCE_ID> or <SOURCE_NAME>`
 
-Get an existing source in current the Airbyte workspace
+Get an existing source in current the Airbyte workspace. You can use a source ID or name.
 
-| **Argument** | **Description**                                                                   |
-| ------------ | --------------------------------------------------------------------------------- |
-| `SOURCE_ID`  | The source connector id. Can be retrieved using `octavia list workspace sources`. |
+| **Argument**  | **Description**  |
+| --------------| -----------------|
+| `SOURCE_ID`   | The source id.   |
+| `SOURCE_NAME` | The source name. |
 
-**Example**:
+**Examples**:
 
 ```bash
 $ octavia get source c0c977c2-48e7-46fe-9f57-576285c26d42
@@ -293,45 +294,73 @@ $ octavia get source c0c977c2-48e7-46fe-9f57-576285c26d42
  'workspace_id': 'c4aa8550-2122-4a33-9a21-adbfaa638544'}
 ```
 
-#### `octavia get destination <DESTINATION_ID>`
+```bash
+$ octavia get source "My Poke"
+{'connection_configuration': {'key': '**********',
+                              'start_date': '2010-01-01T00:00:00.000Z',
+                              'token': '**********'},
+ 'name': 'Pokemon',
+ 'source_definition_id': 'b08e4776-d1de-4e80-ab5c-1e51dad934a2',
+ 'source_id': 'c0c977c2-48e7-46fe-9f57-576285c26d42',
+ 'source_name': 'My Poke',
+ 'workspace_id': 'c4aa8550-2122-4a33-9a21-adbfaa638544'}
+```
 
-Get an existing destination in current the Airbyte workspace
+#### `octavia get destination <DESTINATION_ID> or <DESTINATION_NAME>`
 
-| **Argument**     | **Description**                                                                             |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| `DESTINATION_ID` | The destination connector id. Can be retrieved using `octavia list workspace destinations`. |
+Get an existing destination in current the Airbyte workspace. You can use a destination ID or name.
 
-**Example**:
+| **Argument**       | **Description**       |
+| ------------------ | ----------------------|
+| `DESTINATION_ID`   | The destination id.   |
+| `DESTINATION_NAME` | The destination name. |
+
+**Examples**:
 
 ```bash
 $ octavia get destination c0c977c2-48e7-46fe-9f57-576285c26d42
 {
-  "sourceDefinitionId": "18102e7c-5160-4000-821f-4d7cfdf87201",
-  "sourceId": "18102e7c-5160-4000-841b-15e8ec48c301",
+  "destinationDefinitionId": "c0c977c2-48e7-46fe-9f57-576285c26d42",
+  "destinationId": "18102e7c-5160-4000-841b-15e8ec48c301",
+  "workspaceId": "18102e7c-5160-4000-883a-30bc7cd65601",
+  "connectionConfiguration": {
+    "user": "charles"
+  },
+  "name": "pg",
+  "destinationName": "Postgres"
+}
+```
+
+```bash
+$ octavia get destination pg
+{
+  "destinationDefinitionId": "18102e7c-5160-4000-821f-4d7cfdf87201",
+  "destinationId": "18102e7c-5160-4000-841b-15e8ec48c301",
   "workspaceId": "18102e7c-5160-4000-883a-30bc7cd65601",
   "connectionConfiguration": {
     "user": "charles"
   },
   "name": "string",
-  "sourceName": "string"
+  "destinationName": "string"
 }
 ```
 
-#### `octavia get connection <CONNECTION_ID>`
+#### `octavia get connection <CONNECTION_ID> or <CONNECTION_NAME>`
 
-Get an existing connection in current the Airbyte workspace
+Get an existing connection in current the Airbyte workspace. You can use a connection ID or name.
 
-| **Argument**    | **Description**                                                                           |
-| --------------- | ----------------------------------------------------------------------------------------- |
-| `CONNECTION_ID` | The connection connector id. Can be retrieved using `octavia list workspace connections`. |
+| **Argument**       | **Description**       |
+| ------------------ | ----------------------|
+| `CONNECTION_ID`   | The connection id.   |
+| `CONNECTION_NAME` | The connection name. |
 
 **Example**:
 
 ```bash
 $ octavia get connection c0c977c2-48e7-46fe-9f57-576285c26d42
 {
-  "connectionId": "18102e7c-5340-4000-8656-c433ed782601",
-  "name": "string",
+  "connectionId": "c0c977c2-48e7-46fe-9f57-576285c26d42",
+  "name": "Poke To PG",
   "namespaceDefinition": "source",
   "namespaceFormat": "${SOURCE_NAMESPACE}",
   "prefix": "string",
@@ -392,6 +421,70 @@ $ octavia get connection c0c977c2-48e7-46fe-9f57-576285c26d42
 }
 ```
 
+```bash
+$ octavia get connection "Poke To PG"
+{
+  "connectionId": "c0c977c2-48e7-46fe-9f57-576285c26d42",
+  "name": "Poke To PG",
+  "namespaceDefinition": "source",
+  "namespaceFormat": "${SOURCE_NAMESPACE}",
+  "prefix": "string",
+  "sourceId": "18102e7c-5340-4000-8eaa-4a86f844b101",
+  "destinationId": "18102e7c-5340-4000-8e58-6bed49c24b01",
+  "operationIds": [
+    "18102e7c-5340-4000-8ef0-f35c05a49a01"
+  ],
+  "syncCatalog": {
+    "streams": [
+      {
+        "stream": {
+          "name": "string",
+          "jsonSchema": {},
+          "supportedSyncModes": [
+            "full_refresh"
+          ],
+          "sourceDefinedCursor": false,
+          "defaultCursorField": [
+            "string"
+          ],
+          "sourceDefinedPrimaryKey": [
+            [
+              "string"
+            ]
+          ],
+          "namespace": "string"
+        },
+        "config": {
+          "syncMode": "full_refresh",
+          "cursorField": [
+            "string"
+          ],
+          "destinationSyncMode": "append",
+          "primaryKey": [
+            [
+              "string"
+            ]
+          ],
+          "aliasName": "string",
+          "selected": false
+        }
+      }
+    ]
+  },
+  "schedule": {
+    "units": 0,
+    "timeUnit": "minutes"
+  },
+  "status": "active",
+  "resourceRequirements": {
+    "cpu_request": "string",
+    "cpu_limit": "string",
+    "memory_request": "string",
+    "memory_limit": "string"
+  },
+  "sourceCatalogId": "18102e7c-5340-4000-85f3-204ab7715801"
+}
+```
 #### `octavia generate source <DEFINITION_ID> <SOURCE_NAME>`
 
 Generate a YAML configuration for a source.
@@ -514,12 +607,13 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version | Date       | Description                                        | PR                                                          |
-| ------- | ---------- | -------------------------------------------------- | ----------------------------------------------------------- |
-| 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
-| 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers             | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
-| 0.39.14 | 2022-05-12 | Enable normalization on connection                 | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
-| 0.37.0  | 2022-05-05 | Use snake case in connection fields                | [#12133](https://github.com/airbytehq/airbyte/pull/12133)   |
-| 0.35.68 | 2022-04-15 | Improve telemetry                                  | [#12072](https://github.com/airbytehq/airbyte/issues/11896) |
-| 0.35.68 | 2022-04-12 | Add telemetry                                      | [#11896](https://github.com/airbytehq/airbyte/issues/11896) |
-| 0.35.61 | 2022-04-07 | Alpha release                                      | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)   |
+| Version | Date       | Description                                                  | PR                                                          |
+| ------- | ---------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
+| 0.39.25 | 2022-06-24 | Create get command to retrieve resources JSON representation | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
+| 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces           | [#13070](https://github.com/airbytehq/airbyte/pull/12727)   |
+| 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers                       | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
+| 0.39.14 | 2022-05-12 | Enable normalization on connection                           | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
+| 0.37.0  | 2022-05-05 | Use snake case in connection fields                          | [#12133](https://github.com/airbytehq/airbyte/pull/12133)   |
+| 0.35.68 | 2022-04-15 | Improve telemetry                                            | [#12072](https://github.com/airbytehq/airbyte/issues/11896) |
+| 0.35.68 | 2022-04-12 | Add telemetry                                                | [#11896](https://github.com/airbytehq/airbyte/issues/11896) |
+| 0.35.61 | 2022-04-07 | Alpha release                                                | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)   |
