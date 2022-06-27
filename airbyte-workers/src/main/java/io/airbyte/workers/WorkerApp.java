@@ -141,6 +141,7 @@ public class WorkerApp {
   private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
   private final JobCreator jobCreator;
+  private final StatePersistence statePersistence;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -480,7 +481,9 @@ public class WorkerApp {
         jobNotifier,
         jobTracker,
         jobErrorReporter,
-        streamResetPersistence).start();
+        streamResetPersistence,
+        jobCreator,
+        statePersistence).start();
   }
 
   public static void main(final String[] args) {
