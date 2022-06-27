@@ -7,8 +7,9 @@ from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
+from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
@@ -22,8 +23,9 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
-    HttpExtractor: JelloExtractor,
+    HttpSelector: RecordSelector,
     ConnectionChecker: CheckStream,
     Retrier: DefaultRetrier,
     Decoder: JsonDecoder,
+    JelloExtractor: JelloExtractor,
 }

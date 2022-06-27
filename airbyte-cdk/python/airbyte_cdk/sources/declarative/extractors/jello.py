@@ -7,13 +7,12 @@ from typing import List, Optional
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Record
 from jello import lib as jello_lib
 
 
-class JelloExtractor(HttpExtractor):
+class JelloExtractor:
     default_transform = "."
 
     def __init__(self, transform: str, decoder: Optional[Decoder] = None, config=None, kwargs=None):

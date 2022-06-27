@@ -23,7 +23,7 @@ const PreferencesPage: React.FC = () => {
     <PageViewContainer>
       <HeadTitle titles={[{ id: "preferences.headTitle" }]} />
       <Title center>
-        <FormattedMessage id={"preferences.title"} />
+        <FormattedMessage id="preferences.title" />
       </Title>
       <PreferencesForm onSubmit={setInitialSetupConfig} />
     </PageViewContainer>
