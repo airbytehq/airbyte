@@ -32,7 +32,7 @@ class HttpRequester(Requester):
         request_options_provider: Optional[RequestOptionsProvider] = None,
         request_headers_provider: Optional[RequestHeaderProvider] = None,
         authenticator: HttpAuthenticator,
-        retrier: Retrier = None,
+        retrier: Optional[Retrier] = None,
         config: Config,
     ):
         if request_options_provider is None:

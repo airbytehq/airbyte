@@ -69,10 +69,7 @@ class DeclarativeComponentFactory:
             return self.create_component(definition, config)()
         elif isinstance(definition, dict):
             # Try to infer object type
-            print(f"parent class: {parent_class}")
-            print(f"key: {key}")
             expected_type = self.get_default_type(key, parent_class)
-            print(f"expected_typed: {expected_type}")
             if expected_type:
                 definition["class_name"] = expected_type
                 definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))

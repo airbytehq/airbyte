@@ -245,7 +245,6 @@ def test_full_config_with_defaults():
 
     stream_config = config["lists_stream"]
     stream = factory.create_component(stream_config, input_config)()
-    print(f"type: {type(stream._retriever._record_selector)}")
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
