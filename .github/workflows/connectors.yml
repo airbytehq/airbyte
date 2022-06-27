@@ -52,8 +52,8 @@ jobs:
         id: build
         run: |
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:build
-          docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
 
       - name: Push ${{ matrix.connector }} image with 'dev' tag
         if: ${{ github.event_name == 'push' }}
@@ -62,13 +62,13 @@ jobs:
           source tools/lib/lib.sh
           export IMAGE_VERSION=$(_get_docker_image_version airbyte-integrations/connectors/${{ matrix.connector }}/Dockerfile)
           
-          docker pull ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
-          echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:dev"
-          docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:dev
-          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:dev
-          echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:$IMAGE_VERSION"
-          docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
-          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:$IMAGE_VERSION
-          echo "Publishing image ghcr.io/estuary/airbyte-${{ matrix.connector}}:v1"
-          docker tag ghcr.io/estuary/airbyte-${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/airbyte-${{ matrix.connector }}:v1
-          docker push ghcr.io/estuary/airbyte-${{ matrix.connector }}:v1
+          docker pull ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:dev"
+          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:dev
+          docker push ghcr.io/estuary/${{ matrix.connector }}:dev
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:$IMAGE_VERSION"
+          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
+          docker push ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
+          echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:v1"
+          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:v1
+          docker push ghcr.io/estuary/${{ matrix.connector }}:v1
