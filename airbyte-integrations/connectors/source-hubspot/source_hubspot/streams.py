@@ -2,14 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 import sys
 import time
-import urllib.parse
 from abc import ABC, abstractmethod
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -18,15 +17,10 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
-from source_hubspot.helpers import GroupByKey, IRecordPostProcessor, StoreAsIs
-
-# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
-# so it was decided to limit the length of the `properties` parameter to 15000 characters.
-PROPERTIES_PARAM_MAX_LENGTH = 15000
+from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -58,29 +52,6 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
-
-
-def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
-    summary_length = 0
-    local_properties = []
-    for property_ in properties_list:
-        if len(property_) + summary_length + len(urllib.parse.quote(",")) >= PROPERTIES_PARAM_MAX_LENGTH:
-            yield local_properties
-            local_properties = []
-            summary_length = 0
-
-        local_properties.append(property_)
-        summary_length += len(property_) + len(urllib.parse.quote(","))
-
-    if local_properties:
-        yield local_properties
-
-
-def too_many_properties(properties_list: List[str]) -> bool:
-    # Do not iterate over the generator until the end. Here we need to know if it produces more than one record
-    generator = split_properties(properties_list)
-    _ = next(generator)
-    return next(generator, None) is not None
 
 
 def retry_connection_handler(**kwargs):
@@ -259,6 +230,13 @@ class Stream(HttpStream, ABC):
     ) -> str:
         return self.url
 
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        if "v1" in self.url:
+            return APIv1Property(properties)
+        return APIv3Property(properties)
+
     def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._api: API = api
@@ -290,12 +268,12 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        params: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if params:
-            request_params.update(params)
+        if properties:
+            request_params.update(properties.as_url_param())
 
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -321,7 +299,6 @@ class Stream(HttpStream, ABC):
 
     def _read_stream_records(
         self,
-        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -337,10 +314,10 @@ class Stream(HttpStream, ABC):
         post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
         response = None
 
-        for properties in split_properties(properties_list):
-            params = {"property": properties}
+        properties = self._property_wrapper
+        for chunk in properties.split():
             response = self.handle_request(
-                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, params=params
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk
             )
             for record in self._transform(self.parse_response(response, stream_state=stream_state)):
                 post_processor.add_record(record)
@@ -359,41 +336,42 @@ class Stream(HttpStream, ABC):
 
         next_page_token = None
         try:
-            with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-                while not pagination_complete:
+            while not pagination_complete:
 
-                    properties_list = list(self.properties.keys())
-                    if properties_list and too_many_properties(properties_list):
-                        records, response = self._read_stream_records(
-                            properties_list=properties_list,
-                            stream_slice=stream_slice,
-                            stream_state=stream_state,
-                            next_page_token=next_page_token,
-                        )
-                    else:
-                        response = self.handle_request(
-                            stream_slice=stream_slice,
-                            stream_state=stream_state,
-                            next_page_token=next_page_token,
-                            params={"property": properties_list},
-                        )
-                        records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+                properties = self._property_wrapper
+                if properties and properties.too_many_properties:
+                    records, response = self._read_stream_records(
+                        stream_slice=stream_slice,
+                        stream_state=stream_state,
+                        next_page_token=next_page_token,
+                    )
+                else:
+                    response = self.handle_request(
+                        stream_slice=stream_slice,
+                        stream_state=stream_state,
+                        next_page_token=next_page_token,
+                        properties=properties,
+                    )
+                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                    if self.filter_old_records:
-                        records = self._filter_old_records(records)
-                    yield from records
+                if self.filter_old_records:
+                    records = self._filter_old_records(records)
+                yield from records
 
-                    next_page_token = self.next_page_token(response)
-                    if not next_page_token:
-                        pagination_complete = True
+                next_page_token = self.next_page_token(response)
+                if not next_page_token:
+                    pagination_complete = True
 
-                # Always return an empty generator just in case no records were ever yielded
-                yield from []
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
         except requests.exceptions.HTTPError as e:
             raise e
 
     def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
-        body = response.json()
+        try:
+            body = response.json()
+        except json.decoder.JSONDecodeError:
+            return response.text
         if body.get("category") == "MISSING_SCOPES":
             if "errors" in body:
                 errors = body["errors"]
@@ -796,12 +774,12 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def _process_search(
         self,
-        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
+        properties_list = list(self.properties.keys())
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
@@ -833,47 +811,42 @@ class CRMSearchStream(IncrementalStream, ABC):
         next_page_token = None
 
         latest_cursor = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
-                properties_list = list(self.properties.keys())
+        while not pagination_complete:
+            if self.state:
+                records, raw_response = self._process_search(
+                    next_page_token=next_page_token,
+                    stream_state=stream_state,
+                    stream_slice=stream_slice,
+                )
 
-                if self.state:
-                    records, raw_response = self._process_search(
-                        properties_list,
-                        next_page_token=next_page_token,
-                        stream_state=stream_state,
-                        stream_slice=stream_slice,
-                    )
+            else:
+                records, raw_response = self._read_stream_records(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
+            records = self._filter_old_records(records)
+            records = self._flat_associations(records)
 
-                else:
-                    records, raw_response = self._read_stream_records(
-                        properties_list=properties_list,
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                    )
-                records = self._filter_old_records(records)
-                records = self._flat_associations(records)
+            for record in records:
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record
 
-                for record in records:
-                    cursor = self._field_to_datetime(record[self.updated_at_field])
-                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                    yield record
+            next_page_token = self.next_page_token(raw_response)
+            if not next_page_token:
+                pagination_complete = True
+            elif self.state and next_page_token["payload"]["after"] >= 10000:
+                # Hubspot documentation states that the search endpoints are limited to 10,000 total results
+                # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+                # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+                # start a new search query with the latest state that has been collected.
+                self._update_state(latest_cursor=latest_cursor)
+                next_page_token = None
 
-                next_page_token = self.next_page_token(raw_response)
-                if not next_page_token:
-                    pagination_complete = True
-                elif self.state and next_page_token["payload"]["after"] >= 10000:
-                    # Hubspot documentation states that the search endpoints are limited to 10,000 total results
-                    # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
-                    # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
-                    # start a new search query with the latest state that has been collected.
-                    self._update_state(latest_cursor=latest_cursor)
-                    next_page_token = None
-
-            self._update_state(latest_cursor=latest_cursor)
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+        self._update_state(latest_cursor=latest_cursor)
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
     def request_params(
         self,
@@ -1178,33 +1151,33 @@ class Engagements(IncrementalStream):
 
         next_page_token = None
         latest_cursor = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
-                response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                if self.filter_old_records:
-                    records = self._filter_old_records(records)
+        while not pagination_complete:
+            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                for record in records:
-                    cursor = self._field_to_datetime(record[self.updated_at_field])
-                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                    yield record
+            if self.filter_old_records:
+                records = self._filter_old_records(records)
 
-                next_page_token = self.next_page_token(response)
-                if self.state and next_page_token and next_page_token["offset"] >= 10000:
-                    # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
-                    # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
-                    # descending order, we stop getting records if we have already reached 10,000. Attempting
-                    # to get more than 10K will result in a HTTP 400 error.
-                    # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-                    next_page_token = None
+            for record in records:
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record
 
-                if not next_page_token:
-                    pagination_complete = True
+            next_page_token = self.next_page_token(response)
+            if self.state and next_page_token and next_page_token["offset"] >= 10000:
+                # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
+                # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
+                # descending order, we stop getting records if we have already reached 10,000. Attempting
+                # to get more than 10K will result in a HTTP 400 error.
+                # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+                next_page_token = None
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+            if not next_page_token:
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
         self._update_state(latest_cursor=latest_cursor)
 

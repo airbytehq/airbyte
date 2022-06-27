@@ -12,10 +12,10 @@ import {
 import { barChartColors, theme } from "theme";
 
 interface BarChartProps {
-  data: {
+  data: Array<{
     name: string;
     value: number;
-  }[];
+  }>;
   legendLabels: string[];
   xLabel?: string;
   yLabel?: string;

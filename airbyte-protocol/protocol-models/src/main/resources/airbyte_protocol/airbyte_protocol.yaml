@@ -55,68 +55,83 @@ definitions:
       - data
       - emitted_at
     properties:
+      namespace:
+        description: "namespace the data is associated with"
+        type: string
       stream:
-        description: "the name of this record's stream"
+        description: "stream the data is associated with"
         type: string
       data:
-        description: "the record data"
+        description: "record data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       emitted_at:
         description: "when the data was emitted from the source. epoch in millisecond."
         type: integer
-      namespace:
-        description: "the namespace of this record's stream"
-        type: string
   AirbyteStateMessage:
     type: object
     additionalProperties: true
     properties:
-      state_type:
+      type:
         "$ref": "#/definitions/AirbyteStateType"
+      stream:
+        "$ref": "#/definitions/AirbyteStreamState"
+      global:
+        "$ref": "#/definitions/AirbyteGlobalState"
       data:
         description: "(Deprecated) the state data"
         type: object
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
-      global:
-        "$ref": "#/definitions/AirbyteStateBlob"
-      streams:
-        type: array
-        items:
-          "$ref": "#/definitions/AirbyteStreamState"
-
   AirbyteStateType:
     type: string
     description: >
       The type of state the other fields represent.
-      If not set, the state data is interpreted as GLOBAL and should be read from the `data` field for backwards compatibility.
-      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams.
-      PER_STREAM means that the state should be read from `streams`. Each item in the list represents the state for the associated stream.
+      Is set to LEGACY, the state data should be read from the `data` field for backwards compatibility.
+      If not set, assume the state object is type LEGACY.
+      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams. It contains one shared
+      state and individual stream states.
+      PER_STREAM means that the state should be read from `stream`. The state present in this field correspond to the isolated state of the
+      associated stream description.
     enum:
       - GLOBAL
-      - PER_STREAM
-
+      - STREAM
+      - LEGACY
   AirbyteStreamState:
     type: object
-    description: "per stream state data"
-    additionalProperties: false
+    additionalProperties: true
+    required:
+      - stream_descriptor
+    properties:
+      stream_descriptor:
+        "$ref": "#/definitions/StreamDescriptor"
+      stream_state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+  AirbyteGlobalState:
+    type: object
+    additionalProperties: true
+    required:
+      - stream_states
+    properties:
+      shared_state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+      stream_states:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStreamState"
+  StreamDescriptor:
+    type: object
+    additionalProperties: true
     required:
       - name
-      - state
     properties:
       name:
-        description: "Stream name"
         type: string
-      state:
-        "$ref": "#/definitions/AirbyteStateBlob"
       namespace:
-        description: Optional Source-defined namespace.
         type: string
-
   AirbyteStateBlob:
     type: object
     description: "the state data"
-    additionalProperties: false
+    additionalProperties: true
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
 
   AirbyteLogMessage:
@@ -127,7 +142,7 @@ definitions:
       - message
     properties:
       level:
-        description: "the type of logging"
+        description: "log level"
         type: string
         enum:
           - FATAL
@@ -137,7 +152,7 @@ definitions:
           - DEBUG
           - TRACE
       message:
-        description: "the log message"
+        description: "log message"
         type: string
   AirbyteTraceMessage:
     type: object
@@ -364,10 +379,10 @@ definitions:
       # Connector Type Properties (Common to all connectors from same type)
       # Source Connectors Properties
       supportsIncremental:
-        description: If the connector supports incremental mode or not.
+        description: (deprecated) If the connector supports incremental mode or not.
         type: boolean
       # Destination Connectors Properties
-      # Normalization is currently implemented using dbt so it requires `supportsDBT` to be true for this to be true.
+      # Normalization is currently implemented using dbt, so it requires `supportsDBT` to be true for this to be true.
       supportsNormalization:
         description: If the connector supports normalization or not.
         type: boolean

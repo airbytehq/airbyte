@@ -11,10 +11,13 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.JobTypeResourceLimit.JobType;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.config.State;
+import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -22,6 +25,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
 
 public class DefaultJobCreator implements JobCreator {
@@ -74,7 +78,7 @@ public class DefaultJobCreator implements JobCreator {
             workerResourceRequirements,
             JobType.SYNC));
 
-    configRepository.getConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
+    getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.SYNC)
@@ -93,7 +97,8 @@ public class DefaultJobCreator implements JobCreator {
   public Optional<Long> createResetConnectionJob(final DestinationConnection destination,
                                                  final StandardSync standardSync,
                                                  final String destinationDockerImage,
-                                                 final List<StandardSyncOperation> standardSyncOperations)
+                                                 final List<StandardSyncOperation> standardSyncOperations,
+                                                 final List<StreamDescriptor> streamsToReset)
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
@@ -110,12 +115,21 @@ public class DefaultJobCreator implements JobCreator {
         .withConfiguredAirbyteCatalog(configuredAirbyteCatalog)
         .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
-            workerResourceRequirements));
+            workerResourceRequirements))
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset));
+
+    getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(resetConnectionConfig::withState);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(resetConnectionConfig);
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
+  }
+
+  // TODO (https://github.com/airbytehq/airbyte/issues/13620): update this method implementation
+  // to fetch and serialize the new per-stream state format into a State object
+  private Optional<State> getCurrentConnectionState(final UUID connectionId) throws IOException {
+    return configRepository.getConnectionState(connectionId);
   }
 
 }
