@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +47,7 @@ public class GlobalStateManagerTest {
         .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace("namespace").withName("name"))
             .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
+        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
     assertNotNull(stateManager.getCdcStateManager());
     assertEquals(cdcState, stateManager.getCdcStateManager().getCdcState());
   }
@@ -127,7 +128,7 @@ public class GlobalStateManagerTest {
     final AirbyteStateMessage expected = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(expectedDbState))
         .withGlobal(expectedGlobalState)
-        .withStateType(AirbyteStateType.GLOBAL);
+        .withType(AirbyteStateType.GLOBAL);
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expected, actualFirstEmission);
@@ -150,7 +151,7 @@ public class GlobalStateManagerTest {
     final AirbyteGlobalState globalState = new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState())).withStreamStates(
         List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor()).withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final StateManager stateManager =
-        new GlobalStateManager(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
+        new GlobalStateManager(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState), catalog);
     stateManager.getCdcStateManager().setCdcState(cdcState);
 
     final DbState expectedDbState = new DbState()
@@ -196,10 +197,22 @@ public class GlobalStateManagerTest {
     final AirbyteStateMessage expected = new AirbyteStateMessage()
         .withData(Jsons.jsonNode(expectedDbState))
         .withGlobal(expectedGlobalState)
-        .withStateType(AirbyteStateType.GLOBAL);
+        .withType(AirbyteStateType.GLOBAL);
 
     final AirbyteStateMessage actualFirstEmission = stateManager.updateAndEmit(NAME_NAMESPACE_PAIR1, "a");
     assertEquals(expected, actualFirstEmission);
+  }
+
+  @Test
+  void testToStateWithNoState() {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog();
+    final StateManager stateManager =
+        new GlobalStateManager(new AirbyteStateMessage(), catalog);
+
+    final AirbyteStateMessage airbyteStateMessage = stateManager.toState(Optional.empty());
+    assertNotNull(airbyteStateMessage);
+    assertEquals(AirbyteStateType.GLOBAL, airbyteStateMessage.getType());
+    assertEquals(0, airbyteStateMessage.getGlobal().getStreamStates().size());
   }
 
 }

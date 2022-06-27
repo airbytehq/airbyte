@@ -75,7 +75,7 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
         .withCdcState(getCdcStateManager().getCdcState());
 
     return new AirbyteStateMessage()
-        .withStateType(AirbyteStateType.GLOBAL)
+        .withType(AirbyteStateType.GLOBAL)
         // Temporarily include legacy state for backwards compatibility with the platform
         .withData(Jsons.jsonNode(dbState))
         .withGlobal(globalState);
@@ -91,10 +91,11 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
    *         but may be empty.
    */
   private CdcState extractCdcState(final AirbyteStateMessage airbyteStateMessage) {
-    if (airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
+    if (airbyteStateMessage.getType() == AirbyteStateType.GLOBAL) {
       return Jsons.object(airbyteStateMessage.getGlobal().getSharedState(), CdcState.class);
     } else {
-      return Jsons.object(airbyteStateMessage.getData(), DbState.class).getCdcState();
+      final DbState legacyState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
+      return legacyState != null ? legacyState.getCdcState() : null;
     }
   }
 
@@ -113,7 +114,7 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
      * storing state in the legacy "data" field.
      */
     return () -> {
-      if (airbyteStateMessage.getStateType() == AirbyteStateType.GLOBAL) {
+      if (airbyteStateMessage.getType() == AirbyteStateType.GLOBAL) {
         return airbyteStateMessage.getGlobal().getStreamStates();
       } else if (airbyteStateMessage.getData() != null) {
         return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()

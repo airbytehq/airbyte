@@ -77,7 +77,7 @@ public class StateManagerFactoryTest {
         new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState().withCdcState(new CdcState().withState(Jsons.jsonNode(new DbState())))))
             .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace(NAMESPACE).withName(NAME))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
-    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
 
     final StateManager stateManager = StateManagerFactory.createStateManager(AirbyteStateType.GLOBAL, List.of(airbyteStateMessage), catalog);
 
@@ -93,7 +93,7 @@ public class StateManagerFactoryTest {
         .withCdcState(cdcState)
         .withStreams(List.of(new DbStreamState().withStreamName(NAME).withStreamNamespace(NAMESPACE)));
     final AirbyteStateMessage airbyteStateMessage =
-        new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
+        new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
 
     final StateManager stateManager = StateManagerFactory.createStateManager(AirbyteStateType.GLOBAL, List.of(airbyteStateMessage), catalog);
 
@@ -104,7 +104,7 @@ public class StateManagerFactoryTest {
   @Test
   void testGlobalStateManagerCreationFromStreamState() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(NAME).withNamespace(
             NAMESPACE)).withStreamState(Jsons.jsonNode(new DbStreamState())));
 
@@ -120,7 +120,7 @@ public class StateManagerFactoryTest {
             .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace(NAMESPACE).withName(NAME))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
     final AirbyteStateMessage airbyteStateMessage =
-        new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState).withData(Jsons.jsonNode(new DbState()));
+        new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState).withData(Jsons.jsonNode(new DbState()));
 
     final StateManager stateManager = StateManagerFactory.createStateManager(AirbyteStateType.GLOBAL, List.of(airbyteStateMessage), catalog);
 
@@ -131,7 +131,7 @@ public class StateManagerFactoryTest {
   @Test
   void testStreamStateManagerCreation() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(NAME).withNamespace(
             NAMESPACE)).withStreamState(Jsons.jsonNode(new DbStreamState())));
 
@@ -149,7 +149,7 @@ public class StateManagerFactoryTest {
         .withCdcState(cdcState)
         .withStreams(List.of(new DbStreamState().withStreamName(NAME).withStreamNamespace(NAMESPACE)));
     final AirbyteStateMessage airbyteStateMessage =
-        new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
+        new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(dbState));
 
     final StateManager stateManager = StateManagerFactory.createStateManager(AirbyteStateType.STREAM, List.of(airbyteStateMessage), catalog);
 
@@ -164,7 +164,7 @@ public class StateManagerFactoryTest {
         new AirbyteGlobalState().withSharedState(Jsons.jsonNode(new DbState().withCdcState(new CdcState().withState(Jsons.jsonNode(new DbState())))))
             .withStreamStates(List.of(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withNamespace(NAMESPACE).withName(NAME))
                 .withStreamState(Jsons.jsonNode(new DbStreamState()))));
-    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
 
     Assertions.assertThrows(IllegalArgumentException.class,
         () -> StateManagerFactory.createStateManager(AirbyteStateType.STREAM, List.of(airbyteStateMessage), catalog));
@@ -173,7 +173,7 @@ public class StateManagerFactoryTest {
   @Test
   void testStreamStateManagerCreationWithLegacyDataPresent() {
     final ConfiguredAirbyteCatalog catalog = mock(ConfiguredAirbyteCatalog.class);
-    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+    final AirbyteStateMessage airbyteStateMessage = new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
         .withStream(new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(NAME).withNamespace(
             NAMESPACE)).withStreamState(Jsons.jsonNode(new DbStreamState())))
         .withData(Jsons.jsonNode(new DbState()));
