@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.STATE;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.db.Database;
@@ -158,7 +159,9 @@ public class StatePersistence {
               isNullOrEquals(STATE.NAMESPACE, namespace))
           .fetch().isNotEmpty();
 
-      final JSONB jsonbState = JSONB.valueOf(Jsons.serialize(state));
+      // NOTE: the legacy code was storing a State object instead of just the State data field. We kept
+      // the same behavior for consistency.
+      final JSONB jsonbState = JSONB.valueOf(Jsons.serialize(stateType != StateType.LEGACY ? state : new State().withState(state)));
       final OffsetDateTime now = OffsetDateTime.now();
 
       if (!hasState) {
@@ -292,9 +295,10 @@ public class StatePersistence {
    * Build a StateWrapper for Legacy state
    */
   private static StateWrapper buildLegacyState(final List<StateRecord> records) {
+    final State legacyState = Jsons.convertValue(records.get(0).state, State.class);
     return new StateWrapper()
         .withStateType(StateType.LEGACY)
-        .withLegacyState(records.get(0).state);
+        .withLegacyState(legacyState.getState());
   }
 
   /**
