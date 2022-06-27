@@ -49,6 +49,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| 0.1.20  | 2022-06-24 | [14099](https://github.com/airbytehq/airbyte/pull/14099) | Extended `Contacts` stream schema with `sms_consent`,`unsubscribe_from_sms` properties  
 | 0.1.19  | 2022-05-25 | [13204](https://github.com/airbytehq/airbyte/pull/13204) | Fixed `conversation_parts` stream schema definition                       |
 | 0.1.18   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.17  | 2022-04-29 | [12374](https://github.com/airbytehq/airbyte/pull/12374)  | Fixed filtering of conversation_parts |
