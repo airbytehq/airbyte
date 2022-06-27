@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Set, Type, Union
 
 import airbyte_api_client
+import click
 import yaml
 from airbyte_api_client.api import (
     destination_api,
@@ -51,30 +52,36 @@ from airbyte_api_client.model.web_backend_connection_create import WebBackendCon
 from airbyte_api_client.model.web_backend_connection_request_body import WebBackendConnectionRequestBody
 from airbyte_api_client.model.web_backend_connection_update import WebBackendConnectionUpdate
 from airbyte_api_client.model.web_backend_operation_create_or_update import WebBackendOperationCreateOrUpdate
-from click import ClickException
 
 from .diff_helpers import compute_diff, hash_config
 from .yaml_loaders import EnvVarLoader
 
 
-class DuplicateResourceError(ClickException):
+class NonExistingResourceError(click.ClickException):
     pass
 
 
-class NonExistingResourceError(ClickException):
+class InvalidConfigurationError(click.ClickException):
     pass
 
 
-class InvalidConfigurationError(ClickException):
+class InvalidStateError(click.ClickException):
+    pass
+
+
+class MissingStateError(click.ClickException):
     pass
 
 
 class ResourceState:
-    def __init__(self, configuration_path: str, resource_id: str, generation_timestamp: int, configuration_hash: str):
+    def __init__(
+        self, configuration_path: str, workspace_id: Optional[str], resource_id: str, generation_timestamp: int, configuration_hash: str
+    ):
         """This constructor is meant to be private. Construction shall be made with create or from_file class methods.
 
         Args:
             configuration_path (str): Path to the configuration this state relates to.
+            workspace_id Optional(str): Id of the workspace the state relates to. #TODO mark this a not optional after the user base has upgraded to >= 0.39.18
             resource_id (str): Id of the resource the state relates to.
             generation_timestamp (int): State generation timestamp.
             configuration_hash (str): Hash of the loaded configuration file.
@@ -83,11 +90,13 @@ class ResourceState:
         self.resource_id = resource_id
         self.generation_timestamp = generation_timestamp
         self.configuration_hash = configuration_hash
-        self.path = os.path.join(os.path.dirname(self.configuration_path), "state.yaml")
+        self.workspace_id = workspace_id
+        self.path = self._get_path_from_configuration_and_workspace_id(configuration_path, workspace_id)
 
     def as_dict(self):
         return {
             "resource_id": self.resource_id,
+            "workspace_id": self.workspace_id,
             "generation_timestamp": self.generation_timestamp,
             "configuration_path": self.configuration_path,
             "configuration_hash": self.configuration_hash,
@@ -99,7 +108,7 @@ class ResourceState:
             yaml.dump(self.as_dict(), state_file)
 
     @classmethod
-    def create(cls, configuration_path: str, configuration_hash: str, resource_id: str) -> "ResourceState":
+    def create(cls, configuration_path: str, configuration_hash: str, workspace_id: str, resource_id: str) -> "ResourceState":
         """Create a state for a resource configuration.
 
         Args:
@@ -111,9 +120,13 @@ class ResourceState:
             ResourceState: state representing the resource.
         """
         generation_timestamp = int(time.time())
-        state = ResourceState(configuration_path, resource_id, generation_timestamp, configuration_hash)
+        state = ResourceState(configuration_path, workspace_id, resource_id, generation_timestamp, configuration_hash)
         state._save()
         return state
+
+    def delete(self) -> None:
+        """Delete the state file"""
+        os.remove(self.path)
 
     @classmethod
     def from_file(cls, file_path: str) -> "ResourceState":
@@ -129,10 +142,39 @@ class ResourceState:
             raw_state = yaml.safe_load(f)
         return ResourceState(
             raw_state["configuration_path"],
+            raw_state.get("workspace_id"),  # TODO: workspace id should not be nullable after the user base has upgraded to >= 0.39.18
             raw_state["resource_id"],
             raw_state["generation_timestamp"],
             raw_state["configuration_hash"],
         )
+
+    @classmethod
+    def _get_path_from_configuration_and_workspace_id(cls, configuration_path, workspace_id):
+        return os.path.join(os.path.dirname(configuration_path), f"state_{workspace_id}.yaml")
+
+    @classmethod
+    def from_configuration_path_and_workspace(cls, configuration_path, workspace_id):
+        state_path = cls._get_path_from_configuration_and_workspace_id(configuration_path, workspace_id)
+        state = cls.from_file(state_path)
+        return state
+
+    @classmethod
+    def migrate(self, state_to_migrate_path: str, workspace_id: str) -> "ResourceState":
+        """Create a per workspace state from a legacy state file and remove the legacy state file.
+
+        Args:
+            state_to_migrate_path (str): Path to the legacy state file to migrate.
+            workspace_id (str): Workspace id for which the new state will be stored.
+
+        Returns:
+            ResourceState: The new state after migration.
+        """
+        state_to_migrate = ResourceState.from_file(state_to_migrate_path)
+        new_state = ResourceState.create(
+            state_to_migrate.configuration_path, state_to_migrate.configuration_hash, workspace_id, state_to_migrate.resource_id
+        )
+        state_to_migrate.delete()
+        return new_state
 
 
 class BaseResource(abc.ABC):
@@ -218,7 +260,7 @@ class BaseResource(abc.ABC):
 
         self.workspace_id = workspace_id
         self.configuration_path = configuration_path
-        self.state = self._get_state_from_file(configuration_path)
+        self.state = self._get_state_from_file(configuration_path, workspace_id)
         self.configuration_hash = hash_config(
             raw_configuration
         )  # Hash as early as possible to limit risks of raw_configuration downstream mutations.
@@ -254,7 +296,7 @@ class BaseResource(abc.ABC):
         """
         invalid_keys = list(set(dict_to_check.keys()) & invalid_keys)
         if invalid_keys:
-            raise InvalidConfigurationError(f"{error_message}: {', '.join(invalid_keys)}")
+            raise InvalidConfigurationError(f"Invalid configuration keys: {', '.join(invalid_keys)}. {error_message}. ")
 
     @property
     def remote_resource(self):
@@ -282,15 +324,30 @@ class BaseResource(abc.ABC):
         return self._get_fn(self.api_instance, self.get_payload)
 
     @staticmethod
-    def _get_state_from_file(configuration_file: str) -> Optional[ResourceState]:
+    def _get_state_from_file(configuration_file: str, workspace_id: str) -> Optional[ResourceState]:
         """Retrieve a state object from a local YAML file if it exists.
 
         Returns:
             Optional[ResourceState]: the deserialized resource state if YAML file found.
         """
-        expected_state_path = Path(os.path.join(os.path.dirname(configuration_file), "state.yaml"))
+        expected_state_path = Path(os.path.join(os.path.dirname(configuration_file), f"state_{workspace_id}.yaml"))
+        legacy_state_path = Path(os.path.join(os.path.dirname(configuration_file), "state.yaml"))
         if expected_state_path.is_file():
             return ResourceState.from_file(expected_state_path)
+        elif legacy_state_path.is_file():  # TODO: remove condition after user base has upgraded to >= 0.39.18
+            if click.confirm(
+                click.style(
+                    f"⚠️  - State files are now saved on a workspace basis. Do you want octavia to rename and update {legacy_state_path}? ",
+                    fg="red",
+                )
+            ):
+                return ResourceState.migrate(legacy_state_path, workspace_id)
+            else:
+                raise InvalidStateError(
+                    f"Octavia expects the state file to be located at {expected_state_path} with a workspace_id key. Please update {legacy_state_path}."
+                )
+        else:
+            return None
 
     def get_diff_with_remote_resource(self) -> str:
         """Compute the diff between current resource and the remote resource.
@@ -330,7 +387,10 @@ class BaseResource(abc.ABC):
         """
         try:
             result = operation_fn(self.api_instance, payload)
-            return result, ResourceState.create(self.configuration_path, self.configuration_hash, result[self.resource_id_field])
+            new_state = ResourceState.create(
+                self.configuration_path, self.configuration_hash, self.workspace_id, result[self.resource_id_field]
+            )
+            return result, new_state
         except airbyte_api_client.ApiException as api_error:
             if api_error.status == 422:
                 # This  API response error is really verbose, but it embodies all the details about why the config is not valid.
@@ -532,6 +592,7 @@ class Connection(BaseResource):
         Returns:
             dict: Deserialized connection configuration
         """
+        self._check_for_legacy_raw_configuration_keys(self.raw_configuration)
         configuration = super()._deserialize_raw_configuration()
         self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
@@ -544,11 +605,43 @@ class Connection(BaseResource):
 
     @property
     def source_id(self):
-        return self.raw_configuration["source_id"]
+        """Retrieve the source id from the source state file of the current workspace.
+
+        Raises:
+            MissingStateError: Raised if the state file of the current workspace is not found.
+
+        Returns:
+            str: source id
+        """
+        try:
+            source_state = ResourceState.from_configuration_path_and_workspace(
+                self.raw_configuration["source_configuration_path"], self.workspace_id
+            )
+        except FileNotFoundError:
+            raise MissingStateError(
+                f"Could not find the source state file for configuration {self.raw_configuration['source_configuration_path']}."
+            )
+        return source_state.resource_id
 
     @property
     def destination_id(self):
-        return self.raw_configuration["destination_id"]
+        """Retrieve the destination id from the destination state file of the current workspace.
+
+        Raises:
+            MissingStateError: Raised if the state file of the current workspace is not found.
+
+        Returns:
+            str: destination id
+        """
+        try:
+            destination_state = ResourceState.from_configuration_path_and_workspace(
+                self.raw_configuration["destination_configuration_path"], self.workspace_id
+            )
+        except FileNotFoundError:
+            raise MissingStateError(
+                f"Could not find the destination state file for configuration {self.raw_configuration['destination_configuration_path']}."
+            )
+        return destination_state.resource_id
 
     @property
     def create_payload(self) -> WebBackendConnectionCreate:
@@ -657,17 +750,15 @@ class Connection(BaseResource):
             deserialized_operations.append(operation)
         return deserialized_operations
 
-    # TODO this check can be removed when all our active user are on >= 0.36.11
+    # TODO this check can be removed when all our active user are on >= 0.37.0
     def _check_for_legacy_connection_configuration_keys(self, configuration_to_check):
-        """We changed connection configuration keys from camelCase to snake_case in 0.36.11.
+        """We changed connection configuration keys from camelCase to snake_case in 0.37.0.
         This function check if the connection configuration has some camelCase keys and display a meaningful error message.
 
         Args:
             configuration_to_check (dict): Configuration to validate
         """
-        error_message = (
-            "The following keys should be in snake_case since version 0.36.10, please edit or regenerate your connection configuration"
-        )
+        error_message = "These keys should be in snake_case since version 0.37.0, please edit or regenerate your connection configuration"
         self._check_for_invalid_configuration_keys(
             configuration_to_check, {"syncCatalog", "namespaceDefinition", "namespaceFormat", "resourceRequirements"}, error_message
         )
@@ -681,6 +772,14 @@ class Connection(BaseResource):
             self._check_for_invalid_configuration_keys(
                 stream["config"], {"aliasName", "cursorField", "destinationSyncMode", "primaryKey", "syncMode"}, error_message
             )
+
+    # TODO this check can be removed when all our active user are on > 0.39.18
+    def _check_for_legacy_raw_configuration_keys(self, raw_configuration):
+        self._check_for_invalid_configuration_keys(
+            raw_configuration,
+            {"source_id", "destination_id"},
+            "These keys changed to source_configuration_path and destination_configuration_path in version > 0.39.18, please update your connection configuration to give path to source and destination configuration files or regenerate the connection",
+        )
 
     def _get_remote_comparable_configuration(self) -> dict:
 
