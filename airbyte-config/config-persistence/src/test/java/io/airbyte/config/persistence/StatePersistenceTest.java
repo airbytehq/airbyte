@@ -15,6 +15,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
@@ -45,6 +46,7 @@ import org.junit.jupiter.api.Test;
 
 public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
+  private ConfigRepository configRepository;
   private StatePersistence statePersistence;
   private UUID connectionId;
 
@@ -489,6 +491,27 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         io.airbyte.config.StateType.class));
   }
 
+  @Test
+  public void testStatePersistenceLegacyReadConsistency() throws IOException {
+    final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
+    final State state = new State().withState(jsonState);
+    configRepository.updateConnectionState(connectionId, state);
+
+    final StateWrapper readStateWrapper = statePersistence.getCurrentState(connectionId).orElseThrow();
+    Assertions.assertEquals(StateType.LEGACY, readStateWrapper.getStateType());
+    Assertions.assertEquals(state.getState(), readStateWrapper.getLegacyState());
+  }
+
+  @Test
+  public void testStatePersistenceLegacyWriteConsistency() throws IOException {
+    final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
+    final StateWrapper stateWrapper = new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(jsonState);
+    statePersistence.updateOrCreateState(connectionId, stateWrapper);
+
+    final State readState = configRepository.getConnectionState(connectionId).orElseThrow();
+    Assertions.assertEquals(readState.getState(), stateWrapper.getLegacyState());
+  }
+
   @BeforeEach
   public void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
@@ -510,7 +533,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   private void setupTestData() throws JsonValidationException, IOException {
-    ConfigRepository configRepository = new ConfigRepository(
+    configRepository = new ConfigRepository(
         new DatabaseConfigPersistence(database, mock(JsonSecretsProcessor.class)),
         database);
 
