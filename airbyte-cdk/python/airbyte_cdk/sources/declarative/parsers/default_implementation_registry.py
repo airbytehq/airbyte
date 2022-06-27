@@ -18,6 +18,10 @@ from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.declarative.states.dict_state import DictState
+from airbyte_cdk.sources.declarative.states.state import State
+from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
+from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Requester: HttpRequester,
@@ -28,4 +32,6 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Retrier: DefaultRetrier,
     Decoder: JsonDecoder,
     JelloExtractor: JelloExtractor,
+    State: DictState,
+    StreamSlicer: SingleSlice,
 }

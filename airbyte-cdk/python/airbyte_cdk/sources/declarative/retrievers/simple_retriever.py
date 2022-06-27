@@ -25,8 +25,8 @@ class SimpleRetriever(Retriever, HttpStream):
         requester: Requester,
         paginator: Paginator,
         record_selector: HttpSelector,
-        stream_slicer: Optional[StreamSlicer] = SingleSlice,
-        state: Optional[State] = None,
+        stream_slicer: Optional[StreamSlicer] = SingleSlice(),
+        state: State = None,
     ):
         self._name = name
         self._primary_key = primary_key
@@ -34,7 +34,9 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
-        self._iterator: StreamSlicer = stream_slicer
+        self._iterator = stream_slicer
+        print(f"state: {state}")
+        print(f"statetype: {type(state)}")
         self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None
@@ -221,11 +223,15 @@ class SimpleRetriever(Retriever, HttpStream):
     ) -> Iterable[Mapping[str, Any]]:
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)
         for r in records_generator:
+            print(f"record: {r}")
             self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r)
             yield r
         else:
+            print("no last_records!!!")
             self._state.update_state(
-                stream_slice=stream_slice, stream_state=stream_state, last_reponse=self._last_response, last_record=None
+                stream_slice=stream_slice,
+                stream_state=stream_state,
+                last_reponse=self._last_response,
             )
             yield from []
 
@@ -241,7 +247,26 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # FIXME: this is not passing the cursor field because it is always known at init time
+        print(f"stream_state: {stream_state}")
+        print(f"type: {type(self._iterator)}")
         return self._iterator.stream_slices(sync_mode, stream_state)
 
-    def get_state(self) -> MutableMapping[str, Any]:
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: "cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        """
         return self._state.get_stream_state()
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        self._state.update_state(**value)

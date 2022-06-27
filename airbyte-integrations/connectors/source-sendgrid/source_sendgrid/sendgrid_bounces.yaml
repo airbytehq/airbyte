@@ -1,0 +1,35 @@
+limit: 10
+lists_stream:
+  options:
+    name: "bounces"
+    primary_key: email
+    cursor_field: ["created"]
+    url_base: "https://api.sendgrid.com"
+    schema_loader:
+      file_path: "./source_sendgrid/schemas/{{options.name}}.json"
+    retriever:
+      paginator:
+        type: "OffsetPaginator"
+        page_size: "*ref(limit)"
+      requester:
+        path: "v3/suppression/bounces"
+        request_options_provider:
+          request_parameters:
+            offset: "{{ next_page_token['offset'] }}"
+            limit: "*ref(limit)"
+            start_time: "{{ stream_state['created'] }}"
+            end_time: "{{ utc_now() }}"
+        authenticator:
+          type: "TokenAuthenticator"
+          token: "{{ config.apikey }}"
+      record_selector:
+        extractor:
+          transform: "_"
+      state:
+        initial_mapping:
+          created: "{{ last_record.created }}"
+streams:
+  - "*ref(lists_stream)"
+check:
+  stream_names:
+    - "bounces"
