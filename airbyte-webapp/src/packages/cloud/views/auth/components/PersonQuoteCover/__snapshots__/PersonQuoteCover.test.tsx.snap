@@ -25,7 +25,7 @@ exports[`<PersonQuoteCover /> should render with default props 1`] = `
         alt="company logo"
         class="companyLogo"
         data-testid="company logo"
-        src="/cart-com-company-logo.svg"
+        src="/images/testimonials/cartdotcom-logo.svg"
       />
       <div>
         <h5
@@ -72,7 +72,7 @@ exports[`<PersonQuoteCover /> should render with default props and without backg
         alt="company logo"
         class="companyLogo"
         data-testid="company logo"
-        src="/cart-com-company-logo.svg"
+        src="/images/testimonials/cartdotcom-logo.svg"
       />
       <div>
         <h5
