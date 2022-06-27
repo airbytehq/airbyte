@@ -19,7 +19,6 @@ from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -337,32 +336,31 @@ class Stream(HttpStream, ABC):
         pagination_complete = False
 
         next_page_token = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
+        while not pagination_complete:
 
-                properties_list = list(self.properties.keys())
-                if properties_list:
-                    stream_records, response = self._read_stream_records(
-                        properties_list=properties_list,
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                    )
-                    records = [value for key, value in stream_records.items()]
-                else:
-                    response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+            properties_list = list(self.properties.keys())
+            if properties_list:
+                stream_records, response = self._read_stream_records(
+                    properties_list=properties_list,
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
+                records = [value for key, value in stream_records.items()]
+            else:
+                response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                if self.filter_old_records:
-                    records = self._filter_old_records(records)
-                yield from records
+            if self.filter_old_records:
+                records = self._filter_old_records(records)
+            yield from records
 
-                next_page_token = self.next_page_token(response)
-                if not next_page_token:
-                    pagination_complete = True
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
     @staticmethod
     def _convert_datetime_to_string(dt: pendulum.datetime, declared_format: str = None) -> str:
@@ -797,49 +795,48 @@ class CRMSearchStream(IncrementalStream, ABC):
         next_page_token = None
 
         latest_cursor = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
-                properties_list = list(self.properties.keys())
+        while not pagination_complete:
+            properties_list = list(self.properties.keys())
 
-                if self.state:
-                    stream_records, raw_response = self._process_search(
-                        properties_list,
-                        next_page_token=next_page_token,
-                        stream_state=stream_state,
-                        stream_slice=stream_slice,
-                    )
+            if self.state:
+                stream_records, raw_response = self._process_search(
+                    properties_list,
+                    next_page_token=next_page_token,
+                    stream_state=stream_state,
+                    stream_slice=stream_slice,
+                )
 
-                else:
-                    stream_records, raw_response = self._read_stream_records(
-                        properties_list=properties_list,
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                    )
+            else:
+                stream_records, raw_response = self._read_stream_records(
+                    properties_list=properties_list,
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
 
-                records = [value for key, value in stream_records.items()]
-                records = self._filter_old_records(records)
-                records = self._flat_associations(records)
+            records = [value for key, value in stream_records.items()]
+            records = self._filter_old_records(records)
+            records = self._flat_associations(records)
 
-                for record in records:
-                    cursor = self._field_to_datetime(record[self.updated_at_field])
-                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                    yield record
+            for record in records:
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record
 
-                next_page_token = self.next_page_token(raw_response)
-                if not next_page_token:
-                    pagination_complete = True
-                elif self.state and next_page_token["payload"]["after"] >= 10000:
-                    # Hubspot documentation states that the search endpoints are limited to 10,000 total results
-                    # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
-                    # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
-                    # start a new search query with the latest state that has been collected.
-                    self._update_state(latest_cursor=latest_cursor)
-                    next_page_token = None
+            next_page_token = self.next_page_token(raw_response)
+            if not next_page_token:
+                pagination_complete = True
+            elif self.state and next_page_token["payload"]["after"] >= 10000:
+                # Hubspot documentation states that the search endpoints are limited to 10,000 total results
+                # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
+                # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
+                # start a new search query with the latest state that has been collected.
+                self._update_state(latest_cursor=latest_cursor)
+                next_page_token = None
 
-            self._update_state(latest_cursor=latest_cursor)
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+        self._update_state(latest_cursor=latest_cursor)
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
     def request_params(
         self,
@@ -1115,33 +1112,32 @@ class Engagements(IncrementalStream):
 
         next_page_token = None
         latest_cursor = None
-        with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
-            while not pagination_complete:
-                response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
-                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+        while not pagination_complete:
+            response = self.handle_request(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+            records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
-                if self.filter_old_records:
-                    records = self._filter_old_records(records)
+            if self.filter_old_records:
+                records = self._filter_old_records(records)
 
-                for record in records:
-                    cursor = self._field_to_datetime(record[self.updated_at_field])
-                    latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
-                    yield record
+            for record in records:
+                cursor = self._field_to_datetime(record[self.updated_at_field])
+                latest_cursor = max(cursor, latest_cursor) if latest_cursor else cursor
+                yield record
 
-                next_page_token = self.next_page_token(response)
-                if self.state and next_page_token and next_page_token["offset"] >= 10000:
-                    # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
-                    # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
-                    # descending order, we stop getting records if we have already reached 10,000. Attempting
-                    # to get more than 10K will result in a HTTP 400 error.
-                    # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
-                    next_page_token = None
+            next_page_token = self.next_page_token(response)
+            if self.state and next_page_token and next_page_token["offset"] >= 10000:
+                # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
+                # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
+                # descending order, we stop getting records if we have already reached 10,000. Attempting
+                # to get more than 10K will result in a HTTP 400 error.
+                # https://legacydocs.hubspot.com/docs/methods/engagements/get-recent-engagements
+                next_page_token = None
 
-                if not next_page_token:
-                    pagination_complete = True
+            if not next_page_token:
+                pagination_complete = True
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
         self._update_state(latest_cursor=latest_cursor)
 
