@@ -3,10 +3,10 @@ import { Bar, BarChart as BasicBarChart, CartesianGrid, Label, ResponsiveContain
 import { barChartColors, theme } from "theme";
 
 interface BarChartProps {
-  data: {
+  data: Array<{
     name: string;
     value: number;
-  }[];
+  }>;
   legendLabels: string[];
   xLabel?: string;
   yLabel?: string;

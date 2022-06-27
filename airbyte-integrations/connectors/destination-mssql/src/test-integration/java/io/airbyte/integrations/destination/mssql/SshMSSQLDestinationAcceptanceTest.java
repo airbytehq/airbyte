@@ -39,6 +39,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   private final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
   private static final String database = "test";
   private static MSSQLServerContainer<?> db;
+  private static final Network network = Network.newNetwork();
   private final SshBastionContainer bastion = new SshBastionContainer();
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
@@ -111,7 +112,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -173,13 +174,13 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
-        .withNetwork(bastion.getNetWork())
+        .withNetwork(network)
         .acceptLicense();
     db.start();
   }
