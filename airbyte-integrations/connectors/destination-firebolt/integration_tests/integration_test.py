@@ -107,14 +107,12 @@ def airbyte_message2(test_table_name: str):
 
 @mark.parametrize("config", ["invalid_config", "invalid_config_s3"])
 def test_check_fails(config, request):
-    invalid_config = request.getfixturevalue(config)
     destination = DestinationFirebolt()
-    status = destination.check(logger=MagicMock(), config=invalid_config)
+    status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.FAILED
 
 
 def test_check_succeeds(config, request):
-    config = request.getfixturevalue(config)
     destination = DestinationFirebolt()
     status = destination.check(logger=MagicMock(), config=config)
     assert status.status == Status.SUCCEEDED
@@ -129,12 +127,11 @@ def test_write(
     cleanup,
     request,
 ):
-    config_values = request.getfixturevalue(config)
     destination = DestinationFirebolt()
-    generator = destination.write(config_values, configured_catalogue, [airbyte_message1, airbyte_message2])
+    generator = destination.write(config, configured_catalogue, [airbyte_message1, airbyte_message2])
     result = list(generator)
     assert len(result) == 0
-    with establish_connection(config_values, MagicMock()) as connection:
+    with establish_connection(config, MagicMock()) as connection:
         with connection.cursor() as cursor:
             cursor.execute(
                 f"SELECT _airbyte_ab_id, _airbyte_emitted_at, _airbyte_data FROM _airbyte_raw_{test_table_name} ORDER BY _airbyte_data"
