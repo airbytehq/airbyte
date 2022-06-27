@@ -140,6 +140,7 @@ public class WorkerApp {
   private final JobTracker jobTracker;
   private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
+  private final FeatureFlags featureFlags;
   private final StatePersistence statePersistence;
 
   public void start() {
@@ -273,7 +274,8 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        featureFlags.useStreamCapableState());
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
@@ -478,6 +480,7 @@ public class WorkerApp {
         jobTracker,
         jobErrorReporter,
         streamResetPersistence,
+        featureFlags,
         statePersistence).start();
   }
 
