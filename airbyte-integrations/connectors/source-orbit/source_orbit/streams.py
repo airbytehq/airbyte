@@ -4,7 +4,7 @@
 
 import urllib.parse
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, cast
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -34,7 +34,7 @@ class OrbitStream(HttpStream, ABC):
 
 
 class OrbitStreamPaginated(OrbitStream):
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, str]]:
         decoded_response = response.json()
         links = decoded_response.get("links")
         if not links:
@@ -45,18 +45,14 @@ class OrbitStreamPaginated(OrbitStream):
             return None
 
         next_url = urllib.parse.urlparse(next)
-        next_params = list((cast(str, k), v) for (k, v) in urllib.parse.parse_qsl(next_url.query))
-        return next_params
+        return {str(k): str(v) for (k, v) in urllib.parse.parse_qsl(next_url.query)}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        if next_page_token:
-            params.update(next_page_token)
-
-        return params
+        return {**params, **next_page_token} if next_page_token else params
 
 
 class Members(OrbitStreamPaginated):
@@ -75,7 +71,7 @@ class Members(OrbitStreamPaginated):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["sort"] = "created_at"
         if self.start_date is not None:
-            params["start_date"] = self.start_date
+            params["start_date"] = self.start_date  # The start_date parameter is filtering the last_activity_occurred_at field
         return params
 
 
@@ -89,7 +85,6 @@ class Workspace(OrbitStream):
     ) -> str:
         return f"workspaces/{self.workspace}"
 
-    # We aren't returning a dict with this stream, so we need to "yield" instead of "yield from".
     def parse_response(
         self,
         response: requests.Response,
@@ -98,5 +93,4 @@ class Workspace(OrbitStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         data = response.json()
-        records = data["data"]
-        yield records
+        yield data["data"]
