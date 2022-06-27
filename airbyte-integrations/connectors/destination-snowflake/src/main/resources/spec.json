@@ -132,7 +132,6 @@
         "oneOf": [
           {
             "title": "Select another option",
-            "additionalProperties": false,
             "description": "Select another option",
             "required": ["method"],
             "properties": {
@@ -147,7 +146,6 @@
           },
           {
             "title": "[Recommended] Internal Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": ["method"],
             "properties": {
@@ -162,7 +160,6 @@
           },
           {
             "title": "AWS S3 Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -287,7 +284,6 @@
           },
           {
             "title": "GCS Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -330,7 +326,6 @@
           },
           {
             "title": "Azure Blob Storage Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
