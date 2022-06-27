@@ -11,7 +11,7 @@ interface ImageBlockProps {
   small?: boolean;
 }
 
-const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small }) => {
+export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small }) => {
   const imageCircleClassnames = classnames({
     [styles.circle]: num,
     [styles.iconContainer]: !num || num === undefined,
