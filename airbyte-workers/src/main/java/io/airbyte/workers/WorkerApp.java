@@ -19,6 +19,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -139,6 +140,7 @@ public class WorkerApp {
   private final JobTracker jobTracker;
   private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
+  private final StatePersistence statePersistence;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -224,7 +226,7 @@ public class WorkerApp {
         defaultWorkerConfigs,
         defaultProcessFactory);
 
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
@@ -445,6 +447,8 @@ public class WorkerApp {
         new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+
+    final StatePersistence statePersistence = new StatePersistence(configDatabase);
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -473,7 +477,8 @@ public class WorkerApp {
         jobNotifier,
         jobTracker,
         jobErrorReporter,
-        streamResetPersistence).start();
+        streamResetPersistence,
+        statePersistence).start();
   }
 
   public static void main(final String[] args) {
