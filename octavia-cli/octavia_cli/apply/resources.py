@@ -57,10 +57,6 @@ from .diff_helpers import compute_diff, hash_config
 from .yaml_loaders import EnvVarLoader
 
 
-class DuplicateResourceError(click.ClickException):
-    pass
-
-
 class NonExistingResourceError(click.ClickException):
     pass
 
