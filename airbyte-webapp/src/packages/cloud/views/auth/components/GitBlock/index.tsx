@@ -1,3 +1,1 @@
-import { GitBlock } from "./GitBlock";
-
-export { GitBlock };
+export { GitBlock } from "./GitBlock";
