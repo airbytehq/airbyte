@@ -71,7 +71,7 @@ Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https:
 
 ### Key Metrics
 * `oldest_pending_job_age_secs`
-    * This metric shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more [workers](https://docs.airbyte.com/understanding-airbyte/jobs) may be required.
+    * This metric shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.
 * `oldest_running_job_age_secs`
     * This metric shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime.
 * `ob_failed_by_release_stage`
