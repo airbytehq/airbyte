@@ -4,6 +4,9 @@ inputs:
   branch_version_tag:
     description: 'Used to tag jars and docker images with a branch-specific version (should use the form "dev-<commit_hash>" to pass AirbyteVersion validation)'
     required: false
+  dockerhub_username:
+    description: "Used to log in to dockerhub for pushing images"
+    required: true
   dockerhub_token:
     description: "Used to log in to dockerhub for pushing images"
     required: true
@@ -19,7 +22,7 @@ runs:
     - name: Login to Docker (on Master)
       uses: docker/login-action@v1
       with:
-        username: airbytebot
+        username: ${{ inputs.dockerhub_username }}
         password: ${{ inputs.dockerhub_token }}
 
     - name: Push Docker Images

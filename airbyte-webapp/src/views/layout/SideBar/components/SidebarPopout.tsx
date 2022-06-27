@@ -30,7 +30,7 @@ export const Icon = styled.div`
 
 const SidebarPopout: React.FC<{
   children: (props: { onOpen: () => void }) => React.ReactNode;
-  options: { value: string; label?: React.ReactNode }[];
+  options: Array<{ value: string; label?: React.ReactNode }>;
 }> = ({ children, options }) => {
   const config = useConfig();
 
@@ -42,7 +42,7 @@ const SidebarPopout: React.FC<{
             return {
               value: "docs",
               label: (
-                <Item href={config.ui.docsLink} target="_blank">
+                <Item href={config.links.docsLink} target="_blank">
                   <Icon>
                     <DocsIcon />
                   </Icon>
@@ -54,7 +54,7 @@ const SidebarPopout: React.FC<{
             return {
               value: "slack",
               label: (
-                <Item href={config.ui.slackLink} target="_blank">
+                <Item href={config.links.slackLink} target="_blank">
                   <Icon>
                     {/*@ts-ignore slack icon fails here*/}
                     <FontAwesomeIcon icon={faSlack} />
@@ -67,7 +67,7 @@ const SidebarPopout: React.FC<{
             return {
               value: "status",
               label: (
-                <Item href={config.ui.statusLink} target="_blank">
+                <Item href={config.links.statusLink} target="_blank">
                   <Icon>
                     <StatusIcon />
                   </Icon>
@@ -79,7 +79,7 @@ const SidebarPopout: React.FC<{
             return {
               value: "recipes",
               label: (
-                <Item href={config.ui.recipesLink} target="_blank">
+                <Item href={config.links.recipesLink} target="_blank">
                   <Icon>
                     <RecipesIcon />
                   </Icon>
@@ -91,7 +91,7 @@ const SidebarPopout: React.FC<{
             return {
               value: "ticket",
               label: (
-                <Item href={config.ui.supportTicketLink} target="_blank">
+                <Item href={config.links.supportTicketLink} target="_blank">
                   <Icon>
                     <FontAwesomeIcon icon={faEnvelope} />
                   </Icon>

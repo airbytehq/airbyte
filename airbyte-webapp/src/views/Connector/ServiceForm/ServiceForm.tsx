@@ -5,13 +5,17 @@ import { useToggle } from "react-use";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { ConnectorDefinition, ConnectorDefinitionSpecification, Scheduler } from "core/domain/connector";
-import { FormBaseItem } from "core/form/types";
+import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { isDestinationDefinitionSpecification } from "core/domain/connector/destination";
+import { isSourceDefinition, isSourceDefinitionSpecification } from "core/domain/connector/source";
+import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
 import { ConnectionConfiguration } from "../../../core/domain/connection";
+import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
+import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorServiceTypeControl } from "./components/Controls/ConnectorServiceTypeControl";
 import { FormRoot } from "./FormRoot";
@@ -78,16 +82,24 @@ const SetDefaultName: React.FC = () => {
   const { selectedService } = useServiceForm();
 
   useEffect(() => {
-    if (selectedService) {
-      setFieldValue("name", selectedService.name);
+    if (!selectedService) {
+      return;
     }
+
+    const timeout = setTimeout(() => {
+      // We need to push this out one execution slot, so the form isn't still in its
+      // initialization status and won't react to this call but would just take the initialValues instead.
+      setFieldValue("name", selectedService.name);
+    });
+    return () => clearTimeout(timeout);
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedService]);
 
   return null;
 };
 
-export type ServiceFormProps = {
+export interface ServiceFormProps {
   formType: "source" | "destination";
   availableServices: ConnectorDefinition[];
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
@@ -103,8 +115,8 @@ export type ServiceFormProps = {
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
-  testConnector?: (v?: ServiceFormValues) => Promise<Scheduler>;
-};
+  testConnector?: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+}
 
 const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   const formId = useUniqueFormId();
@@ -121,6 +133,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     onStopTesting,
     testConnector,
     selectedConnectorDefinitionSpecification,
+    availableServices,
   } = props;
 
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
@@ -144,17 +157,42 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
 
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
+  useEffect(() => {
+    if (!selectedConnectorDefinitionSpecification) {
+      return;
+    }
+
+    const selectedServiceDefinition = availableServices.find((service) => {
+      if (isSourceDefinition(service)) {
+        const serviceDefinitionId = service.sourceDefinitionId;
+        return (
+          isSourceDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
+          serviceDefinitionId === selectedConnectorDefinitionSpecification.sourceDefinitionId
+        );
+      }
+      const serviceDefinitionId = service.destinationDefinitionId;
+      return (
+        isDestinationDefinitionSpecification(selectedConnectorDefinitionSpecification) &&
+        serviceDefinitionId === selectedConnectorDefinitionSpecification.destinationDefinitionId
+      );
+    });
+    setDocumentationUrl(selectedServiceDefinition?.documentationUrl ?? "");
+    setDocumentationPanelOpen(true);
+  }, [availableServices, selectedConnectorDefinitionSpecification, setDocumentationPanelOpen, setDocumentationUrl]);
+
   const uiOverrides = useMemo(
     () => ({
       name: {
-        component: (property: FormBaseItem) => <ConnectorNameControl property={property} formType={formType} />,
+        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
+          <ConnectorNameControl property={property} formType={formType} {...componentProps} />
+        ),
       },
       serviceType: {
-        component: (property: FormBaseItem) => (
+        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
           <ConnectorServiceTypeControl
             property={property}
             formType={formType}
-            documentationUrl={selectedConnectorDefinitionSpecification?.documentationUrl}
             onChangeServiceType={props.onServiceSelect}
             availableServices={props.availableServices}
             isEditMode={props.isEditMode}
@@ -162,18 +200,12 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
               setInitialRequestName(name);
               toggleOpenRequestModal();
             }}
+            {...componentProps}
           />
         ),
       },
     }),
-    [
-      formType,
-      selectedConnectorDefinitionSpecification?.documentationUrl,
-      props.onServiceSelect,
-      props.availableServices,
-      props.isEditMode,
-      toggleOpenRequestModal,
-    ]
+    [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
   );
 
   const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues, uiOverrides);
@@ -200,8 +232,8 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
 
   return (
     <Formik
-      validateOnBlur={true}
-      validateOnChange={true}
+      validateOnBlur
+      validateOnChange
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}

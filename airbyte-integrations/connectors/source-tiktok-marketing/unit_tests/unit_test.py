@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -112,6 +112,7 @@ def test_random_items(prepared_prod_args):
                 )
                 if not max_updated_value or max_updated_value < ad_items[-1][stream.cursor_field]:
                     max_updated_value = ad_items[-1][stream.cursor_field]
+
             # mock for ads
             for page, page_response in generate_pages(items=ad_items, page_size=page_size, last_empty=True):
                 uri = f"/open_api/v1.2/ad/get/?page_size={page_size}&advertiser_id={advertiser_id}"

@@ -1,7 +1,7 @@
 import { applyProviders } from "./configProviders";
 import { DeepPartial, ProviderAsync } from "./types";
 
-type Value = {
+interface Value {
   prop1: {
     innerProp: string;
     innerProp2: string;
@@ -13,8 +13,8 @@ type Value = {
   prop3: {
     innerProp: string;
   };
-};
-describe("applyProviders", function () {
+}
+describe("applyProviders", () => {
   test("should deepMerge config returned from providers", async () => {
     const defaultValue: Value = {
       prop1: {
@@ -29,7 +29,7 @@ describe("applyProviders", function () {
         innerProp: "1",
       },
     };
-    const providers: ProviderAsync<DeepPartial<Value>>[] = [
+    const providers: Array<ProviderAsync<DeepPartial<Value>>> = [
       async () => ({
         prop1: {
           innerProp: "John",

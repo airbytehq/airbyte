@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql_strict_encrypt;
@@ -59,18 +59,19 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .build());
 
     dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        "",
+        config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            String.join("&", SSL_PARAMETERS)), SQLDialect.MYSQL);
+            String.join("&", SSL_PARAMETERS)),
+        SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {

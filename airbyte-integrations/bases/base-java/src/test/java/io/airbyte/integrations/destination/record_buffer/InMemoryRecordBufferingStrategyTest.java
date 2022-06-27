@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -25,6 +26,7 @@ public class InMemoryRecordBufferingStrategyTest {
   // instances
   private static final int MAX_QUEUE_SIZE_IN_BYTES = 130;
 
+  @SuppressWarnings("unchecked")
   private final RecordWriter<AirbyteRecordMessage> recordWriter = mock(RecordWriter.class);
 
   @Test
@@ -36,17 +38,12 @@ public class InMemoryRecordBufferingStrategyTest {
     final AirbyteMessage message2 = generateMessage(stream2);
     final AirbyteMessage message3 = generateMessage(stream2);
     final AirbyteMessage message4 = generateMessage(stream2);
-    final VoidCallable hook = mock(VoidCallable.class);
-    buffering.registerFlushAllEventHook(hook);
 
-    buffering.addRecord(stream1, message1);
-    buffering.addRecord(stream2, message2);
+    assertFalse(buffering.addRecord(stream1, message1));
+    assertFalse(buffering.addRecord(stream2, message2));
     // Buffer still has room
-    verify(hook, times(0)).call();
-
-    buffering.addRecord(stream2, message3);
+    assertTrue(buffering.addRecord(stream2, message3));
     // Buffer limit reach, flushing all messages so far before adding the new incoming one
-    verify(hook, times(1)).call();
     verify(recordWriter, times(1)).accept(stream1, List.of(message1.getRecord()));
     verify(recordWriter, times(1)).accept(stream2, List.of(message2.getRecord()));
 
@@ -54,7 +51,6 @@ public class InMemoryRecordBufferingStrategyTest {
 
     // force flush to terminate test
     buffering.flushAll();
-    verify(hook, times(2)).call();
     verify(recordWriter, times(1)).accept(stream2, List.of(message3.getRecord(), message4.getRecord()));
   }
 

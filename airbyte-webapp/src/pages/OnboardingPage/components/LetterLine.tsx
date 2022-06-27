@@ -61,10 +61,10 @@ const Img = styled.img<{ exit?: boolean }>`
   animation-fill-mode: both;
 `;
 
-type LetterLineProps = {
+interface LetterLineProps {
   onRight?: boolean;
   exit?: boolean;
-};
+}
 
 const LetterLine: React.FC<LetterLineProps> = ({ onRight, exit }) => {
   return (

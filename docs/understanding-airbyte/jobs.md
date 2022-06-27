@@ -14,7 +14,7 @@ The worker has 4 main responsibilities in its lifecycle.
 1. Spin up any connector docker containers that are needed for the job. 
 2. They facilitate message passing to or from a connector docker container \(more on this [below](jobs.md#message-passing)\). 
 3. Shut down any connector docker containers that it started. 
-4. Return the output of the job. \(See [Airbyte Specification](airbyte-specification.md) to understand the output of each worker type.\)
+4. Return the output of the job. \(See [Airbyte Specification](airbyte-protocol.md) to understand the output of each worker type.\)
 
 ## Message Passing
 
@@ -25,7 +25,7 @@ There are 2 flavors of workers:
 
 In the first case, the worker is generally extracting data from the connector and reporting it back to the scheduler. It does this by listening to STDOUT of the connector. In the second case, the worker is facilitating passing data \(via record messages\) from the source to the destination. It does this by listening on STDOUT of the source and writing to STDIN on the destination.
 
-For more information on the schema of the messages that are passed, refer to [Airbyte Specification](airbyte-specification.md).
+For more information on the schema of the messages that are passed, refer to [Airbyte Specification](airbyte-protocol.md).
 
 ## Worker Lifecycle
 
@@ -55,5 +55,5 @@ Jobs in the worker follow the following state machine.
 
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
 
-[Image Source](https://docs.google.com/drawings/d/1oMahOg1T8cssxiimV8u4lChbQP5D-wVrSjdMSgxdjiQ/edit)
+[Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
 

@@ -1,0 +1,106 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_XML_BROWSE_TREE_DATA",
+        "json_schema": {
+          "title": "XML Browse Tree Data",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "browseNodeId": {
+              "type": ["string"]
+            },
+            "browseNodeAttributes": {
+              "type": ["null", "object"],
+              "properties": {
+                "attribute": {
+                  "type": ["array"],
+                  "items": {
+                    "type": ["null", "object"]
+                  },
+                  "properties": {
+                    "name": {
+                      "type": ["null", "string"]
+                    },
+                    "text": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "count": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "browseNodeName": {
+              "type": ["null", "string"]
+            },
+            "browseNodeStoreContextName": {
+              "type": ["null", "string"]
+            },
+            "browsePathById": {
+              "type": ["null", "string"]
+            },
+            "browsePathByName": {
+              "type": ["null", "string"]
+            },
+            "hasChildren": {
+              "type": ["string"]
+            },
+            "childNodes": {
+              "type": ["null", "object"],
+              "properties": {
+                "count": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "productTypeDefinitions": {
+              "type": ["null", "string"]
+            },
+            "refinementsInformation": {
+              "type": ["array"],
+              "items": {
+                "type": ["null", "object"]
+              },
+              "properties": {
+                "refinementName": {
+                  "type": ["object"],
+                  "properties": {
+                    "refinementField": {
+                      "type": ["null", "object"],
+                      "properties": {
+                        "acceptedValues": {
+                          "type": ["null", "string"]
+                        },
+                        "hasModifier": {
+                          "type": ["null", "string"]
+                        },
+                        "modifiers": {
+                          "type": ["null", "string"]
+                        },
+                        "refinementAttribute": {
+                          "type": ["null", "string"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

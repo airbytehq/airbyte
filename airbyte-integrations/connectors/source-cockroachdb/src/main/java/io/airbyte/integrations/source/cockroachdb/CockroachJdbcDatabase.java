@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -79,11 +79,6 @@ public class CockroachJdbcDatabase
       return statement.executeQuery();
     }, sourceOperations::rowToJson).stream();
 
-  }
-
-  @Override
-  public void close() throws Exception {
-    database.close();
   }
 
 }

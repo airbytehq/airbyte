@@ -1,77 +1,81 @@
 import { ConnectionConfiguration } from "core/domain/connection";
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import Status from "core/statuses";
 
-import { Destination, Scheduler } from "./types";
+import {
+  CheckConnectionRead,
+  CheckConnectionReadStatus,
+  checkConnectionToDestination,
+  checkConnectionToDestinationForUpdate,
+  createDestination,
+  deleteDestination,
+  DestinationCoreConfig,
+  DestinationCreate,
+  DestinationUpdate,
+  executeDestinationCheckConnection,
+  getDestination,
+  listDestinationsForWorkspace,
+  updateDestination,
+} from "../../request/AirbyteClient";
 
-class DestinationService extends AirbyteRequestService {
-  get url(): string {
-    return "destinations";
-  }
-
+export class DestinationService extends AirbyteRequestService {
   public async check_connection(
     params: {
       destinationId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
     requestParams?: RequestInit
-  ): Promise<Scheduler> {
-    const url = !params.destinationId
-      ? `scheduler/${this.url}/check_connection`
-      : params.connectionConfiguration
-      ? `${this.url}/check_connection_for_update`
-      : `${this.url}/check_connection`;
+  ) {
+    let result: CheckConnectionRead;
+    if (!params.destinationId) {
+      result = await executeDestinationCheckConnection(params as DestinationCoreConfig, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
+    } else if (params.connectionConfiguration) {
+      result = await checkConnectionToDestinationForUpdate(params as DestinationUpdate, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
+    } else {
+      result = await checkConnectionToDestination(
+        { destinationId: params.destinationId },
+        {
+          ...this.requestOptions,
+          signal: requestParams?.signal,
+        }
+      );
+    }
 
-    // migrated from rest-hooks. Needs proper fix to `Scheduler` type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(url, params, requestParams);
-
-    // If check connection for destination has status 'failed'
-    if (result.status === Status.FAILED) {
+    if (result.status === CheckConnectionReadStatus.failed) {
       const jobInfo = {
         ...result.jobInfo,
         status: result.status,
       };
 
-      throw new LogsRequestError(jobInfo, jobInfo, result.message);
+      throw new LogsRequestError(jobInfo, result.message);
     }
 
     return result;
   }
 
-  public get(destinationId: string): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/get`, {
-      destinationId,
-    });
+  public get(destinationId: string) {
+    return getDestination({ destinationId }, this.requestOptions);
   }
 
-  public list(workspaceId: string): Promise<{ destinations: Destination[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public list(workspaceId: string) {
+    return listDestinationsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
-  public create(body: {
-    name: string;
-    destinationDefinitionId?: string;
-    workspaceId: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/create`, body);
+  public create(body: DestinationCreate) {
+    return createDestination(body, this.requestOptions);
   }
 
-  public update(body: {
-    destinationId: string;
-    name: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/update`, body);
+  public update(body: DestinationUpdate) {
+    return updateDestination(body, this.requestOptions);
   }
 
-  public delete(destinationId: string): Promise<Destination> {
-    return this.fetch<Destination>(`${this.url}/delete`, { destinationId });
+  public delete(destinationId: string) {
+    return deleteDestination({ destinationId }, this.requestOptions);
   }
 }
-
-export { DestinationService };

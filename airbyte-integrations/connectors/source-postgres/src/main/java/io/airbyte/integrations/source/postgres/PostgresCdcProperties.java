@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -13,7 +13,7 @@ public class PostgresCdcProperties {
     final Properties props = new Properties();
     props.setProperty("plugin.name", PostgresUtils.getPluginValue(config.get("replication_method")));
     props.setProperty("connector.class", "io.debezium.connector.postgresql.PostgresConnector");
-    props.setProperty("snapshot.mode", "exported");
+    props.setProperty("snapshot.mode", "initial");
 
     props.setProperty("slot.name", config.get("replication_method").get("replication_slot").asText());
     props.setProperty("publication.name", config.get("replication_method").get("publication").asText());

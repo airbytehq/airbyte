@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -17,8 +17,8 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.exception.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

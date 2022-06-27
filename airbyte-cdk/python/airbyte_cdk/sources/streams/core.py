@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -74,6 +74,18 @@ class Stream(ABC):
         :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
         """
         return casing.camel_to_snake(self.__class__.__name__)
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        return None
 
     @abstractmethod
     def read_records(
@@ -204,7 +216,7 @@ class Stream(ABC):
                 elif isinstance(component, list):
                     wrapped_keys.append(component)
                 else:
-                    raise ValueError("Element must be either list or str.")
+                    raise ValueError(f"Element must be either list or str. Got: {type(component)}")
             return wrapped_keys
         else:
-            raise ValueError("Element must be either list or str.")
+            raise ValueError(f"Element must be either list or str. Got: {type(keys)}")

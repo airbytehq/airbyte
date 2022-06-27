@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -132,15 +133,16 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void executeQuery(final String query) {
-    final DSLContext dslContext = DSLContextFactory.create(
+    try (final DSLContext dslContext = DSLContextFactory.create(
         "root",
         "test",
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             container.getHost(),
             container.getFirstMappedPort(),
-            container.getDatabaseName()), SQLDialect.MYSQL);
-    try (final Database database = new Database(dslContext)) {
+            container.getDatabaseName()),
+        SQLDialect.MYSQL)) {
+      final Database database = new Database(dslContext);
       database.query(
           ctx -> ctx
               .execute(query));
@@ -173,10 +175,11 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
+    final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
+
     assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 

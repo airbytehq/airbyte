@@ -10,7 +10,8 @@
       "host": {
         "title": "Host",
         "description": "Hostname of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 1
       },
       "port": {
         "title": "Port",
@@ -18,22 +19,26 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "default": 1521
+        "default": 1521,
+        "order": 2
       },
       "sid": {
         "title": "SID (Oracle System Identifier)",
-        "type": "string"
+        "type": "string",
+        "order": 3
       },
       "username": {
         "title": "User",
         "description": "The username which is used to access the database.",
-        "type": "string"
+        "type": "string",
+        "order": 4
       },
       "password": {
         "title": "Password",
         "description": "The password associated with the username.",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 5
       },
       "schemas": {
         "title": "Schemas",
@@ -43,13 +48,20 @@
           "type": "string"
         },
         "minItems": 1,
-        "uniqueItems": true
+        "uniqueItems": true,
+        "order": 6
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 7
       },
       "encryption": {
         "title": "Encryption",
         "type": "object",
         "description": "The encryption method with is used when communicating with the database.",
-        "order": 6,
+        "order": 8,
         "oneOf": [
           {
             "title": "Unencrypted",

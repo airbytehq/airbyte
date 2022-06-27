@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -44,7 +45,8 @@ class OracleStressTest extends JdbcStressTest {
     COL_ID_TYPE = "NUMBER(38,0)";
     INSERT_STATEMENT = "INTO id_and_name (id, name) VALUES (%s,'picard-%s')";
 
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 
@@ -89,7 +91,7 @@ class OracleStressTest extends JdbcStressTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OracleTestSource.class);
 
-    static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+    static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
     public OracleTestSource() {
       super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());

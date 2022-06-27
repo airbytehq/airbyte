@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -31,7 +31,7 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   // by doing this in a separate method we can mock it to avoid closing the jvm and therefore test
   // properly
   protected void terminate() {
-    System.exit(0);
+    System.exit(1);
   }
 
 }

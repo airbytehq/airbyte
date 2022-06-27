@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -67,7 +67,8 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),
-            config.get("port").asText()), SQLDialect.MYSQL);
+            config.get("port").asText()),
+        SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -16,13 +16,13 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.Network;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -33,6 +33,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private static final String DB_NAME = "default";
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -154,15 +155,13 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())
-        )
-    );
+                config.get("database").asText())));
   }
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    bastion.initAndStartBastion();
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
+    bastion.initAndStartBastion(network);
+    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(network);
     db.start();
   }
 

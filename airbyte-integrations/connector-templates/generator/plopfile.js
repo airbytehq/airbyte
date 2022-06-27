@@ -14,9 +14,8 @@ Your ${connectorName} connector has been created at .${path.resolve(outputPath)}
 
 Follow the TODOs in the generated module to implement your connector. 
 
-Questions, comments, or concerns? Let us know at:
-Slack: https://slack.airbyte.io
-Github: https://github.com/airbytehq/airbyte
+Questions, comments, or concerns? Let us know in our connector development forum:
+https://discuss.airbyte.io/c/connector-development/16
 
 We're always happy to provide any support!
 

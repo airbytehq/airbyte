@@ -1,13 +1,13 @@
-import { QueryObserverResult, useQuery } from "react-query";
+import { useQuery } from "react-query";
 
 import { useConfig } from "config";
-import { DestinationDefinitionSpecification } from "core/domain/connector";
 import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { DestinationDefinitionSpecificationRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
@@ -16,9 +16,8 @@ export const destinationDefinitionSpecificationKeys = {
   detail: (id: string | number) => [...destinationDefinitionSpecificationKeys.all, "details", id] as const,
 };
 
-function useGetService(): DestinationDefinitionSpecificationService {
+function useGetService() {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
@@ -27,16 +26,14 @@ function useGetService(): DestinationDefinitionSpecificationService {
   );
 }
 
-export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecification => {
+export const useGetDestinationDefinitionSpecification = (id: string): DestinationDefinitionSpecificationRead => {
   const service = useGetService();
   const { workspaceId } = useCurrentWorkspace();
 
   return useSuspenseQuery(destinationDefinitionSpecificationKeys.detail(id), () => service.get(id, workspaceId));
 };
 
-export const useGetDestinationDefinitionSpecificationAsync = (
-  id: string | null
-): QueryObserverResult<DestinationDefinitionSpecification, Error> => {
+export const useGetDestinationDefinitionSpecificationAsync = (id: string | null) => {
   const service = useGetService();
   const { workspaceId } = useCurrentWorkspace();
 

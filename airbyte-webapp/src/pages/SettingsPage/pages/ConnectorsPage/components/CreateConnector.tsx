@@ -10,16 +10,16 @@ import { useCreateSourceDefinition } from "services/connector/SourceDefinitionSe
 
 import CreateConnectorModal from "./CreateConnectorModal";
 
-type IProps = {
+interface IProps {
   type: string;
-};
+}
 
-type ICreateProps = {
+interface ICreateProps {
   name: string;
   documentationUrl: string;
   dockerImageTag: string;
   dockerRepository: string;
-};
+}
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
@@ -30,7 +30,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setErrorMessage("");
   };
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const { mutateAsync: createSourceDefinition } = useCreateSourceDefinition();
 

@@ -130,7 +130,7 @@ const RemainingCredits: React.FC<Props> = ({ selfServiceCheckoutEnabled }) => {
         >
           <FormattedMessage id="credits.buyCredits" />
         </LoadingButton>
-        <Button as="a" target="_blank" href={config.ui.contactSales} size="xl">
+        <Button as="a" target="_blank" href={config.links.contactSales} size="xl">
           <FormattedMessage id="credits.talkToSales" />
         </Button>
       </Actions>

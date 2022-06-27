@@ -7,6 +7,8 @@ import { AirbyteJSONSchema } from "core/jsonSchema";
 import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
 
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
+import { ConnectorDocumentationWrapper } from "../ConnectorDocumentationLayout";
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
@@ -115,16 +117,21 @@ describe("Service Form", () => {
     beforeEach(async () => {
       const handleSubmit = jest.fn();
       const renderResult = await render(
-        <ServiceForm
-          formType="source"
-          onSubmit={handleSubmit}
-          selectedConnectorDefinitionSpecification={{
-            connectionSpecification: schema,
-            sourceDefinitionId: "1",
-            documentationUrl: "",
-          }}
-          availableServices={[]}
-        />
+        <ConnectorDocumentationWrapper>
+          <ServiceForm
+            formType="source"
+            onSubmit={handleSubmit}
+            selectedConnectorDefinitionSpecification={
+              // @ts-expect-error Partial objects for testing
+              {
+                connectionSpecification: schema,
+                sourceDefinitionId: "1",
+                documentationUrl: "",
+              } as DestinationDefinitionSpecificationRead
+            }
+            availableServices={[]}
+          />
+        </ConnectorDocumentationWrapper>
       );
       container = renderResult.container;
     });
@@ -195,17 +202,22 @@ describe("Service Form", () => {
     let container: HTMLElement;
     beforeEach(async () => {
       const renderResult = await render(
-        <ServiceForm
-          formType="source"
-          formValues={{ name: "test-name", serviceType: "test-service-type" }}
-          onSubmit={(values) => (result = values)}
-          selectedConnectorDefinitionSpecification={{
-            connectionSpecification: schema,
-            sourceDefinitionId: "test-service-type",
-            documentationUrl: "",
-          }}
-          availableServices={[]}
-        />
+        <ConnectorDocumentationWrapper>
+          <ServiceForm
+            formType="source"
+            formValues={{ name: "test-name", serviceType: "test-service-type" }}
+            onSubmit={(values) => (result = values)}
+            selectedConnectorDefinitionSpecification={
+              // @ts-expect-error Partial objects for testing
+              {
+                connectionSpecification: schema,
+                sourceDefinitionId: "test-service-type",
+                documentationUrl: "",
+              } as DestinationDefinitionSpecificationRead
+            }
+            availableServices={[]}
+          />
+        </ConnectorDocumentationWrapper>
       );
       container = renderResult.container;
     });
