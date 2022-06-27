@@ -32,7 +32,7 @@ definition_version: {{ definition.docker_image_tag }}
 
 
 {%- macro render_one_of(field) %}
-{{ field.name }}: 
+{{ field.name }}:
 {%- for one_of_value in field.one_of_values %}
   {%- if loop.first %}
   ## -------- Pick one valid structure among the examples below: --------
@@ -41,17 +41,17 @@ definition_version: {{ definition.docker_image_tag }}
   ## -------- Another valid structure for {{ field.name }}: --------
   {{- render_sub_fields(one_of_value, True)|indent(2, False) }}
   {%- endif %}
-{%- endfor %}  
+{%- endfor %}
 {%- endmacro %}
 
 {%- macro render_object_field(field) %}
-{{ field.name }}: 
-  {{- render_sub_fields(field.object_properties, is_commented=False)|indent(2, False)}} 
+{{ field.name }}:
+  {{- render_sub_fields(field.object_properties, is_commented=False)|indent(2, False)}}
 {%- endmacro %}
 
 {%- macro render_array_of_objects(field) %}
-{{ field.name }}: 
-  {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, False)}} 
+{{ field.name }}:
+  {{- render_array_sub_fields(field.array_items, is_commented=False)|indent(2, False)}}
 {%- endmacro %}
 
 {%- macro render_root(root, is_commented) %}

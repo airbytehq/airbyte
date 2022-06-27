@@ -38,7 +38,7 @@ const mockConnection: WebBackendConnectionRead = {
   sourceId: "test-source",
   destinationId: "test-destination",
   status: ConnectionStatus.active,
-  schedule: null,
+  schedule: undefined,
   syncCatalog: {
     streams: [],
   },

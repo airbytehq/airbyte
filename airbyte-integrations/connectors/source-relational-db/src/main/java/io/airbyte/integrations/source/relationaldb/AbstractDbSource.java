@@ -13,6 +13,8 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -20,7 +22,6 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.state.AirbyteStateMessageListTypeReference;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -521,16 +522,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
-    if (initialStateJson == null) {
-      return generateEmptyInitialState(config);
-    } else {
-      try {
-        return Jsons.object(initialStateJson, new AirbyteStateMessageListTypeReference());
-      } catch (final IllegalArgumentException e) {
-        LOGGER.warn("Defaulting to legacy state object...");
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(initialStateJson));
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson);
+    return typedState.map((state) -> {
+      switch (state.getStateType()) {
+        case GLOBAL:
+          return List.of(state.getGlobal());
+        case STREAM:
+          return state.getStateMessages();
+        case LEGACY:
+        default:
+          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(state.getLegacyState()));
       }
-    }
+    }).orElse(generateEmptyInitialState(config));
   }
 
   /**
@@ -541,7 +544,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    */
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
     // For backwards compatibility with existing connectors
-    return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
+    return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
   }
 
   /**
