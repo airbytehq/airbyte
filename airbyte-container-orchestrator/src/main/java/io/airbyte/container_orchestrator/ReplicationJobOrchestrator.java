@@ -9,13 +9,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
+import io.airbyte.metrics.lib.MetricClient;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.DatadogMetricReporter;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.general.ReplicationWorker;
@@ -98,12 +99,9 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
-    final Optional<DatadogMetricReporter> metricReporter;
-    if (configs.getDDAgentHost() != null && configs.getDDDogStatsDPort() != null) {
-      metricReporter = Optional.of(new DatadogMetricReporter(new DatadogClientConfiguration(configs), sourceLauncherConfig.getDockerImage()));
-    } else {
-      metricReporter = Optional.ofNullable(null);
-    }
+    final MetricClient metricClient = MetricClientFactory.getMetricClient();
+    final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
+
     log.info("Setting up replication worker...");
     final ReplicationWorker replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
