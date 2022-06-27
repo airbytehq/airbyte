@@ -29,26 +29,10 @@ def test_table_name() -> str:
     return f"airbyte_integration_{rnd_string}"
 
 
-@fixture(scope="module")
-def config_sql() -> Dict[str, str]:
-    with open(
-        "secrets/config_sql.json",
-    ) as f:
-        yield load(f)
-
-
-@fixture(scope="module")
-def config_s3() -> Dict[str, str]:
-    with open(
-        "secrets/config_s3.json",
-    ) as f:
-        yield load(f)
-
-
 @fixture
-def cleanup(config_sql: Dict[str, str], test_table_name: str):
+def cleanup(config: Dict[str, str], test_table_name: str):
     yield
-    with establish_connection(config_sql, MagicMock()) as connection:
+    with establish_connection(config, MagicMock()) as connection:
         with connection.cursor() as cursor:
             cursor.execute(f"DROP TABLE IF EXISTS _airbyte_raw_{test_table_name}")
             cursor.execute(f"DROP TABLE IF EXISTS ex_airbyte_raw_{test_table_name}")
@@ -123,7 +107,7 @@ def test_check_fails(config, request):
     assert status.status == Status.FAILED
 
 
-@mark.parametrize("config", ["config_sql", "config_s3"])
+@mark.parametrize("config")
 def test_check_succeeds(config, request):
     config = request.getfixturevalue(config)
     destination = DestinationFirebolt()
@@ -131,7 +115,7 @@ def test_check_succeeds(config, request):
     assert status.status == Status.SUCCEEDED
 
 
-@mark.parametrize("config", ["config_sql", "config_s3"])
+@mark.parametrize("config")
 def test_write(
     config: Dict[str, str],
     configured_catalogue: ConfiguredAirbyteCatalog,
