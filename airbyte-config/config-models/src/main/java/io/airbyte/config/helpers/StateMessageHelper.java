@@ -42,6 +42,8 @@ public class StateMessageHelper {
         return Optional.of(new StateWrapper()
             .withStateType(StateType.GLOBAL)
             .withGlobal(stateMessages.get(0)));
+      } else if (stateMessages.size() == 1 && stateMessages.get(0).getType() == AirbyteStateType.LEGACY) {
+        return Optional.of(getLegacyStateWrapper(stateMessages.get(0).getData()));
       } else if (stateMessages.size() >= 1
           && stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
         return Optional.of(new StateWrapper()
