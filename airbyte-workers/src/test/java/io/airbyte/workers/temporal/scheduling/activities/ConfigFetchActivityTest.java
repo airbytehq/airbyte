@@ -50,7 +50,8 @@ public class ConfigFetchActivityTest {
   private final static StandardSync standardSyncWithSchedule = new StandardSync()
       .withSchedule(new Schedule()
           .withTimeUnit(TimeUnit.MINUTES)
-          .withUnits(5L));
+          .withUnits(5L))
+      .withStatus(Status.ACTIVE);
 
   private final static StandardSync standardSyncWithScheduleDisable = new StandardSync()
       .withSchedule(new Schedule()
