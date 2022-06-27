@@ -180,4 +180,5 @@ public class StateMessageHelperTest {
             () -> StateMessageHelper.getTypedState(Jsons.jsonNode(List.of(stateMessage1, stateMessage2)), USE_STREAM_CAPABLE_STATE))
         .isInstanceOf(IllegalStateException.class);
   }
+
 }

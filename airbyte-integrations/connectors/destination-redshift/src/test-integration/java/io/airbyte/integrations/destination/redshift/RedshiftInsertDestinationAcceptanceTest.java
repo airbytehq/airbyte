@@ -46,6 +46,7 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3Destinati
 
   private static final Instant NOW = Instant.now();
   private static final String USERS_STREAM_NAME = "users_" + RandomStringUtils.randomAlphabetic(5);
+  private static final String BOOKS_STREAM_NAME = "books_" + RandomStringUtils.randomAlphabetic(5);
 
   private static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
@@ -77,14 +78,17 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3Destinati
             .withDestinationSyncMode(DestinationSyncMode.APPEND)));
   }
 
+
   @Test
   void testIfSuperTmpTableWasCreatedAfterVarcharTmpTable() throws Exception {
     setup();
-    Database database = getDatabase();
-    String rawTableName = this.getNamingResolver().getRawTableName(USERS_STREAM_NAME);
-    createTmpTableWithVarchar(database, rawTableName);
+    final Database database = getDatabase();
+    final String usersStream = getNamingResolver().getRawTableName(USERS_STREAM_NAME);
+    final String booksStream = getNamingResolver().getRawTableName(BOOKS_STREAM_NAME);
+    createTmpTableWithVarchar(database, usersStream);
+    createTmpTableWithVarchar(database, booksStream);
 
-    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "character varying"));
+    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, usersStream, "character varying"));
 
     final Destination destination = new RedshiftDestination();
     final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
@@ -94,7 +98,8 @@ class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3Destinati
     consumer.accept(MESSAGE_STATE);
     consumer.close();
 
-    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, rawTableName, "super"));
+    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, usersStream, "super"));
+    assertTrue(isTmpTableDataColumnInExpectedType(database, DATASET_ID, booksStream, "character varying"));
 
     final List<JsonNode> usersActual = retrieveRecords(testDestinationEnv, USERS_STREAM_NAME, DATASET_ID, config);
     final List<JsonNode> expectedUsersJson = Lists.newArrayList(
