@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import random
@@ -21,12 +21,14 @@ from destination_firebolt.destination import DestinationFirebolt, establish_conn
 from firebolt.common.exception import FireboltError
 from pytest import fixture, mark, raises
 
+
 @fixture(scope="module")
 def config() -> Dict[str, str]:
     with open(
         "secrets/config.json",
     ) as f:
         yield load(f)
+
 
 @fixture(scope="module")
 def test_table_name() -> str:
