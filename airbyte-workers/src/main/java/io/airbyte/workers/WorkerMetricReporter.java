@@ -4,19 +4,20 @@
 
 package io.airbyte.workers;
 
-import io.airbyte.metrics.lib.DatadogClientConfiguration;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 
-public class DatadogMetricReporter {
+public class WorkerMetricReporter {
 
   private final String dockerRepo;
   private final String dockerVersion;
+  private final MetricClient metricClient;
 
-  public DatadogMetricReporter(final DatadogClientConfiguration ddConfig, final String dockerImage) {
+  public WorkerMetricReporter(final MetricClient metricClient, final String dockerImage) {
     final String[] dockerImageInfo = dockerImage.split(":");
     this.dockerRepo = dockerImageInfo[0];
     this.dockerVersion = dockerImageInfo.length > 1 ? dockerImageInfo[1] : "";
+    this.metricClient = metricClient;
   }
 
   public void trackSchemaValidationError(final String stream) {
@@ -25,7 +26,7 @@ public class DatadogMetricReporter {
       "docker_version:" + dockerVersion,
       "stream:" + stream
     };
-    DogStatsDMetricSingleton.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
+    metricClient.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
   }
 
 }

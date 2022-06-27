@@ -57,7 +57,11 @@ public class MetricClientFactory {
     }
 
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
-      initializeDatadogMetricClient(metricEmittingApp);
+      if (configs.getDDAgentHost() == null || configs.getDDDogStatsDPort() == null) {
+        throw new RuntimeException("DD_AGENT_HOST is null or DD_DOGSTATSD_PORT is null. Both are required to use the DataDog Metric Client");
+      } else {
+        initializeDatadogMetricClient(metricEmittingApp);
+      }
     } else if (OTEL_METRIC_CLIENT.equals(configs.getMetricClient())) {
       initializeOpenTelemetryMetricClient(metricEmittingApp);
     } else {

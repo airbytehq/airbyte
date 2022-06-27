@@ -78,7 +78,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean cancelled;
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
-  private final Optional<DatadogMetricReporter> metricReporter;
+  private final WorkerMetricReporter metricReporter;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -87,7 +87,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
-                                  final Optional<DatadogMetricReporter> metricReporter) {
+                                  final WorkerMetricReporter metricReporter) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -297,7 +297,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                  final MessageTracker messageTracker,
                                                  final Map<String, String> mdc,
                                                  final RecordSchemaValidator recordSchemaValidator,
-                                                 final Optional<DatadogMetricReporter> metricReporter) {
+                                                 final WorkerMetricReporter metricReporter) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -341,9 +341,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
-            if (metricReporter.get() != null) {
-              metricReporter.get().trackSchemaValidationError(stream);
-            }
+            metricReporter.trackSchemaValidationError(stream);
           });
         }
 
