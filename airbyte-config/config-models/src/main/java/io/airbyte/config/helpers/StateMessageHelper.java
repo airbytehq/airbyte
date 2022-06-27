@@ -47,6 +47,9 @@ public class StateMessageHelper {
         return Optional.of(new StateWrapper()
             .withStateType(StateType.STREAM)
             .withStateMessages(stateMessages));
+
+      } else if (stateMessages.size() == 1 && stateMessages.get(0).getType() == AirbyteStateType.LEGACY) {
+        return Optional.of(getLegacyStateWrapper(stateMessages.get(0).getData()));
       } else {
         throw new IllegalStateException("Unexpected state blob");
       }
