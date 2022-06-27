@@ -94,8 +94,6 @@ extractor:
   decoder: "*ref(decoder)"
 selector:
   class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-  extractor:
-    decoder: "*ref(decoder)"
   record_filter:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
@@ -182,6 +180,8 @@ check:
     streams_to_check = checker._stream_names
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
+
+    assert stream._retriever._requester._path._default == "marketing/lists"
 
 
 def test_create_requester():
