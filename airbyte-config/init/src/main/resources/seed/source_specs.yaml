@@ -868,7 +868,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.7"
+- dockerImage: "airbyte/source-bing-ads:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -880,10 +880,6 @@
       - "client_id"
       - "refresh_token"
       - "reports_start_date"
-      - "hourly_reports"
-      - "daily_reports"
-      - "weekly_reports"
-      - "monthly_reports"
       additionalProperties: true
       properties:
         auth_method:
@@ -934,38 +930,6 @@
             \ Any data generated before this date will not be replicated in reports.\
             \ This is a UTC date in YYYY-MM-DD format."
           order: 5
-        hourly_reports:
-          title: "Enable hourly-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ an hourly time window. More information about report aggregation can\
-            \ be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
-        daily_reports:
-          title: "Enable daily-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ a daily time window. More information about report aggregation can be\
-            \ found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
-        weekly_reports:
-          title: "Enable weekly-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ a weekly time window running from Sunday to Saturday. More information\
-            \ about report aggregation can be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
-        monthly_reports:
-          title: "Enable monthly-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ a monthly time window. More information about report aggregation can\
-            \ be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -3886,7 +3850,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.19"
+- dockerImage: "airbyte/source-intercom:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -9299,7 +9263,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.5"
+- dockerImage: "airbyte/source-twilio:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
     connectionSpecification:
