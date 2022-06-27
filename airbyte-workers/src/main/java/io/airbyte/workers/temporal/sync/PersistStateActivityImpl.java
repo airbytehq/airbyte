@@ -12,14 +12,12 @@ import io.airbyte.config.persistence.StatePersistence;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class PersistStateActivityImpl implements PersistStateActivity {
 
   private final StatePersistence statePersistence;
-
-  public PersistStateActivityImpl(final StatePersistence statePersistence) {
-    this.statePersistence = statePersistence;
-  }
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {
