@@ -63,7 +63,10 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public String getStagingPath(UUID connectionId, String namespace, String streamName, DateTime writeDatetime) {
-    return nameTransformer.applyDefaultCase(String.format("%s/%s_%02d_%02d_%02d_%s/",
+    final String bucketPath = s3Config.getBucketPath();
+    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
+    return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
+        prefix,
         getStageName(namespace, streamName),
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),
