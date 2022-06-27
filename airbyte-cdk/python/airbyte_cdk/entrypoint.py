@@ -108,7 +108,6 @@ class AirbyteEntrypoint(object):
                     generator = self.source.read(self.logger, config, config_catalog, state)
                     for message in generator:
                         yield message.json(exclude_unset=True)
-                    print(f"state: {state}")
                 else:
                     raise Exception("Unexpected command " + cmd)
 

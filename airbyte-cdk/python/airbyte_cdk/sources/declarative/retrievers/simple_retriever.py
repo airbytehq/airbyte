@@ -232,11 +232,9 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_state = self._state.get_stream_state()
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)
         for r in records_generator:
-            print(f"record: {r}")
             self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r)
             yield r
         else:
-            print("no last_records!!!")
             self._state.update_state(
                 stream_slice=stream_slice,
                 stream_state=stream_state,
@@ -256,8 +254,6 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # FIXME: this is not passing the cursor field because it is always known at init time
-        print(f"stream_state: {stream_state}")
-        print(f"type: {type(self._iterator)}")
         return self._iterator.stream_slices(sync_mode, self._state.get_stream_state())
 
     @property
@@ -273,17 +269,13 @@ class SimpleRetriever(Retriever, HttpStream):
          State should try to be as small as possible but at the same time descriptive enough to restore
          syncing process from the point where it stopped.
         """
-        print(f"retriever get state: {self._state.get_stream_state()}")
         return self._state.get_stream_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        print(f"settingstate: {value}")
         self._state.set_state(value)
-        print(f"aftersettingstate: {self._state._context}")
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         state = self._state.get_stream_state()
-        print(f"get_updated_state: {state}")
         return state
