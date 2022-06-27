@@ -176,7 +176,9 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         print(f"getting params for : {stream_state}")
         print(f"getting params for(self state) : {self._state.get_stream_state()}")
-        return self._requester.request_params(self._state.get_stream_state(), stream_slice, next_page_token)
+        request_params = self._requester.request_params(self._state.get_stream_state(), stream_slice, next_page_token)
+        stream_slicer_request_params = self._iterator.request_params(self._state.get_stream_state(), stream_slice, next_page_token)
+        return {**request_params, **stream_slicer_request_params}
 
     @property
     def cache_filename(self):

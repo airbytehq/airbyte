@@ -25,9 +25,9 @@ class InterpolatedRequestInputProvider:
             self._interpolator = InterpolatedMapping(request_inputs, JinjaInterpolation())
 
     def request_inputs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> Union[Mapping, str]:
-        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
+        kwargs.update({"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token})
         interpolated_value = self._interpolator.eval(self._config, **kwargs)
 
         if isinstance(interpolated_value, dict):

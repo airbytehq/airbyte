@@ -25,9 +25,9 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         self._body_json_interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_body_json)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        interpolated_value = self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
+        interpolated_value = self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token, **kwargs)
         if isinstance(interpolated_value, dict):
             return interpolated_value
         return {}
