@@ -26,4 +26,3 @@ const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small }) => {
 };
 
 export default ImageBlock;
-export { ImageBlock };
