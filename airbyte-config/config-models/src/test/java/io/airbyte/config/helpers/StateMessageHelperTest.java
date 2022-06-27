@@ -45,12 +45,12 @@ public class StateMessageHelperTest {
 
   @Test
   public void testLegacyInList() {
-    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.jsonNode(
-        List.of(
-            Map.of("Any", "value"))),
-        USE_STREAM_CAPABLE_STATE);
+    final JsonNode jsonState = Jsons.jsonNode(List.of(Map.of("Any", "value")));
+
+    final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(jsonState, USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
+    Assertions.assertThat(stateWrapper.get().getLegacyState()).isEqualTo(jsonState);
   }
 
   @Test

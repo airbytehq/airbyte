@@ -34,7 +34,6 @@ public class StateMessageHelper {
       try {
         stateMessages = Jsons.object(state, new AirbyteStateMessageListTypeReference());
       } catch (final IllegalArgumentException e) {
-        // []
         return Optional.of(getLegacyStateWrapper(state));
       }
       if (stateMessages.size() == 0) {
@@ -47,7 +46,7 @@ public class StateMessageHelper {
         } else {
           switch (stateMessages.get(0).getType()) {
             case GLOBAL -> {
-              return Optional.of(provideGlobalState(stateMessages, useStreamCapableState));
+              return Optional.of(provideGlobalState(stateMessages.get(0), useStreamCapableState));
             }
             case STREAM -> {
               return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
@@ -75,15 +74,15 @@ public class StateMessageHelper {
     }
   }
 
-  private static StateWrapper provideGlobalState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
+  private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {
     if (useStreamCapableState) {
       return new StateWrapper()
           .withStateType(StateType.GLOBAL)
-          .withGlobal(stateMessages.get(0));
+          .withGlobal(stateMessages);
     } else {
       return new StateWrapper()
           .withStateType(StateType.LEGACY)
-          .withLegacyState(stateMessages.get(0).getData());
+          .withLegacyState(stateMessages.getData());
     }
   }
 
@@ -91,7 +90,7 @@ public class StateMessageHelper {
    * This is returning a wrapped state, it assumes that the state messages are ordered.
    *
    * @param stateMessages - an ordered list of state message
-   * @param useStreamCapableState - a flag that hallow to return the new format
+   * @param useStreamCapableState - a flag that indicates whether to return the new format
    * @return a wrapped state
    */
   private static StateWrapper provideStreamState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
