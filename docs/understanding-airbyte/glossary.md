@@ -81,7 +81,7 @@ This is only relevant for individuals who want to create a connector.
 
 This refers to the functions that a Source or Destination must implement to successfully 
 retrieve data and load it, respectively. Implementing these functions using the Airbyte 
-Specification makes a Source or Destination work correctly. Learn more [here](airbyte-specification.md).
+Specification makes a Source or Destination work correctly. Learn more [here](airbyte-protocol.md).
 
 ### Temporal
 

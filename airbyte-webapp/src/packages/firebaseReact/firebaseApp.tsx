@@ -20,7 +20,7 @@ interface FirebaseAppProviderProps {
   suspense?: boolean;
 }
 
-export function FirebaseAppProvider(props: React.PropsWithChildren<FirebaseAppProviderProps>): JSX.Element {
+export const FirebaseAppProvider = (props: React.PropsWithChildren<FirebaseAppProviderProps>): JSX.Element => {
   const { firebaseConfig, appName, suspense } = props;
 
   const firebaseApp: FirebaseApp = React.useMemo(() => {
@@ -32,13 +32,12 @@ export function FirebaseAppProvider(props: React.PropsWithChildren<FirebaseAppPr
     if (existingApp) {
       if (firebaseConfig && equal(existingApp.options, firebaseConfig)) {
         return existingApp;
-      } else {
-        throw new Error(
-          `Does not match the options already provided to the ${
-            appName || "default"
-          } firebase app instance, give this new instance a different appName.`
-        );
       }
+      throw new Error(
+        `Does not match the options already provided to the ${
+          appName || "default"
+        } firebase app instance, give this new instance a different appName.`
+      );
     } else {
       if (!firebaseConfig) {
         throw new Error("No firebaseConfig provided");
@@ -55,7 +54,7 @@ export function FirebaseAppProvider(props: React.PropsWithChildren<FirebaseAppPr
       <SuspenseEnabledContext.Provider value={suspense ?? false} {...props} />
     </FirebaseAppContext.Provider>
   );
-}
+};
 
 export function useFirebaseApp(): FirebaseApp {
   const firebaseApp = React.useContext(FirebaseAppContext);

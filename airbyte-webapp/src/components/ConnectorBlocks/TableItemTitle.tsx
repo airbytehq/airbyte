@@ -57,7 +57,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
 }) => {
   const { hasFeature } = useFeatureService();
   const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const options = [
     {
       label: formatMessage({
