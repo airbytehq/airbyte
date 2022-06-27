@@ -197,8 +197,8 @@ def test_create_requester():
     request_options_provider:
       request_parameters:
         page_size: 10
-    request_headers_provider:
-      header: header_value
+      request_headers:
+        header: header_value
     """
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()
@@ -209,7 +209,7 @@ def test_create_requester():
     assert isinstance(component._authenticator, TokenAuthenticator)
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
-    assert component._request_headers_provider._interpolator._interpolator._mapping["header"] == "header_value"
+    assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"
     assert component._name == "lists"
 
 
