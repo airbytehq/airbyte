@@ -2,119 +2,117 @@
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
   "properties": {
-        "id": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "name": {
           "type": "string"
         },
-        "type": {
+        "slug": {
           "type": "string"
         },
-        "attributes": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "slug": {
-              "type": "string"
-            },
-            "updated_at": {
-              "type": "string"
-            },
-            "created_at": {
-              "type": "string"
-            },
-            "members_count": {
-              "type": "integer"
-            },
-            "activities_count": {
-              "type": "integer"
-            },
-            "tags": {
-              "type": "object"
-            }
-          },
+        "updated_at": {
+          "type": "string"
         },
-        "relationships": {
-          "type": "object",
-          "properties": {
-            "last_member": {
-              "type": "object",
-              "properties": {
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  },
-                }
-              },
-            },
-            "last_activity": {
-              "type": "object",
-              "properties": {
-                "data": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "type": {
-                      "type": "string"
-                    }
-                  },
-                }
-              },
-            },
-            "repositories": {
-              "type": "object",
-              "properties": {
-                "data": {
-                  "type": "array",
-                  "items": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        }
-                      },
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        }
-                      },
-                    },
-                    {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        }
-                      },
-                    }
-                  ]
-                }
-              },
-            }
-          },
+        "created_at": {
+          "type": "string"
+        },
+        "members_count": {
+          "type": "integer"
+        },
+        "activities_count": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "object"
         }
-      },
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "properties": {
+        "last_member": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "last_activity": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "repositories": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
     },
     "included": {
       "type": "array",
@@ -563,6 +561,5 @@
         }
       ]
     }
-  },
-  "required": ["data", "included"]
+  }
 }
