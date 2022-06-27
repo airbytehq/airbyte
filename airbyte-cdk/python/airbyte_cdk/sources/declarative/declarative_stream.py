@@ -36,7 +36,7 @@ class DeclarativeStream(Stream):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._retriever.get_state()
+        return self._retriever.state
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
