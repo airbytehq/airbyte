@@ -31,6 +31,7 @@ class SourceOrbit(AbstractSource):
         stream_kwargs = {
             "authenticator": TokenAuthenticator(config["api_token"]),
             "workspace": config["workspace"],
+            "start_date": config["start_date"],
         }
 
         return [Members(**stream_kwargs), Workspace(**stream_kwargs)]
