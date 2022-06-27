@@ -77,8 +77,10 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void createStageIfNotExists(JdbcDatabase database, String stageName) throws Exception {
+    final String bucketPath = s3Config.getBucketPath();
+    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
-        () -> s3StorageOperations.createBucketObjectIfNotExists(stageName),
+        () -> s3StorageOperations.createBucketObjectIfNotExists(prefix + stageName),
         Map.of("stage", stageName));
   }
 
@@ -166,15 +168,19 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
 
   @Override
   public void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles) throws Exception {
+    final String bucketPath = s3Config.getBucketPath();
+    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     AirbyteSentry.executeWithTracing("CleanStage",
-        () -> s3StorageOperations.cleanUpBucketObject(stageName, stagedFiles),
+        () -> s3StorageOperations.cleanUpBucketObject(prefix + stageName, stagedFiles),
         Map.of("stage", stageName));
   }
 
   @Override
   public void dropStageIfExists(JdbcDatabase database, String stageName) throws Exception {
+    final String bucketPath = s3Config.getBucketPath();
+    final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     AirbyteSentry.executeWithTracing("DropStageIfExists",
-        () -> s3StorageOperations.dropBucketObject(stageName),
+        () -> s3StorageOperations.dropBucketObject(prefix + stageName),
         Map.of("stage", stageName));
   }
 
