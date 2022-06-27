@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.temporal.sync;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,8 +41,7 @@ public class PersistStateActivityTest {
   @Test
   public void testPersist() throws IOException {
     final JsonNode jsonState = Jsons.jsonNode(Map.ofEntries(
-        Map.entry("some", "state")
-    ));
+        Map.entry("some", "state")));
 
     final State state = new State().withState(jsonState);
 
@@ -47,4 +50,5 @@ public class PersistStateActivityTest {
     // The ser/der of the state into a state wrapper is tested in StateMessageHelperTest
     Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
   }
+
 }
