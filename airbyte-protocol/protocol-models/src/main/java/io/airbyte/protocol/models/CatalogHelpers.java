@@ -16,7 +16,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.util.MoreLists;
 import io.airbyte.protocol.models.transform_models.FieldTransform;
 import io.airbyte.protocol.models.transform_models.StreamTransform;
-import io.airbyte.protocol.models.transform_models.UpdateFieldTransform;
+import io.airbyte.protocol.models.transform_models.UpdateFieldSchemaTransform;
 import io.airbyte.protocol.models.transform_models.UpdateStreamTransform;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -306,7 +306,7 @@ public class CatalogHelpers {
           final AirbyteStream streamOld = descriptorToStreamOld.get(descriptor);
           final AirbyteStream streamNew = descriptorToStreamNew.get(descriptor);
           if (!streamOld.equals(streamNew)) {
-            streamTransforms.add(StreamTransform.createUpdateStreamTransform(getStreamDiff(descriptor, streamOld, streamNew)));
+            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(descriptor, streamOld, streamNew)));
           }
         });
 
@@ -333,10 +333,10 @@ public class CatalogHelpers {
       final JsonNode newType = fieldNameToTypeNew.get(fieldName);
 
       if (!oldType.equals(newType)) {
-        fieldTransforms.add(FieldTransform.createUpdateFieldTransform(new UpdateFieldTransform(fieldName, oldType, newType)));
+        fieldTransforms.add(FieldTransform.createUpdateFieldTransform(fieldName, new UpdateFieldSchemaTransform(oldType, newType)));
       }
     });
-    return new UpdateStreamTransform(descriptor, fieldTransforms);
+    return new UpdateStreamTransform(fieldTransforms);
   }
 
 }
