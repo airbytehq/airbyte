@@ -21,6 +21,12 @@ from destination_firebolt.destination import DestinationFirebolt, establish_conn
 from firebolt.common.exception import FireboltError
 from pytest import fixture, mark, raises
 
+@fixture(scope="module")
+def config() -> Dict[str, str]:
+    with open(
+        "secrets/config.json",
+    ) as f:
+        yield load(f)
 
 @fixture(scope="module")
 def test_table_name() -> str:
@@ -107,7 +113,6 @@ def test_check_fails(config, request):
     assert status.status == Status.FAILED
 
 
-@mark.parametrize("config")
 def test_check_succeeds(config, request):
     config = request.getfixturevalue(config)
     destination = DestinationFirebolt()
@@ -115,7 +120,6 @@ def test_check_succeeds(config, request):
     assert status.status == Status.SUCCEEDED
 
 
-@mark.parametrize("config")
 def test_write(
     config: Dict[str, str],
     configured_catalogue: ConfiguredAirbyteCatalog,
