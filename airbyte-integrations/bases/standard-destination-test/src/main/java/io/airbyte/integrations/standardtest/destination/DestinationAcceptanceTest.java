@@ -435,7 +435,6 @@ public abstract class DestinationAcceptanceTest {
         .forEach(message -> message.getRecord().setStream(DUMMY_CATALOG_NAME));
     // sync dummy data
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false);
-    // ----
 
     // Run second sync
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
