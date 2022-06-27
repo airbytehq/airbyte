@@ -18,40 +18,28 @@ import lombok.ToString;
 public final class StreamTransform {
 
   private final StreamTransformType transformType;
-  private final AddStreamTransform addStreamTransform;
-  private final RemoveStreamTransform removeStreamTransform;
+  private final StreamDescriptor streamDescriptor;
   private final UpdateStreamTransform updateStreamTransform;
 
   public static StreamTransform createAddStreamTransform(final StreamDescriptor streamDescriptor) {
-    return createAddStreamTransform(new AddStreamTransform(streamDescriptor));
-  }
-
-  public static StreamTransform createAddStreamTransform(final AddStreamTransform addStreamTransform) {
-    return new StreamTransform(StreamTransformType.ADD_STREAM, addStreamTransform, null, null);
+    return new StreamTransform(StreamTransformType.ADD_STREAM, streamDescriptor, null);
   }
 
   public static StreamTransform createRemoveStreamTransform(final StreamDescriptor streamDescriptor) {
-    return createRemoveStreamTransform(new RemoveStreamTransform(streamDescriptor));
+    return new StreamTransform(StreamTransformType.REMOVE_STREAM, streamDescriptor, null);
   }
 
-  public static StreamTransform createRemoveStreamTransform(final RemoveStreamTransform removeStreamTransform) {
-    return new StreamTransform(StreamTransformType.REMOVE_STREAM, null, removeStreamTransform, null);
-  }
-
-  public static StreamTransform createUpdateStreamTransform(final UpdateStreamTransform updateStreamTransform) {
-    return new StreamTransform(StreamTransformType.UPDATE_STREAM, null, null, updateStreamTransform);
+  public static StreamTransform createUpdateStreamTransform(final StreamDescriptor streamDescriptor,
+                                                            final UpdateStreamTransform updateStreamTransform) {
+    return new StreamTransform(StreamTransformType.UPDATE_STREAM, streamDescriptor, updateStreamTransform);
   }
 
   public StreamTransformType getTransformType() {
     return transformType;
   }
 
-  public AddStreamTransform getAddStreamTransform() {
-    return addStreamTransform;
-  }
-
-  public RemoveStreamTransform getRemoveStreamTransform() {
-    return removeStreamTransform;
+  public StreamDescriptor getStreamDescriptor() {
+    return streamDescriptor;
   }
 
   public UpdateStreamTransform getUpdateStreamTransform() {
