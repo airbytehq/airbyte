@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.anyOfS3FieldsAreNullOrEmpty;
-import static io.airbyte.integrations.destination.redshift.validator.RedshiftUtil.findS3Options;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.anyOfS3FieldsAreNullOrEmpty;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.Destination;
