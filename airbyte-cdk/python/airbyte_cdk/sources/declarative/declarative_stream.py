@@ -16,10 +16,9 @@ class DeclarativeStream(Stream):
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
 
-    def __init__(self, name, primary_key, schema_loader: SchemaLoader, retriever: Retriever, cursor_field: Optional[List[str]] = None):
+    def __init__(self, name, primary_key, schema_loader: SchemaLoader, retriever: Retriever):
         self._name = name
         self._primary_key = primary_key
-        self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
         self._retriever = retriever
 
@@ -49,7 +48,7 @@ class DeclarativeStream(Stream):
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
-        return self._cursor_field
+        return self._retriever.cursor_field
 
     def read_records(
         self,

@@ -3,6 +3,7 @@
 #
 import ast
 import datetime
+import numbers
 
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from jinja2 import Environment
@@ -18,7 +19,7 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
         self._environment.globals["timestamp"] = (
-            lambda dt: dt if isinstance(dt, int) else int(datetime.datetime.strptime(dt, "%Y-%m-%d").timestamp())
+            lambda dt: int(dt) if isinstance(dt, numbers.Number) else int(datetime.datetime.strptime(dt, "%Y-%m-%d").timestamp())
         )
         self._environment.globals["max"] = lambda a, b: max(a, b)
 

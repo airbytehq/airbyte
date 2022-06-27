@@ -42,6 +42,14 @@ class SimpleRetriever(Retriever, HttpStream):
         self._last_records = None
 
     @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        """
+        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        """
+        return self._iterator._cursor_field
+
+    @property
     def name(self) -> str:
         """
         :return: Stream name
@@ -232,6 +240,7 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = self._state.get_stream_state()
+        print(f"read_stream_state: {stream_state}")
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)
         for r in records_generator:
             self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r)
@@ -276,8 +285,10 @@ class SimpleRetriever(Retriever, HttpStream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
+        print(f"setstate: {value}")
         self._state.set_state(value)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        print(f"get_updated_state: {current_stream_state}")
         state = self._state.get_stream_state()
         return state

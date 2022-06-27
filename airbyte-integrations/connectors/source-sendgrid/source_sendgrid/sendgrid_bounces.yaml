@@ -3,7 +3,6 @@ lists_stream:
   options:
     name: "bounces"
     primary_key: email
-    cursor_field: ["created"]
     url_base: "https://api.sendgrid.com"
     schema_loader:
       file_path: "./source_sendgrid/schemas/{{options.name}}.json"
@@ -27,8 +26,8 @@ lists_stream:
         type: "DatetimeStreamSlicer"
         start_time: "2017-01-01"
         end_time: "2022-01-01"
-        step: "1000d"
-        cursor_value: "{{ stream_state.created }}"
+        step: "10d"
+        cursor_field: "created"
         datetime_format: "%Y-%m-%d"
         request_options_provider:
           request_parameters:

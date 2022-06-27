@@ -34,7 +34,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_time: Union[InterpolatedString, str],
         end_time: Union[InterpolatedString, str],
         step,
-        cursor_value: InterpolatedString,
+        cursor_field: str,
         datetime_format,
         config,
         request_options_provider: Optional[RequestOptionsProvider] = None,
@@ -52,21 +52,19 @@ class DatetimeStreamSlicer(StreamSlicer):
             start_time = InterpolatedString(start_time)
         if isinstance(end_time, str):
             end_time = InterpolatedString(end_time)
-        if isinstance(cursor_value, str):
-            cursor_value = InterpolatedString(cursor_value)
         self._start_time = self.parse_date(start_time.eval(config))
         self._end_time = self.parse_date(end_time.eval(config))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
         self._start_time = min(self._start_time, self._end_time)
         self._step = self._parse_timedelta(step)
         self._config = config
-        self._cursor_value = cursor_value
+        self._cursor_field = cursor_field
         self._request_options_provider = request_options_provider
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
 
-        cursor_value = self._cursor_value.eval(self._config, **{"stream_state": stream_state})
+        cursor_value = stream_state.get(self._cursor_field)
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date
@@ -122,9 +120,11 @@ class DatetimeStreamSlicer(StreamSlicer):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ):
-        start_time_from_cursor = self._cursor_value.eval(self._config, stream_state=stream_state, stream_slice=stream_slice)
+        start_time_from_cursor = stream_state.get(self._cursor_field)
         start_time_from_slice = datetime.datetime.strptime(stream_slice.get("start_date"), self._datetime_format).timestamp()
 
+        print(f"cursor: {start_time_from_cursor}")
+        print(f"slice: {start_time_from_slice}")
         if start_time_from_cursor and start_time_from_cursor > start_time_from_slice:
             start_time = start_time_from_cursor
         else:
@@ -134,7 +134,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         print(f"start_time: {start_time}")
         print(f"end_time: {end_time}")
         print(f"request_params: {stream_state} ----- {stream_slice}")
-        print(f"{stream_slice.get('start_date')}")
         print(f"to evaluate: {self._request_options_provider._parameter_interpolator._interpolator._mapping}")
         ret = self._request_options_provider.request_params(
             stream_state, stream_slice, next_page_token, start_time=start_time, end_time=end_time
