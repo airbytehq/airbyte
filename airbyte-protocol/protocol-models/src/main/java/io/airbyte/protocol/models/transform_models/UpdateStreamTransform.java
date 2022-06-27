@@ -4,7 +4,6 @@
 
 package io.airbyte.protocol.models.transform_models;
 
-import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -19,7 +18,6 @@ import lombok.ToString;
 @ToString
 public class UpdateStreamTransform {
 
-  private final StreamDescriptor streamDescriptor;
   private final Set<FieldTransform> fieldTransforms;
 
   public Set<FieldTransform> getFieldTransforms() {
