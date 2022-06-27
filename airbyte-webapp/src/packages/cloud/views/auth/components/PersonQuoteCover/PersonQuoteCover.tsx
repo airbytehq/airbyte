@@ -33,7 +33,7 @@ export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
           <p>{quoteText ? quoteText : <FormattedMessage id="login.quoteText" />}</p>
         </blockquote>
         <img
-          src={logoImageSrc ? logoImageSrc : "/cart-com-company-logo.svg"}
+          src={logoImageSrc ? logoImageSrc : "/images/testimonials/cartdotcom-logo.svg"}
           className={styles.companyLogo}
           alt="company logo"
           data-testid="company logo"
