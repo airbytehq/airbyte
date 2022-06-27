@@ -56,7 +56,7 @@ export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: Tra
       properties: TrackConnectorActionProperties | TrackConnectionActionProperties
     ) => {
       // Calls that did not exist in the legacy format will not have a legacy event name
-      const legacyEventName = legacyType ? `${legacyType} - Action)` : "";
+      const legacyEventName = legacyType ? `${legacyType} - Action` : "";
 
       analyticsService.track(`Airbyte.UI.${namespace}.${actionType}`, {
         actionDescription,
