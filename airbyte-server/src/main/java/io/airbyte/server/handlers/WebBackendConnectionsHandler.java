@@ -36,7 +36,6 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.StreamDescriptor;
-import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
@@ -369,9 +368,9 @@ public class WebBackendConnectionsHandler {
       final ConfiguredAirbyteCatalog existingConfiguredCatalog =
           configRepository.getConfiguredCatalogForConnection(webBackendConnectionUpdate.getConnectionId());
       final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
-      final AirbyteCatalog modelExisting = CatalogConverter.toApi(existingCatalog);
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
       final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
-      final CatalogDiff catalogDiff = ConnectionsHandler.getDiff(modelExisting, newAirbyteCatalog);
+      final CatalogDiff catalogDiff = ConnectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
       final List<StreamDescriptor> streamsToReset = getStreamsToReset(catalogDiff);
       ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
           webBackendConnectionUpdate.getConnectionId(),
