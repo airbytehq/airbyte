@@ -17,7 +17,7 @@ lists_stream:
           request_parameters:
             offset: "{{ next_page_token['offset'] }}"
             limit: "*ref(limit)"
-            start_time: "{{ timestamp(stream_slice['start_date']) }}"
+            start_time: "{{ max(stream_state['created'], timestamp(stream_slice['start_date'])) }}"
             end_time: "{{ timestamp(stream_slice['end_date']) }}"
         authenticator:
           type: "TokenAuthenticator"
@@ -32,7 +32,7 @@ lists_stream:
         type: "DatetimeStreamSlicer"
         start_time: "2017-01-01"
         end_time: "2022-01-01"
-        step: "1d"
+        step: "10d"
         cursor_value: "{{ stream_state['created'] }}"
         datetime_format: "%Y-%m-%d"
 streams:

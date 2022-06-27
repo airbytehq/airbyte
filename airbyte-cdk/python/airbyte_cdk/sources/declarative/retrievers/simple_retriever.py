@@ -108,6 +108,7 @@ class SimpleRetriever(Retriever, HttpStream):
         Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
+        stream_state = self._state.get_stream_state()
         return self._requester.request_headers(stream_state, stream_slice, next_page_token)
 
     def request_body_data(
@@ -125,6 +126,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        stream_state = self._state.get_stream_state()
         return self._requester.request_body_data(stream_state, stream_slice, next_page_token)
 
     def request_body_json(
@@ -138,6 +140,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        stream_state = self._state.get_stream_state()
         return self._requester.request_body_json(stream_state, stream_slice, next_page_token)
 
     def request_kwargs(
@@ -156,6 +159,7 @@ class SimpleRetriever(Retriever, HttpStream):
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
+        stream_state = self._state.get_stream_state()
         return self._requester.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
@@ -164,12 +168,15 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        stream_state = self._state.get_stream_state()
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        return self._requester.request_params(stream_state, stream_slice, next_page_token)
+        print(f"getting params for : {stream_state}")
+        print(f"getting params for(self state) : {self._state.get_stream_state()}")
+        return self._requester.request_params(self._state.get_stream_state(), stream_slice, next_page_token)
 
     @property
     def cache_filename(self):
@@ -193,6 +200,7 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        stream_state = self._state.get_stream_state()
         self._last_response = response
         records = self._record_selector.select_records(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -221,6 +229,7 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        stream_state = self._state.get_stream_state()
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)
         for r in records_generator:
             print(f"record: {r}")
@@ -249,7 +258,7 @@ class SimpleRetriever(Retriever, HttpStream):
         # FIXME: this is not passing the cursor field because it is always known at init time
         print(f"stream_state: {stream_state}")
         print(f"type: {type(self._iterator)}")
-        return self._iterator.stream_slices(sync_mode, stream_state)
+        return self._iterator.stream_slices(sync_mode, self._state.get_stream_state())
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -264,9 +273,17 @@ class SimpleRetriever(Retriever, HttpStream):
          State should try to be as small as possible but at the same time descriptive enough to restore
          syncing process from the point where it stopped.
         """
+        print(f"retriever get state: {self._state.get_stream_state()}")
         return self._state.get_stream_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._state.update_state(**value)
+        print(f"settingstate: {value}")
+        self._state.set_state(value)
+        print(f"aftersettingstate: {self._state._context}")
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        state = self._state.get_stream_state()
+        print(f"get_updated_state: {state}")
+        return state

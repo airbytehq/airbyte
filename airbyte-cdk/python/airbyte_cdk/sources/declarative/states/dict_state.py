@@ -43,18 +43,24 @@ class DictState(State):
         self._context = dict()
         self._config = config
 
+    def set_state(self, state):
+        self._context[self.stream_state_field] = state
+
     def update_state(self, **kwargs):
+        print(f"update_state kwargs: {kwargs}")
         stream_state = kwargs.get(self.stream_state_field)
+        print(f"update_state:stream_state: {stream_state}")
         prev_stream_state = self.get_stream_state() or stream_state
         self._context.update(**kwargs)
 
         self._context[self.stream_state_field] = self._compute_state(prev_stream_state)
+        print(f"updatedstate: {self._context}")
 
     def get_state(self, state_field):
         return self._context.get(state_field, {})
 
     def get_stream_state(self):
-        print(f"state: {self._context}")
+        print(f"get_stream_state: {self._context}")
         return self.get_state(self.stream_state_field)
 
     def _compute_state(self, prev_state):
@@ -62,6 +68,7 @@ class DictState(State):
             self._interpolator.eval(name, self._config): self._interpolator.eval(value, self._config, **self._context)
             for name, value in self._templates_to_evaluate.items()
         }
+        print(f"updated_state(compute): {updated_state}")
         updated_state = {name: value for name, value in updated_state.items() if value}
 
         if prev_state:

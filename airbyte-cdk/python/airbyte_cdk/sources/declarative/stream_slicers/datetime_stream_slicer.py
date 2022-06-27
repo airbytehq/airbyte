@@ -56,9 +56,6 @@ class DatetimeStreamSlicer(StreamSlicer):
 
         cursor_value = self._cursor_value.eval(self._config, **{"stream_state": stream_state})
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
-        print(f"cursor_value: {cursor_value}")
-        print(f"start_date: {start_date}")
-        # exit()
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date
         return self._partition_daterange(start_date, self._end_time, self._step)
@@ -73,7 +70,6 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
         cursor_date = self.parse_date(cursor_value or default_date)
-        print(f"cursor_date: {cursor_date}")
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: Any) -> datetime:

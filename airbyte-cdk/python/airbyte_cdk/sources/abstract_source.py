@@ -212,6 +212,8 @@ class AbstractSource(Source, ABC):
         )
         total_records_counter = 0
         for _slice in slices:
+            print(f"SLICE: {_slice}")
+            print(f"state: {stream_state}")
             records = stream_instance.read_records(
                 sync_mode=SyncMode.incremental,
                 stream_slice=_slice,
@@ -220,7 +222,10 @@ class AbstractSource(Source, ABC):
             )
             for record_counter, record_data in enumerate(records, start=1):
                 yield self._as_airbyte_record(stream_name, record_data)
+                print(f"stream_state_before: {stream_state}")
                 stream_state = stream_instance.get_updated_state(stream_state, record_data)
+                print(f"stream_state_after: {stream_state}")
+
                 checkpoint_interval = stream_instance.state_checkpoint_interval
                 if checkpoint_interval and record_counter % checkpoint_interval == 0:
                     yield self._checkpoint_state(stream_instance, stream_state, connector_state)
