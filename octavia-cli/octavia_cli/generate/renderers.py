@@ -4,8 +4,10 @@
 
 import abc
 import os
+from pathlib import Path
 from typing import Any, Callable, List
 
+import click
 import yaml
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from jinja2 import Environment, PackageLoader, Template, select_autoescape
@@ -147,7 +149,7 @@ class BaseRenderer(abc.ABC):
     def __init__(self, resource_name: str) -> None:
         self.resource_name = resource_name
 
-    def _get_output_path(self, project_path: str, definition_type: str) -> str:
+    def _get_output_path(self, project_path: str, definition_type: str) -> Path:
         """Get rendered file output path
 
         Args:
@@ -160,7 +162,7 @@ class BaseRenderer(abc.ABC):
         directory = os.path.join(project_path, f"{definition_type}s", self.resource_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
-        return os.path.join(directory, "configuration.yaml")
+        return Path(os.path.join(directory, "configuration.yaml"))
 
     @abc.abstractmethod
     def _render(self):  # pragma: no cover
@@ -171,7 +173,16 @@ class BaseRenderer(abc.ABC):
         """
         raise NotImplementedError
 
-    def write_yaml(self, project_path: str) -> str:
+    @staticmethod
+    def _confirm_overwrite(output_path):
+        overwrite = True
+        if output_path.is_file():
+            overwrite = click.confirm(
+                f"The configuration octavia-cli is about to create already exists, do you want to replace it? ({output_path})"
+            )
+        return overwrite
+
+    def write_yaml(self, project_path: Path) -> str:
         """Write rendered specification to a YAML file in local project path.
 
         Args:
@@ -181,33 +192,31 @@ class BaseRenderer(abc.ABC):
             str: Path to the rendered specification.
         """
         output_path = self._get_output_path(project_path, self.definition.type)
-        rendered = self._render()
-
-        with open(output_path, "w") as f:
-            f.write(rendered)
+        if self._confirm_overwrite(output_path):
+            with open(output_path, "w") as f:
+                rendered_yaml = self._render()
+                f.write(rendered_yaml)
         return output_path
 
-    def import_configuration(self, project_path: str, configuration: dict) -> str:
+    def import_configuration(self, project_path: Path, configuration: dict) -> Path:
         """Import configuration from the YAML file in local project path.
         If local configuration.yaml file exists, it is replaced.
 
         Args:
-            project_path (str): Path to directory hosting the octavia project.
-            configuration (dict): Configuraton of the resource.
+            project_path (Path): Path to directory hosting the octavia project.
+            configuration (dict): Configuration of the resource.
 
         Returns:
-            str: Path to the rendered specification.
+            Path: Path to the rendered specification.
         """
-        output_path = self.write_yaml(project_path)
 
-        with open(output_path) as f:
-            data = yaml.safe_load(f)
-
+        rendered = self._render()
+        data = yaml.safe_load(rendered)
         data["configuration"] = configuration
-
-        with open(output_path, "wb") as f:
-            yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
-
+        output_path = self._get_output_path(project_path, self.definition.type)
+        if self._confirm_overwrite(output_path):
+            with open(output_path, "wb") as f:
+                yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
         return output_path
 
 

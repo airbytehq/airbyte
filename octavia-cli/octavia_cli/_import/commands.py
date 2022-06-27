@@ -46,17 +46,18 @@ def import_resource(
     Returns:
         str: The resource's JSON representation.
     """
-    config = json.loads(get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get))
+    remote_configuration = json.loads(get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get))
 
     resource_type = ResourceCls.__name__.lower()
 
-    definition = definitions.factory(resource_type, api_client, workspace_id, config[f"{resource_type}_definition_id"])
+    definition = definitions.factory(resource_type, api_client, workspace_id, remote_configuration[f"{resource_type}_definition_id"])
 
-    renderer = ConnectorSpecificationRenderer(config["name"], definition)
+    renderer = ConnectorSpecificationRenderer(remote_configuration["name"], definition)
 
-    output_path = renderer.import_configuration(project_path=".", configuration=config["connection_configuration"])
+    output_path = renderer.import_configuration(project_path=".", configuration=remote_configuration["connection_configuration"])
     message = f"✅ - Imported {resource_type} in {output_path}."
     click.echo(click.style(message, fg="green"))
+    # TODO add message to ask users to update secrets
 
 
 @click.group(
