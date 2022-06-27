@@ -4,7 +4,7 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -27,8 +27,8 @@ class DatetimeStreamSlicer(StreamSlicer):
     # FIXME: timezone should be declarative?
     def __init__(
         self,
-        start_time: InterpolatedString,
-        end_time: InterpolatedString,
+        start_time: Union[InterpolatedString, str],
+        end_time: Union[InterpolatedString, str],
         step,
         cursor_value: InterpolatedString,
         datetime_format,
@@ -37,6 +37,12 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
+        if isinstance(start_time, str):
+            start_time = InterpolatedString(start_time)
+        if isinstance(end_time, str):
+            end_time = InterpolatedString(end_time)
+        if isinstance(cursor_value, str):
+            cursor_value = InterpolatedString(cursor_value)
         self._start_time = self.parse_date(start_time.eval(config))
         self._end_time = self.parse_date(end_time.eval(config))
         self._end_time = min(self._end_time, datetime.datetime.now(tz=datetime.timezone.utc))
@@ -50,6 +56,9 @@ class DatetimeStreamSlicer(StreamSlicer):
 
         cursor_value = self._cursor_value.eval(self._config, **{"stream_state": stream_state})
         start_date = self._get_date(self.parse_date(cursor_value), self._start_time, max)
+        print(f"cursor_value: {cursor_value}")
+        print(f"start_date: {start_date}")
+        # exit()
         if not self.is_start_date_valid(start_date):
             self._end_time = start_date
         return self._partition_daterange(start_date, self._end_time, self._step)
@@ -64,6 +73,7 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
         cursor_date = self.parse_date(cursor_value or default_date)
+        print(f"cursor_date: {cursor_date}")
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: Any) -> datetime:
@@ -72,6 +82,8 @@ class DatetimeStreamSlicer(StreamSlicer):
                 return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
             else:
                 return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
+        elif isinstance(date, int):
+            return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
         return date
 
     def is_start_date_valid(self, start_date: datetime) -> bool:
