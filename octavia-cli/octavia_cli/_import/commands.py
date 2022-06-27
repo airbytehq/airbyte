@@ -12,17 +12,14 @@ from octavia_cli.generate import definitions
 from octavia_cli.generate.renderers import ConnectorSpecificationRenderer
 from octavia_cli.get.commands import get_json_representation
 from octavia_cli.get.resources import Destination, Source
-from octavia_cli.list.listings import Destinations, Sources
 
 COMMON_HELP_MESSAGE_PREFIX = "Import a JSON representation of a remote"
 
 
 def build_help_message(resource_type: str) -> str:
     """Helper function to build help message consistently for all the commands in this module.
-
     Args:
         resource_type (str): source, destination or connection
-
     Returns:
         str: The generated help message.
     """
@@ -36,14 +33,11 @@ def import_resource(
     resource_to_get: str,
 ) -> str:
     """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
-
-
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
         workspace_id (str): Current workspace id.
         ResourceCls (Type[Union[Source, Destination]]): Resource class to use
         resource_to_get (str): resource name or id to get JSON representation for.
-
     Returns:
         str: The resource's JSON representation.
     """
@@ -76,15 +70,6 @@ def source(ctx: click.Context, resource: str):
     click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Source, resource))
 
 
-@_import.command(cls=OctaviaCommand, name="sources", help=build_help_message("source"))
-@click.pass_context
-def sources(ctx: click.Context):
-    sources = Sources(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"])
-
-    for _, _, source_id in sources.get_listing():
-        import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Source, source_id)
-
-
 @_import.command(cls=OctaviaCommand, name="destination", help=build_help_message("destination"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
@@ -92,25 +77,10 @@ def destination(ctx: click.Context, resource: str):
     click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Destination, resource))
 
 
-@_import.command(cls=OctaviaCommand, name="destinations", help=build_help_message("destination"))
-@click.pass_context
-def destinations(ctx: click.Context):
-    destinations = Destinations(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"])
-
-    for _, _, destination_id in destinations.get_listing():
-        import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Destination, destination_id)
-
-
 @_import.command(cls=OctaviaCommand, name="connection", help=build_help_message("connection"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
 def connection(ctx: click.Context, resource: str):
-    pass
-
-
-@_import.command(cls=OctaviaCommand, name="connections", help=build_help_message("connection"))
-@click.pass_context
-def connections(ctx: click.Context):
     pass
 
 
