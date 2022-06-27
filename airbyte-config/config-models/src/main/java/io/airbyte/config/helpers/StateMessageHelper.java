@@ -34,30 +34,45 @@ public class StateMessageHelper {
       try {
         stateMessages = Jsons.object(state, new AirbyteStateMessageListTypeReference());
       } catch (final IllegalArgumentException e) {
+        // []
         return Optional.of(getLegacyStateWrapper(state));
       }
+      if (stateMessages.size() == 0) {
+        return Optional.empty();
+      }
+
       if (stateMessages.size() == 1) {
-        if (stateMessages.get(0).getType() == AirbyteStateType.GLOBAL) {
-          return Optional.of(provideGlobalState(stateMessages, useStreamCapableState));
-        } else if (stateMessages.get(0).getType() == null || stateMessages.get(0).getType() == AirbyteStateType.LEGACY) {
+        if (stateMessages.get(0).getType() == null) {
           return Optional.of(getLegacyStateWrapper(state));
         } else {
-          throw new IllegalStateException("Unexpected state blob, the");
+          switch (stateMessages.get(0).getType()) {
+            case GLOBAL -> {
+              return Optional.of(provideGlobalState(stateMessages, useStreamCapableState));
+            }
+            case STREAM -> {
+              return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
+            }
+            case LEGACY -> {
+              return Optional.of(getLegacyStateWrapper(stateMessages.get(0).getData()));
+            }
+            default -> {
+              // Should not be reachable.
+              throw new IllegalStateException("Unexpected state type");
+            }
+          }
         }
-      } else if (stateMessages.size() >= 1) {
+      } else {
         if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
           return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
         }
         if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == null)) {
           return Optional.of(getLegacyStateWrapper(state));
-        } else {
-          throw new IllegalStateException("Unexpected state blob, the");
         }
-      } else {
-        return Optional.of(getLegacyStateWrapper(state));
+
+        throw new IllegalStateException("Unexpected state blob, the state contains either multiple global or conflicting state type.");
+
       }
     }
-    // return Optional.empty();
   }
 
   private static StateWrapper provideGlobalState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
