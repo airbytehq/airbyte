@@ -45,4 +45,4 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-XX-XX | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release |
+| 0.1.0 | 2022-06-27 | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release |
