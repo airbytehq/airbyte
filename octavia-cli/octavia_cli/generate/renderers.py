@@ -143,20 +143,32 @@ class BaseRenderer(abc.ABC):
         pass
 
     def __init__(self, resource_name: str) -> None:
-        self.resource_name = resource_name
+        self.resource_name = resource_name  # TODO slugify resource name
 
-    def _get_output_path(self, project_path: str, definition_type: str) -> Path:
+    @classmethod
+    def get_output_path(cls, project_path: str, definition_type: str, resource_name: str) -> Path:
         """Get rendered file output path
         Args:
             project_path (str): Current project path.
             definition_type (str): Current definition_type.
+            resource_name (str): Current resource_name.
         Returns:
             str: Full path to the output path.
         """
-        directory = os.path.join(project_path, f"{definition_type}s", self.resource_name)
+        directory = os.path.join(project_path, f"{definition_type}s", resource_name)
         if not os.path.exists(directory):
             os.makedirs(directory)
         return Path(os.path.join(directory, "configuration.yaml"))
+
+    @staticmethod
+    def _confirm_overwrite(output_path):
+        # TODO docstring
+        overwrite = True
+        if output_path.is_file():
+            overwrite = click.confirm(
+                f"The configuration octavia-cli is about to create already exists, do you want to replace it? ({output_path})"
+            )
+        return overwrite
 
     @abc.abstractmethod
     def _render(self):  # pragma: no cover
@@ -166,15 +178,6 @@ class BaseRenderer(abc.ABC):
         """
         raise NotImplementedError
 
-    @staticmethod
-    def _confirm_overwrite(output_path):
-        overwrite = True
-        if output_path.is_file():
-            overwrite = click.confirm(
-                f"The configuration octavia-cli is about to create already exists, do you want to replace it? ({output_path})"
-            )
-        return overwrite
-
     def write_yaml(self, project_path: Path) -> str:
         """Write rendered specification to a YAML file in local project path.
         Args:
@@ -182,7 +185,7 @@ class BaseRenderer(abc.ABC):
         Returns:
             str: Path to the rendered specification.
         """
-        output_path = self._get_output_path(project_path, self.definition.type)
+        output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
         if self._confirm_overwrite(output_path):
             with open(output_path, "w") as f:
                 rendered_yaml = self._render()
@@ -190,19 +193,11 @@ class BaseRenderer(abc.ABC):
         return output_path
 
     def import_configuration(self, project_path: Path, configuration: dict) -> Path:
-        """Import configuration from the YAML file in local project path.
-        If local configuration.yaml file exists, it is replaced.
-        Args:
-            project_path (Path): Path to directory hosting the octavia project.
-            configuration (dict): Configuration of the resource.
-        Returns:
-            Path: Path to the rendered specification.
-        """
-
+        # TODO doctring
         rendered = self._render()
         data = yaml.safe_load(rendered)
         data["configuration"] = configuration
-        output_path = self._get_output_path(project_path, self.definition.type)
+        output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
         if self._confirm_overwrite(output_path):
             with open(output_path, "wb") as f:
                 yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
@@ -281,3 +276,28 @@ class ConnectionRenderer(BaseRenderer):
                 "supports_dbt": self.destination.definition.supports_dbt,
             }
         )
+
+    def import_configuration(self, project_path: Path, configuration: dict) -> Path:
+        # TODO docstring
+        rendered = self._render()
+        data = yaml.safe_load(rendered)
+        keys_to_remove = [
+            "connection_id",
+            "name",
+            "source_id",
+            "destination_id",
+            "latest_sync_job_created_at",
+            "latest_sync_job_status",
+            "source",
+            "destination",
+            "is_syncing",
+            "operation_ids",
+        ]
+        data["configuration"] = {k: v for k, v in configuration.items() if k not in keys_to_remove}
+        if "operations" in data["configuration"] and len(data["configuration"]["operations"]) == 0:
+            data["configuration"].pop("operations")
+        output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
+        if self._confirm_overwrite(output_path):
+            with open(output_path, "wb") as f:
+                yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
+        return output_path
