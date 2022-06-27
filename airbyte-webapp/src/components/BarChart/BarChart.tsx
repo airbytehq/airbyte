@@ -22,9 +22,9 @@ interface BarChartProps {
 }
 
 const BarChart: React.FC<BarChartProps> = ({ data, legendLabels, xLabel, yLabel }) => {
-  const chartLinesColor = theme.greyColor20;
-  const chartTicksColor = theme.lightTextColor;
-  const chartHoverFill = theme.greyColor20;
+  const chartLinesColor = theme.grey100;
+  const chartTicksColor = theme.grey;
+  const chartHoverFill = theme.grey100;
 
   const width = useMemo(
     () => Math.min(Math.max([...data].sort((a, b) => b.value - a.value)[0].value.toFixed(0).length * 10, 80), 130),
