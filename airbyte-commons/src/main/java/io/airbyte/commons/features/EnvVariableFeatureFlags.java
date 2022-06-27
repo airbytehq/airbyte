@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
+  public static final String USE_STREAM_CAPABLE_STATE = "USE_STREAM_CAPABLE_STATE";
+
   @Override
   public boolean autoDisablesFailingConnections() {
     log.info("Auto Disable Failing Connections: " + Boolean.parseBoolean(System.getenv("AUTO_DISABLE_FAILING_CONNECTIONS")));
@@ -29,7 +31,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean useStreamCapableState() {
-    return getEnvOrDefault("USE_STREAM_CAPABLE_STATE", false, Boolean::parseBoolean);
+    return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, false, Boolean::parseBoolean);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

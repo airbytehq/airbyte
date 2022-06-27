@@ -14,35 +14,10 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 public class StateMessageHelper {
 
   public static class AirbyteStateMessageListTypeReference extends TypeReference<List<AirbyteStateMessage>> {}
-
-  private static final BiFunction<List<AirbyteStateMessage>, Boolean, StateWrapper> provideGlobalState = (stateMessages, useStreamCapableState) -> {
-    if (useStreamCapableState) {
-      return new StateWrapper()
-          .withStateType(StateType.GLOBAL)
-          .withGlobal(stateMessages.get(0));
-    } else {
-      return new StateWrapper()
-          .withStateType(StateType.LEGACY)
-          .withLegacyState(stateMessages.get(0).getData());
-    }
-  };
-
-  private static final BiFunction<List<AirbyteStateMessage>, Boolean, StateWrapper> provideStreamState = (stateMessages, useStreamCapableState) -> {
-    if (useStreamCapableState) {
-      return new StateWrapper()
-          .withStateType(StateType.STREAM)
-          .withStateMessages(stateMessages);
-    } else {
-      return new StateWrapper()
-          .withStateType(StateType.LEGACY)
-          .withLegacyState(Iterables.getLast(stateMessages).getData());
-    }
-  };
 
   /**
    * This a takes a json blob state and tries return either a legacy state in the format of a json
@@ -61,17 +36,58 @@ public class StateMessageHelper {
       } catch (final IllegalArgumentException e) {
         return Optional.of(getLegacyStateWrapper(state));
       }
-      if (stateMessages.stream().anyMatch(streamMessage -> !streamMessage.getAdditionalProperties().isEmpty())) {
+      if (stateMessages.size() == 1) {
+        if (stateMessages.get(0).getType() == AirbyteStateType.GLOBAL) {
+          return Optional.of(provideGlobalState(stateMessages, useStreamCapableState));
+        } else if (stateMessages.get(0).getType() == null || stateMessages.get(0).getType() == AirbyteStateType.LEGACY) {
+          return Optional.of(getLegacyStateWrapper(state));
+        } else {
+          throw new IllegalStateException("Unexpected state blob, the");
+        }
+      } else if (stateMessages.size() >= 1) {
+        if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
+          return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
+        }
+        if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == null)) {
+          return Optional.of(getLegacyStateWrapper(state));
+        } else {
+          throw new IllegalStateException("Unexpected state blob, the");
+        }
+      } else {
         return Optional.of(getLegacyStateWrapper(state));
       }
-      if (stateMessages.size() == 1 && stateMessages.get(0).getType() == AirbyteStateType.GLOBAL) {
-        return Optional.of(provideGlobalState.apply(stateMessages, useStreamCapableState));
-      } else if (stateMessages.size() >= 1
-          && stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
-        return Optional.of(provideStreamState.apply(stateMessages, useStreamCapableState));
-      } else {
-        throw new IllegalStateException("Unexpected state blob");
-      }
+    }
+    // return Optional.empty();
+  }
+
+  private static StateWrapper provideGlobalState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
+    if (useStreamCapableState) {
+      return new StateWrapper()
+          .withStateType(StateType.GLOBAL)
+          .withGlobal(stateMessages.get(0));
+    } else {
+      return new StateWrapper()
+          .withStateType(StateType.LEGACY)
+          .withLegacyState(stateMessages.get(0).getData());
+    }
+  }
+
+  /**
+   * This is returning a wrapped state, it assumes that the state messages are ordered.
+   *
+   * @param stateMessages - an ordered list of state message
+   * @param useStreamCapableState - a flag that hallow to return the new format
+   * @return a wrapped state
+   */
+  private static StateWrapper provideStreamState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
+    if (useStreamCapableState) {
+      return new StateWrapper()
+          .withStateType(StateType.STREAM)
+          .withStateMessages(stateMessages);
+    } else {
+      return new StateWrapper()
+          .withStateType(StateType.LEGACY)
+          .withLegacyState(Iterables.getLast(stateMessages).getData());
     }
   }
 
