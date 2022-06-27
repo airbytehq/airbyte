@@ -74,18 +74,18 @@ Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https:
     * This metric shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.
 * `oldest_running_job_age_secs`
     * This metric shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime.
-* `ob_failed_by_release_stage`
+* `job_failed_by_release_stage`
     * This metric shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.
         :::note
-        Some metrics are tagged by connector release stage (alpha, beta, or GA). This allows you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by release stage will help you find failed jobs. 
+        Metrics with `by_release_stage` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.  
         :::
 :::code
 **Example** 
 If a job was created for an Alpha source to a Beta destination, and the outcome of the job is a success, the following metrics are displayed:
-`job_created_by_release_stage\[“alpha”] = 1;`
-`job_created_by_release_stage\[“beta”] = 1;`
-`job_failed_by_release_stage\[“alpha”] = 1;`
-`job_succeeded_by_release_stage\[“beta”] = 1;`
+`job_created_by_release_stage\[“alpha”\] = 1;`
+`job_created_by_release_stage\[“beta”\] = 1;`
+`job_failed_by_release_stage\[“alpha”\] = 1;`
+`job_succeeded_by_release_stage\[“beta”\] = 1;`
 
 **Note:** Each job has a source and destination, so each metric is counted twice — once for source and once for destination.
 
