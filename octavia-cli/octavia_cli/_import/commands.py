@@ -7,13 +7,17 @@ from typing import List, Type, Union
 
 import airbyte_api_client
 import click
+from octavia_cli.apply import resources
 from octavia_cli.base_commands import OctaviaCommand
-from octavia_cli.generate import definitions
-from octavia_cli.generate.renderers import ConnectorSpecificationRenderer
+from octavia_cli.generate import definitions, renderers
 from octavia_cli.get.commands import get_json_representation
-from octavia_cli.get.resources import Destination, Source
+from octavia_cli.get.resources import Connection as UnmanagedConnection
+from octavia_cli.get.resources import Destination as UnmanagedDestination
+from octavia_cli.get.resources import Source as UnmanagedSource
 
-COMMON_HELP_MESSAGE_PREFIX = "Import a JSON representation of a remote"
+
+class MissingResourceDependencyError(click.UsageError):
+    pass
 
 
 def build_help_message(resource_type: str) -> str:
@@ -25,44 +29,78 @@ def build_help_message(resource_type: str) -> str:
     Returns:
         str: The generated help message.
     """
-    return f"Import a JSON representation of a remote {resource_type}."
+    return f"Import an existing {resource_type} to manage it with octavia-cli."
 
 
-def import_resource(
+def import_source_or_destination(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
-    ResourceCls: Type[Union[Source, Destination]],
+    ResourceCls: Type[Union[UnmanagedSource, UnmanagedDestination]],
     resource_to_get: str,
 ) -> str:
-    """Helper function to retrieve a resource json representation and avoid repeating the same logic for Source/Destination and connection.
-
-
-    Args:
-        api_client (airbyte_api_client.ApiClient): The Airbyte API client.
-        workspace_id (str): Current workspace id.
-        ResourceCls (Type[Union[Source, Destination]]): Resource class to use
-        resource_to_get (str): resource name or id to get JSON representation for.
-
-    Returns:
-        str: The resource's JSON representation.
-    """
+    # TODO docstring
     remote_configuration = json.loads(get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get))
 
     resource_type = ResourceCls.__name__.lower()
 
     definition = definitions.factory(resource_type, api_client, workspace_id, remote_configuration[f"{resource_type}_definition_id"])
 
-    renderer = ConnectorSpecificationRenderer(remote_configuration["name"], definition)
+    renderer = renderers.ConnectorSpecificationRenderer(remote_configuration["name"], definition)
 
-    output_path = renderer.import_configuration(project_path=".", configuration=remote_configuration["connection_configuration"])
-    message = f"✅ - Imported {resource_type} in {output_path}."
+    new_configuration_path = renderer.import_configuration(project_path=".", configuration=remote_configuration["connection_configuration"])
+    managed_resource, state = resources.factory(api_client, workspace_id, new_configuration_path).manage(
+        remote_configuration[f"{resource_type}_id"]
+    )
+    message = f"✅ - Imported {resource_type} {managed_resource.name} in {new_configuration_path}. State stored in {state.path}"
     click.echo(click.style(message, fg="green"))
     # TODO add message to ask users to update secrets
 
 
+def import_connection(
+    api_client: airbyte_api_client.ApiClient,
+    workspace_id: str,
+    resource_to_get: str,
+) -> str:
+    # TODO docstring
+    remote_configuration = json.loads(get_json_representation(api_client, workspace_id, UnmanagedConnection, resource_to_get))
+    source_name, destination_name = remote_configuration["source"]["name"], remote_configuration["destination"]["name"]
+    source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
+        project_path=".", definition_type="source", resource_name=source_name
+    )
+    destination_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
+        project_path=".", definition_type="destination", resource_name=destination_name
+    )
+    if not source_configuration_path.is_file():
+        raise MissingResourceDependencyError(
+            f"The source {source_name} is not managed by octavia-cli, please import and apply it before importing your connection."
+        )
+    elif not destination_configuration_path.is_file():
+        raise MissingResourceDependencyError(
+            f"The destination {destination_name} is not managed by octavia-cli, please import and apply it before importing your connection."
+        )
+    else:
+        source = resources.factory(api_client, workspace_id, source_configuration_path)
+        destination = resources.factory(api_client, workspace_id, destination_configuration_path)
+        if not source.was_created:
+            raise resources.NonExistingResourceError(
+                f"The source defined at {source_configuration_path} does not exists. Please run octavia apply before creating this connection."
+            )
+        if not destination.was_created:
+            raise resources.NonExistingResourceError(
+                f"The destination defined at {destination_configuration_path} does not exists. Please run octavia apply before creating this connection."
+            )
+
+        connection_name, connection_id = remote_configuration["name"], remote_configuration["connection_id"]
+        connection_renderer = renderers.ConnectionRenderer(connection_name, source, destination)
+        new_configuration_path = connection_renderer.import_configuration(".", remote_configuration)
+        managed_resource, state = resources.factory(api_client, workspace_id, new_configuration_path).manage(connection_id)
+        message = f"✅ - Imported connection {managed_resource.name} in {new_configuration_path}. State stored in {state.path}"
+        click.echo(click.style(message, fg="green"))
+
+
 @click.group(
     "import",
-    help=f'{build_help_message("source, destination or connection")} ID or name can be used as argument. Example: \'octavia import source "My Pokemon source"\' or \'octavia import source cb5413b2-4159-46a2-910a-dc282a439d2d\'',
+    help=f'{build_help_message("source, destination or connection")}. ID or name can be used as argument. Example: \'octavia import source "My Pokemon source"\' or \'octavia import source cb5413b2-4159-46a2-910a-dc282a439d2d\'',
 )
 @click.pass_context
 def _import(ctx: click.Context):  # pragma: no cover
@@ -73,21 +111,21 @@ def _import(ctx: click.Context):  # pragma: no cover
 @click.argument("resource", type=click.STRING)
 @click.pass_context
 def source(ctx: click.Context, resource: str):
-    click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Source, resource))
+    click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSource, resource))
 
 
 @_import.command(cls=OctaviaCommand, name="destination", help=build_help_message("destination"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
 def destination(ctx: click.Context, resource: str):
-    click.echo(import_resource(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], Destination, resource))
+    click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedDestination, resource))
 
 
 @_import.command(cls=OctaviaCommand, name="connection", help=build_help_message("connection"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
 def connection(ctx: click.Context, resource: str):
-    pass
+    click.echo(import_connection(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], resource))
 
 
 AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]

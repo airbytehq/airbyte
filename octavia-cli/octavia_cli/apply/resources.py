@@ -7,7 +7,7 @@ import os
 import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable, List, Optional, Set, Type, Union
+from typing import Callable, List, Optional, Set, Tuple, Type, Union
 
 import airbyte_api_client
 import click
@@ -75,7 +75,12 @@ class MissingStateError(click.ClickException):
 
 class ResourceState:
     def __init__(
-        self, configuration_path: str, workspace_id: Optional[str], resource_id: str, generation_timestamp: int, configuration_hash: str
+        self,
+        configuration_path: Union[str, Path],
+        workspace_id: Optional[str],
+        resource_id: str,
+        generation_timestamp: int,
+        configuration_hash: str,
     ):
         """This constructor is meant to be private. Construction shall be made with create or from_file class methods.
 
@@ -86,7 +91,7 @@ class ResourceState:
             generation_timestamp (int): State generation timestamp.
             configuration_hash (str): Hash of the loaded configuration file.
         """
-        self.configuration_path = configuration_path
+        self.configuration_path = str(configuration_path)
         self.resource_id = resource_id
         self.generation_timestamp = generation_timestamp
         self.configuration_hash = configuration_hash
@@ -398,6 +403,14 @@ class BaseResource(abc.ABC):
                 raise InvalidConfigurationError(api_error.body)
             else:
                 raise api_error
+
+    def manage(
+        self, resource_id: str
+    ) -> Union[Tuple[SourceRead, ResourceState], Tuple[DestinationRead, ResourceState], Tuple[ConnectionRead, ResourceState]]:
+        # TODO docstring
+        self.state = ResourceState.create(self.configuration_path, self.configuration_hash, self.workspace_id, resource_id)
+
+        return self.remote_resource, self.state
 
     def create(self) -> Union[SourceRead, DestinationRead, ConnectionRead]:
         """Public function to create the resource on the remote Airbyte instance.
