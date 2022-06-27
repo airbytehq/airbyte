@@ -132,7 +132,7 @@ public class EnvConfigs implements Configs {
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
 
-  private static final String METRIC_CLIENT = "METRIC_CLIENT";
+  public static final String METRIC_CLIENT = "METRIC_CLIENT";
   private static final String OTEL_COLLECTOR_ENDPOINT = "OTEL_COLLECTOR_ENDPOINT";
 
   // job-type-specific overrides
