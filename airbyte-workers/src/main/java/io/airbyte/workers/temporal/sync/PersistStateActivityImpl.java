@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateWrapper;
@@ -18,13 +19,14 @@ import lombok.AllArgsConstructor;
 public class PersistStateActivityImpl implements PersistStateActivity {
 
   private final StatePersistence statePersistence;
+  private final FeatureFlags featureFlags;
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {
     final State state = syncOutput.getState();
     if (state != null) {
       try {
-        final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState());
+        final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
           statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
         }

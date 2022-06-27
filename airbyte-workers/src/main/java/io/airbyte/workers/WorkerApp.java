@@ -227,7 +227,7 @@ public class WorkerApp {
         defaultWorkerConfigs,
         defaultProcessFactory);
 
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence);
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
