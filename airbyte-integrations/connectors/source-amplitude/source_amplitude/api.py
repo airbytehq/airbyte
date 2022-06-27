@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -230,8 +230,8 @@ class ActiveUsers(IncrementalAmplitudeStream):
         response_data = response.json().get(self.data_field, [])
         if response_data:
             series = list(map(list, zip(*response_data["series"])))
-            for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "statistics": dict(zip(response_data["seriesLabels"], series[i]))}
+            for i, data in enumerate(series):
+                yield {"date": response_data["xValues"][i], "statistics": dict(zip(response_data["seriesLabels"], data))}
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/users"
