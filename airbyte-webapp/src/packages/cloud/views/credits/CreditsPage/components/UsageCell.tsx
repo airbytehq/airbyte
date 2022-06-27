@@ -19,7 +19,6 @@ const Full = styled.div<{ percent: number }>`
   height: 100%;
   width: ${({ percent }) => percent}%;
   background: ${({ theme }) => theme.grey500};
-  opacity: 0.5;
 `;
 
 const UsageCell: React.FC<ConnectionCellProps> = ({ percent }) => (
