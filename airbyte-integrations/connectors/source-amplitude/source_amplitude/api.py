@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -250,8 +250,8 @@ class AverageSessionLength(IncrementalAmplitudeStream):
             # an array that contains the average session length for each day.
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
             series = response_data["series"][0]
-            for i, date in enumerate(response_data["xValues"]):
-                yield {"date": date, "length": series[i]}
+            for i, data in enumerate(series):
+                yield {"date": response_data["xValues"][i], "length": data}
 
     def path(self, **kwargs) -> str:
         return f"{self.api_version}/sessions/average"
