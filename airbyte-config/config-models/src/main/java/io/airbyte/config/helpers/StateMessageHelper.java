@@ -6,6 +6,7 @@ package io.airbyte.config.helpers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterables;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
@@ -26,7 +27,7 @@ public class StateMessageHelper {
    * @param state - a blob representing the state
    * @return An optional state wrapper, if there is no state an empty optional will be returned
    */
-  public static Optional<StateWrapper> getTypedState(final JsonNode state) {
+  public static Optional<StateWrapper> getTypedState(final JsonNode state, final boolean useStreamCapableState) {
     if (state == null) {
       return Optional.empty();
     } else {
@@ -36,20 +37,40 @@ public class StateMessageHelper {
       } catch (final IllegalArgumentException e) {
         return Optional.of(getLegacyStateWrapper(state));
       }
-      if (stateMessages.stream().anyMatch(streamMessage -> !streamMessage.getAdditionalProperties().isEmpty())) {
-        return Optional.of(getLegacyStateWrapper(state));
+      if (stateMessages.size() == 0) {
+        return Optional.empty();
       }
-      if (stateMessages.size() == 1 && stateMessages.get(0).getType() == AirbyteStateType.GLOBAL) {
-        return Optional.of(new StateWrapper()
-            .withStateType(StateType.GLOBAL)
-            .withGlobal(stateMessages.get(0)));
-      } else if (stateMessages.size() >= 1
-          && stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
-        return Optional.of(new StateWrapper()
-            .withStateType(StateType.STREAM)
-            .withStateMessages(stateMessages));
+
+      if (stateMessages.size() == 1) {
+        if (stateMessages.get(0).getType() == null) {
+          return Optional.of(getLegacyStateWrapper(state));
+        } else {
+          switch (stateMessages.get(0).getType()) {
+            case GLOBAL -> {
+              return Optional.of(provideGlobalState(stateMessages.get(0), useStreamCapableState));
+            }
+            case STREAM -> {
+              return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
+            }
+            case LEGACY -> {
+              return Optional.of(getLegacyStateWrapper(stateMessages.get(0).getData()));
+            }
+            default -> {
+              // Should not be reachable.
+              throw new IllegalStateException("Unexpected state type");
+            }
+          }
+        }
       } else {
-        throw new IllegalStateException("Unexpected state blob");
+        if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == AirbyteStateType.STREAM)) {
+          return Optional.of(provideStreamState(stateMessages, useStreamCapableState));
+        }
+        if (stateMessages.stream().allMatch(stateMessage -> stateMessage.getType() == null)) {
+          return Optional.of(getLegacyStateWrapper(state));
+        }
+
+        throw new IllegalStateException("Unexpected state blob, the state contains either multiple global or conflicting state type.");
+
       }
     }
   }
@@ -71,6 +92,37 @@ public class StateMessageHelper {
       case GLOBAL -> new State().withState(Jsons.jsonNode(List.of(stateWrapper.getGlobal())));
       default -> throw new RuntimeException("Unexpected StateType " + stateWrapper.getStateType());
     };
+  }
+
+  private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {
+    if (useStreamCapableState) {
+      return new StateWrapper()
+          .withStateType(StateType.GLOBAL)
+          .withGlobal(stateMessages);
+    } else {
+      return new StateWrapper()
+          .withStateType(StateType.LEGACY)
+          .withLegacyState(stateMessages.getData());
+    }
+  }
+
+  /**
+   * This is returning a wrapped state, it assumes that the state messages are ordered.
+   *
+   * @param stateMessages - an ordered list of state message
+   * @param useStreamCapableState - a flag that indicates whether to return the new format
+   * @return a wrapped state
+   */
+  private static StateWrapper provideStreamState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
+    if (useStreamCapableState) {
+      return new StateWrapper()
+          .withStateType(StateType.STREAM)
+          .withStateMessages(stateMessages);
+    } else {
+      return new StateWrapper()
+          .withStateType(StateType.LEGACY)
+          .withLegacyState(Iterables.getLast(stateMessages).getData());
+    }
   }
 
   private static StateWrapper getLegacyStateWrapper(final JsonNode state) {

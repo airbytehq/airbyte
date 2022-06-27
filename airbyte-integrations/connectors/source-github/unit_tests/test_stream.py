@@ -68,15 +68,18 @@ def test_internal_server_error_retry(time_mock):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_text", "expected_backoff_time"),
+    ("http_status", "response_headers", "expected_backoff_time"),
     [
-        (HTTPStatus.BAD_GATEWAY, "", 60),
+        (HTTPStatus.BAD_GATEWAY, {}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
 )
-def test_backoff_time(http_status, response_text, expected_backoff_time):
+@patch("time.time", return_value=1655804424.0)
+def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    response_mock.text = response_text
+    response_mock.headers = response_headers
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
@@ -85,12 +88,27 @@ def test_backoff_time(http_status, response_text, expected_backoff_time):
 @responses.activate
 @patch("time.sleep")
 def test_retry_after(time_mock):
+    first_request = True
+
+    def request_callback(request):
+        nonlocal first_request
+        if first_request:
+            first_request = False
+            return (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "")
+        return (HTTPStatus.OK, {}, '{"login": "airbytehq"}')
+
+    responses.add_callback(
+        responses.GET,
+        "https://api.github.com/orgs/airbytehq",
+        callback=request_callback,
+        content_type="application/json",
+    )
+
     stream = Organizations(organizations=["airbytehq"])
-    responses.add("GET", "https://api.github.com/orgs/airbytehq", json={"login": "airbytehq"}, headers={"Retry-After": "10"})
     read_full_refresh(stream)
-    assert time_mock.call_args[0][0] == 10
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
 
 
 @responses.activate
