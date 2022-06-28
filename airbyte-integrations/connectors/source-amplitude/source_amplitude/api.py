@@ -249,7 +249,7 @@ class AverageSessionLength(IncrementalAmplitudeStream):
             # From the Amplitude documentation it follows that "series" is an array with one element which is itself
             # an array that contains the average session length for each day.
             # https://developers.amplitude.com/docs/dashboard-rest-api#returns-2
-            series = response_data["series"][0]
+            series = response_data["series"][0] if response_data["series"] is not None and len(response_data["series"]) > 0 else []
             for i, data in enumerate(series):
                 yield {"date": response_data["xValues"][i], "length": data}
 
