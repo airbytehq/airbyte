@@ -2,7 +2,7 @@
 @use "../../../scss/variables";
 
 .menuItem {
-  color: colors.$greyColor30;
+  color: colors.$grey-30;
   width: 100%;
   cursor: pointer;
   border-radius: 4px;
@@ -20,31 +20,31 @@
 
   &:hover,
   &:focus-visible {
-    background: #262963; //todo: update to use palette when palette up to date
+    background: colors.$dark-blue-800;
     transition: variables.$transition-out;
   }
 
   &.active {
-    color: colors.$whiteColor;
-    background: colors.$primaryColor;
+    color: colors.$white;
+    background: colors.$blue-400;
     transition: variables.$transition-out;
 
     &:hover,
     &:focus-visible {
-      color: colors.$whiteColor;
-      background: #7f7eff; //todo: update to use palette when palette up to date
+      color: colors.$white;
+      background: colors.$blue-300;
       transition: variables.$transition-out;
     }
   }
 
   &.activeChild {
-    color: colors.$whiteColor;
-    background: #353b7b;
+    color: colors.$white;
+    background: colors.$dark-blue-600;
 
     &:hover,
     &:focus-visible {
-      color: colors.$whiteColor;
-      background: #565c94;
+      color: colors.$white;
+      background: colors.$dark-blue-400;
     }
   }
 }

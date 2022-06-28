@@ -1,6 +1,7 @@
 import { faStar } from "@fortawesome/free-regular-svg-icons";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classnames from "classnames";
 import React from "react";
 import { FormattedMessage, FormattedNumber } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -10,6 +11,7 @@ import { Link } from "components";
 
 import { FeatureItem, WithFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
@@ -79,6 +81,13 @@ const SideBar: React.FC = () => {
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const handleChatUs = () => show();
+  const { location } = useRouter();
+
+  const menuItemStyle = (isActive: boolean) => {
+    console.log(isActive);
+    const isChild = location.pathname.split("/").length > 4 && !location.pathname.includes("settings");
+    return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
+  };
 
   return (
     <Bar>
@@ -92,7 +101,7 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <NavLink className={styles.menuItem} to={RoutePaths.Onboarding}>
+              <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
@@ -101,7 +110,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-            <NavLink className={styles.menuItem} to={RoutePaths.Connections}>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -109,7 +118,7 @@ const SideBar: React.FC = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink className={styles.menuItem} to={RoutePaths.Source}>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
@@ -117,7 +126,7 @@ const SideBar: React.FC = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink className={styles.menuItem} to={RoutePaths.Destination}>
+            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
@@ -128,7 +137,7 @@ const SideBar: React.FC = () => {
       </div>
       <Menu>
         <li>
-          <NavLink className={styles.menuItem} to={CloudRoutes.Credits}>
+          <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={CloudRoutes.Credits}>
             <CreditsIcon icon={faStar} />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
@@ -175,7 +184,7 @@ const SideBar: React.FC = () => {
           </SidebarPopout>
         </li>
         <li>
-          <NavLink className={styles.menuItem} to={RoutePaths.Settings}>
+          <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
             <WithFeature featureId={FeatureItem.AllowUpdateConnectors}>
               <React.Suspense fallback={null}>
                 <NotificationIndicator />
