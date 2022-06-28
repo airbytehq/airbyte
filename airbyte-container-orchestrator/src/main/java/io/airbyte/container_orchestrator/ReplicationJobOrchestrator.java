@@ -11,6 +11,7 @@ import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.RecordSchemaValidator;
@@ -99,6 +100,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
+    MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final MetricClient metricClient = MetricClientFactory.getMetricClient();
     final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
