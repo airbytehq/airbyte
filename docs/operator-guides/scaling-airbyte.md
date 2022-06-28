@@ -76,6 +76,7 @@ Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https:
     * This metric shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime.
 * `job_failed_by_release_stage`
     * This metric shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.
+        
         :::note
         Metrics with `by_release_stage` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.  
         :::
