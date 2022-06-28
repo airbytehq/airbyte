@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from __future__ import annotations
 
 import copy
