@@ -99,6 +99,7 @@ public interface ServerFactory {
           seed,
           synchronousSchedulerClient,
           new FileTtlManager(10, TimeUnit.MINUTES, 10),
+          new StatePersistence(configsDatabase),
           MDC.getCopyOfContextMap(),
           configsDatabase,
           jobsDatabase,

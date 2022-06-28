@@ -53,7 +53,6 @@ const News: React.FC = () => {
           <FormattedMessage id="login.selfhosting" />
         </H2>
         <GitBlock>
-          {/*@ts-ignore github icon fails here*/}
           <GitIcon icon={faGithub} />
           <div>
             <H4>

@@ -46,6 +46,7 @@ public class ConfigurationApiTest {
         mock(FileTtlManager.class),
         mock(Database.class),
         mock(Database.class),
+        mock(StatePersistence.class),
         mock(TrackingClient.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
