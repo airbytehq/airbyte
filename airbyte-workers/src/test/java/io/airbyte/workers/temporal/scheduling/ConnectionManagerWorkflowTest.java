@@ -671,7 +671,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @RepeatedTest(10)
-    @Timeout(value = 30,
+    @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
     public void resetCancelRunningWorkflow() throws InterruptedException {
@@ -695,7 +695,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofSeconds(30L));
+      testEnv.sleep(Duration.ofMinutes(3L));
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
