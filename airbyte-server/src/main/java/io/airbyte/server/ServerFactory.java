@@ -4,6 +4,7 @@
 
 package io.airbyte.server;
 
+import com.google.cloud.pubsub.v1.Publisher;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
@@ -43,7 +44,8 @@ public interface ServerFactory {
                         HttpClient httpClient,
                         EventRunner eventRunner,
                         Flyway configsFlyway,
-                        Flyway jobsFlyway);
+                        Flyway jobsFlyway,
+                        Publisher publisher);
 
   class Api implements ServerFactory {
 
@@ -64,7 +66,8 @@ public interface ServerFactory {
                                  final HttpClient httpClient,
                                  final EventRunner eventRunner,
                                  final Flyway configsFlyway,
-                                 final Flyway jobsFlyway) {
+                                 final Flyway jobsFlyway,
+                                 final Publisher publisher) {
       // set static values for factory
       ConfigurationApiFactory.setValues(
           configRepository,
@@ -85,7 +88,8 @@ public interface ServerFactory {
           httpClient,
           eventRunner,
           configsFlyway,
-          jobsFlyway);
+          jobsFlyway,
+          publisher);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

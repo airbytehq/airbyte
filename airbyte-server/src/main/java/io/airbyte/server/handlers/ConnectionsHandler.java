@@ -4,6 +4,7 @@
 
 package io.airbyte.server.handlers;
 
+import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -66,30 +67,34 @@ public class ConnectionsHandler {
   private final WorkspaceHelper workspaceHelper;
   private final TrackingClient trackingClient;
   private final EventRunner eventRunner;
+  private final Publisher publisher;
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
                      final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
-                     final EventRunner eventRunner) {
+                     final EventRunner eventRunner,
+                     final Publisher publisher) {
     this.configRepository = configRepository;
     this.uuidGenerator = uuidGenerator;
     this.workspaceHelper = workspaceHelper;
     this.trackingClient = trackingClient;
     this.eventRunner = eventRunner;
+    this.publisher = publisher;
   }
 
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
-                            final EventRunner eventRunner) {
+                            final EventRunner eventRunner,
+                            final Publisher publisher) {
     this(configRepository,
         UUID::randomUUID,
         workspaceHelper,
         trackingClient,
-        eventRunner);
-
+        eventRunner,
+        publisher);
   }
 
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
@@ -155,6 +160,19 @@ public class ConnectionsHandler {
       configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
       throw e;
     }
+
+    final String message = String.format("""
+                                         {
+                                         "type": "CreateConnection",
+                                         "name": "%s",
+                                         "sourceId": "%s",
+                                         "destinationId": "%s",
+                                         "schedule": "%s"
+                                         }
+                                         """, connectionCreate.getName(), connectionCreate.getSourceId(), connectionCreate.getDestinationId(),
+        connectionCreate.getSchedule());
+
+    // pubToSub(Jsons.serialize(connectionCreate));
 
     return buildConnectionRead(connectionId);
   }

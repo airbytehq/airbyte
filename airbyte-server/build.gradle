@@ -33,6 +33,8 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
 
+    implementation platform('com.google.cloud:libraries-bom:25.3.0')
+    implementation 'com.google.cloud:google-cloud-pubsub'
 
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.postgresql

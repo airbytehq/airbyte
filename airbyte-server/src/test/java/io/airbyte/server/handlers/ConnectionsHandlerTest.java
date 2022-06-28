@@ -158,7 +158,8 @@ class ConnectionsHandlerTest {
           uuidGenerator,
           workspaceHelper,
           trackingClient,
-          eventRunner);
+          eventRunner,
+          null);
     }
 
     @Test
