@@ -243,6 +243,7 @@
               "format": "date-time",
               "type": ["null", "string"]
           } 
+      }
     },
     "started_by": {
       "type": ["null", "string"]
