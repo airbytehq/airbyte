@@ -64,7 +64,6 @@ class DeclarativeComponentFactory:
         4. list: loop over the list and create objects for its items
         5. anything else -> return as is
         """
-
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
@@ -108,7 +107,6 @@ class DeclarativeComponentFactory:
     def get_default_type(parameter_name, parent_class):
         type_hints = get_type_hints(parent_class.__init__)
         interface = type_hints.get(parameter_name)
-
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
         return expected_type
 
