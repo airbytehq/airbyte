@@ -17,7 +17,6 @@ config = {
     "username": "username",
     "password": "password",
     "domain": "demo.kyriba.com",
-    "api_version": 1,
     "start_date": "2022-01-01",
 }
 
