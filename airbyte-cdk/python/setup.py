@@ -39,8 +39,7 @@ files_source_deps = [
 sphinx_deps = ["Sphinx~=4.2", "sphinx-rtd-theme~=1.0"]
 test_deps = ["MyPy~=0.812", "pytest", "pytest-cov", "pytest-mock", "pytest-order", "requests-mock", "pytest-httpserver"]
 
-dev_deps = main_deps + sphinx_deps + test_deps
-files_dev_deps = dev_deps + files_source_deps
+dev_deps = main_deps + files_source_deps + sphinx_deps + test_deps
 
 setup(
     name="airbyte-cdk",
@@ -73,5 +72,5 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     install_requires=main_deps,
     python_requires=">=3.9",
-    extras_require={"files-source": files_source_deps, "sphinx-docs": sphinx_deps, "dev": dev_deps, "files-dev": files_dev_deps},
+    extras_require={"files-source": files_source_deps, "sphinx-docs": sphinx_deps, "dev": dev_deps},
 )
