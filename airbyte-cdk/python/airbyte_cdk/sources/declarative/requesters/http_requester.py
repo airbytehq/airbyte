@@ -6,10 +6,6 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.request_headers.interpolated_request_header_provider import (
-    InterpolatedRequestHeaderProvider,
-)
-from airbyte_cdk.sources.declarative.requesters.request_headers.request_header_provider import RequestHeaderProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -30,21 +26,14 @@ class HttpRequester(Requester):
         path: [str, InterpolatedString],
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
-        request_headers_provider: Optional[RequestHeaderProvider] = None,
         authenticator: HttpAuthenticator,
         retrier: Optional[Retrier] = None,
         config: Config,
     ):
         if request_options_provider is None:
-            request_options_provider = InterpolatedRequestOptionsProvider(
-                config=config, request_parameters={}, request_body_data="", request_body_json={}
-            )
+            request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         elif isinstance(request_options_provider, dict):
             request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
-        if request_headers_provider is None:
-            request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers={})
-        elif isinstance(request_headers_provider, dict):
-            request_headers_provider = InterpolatedRequestHeaderProvider(config=config, request_headers=request_headers_provider)
         self._name = name
         self._authenticator = authenticator
         if type(url_base) == str:
@@ -57,14 +46,8 @@ class HttpRequester(Requester):
             http_method = HttpMethod[http_method]
         self._method = http_method
         self._request_options_provider = request_options_provider
-        self._request_headers_provider = request_headers_provider
         self._retrier = retrier or DefaultRetrier()
         self._config = config
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return self._request_options_provider.request_params(stream_state, stream_slice, next_page_token)
 
     def get_authenticator(self):
         return self._authenticator
@@ -99,10 +82,15 @@ class HttpRequester(Requester):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         return self._retrier.backoff_time(response)
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return self._request_options_provider.request_params(stream_state, stream_slice, next_page_token)
+
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return self._request_headers_provider.request_headers(stream_state, stream_slice, next_page_token)
+        return self._request_options_provider.request_headers(stream_state, stream_slice, next_page_token)
 
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

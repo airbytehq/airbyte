@@ -34,9 +34,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
-        self._iterator = stream_slicer
-        print(f"state: {state}")
-        print(f"statetype: {type(state)}")
+        self._iterator: StreamSlicer = stream_slicer
         self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None

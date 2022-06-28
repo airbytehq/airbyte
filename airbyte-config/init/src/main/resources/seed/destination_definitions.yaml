@@ -97,6 +97,12 @@
   documentationUrl: https://docs.airbyte.io/integrations/destinations/elasticsearch
   icon: elasticsearch.svg
   releaseStage: alpha
+- name: Firebolt
+  destinationDefinitionId: 18081484-02a5-4662-8dba-b270b582f321
+  dockerRepository: airbyte/destination-firebolt
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/destinations/firebolt
+  releaseStage: alpha
 - name: Google Cloud Storage (GCS)
   destinationDefinitionId: ca8f6566-e555-4b40-943a-545bf123117a
   dockerRepository: airbyte/destination-gcs
@@ -225,7 +231,7 @@
 - name: Redshift
   destinationDefinitionId: f7a7d195-377f-cf5b-70a5-be6b819019dc
   dockerRepository: airbyte/destination-redshift
-  dockerImageTag: 0.3.44
+  dockerImageTag: 0.3.46
   documentationUrl: https://docs.airbyte.io/integrations/destinations/redshift
   icon: redshift.svg
   resourceRequirements:

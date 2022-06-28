@@ -18,27 +18,17 @@ class NextPageUrlPaginator(Paginator):
     def __init__(
         self,
         url_base: str = None,
-        interpolated_paginator: Optional[InterpolatedPaginator] = None,
         next_page_token_template: Optional[Mapping[str, str]] = None,
         config: Optional[Config] = None,
     ):
         """
-
         :param url_base: url base to remove from the token
         :param interpolated_paginator: optional paginator to delegate to
         :param next_page_token_template: optional mapping to delegate to if interpolated_paginator is None
         :param config: connection config
         """
-        if next_page_token_template and interpolated_paginator:
-            raise ValueError(
-                f"Only one of next_page_token_template and interpolated_paginator is expected. Got {next_page_token_template} and {interpolated_paginator}"
-            )
         self._url_base = url_base
-        self._interpolated_paginator = (
-            interpolated_paginator
-            # Create paginator from next_page_token_template if no paginator passed as parameter
-            or InterpolatedPaginator(next_page_token_template=next_page_token_template, config=config)
-        )
+        self._interpolated_paginator = InterpolatedPaginator(next_page_token_template=next_page_token_template, config=config)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         next_page_token = self._interpolated_paginator.next_page_token(response, last_records)

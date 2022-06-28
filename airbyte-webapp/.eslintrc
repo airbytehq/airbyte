@@ -64,7 +64,6 @@
     "@typescript-eslint/ban-ts-comment": [
       "warn",
       {
-        "ts-ignore": "allow-with-description",
         "ts-expect-error": "allow-with-description"
       }
     ],
