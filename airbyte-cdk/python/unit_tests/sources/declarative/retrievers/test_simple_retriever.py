@@ -13,7 +13,7 @@ primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
 
 
-def test():
+def test_simple_retriever():
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.request_params.return_value = request_params
@@ -89,6 +89,5 @@ def test():
     assert retriever.backoff_time(requests.Response()) == backoff_time
     assert retriever.request_body_data(None, None, None) == request_body_data
     assert retriever.request_body_json(None, None, None) == request_body_json
-    assert retriever.request_kwargs(None, None, None) == request_kwargs
     assert retriever.cache_filename == cache_filename
     assert retriever.use_cache == use_cache

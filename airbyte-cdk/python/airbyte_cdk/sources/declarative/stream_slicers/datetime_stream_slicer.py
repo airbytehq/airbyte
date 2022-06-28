@@ -130,5 +130,5 @@ class DatetimeStreamSlicer(StreamSlicer):
 
         end_time = stream_slice.get("end_date")
         return self._request_options_provider.request_params(
-            stream_state, stream_slice, next_page_token, start_time=start_time, end_time=end_time
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, start_time=start_time, end_time=end_time
         )

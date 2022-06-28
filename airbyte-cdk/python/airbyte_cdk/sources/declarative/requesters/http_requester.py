@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, MutableMapping, Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -84,28 +84,31 @@ class HttpRequester(Requester):
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return self._request_options_provider.request_params(stream_state, stream_slice, next_page_token)
+    ) -> Mapping[str, Any]:
+        return self._request_options_provider.request_params(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return self._request_options_provider.request_headers(stream_state, stream_slice, next_page_token)
+        return self._request_options_provider.request_headers(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
 
     def request_body_data(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Union[Mapping, str]]:
-        return self._request_options_provider.request_body_data(stream_state, stream_slice, next_page_token)
+        return self._request_options_provider.request_body_data(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
 
     def request_body_json(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Optional[Mapping]:
-        return self._request_options_provider.request_body_json(stream_state, stream_slice, next_page_token)
-
-    def request_kwargs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return self._request_options_provider.request_kwargs(stream_state, stream_slice, next_page_token)
+        return self._request_options_provider.request_body_json(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
 
     @property
     def cache_filename(self) -> str:

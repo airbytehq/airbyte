@@ -137,19 +137,6 @@ class Requester(ABC):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
 
-    @abstractmethod
-    def request_kwargs(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Mapping[str, Any]:
-        """
-        Returns a mapping of keyword arguments to be used when creating the HTTP request.
-        Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
-        this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
-        """
-
     @property
     @abstractmethod
     def cache_filename(self) -> str:
