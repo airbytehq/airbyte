@@ -67,7 +67,7 @@ The advice here is best-effort and by no means comprehensive. Please reach out o
 If you've been running Airbyte in production and have more tips up your sleeve, we welcome contributions!
 
 ## Recommended Metrics
-Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https://docs.airbyte.com/operator-guides/collecting-metrics/).
+Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https://docs.airbyte.com/operator-guides/collecting-metrics/)
 
 ### Key Metrics
 * `oldest_pending_job_age_secs`
