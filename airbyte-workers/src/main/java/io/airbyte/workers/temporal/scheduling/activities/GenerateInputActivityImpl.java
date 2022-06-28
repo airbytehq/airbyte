@@ -45,7 +45,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
             .withDestinationConfiguration(resetConnection.getDestinationConfiguration())
             .withConfiguredAirbyteCatalog(resetConnection.getConfiguredAirbyteCatalog())
             .withOperationSequence(resetConnection.getOperationSequence())
-            .withResourceRequirements(resetConnection.getResourceRequirements());
+            .withResourceRequirements(resetConnection.getResourceRequirements())
+            .withState(resetConnection.getState());
       }
 
       final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);

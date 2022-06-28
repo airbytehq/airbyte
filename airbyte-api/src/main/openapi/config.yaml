@@ -1996,6 +1996,29 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/state/get_type:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state type for a connection.
+      operationId: getStateType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionStateType"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/workspace/state:
     post:
       tags:
@@ -3585,7 +3608,6 @@ components:
           type: string
           description: Stream's name.
         jsonSchema:
-          description: Stream schema using Json Schema specs.
           $ref: "#/components/schemas/StreamJsonSchema"
         supportedSyncModes:
           type: array
@@ -3610,6 +3632,7 @@ components:
           type: string
           description: Optional Source-defined namespace. Airbyte streams from the same sources should have the same namespace. Currently only used by JDBC destinations to determine what schema to write to.
     StreamJsonSchema:
+      description: Stream schema using Json Schema specs.
       type: object
     AirbyteStreamConfiguration:
       description: the mutable part of the stream to configure the destination
@@ -3674,7 +3697,6 @@ components:
         configId:
           type: string
         pagination:
-          type: object
           $ref: "#/components/schemas/Pagination"
     JobIdRequestBody:
       type: object
@@ -3707,6 +3729,25 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
+        resetConfig:
+          $ref: "#/components/schemas/ResetConfig"
+    ResetConfig:
+      type: object
+      description: contains information about how a reset was configured. only populated if the job was a reset.
+      properties:
+        streamsToReset:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamDescriptor"
+    StreamDescriptor:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        namespace:
+          type: string
     JobDebugRead:
       type: object
       required:
@@ -3980,14 +4021,130 @@ components:
           $ref: "#/components/schemas/SynchronousJobRead"
     ConnectionState:
       type: object
+      description: Contains the state for a connection. The stateType field identifies what type of state it is. Only the field corresponding to that type will be set, the rest will be null. If stateType=not_set, then none of the fields will be set.
       required:
         - connectionId
+        - stateType
       properties:
+        stateType:
+          $ref: "#/components/schemas/ConnectionStateType"
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
-        state:
-          $ref: "#/components/schemas/ConnectionStateObject"
-    ConnectionStateObject:
+        state: # legacy state object
+          $ref: "#/components/schemas/StateBlob"
+        streamState:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamState"
+        globalState:
+          $ref: "#/components/schemas/GlobalState"
+    StateBlob:
+      type: object
+    StreamState:
+      type: object
+      required:
+        - streamDescriptor
+      properties:
+        streamDescriptor:
+          $ref: "#/components/schemas/StreamDescriptor"
+        streamState:
+          $ref: "#/components/schemas/StateBlob"
+    GlobalState:
+      type: object
+      required:
+        - streamStates
+      properties:
+        shared_state:
+          $ref: "#/components/schemas/StateBlob"
+        streamStates:
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamState"
+    ConnectionStateType:
+      type: string
+      enum:
+        - global
+        - stream
+        - legacy
+        - not_set
+    CatalogDiff:
+      type: object
+      description: Describes the difference between two Airbyte catalogs.
+      required:
+        - transforms
+      properties:
+        transforms:
+          description: list of stream transformations. order does not matter.
+          type: array
+          items:
+            $ref: "#/components/schemas/StreamTransform"
+    StreamTransform:
+      type: object
+      required:
+        - transformType
+        - streamDescriptor
+      properties:
+        transformType:
+          type: string
+          enum:
+            - add_stream
+            - remove_stream
+            - update_stream
+        streamDescriptor:
+          $ref: "#/components/schemas/StreamDescriptor"
+        updateStream:
+          type: array
+          description: list of field transformations. order does not matter.
+          items:
+            $ref: "#/components/schemas/FieldTransform"
+    FieldTransform:
+      type: object
+      description: "Describes the difference between two Streams."
+      required:
+        - transformType
+        - fieldName
+      properties:
+        transformType:
+          type: string
+          enum:
+            - add_field
+            - remove_field
+            - update_field_schema
+        fieldName:
+          $ref: "#/components/schemas/FieldName"
+        addField:
+          $ref: "#/components/schemas/FieldAdd"
+        removeField:
+          $ref: "#/components/schemas/FieldRemove"
+        updateFieldSchema:
+          $ref: "#/components/schemas/FieldSchemaUpdate"
+    FieldAdd:
+      type: object
+      properties:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldRemove:
+      type: object
+      properties:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldSchemaUpdate:
+      type: object
+      required:
+        - oldSchema
+        - newSchema
+      properties:
+        oldSchema:
+          $ref: "#/components/schemas/FieldSchema"
+        newSchema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldName:
+      description: A field name is a list of strings that form the path to the field.
+      type: array
+      items:
+        type: string
+    FieldSchema:
+      description: JSONSchema representation of the field
       type: object
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
@@ -4099,10 +4256,8 @@ components:
             $ref: "#/components/schemas/DbMigrationRead"
     # OAuth
     OAuthConfiguration:
-      description: OAuth specific blob.
+      description: The values required to configure OAuth flows. The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
     OAuthInputConfiguration:
-      description: The values required to configure OAuth flows.
-        The schema for this must match the `OAuthConfigSpecification.oauthUserInputFromConnectorConfigSpecification` schema.
       $ref: "#/components/schemas/OAuthConfiguration"
     AdvancedAuth:
       type: object
@@ -4372,6 +4527,8 @@ components:
         catalogId:
           type: string
           format: uuid
+        catalogDiff:
+          $ref: "#/components/schemas/CatalogDiff"
     WebBackendConnectionReadList:
       type: object
       required:

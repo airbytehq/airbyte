@@ -38,14 +38,14 @@ Wherever you want!
 
 ## **Perks!!!**
 
-* **Flexible work environment as fully remote** - we don’t look at when you log in, log out or how much time you work. We trust you, it’s the only way remote can actually work. 
+* **Flexible work environment as fully remote** - we don’t look at when you log in, log out or how much time you work. We trust you, it’s the only way remote can actually work.
 * [**Unlimited vacation policy**](https://handbook.airbyte.io/people/time-off) with mandatory minimum time off - so you can fit work around your life.
 * [**Co-working space stipend**](https://handbook.airbyte.io/people/expense-policy#work-space) - we provide everyone with $200/month to use on a coworking space of their choice, if any.
 * [**Parental leave**](https://handbook.airbyte.io/people/time-off#parental-leave) \(for both parents, after one year spent with the company\) - so those raising families can do so while still working for us.
-* **Open book policy** - we reimburse books that employees want to purchase for their professional and career development. 
-* **Continuous learning / training policy** - we sponsor the conferences and training programs you feel would add to your development in the company. 
-* **Health insurance** for those from countries that do not provide this freely. Through Savvy in the US, which means you can choose the insurance you want and will receive a stipend from the company. 
-* **401k** for the US employees. 
+* **Open book policy** - we reimburse books that employees want to purchase for their professional and career development.
+* **Continuous learning / training policy** - we sponsor the conferences and training programs you feel would add to your development in the company.
+* **Health insurance** for those from countries that do not provide this freely. Through Savvy in the US, which means you can choose the insurance you want and will receive a stipend from the company.
+* **401k** for the US employees.
 * **Sponsored visas** for those who need them
 * We'll give you a corporate card for expenses. Our philosophy is Freedom & Responsibiility. We trust you, just do what's best for the company.
 
@@ -56,7 +56,7 @@ We are an open company, we are opinionated and public about how we think!
 * Our [company handbook](https://handbook.airbyte.io/),
 * Our [culture & values](https://handbook.airbyte.io/company/culture-and-values),
 * Our [strategy](https://handbook.airbyte.io/strategy/strategy),
-* Our [roadmap](https://docs.airbyte.io/roadmap),
+* Our [roadmap](https://handbook.airbyte.com/strategy/roadmap),
 * The [future of data integration](https://airbyte.io/articles/data-engineering-thoughts/why-the-future-of-etl-is-not-elt-but-el/)
 
 ## **Applying**

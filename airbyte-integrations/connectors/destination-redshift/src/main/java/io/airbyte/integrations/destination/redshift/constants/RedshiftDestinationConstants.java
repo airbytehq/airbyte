@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift.constants;
 
 /**
@@ -5,8 +9,8 @@ package io.airbyte.integrations.destination.redshift.constants;
  */
 public class RedshiftDestinationConstants {
 
-  private RedshiftDestinationConstants() {
-  }
+  private RedshiftDestinationConstants() {}
 
   public static final String UPLOADING_METHOD = "uploading_method";
+
 }

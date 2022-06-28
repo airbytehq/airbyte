@@ -2,7 +2,10 @@
 
 The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
-This is a simple task with the Airbyte CDK. For each stream in our connector we'll need to: 1. Create a python `class` in `source.py` which extends `HttpStream` 2. Place a `<stream_name>.json` file in the `source_<name>/schemas/` directory. The name of the file should be the snake\_case name of the stream whose schema it describes, and its contents should be the JsonSchema describing the output from that stream.
+This is a simple task with the Airbyte CDK. For each stream in our connector we'll need to: 
+
+1. Create a python `class` in `source.py` which extends `HttpStream`. 
+2. Place a `<stream_name>.json` file in the `source_<name>/schemas/` directory. The name of the file should be the snake\_case name of the stream whose schema it describes, and its contents should be the JsonSchema describing the output from that stream.
 
 Let's create a class in `source.py` which extends `HttpStream`. You'll notice there are classes with extensive comments describing what needs to be done to implement various connector features. Feel free to read these classes as needed. But for the purposes of this tutorial, let's assume that we are adding classes from scratch either by deleting those generated classes or editing them to match the implementation below.
 
@@ -60,7 +63,7 @@ Having created this stream in code, we'll put a file `exchange_rates.json` in th
 With `.json` schema file in place, let's see if the connector can now find this schema and produce a valid catalog:
 
 ```text
-python main.py discover --config secrets/config.json
+python main.py discover --config secrets/config.json # this is not a mistake, the schema file is found by naming snake_case naming convention as specified above
 ```
 
 you should see some output like:

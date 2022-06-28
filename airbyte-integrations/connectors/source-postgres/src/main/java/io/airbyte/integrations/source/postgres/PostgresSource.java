@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -26,12 +27,17 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
@@ -227,16 +233,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    /**
-     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
-     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
-     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
-     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
-     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
-     * part
-     */
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
@@ -402,6 +400,27 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     properties.set(CDC_DELETED_AT, stringType);
 
     return stream;
+  }
+
+  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+  // state
+  @Override
+  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
+      final AirbyteGlobalState globalState = new AirbyteGlobalState()
+          .withSharedState(Jsons.jsonNode(new CdcState()))
+          .withStreamStates(List.of());
+      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+    } else {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState()));
+    }
+  }
+
+  @Override
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   public static void main(final String[] args) throws Exception {

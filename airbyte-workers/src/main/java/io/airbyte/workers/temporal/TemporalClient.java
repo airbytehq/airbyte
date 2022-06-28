@@ -6,7 +6,6 @@ package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
-import io.airbyte.config.Configs;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -33,6 +32,8 @@ import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -54,7 +55,6 @@ public class TemporalClient {
   private final Path workspaceRoot;
   private final WorkflowClient client;
   private final WorkflowServiceStubs service;
-  private final Configs configs;
 
   /**
    * This is use to sleep between 2 temporal queries. The query are needed to ensure that the cancel
@@ -63,23 +63,21 @@ public class TemporalClient {
    */
   private static final int DELAY_BETWEEN_QUERY_MS = 10;
 
-  private static final int MAXIMUM_SEARCH_PAGE_SIZE = 50;
-
-  public static TemporalClient production(final String temporalHost, final Path workspaceRoot, final Configs configs) {
-    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService(temporalHost);
-    return new TemporalClient(WorkflowClient.newInstance(temporalService), workspaceRoot, temporalService, configs);
-  }
-
-  // todo (cgardens) - there are two sources of truth on workspace root. we need to get this down to
-  // one. either temporal decides and can report it or it is injected into temporal runs.
   public TemporalClient(final WorkflowClient client,
                         final Path workspaceRoot,
-                        final WorkflowServiceStubs workflowServiceStubs,
-                        final Configs configs) {
+                        final WorkflowServiceStubs workflowServiceStubs) {
     this.client = client;
     this.workspaceRoot = workspaceRoot;
     this.service = workflowServiceStubs;
-    this.configs = configs;
+  }
+
+  /**
+   * Direct termination of Temporal Workflows should generally be avoided. This method exists for some
+   * rare circumstances where this may be required. Originally added to facilitate Airbyte's migration
+   * to Temporal Cloud. TODO consider deleting this after Temporal Cloud migration
+   */
+  public void dangerouslyTerminateWorkflow(final String workflowId, final String reason) {
+    this.client.newUntypedWorkflowStub(workflowId).terminate(reason);
   }
 
   public TemporalResponse<ConnectorSpecification> submitGetSpec(final UUID jobId, final int attempt, final JobGetSpecConfig config) {
@@ -213,10 +211,23 @@ public class TemporalClient {
     } while (token != null && token.size() > 0);
   }
 
+  /**
+   * Refreshes the cache of running workflows, and returns their names. Currently called by the
+   * Temporal Cloud migrator to generate a list of workflows that should be migrated. After the
+   * Temporal Migration is complete, this could be removed, though it may be handy for a future use
+   * case.
+   */
+  public Set<String> getAllRunningWorkflows() {
+    final var startTime = Instant.now();
+    refreshRunningWorkflow();
+    final var endTime = Instant.now();
+    log.info("getAllRunningWorkflows took {} milliseconds", Duration.between(startTime, endTime).toMillis());
+    return workflowNames;
+  }
+
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
     final ConnectionManagerWorkflow connectionManagerWorkflow = ConnectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
-
     try {
       CompletableFuture.supplyAsync(() -> {
         try {
@@ -224,7 +235,6 @@ public class TemporalClient {
             Thread.sleep(DELAY_BETWEEN_QUERY_MS);
           } while (!isWorkflowReachable(connectionId));
         } catch (final InterruptedException e) {}
-
         return null;
       }).get(60, TimeUnit.SECONDS);
     } catch (final InterruptedException | ExecutionException e) {
