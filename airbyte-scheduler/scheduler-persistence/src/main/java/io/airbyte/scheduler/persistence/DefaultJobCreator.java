@@ -18,6 +18,7 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.StreamDescriptor;
@@ -95,9 +96,7 @@ public class DefaultJobCreator implements JobCreator {
       throws IOException {
     final ConfiguredAirbyteCatalog configuredAirbyteCatalog = standardSync.getCatalog();
     configuredAirbyteCatalog.getStreams().forEach(configuredAirbyteStream -> {
-      final StreamDescriptor streamDescriptor = new StreamDescriptor()
-          .withName(configuredAirbyteStream.getStream().getName())
-          .withNamespace(configuredAirbyteStream.getStream().getNamespace());
+      final StreamDescriptor streamDescriptor = CatalogHelpers.extractDescriptor(configuredAirbyteStream);
       configuredAirbyteStream.setSyncMode(SyncMode.FULL_REFRESH);
       if (streamsToReset.contains(streamDescriptor)) {
         // The Reset Source will emit no record messages for any streams, so setting the destination sync
