@@ -197,13 +197,8 @@ def test_create_requester():
     request_options_provider:
       request_parameters:
         page_size: 10
-<<<<<<< HEAD
-    request_headers_provider:
-      header: header_value
-=======
       request_headers:
         header: header_value
->>>>>>> master
     """
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()

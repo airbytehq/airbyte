@@ -56,7 +56,6 @@ class DeclarativeComponentFactory:
         return {**d1, **d2}
 
     def _create_subcomponent(self, key, definition, kwargs, config, parent_class):
-
         """
         There are 5 ways to define a component.
         1. dict with "class_name" field -> create an object of type "class_name"
@@ -118,10 +117,9 @@ class DeclarativeComponentFactory:
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
         return expected_type
 
-
-@staticmethod
-def _get_subcomponent_options(sub: Any):
-    if isinstance(sub, dict):
-        return sub.get("options", {})
-    else:
-        return {}
+    @staticmethod
+    def _get_subcomponent_options(sub: Any):
+        if isinstance(sub, dict):
+            return sub.get("options", {})
+        else:
+            return {}

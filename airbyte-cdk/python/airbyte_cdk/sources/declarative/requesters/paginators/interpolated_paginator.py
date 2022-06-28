@@ -22,10 +22,12 @@ class InterpolatedPaginator(Paginator):
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         decoded_response = self._decoder.decode(response)
         headers = response.headers
+        print(f"last_records: {last_records}")
         interpolated_values = self._next_page_token_template.eval(
             self._config, decoded_response=decoded_response, headers=headers, last_records=last_records
         )
+        print(f"interpolated_values: {interpolated_values}")
 
-        non_null_tokens = {k: v for k, v in interpolated_values.items() if v}
+        non_null_tokens = {k: v for k, v in interpolated_values.items() if v is not None}
 
         return non_null_tokens if non_null_tokens else None

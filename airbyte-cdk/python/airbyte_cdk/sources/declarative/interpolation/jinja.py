@@ -29,22 +29,28 @@ class JinjaInterpolation(Interpolation):
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
                 if result:
-                    try:
-                        return ast.literal_eval(result)
-                    except (ValueError, SyntaxError):
-                        return result
+                    return self._literal_eval(result)
             else:
                 # If input is not a string, return it as is
                 raise Exception(f"Expected a string. got {input_str}")
         except UndefinedError:
             pass
         # If result is empty or resulted in an undefined error, evaluate and return the default string
-        return self._eval(default, context)
+        return self._literal_eval(self._eval(default, context))
+
+    def _literal_eval(self, result):
+        try:
+            return ast.literal_eval(result)
+        except (ValueError, SyntaxError) as e:
+            print(f"error: {e}: {result}")
+            return result
 
     def _eval(self, s: str, context):
         try:
+            print(f"evaluating {s} with {context}")
             return self._environment.from_string(s).render(context)
-        except TypeError:
+        except TypeError as e:
             # The string is a static value, not a jinja template
             # It can be returned as is
+            print(f"eval error {e}")
             return s

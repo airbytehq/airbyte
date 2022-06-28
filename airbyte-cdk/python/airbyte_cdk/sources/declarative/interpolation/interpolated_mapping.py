@@ -14,9 +14,12 @@ class InterpolatedMapping:
         self._interpolation = interpolation
 
     def eval(self, config, **kwargs):
+        print(f"mapping: {self._mapping}")
+        print(f"kwargs: {kwargs}")
         interpolated_values = {
             self._interpolation.eval(name, config, **kwargs): self._eval(value, config, **kwargs) for name, value in self._mapping.items()
         }
+        print(f"interpolated_values: {interpolated_values}")
         return interpolated_values
 
     def _eval(self, value, config, **kwargs):

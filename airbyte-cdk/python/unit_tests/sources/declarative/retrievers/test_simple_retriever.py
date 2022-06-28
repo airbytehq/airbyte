@@ -70,7 +70,7 @@ def test():
     assert retriever.primary_key == primary_key
     assert retriever.url_base == url_base
     assert retriever.path() == path
-    assert retriever.get_state() == underlying_state
+    assert retriever.state == underlying_state
     assert retriever.next_page_token(response) == next_page_token
     assert retriever.request_params(None, None, None) == request_params
     assert retriever.stream_slices(sync_mode=SyncMode.incremental) == stream_slices

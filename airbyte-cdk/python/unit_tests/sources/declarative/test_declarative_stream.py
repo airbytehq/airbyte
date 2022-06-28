@@ -8,7 +8,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 
 
-def test():
+def test_declarative_stream():
     name = "stream"
     primary_key = "pk"
     cursor_field = ["created_at"]
@@ -23,15 +23,15 @@ def test():
     checkpoint_interval = 1000
 
     retriever = MagicMock()
-    retriever.get_state.return_value = state
+    retriever.state = state
     retriever.read_records.return_value = records
     retriever.stream_slices.return_value = stream_slices
     retriever.state_checkpoint_interval = checkpoint_interval
+    retriever.cursor_field = cursor_field
 
     stream = DeclarativeStream(
         name=name,
         primary_key=primary_key,
-        cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
     )
