@@ -36,7 +36,17 @@ def import_source_or_destination(
     ResourceCls: Type[Union[UnmanagedSource, UnmanagedDestination]],
     resource_to_get: str,
 ) -> str:
-    # TODO docstring
+    """Helper function to import sources & destinations.
+
+    Args:
+        api_client (airbyte_api_client.ApiClient): the Airbyte API client.
+        workspace_id (str): current Airbyte workspace id.
+        ResourceCls (Union[UnmanagedSource, UnmanagedDestination]): the Airbyte Resource Class.
+        resource_to_get (str): the name or ID of the resource in the current Airbyte workspace id.
+
+    Returns:
+        str: The generated import message.
+    """
     remote_configuration = json.loads(get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get))
 
     resource_type = ResourceCls.__name__.lower()
@@ -59,7 +69,16 @@ def import_connection(
     workspace_id: str,
     resource_to_get: str,
 ) -> str:
-    # TODO docstring
+    """Helper function to import connection.
+
+    Args:
+        api_client (airbyte_api_client.ApiClient): the Airbyte API client.
+        workspace_id (str): current Airbyte workspace id.
+        resource_to_get (str): the name or ID of the resource in the current Airbyte workspace id.
+
+    Returns:
+        str: The generated import message.
+    """
     remote_configuration = json.loads(get_json_representation(api_client, workspace_id, UnmanagedConnection, resource_to_get))
     source_name, destination_name = remote_configuration["source"]["name"], remote_configuration["destination"]["name"]
     source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
