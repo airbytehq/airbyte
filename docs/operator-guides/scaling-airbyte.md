@@ -81,19 +81,19 @@ Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https:
   <tr>
    <td>oldest_pending_job_age_secs
    </td>
-   <td>This metric shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.
+   <td>Shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.
    </td>
   </tr>
   <tr>
    <td>oldest_running_job_age_secs
    </td>
-   <td>This metric shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime. 
+   <td>Shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime. 
    </td>
   </tr>
   <tr>
    <td>job_failed_by_release_stage
    </td>
-   <td>This metric shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.
+   <td>Shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.
    </td>
   </tr>
 </table>
@@ -129,19 +129,19 @@ If a job was created for an Alpha source to a Beta destination, and the outcome 
   <tr>
    <td>num_running_jobs & num_pending_jobs
    </td>
-   <td>These two metrics show how many jobs are currently running and how many jobs are in pending state. These help you understand the general system state.
+   <td>Shows how many jobs are currently running and how many jobs are in pending state. These help you understand the general system state.
    </td>
   </tr>
   <tr>
    <td>job_succeeded_by_release_stage
    </td>
-   <td>This metric shows successful jobs in that release stage and is tagged as alpha, beta, or GA.
+   <td>Shows successful jobs in that release stage and is tagged as alpha, beta, or GA.
    </td>
   </tr>
   <tr>
    <td>job_created_by_release_stage
    </td>
-   <td>This metric shows the jobs created in that release stage and is tagged as alpha, beta, or GA.
+   <td>Shows the jobs created in that release stage and is tagged as alpha, beta, or GA.
    </td>
   </tr>
 </table>
