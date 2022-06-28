@@ -61,7 +61,8 @@ def import_source_or_destination(
     )
     message = f"✅ - Imported {resource_type} {managed_resource.name} in {new_configuration_path}. State stored in {state.path}"
     click.echo(click.style(message, fg="green"))
-    # TODO add message to ask users to update secrets
+    message = f"⚠️  - Please update any secrets stored in {state.path}"
+    click.echo(click.style(message, fg="yellow"))
 
 
 def import_connection(
