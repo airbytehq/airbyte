@@ -456,7 +456,6 @@ public class WorkerApp {
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
-    final StatePersistence statePersistence = new StatePersistence(configDatabase);
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
