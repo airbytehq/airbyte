@@ -10,7 +10,9 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
+from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -23,8 +25,8 @@ class SimpleRetriever(Retriever, HttpStream):
         requester: Requester,
         paginator: Paginator,
         record_selector: HttpSelector,
-        stream_slicer: StreamSlicer,
-        state: State,
+        stream_slicer: Optional[StreamSlicer] = SingleSlice,
+        state: Optional[State] = None,
     ):
         self._name = name
         self._primary_key = primary_key
@@ -33,7 +35,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = stream_slicer
-        self._state: State = state.deep_copy()
+        self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None
 
