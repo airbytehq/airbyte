@@ -28,6 +28,10 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -429,6 +433,33 @@ class ConfigRepositoryTest {
 
     final var check = configRepository.healthCheck();
     assertFalse(check);
+  }
+
+  @Test
+  void testGetAllStreamsForConnection() throws Exception {
+    final UUID connectionId = UUID.randomUUID();
+    final AirbyteStream airbyteStream = new AirbyteStream().withName("stream1").withNamespace("namespace1");
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream().withStream(airbyteStream);
+    final AirbyteStream airbyteStream2 = new AirbyteStream().withName("stream2");
+    final ConfiguredAirbyteStream configuredStream2 = new ConfiguredAirbyteStream().withStream(airbyteStream2);
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream, configuredStream2));
+
+    final StandardSync sync = new StandardSync()
+        .withCatalog(configuredCatalog);
+    doReturn(sync)
+        .when(configRepository)
+        .getStandardSync(connectionId);
+
+    final List<StreamDescriptor> result = configRepository.getAllStreamsForConnection(connectionId);
+    assertEquals(2, result.size());
+
+    assertTrue(
+        result.stream().anyMatch(
+            streamDescriptor -> streamDescriptor.getName().equals("stream1") && streamDescriptor.getNamespace().equals("namespace1")));
+    assertTrue(
+        result.stream().anyMatch(
+            streamDescriptor -> streamDescriptor.getName().equals("stream2") && streamDescriptor.getNamespace() == null));
+
   }
 
 }
