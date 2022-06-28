@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
@@ -115,22 +114,6 @@ class ConfigRepositoryTest {
     configRepository.getStandardWorkspaceFromConnection(connectionId, isTombstone);
 
     verify(configRepository).getStandardWorkspace(WORKSPACE_ID, isTombstone);
-  }
-
-  @Test
-  void testGetConnectionState() throws Exception {
-    final UUID connectionId = UUID.randomUUID();
-    final State state = new State().withState(Jsons.deserialize("{ \"cursor\": 1000 }"));
-    final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
-
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), StandardSyncState.class))
-        .thenThrow(new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_STATE, connectionId));
-    assertEquals(Optional.empty(), configRepository.getConnectionState(connectionId));
-
-    reset(configPersistence);
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), StandardSyncState.class))
-        .thenReturn(connectionState);
-    assertEquals(Optional.of(state), configRepository.getConnectionState(connectionId));
   }
 
   @Test
