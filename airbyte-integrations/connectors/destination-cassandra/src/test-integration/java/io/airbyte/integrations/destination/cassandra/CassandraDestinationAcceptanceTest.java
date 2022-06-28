@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.cassandra;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CassandraDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
 
@@ -36,8 +35,8 @@ public class CassandraDestinationAcceptanceTest extends DestinationAcceptanceTes
     configJson = TestDataFactory.createJsonConfig(
         cassandraContainer.getUsername(),
         cassandraContainer.getPassword(),
-        cassandraContainer.getHost(),
-        cassandraContainer.getFirstMappedPort());
+        HostPortResolver.resolveHost(cassandraContainer),
+        HostPortResolver.resolvePort(cassandraContainer));
     var cassandraConfig = new CassandraConfig(configJson);
     cassandraCqlProvider = new CassandraCqlProvider(cassandraConfig);
     cassandraNameTransformer = new CassandraNameTransformer(cassandraConfig);
