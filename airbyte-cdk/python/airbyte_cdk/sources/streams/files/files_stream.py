@@ -62,7 +62,7 @@ class FilesStream(Stream, ABC):
         self.master_schema: Dict[str, Any] = None
         LOGGER.info(f"initialised stream with format: {format}")
 
-    def _parse_user_input_schema(schema: str) -> Dict[str, Any]:
+    def _parse_user_input_schema(self, schema: str) -> Dict[str, Any]:
         """
         If the user provided a schema, we run this method to convert to a python dict and verify it
         This verifies:
@@ -515,9 +515,7 @@ class IncrementalFilesStream(FilesStream, ABC):
         if stream_slice:
             if sync_mode == SyncMode.full_refresh:
                 yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-
             else:
-
                 file_reader = self.fileformatparser_class(
                     self._format, self._get_master_schema(self._get_datetime_from_stream_state(stream_state))
                 )

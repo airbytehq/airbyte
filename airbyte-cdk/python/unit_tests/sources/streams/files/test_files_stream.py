@@ -3,14 +3,16 @@
 #
 
 import logging
+import random
 from datetime import datetime
 from typing import Any, Dict, List, Mapping
 from unittest.mock import MagicMock, patch
 
+import pendulum
 import pytest
-
-# from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.files import IncrementalFilesStream
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.files import FileInfo, IncrementalFilesStream, StorageFile
+from airbyte_cdk.sources.streams.files.formats import CsvParser
 
 from .formats.abstract_parser_tests import create_by_local_file, memory_limit
 
@@ -21,6 +23,15 @@ def mock_big_size_object():
     mock = MagicMock()
     mock.__sizeof__.return_value = 1000000001
     return mock
+
+
+@pytest.fixture(name="five_file_infos")
+def file_info_fixture():
+    lst = []
+    for x in range(5):
+        rand_int = random.randint(0, 1556417921769)
+        lst.append(FileInfo(f"dummyfile_{rand_int}", 10, pendulum.now() - pendulum.duration(milliseconds=rand_int)))
+    return lst
 
 
 # patching abstractmethods to empty set so we can instantiate ABC to test
@@ -54,12 +65,18 @@ class TestIncrementalFilesStream:
     )
     @memory_limit(512)
     def test_parse_user_input_schema(self, schema_string: str, return_schema: str) -> None:
+        stream = IncrementalFilesStream(dataset="foo", provider={}, format={}, path_pattern="**")
         if return_schema is not None:
-            assert str(IncrementalFilesStream._parse_user_input_schema(schema_string)) == str(return_schema)
+            assert str(stream._parse_user_input_schema(schema_string)) == str(return_schema)
         else:
             with pytest.raises(Exception) as e_info:
-                IncrementalFilesStream._parse_user_input_schema(schema_string)
+                stream._parse_user_input_schema(schema_string)
                 LOGGER.debug(str(e_info))
+
+    def test_name_property(self):
+        dataset = "foo"
+        stream = IncrementalFilesStream(dataset=dataset, provider={}, format={}, path_pattern="**")
+        assert stream.name == dataset
 
     @pytest.mark.parametrize(  # set expected_return_record to None for an expected fail
         "target_columns, record, expected_return_record",
@@ -327,6 +344,12 @@ class TestIncrementalFilesStream:
         file_infos = [create_by_local_file(filepath) for filepath in filepaths]
         assert set([p.key for p in fs.pattern_matched_file_iterator(file_infos)]) == set(expected_filepaths)
 
+    def test_get_time_ordered_file_infos(self, five_file_infos):
+        stream = IncrementalFilesStream(dataset="foo", provider={}, format={}, path_pattern="**")
+        with patch.object(stream, "file_iterator", MagicMock(return_value=five_file_infos)):
+            lst = stream.get_time_ordered_file_infos()
+        assert lst[0].last_modified < lst[1].last_modified < lst[2].last_modified < lst[3].last_modified < lst[4].last_modified
+
     @pytest.mark.parametrize(
         "latest_record, current_stream_state, expected",
         [
@@ -387,29 +410,78 @@ class TestIncrementalFilesStream:
                     datetime,
                 )
 
-    def test_name_property(self):
-        dataset = "foo"
-        stream = IncrementalFilesStream(dataset=dataset, provider={}, format={}, path_pattern="**")
-        assert stream.name == dataset
+    def test_fileformatparser_class_exception(self):
+        stream = IncrementalFilesStream(dataset="foo", provider={}, format={"filetype": "NON-EXISTENT_format"}, path_pattern="**")
+        with pytest.raises(RuntimeError) as e_info:
+            stream.fileformatparser_class
+            LOGGER.debug(str(e_info))
 
-    # def test_fileformatparser_class():
-    #     # filetype = self._format.get("filetype")
-    #     # file_reader = FORMAT_PARSER_MAP.get(filetype)
-    #     # if not file_reader:
-    #     #     raise RuntimeError(f"Detected mismatched file format '{filetype}'. Available values: '{list(FORMAT_PARSER_MAP.keys())}''.")
-    #     # return file_reader
-    #     pass
+    @pytest.mark.parametrize(
+        "stream_kwargs, mock_inferred_schema, expected_schema_columns",
+        [
+            (  # basic test
+                {"dataset": "foo", "provider": {}, "format": {"filetype": "csv"}, "path_pattern": "**"},
+                {"col_a": "string", "col_b": "integer"},
+                {"col_a": "string", "col_b": "integer"},
+            ),
+            (  # provided schema
+                {
+                    "dataset": "foo",
+                    "provider": {},
+                    "format": {"filetype": "csv"},
+                    "path_pattern": "**",
+                    "schema": '{"col_a": "string", "col_b":"integer"}',
+                },
+                {"col_a": "string", "col_b": "integer"},
+                {"col_a": "string", "col_b": "integer"},
+            ),
+        ],
+    )
+    @patch("airbyte_cdk.sources.streams.files.IncrementalFilesStream.storagefile_class", StorageFile)
+    @patch("airbyte_cdk.sources.streams.files.StorageFile.__abstractmethods__", set())
+    def test_get_json_schema(self, stream_kwargs, mock_inferred_schema, expected_schema_columns, five_file_infos):
+        expected_schema = {
+            "properties": {
+                IncrementalFilesStream.ab_additional_col: {"type": "object"},
+                IncrementalFilesStream.ab_last_mod_col: {"format": "date-time", "type": "string"},
+                IncrementalFilesStream.ab_file_name_col: {"type": "string"},
+            },
+            "type": "object",
+        }
+        for col, typ in expected_schema_columns.items():
+            expected_schema["properties"][col] = {"type": ["null", typ]}
 
-    # def test_get_time_ordered_file_infos():
-    #     # with and without initial schema
-    #     pass
+        stream = IncrementalFilesStream(**stream_kwargs)
+        with patch.object(stream, "file_iterator", MagicMock(return_value=five_file_infos)):
+            with patch.object(stream.storagefile_class, "open", MagicMock()):
+                with patch.object(CsvParser, "get_inferred_schema", MagicMock(return_value=mock_inferred_schema)):
+                    schema = stream.get_json_schema()
+                    assert schema == expected_schema
 
-    # @pytest.mark.parametrize(
-    #     "stream_kwargs",
-    #     [
-    #         ({"dataset":"foo", "provider":{}, "format":{}, "path_pattern":"**"}),
-    #         # NOTE TO SELF - make sure to do one (or more) with user-provided schema
-    #     ],
-    # )
-    # def test_get_json_schema():
-    #     pass
+    @pytest.mark.parametrize(
+        "sync_mode, state_date",
+        [
+            (SyncMode.full_refresh, None),
+            (SyncMode.incremental, None),
+            (SyncMode.incremental, pendulum.now() - pendulum.duration(years=25)),
+        ],
+    )
+    @patch("airbyte_cdk.sources.streams.files.IncrementalFilesStream.storagefile_class", StorageFile)
+    @patch("airbyte_cdk.sources.streams.files.StorageFile.__abstractmethods__", set())
+    def test_stream_slices(self, sync_mode, state_date, five_file_infos):
+
+        stream = IncrementalFilesStream(dataset="foo", provider={}, format={}, path_pattern="**")
+        # get unique datetimes from the five_file_infos, extemely likely to be 5 but just to be robust
+        unique_dates = list(set([inf.last_modified for inf in five_file_infos]))
+        stream_state = None
+        if state_date:
+            stream_state = {stream.cursor_field: datetime.strftime(state_date, stream.datetime_format_string)}
+            # get number of datetimes after stream state if we have it
+            unique_dates = [d for d in unique_dates if d > state_date]
+        num_unique_dates = len(unique_dates)
+
+        with patch.object(stream, "file_iterator", MagicMock(return_value=five_file_infos)):
+            slices = stream.stream_slices(sync_mode, stream.cursor_field, stream_state)
+            slice_list = [s for s in slices]
+        LOGGER.info(f"number of slices: {len(slice_list)}")
+        assert len(slice_list) == num_unique_dates
