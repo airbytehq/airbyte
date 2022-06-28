@@ -1,12 +1,15 @@
 import React from "react";
 import styled from "styled-components";
 
-import useConnection from "hooks/services/useConnectionHook";
 import DeleteBlock from "components/DeleteBlock";
 
-type IProps = {
+import { useDeleteConnection } from "hooks/services/useConnectionHook";
+
+import { StateBlock } from "./StateBlock";
+
+interface IProps {
   connectionId: string;
-};
+}
 
 const Content = styled.div`
   max-width: 647px;
@@ -15,12 +18,13 @@ const Content = styled.div`
 `;
 
 const SettingsView: React.FC<IProps> = ({ connectionId }) => {
-  const { deleteConnection } = useConnection();
+  const { mutateAsync: deleteConnection } = useDeleteConnection();
 
-  const onDelete = () => deleteConnection({ connectionId });
+  const onDelete = () => deleteConnection(connectionId);
 
   return (
     <Content>
+      <StateBlock connectionId={connectionId} />
       <DeleteBlock type="connection" onDelete={onDelete} />
     </Content>
   );

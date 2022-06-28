@@ -1,30 +1,23 @@
-import {
-  QueryObserverResult,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "react-query";
-
-import type {
-  CloudWorkspace,
-  CloudWorkspaceUsage,
-} from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { useCallback } from "react";
+import { QueryObserverResult, useMutation, useQuery, useQueryClient } from "react-query";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
+import type { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
+import { SCOPE_USER } from "services/Scope";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { QueryObserverSuccessResult } from "react-query/types/core/types";
+
+import { useSuspenseQuery } from "../../../../services/connector/useSuspenseQuery";
 
 export const workspaceKeys = {
-  all: ["cloud_workspaces"] as const,
+  all: [SCOPE_USER, "cloud_workspaces"] as const,
   lists: () => [...workspaceKeys.all, "list"] as const,
   list: (filters: string) => [...workspaceKeys.lists(), { filters }] as const,
   details: () => [...workspaceKeys.all, "detail"] as const,
   detail: (id: number | string) => [...workspaceKeys.details(), id] as const,
-  usage: (id: number | string) =>
-    [...workspaceKeys.details(), id, "usage"] as const,
+  usage: (id: number | string) => [...workspaceKeys.details(), id, "usage"] as const,
 };
 
 function useGetWorkspaceService(): CloudWorkspacesService {
@@ -42,22 +35,14 @@ export function useListCloudWorkspaces(): CloudWorkspace[] {
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return (useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () =>
-    service.listByUser(user.userId)
-  ) as QueryObserverSuccessResult<CloudWorkspace[]>).data;
+  return useSuspenseQuery<CloudWorkspace[]>(workspaceKeys.lists(), () => service.listByUser(user.userId));
 }
 
-export function useListCloudWorkspacesAsync(): QueryObserverResult<
-  CloudWorkspace[]
-> {
+export function useListCloudWorkspacesAsync(): QueryObserverResult<CloudWorkspace[]> {
   const service = useGetWorkspaceService();
   const user = useCurrentUser();
 
-  return useQuery<CloudWorkspace[]>(
-    workspaceKeys.lists(),
-    () => service.listByUser(user.userId),
-    { suspense: false }
-  );
+  return useQuery<CloudWorkspace[]>(workspaceKeys.lists(), () => service.listByUser(user.userId));
 }
 
 export function useCreateWorkspace() {
@@ -65,17 +50,11 @@ export function useCreateWorkspace() {
   const queryClient = useQueryClient();
   const user = useCurrentUser();
 
-  return useMutation(
-    async (name: string) => service.create({ name, userId: user.userId }),
-    {
-      onSuccess: (result) => {
-        queryClient.setQueryData<CloudWorkspace[]>(
-          workspaceKeys.lists(),
-          (old) => [...(old ?? []), result]
-        );
-      },
-    }
-  ).mutateAsync;
+  return useMutation(async (name: string) => service.create({ name, userId: user.userId }), {
+    onSuccess: (result) => {
+      queryClient.setQueryData<CloudWorkspace[]>(workspaceKeys.lists(), (old) => [...(old ?? []), result]);
+    },
+  }).mutateAsync;
 }
 
 export function useUpdateWorkspace() {
@@ -87,35 +66,27 @@ export function useUpdateWorkspace() {
       service.update(payload.workspaceId, { name: payload.name }),
     {
       onSuccess: (result) => {
-        queryClient.setQueryData<CloudWorkspace[]>(
-          workspaceKeys.lists(),
-          (old) => {
-            const list = old ?? [];
-            if (list.length === 0) {
-              return [result];
-            }
-
-            const index = list.findIndex(
-              (item) => item.workspaceId === result.workspaceId
-            );
-
-            if (index === -1) {
-              return list;
-            }
-
-            return [...list.slice(0, index), result, ...list.slice(index + 1)];
+        queryClient.setQueryData<CloudWorkspace[]>(workspaceKeys.lists(), (old) => {
+          const list = old ?? [];
+          if (list.length === 0) {
+            return [result];
           }
-        );
 
-        queryClient.setQueryData<CloudWorkspace>(
-          [workspaceKeys.detail(result.workspaceId)],
-          (old) => {
-            return {
-              ...old,
-              ...result,
-            };
+          const index = list.findIndex((item) => item.workspaceId === result.workspaceId);
+
+          if (index === -1) {
+            return list;
           }
-        );
+
+          return [...list.slice(0, index), result, ...list.slice(index + 1)];
+        });
+
+        queryClient.setQueryData<CloudWorkspace>([workspaceKeys.detail(result.workspaceId)], (old) => {
+          return {
+            ...old,
+            ...result,
+          };
+        });
       },
     }
   );
@@ -125,36 +96,34 @@ export function useRemoveWorkspace() {
   const service = useGetWorkspaceService();
   const queryClient = useQueryClient();
 
-  return useMutation(
-    async (workspaceId: string) => service.remove(workspaceId),
-    {
-      onSuccess: (_, workspaceId) => {
-        queryClient.setQueryData<CloudWorkspace[] | undefined>(
-          workspaceKeys.lists(),
-          (old) =>
-            old?.filter((workspace) => workspace.workspaceId !== workspaceId)
-        );
-      },
-    }
-  );
+  return useMutation(async (workspaceId: string) => service.remove(workspaceId), {
+    onSuccess: (_, workspaceId) => {
+      queryClient.setQueryData<CloudWorkspace[] | undefined>(workspaceKeys.lists(), (old) =>
+        old?.filter((workspace) => workspace.workspaceId !== workspaceId)
+      );
+    },
+  });
 }
 
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return (useQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
-    service.get(workspaceId)
-  ) as QueryObserverSuccessResult<CloudWorkspace>).data;
+  return useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () => service.get(workspaceId));
 }
 
-export function useGetUsage(
-  workspaceId: string
-): QueryObserverResult<CloudWorkspaceUsage> {
+export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<void> {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    () => queryClient.invalidateQueries([workspaceKeys.detail(workspaceId)]),
+    [queryClient, workspaceId]
+  );
+}
+
+export function useGetUsage(workspaceId: string): CloudWorkspaceUsage {
   const service = useGetWorkspaceService();
 
-  return useQuery<CloudWorkspaceUsage>([workspaceKeys.usage(workspaceId)], () =>
-    service.getUsage(workspaceId)
-  );
+  return useSuspenseQuery<CloudWorkspaceUsage>([workspaceKeys.usage(workspaceId)], () => service.getUsage(workspaceId));
 }
 
 export { useWorkspaceService } from "services/workspaces/WorkspacesService";

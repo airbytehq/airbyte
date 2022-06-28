@@ -15,6 +15,12 @@ Since the Orb API does not allow querying objects based on `updated_at`, these i
 
 Orb's API uses cursor-based pagination, which is documented [here](https://docs.withorb.com/reference/pagination).
 
+## Enriching Credit Ledger entries
+
+The connector configuration includes two properties: `numeric_event_properties_keys` and `string_event_properties_keys`. 
+
+When a ledger entry has an `event_id` attached to it (e.g. an automated decrement), the connector will make a follow-up request to  enrich those entries with event properties corresponding to the keys provided. The connector assumes (and generates schema) that property values corresponding to the keys listed in `numeric_event_properties_keys` are numeric, and the property values corresponding to the keys listed in `string_event_properties_keys` are string typed.
+
 ## Authentication
 
 This connector authenticates against the Orb API with an API key that can be issued via the Orb Admin Console.

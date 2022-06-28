@@ -1,25 +1,28 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.Network;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -30,6 +33,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private static final String DB_NAME = "default";
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -43,7 +47,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -53,6 +57,26 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -86,10 +110,10 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -102,10 +126,11 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
         getConfig(),
         ClickhouseDestination.HOST_KEY,
         ClickhouseDestination.PORT_KEY,
-        (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabase(mangledConfig)
-            .query(String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .collect(Collectors.toList()));
+        mangledConfig -> {
+          final JdbcDatabase database = getDatabase(mangledConfig);
+          final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+          return database.queryJsons(query);
+        });
   }
 
   @Override
@@ -122,25 +147,26 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    return Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickhouseDestination.DRIVER_CLASS);
+    return new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.has("password") ? config.get("password").asText() : null,
+            ClickhouseDestination.DRIVER_CLASS,
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())));
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
-    bastion.initAndStartBastion();
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
+  protected void setup(final TestDestinationEnv testEnv) {
+    bastion.initAndStartBastion(network);
+    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(network);
     db.start();
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
 
@@ -182,6 +208,11 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
+  }
+
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
   }
 
 }

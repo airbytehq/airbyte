@@ -33,6 +33,31 @@
     cast({{ array_column }} as {{dbt_utils.type_string()}})
 {%- endmacro %}
 
+{% macro redshift__array_to_string(array_column) -%}
+  {% if redshift_super_type() -%}
+    json_serialize({{array_column}})
+  {%- else -%}
+    {{ array_column }}
+  {%- endif %}
+{%- endmacro %}
+
+{# object_to_string -------------------------------------------------     #}
+{% macro object_to_string(object_column) -%}
+  {{ adapter.dispatch('object_to_string')(object_column) }}
+{%- endmacro %}
+
+{% macro default__object_to_string(object_column) -%}
+    {{ object_column }}
+{%- endmacro %}
+
+{% macro redshift__object_to_string(object_column) -%}
+  {% if redshift_super_type() -%}
+    json_serialize({{object_column}})
+  {%- else -%}
+    {{ object_column }}
+  {%- endif %}
+{%- endmacro %}
+
 {# cast_to_boolean -------------------------------------------------     #}
 {% macro cast_to_boolean(field) -%}
     {{ adapter.dispatch('cast_to_boolean')(field) }}
@@ -49,12 +74,21 @@
 
 {# -- Redshift does not support converting string directly to boolean, it must go through int first #}
 {% macro redshift__cast_to_boolean(field) -%}
+  {% if redshift_super_type() -%}
+    cast({{ field }} as boolean)
+  {%- else -%}
     cast(decode({{ field }}, 'true', '1', 'false', '0')::integer as boolean)
+  {%- endif %}
 {%- endmacro %}
 
 {# -- MS SQL Server does not support converting string directly to boolean, it must be casted as bit #}
 {% macro sqlserver__cast_to_boolean(field) -%}
     cast({{ field }} as bit)
+{%- endmacro %}
+
+{# -- ClickHouse does not support converting string directly to Int8, it must go through int first #}
+{% macro clickhouse__cast_to_boolean(field) -%}
+    IF(lower({{ field }}) = 'true', 1, 0)
 {%- endmacro %}
 
 {# empty_string_to_null -------------------------------------------------     #}
@@ -64,4 +98,8 @@
 
 {%- macro default__empty_string_to_null(field) -%}
     nullif({{ field }}, '')
+{%- endmacro %}
+
+{%- macro redshift__empty_string_to_null(field) -%}
+    nullif({{ field }}::varchar, '')
 {%- endmacro %}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -9,13 +9,20 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.protocol.models.AirbyteGlobalState;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -81,6 +88,11 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return PostgresTestSource.DRIVER_CLASS;
   }
 
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
+
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
@@ -90,19 +102,19 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
-    static final String DRIVER_CLASS = "org.postgresql.Driver";
+    static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+      super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+          .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get("host").asText(),
-              config.get("port").asText(),
+              config.get("port").asInt(),
               config.get("database").asText()));
 
       if (config.has("password")) {
@@ -115,6 +127,27 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     @Override
     public Set<String> getExcludedInternalNameSpaces() {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+    }
+
+    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+    // state
+    @Override
+    protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+      if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
+        final AirbyteGlobalState globalState = new AirbyteGlobalState()
+            .withSharedState(Jsons.jsonNode(new CdcState()))
+            .withStreamStates(List.of());
+        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+      } else {
+        return List.of(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()));
+      }
+    }
+
+    @Override
+    protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+      return AirbyteStateType.STREAM;
     }
 
     public static void main(final String[] args) throws Exception {

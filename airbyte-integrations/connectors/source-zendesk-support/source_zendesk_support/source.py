@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -51,11 +51,21 @@ class SourceZendeskSupport(AbstractSource):
 
     @classmethod
     def get_authenticator(cls, config: Mapping[str, Any]) -> BasicApiTokenAuthenticator:
-        if config["auth_method"]["auth_method"] == "access_token":
-            return TokenAuthenticator(token=config["auth_method"]["access_token"])
-        elif config["auth_method"]["auth_method"] == "api_token":
-            return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
-        raise SourceZendeskException(f"Not implemented authorization method: {config['auth_method']}")
+
+        # old authentication flow support
+        auth_old = config.get("auth_method")
+        if auth_old:
+            if auth_old.get("auth_method") == "api_token":
+                return BasicApiTokenAuthenticator(config["auth_method"]["email"], config["auth_method"]["api_token"])
+        # new authentication flow
+        auth = config.get("credentials")
+        if auth:
+            if auth.get("credentials") == "oauth2.0":
+                return TokenAuthenticator(token=config["credentials"]["access_token"])
+            elif auth.get("credentials") == "api_token":
+                return BasicApiTokenAuthenticator(config["credentials"]["email"], config["credentials"]["api_token"])
+            else:
+                raise SourceZendeskException(f"Not implemented authorization method: {config['credentials']}")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -73,7 +83,7 @@ class SourceZendeskSupport(AbstractSource):
             return False, e
 
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
-        logger.info("available features: %s" % active_features)
+        # logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
             return False, "Organization access is not enabled. Please check admin permission of the current account"
         return True, None

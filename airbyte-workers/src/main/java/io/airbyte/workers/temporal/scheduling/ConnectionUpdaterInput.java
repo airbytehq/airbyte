@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling;
@@ -8,6 +8,7 @@ import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -15,6 +16,7 @@ import lombok.NonNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ConnectionUpdaterInput {
 
   @NonNull
@@ -36,5 +38,7 @@ public class ConnectionUpdaterInput {
   @Nullable
   private WorkflowState workflowState;
   private boolean resetConnection;
+  @Builder.Default
+  private boolean fromJobResetFailure = false;
 
 }

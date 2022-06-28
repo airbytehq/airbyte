@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -16,6 +16,7 @@ import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
+import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,7 +54,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     }
   }
 
-  private void putValue(JDBCType columnType,
+  private void putValue(final JDBCType columnType,
                         final ResultSet resultSet,
                         final String columnName,
                         final int colIndex,
@@ -104,8 +105,8 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
                            final ResultSet resultSet,
                            final int index)
       throws SQLException {
-    byte[] bytes = resultSet.getBytes(index);
-    String value = new String(bytes);
+    final byte[] bytes = resultSet.getBytes(index);
+    final String value = new String(bytes, Charset.defaultCharset());
     node.put(columnName, value);
   }
 

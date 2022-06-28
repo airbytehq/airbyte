@@ -2,11 +2,13 @@ import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
 import BarChart from "components/BarChart";
-import UsagePerConnectionTable from "./UsagePerConnectionTable";
+import ContentCard from "components/ContentCard";
+
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
+
+import UsagePerConnectionTable from "./UsagePerConnectionTable";
 
 export const ChartWrapper = styled.div`
   width: 100%;
@@ -33,18 +35,15 @@ const CreditsUsagePage: React.FC = () => {
   const { formatMessage, formatDate } = useIntl();
 
   const { workspaceId } = useCurrentWorkspace();
-  const { data } = useGetUsage(workspaceId);
+  const data = useGetUsage(workspaceId);
 
   const chartData = useMemo(
     () =>
       data?.creditConsumptionByDay?.map(({ creditsConsumed, date }) => ({
-        name: formatDate(
-          new Date(date[0], date[1] - 1 /* zero-indexed */, date[2]),
-          {
-            month: "short",
-            day: "numeric",
-          }
-        ),
+        name: formatDate(new Date(date[0], date[1] - 1 /* zero-indexed */, date[2]), {
+          month: "short",
+          day: "numeric",
+        }),
         value: creditsConsumed,
       })),
     [data, formatDate]
@@ -54,7 +53,7 @@ const CreditsUsagePage: React.FC = () => {
     <>
       <ContentCard title={<FormattedMessage id="credits.totalUsage" />} light>
         <ChartWrapper>
-          {data && data.creditConsumptionByDay.length ? (
+          {data?.creditConsumptionByDay?.length ? (
             <BarChart
               data={chartData}
               legendLabels={LegendLabels}
@@ -73,14 +72,9 @@ const CreditsUsagePage: React.FC = () => {
         </ChartWrapper>
       </ContentCard>
 
-      <CardBlock
-        title={<FormattedMessage id="credits.usagePerConnection" />}
-        light
-      >
-        {data && data.creditConsumptionByConnector.length ? (
-          <UsagePerConnectionTable
-            creditConsumption={data.creditConsumptionByConnector}
-          />
+      <CardBlock title={<FormattedMessage id="credits.usagePerConnection" />} light>
+        {data?.creditConsumptionByConnector?.length ? (
+          <UsagePerConnectionTable creditConsumption={data.creditConsumptionByConnector} />
         ) : (
           <Empty>
             <FormattedMessage id="credits.noData" />

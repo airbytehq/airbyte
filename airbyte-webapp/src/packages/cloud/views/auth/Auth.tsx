@@ -1,18 +1,19 @@
 import React, { Suspense } from "react";
-import styled from "styled-components";
 import { Navigate, Route, Routes } from "react-router-dom";
+import styled from "styled-components";
 
 import { LoadingPage } from "components";
+
 import useRouter from "hooks/useRouter";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { FirebaseActionRoute } from "packages/cloud/views/FirebaseActionRoute";
+
 import FormContent from "./components/FormContent";
 import News from "./components/News";
-
-import { CloudRoutes } from "packages/cloud/cloudRoutes";
-
 import { LoginPage } from "./LoginPage";
-import { SignupPage } from "./SignupPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
-import { ResetPasswordAction } from "packages/cloud/views/FirebaseActionRoute";
+import { SignupPage } from "./SignupPage";
 
 const Content = styled.div`
   width: 100%;
@@ -39,28 +40,22 @@ const NewsPart = styled(Part)`
 
 const Auth: React.FC = () => {
   const { pathname, location } = useRouter();
+  const { loggedOut } = useAuthService();
+  const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
 
   return (
     <Content>
       <Part>
-        <FormContent toLogin={pathname === `${CloudRoutes.Signup}`}>
+        <FormContent toLogin={toLogin}>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
               <Route path={CloudRoutes.Login} element={<LoginPage />} />
               <Route path={CloudRoutes.Signup} element={<SignupPage />} />
-              <Route
-                path={CloudRoutes.ResetPassword}
-                element={<ResetPasswordPage />}
-              />
-              <Route
-                path={CloudRoutes.FirebaseAction}
-                element={<ResetPasswordAction />}
-              />
+              <Route path={CloudRoutes.ResetPassword} element={<ResetPasswordPage />} />
+              <Route path={CloudRoutes.FirebaseAction} element={<FirebaseActionRoute />} />
               <Route
                 path="*"
-                element={
-                  <Navigate to={CloudRoutes.Login} state={{ from: location }} />
-                }
+                element={<Navigate to={`${CloudRoutes.Login}${loggedOut ? "" : `?from=${location.pathname}`}`} />}
               />
             </Routes>
           </Suspense>

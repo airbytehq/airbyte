@@ -68,6 +68,9 @@
     "unsubscribed_from_emails": {
       "type": ["null", "boolean"]
     },
+    "unsubscribed_from_sms": {
+      "type": ["null", "boolean"]
+    },
     "created_at": {
       "type": ["null", "integer"]
     },
@@ -76,6 +79,9 @@
     },
     "signed_up_at": {
       "type": ["null", "integer"]
+    },
+    "sms_consent": {
+      "type": ["null", "boolean"]
     },
     "last_seen_at": {
       "type": ["null", "integer"]

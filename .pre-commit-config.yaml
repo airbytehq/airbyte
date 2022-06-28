@@ -7,8 +7,8 @@ repos:
     hooks:
       - id: licenseheaders
         args: ["--tmpl=LICENSE_SHORT", "--ext=py", "-f"]
-  - repo: https://github.com/ambv/black
-    rev: 22.1.0
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
     hooks:
       - id: black
         args: ["--config", "pyproject.toml"]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -21,7 +21,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -33,9 +34,11 @@ import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -125,44 +128,53 @@ class PostgresSourceTest {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Database database = getDatabaseFromConfig(config);
-    database.query(ctx -> {
-      ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-      ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
-      ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-      ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
-      ctx.fetch("INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch("CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
+        ctx.fetch(
+            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-      ctx.fetch("CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
-      ctx.fetch(
-          "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
-      return null;
-    });
-    database.close();
+        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+        ctx.fetch(
+            "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+
+        ctx.fetch(
+            "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+        ctx.fetch(
+            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
+        return null;
+      });
+    }
   }
 
-  private static Database getDatabaseWithSpecifiedUser(final JsonNode config, final String username, final String password) {
-    return Databases.createDatabase(
+  private static DSLContext getDslContextWithSpecifiedUser(final JsonNode config, final String username, final String password) {
+    return DSLContextFactory.create(
         username,
         password,
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
+            config.get("port").asInt(),
             config.get("database").asText()),
-        "org.postgresql.Driver",
         SQLDialect.POSTGRES);
   }
 
-  private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
+            config.get("port").asInt(),
             config.get("database").asText()),
-        "org.postgresql.Driver",
         SQLDialect.POSTGRES);
   }
 
@@ -210,7 +222,8 @@ class PostgresSourceTest {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine").withCommand("postgres -c client_encoding=sql_ascii")) {
       db.start();
       final JsonNode config = getConfig(db);
-      try (final Database database = getDatabaseFromConfig(config)) {
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = getDatabase(dslContext);
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
           ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,E'\\u2013 someutfstring'),  (2, E'\\u2215');");
@@ -231,7 +244,8 @@ class PostgresSourceTest {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
       db.start();
       final JsonNode config = getConfig(db);
-      try (final Database database = getDatabaseFromConfig(config)) {
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
           ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'John'),  (2, 'Alfred'), (3, 'Alex');");
@@ -241,7 +255,8 @@ class PostgresSourceTest {
           return null;
         });
       }
-      try (final Database database = getDatabaseWithSpecifiedUser(config, "test_user_3", "132")) {
+      try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_3", "132")) {
+        final Database database = new Database(dslContext);
         database.query(ctx -> {
           ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
           ctx.fetch("CREATE VIEW id_and_name_3_view(id, name) as\n"
@@ -275,6 +290,54 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testDiscoverRecursiveRolePermissions() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name_7(id INTEGER, name VARCHAR(200));");
+          ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+
+          ctx.fetch("CREATE USER test_user_4 password '132';");
+
+          ctx.fetch("CREATE ROLE airbyte LOGIN password 'airbyte';");
+          ctx.fetch("CREATE ROLE read_only LOGIN password 'read_only';");
+          ctx.fetch("CREATE ROLE intermediate LOGIN password 'intermediate';");
+
+          ctx.fetch("CREATE ROLE access_nothing LOGIN password 'access_nothing';");
+
+          ctx.fetch("GRANT intermediate TO airbyte;");
+          ctx.fetch("GRANT read_only TO intermediate;");
+
+          ctx.fetch("GRANT SELECT ON id_and_name, id_and_name_7 TO read_only;");
+          ctx.fetch("GRANT airbyte TO test_user_4;");
+
+          ctx.fetch("CREATE TABLE unseen(id INTEGER, name VARCHAR(200));");
+          ctx.fetch("GRANT CONNECT ON DATABASE test TO test_user_4;");
+          return null;
+        });
+      }
+      try (final DSLContext dslContext = getDslContextWithSpecifiedUser(config, "test_user_4", "132")) {
+        final Database database = new Database(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_name_3(id INTEGER, name VARCHAR(200));");
+          return null;
+        });
+      }
+      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "test_user_4", "132"));
+      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      assertEquals(Sets.newHashSet("id_and_name", "id_and_name_7", "id_and_name_3"), tableNames);
+
+      actual = new PostgresSource().discover(getConfig(db, "access_nothing", "access_nothing"));
+      tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      assertEquals(Sets.newHashSet(), tableNames);
+      db.stop();
+    }
+  }
+
+  @Test
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
@@ -295,6 +358,23 @@ class PostgresSourceTest {
         "replication_slot", "slot",
         "publication", "ab_pub")));
     assertTrue(PostgresSource.isCdc(config));
+  }
+
+  @Test
+  void testGetUsername() {
+    final String username = "airbyte-user";
+
+    // normal host
+    final JsonNode normalConfig = Jsons.jsonNode(Map.of(
+        "username", username,
+        "jdbc_url", "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
+    assertEquals(username, PostgresSource.getUsername(normalConfig));
+
+    // azure host
+    final JsonNode azureConfig = Jsons.jsonNode(Map.of(
+        "username", username + "@airbyte",
+        "jdbc_url", "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
+    assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 
 }

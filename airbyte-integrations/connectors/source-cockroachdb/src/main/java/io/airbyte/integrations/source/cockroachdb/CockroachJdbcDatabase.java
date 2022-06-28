@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -54,21 +54,21 @@ public class CockroachJdbcDatabase
   }
 
   @Override
-  public <T> Stream<T> resultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
-                                      final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
+                                            final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return database.resultSetQuery(query, recordTransform);
+    return database.unsafeResultSetQuery(query, recordTransform);
   }
 
   @Override
-  public <T> Stream<T> query(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
-                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
+  public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
+                                   final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    return database.query(statementCreator, recordTransform);
+    return database.unsafeQuery(statementCreator, recordTransform);
   }
 
   @Override
-  public Stream<JsonNode> query(final String sql, final String... params) throws SQLException {
+  public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
     return bufferedResultSetQuery(connection -> {
       final PreparedStatement statement = connection.prepareStatement(sql);
       int i = 1;
@@ -79,11 +79,6 @@ public class CockroachJdbcDatabase
       return statement.executeQuery();
     }, sourceOperations::rowToJson).stream();
 
-  }
-
-  @Override
-  public void close() throws Exception {
-    database.close();
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.util;
@@ -30,6 +30,7 @@ public class S3OutputPathHelper {
       paths.add(NAME_TRANSFORMER.convertStreamName(namespace));
     }
     paths.add(NAME_TRANSFORMER.convertStreamName(streamName));
+
     return String.join("/", paths).replaceAll("/+", "/");
   }
 

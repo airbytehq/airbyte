@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.state;
@@ -34,6 +34,7 @@ public class WorkflowState {
   private boolean quarantined = false;
   private boolean success = true;
   private boolean cancelledForReset = false;
+  private boolean resetWithScheduling = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -131,6 +132,16 @@ public class WorkflowState {
     this.cancelledForReset = cancelledForReset;
   }
 
+  public void setResetWithScheduling(final boolean resetWithScheduling) {
+    final ChangedStateEvent event = new ChangedStateEvent(
+        StateField.RESET_WITH_SCHEDULING,
+        resetWithScheduling);
+    stateChangedListener.addEvent(id, event);
+    this.resetWithScheduling = resetWithScheduling;
+  }
+
+  // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
+  // event.
   public void reset() {
     this.setRunning(false);
     this.setDeleted(false);

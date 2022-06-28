@@ -1,29 +1,31 @@
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { FormikHelpers } from "formik";
+import React, { useMemo, useState } from "react";
+import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
-import { Button } from "components";
-import useConnection, {
-  useConnectionLoad,
-  ValuesProps,
-} from "hooks/services/useConnectionHook";
-import ConnectionForm from "views/Connection/ConnectionForm";
-import TransferFormCard from "views/Connection/ConnectionForm/TransferFormCard";
-import ResetDataModal from "components/ResetDataModal";
-import { ModalTypes } from "components/ResetDataModal/types";
+import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
+import { toWebBackendConnectionUpdate } from "core/domain/connection";
+import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import {
+  useConnectionLoad,
+  useResetConnection,
+  useUpdateConnection,
+  ValuesProps,
+} from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
-import { ConnectionNamespaceDefinition } from "core/domain/connection";
-import { CollapsibleCard } from "views/Connection/CollapsibleCard";
+import ConnectionForm from "views/Connection/ConnectionForm";
+import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
-type IProps = {
+interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
-};
+}
 
 const Content = styled.div`
   max-width: 1279px;
@@ -31,23 +33,9 @@ const Content = styled.div`
   padding-bottom: 10px;
 `;
 
-const TitleContainer = styled.div<{ hasButton: boolean }>`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  margin: ${({ hasButton }) => (hasButton ? "-5px 0" : 0)};
-`;
-
 const TryArrow = styled(FontAwesomeIcon)`
   margin: 0 10px -1px 0;
   font-size: 14px;
-`;
-
-const Title = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 `;
 
 const Message = styled.div`
@@ -61,47 +49,59 @@ const Note = styled.span`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const ReplicationView: React.FC<IProps> = ({
-  onAfterSaveSchema,
-  connectionId,
-}) => {
-  const [isModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(
-    false
-  );
+export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [currentValues, setCurrentValues] = useState<ValuesProps>({
-    namespaceDefinition: ConnectionNamespaceDefinition.Source,
-    namespaceFormat: "",
-    schedule: null,
-    prefix: "",
-    syncCatalog: { streams: [] },
-  });
+  const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
 
-  const { updateConnection, resetConnection } = useConnection();
+  const { mutateAsync: updateConnection } = useUpdateConnection();
+  const { mutateAsync: resetConnection } = useResetConnection();
 
   const onReset = () => resetConnection(connectionId);
 
-  const {
-    connection: initialConnection,
+  const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
+
+  const [{ value: connectionWithRefreshCatalog, loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(
     refreshConnectionCatalog,
-  } = useConnectionLoad(connectionId);
+    [connectionId]
+  );
 
-  const [
-    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
-    refreshCatalog,
-  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
+  const connection = useMemo(() => {
+    if (activeUpdatingSchemaMode && connectionWithRefreshCatalog) {
+      // merge connectionFormValues (unsaved previous form state) with the refreshed connection data:
+      // 1. if there is a namespace definition, format, prefix, or schedule in connectionFormValues,
+      //    use those and fill in the rest from the database
+      // 2. otherwise, use the values from the database
+      // 3. if none of the above, use the default values.
+      return {
+        ...connectionWithRefreshCatalog,
+        namespaceDefinition:
+          connectionFormValues?.namespaceDefinition ?? connectionWithRefreshCatalog.namespaceDefinition,
+        namespaceFormat: connectionFormValues?.namespaceFormat ?? connectionWithRefreshCatalog.namespaceFormat,
+        prefix: connectionFormValues?.prefix ?? connectionWithRefreshCatalog.prefix,
+        schedule: connectionFormValues?.schedule ?? connectionWithRefreshCatalog.schedule,
+      };
+    }
+    return initialConnection;
+  }, [activeUpdatingSchemaMode, connectionWithRefreshCatalog, initialConnection, connectionFormValues]);
 
-  const connection = activeUpdatingSchemaMode
-    ? connectionWithRefreshCatalog
-    : initialConnection;
+  const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
+    if (!connection) {
+      // onSubmit should only be called when a connection object exists.
+      return;
+    }
 
-  const onSubmit = async (values: ValuesProps) => {
-    const initialSyncSchema = connection?.syncCatalog;
+    const initialSyncSchema = connection.syncCatalog;
+    const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
     await updateConnection({
+      ...connectionAsUpdate,
       ...values,
       connectionId,
+      // Use the name and status from the initial connection because
+      // The status can be toggled and the name can be changed in-between refreshing the schema
+      name: initialConnection.name,
       status: initialConnection.status || "",
       withRefreshedCatalog: activeUpdatingSchemaMode,
     });
@@ -114,17 +114,26 @@ const ReplicationView: React.FC<IProps> = ({
     if (activeUpdatingSchemaMode) {
       setActiveUpdatingSchemaMode(false);
     }
+
+    formikHelpers?.resetForm({ values });
   };
 
-  const onSubmitResetModal = async () => {
-    setIsUpdateModalOpen(false);
-    await onSubmit(currentValues);
+  const openResetDataModal = (values: ValuesProps) => {
+    openConfirmationModal({
+      title: "connection.updateSchema",
+      text: "connection.updateSchemaText",
+      submitButtonText: "connection.updateSchema",
+      submitButtonDataId: "refresh",
+      onSubmit: async () => {
+        await onSubmit(values);
+        closeConfirmationModal();
+      },
+    });
   };
 
   const onSubmitForm = async (values: ValuesProps) => {
     if (activeUpdatingSchemaMode) {
-      setCurrentValues(values);
-      setIsUpdateModalOpen(true);
+      openResetDataModal(values);
     } else {
       await onSubmit(values);
     }
@@ -135,7 +144,7 @@ const ReplicationView: React.FC<IProps> = ({
     await refreshCatalog();
   };
 
-  const onExitRefreshCatalogMode = () => {
+  const onCancelConnectionFormEdit = () => {
     setActiveUpdatingSchemaMode(false);
   };
 
@@ -160,43 +169,23 @@ const ReplicationView: React.FC<IProps> = ({
 
   return (
     <Content>
-      <TransferFormCard connection={connection} />
-      <CollapsibleCard
-        collapsible
-        title={
-          <Title>
-            <TitleContainer hasButton={!activeUpdatingSchemaMode}>
-              <FormattedMessage id="connection.streams" />
-            </TitleContainer>
-          </Title>
-        }
-      >
+      <Card>
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
-            isEditMode
+            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
             onReset={onReset}
-            successMessage={
-              saved && <FormattedMessage id="form.changesSaved" />
-            }
-            onCancel={onExitRefreshCatalogMode}
+            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+            onCancel={onCancelConnectionFormEdit}
             editSchemeMode={activeUpdatingSchemaMode}
             additionalSchemaControl={renderUpdateSchemaButton()}
+            onChangeValues={setConnectionFormValues}
           />
         ) : (
           <LoadingSchema />
         )}
-      </CollapsibleCard>
-      {isModalOpen ? (
-        <ResetDataModal
-          onClose={() => setIsUpdateModalOpen(false)}
-          onSubmit={onSubmitResetModal}
-          modalType={ModalTypes.UPDATE_SCHEMA}
-        />
-      ) : null}
+      </Card>
     </Content>
   );
 };
-
-export default ReplicationView;

@@ -1,15 +1,13 @@
 import React, { useMemo } from "react";
-import styled from "styled-components";
-import { components } from "react-select";
 import { FormattedMessage, useIntl } from "react-intl";
+import { components } from "react-select";
 import { MenuListComponentProps } from "react-select/src/components/Menu";
+import styled from "styled-components";
 
 import { Popout } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
-import {
-  useWorkspaceService,
-  useListCloudWorkspacesAsync,
-} from "packages/cloud/services/workspaces/WorkspacesService";
+
+import { useWorkspaceService, useListCloudWorkspacesAsync } from "packages/cloud/services/workspaces/WorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import ExitIcon from "./components/ExitIcon";
@@ -56,8 +54,7 @@ const TopElement = styled.div<{ single: boolean }>`
     text-overflow: ellipsis;
   }
 
-  ${({ single, theme }) =>
-    !single && `border-bottom: 1px solid ${theme.greyColor20};`}
+  ${({ single, theme }) => !single && `border-bottom: 1px solid ${theme.greyColor20};`}
 `;
 
 const List = styled.div`
@@ -74,11 +71,7 @@ type MenuWithRequestButtonProps = MenuListComponentProps<IDataItem, false> & {
   selectedWorkspace: string;
 };
 
-const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({
-  children,
-  selectedWorkspace,
-  ...props
-}) => {
+const WorkspacesList: React.FC<MenuWithRequestButtonProps> = ({ children, selectedWorkspace, ...props }) => {
   const { exitWorkspace } = useWorkspaceService();
 
   return (
@@ -121,13 +114,9 @@ const WorkspacePopout: React.FC<{
 
   return (
     <Popout
-      targetComponent={(targetProps) =>
-        children({ onOpen: targetProps.onOpen, value: workspace.name })
-      }
+      targetComponent={(targetProps) => children({ onOpen: targetProps.onOpen, value: workspace.name })}
       components={{
-        MenuList: (props) => (
-          <WorkspacesList {...props} selectedWorkspace={workspace.name} />
-        ),
+        MenuList: (props) => <WorkspacesList {...props} selectedWorkspace={workspace.name} />,
       }}
       isSearchable={false}
       options={options}

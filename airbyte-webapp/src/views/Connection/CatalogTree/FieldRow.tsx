@@ -2,6 +2,8 @@ import React, { memo } from "react";
 import styled from "styled-components";
 
 import { Cell, CheckBox, RadioButton } from "components";
+
+import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 import DataTypeCell from "./components/DataTypeCell";
 import { NameContainer } from "./styles";
 
@@ -9,12 +11,16 @@ interface FieldRowProps {
   name: string;
   path: string[];
   type: string;
+  format?: string;
+  airbyte_type?: string;
   nullable?: boolean;
   destinationName: string;
   isPrimaryKey: boolean;
   isPrimaryKeyEnabled: boolean;
   isCursor: boolean;
   isCursorEnabled: boolean;
+  anyOf?: unknown[];
+  oneOf?: unknown[];
 
   onPrimaryKeyChange: (pk: string[]) => void;
   onCursorChange: (cs: string[]) => void;
@@ -28,32 +34,21 @@ const LastCell = styled(Cell)`
   margin-right: -10px;
 `;
 
-const FieldRowInner: React.FC<FieldRowProps> = ({
-  onPrimaryKeyChange,
-  onCursorChange,
-  path,
-  ...props
-}) => {
+const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorChange, path, ...props }) => {
+  const dataType = useTranslateDataType(props);
+
   return (
     <>
       <FirstCell ellipsis flex={1.5}>
         <NameContainer title={props.name}>{props.name}</NameContainer>
       </FirstCell>
-      <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
+      <DataTypeCell nullable={props.nullable}>{dataType}</DataTypeCell>
       <Cell>
-        {props.isCursorEnabled && (
-          <RadioButton
-            checked={props.isCursor}
-            onChange={() => onCursorChange(path)}
-          />
-        )}
+        {props.isCursorEnabled && <RadioButton checked={props.isCursor} onChange={() => onCursorChange(path)} />}
       </Cell>
       <Cell>
         {props.isPrimaryKeyEnabled && (
-          <CheckBox
-            checked={props.isPrimaryKey}
-            onChange={() => onPrimaryKeyChange(path)}
-          />
+          <CheckBox checked={props.isPrimaryKey} onChange={() => onPrimaryKeyChange(path)} />
         )}
       </Cell>
       <LastCell ellipsis title={props.destinationName} flex={1.5}>
@@ -63,5 +58,4 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   );
 };
 
-const FieldRow = memo(FieldRowInner);
-export { FieldRow };
+export const FieldRow = memo(FieldRowInner);

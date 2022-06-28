@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.normalization;
@@ -24,12 +24,13 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
-import io.airbyte.workers.process.KubeProcessFactory;
+import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -75,17 +76,20 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    when(processFactory.create(JOB_ID, JOB_ATTEMPT, jobRoot, NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME, false, files, null,
+    when(processFactory.create(AirbyteIntegrationLauncher.NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
+        NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME, false, files, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(KubeProcessFactory.JOB_TYPE, KubeProcessFactory.SYNC_JOB, KubeProcessFactory.SYNC_STEP, KubeProcessFactory.NORMALISE_STEP),
+        Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
+            AirbyteIntegrationLauncher.NORMALIZE_STEP),
+        Map.of(),
         Map.of(),
         "run",
         "--integration-type", "bigquery",
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
             .thenReturn(process);
-    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
-    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes()));
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream("hello".getBytes(StandardCharsets.UTF_8)));
+    when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("hello".getBytes(StandardCharsets.UTF_8)));
   }
 
   @AfterEach

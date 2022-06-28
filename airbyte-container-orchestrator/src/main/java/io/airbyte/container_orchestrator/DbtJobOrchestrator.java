@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.container_orchestrator;
@@ -8,10 +8,10 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.DbtTransformationRunner;
-import io.airbyte.workers.DbtTransformationWorker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.general.DbtTransformationRunner;
+import io.airbyte.workers.general.DbtTransformationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;

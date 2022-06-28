@@ -2,9 +2,11 @@
 
 ## High-Level Overview
 
-{% hint style="info" %}
+:::info
+
 The high-level overview contains all the information you need to use Basic Normalization when pulling from APIs. Information past that can be read for advanced or educational purposes.
-{% endhint %}
+
+:::
 
 When you run your first Airbyte sync without the basic normalization, you'll notice that your data gets written to your destination as one data column with a JSON blob that contains all of your data. This is the `_airbyte_raw_` table that you may have seen before. Why do we create this table? A core tenet of ELT philosophy is that data should be untouched as it moves through the E and L stages so that the raw data is always accessible. If an unmodified version of the data exists in the destination, it can be retransformed without needing to sync data again.
 
@@ -60,12 +62,12 @@ You'll notice that some metadata are added to keep track of important informatio
 
 Additional metadata columns can be added on some tables depending on the usage:
 - On the Slowly Changing Dimension (SCD) tables:
-- `_airbyte_start_at`: equivalent to the cursor column defined on the table, denotes when the row was first seen
-- `_airbyte_end_at`: denotes until when the row was seen with these particular values. If this column is not NULL, then the record has been updated and is no longer the most up to date one. If NULL, then the row is the latest version for the record.
-- `_airbyte_active_row`: denotes if the row for the record is the latest version or not.
-- `_airbyte_unique_key_scd`: hash of primary keys + cursors used to de-duplicate the scd table.
-- On de-duplicated (and SCD) tables:
-- `_airbyte_unique_key`: hash of primary keys used to de-duplicate the final table.
+  - `_airbyte_start_at`: equivalent to the cursor column defined on the table, denotes when the row was first seen
+  - `_airbyte_end_at`: denotes until when the row was seen with these particular values. If this column is not NULL, then the record has been updated and is no longer the most up to date one. If NULL, then the row is the latest version for the record.
+  - `_airbyte_active_row`: denotes if the row for the record is the latest version or not.
+  - `_airbyte_unique_key_scd`: hash of primary keys + cursors used to de-duplicate the scd table.
+  - On de-duplicated (and SCD) tables:
+  - `_airbyte_unique_key`: hash of primary keys used to de-duplicate the final table.
 
 The [normalization rules](basic-normalization.md#Rules) are _not_ configurable. They are designed to pick a reasonable set of defaults to hit the 80/20 rule of data normalization. We respect that normalization is a detail-oriented problem and that with a fixed set of rules, we cannot normalize your data in such a way that covers all use cases. If this feature does not meet your normalization needs, we always put the full json blob in destination as well, so that you can parse that object however best meets your use case. We will be adding more advanced normalization functionality shortly. Airbyte is focused on the EL of ELT. If you need a really featureful tool for the transformations then, we suggest trying out dbt.
 
@@ -101,7 +103,8 @@ In Airbyte, the current normalization option is implemented using a dbt Transfor
 * [Redshift](../integrations/destinations/redshift.md)
 * [Snowflake](../integrations/destinations/snowflake.md)
 
-Basic Normalization can be used in each of these destinations by configuring the "basic normalization" field to true when configuring the destination in the UI.
+Basic Normalization can be configured when you're creating the connection between your Connection Setup and after in the Transformation Tab.
+Select the option: **Normalized tabular data**.
 
 ## Rules
 
@@ -350,6 +353,22 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.2.6 | 2022-06-16 | [\#13894](https://github.com/airbytehq/airbyte/pull/13894) | Fix incorrect jinja2 macro `json_extract_array` call |
+|                 | 0.2.5 | 2022-06-15 | [\#11470](https://github.com/airbytehq/airbyte/pull/11470) | Upgrade MySQL to dbt 1.0.0 |
+|                 | 0.2.4 | 2022-06-14 | [\#12846](https://github.com/airbytehq/airbyte/pull/12846) | CDC correctly deletes propagates deletions to final tables |
+|                 | 0.2.3 | 2022-06-10 | [\#11204](https://github.com/airbytehq/airbyte/pull/11204) | MySQL: add support for SSh tunneling |
+|                 | 0.2.2 | 2022-06-02 | [\#13289](https://github.com/airbytehq/airbyte/pull/13289) | BigQuery use `json_extract_string_array` for array of simple type elements |
+|                 | 0.2.1 | 2022-05-17 | [\#12924](https://github.com/airbytehq/airbyte/pull/12924) | Fixed checking --event-buffer-size on old dbt crashed entrypoint.sh |
+|                 | 0.2.0 | 2022-05-15 | [\#12745](https://github.com/airbytehq/airbyte/pull/12745) | Snowflake: add datetime without timezone |
+|                 | 0.1.78 | 2022-05-06 | [\#12305](https://github.com/airbytehq/airbyte/pull/12305) | Mssql: use NVARCHAR and datetime2 by default |
+| 0.36.2-alpha    | 0.1.77 | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Add support redshift SUPER type |
+| 0.35.65-alpha   | 0.1.75 | 2022-04-09 | [\#11511](https://github.com/airbytehq/airbyte/pull/11511) | Move DBT modules from `/tmp/dbt_modules` to `/dbt` |
+| 0.35.61-alpha   | 0.1.74 | 2022-03-24 | [\#10905](https://github.com/airbytehq/airbyte/pull/10905) | Update clickhouse dbt version |
+| 0.35.60-alpha   | 0.1.73 | 2022-03-25 | [\#11267](https://github.com/airbytehq/airbyte/pull/11267) | Set `--event-buffer-size` to reduce memory usage |
+| 0.35.59-alpha   | 0.1.72 | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added Snowflake OAuth2.0 support |
+| 0.35.53-alpha   | 0.1.71 | 2022-03-14 | [\#11077](https://github.com/airbytehq/airbyte/pull/11077) | Enable BigQuery to handle project ID embedded inside dataset ID |
+| 0.35.49-alpha   | 0.1.70 | 2022-03-11 | [\#11051](https://github.com/airbytehq/airbyte/pull/11051) | Upgrade dbt to 1.0.0 (except for MySQL and Oracle) |
+| 0.35.45-alpha   | 0.1.69 | 2022-03-04 | [\#10754](https://github.com/airbytehq/airbyte/pull/10754) | Enable Clickhouse normalization over SSL |
 | 0.35.32-alpha   | 0.1.68 | 2022-02-20 | [\#10485](https://github.com/airbytehq/airbyte/pull/10485) | Fix row size too large for table with numerous `string` fields |
 |                 | 0.1.66 | 2022-02-04 | [\#9341](https://github.com/airbytehq/airbyte/pull/9341) | Fix normalization for bigquery datasetId and tables |
 | 0.35.13-alpha   | 0.1.65 | 2021-01-28 | [\#9846](https://github.com/airbytehq/airbyte/pull/9846) | Tweak dbt multi-thread parameter down |

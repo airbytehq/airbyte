@@ -1,15 +1,11 @@
-import { useEffect } from "react";
 import * as FullStory from "@fullstory/browser";
+import { useEffect } from "react";
 
 import type { User } from "packages/cloud/lib/domain/users";
 
 let inited = false;
 
-const useFullStory = (
-  config: FullStory.SnippetOptions,
-  enabled: boolean,
-  user: User | null
-): boolean => {
+const useFullStory = (config: FullStory.SnippetOptions, enabled: boolean, user: User | null): boolean => {
   useEffect(() => {
     if (!inited && enabled) {
       try {

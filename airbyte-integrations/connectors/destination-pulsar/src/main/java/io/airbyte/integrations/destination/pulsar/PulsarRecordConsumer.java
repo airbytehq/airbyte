@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.pulsar;
@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
           .set(PulsarDestination.COLUMN_NAME_AB_ID, key)
           .set(PulsarDestination.COLUMN_NAME_STREAM, recordMessage.getStream())
           .set(PulsarDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt())
-          .set(PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData().toString().getBytes())
+          .set(PulsarDestination.COLUMN_NAME_DATA, recordMessage.getData().toString().getBytes(StandardCharsets.UTF_8))
           .build();
 
       sendRecord(producer, value);

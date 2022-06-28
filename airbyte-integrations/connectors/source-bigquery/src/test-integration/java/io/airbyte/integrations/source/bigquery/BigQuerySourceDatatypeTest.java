@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.bigquery;
@@ -59,7 +59,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
     final String projectId = credentialsJson.get(CONFIG_PROJECT_ID).asText();
@@ -284,7 +284,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("['a', 'b']")
-            .addExpectedValues("[{\"test_column\":\"a\"},{\"test_column\":\"b\"}]")
+            .addExpectedValues("[\"a\",\"b\"]")
             .build());
 
     addDataTypeTestData(
@@ -315,6 +315,15 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("[STRUCT('qqq' as fff, [STRUCT('fff' as ooo, 1 as kkk), STRUCT('hhh' as ooo, 2 as kkk)] as ggg)]")
             .addExpectedValues("[{\"fff\":\"qqq\",\"ggg\":[{\"ooo\":\"fff\",\"kkk\":1},{\"ooo\":\"hhh\",\"kkk\":2}]}]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("interval")
+            .airbyteType(JsonSchemaType.STRING)
+            .createTablePatternSql(CREATE_SQL_PATTERN)
+            .addInsertValues("MAKE_INTERVAL(2021, 10, 10, 10, 10, 10)", "null")
+            .addExpectedValues("2021-10 10 10:10:10", null)
             .build());
   }
 

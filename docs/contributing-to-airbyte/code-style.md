@@ -20,7 +20,7 @@ Install it in IntelliJ:
 6. We add the `final` keyword wherever possible. It's a drag to have to do it manually, however, so we set up the IDE to do it for us. You can either set this as the default for your IDE or you can set it just for the Airbyte project(s) that you are using.
    1. Turn on the inspection. Go into IntelliJ Preferences...
       1. Editor > Inspections > Search (with the quotation marks included) "Field may be 'final'" > check the box
-      2. Editor > Inspections > Search "local variable or parameter may be final" > check the box
+      2. Editor > Inspections > Search "local variable or parameter can be final" > check the box
       3. Apply the changes.
    2. Turn on the auto add final. Go into IntelliJ Preferences...
       1. Plugins - install Save Actions if not already installed.

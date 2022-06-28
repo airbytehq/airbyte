@@ -4,10 +4,9 @@
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from ci_common_utils import Logger
-
 from ci_sonar_qube import ROOT_DIR
 
 LOGGER = Logger()
@@ -19,28 +18,31 @@ AVAILABLE_SCAN_FOLDERS = (
 )
 
 
-def folder_generator(dir_path: Path) -> Path:
+def get_module_folder(dir_path: Path) -> Path:
     while dir_path and str(dir_path) != dir_path.root and dir_path != dir_path.parent:
+        parent_path = dir_path.parent
         if dir_path.is_dir():
-            yield dir_path
+            for available_folder in AVAILABLE_SCAN_FOLDERS:
+                if str(parent_path).endswith(available_folder):
+                    """first child of known folder"""
+                    return dir_path
+        """keep looking up"""
         dir_path = dir_path.parent
 
-
-def find_py_module(changed_path: Path) -> Optional[Path]:
-    """All Python connectors have setup.py file into own sortware folders"""
-    for dir_path in folder_generator(changed_path):
-        setup_py_file = dir_path / "setup.py"
-        if setup_py_file.is_file():
-            return dir_path
     return None
 
 
-def find_java_module(changed_path: Path) -> Optional[Path]:
+def get_module_type(dir_path: Path) -> Path:
     """All Java connectors have a folder src/main/java into own folders"""
-    for dir_path in folder_generator(changed_path):
-        required_java_dir = dir_path / "src/main/java"
-        if required_java_dir.is_dir():
-            return dir_path
+    required_java_dir = dir_path / "src/main/java"
+    if required_java_dir.is_dir():
+        return "java"
+
+    """All Python connectors have setup.py file into own software folders"""
+    setup_py_file = dir_path / "setup.py"
+    if setup_py_file.is_file():
+        return "py"
+
     return None
 
 
@@ -55,26 +57,18 @@ def list_changed_modules(changed_files: List[str]) -> List[Dict[str, str]]:
             file_path = ROOT_DIR / file_path
         else:
             file_path = Path(file_path)
-        module_folder = find_py_module(file_path)
+
+        module_folder = get_module_folder(file_path)
         if module_folder:
-            module_folders[module_folder] = "py"
-            continue
-        module_folder = find_java_module(file_path)
-        if module_folder:
-            module_folders[module_folder] = "java"
+            module_type = get_module_type(module_folder)
+            if not module_type:
+                LOGGER.info(f"skip the folder {module_folder}...")
+            else:
+                module_folders[module_folder] = module_type
 
     modules = []
     for module_folder, lang in module_folders.items():
         module_folder = str(module_folder)
-        has = False
-        for available_folder in AVAILABLE_SCAN_FOLDERS:
-            if available_folder in module_folder:
-                has = True
-                break
-        if not has:
-            LOGGER.info(f"skip the folder {module_folder}...")
-            continue
-
         parts = module_folder.split("/")
         module_name = "/".join(parts[-2:])
         modules.append({"folder": module_folder, "lang": lang, "module": module_name})

@@ -1,16 +1,31 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureType;
+import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.scheduler.models.IntegrationLauncherConfig;
+import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.temporal.ConnectionManagerUtils;
 import io.airbyte.workers.temporal.TemporalJobType;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
+import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
 import io.airbyte.workers.temporal.exception.RetryableException;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionActivityInput;
+import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity.AutoDisableConnectionOutput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
@@ -19,15 +34,21 @@ import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActiv
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.GeneratedJobInput;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInput;
+import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity.SyncInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberCreationOutput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.AttemptNumberFailureInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.EnsureCleanJobStateInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCancelledInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobCreationOutput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobFailureInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
+import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.ReportJobStartInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowInternalState;
@@ -42,6 +63,7 @@ import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -55,6 +77,18 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   public static final int NON_RUNNING_ATTEMPT_ID = -1;
 
   private static final int TASK_QUEUE_CHANGE_CURRENT_VERSION = 1;
+  private static final int AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION = 1;
+
+  private static final String RENAME_ATTEMPT_ID_TO_NUMBER_TAG = "rename_attempt_id_to_number";
+  private static final int RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION = 1;
+
+  private static final String ENSURE_CLEAN_JOB_STATE = "ensure_clean_job_state";
+  private static final int ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION = 1;
+
+  private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
+  private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
+
+  static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
 
@@ -68,6 +102,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(ConfigFetchActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final ConnectionDeletionActivity connectionDeletionActivity =
       Workflow.newActivityStub(ConnectionDeletionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final AutoDisableConnectionActivity autoDisableConnectionActivity =
+      Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final CheckConnectionActivity checkActivity =
+      Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -82,12 +120,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
         cancellableSyncWorkflow.run();
       } catch (final CanceledFailure cf) {
-        // When a scope is cancelled temporal will thow a CanceledFailure as you can see here:
+        // When a scope is cancelled temporal will throw a CanceledFailure as you can see here:
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
         // The naming is very misleading, it is not a failure but the expected behavior...
       }
 
       if (workflowState.isDeleted()) {
+        if (workflowState.isRunning()) {
+          log.info("Cancelling the current running job because a connection deletion was requested");
+          reportCancelled(false);
+        }
+        log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
         return;
       }
@@ -120,7 +163,17 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       // when a reset is triggered, the previous attempt, cancels itself (unless it is already a reset, in
       // which case it does nothing). the previous run that cancels itself then passes on the
       // resetConnection flag to the next run so that that run can execute the actual reset
-      workflowState.setResetConnection(connectionUpdaterInput.isResetConnection());
+      if (connectionUpdaterInput.isResetConnection()) {
+        workflowState.setResetConnection(true);
+      }
+      if (connectionUpdaterInput.isFromJobResetFailure()) {
+        workflowState.setResetWithScheduling(true);
+      }
+
+      // Clean the job state by failing any jobs for this connection that are currently non-terminal.
+      // This catches cases where the temporal workflow was terminated and restarted while a job was
+      // actively running, leaving that job in an orphaned and non-terminal state.
+      ensureCleanJobState(connectionUpdaterInput);
 
       final Duration timeToWait = getTimeToWait(connectionUpdaterInput.getConnectionId());
 
@@ -128,7 +181,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
 
       if (workflowState.isDeleted()) {
-        deleteConnectionBeforeTerminatingTheWorkflow();
+        log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
         return;
       }
 
@@ -138,27 +191,31 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       workflowInternalState.setJobId(getOrCreateJobId(connectionUpdaterInput));
-
-      workflowInternalState.setAttemptId(createAttemptId(workflowInternalState.getJobId()));
+      workflowInternalState.setAttemptNumber(createAttempt(workflowInternalState.getJobId()));
 
       final GeneratedJobInput jobInputs = getJobInput();
 
       reportJobStarting();
       StandardSyncOutput standardSyncOutput = null;
+
       try {
-        standardSyncOutput = runChildWorkflow(jobInputs);
+        final SyncCheckConnectionFailure syncCheckConnectionFailure = checkConnections(jobInputs);
+        if (syncCheckConnectionFailure.isFailed()) {
+          final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
+          workflowState.setFailed(getFailStatus(checkFailureOutput));
+          reportFailure(connectionUpdaterInput, checkFailureOutput);
+        } else {
+          standardSyncOutput = runChildWorkflow(jobInputs);
+          workflowState.setFailed(getFailStatus(standardSyncOutput));
 
-        workflowState.setFailed(getFailStatus(standardSyncOutput));
-
-        if (workflowState.isFailed()) {
-          reportFailure(connectionUpdaterInput, standardSyncOutput);
-          prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+          if (workflowState.isFailed()) {
+            reportFailure(connectionUpdaterInput, standardSyncOutput);
+          } else {
+            reportSuccess(connectionUpdaterInput, standardSyncOutput);
+          }
         }
 
-        // If we don't fail, it's a success.
-        reportSuccess(connectionUpdaterInput, standardSyncOutput);
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just
@@ -175,13 +232,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               af.getActivityType(),
               af.getCause(),
               workflowInternalState.getJobId(),
-              workflowInternalState.getAttemptId()));
+              workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
-                  workflowInternalState.getAttemptId()));
+                  workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
@@ -191,38 +248,134 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private void reportSuccess(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput) {
     workflowState.setSuccess(true);
-    runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobSuccess, new JobSuccessInput(
-        workflowInternalState.getJobId(),
-        workflowInternalState.getAttemptId(),
-        standardSyncOutput));
+    final int attemptCreationVersion =
+        Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
+
+    if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobSuccess, new JobSuccessInput(
+          workflowInternalState.getJobId(),
+          workflowInternalState.getAttemptNumber(),
+          standardSyncOutput));
+    } else {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobSuccessWithAttemptNumber, new JobSuccessInputWithAttemptNumber(
+          workflowInternalState.getJobId(),
+          workflowInternalState.getAttemptNumber(),
+          standardSyncOutput));
+    }
 
     resetNewConnectionInput(connectionUpdaterInput);
   }
 
-  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput, final StandardSyncOutput standardSyncOutput) {
-    runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailure, new AttemptFailureInput(
-        workflowInternalState.getJobId(),
-        workflowInternalState.getAttemptId(),
-        standardSyncOutput,
-        FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
+  private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput,
+                             final StandardSyncOutput standardSyncOutput) {
+    final int attemptCreationVersion =
+        Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
+
+    if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailure, new AttemptFailureInput(
+          workflowInternalState.getJobId(),
+          workflowInternalState.getAttemptNumber(),
+          standardSyncOutput,
+          FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
+    } else {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::attemptFailureWithAttemptNumber, new AttemptNumberFailureInput(
+          workflowInternalState.getJobId(),
+          workflowInternalState.getAttemptNumber(),
+          standardSyncOutput,
+          FailureHelper.failureSummary(workflowInternalState.getFailures(), workflowInternalState.getPartialSuccess())));
+    }
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
 
-    if (maxAttempt > attemptNumber) {
-      if (workflowState.isResetConnection()) {
-        workflowState.setContinueAsReset(true);
-      }
+    if (workflowState.isResetConnection()) {
+      workflowState.setContinueAsReset(true);
+    }
+
+    final FailureType failureType =
+        standardSyncOutput != null ? standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType()
+            : null;
+    if (maxAttempt > attemptNumber && failureType != FailureType.CONFIG_ERROR) {
       // restart from failure
       connectionUpdaterInput.setAttemptNumber(attemptNumber + 1);
       connectionUpdaterInput.setFromFailure(true);
     } else {
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(
-          connectionUpdaterInput.getJobId(),
-          "Job failed after too many retries for connection " + connectionId));
+      final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
+          : "Job failed after too many retries for connection " + connectionId;
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason));
+
+      final int autoDisableConnectionVersion =
+          Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
+
+      if (autoDisableConnectionVersion != Workflow.DEFAULT_VERSION) {
+        final AutoDisableConnectionActivityInput autoDisableConnectionActivityInput =
+            new AutoDisableConnectionActivityInput(connectionId, Instant.ofEpochMilli(Workflow.currentTimeMillis()));
+        final AutoDisableConnectionOutput output = runMandatoryActivityWithOutput(
+            autoDisableConnectionActivity::autoDisableFailingConnection, autoDisableConnectionActivityInput);
+        if (output.isDisabled()) {
+          log.info("Auto-disabled for constantly failing for Connection {}", connectionId);
+        }
+      }
 
       resetNewConnectionInput(connectionUpdaterInput);
+      if (workflowState.isResetConnection()) {
+        connectionUpdaterInput.setFromJobResetFailure(true);
+      }
     }
+  }
+
+  private SyncCheckConnectionFailure checkConnections(final GenerateInputActivity.GeneratedJobInput jobInputs) {
+    final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
+    final StandardSyncInput syncInput = jobInputs.getSyncInput();
+    final JsonNode sourceConfig = syncInput.getSourceConfiguration();
+    final JsonNode destinationConfig = syncInput.getDestinationConfiguration();
+    final IntegrationLauncherConfig sourceLauncherConfig = jobInputs.getSourceLauncherConfig();
+    final IntegrationLauncherConfig destinationLauncherConfig = jobInputs.getDestinationLauncherConfig();
+    final SyncCheckConnectionFailure checkFailure = new SyncCheckConnectionFailure(jobRunConfig);
+
+    final int attemptCreationVersion =
+        Workflow.getVersion(CHECK_BEFORE_SYNC_TAG, Workflow.DEFAULT_VERSION, CHECK_BEFORE_SYNC_CURRENT_VERSION);
+
+    if (attemptCreationVersion < CHECK_BEFORE_SYNC_CURRENT_VERSION) {
+      // return early if this instance of the workflow was created beforehand
+      return checkFailure;
+    }
+
+    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
+    final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+
+    if (workflowState.isResetConnection() || checkFailure.isFailed()) {
+      log.info("SOURCE CHECK: Skipped");
+    } else {
+      log.info("SOURCE CHECK: Starting");
+      final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
+      if (sourceCheckResponse.getStatus() == Status.FAILED) {
+        checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
+        checkFailure.setFailureOutput(sourceCheckResponse);
+        log.info("SOURCE CHECK: Failed");
+      } else {
+        log.info("SOURCE CHECK: Successful");
+      }
+    }
+
+    final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
+    final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+
+    if (checkFailure.isFailed()) {
+      log.info("DESTINATION CHECK: Skipped");
+    } else {
+      log.info("DESTINATION CHECK: Starting");
+      final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
+      if (destinationCheckResponse.getStatus() == Status.FAILED) {
+        checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
+        checkFailure.setFailureOutput(destinationCheckResponse);
+        log.info("DESTINATION CHECK: Failed");
+      } else {
+        log.info("DESTINATION CHECK: Successful");
+      }
+    }
+
+    return checkFailure;
   }
 
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -265,6 +418,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public void resetConnection() {
     workflowState.setResetConnection(true);
+    workflowState.setResetWithScheduling(false);
     if (workflowState.isRunning()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
@@ -277,11 +431,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @Override
-  public void simulateFailure() {
-    workflowState.setFailed(true);
-  }
-
-  @Override
   public WorkflowState getState() {
     return workflowState;
   }
@@ -289,20 +438,20 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   @Override
   public JobInformation getJobInformation() {
     final Long jobId = workflowInternalState.getJobId();
-    final Integer attemptId = workflowInternalState.getAttemptId();
+    final Integer attemptNumber = workflowInternalState.getAttemptNumber();
     return new JobInformation(
         jobId == null ? NON_RUNNING_JOB_ID : jobId,
-        attemptId == null ? NON_RUNNING_ATTEMPT_ID : attemptId);
+        attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber);
   }
 
   @Override
   public QuarantinedInformation getQuarantinedInformation() {
     final Long jobId = workflowInternalState.getJobId();
-    final Integer attemptId = workflowInternalState.getAttemptId();
+    final Integer attemptNumber = workflowInternalState.getAttemptNumber();
     return new QuarantinedInformation(
         connectionId,
         jobId == null ? NON_RUNNING_JOB_ID : jobId,
-        attemptId == null ? NON_RUNNING_ATTEMPT_ID : attemptId,
+        attemptNumber == null ? NON_RUNNING_ATTEMPT_ID : attemptNumber,
         workflowState.isQuarantined());
   }
 
@@ -313,7 +462,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * delete
    */
   private Boolean skipScheduling() {
-    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() || workflowState.isResetConnection();
+    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() ||
+        (!workflowState.isResetWithScheduling() && workflowState.isResetConnection());
   }
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
@@ -330,23 +480,52 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   /**
    * This is running a lambda function that takes {@param input} as an input. If the run of the lambda
-   * is thowing an exception, the workflow will be in a quarantined state and can then be manual
-   * un-quarantined or a retry of the failed lambda can be trigger through a signal method.
+   * throws an exception, the workflow will retried after a short delay.
    *
-   * We aimed to use this method for call of the temporal activity.
+   * Note that if the lambda activity is configured to have retries, the exception will only be caught
+   * after the activity has been retried the maximum number of times.
+   *
+   * This method is meant to be used for calling temporal activities.
    */
   private <INPUT, OUTPUT> OUTPUT runMandatoryActivityWithOutput(final Function<INPUT, OUTPUT> mapper, final INPUT input) {
     try {
       return mapper.apply(input);
     } catch (final Exception e) {
-      log.error("Failed to run an activity for the connection " + connectionId, e);
-      workflowState.setQuarantined(true);
-      workflowState.setRetryFailedActivity(false);
-      Workflow.await(() -> workflowState.isRetryFailedActivity());
-      log.error("Retrying an activity for the connection " + connectionId, e);
-      workflowState.setQuarantined(false);
-      workflowState.setRetryFailedActivity(false);
-      return runMandatoryActivityWithOutput(mapper, input);
+      log.error("[ACTIVITY-FAILURE] Connection " + connectionId +
+          " failed to run an activity. Connection manager workflow will be restarted after a delay of " +
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds() + " seconds.", e);
+      // TODO (https://github.com/airbytehq/airbyte/issues/13773) add tracking/notification
+
+      // Wait a short delay before restarting workflow. This is important if, for example, the failing
+      // activity was configured to not have retries.
+      // Without this delay, that activity could cause the workflow to loop extremely quickly,
+      // overwhelming temporal.
+      log.info("Waiting {} seconds before restarting the workflow for connection {}, to prevent spamming temporal with restarts.",
+          WORKFLOW_FAILURE_RESTART_DELAY.getSeconds(),
+          connectionId);
+      Workflow.await(WORKFLOW_FAILURE_RESTART_DELAY, () -> workflowState.isRetryFailedActivity());
+
+      // Accept a manual signal to retry the failed activity during this window
+      if (workflowState.isRetryFailedActivity()) {
+        log.info("Received RetryFailedActivity signal for connection {}. Retrying activity.", connectionId);
+        workflowState.setRetryFailedActivity(false);
+        return runMandatoryActivityWithOutput(mapper, input);
+      }
+
+      log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
+
+      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
+      // this ensures that the new workflow will still perform a reset if an activity failed while
+      // attempting to reset the connection
+      if (workflowState.isResetConnection()) {
+        newWorkflowInput.setResetConnection(true);
+        newWorkflowInput.setFromJobResetFailure(true);
+      }
+
+      Workflow.continueAsNew(newWorkflowInput);
+
+      throw new IllegalStateException("This statement should never be reached, as the ConnectionManagerWorkflow for connection "
+          + connectionId + " was continued as new.");
     }
   }
 
@@ -379,6 +558,23 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return scheduleRetrieverOutput.getTimeToWait();
   }
 
+  private void ensureCleanJobState(final ConnectionUpdaterInput connectionUpdaterInput) {
+    final int ensureCleanJobStateVersion =
+        Workflow.getVersion(ENSURE_CLEAN_JOB_STATE, Workflow.DEFAULT_VERSION, ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION);
+
+    // For backwards compatibility and determinism, skip if workflow existed before this change
+    if (ensureCleanJobStateVersion < ENSURE_CLEAN_JOB_STATE_CURRENT_VERSION) {
+      return;
+    }
+
+    if (connectionUpdaterInput.getJobId() != null) {
+      log.info("This workflow is already attached to a job, so no need to clean job state.");
+      return;
+    }
+
+    runMandatoryActivity(jobCreationAndStatusUpdateActivity::ensureCleanJobState, new EnsureCleanJobStateInput(connectionId));
+  }
+
   /**
    * Creates a new job if it is not present in the input. If the jobId is specified in the input of
    * the connectionManagerWorkflow, we will return it. Otherwise we will create a job and return its
@@ -401,15 +597,31 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   /**
    * Create a new attempt for a given jobId
+   *
+   * @param jobId - the jobId associated with the new attempt
+   *
+   * @return The attempt number
    */
-  private Integer createAttemptId(final long jobId) {
-    final AttemptCreationOutput attemptCreationOutput =
+  private Integer createAttempt(final long jobId) {
+    final int attemptCreationVersion =
+        Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
+
+    // Retrieve the attempt number but name it attempt id
+    if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
+      final AttemptCreationOutput attemptCreationOutput =
+          runMandatoryActivityWithOutput(
+              jobCreationAndStatusUpdateActivity::createNewAttempt,
+              new AttemptCreationInput(
+                  jobId));
+      return attemptCreationOutput.getAttemptId();
+    }
+
+    final AttemptNumberCreationOutput attemptNumberCreationOutput =
         runMandatoryActivityWithOutput(
-            jobCreationAndStatusUpdateActivity::createNewAttempt,
+            jobCreationAndStatusUpdateActivity::createNewAttemptNumber,
             new AttemptCreationInput(
                 jobId));
-
-    return attemptCreationOutput.getAttemptId();
+    return attemptNumberCreationOutput.getAttemptNumber();
   }
 
   /**
@@ -418,14 +630,30 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    */
   private GeneratedJobInput getJobInput() {
     final Long jobId = workflowInternalState.getJobId();
-    final Integer attemptId = workflowInternalState.getAttemptId();
-    final SyncInput getSyncInputActivitySyncInput = new SyncInput(
-        attemptId,
+    final Integer attemptNumber = workflowInternalState.getAttemptNumber();
+    final int attemptCreationVersion =
+        Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
+
+    if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
+      final SyncInput getSyncInputActivitySyncInput = new SyncInput(
+          attemptNumber,
+          jobId,
+          workflowState.isResetConnection());
+
+      final GeneratedJobInput syncWorkflowInputs = runMandatoryActivityWithOutput(
+          getSyncInputActivity::getSyncWorkflowInput,
+          getSyncInputActivitySyncInput);
+
+      return syncWorkflowInputs;
+    }
+
+    final SyncInputWithAttemptNumber getSyncInputActivitySyncInput = new SyncInputWithAttemptNumber(
+        attemptNumber,
         jobId,
         workflowState.isResetConnection());
 
     final GeneratedJobInput syncWorkflowInputs = runMandatoryActivityWithOutput(
-        getSyncInputActivity::getSyncWorkflowInput,
+        getSyncInputActivity::getSyncWorkflowInputWithAttemptNumber,
         getSyncInputActivitySyncInput);
 
     return syncWorkflowInputs;
@@ -464,7 +692,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
       taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
     }
-
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + workflowInternalState.getJobId())
@@ -495,10 +722,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return true;
     }
 
-    // For testing purpose we simulate a failure using a signal method to avoid having to do a static
-    // mock.
-    // We do override failure reason in this case.
-    return false || workflowState.isFailed();
+    return false;
   }
 
   /**
@@ -513,18 +737,33 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
   private void reportCancelledAndContinueWith(final boolean isReset, final ConnectionUpdaterInput connectionUpdaterInput) {
-    workflowState.setContinueAsReset(isReset);
-    final Long jobId = workflowInternalState.getJobId();
-    final Integer attemptId = workflowInternalState.getAttemptId();
-    final Set<FailureReason> failures = workflowInternalState.getFailures();
-    final Boolean partialSuccess = workflowInternalState.getPartialSuccess();
-    runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobCancelled,
-        new JobCancelledInput(
-            jobId,
-            attemptId,
-            FailureHelper.failureSummaryForCancellation(jobId, attemptId, failures, partialSuccess)));
+    reportCancelled(isReset);
     resetNewConnectionInput(connectionUpdaterInput);
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+  }
+
+  private void reportCancelled(final boolean isReset) {
+    workflowState.setContinueAsReset(isReset);
+    final Long jobId = workflowInternalState.getJobId();
+    final Integer attemptNumber = workflowInternalState.getAttemptNumber();
+    final Set<FailureReason> failures = workflowInternalState.getFailures();
+    final Boolean partialSuccess = workflowInternalState.getPartialSuccess();
+    final int attemptCreationVersion =
+        Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
+
+    if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobCancelled,
+          new JobCancelledInput(
+              jobId,
+              attemptNumber,
+              FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
+    } else {
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobCancelledWithAttemptNumber,
+          new JobCancelledInputWithAttemptNumber(
+              jobId,
+              attemptNumber,
+              FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
+    }
   }
 
 }

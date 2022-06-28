@@ -17,9 +17,9 @@ task generateApiServer(type: GenerateTask) {
     inputSpec = specFile
     outputDir = serverOutputDir
 
-    apiPackage = "io.airbyte.api"
-    invokerPackage = "io.airbyte.api.invoker"
-    modelPackage = "io.airbyte.api.model"
+    apiPackage = "io.airbyte.api.generated"
+    invokerPackage = "io.airbyte.api.invoker.generated"
+    modelPackage = "io.airbyte.api.model.generated"
 
     importMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
@@ -28,7 +28,8 @@ task generateApiServer(type: GenerateTask) {
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-            'ConnectionStateObject'             : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     generateApiDocumentation = false
@@ -36,7 +37,15 @@ task generateApiServer(type: GenerateTask) {
     configOptions = [
             dateLibrary  : "java8",
             generatePom  : "false",
-            interfaceOnly: "true"
+            interfaceOnly: "true",
+            /*
+            JAX-RS generator does not respect nullable properties defined in the OpenApi Spec.
+            It means that if a field is not nullable but not set it is still returning a null value for this field in the serialized json.
+            The below Jackson annotation is made to only keep non null values in serialized json.
+            We are not yet using nullable=true properties in our OpenApi so this is a valid workaround at the moment to circumvent the default JAX-RS behavior described above.
+            Feel free to read the conversation on https://github.com/airbytehq/airbyte/pull/13370 for more details.
+            */
+            additionalModelTypeAnnotations: "\n@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)"
     ]
 }
 compileJava.dependsOn tasks.generateApiServer
@@ -51,9 +60,9 @@ task generateApiClient(type: GenerateTask) {
     inputSpec = specFile
     outputDir = clientOutputDir
 
-    apiPackage = "io.airbyte.api.client"
-    invokerPackage = "io.airbyte.api.client.invoker"
-    modelPackage = "io.airbyte.api.client.model"
+    apiPackage = "io.airbyte.api.client.generated"
+    invokerPackage = "io.airbyte.api.client.invoker.generated"
+    modelPackage = "io.airbyte.api.client.model.generated"
 
     importMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
@@ -62,7 +71,8 @@ task generateApiClient(type: GenerateTask) {
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-            'ConnectionStateObject'             : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     library = "native"
@@ -84,9 +94,9 @@ task generateApiDocs(type: GenerateTask) {
     inputSpec = specFile
     outputDir = docsOutputDir
 
-    apiPackage = "io.airbyte.api.client"
-    invokerPackage = "io.airbyte.api.client.invoker"
-    modelPackage = "io.airbyte.api.client.model"
+    apiPackage = "io.airbyte.api.client.generated"
+    invokerPackage = "io.airbyte.api.client.invoker.generated"
+    modelPackage = "io.airbyte.api.client.model.generated"
 
     importMappings = [
             'OAuthConfiguration'                : 'com.fasterxml.jackson.databind.JsonNode',
@@ -95,7 +105,8 @@ task generateApiDocs(type: GenerateTask) {
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-            'ConnectionStateObject'             : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     generateApiDocumentation = false
@@ -143,3 +154,4 @@ sourceSets {
     }
 }
 
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

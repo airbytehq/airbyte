@@ -46,8 +46,12 @@ abstract class AirbyteDockerTask extends DefaultTask {
         if (project.file(fileName).exists()) {
             def tag = DockerHelpers.getDevTaggedImage(projectDir, dockerfileName)
 
+            def arch = System.getProperty("os.arch").toLowerCase()
+            def isArm64 = arch == "aarch64" || arch == "arm64"
+            def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'amd64'
+
             project.exec {
-                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks
+                commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks, buildPlatform
             }
         }
     }

@@ -1,7 +1,8 @@
 import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
-type FormItem = {
+interface FormItem {
   fieldKey: string;
   path: string;
   isRequired: boolean;
@@ -10,7 +11,7 @@ type FormItem = {
   description?: string;
 
   airbyte_hidden?: boolean;
-};
+}
 
 export type FormBaseItem = {
   _type: "formItem";
@@ -32,7 +33,7 @@ type FormGroupItem = {
 
 type FormConditionItem = {
   _type: "formCondition";
-  conditions: { [key: string]: FormGroupItem | FormBaseItem };
+  conditions: Record<string, FormGroupItem | FormBaseItem>;
 } & FormItem;
 
 type FormObjectArrayItem = {
@@ -40,19 +41,13 @@ type FormObjectArrayItem = {
   properties: FormBlock;
 } & FormItem;
 
-type FormBlock =
-  | FormGroupItem
-  | FormBaseItem
-  | FormConditionItem
-  | FormObjectArrayItem;
+type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
 
-export type {
-  FormBlock,
-  FormConditionItem,
-  FormGroupItem,
-  FormObjectArrayItem,
-};
+export type { FormBlock, FormConditionItem, FormGroupItem, FormObjectArrayItem };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WidgetConfig = { [key: string]: any };
-export type WidgetConfigMap = { [key: string]: WidgetConfig };
+export type WidgetConfig = Record<string, any>;
+export type WidgetConfigMap = Record<string, WidgetConfig>;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type FormComponentOverrideProps = Record<string, any>;

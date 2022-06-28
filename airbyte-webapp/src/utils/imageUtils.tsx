@@ -21,10 +21,5 @@ export const getIcon = (icon?: string): React.ReactNode => {
     );
   }
 
-  return (
-    <IconContainer
-      alt=""
-      src={`data:image/svg+xml;utf8,${encodeURIComponent(icon)}`}
-    />
-  );
+  return <IconContainer alt="" src={`data:image/svg+xml;utf8,${encodeURIComponent(icon)}`} />;
 };

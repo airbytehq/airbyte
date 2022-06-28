@@ -11,11 +11,10 @@ application {
 
 def scyllaDriver = '3.10.2-scylla-1'
 def assertVersion = '3.21.0'
-def testContainersVersion = '1.16.2'
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
@@ -24,7 +23,7 @@ dependencies {
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
-    testImplementation "org.testcontainers:testcontainers:${testContainersVersion}"
+    testImplementation libs.connectors.testcontainers.scylla
 
 
 

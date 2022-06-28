@@ -8,6 +8,7 @@ DOCKERFILE="$3"
 TAGGED_IMAGE="$4"
 ID_FILE="$5"
 FOLLOW_SYMLINKS="$6"
+DOCKER_BUILD_ARCH="${DOCKER_BUILD_ARCH:-amd64}"
 # https://docs.docker.com/develop/develop-images/build_enhancements/
 export DOCKER_BUILDKIT=1
 
@@ -43,8 +44,8 @@ if [ "$FOLLOW_SYMLINKS" == "true" ]; then
 else
   JDK_VERSION="${JDK_VERSION:-17.0.1}"
   if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
-    docker build --build-arg JDK_VERSION="$JDK_VERSION" . "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" . "${args[@]}"
   else
-    docker build --build-arg JDK_VERSION="$JDK_VERSION" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
+    docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" --platform="$DOCKER_BUILD_PLATFORM" . "${args[@]}"
   fi
 fi

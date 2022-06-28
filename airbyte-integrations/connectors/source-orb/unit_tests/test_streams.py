@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -61,7 +61,7 @@ def test_http_method(patch_base_class):
 
 @pytest.mark.parametrize("event_properties_keys", [["foo-property"], ["foo-property", "bar-property"], None])
 def test_credit_ledger_entries_schema(patch_base_class, mocker, event_properties_keys):
-    stream = CreditsLedgerEntries(event_properties_keys=event_properties_keys)
+    stream = CreditsLedgerEntries(string_event_properties_keys=event_properties_keys)
     json_schema = stream.get_json_schema()
 
     assert "event" in json_schema["properties"]

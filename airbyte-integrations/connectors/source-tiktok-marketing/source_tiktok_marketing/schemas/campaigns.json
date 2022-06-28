@@ -35,7 +35,10 @@
       "type": ["null", "number"]
     },
     "bid_type": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
+    },
+    "deep_bid_type": {
+      "type": ["null", "string"]
     },
     "optimize_goal": {
       "type": ["null", "string"]

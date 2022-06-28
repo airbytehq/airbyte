@@ -8,11 +8,7 @@ const AnalyticsProvider: React.FC = ({ children }) => {
   const config = useConfig();
   useSegment(config.segment.enabled ? config.segment.token : "");
 
-  return (
-    <AnalyticsServiceProvider version={config.version}>
-      {children}
-    </AnalyticsServiceProvider>
-  );
+  return <AnalyticsServiceProvider version={config.version}>{children}</AnalyticsServiceProvider>;
 };
 
 export { AnalyticsProvider };

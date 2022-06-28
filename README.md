@@ -2,14 +2,8 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000)](https://GitHub.com/airbytehq/airbyte/stargazers/) [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI)](https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml) [![License](https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md) [![License](https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen)](https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md)
 
-![](docs/.gitbook/assets/airbyte_new_logo.svg)
-
-**Data integration made simple, secure and extensible.**  
+**Data integration made simple, secure and extensible.**
 The new open-source standard to sync data from applications, APIs & databases to warehouses, lakes & other destinations.
-
-[![](docs/.gitbook/assets/deploy_locally.svg)](docs/deploying-airbyte/local-deployment.md) [![](docs/.gitbook/assets/deploy_on_aws.svg)](docs/deploying-airbyte/on-aws-ec2.md) [![](docs/.gitbook/assets/deploy_on_gcp.svg)](docs/deploying-airbyte/on-gcp-compute-engine.md) [![](docs/.gitbook/assets/deploy_on_k8s.svg)](docs/deploying-airbyte/on-kubernetes.md)
-
-![](docs/.gitbook/assets/airbyte-ui-for-your-integration-pipelines.png)
 
 Airbyte is on a mission to make data integration pipelines a commodity.
 
@@ -61,6 +55,7 @@ See our [Contributing guide](docs/contributing-to-airbyte/) on how to get starte
 For general help using Airbyte, please refer to the official Airbyte documentation. For additional help, you can use one of these channels to ask a question:
 
 * [Slack](https://slack.airbyte.io) \(For live discussion with the Community and Airbyte team\)
+* [Forum](https://discuss.airbyte.io/) \(For deeper converstaions about features, connectors, or problems\)
 * [GitHub](https://github.com/airbytehq/airbyte) \(Bug reports, Contributions\)
 * [Twitter](https://twitter.com/airbytehq) \(Get the news fast\)
 * [Weekly office hours](https://airbyte.io/weekly-office-hours/) \(Live informal 30-minute video call sessions with the Airbyte team\)

@@ -18,7 +18,7 @@ class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
                         '-v', "${project.projectDir.absolutePath}:${targetMountDirectory}",
                         '-w', "$targetMountDirectory",
                         '-e', "AIRBYTE_SAT_CONNECTOR_DIR=${project.projectDir.absolutePath}",
-                        'airbyte/source-acceptance-test',
+                        'airbyte/source-acceptance-test:dev',
                         '-p', 'integration_tests.acceptance',
                     ]
                     commandLine args
@@ -33,6 +33,11 @@ class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
         project.sourceAcceptanceTest.dependsOn(project.airbyteDocker)
         if (project.hasProperty('airbyteDockerTest')){
             project.sourceAcceptanceTest.dependsOn(project.airbyteDockerTest)
+        }
+
+        // make sure we create the integrationTest task once
+        if (!project.tasks.findByName('integrationTest')) {
+            project.task('integrationTest')
         }
 
         project.integrationTest.dependsOn(project.sourceAcceptanceTest)

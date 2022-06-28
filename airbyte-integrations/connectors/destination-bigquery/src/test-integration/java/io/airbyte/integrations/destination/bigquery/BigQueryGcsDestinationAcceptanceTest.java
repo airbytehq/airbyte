@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -23,7 +23,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
 
-    final String fullConfigFromSecretFileAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigFromSecretFileAsString = Files.readString(CREDENTIALS_PATH);
 
     final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(fullConfigFromSecretFileAsString);
     final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
@@ -45,7 +45,6 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
         .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
         .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
         .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
-        .put(BigQueryConsts.PART_SIZE, gcsConfigFromSecretFile.get(BigQueryConsts.PART_SIZE))
         .put(BigQueryConsts.CREDENTIAL, credential)
         .build());
 

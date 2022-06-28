@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -23,12 +23,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SnowflakeS3StreamCopierTest {
-
-  private static final int PART_SIZE = 5;
 
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
@@ -39,31 +39,28 @@ class SnowflakeS3StreamCopierTest {
   private SnowflakeS3StreamCopier copier;
 
   @BeforeEach
-  public void setup() {
+  public void setup() throws Exception {
     s3Client = mock(AmazonS3Client.class, RETURNS_DEEP_STUBS);
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
-    copier = new SnowflakeS3StreamCopier(
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(
+        "fake-bucket",
+        "fake-bucketPath",
+        "fake-region")
+        .withEndpoint("fake-endpoint")
+        .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+        .get();
+
+    copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         "fake-schema",
         s3Client,
         db,
-        new S3CopyConfig(
-            true,
-            new S3DestinationConfig(
-                "fake-endpoint",
-                "fake-bucket",
-                "fake-bucketPath",
-                "fake-region",
-                "fake-access-key-id",
-                "fake-secret-access-key",
-                PART_SIZE,
-                null)),
+        new S3CopyConfig(true, s3Config),
         new ExtendedNameTransformer(),
         sqlOperations,
-        UPLOAD_TIME,
         new ConfiguredAirbyteStream()
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(new AirbyteStream()
@@ -79,8 +76,12 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-    List<List<String>> partition = Lists.partition(new ArrayList<>(copier.getStagingWritersByFile().keySet()), 1000);
-    for (List<String> files : partition) {
+    final Set<String> stagingFiles = copier.getStagingFiles();
+    // check the use of all files for staging
+    Assertions.assertTrue(stagingFiles.size() > 1);
+
+    final List<List<String>> partition = Lists.partition(new ArrayList<>(stagingFiles), 1000);
+    for (final List<String> files : partition) {
       verify(db).execute(String.format(
           "COPY INTO fake-schema.%s FROM '%s' "
               + "CREDENTIALS=(aws_key_id='fake-access-key-id' aws_secret_key='fake-secret-access-key') "

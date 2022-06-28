@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.notification;
@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +33,8 @@ import org.slf4j.LoggerFactory;
 public class SlackNotificationClientTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackNotificationClientTest.class);
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
 
   public static final String WEBHOOK_URL = "http://localhost:";
   private static final String EXPECTED_FAIL_MESSAGE = "Your connection from source-test to destination-test just failed...\n"
@@ -117,6 +120,50 @@ public class SlackNotificationClientTest {
     assertTrue(client.notifyJobSuccess("source-test", "destination-test", "job description", "logUrl"));
   }
 
+  @Test
+  void testNotifyConnectionDisabled() throws IOException, InterruptedException {
+    final String expectedNotificationMessage = String.format(
+        """
+        Your connection from source-test to destination-test was automatically disabled because it failed 100 times consecutively or has been failing for 14 days in a row.
+
+        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description.
+
+        Workspace ID: %s
+        Connection ID: %s
+        """,
+        WORKSPACE_ID, CONNECTION_ID);
+
+    server.createContext("/test", new ServerHandler(expectedNotificationMessage));
+    final SlackNotificationClient client =
+        new SlackNotificationClient(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withSendOnSuccess(true)
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
+    assertTrue(client.notifyConnectionDisabled("", "source-test", "destination-test", "job description.", WORKSPACE_ID, CONNECTION_ID));
+  }
+
+  @Test
+  void testNotifyConnectionDisabledWarning() throws IOException, InterruptedException {
+    final String expectedNotificationWarningMessage = String.format(
+        """
+        Your connection from source-test to destination-test is scheduled to be automatically disabled because it either failed 50 times consecutively or there were only failed jobs in the past 7 days. Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
+
+        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description.
+
+        Workspace ID: %s
+        Connection ID: %s
+        """,
+        WORKSPACE_ID, CONNECTION_ID);
+
+    server.createContext("/test", new ServerHandler(expectedNotificationWarningMessage));
+    final SlackNotificationClient client =
+        new SlackNotificationClient(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withSendOnSuccess(true)
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
+    assertTrue(client.notifyConnectionDisableWarning("", "source-test", "destination-test", "job description.", WORKSPACE_ID, CONNECTION_ID));
+  }
+
   static class ServerHandler implements HttpHandler {
 
     final private String expectedMessage;
@@ -145,7 +192,7 @@ public class SlackNotificationClientTest {
         t.sendResponseHeaders(500, response.length());
       }
       final OutputStream os = t.getResponseBody();
-      os.write(response.getBytes());
+      os.write(response.getBytes(StandardCharsets.UTF_8));
       os.close();
     }
 

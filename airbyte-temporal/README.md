@@ -1,3 +1,7 @@
+# airbyte-temporal
+
+This module implements a custom version of what the Temporal autosetup image is doing. Because Temporal does not recommend the autosetup be used in production, we had to add some modifications. It ensures that the temporalDB schema will get upgraded if the temporal version is updated.
+
 ## Testing a temporal migration
 
 `tools/bin/test_temporal_migration.sh` is available to test that a bump of the temporal version won't break the docker compose build. Here is what 

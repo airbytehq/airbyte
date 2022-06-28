@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.JobDebugInfoRead;
-import io.airbyte.api.model.JobDebugRead;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.JobDebugInfoRead;
+import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -137,7 +137,7 @@ public class JobHistoryHandler {
     final DestinationRead destination = getDestinationRead(connection);
     final SourceDefinitionRead sourceDefinitionRead = getSourceDefinitionRead(source);
     final DestinationDefinitionRead destinationDefinitionRead = getDestinationDefinitionRead(destination);
-    final JobDebugRead jobDebugRead = jobConverter.getDebugJobInfoRead(jobInfoRead, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion);
+    final JobDebugRead jobDebugRead = JobConverter.getDebugJobInfoRead(jobInfoRead, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion);
 
     return new JobDebugInfoRead()
         .attempts(jobInfoRead.getAttempts())

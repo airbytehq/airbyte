@@ -1,7 +1,8 @@
-import { Config } from "./types";
-import { uiConfig } from "./uiConfig";
 import { Feature } from "hooks/services/Feature";
 import { FeatureItem } from "hooks/services/Feature/types";
+
+import { links } from "./links";
+import { Config } from "./types";
 
 const features: Feature[] = [
   {
@@ -13,14 +14,20 @@ const features: Feature[] = [
   {
     id: FeatureItem.AllowUpdateConnectors,
   },
+  {
+    id: FeatureItem.AllowCreateConnection,
+  },
+  {
+    id: FeatureItem.AllowSync,
+  },
 ];
 
 const defaultConfig: Config = {
-  ui: uiConfig,
+  links,
   segment: { enabled: true, token: "" },
   healthCheckInterval: 20000,
   version: "dev",
-  apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api/v1/`,
+  apiUrl: `${window.location.protocol}//${window.location.hostname}:8001/api`,
   integrationUrl: "/docs",
   oauthRedirectUrl: `${window.location.protocol}//${window.location.host}`,
   isDemo: false,

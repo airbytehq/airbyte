@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -14,6 +15,7 @@ import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +30,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
-  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
   public static final String COLUMN_NAME_AB_ID =
       "\"" + JavaBaseConstants.COLUMN_NAME_AB_ID.toUpperCase() + "\"";
@@ -134,7 +136,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   private static void convertAndImportCertificate(final String certificate)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    try (final PrintWriter out = new PrintWriter("certificate.pem")) {
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
@@ -22,7 +22,7 @@ import org.assertj.core.util.Sets;
 public class SourceAndDestinationFailureSyncWorkflow implements SyncWorkflow {
 
   @VisibleForTesting
-  public static Set<FailureReason> FAILURE_REASONS = Sets.newLinkedHashSet(
+  public static final Set<FailureReason> FAILURE_REASONS = Sets.newLinkedHashSet(
       new FailureReason().withFailureOrigin(FailureOrigin.SOURCE).withTimestamp(System.currentTimeMillis()),
       new FailureReason().withFailureOrigin(FailureOrigin.DESTINATION).withTimestamp(System.currentTimeMillis()));
 

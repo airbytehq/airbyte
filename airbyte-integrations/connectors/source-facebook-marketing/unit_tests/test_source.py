@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pydantic
@@ -92,4 +92,6 @@ class TestSourceFacebookMarketing:
             start_date=config.start_date,
             end_date=config.end_date,
         )
-        assert SourceFacebookMarketing()._update_insights_streams(insights=config.custom_insights, args=insights_args, streams=streams)
+        assert SourceFacebookMarketing()._update_insights_streams(
+            insights=config.custom_insights, default_args=insights_args, streams=streams
+        )
