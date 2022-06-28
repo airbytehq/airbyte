@@ -14,6 +14,7 @@ MAIN_REQUIREMENTS = [
     "pytz",
     "fastavro==1.4.11",
     "python-snappy==0.6.1",
+    "pandas==1.3.1",
 ]
 
 TEST_REQUIREMENTS = [

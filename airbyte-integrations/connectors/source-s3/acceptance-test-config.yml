@@ -14,6 +14,9 @@ tests:
     # # for Avro format
     - config_path: "secrets/avro_config.json"
       status: "succeed"
+        # for JSON format
+    - config_path: "secrets/json_config.json"
+      status: "succeed"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       status: "succeed"
@@ -26,6 +29,8 @@ tests:
     - config_path: "secrets/parquet_config.json"
     # # for Avro format
     - config_path: "secrets/avro_config.json"
+    # for JSON format
+    - config_path: "secrets/json_config.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
   basic_read:
@@ -47,6 +52,11 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       expect_records:
         path: "integration_tests/expected_records_avro.txt"
+    # for JSON format
+    - config_path: "secrets/json_config.json"
+      configured_catalog_path: "integration_tests/json_configured_catalog.json"
+      expect_records:
+      path: "integration_tests/json_expected_records.jsonl"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -79,6 +89,12 @@ tests:
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
+    # for JSON format
+    - config_path: "secrets/json_config.json"
+      configured_catalog_path: "integration_tests/json_configured_catalog.json"
+      cursor_paths:
+      test: [ "_ab_source_file_last_modified" ]
+      future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -100,6 +116,9 @@ tests:
     - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
+    # for JSON format
+    - config_path: "secrets/json_config.json"
+      configured_catalog_path: "integration_tests/json_configured_catalog.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
