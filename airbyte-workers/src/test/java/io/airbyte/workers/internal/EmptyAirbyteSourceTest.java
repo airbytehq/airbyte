@@ -43,7 +43,7 @@ public class EmptyAirbyteSourceTest {
 
   @BeforeEach
   public void init() {
-    emptyAirbyteSource = new EmptyAirbyteSource();
+    emptyAirbyteSource = new EmptyAirbyteSource(true);
   }
 
   @Test

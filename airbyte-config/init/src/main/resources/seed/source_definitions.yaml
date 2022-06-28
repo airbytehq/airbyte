@@ -104,7 +104,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -303,7 +303,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.36
+  dockerImageTag: 0.2.37
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -332,6 +332,14 @@
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
+- name: Google Analytics Data API
+  sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
+  dockerRepository: airbyte/source-google-analytics-data-api
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-data-api
+  icon: google-analytics.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
@@ -422,7 +430,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -639,6 +647,14 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/orb
   icon: orb.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Orbit
+  sourceDefinitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
+  dockerRepository: airbyte/source-orbit
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/orbit
+  icon: orbit.svg
   sourceType: api
   releaseStage: alpha
 - sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
@@ -945,7 +961,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
@@ -961,7 +977,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
@@ -1025,7 +1041,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
@@ -1093,6 +1109,6 @@
   sourceDefinitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
   dockerRepository: airbyte/source-firebolt
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.firebolt.io/
+  documentationUrl: https://docs.airbyte.io/integrations/sources/firebolt
   sourceType: database
   releaseStage: alpha

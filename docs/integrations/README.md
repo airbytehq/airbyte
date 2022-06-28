@@ -61,7 +61,8 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
 | [GitHub](sources/github.md)                                                                 | Beta                 | Yes                 |
-| [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
+| [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |                                                      | Beta                 | Yes                 |
+| [Google Analytics Data API](sources/google-analytics-data-api.md)                           | Alpha                | No                  |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
 | [Google Analytics v4](sources/google-analytics-v4.md)                                       | Beta                 | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
@@ -184,6 +185,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [DynamoDB](destinations/dynamodb.md)                       | Alpha                | Yes                 |
 | [Elasticsearch](destinations/elasticsearch.md)             | Alpha                | Yes                 |
 | [End-to-End Testing](destinations/e2e-test.md)             | Alpha                | Yes                 |
+| [Firebolt](destinations/firebolt.md)             | Alpha                | No                 |
 | [Google Cloud Storage (GCS)](destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Google Sheets](destinations/google-sheets.md)             | Alpha                | Yes                 |
