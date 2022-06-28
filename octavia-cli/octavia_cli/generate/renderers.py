@@ -12,6 +12,7 @@ import yaml
 from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from jinja2 import Environment, PackageLoader, Template, select_autoescape
 from octavia_cli.apply import resources
+from slugify import slugify
 
 from .definitions import BaseDefinition, ConnectionDefinition
 from .yaml_dumpers import CatalogDumper
@@ -143,7 +144,7 @@ class BaseRenderer(abc.ABC):
         pass
 
     def __init__(self, resource_name: str) -> None:
-        self.resource_name = resource_name  # TODO slugify resource name
+        self.resource_name = resource_name
 
     @classmethod
     def get_output_path(cls, project_path: str, definition_type: str, resource_name: str) -> Path:
@@ -155,14 +156,19 @@ class BaseRenderer(abc.ABC):
         Returns:
             str: Full path to the output path.
         """
-        directory = os.path.join(project_path, f"{definition_type}s", resource_name)
+        directory = os.path.join(project_path, f"{definition_type}s", slugify(resource_name))
         if not os.path.exists(directory):
             os.makedirs(directory)
         return Path(os.path.join(directory, "configuration.yaml"))
 
     @staticmethod
     def _confirm_overwrite(output_path):
-        # TODO docstring
+        """User input to determine if the configuration paqth should be overwritten.
+        Args:
+            output_path (str): Path of the configuration file to overwrite
+        Returns:
+            bool: Boolean representing if the configuration file is to be overwritten
+        """
         overwrite = True
         if output_path.is_file():
             overwrite = click.confirm(
@@ -193,7 +199,13 @@ class BaseRenderer(abc.ABC):
         return output_path
 
     def import_configuration(self, project_path: Path, configuration: dict) -> Path:
-        # TODO doctring
+        """Import the resource configuration. Save the yaml file to disk. Return the output_path
+        Args:
+            project_path (str): Current project path.
+            configuration (dict): The configuration of the resource.
+        Returns:
+            str: Path to the resource configuration.
+        """
         rendered = self._render()
         data = yaml.safe_load(rendered)
         data["configuration"] = configuration
@@ -278,7 +290,13 @@ class ConnectionRenderer(BaseRenderer):
         )
 
     def import_configuration(self, project_path: Path, configuration: dict) -> Path:
-        # TODO docstring
+        """Import the connection configuration. Save the yaml file to disk. Return the output_path
+        Args:
+            project_path (str): Current project path.
+            configuration (dict): The configuration of the connection.
+        Returns:
+            str: Path to the connection configuration.
+        """
         rendered = self._render()
         data = yaml.safe_load(rendered)
         keys_to_remove = [
@@ -292,6 +310,8 @@ class ConnectionRenderer(BaseRenderer):
             "destination",
             "is_syncing",
             "operation_ids",
+            "catalog_id",
+            "catalog_diff",
         ]
         data["configuration"] = {k: v for k, v in configuration.items() if k not in keys_to_remove}
         if "operations" in data["configuration"] and len(data["configuration"]["operations"]) == 0:
