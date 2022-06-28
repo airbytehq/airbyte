@@ -208,9 +208,17 @@ public class StateMessageHelperTest {
                             .withStreamDescriptor(new StreamDescriptor().withNamespace("ns").withName("name"))
                             .withStreamState(Jsons.deserialize("\"stream state\""))))));
     final State expectedState = new State().withState(Jsons.deserialize(
-        "[{\"type\":\"GLOBAL\",\"global\":{\"shared_state\":\"shared\",\"stream_states\":[" +
-            "{\"stream_descriptor\":{\"name\":\"name\",\"namespace\":\"ns\"},\"stream_state\":\"stream state\"}" +
-            "]}}]"));
+        """
+        [{
+          "type":"GLOBAL",
+          "global":{
+             "shared_state":"shared",
+             "stream_states":[
+               {"stream_descriptor":{"name":"name","namespace":"ns"},"stream_state":"stream state"}
+             ]
+          }
+        }]
+        """));
 
     final State convertedState = StateMessageHelper.getState(stateWrapper);
     Assertions.assertThat(convertedState).isEqualTo(expectedState);
@@ -230,10 +238,12 @@ public class StateMessageHelperTest {
                     .withStreamDescriptor(new StreamDescriptor().withNamespace("ns2").withName("name2"))
                     .withStreamState(Jsons.deserialize("\"state2\"")))));
     final State expectedState = new State().withState(Jsons.deserialize(
-        "[" +
-            "{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"name1\",\"namespace\":\"ns1\"},\"stream_state\":\"state1\"}}," +
-            "{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"name2\",\"namespace\":\"ns2\"},\"stream_state\":\"state2\"}}" +
-            "]"));
+        """
+        [
+          {"type":"STREAM","stream":{"stream_descriptor":{"name":"name1","namespace":"ns1"},"stream_state":"state1"}},
+          {"type":"STREAM","stream":{"stream_descriptor":{"name":"name2","namespace":"ns2"},"stream_state":"state2"}}
+        ]
+        """));
 
     final State convertedState = StateMessageHelper.getState(stateWrapper);
     Assertions.assertThat(convertedState).isEqualTo(expectedState);
