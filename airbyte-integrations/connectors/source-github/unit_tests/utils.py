@@ -3,7 +3,6 @@
 #
 
 from typing import Any, MutableMapping
-from urllib.parse import urlparse
 
 import responses
 from airbyte_cdk.models import SyncMode
@@ -27,10 +26,6 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
             stream_state = stream_instance.get_updated_state(stream_state, record)
             res.append(record)
     return res
-
-
-def urlbase(url):
-    return urlparse(url)._replace(params="", query="", fragment="").geturl()
 
 
 class ProjectsResponsesAPI:
