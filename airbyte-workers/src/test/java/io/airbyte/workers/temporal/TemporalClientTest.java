@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal;
 
+import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -573,7 +574,7 @@ class TemporalClientTest {
       final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
 
       assertTrue(result.getJobId().isPresent());
-      assertEquals(ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID, result.getJobId().get());
+      assertEquals(NON_RUNNING_JOB_ID, result.getJobId().get());
       assertFalse(result.getFailingReason().isPresent());
       verify(workflowClient).signalWithStart(mBatchRequest);
 
@@ -624,6 +625,8 @@ class TemporalClientTest {
       when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
           new JobInformation(jobId1, 0),
           new JobInformation(jobId1, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
           new JobInformation(jobId2, 0),
           new JobInformation(jobId2, 0));
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
@@ -653,8 +656,8 @@ class TemporalClientTest {
       when(mWorkflowState.isDeleted()).thenReturn(false);
       when(mWorkflowState.isRunning()).thenReturn(false);
       when(mNewConnectionManagerWorkflow.getJobInformation()).thenReturn(
-          new JobInformation(ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID, 0),
-          new JobInformation(ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
           new JobInformation(JOB_ID, 0),
           new JobInformation(JOB_ID, 0));
       when(workflowClient.newWorkflowStub(any(Class.class), any(WorkflowOptions.class))).thenReturn(mNewConnectionManagerWorkflow);
@@ -754,7 +757,11 @@ class TemporalClientTest {
     when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
     when(mWorkflowState.isQuarantined()).thenReturn(false);
     when(mWorkflowState.isDeleted()).thenReturn(false);
-    mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED);
+    when(workflowServiceBlockingStub.describeWorkflowExecution(any()))
+        .thenReturn(DescribeWorkflowExecutionResponse.newBuilder().setWorkflowExecutionInfo(
+            WorkflowExecutionInfo.newBuilder().setStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_COMPLETED).buildPartial()).build())
+        .thenReturn(DescribeWorkflowExecutionResponse.newBuilder().setWorkflowExecutionInfo(
+            WorkflowExecutionInfo.newBuilder().setStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING).buildPartial()).build());
 
     final ConnectionManagerWorkflow mNewConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
     final WorkflowState mNewWorkflowState = mock(WorkflowState.class);

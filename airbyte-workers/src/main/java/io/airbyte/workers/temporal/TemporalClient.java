@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal;
 
+import static io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl.NON_RUNNING_JOB_ID;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -392,7 +394,7 @@ public class TemporalClient {
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == oldJobId);
+    } while (!newJobStarted(connectionId, oldJobId));
 
     log.info("end of reset submission");
 
@@ -401,6 +403,15 @@ public class TemporalClient {
     return new ManualOperationResult(
         Optional.empty(),
         Optional.of(jobId));
+  }
+
+  private boolean newJobStarted(final UUID connectionId, final long oldJobId) {
+    final long currentJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
+    if (currentJobId == NON_RUNNING_JOB_ID || currentJobId == oldJobId) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   /**
