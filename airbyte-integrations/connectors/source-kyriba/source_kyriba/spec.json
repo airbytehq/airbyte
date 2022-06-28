@@ -14,12 +14,6 @@
         "examples": ["demo.kyriba.com"],
         "pattern":"^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
       },
-      "api_version": {
-        "type": "integer",
-        "description": "API version to be used in the URL.",
-        "title": "API Version",
-        "examples": [1, 2]
-      },
       "username": {
         "type": "string",
         "description": "Username to be used in basic auth",

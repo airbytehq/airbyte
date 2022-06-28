@@ -38,11 +38,9 @@ class KyribaStream(HttpStream):
         gateway_url: str,
         client: KyribaClient,
         start_date: str,
-        api_version: str = 1,
         end_date: str = None,
     ):
         self.gateway_url = gateway_url
-        self.api_version = api_version
         self.start_date = date.fromisoformat(start_date) or date.today()
         self.end_date = date.fromisoformat(end_date) if end_date else None
         self.client = client
@@ -52,7 +50,7 @@ class KyribaStream(HttpStream):
 
     @property
     def url_base(self) -> str:
-        return f"{self.gateway_url}/api/v{self.api_version}/"
+        return f"{self.gateway_url}/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         metadata = response.json()["metadata"]
@@ -282,7 +280,6 @@ class SourceKyriba(AbstractSource):
         client = KyribaClient(config["username"], config["password"], gateway_url)
         kwargs = {
             "gateway_url": gateway_url,
-            "api_version": config.get("api_version"),
             "client": client,
             "start_date": config.get("start_date"),
             "end_date": config.get("end_date"),

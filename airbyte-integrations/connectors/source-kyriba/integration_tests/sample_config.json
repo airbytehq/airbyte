@@ -1,7 +1,6 @@
 {
     "username": "username",
     "password": "password",
-    "api_version": 1,
     "start_date": "2022-05-01",
     "end_date": "2022-05-04",
     "domain": "demo.kyriba.com"
