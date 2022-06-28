@@ -40,7 +40,6 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionWorkflow;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow.JobInformation;
-import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
@@ -488,7 +487,8 @@ class TemporalClientTest {
       final BatchRequest mBatchRequest = mock(BatchRequest.class);
       when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
-      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mTerminatedConnectionManagerWorkflow, mTerminatedConnectionManagerWorkflow, mNewConnectionManagerWorkflow);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mTerminatedConnectionManagerWorkflow, mTerminatedConnectionManagerWorkflow,
+          mNewConnectionManagerWorkflow);
 
       final ManualOperationResult result = temporalClient.startNewManualSync(CONNECTION_ID);
 
@@ -569,7 +569,8 @@ class TemporalClientTest {
       final BatchRequest mBatchRequest = mock(BatchRequest.class);
       when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
-      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mTerminatedConnectionManagerWorkflow, mTerminatedConnectionManagerWorkflow, mNewConnectionManagerWorkflow);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mTerminatedConnectionManagerWorkflow, mTerminatedConnectionManagerWorkflow,
+          mNewConnectionManagerWorkflow);
 
       final ManualOperationResult result = temporalClient.startNewCancellation(CONNECTION_ID);
 
@@ -664,7 +665,8 @@ class TemporalClientTest {
       final BatchRequest mBatchRequest = mock(BatchRequest.class);
       when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
-      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mTerminatedConnectionManagerWorkflow, mTerminatedConnectionManagerWorkflow, mNewConnectionManagerWorkflow);
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mTerminatedConnectionManagerWorkflow, mTerminatedConnectionManagerWorkflow,
+          mNewConnectionManagerWorkflow);
 
       final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR);
       final ManualOperationResult result = temporalClient.resetConnection(CONNECTION_ID, streamsToReset);
@@ -726,7 +728,8 @@ class TemporalClientTest {
     final BatchRequest mBatchRequest = mock(BatchRequest.class);
     when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
-    when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow, mConnectionManagerWorkflow, mNewConnectionManagerWorkflow);
+    when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow, mConnectionManagerWorkflow,
+        mNewConnectionManagerWorkflow);
 
     final WorkflowStub mWorkflowStub = mock(WorkflowStub.class);
     when(workflowClient.newUntypedWorkflowStub(anyString())).thenReturn(mWorkflowStub);
@@ -772,7 +775,8 @@ class TemporalClientTest {
     final BatchRequest mBatchRequest = mock(BatchRequest.class);
     when(workflowClient.newSignalWithStartRequest()).thenReturn(mBatchRequest);
 
-    when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow, mConnectionManagerWorkflow, mNewConnectionManagerWorkflow);
+    when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow, mConnectionManagerWorkflow,
+        mNewConnectionManagerWorkflow);
 
     final WorkflowStub mWorkflowStub = mock(WorkflowStub.class);
     when(workflowClient.newUntypedWorkflowStub(anyString())).thenReturn(mWorkflowStub);

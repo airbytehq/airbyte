@@ -707,7 +707,8 @@ public class BasicAcceptanceTests {
     assertEquals(JobConfigType.RESET_CONNECTION, jobInfoRead.getJob().getConfigType());
 
     // verify that sync job was cancelled
-    final JobRead connectionSyncReadAfterReset = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId())).getJob();
+    final JobRead connectionSyncReadAfterReset =
+        apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId())).getJob();
     assertEquals(JobStatus.CANCELLED, connectionSyncReadAfterReset.getStatus());
   }
 
