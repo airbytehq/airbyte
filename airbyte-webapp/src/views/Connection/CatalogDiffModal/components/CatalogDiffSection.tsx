@@ -1,7 +1,10 @@
+import { FormattedMessage } from "react-intl";
+
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
 import { CatalogDiffAccordion } from "./CatalogDiffAccordion";
 import { CatalogDiffRow } from "./CatalogDiffRow";
+import styles from "./CatalogDiffSection.module.scss";
 
 interface CatalogDiffSectionProps {
   data: StreamTransform[];
@@ -12,18 +15,33 @@ export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, ca
   //note: do we have to send the catalog along for a field?
   //isChild will be used to demote headings within the accordion
 
+  const diffVerb = data[0].transformType.includes("add")
+    ? "new"
+    : data[0].transformType.includes("remove")
+    ? "removed"
+    : data[0].transformType.includes("update")
+    ? "changed"
+    : undefined;
+
+  const diffObject = data[0].transformType.includes("stream")
+    ? "stream"
+    : data[0].transformType.includes("field")
+    ? "field"
+    : undefined;
   return (
-    <>
+    <div className={styles.sectionContainer}>
       {/* generic header */}
-      <div>{/* {data.length} {unit} {action} */}</div>
+      <div>
+        <FormattedMessage id={`connection.updateSchema.${diffVerb}`} />
+      </div>
       {/* update stream should make an accordion, others should make a row */}
       {data.map((item) => {
         return item.transformType === "update_stream" ? (
-          <CatalogDiffRow item={item} catalog={catalog} />
-        ) : (
           <CatalogDiffAccordion data={item.updateStream} catalog={catalog} />
+        ) : (
+          <CatalogDiffRow item={item} catalog={catalog} />
         );
       })}
-    </>
+    </div>
   );
 };

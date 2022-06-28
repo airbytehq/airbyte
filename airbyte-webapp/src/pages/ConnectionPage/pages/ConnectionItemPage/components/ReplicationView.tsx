@@ -18,6 +18,7 @@ import {
   ValuesProps,
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
+import { CatalogDiffModal } from "views/Connection/CatalogDiffModal/CatalogDiffModal";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
@@ -87,6 +88,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [saved, setSaved] = useState(false);
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
   const connectionService = useConnectionService();
+  const [diffAcknowledged, setDiffAcknowledged] = useState(false);
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
@@ -187,25 +189,34 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   return (
     <Content>
-      {!isRefreshingCatalog && connection ? (
-        <ConnectionForm
-          mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
-          connection={connection}
-          onSubmit={onSubmitForm}
-          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-          onCancel={onCancelConnectionFormEdit}
-          canSubmitUntouchedForm={activeUpdatingSchemaMode}
-          additionalSchemaControl={
-            <Button onClick={onRefreshSourceSchema} type="button" secondary>
-              <TryArrow icon={faSyncAlt} />
-              <FormattedMessage id="connection.updateSchema" />
-            </Button>
-          }
-          onChangeValues={setConnectionFormValues}
-        />
-      ) : (
-        <LoadingSchema />
-      )}
+      <Card>
+        {!isRefreshingCatalog && connection.catalogDiff && !diffAcknowledged && (
+          <CatalogDiffModal
+            catalogDiff={connection.catalogDiff}
+            catalog={connection.syncCatalog}
+            setDiffAcknowledged={setDiffAcknowledged}
+          />
+        )}
+        {connection ? (
+          <ConnectionForm
+            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
+            connection={connection}
+            onSubmit={onSubmitForm}
+            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+            onCancel={onCancelConnectionFormEdit}
+            canSubmitUntouchedForm={activeUpdatingSchemaMode}
+            additionalSchemaControl={
+              <Button onClick={onRefreshSourceSchema} type="button" secondary>
+                <TryArrow icon={faSyncAlt} />
+                <FormattedMessage id="connection.updateSchema" />
+              </Button>
+            }
+            onChangeValues={setConnectionFormValues}
+          />
+        ) : (
+          <LoadingSchema />
+        )}
+      </Card>
     </Content>
   );
 };
