@@ -115,6 +115,7 @@ class WebBackendConnectionsHandlerTest {
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
+    final StateHandler stateHandler = mock(StateHandler.class);
     operationsHandler = mock(OperationsHandler.class);
     final SourceHandler sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
@@ -122,7 +123,9 @@ class WebBackendConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     eventRunner = mock(EventRunner.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
+    wbHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
         sourceHandler,
         destinationHandler,
         jobHistoryHandler,

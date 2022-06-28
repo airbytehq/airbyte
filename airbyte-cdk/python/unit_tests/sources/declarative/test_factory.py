@@ -8,12 +8,16 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
 
@@ -90,8 +94,6 @@ extractor:
   decoder: "*ref(decoder)"
 selector:
   class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
-  extractor:
-    decoder: "*ref(decoder)"
   record_filter:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
@@ -178,3 +180,82 @@ check:
     streams_to_check = checker._stream_names
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
+
+    assert stream._retriever._requester._path._default == "marketing/lists"
+
+
+def test_create_requester():
+    content = """
+  requester:
+    class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
+    path: "/v3/marketing/lists"
+    name: lists
+    url_base: "https://api.sendgrid.com"
+    authenticator:
+      type: "TokenAuthenticator"
+      token: "{{ config.apikey }}"
+    request_options_provider:
+      request_parameters:
+        page_size: 10
+      request_headers:
+        header: header_value
+    """
+    config = parser.parse(content)
+    component = factory.create_component(config["requester"], input_config)()
+    assert isinstance(component, HttpRequester)
+    assert isinstance(component._retrier, DefaultRetrier)
+    assert component._path._string == "/v3/marketing/lists"
+    assert component._url_base._string == "https://api.sendgrid.com"
+    assert isinstance(component._authenticator, TokenAuthenticator)
+    assert component._method == HttpMethod.GET
+    assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
+    assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"
+    assert component._name == "lists"
+
+
+def test_full_config_with_defaults():
+    content = """
+    lists_stream:
+      class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+      options:
+        name: "lists"
+        primary_key: id
+        url_base: "https://api.sendgrid.com"
+        schema_loader:
+          file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+        retriever:
+          paginator:
+            type: "NextPageUrlPaginator"
+            next_page_token_template:
+                next_page_token: "{{ decoded_response.metadata.next}}"
+          requester:
+            path: "/v3/marketing/lists"
+            authenticator:
+              type: "TokenAuthenticator"
+              token: "{{ config.apikey }}"
+            request_parameters:
+              page_size: 10
+          record_selector:
+            extractor:
+              transform: ".result[]"
+    streams:
+      - "*ref(lists_stream)"
+    """
+    config = parser.parse(content)
+
+    stream_config = config["lists_stream"]
+    stream = factory.create_component(stream_config, input_config)()
+    assert type(stream) == DeclarativeStream
+    assert stream.primary_key == "id"
+    assert stream.name == "lists"
+    assert type(stream._schema_loader) == JsonSchema
+    assert type(stream._retriever) == SimpleRetriever
+    assert stream._retriever._requester._method == HttpMethod.GET
+    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
+    assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
+    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
+        "next_page_token": "{{ decoded_response.metadata.next}}"
+    }

@@ -156,7 +156,7 @@ public class ConfigRepository {
   }
 
   public void setFeedback(final UUID workflowId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    final StandardWorkspace workspace = this.getStandardWorkspace(workflowId, false);
+    final StandardWorkspace workspace = getStandardWorkspace(workflowId, false);
 
     workspace.setFeedbackDone(true);
 
@@ -758,6 +758,8 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
+  @Deprecated(forRemoval = true)
+  // use StatePersistence instead
   public Optional<State> getConnectionState(final UUID connectionId) throws IOException {
     try {
       final StandardSyncState connectionState = persistence.getConfig(
@@ -772,6 +774,8 @@ public class ConfigRepository {
     }
   }
 
+  @Deprecated(forRemoval = true)
+  // use StatePersistence instead
   public void updateConnectionState(final UUID connectionId, final State state) throws IOException {
     LOGGER.info("Updating connection {} state: {}", connectionId, state);
     final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
