@@ -111,8 +111,7 @@ public interface ServerFactory {
           httpClient,
           eventRunner,
           configsFlyway,
-          jobsFlyway,
-          statePersistence);
+          jobsFlyway);
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(ConfigurationApi.class);

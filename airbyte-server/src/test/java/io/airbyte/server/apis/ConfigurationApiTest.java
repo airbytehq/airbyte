@@ -55,9 +55,8 @@ public class ConfigurationApiTest {
         mock(HttpClient.class),
         mock(EventRunner.class),
         mock(Flyway.class),
-        mock(Flyway.class),
-        mock(StatePersistence.class));
-    assertTrue(configurationApi.canImportDefinitons());
+        mock(Flyway.class));
+    assertTrue(configurationApi.canImportDefinitions());
   }
 
 }

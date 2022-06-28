@@ -182,8 +182,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final HttpClient httpClient,
                           final EventRunner eventRunner,
                           final Flyway configsFlyway,
-                          final Flyway jobsFlyway,
-                          final StatePersistence statePersistence) {
+                          final Flyway jobsFlyway) {
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
     this.workspaceRoot = workspaceRoot;
@@ -200,8 +199,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         jobPersistence,
         workerEnvironment,
         logConfigs,
-        eventRunner,
-        statePersistence);
+        eventRunner);
 
     stateHandler = new StateHandler(statePersistence);
     connectionsHandler = new ConnectionsHandler(

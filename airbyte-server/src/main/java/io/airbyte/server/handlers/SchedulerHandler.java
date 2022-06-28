@@ -43,12 +43,10 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.EventRunner;
@@ -84,31 +82,7 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
-  private final StatePersistence statePersistence;
 
-  public SchedulerHandler(final ConfigRepository configRepository,
-                          final SecretsRepositoryReader secretsRepositoryReader,
-                          final SecretsRepositoryWriter secretsRepositoryWriter,
-                          final SynchronousSchedulerClient synchronousSchedulerClient,
-                          final JobPersistence jobPersistence,
-                          final WorkerEnvironment workerEnvironment,
-                          final LogConfigs logConfigs,
-                          final EventRunner eventRunner,
-                          final StatePersistence statePersistence) {
-    this(
-        configRepository,
-        secretsRepositoryWriter,
-        synchronousSchedulerClient,
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
-        new JsonSchemaValidator(),
-        jobPersistence,
-        eventRunner,
-        statePersistence,
-        new JobConverter(workerEnvironment, logConfigs));
-  }
-
-  // TODO: remove once cloud has been migrated to using the constructor that is explicitly passing
-  // StatePersistence
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -125,7 +99,6 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         jobPersistence,
         eventRunner,
-        null,
         new JobConverter(workerEnvironment, logConfigs));
   }
 
@@ -137,7 +110,6 @@ public class SchedulerHandler {
                    final JsonSchemaValidator jsonSchemaValidator,
                    final JobPersistence jobPersistence,
                    final EventRunner eventRunner,
-                   final StatePersistence statePersistence,
                    final JobConverter jobConverter) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -147,7 +119,6 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.eventRunner = eventRunner;
     this.jobConverter = jobConverter;
-    this.statePersistence = statePersistence;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -346,21 +317,6 @@ public class SchedulerHandler {
 
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
     return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
-  }
-
-  public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    // TODO remove conditions once StatePersistence is no longer optional
-    final Optional<State> currentState = statePersistence != null
-        ? statePersistence.getCurrentState(connectionIdRequestBody.getConnectionId()).map(StateMessageHelper::getState)
-        : configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
-    LOGGER.info("currentState server: {}", currentState);
-
-    final ConnectionState connectionState = new ConnectionState()
-        .connectionId(connectionIdRequestBody.getConnectionId());
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-
-    return connectionState;
   }
 
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
