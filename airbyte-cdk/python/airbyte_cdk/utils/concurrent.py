@@ -8,7 +8,7 @@ import queue
 import threading
 from dataclasses import dataclass
 from functools import total_ordering
-from typing import Callable, ClassVar, Dict
+from typing import Callable, ClassVar, Dict, List
 
 from airbyte_cdk.models import ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -56,6 +56,9 @@ class MessageData(Message):
 
 
 class ConcurrentStreamReader:
+
+    TIMEOUT = 10
+
     def __init__(self, stream_instance: Stream, configured_stream: ConfiguredAirbyteStream):
         self.stream_instance = stream_instance
         self.max_workers = stream_instance.max_workers
@@ -67,11 +70,15 @@ class ConcurrentStreamReader:
         self.to_consumer: queue.Queue[Message] = queue.Queue()
         self.to_iterator: queue.Queue[Message] = queue.PriorityQueue()
 
-    def __enter__(self):
-        threading.Thread(target=self._safe_thread, args=(self.consumer,), daemon=True).start()
+        self.threads: List[threading.Thread] = []
+        self.threads.append(threading.Thread(target=self._safe_thread, args=(self.consumer,), daemon=True))
         for _ in range(self.max_workers):
-            threading.Thread(target=self._safe_thread, args=(self.worker,), daemon=True).start()
-        threading.Thread(target=self._safe_thread, args=(self.producer,), daemon=True).start()
+            self.threads.append(threading.Thread(target=self._safe_thread, args=(self.worker,), daemon=True))
+        self.threads.append(threading.Thread(target=self._safe_thread, args=(self.producer,), daemon=True))
+
+    def __enter__(self):
+        for t in self.threads:
+            t.start()
         return self
 
     def __exit__(self, exc, value, tb):
@@ -89,7 +96,7 @@ class ConcurrentStreamReader:
     def _q_put(self, Q, message):
         while True:
             try:
-                return Q.put(message, timeout=10)
+                return Q.put(message, timeout=self.TIMEOUT)
             except queue.Full:
                 pass
             finally:
@@ -99,7 +106,7 @@ class ConcurrentStreamReader:
     def _q_get(self, Q):
         while True:
             try:
-                return Q.get(timeout=10)
+                return Q.get(timeout=self.TIMEOUT)
             except queue.Empty:
                 pass
             finally:
