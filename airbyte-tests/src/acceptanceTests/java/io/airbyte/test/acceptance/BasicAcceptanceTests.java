@@ -674,9 +674,9 @@ public class BasicAcceptanceTests {
   @Test
   @Order(17)
   public void testResetCancelsRunningSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
 
-    final SourceRead source = createSource(
+    final SourceRead source = testHarness.createSource(
         "E2E Test Source -" + UUID.randomUUID(),
         workspaceId,
         sourceDefinition.getSourceDefinitionId(),
@@ -688,14 +688,14 @@ public class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = createDestination().getDestinationId();
-    final UUID operationId = createOperation().getOperationId();
-    final AirbyteCatalog catalog = discoverSourceSchema(sourceId);
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     // wait to get out of PENDING
