@@ -302,7 +302,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     } else {
       final String failureReason = failureType == FailureType.CONFIG_ERROR ? "Connection Check Failed " + connectionId
           : "Job failed after too many retries for connection " + connectionId;
-      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(connectionUpdaterInput.getJobId(), failureReason));
+      runMandatoryActivity(jobCreationAndStatusUpdateActivity::jobFailure, new JobFailureInput(workflowInternalState.getJobId(), failureReason));
 
       final int autoDisableConnectionVersion =
           Workflow.getVersion("auto_disable_failing_connection", Workflow.DEFAULT_VERSION, AUTO_DISABLE_FAILING_CONNECTION_CHANGE_CURRENT_VERSION);
