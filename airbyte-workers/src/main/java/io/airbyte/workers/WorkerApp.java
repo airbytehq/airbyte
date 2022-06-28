@@ -227,7 +227,7 @@ public class WorkerApp {
         defaultWorkerConfigs,
         defaultProcessFactory);
 
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
@@ -455,6 +455,8 @@ public class WorkerApp {
         new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+
+    final StatePersistence statePersistence = new StatePersistence(configDatabase);
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
