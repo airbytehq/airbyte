@@ -1,8 +1,13 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
 from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_kyriba.source import AccountSubStream, Accounts
+from source_kyriba.source import Accounts, AccountSubStream
+
 from .test_streams import config
 
 

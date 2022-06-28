@@ -4,8 +4,7 @@
 
 from unittest.mock import MagicMock
 
-from source_kyriba.source import SourceKyriba, KyribaClient
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_kyriba.source import KyribaClient, SourceKyriba
 
 config = {
     "username": "username",

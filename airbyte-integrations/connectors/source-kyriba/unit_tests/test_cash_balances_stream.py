@@ -1,10 +1,14 @@
+#
+# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+#
+
+from datetime import date
 from unittest.mock import MagicMock
 
 import pytest
-import requests
 from source_kyriba.source import CashBalancesStream
+
 from .test_streams import config
-from datetime import date
 
 
 @pytest.fixture

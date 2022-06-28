@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_kyriba.source import KyribaStream, KyribaClient
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_kyriba.source import KyribaClient, KyribaStream
 
 
 @pytest.fixture
@@ -104,7 +104,7 @@ def test_should_retry_401(patch_base_class):
     cfg["client"] = client
     stream = KyribaStream(**cfg)
     client.login.assert_called_once()
-    assert stream.should_retry(response_mock) == True
+    assert stream.should_retry(response_mock)
 
 
 def test_backoff_time(patch_base_class):

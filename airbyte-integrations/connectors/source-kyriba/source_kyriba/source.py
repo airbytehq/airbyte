@@ -3,17 +3,16 @@
 #
 
 from abc import ABC
+from datetime import date, datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import requests
-import uuid
 import backoff
-from datetime import timedelta, date, datetime
+import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.models import SyncMode
 
 
 class KyribaClient:

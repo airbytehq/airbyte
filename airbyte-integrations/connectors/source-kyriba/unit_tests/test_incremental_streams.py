@@ -6,6 +6,7 @@
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
 from source_kyriba.source import IncrementalKyribaStream
+
 from .test_streams import config
 
 
