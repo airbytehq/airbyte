@@ -26,7 +26,7 @@ lists_stream:
         type: "DatetimeStreamSlicer"
         start_time: "2017-01-01"
         end_time: "2022-01-01"
-        step: "10d"
+        step: "1000d"
         cursor_field: "created"
         datetime_format: "%Y-%m-%d"
         request_options_provider:
