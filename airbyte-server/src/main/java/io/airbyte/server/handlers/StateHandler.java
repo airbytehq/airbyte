@@ -29,8 +29,4 @@ public class StateHandler {
     return StateConverter.toApi(connectionId, currentState.orElse(null));
   }
 
-  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    return Enums.convertTo(getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
-  }
-
 }
