@@ -590,7 +590,8 @@ class Connection(BaseResource):
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
         if "schedule" in configuration:
             configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
-        configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
+        if "resource_requirements" in configuration:
+            configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
         configuration["status"] = ConnectionStatus(configuration["status"])
         return configuration
 
