@@ -60,21 +60,24 @@ class GithubStream(HttpStream, ABC):
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
-        retry_flag = response.headers.get("X-RateLimit-Remaining") == "0" or response.status_code in (
-            requests.codes.SERVER_ERROR,
-            requests.codes.BAD_GATEWAY,
+        retry_flag = (
+            # Rate limit HTTP headers
+            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
+            response.headers.get("X-RateLimit-Remaining") == "0"
+            # Secondary rate limits
+            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
+            or response.headers.get("Retry-After")
+            or response.status_code
+            in (
+                requests.codes.SERVER_ERROR,
+                requests.codes.BAD_GATEWAY,
+            )
         )
         if retry_flag:
             self.logger.info(
                 f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code with message: {response.text}"
             )
 
-        # Handling secondary rate limits for Github
-        # Additional information here: https://docs.github.com/en/rest/guides/best-practices-for-integrators#dealing-with-secondary-rate-limits
-        elif response.headers.get("Retry-After"):
-            time_delay = int(response.headers["Retry-After"])
-            self.logger.info(f"Handling Secondary Rate limits, setting sync delay for {time_delay} second(s)")
-            time.sleep(time_delay)
         return retry_flag
 
     def backoff_time(self, response: requests.Response) -> Union[int, float]:
@@ -84,6 +87,10 @@ class GithubStream(HttpStream, ABC):
 
         if response.status_code == requests.codes.SERVER_ERROR:
             return None
+
+        retry_after = int(response.headers.get("Retry-After", 0))
+        if retry_after:
+            return retry_after
 
         reset_time = response.headers.get("X-RateLimit-Reset")
         backoff_time = float(reset_time) - time.time() if reset_time else 60
