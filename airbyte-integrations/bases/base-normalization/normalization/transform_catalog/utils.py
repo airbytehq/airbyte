@@ -59,15 +59,19 @@ def is_number(property_type) -> bool:
     return property_type == "number" or "number" in property_type
 
 
-def is_integer(property_type) -> bool:
+def is_integer(definition: dict) -> bool:
+    if "airbyte_type" in definition and definition["airbyte_type"] == "integer":
+        return True
+    property_type = definition["type"]
     if is_string(property_type) or is_number(property_type):
         # Handle union type, give priority to wider scope types
         return False
     return property_type == "integer" or "integer" in property_type
 
 
-def is_boolean(property_type) -> bool:
-    if is_string(property_type) or is_number(property_type) or is_integer(property_type):
+def is_boolean(definition: dict) -> bool:
+    property_type = definition["type"]
+    if is_string(property_type) or is_number(property_type) or is_integer(definition):
         # Handle union type, give priority to wider scope types
         return False
     return property_type == "boolean" or "boolean" in property_type
@@ -85,8 +89,12 @@ def is_airbyte_column(name: str) -> bool:
     return name.startswith("_airbyte_")
 
 
-def is_simple_property(property_type) -> bool:
-    return is_string(property_type) or is_integer(property_type) or is_number(property_type) or is_boolean(property_type)
+def is_simple_property(definition: dict) -> bool:
+    if "type" not in definition:
+        property_type = "object"
+    else:
+        property_type = definition["type"]
+    return is_string(property_type) or is_integer(definition) or is_number(property_type) or is_boolean(definition)
 
 
 def is_combining_node(properties: dict) -> Set[str]:
