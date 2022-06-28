@@ -24,7 +24,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -185,7 +184,6 @@ public class ServerApp implements ServerRunnable {
     LOGGER.info("Creating jobs persistence...");
     final Database jobsDatabase = new Database(jobsDslContext);
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobsDatabase);
-    final StatePersistence statePersistence = new StatePersistence(configsDatabase);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -236,8 +234,7 @@ public class ServerApp implements ServerRunnable {
         httpClient,
         eventRunner,
         configsFlyway,
-        jobsFlyway,
-        statePersistence);
+        jobsFlyway);
   }
 
   @VisibleForTesting

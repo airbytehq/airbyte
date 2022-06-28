@@ -92,6 +92,50 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.statePersistence = statePersistence;
   }
 
+  // TODO: remove once cloud has been migrated to using the `setValues` that is explicitly passing
+  // statePersistence.
+  public static void setValues(
+                               final ConfigRepository configRepository,
+                               final SecretsRepositoryReader secretsRepositoryReader,
+                               final SecretsRepositoryWriter secretsRepositoryWriter,
+                               final JobPersistence jobPersistence,
+                               final ConfigPersistence seed,
+                               final SynchronousSchedulerClient synchronousSchedulerClient,
+                               final FileTtlManager archiveTtlManager,
+                               final Map<String, String> mdc,
+                               final Database configsDatabase,
+                               final Database jobsDatabase,
+                               final TrackingClient trackingClient,
+                               final WorkerEnvironment workerEnvironment,
+                               final LogConfigs logConfigs,
+                               final AirbyteVersion airbyteVersion,
+                               final Path workspaceRoot,
+                               final HttpClient httpClient,
+                               final EventRunner eventRunner,
+                               final Flyway configsFlyway,
+                               final Flyway jobsFlyway) {
+    ConfigurationApiFactory.configRepository = configRepository;
+    ConfigurationApiFactory.jobPersistence = jobPersistence;
+    ConfigurationApiFactory.seed = seed;
+    ConfigurationApiFactory.secretsRepositoryReader = secretsRepositoryReader;
+    ConfigurationApiFactory.secretsRepositoryWriter = secretsRepositoryWriter;
+    ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
+    ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
+    ConfigurationApiFactory.mdc = mdc;
+    ConfigurationApiFactory.configsDatabase = configsDatabase;
+    ConfigurationApiFactory.jobsDatabase = jobsDatabase;
+    ConfigurationApiFactory.trackingClient = trackingClient;
+    ConfigurationApiFactory.workerEnvironment = workerEnvironment;
+    ConfigurationApiFactory.logConfigs = logConfigs;
+    ConfigurationApiFactory.workspaceRoot = workspaceRoot;
+    ConfigurationApiFactory.airbyteVersion = airbyteVersion;
+    ConfigurationApiFactory.httpClient = httpClient;
+    ConfigurationApiFactory.eventRunner = eventRunner;
+    ConfigurationApiFactory.configsFlyway = configsFlyway;
+    ConfigurationApiFactory.jobsFlyway = jobsFlyway;
+    ConfigurationApiFactory.statePersistence = new StatePersistence(ConfigurationApiFactory.configsDatabase);
+  }
+
   @Override
   public ConfigurationApi provide() {
     MDC.setContextMap(ConfigurationApiFactory.mdc);

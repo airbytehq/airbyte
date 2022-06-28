@@ -28,6 +28,7 @@ import org.slf4j.MDC;
 
 public interface ServerFactory {
 
+  // TODO Add StatePeristence to the create interface once cloud has been updated
   ServerRunnable create(SynchronousSchedulerClient cachingSchedulerClient,
                         ConfigRepository configRepository,
                         SecretsRepositoryReader secretsRepositoryReader,
@@ -44,12 +45,33 @@ public interface ServerFactory {
                         HttpClient httpClient,
                         EventRunner eventRunner,
                         Flyway configsFlyway,
-                        Flyway jobsFlyway,
-                        StatePersistence statePersistence);
+                        Flyway jobsFlyway);
 
   class Api implements ServerFactory {
 
     @Override
+    public ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
+                                 final ConfigRepository configRepository,
+                                 final SecretsRepositoryReader secretsRepositoryReader,
+                                 final SecretsRepositoryWriter secretsRepositoryWriter,
+                                 final JobPersistence jobPersistence,
+                                 final ConfigPersistence seed,
+                                 final Database configsDatabase,
+                                 final Database jobsDatabase,
+                                 final TrackingClient trackingClient,
+                                 final WorkerEnvironment workerEnvironment,
+                                 final LogConfigs logConfigs,
+                                 final AirbyteVersion airbyteVersion,
+                                 final Path workspaceRoot,
+                                 final HttpClient httpClient,
+                                 final EventRunner eventRunner,
+                                 final Flyway configsFlyway,
+                                 final Flyway jobsFlyway) {
+      return create(synchronousSchedulerClient, configRepository, secretsRepositoryReader, secretsRepositoryWriter,
+          jobPersistence, seed, configsDatabase, jobsDatabase, trackingClient, workerEnvironment, logConfigs, airbyteVersion,
+          workspaceRoot, httpClient, eventRunner, configsFlyway, jobsFlyway, new StatePersistence(configsDatabase));
+    }
+
     public ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final ConfigRepository configRepository,
                                  final SecretsRepositoryReader secretsRepositoryReader,

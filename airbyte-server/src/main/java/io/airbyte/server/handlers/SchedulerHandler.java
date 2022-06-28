@@ -109,6 +109,28 @@ public class SchedulerHandler {
         new JobConverter(workerEnvironment, logConfigs));
   }
 
+  // TODO: remove once cloud has been migrated to using the constructor that is explicitly passing
+  // StatePersistence
+  public SchedulerHandler(final ConfigRepository configRepository,
+                          final SecretsRepositoryReader secretsRepositoryReader,
+                          final SecretsRepositoryWriter secretsRepositoryWriter,
+                          final SynchronousSchedulerClient synchronousSchedulerClient,
+                          final JobPersistence jobPersistence,
+                          final WorkerEnvironment workerEnvironment,
+                          final LogConfigs logConfigs,
+                          final EventRunner eventRunner) {
+    this(
+        configRepository,
+        secretsRepositoryWriter,
+        synchronousSchedulerClient,
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader),
+        new JsonSchemaValidator(),
+        jobPersistence,
+        eventRunner,
+        null,
+        new JobConverter(workerEnvironment, logConfigs));
+  }
+
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
                    final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -329,8 +351,10 @@ public class SchedulerHandler {
   }
 
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState =
-        statePersistence.getCurrentState(connectionIdRequestBody.getConnectionId()).map(StateMessageHelper::getState);
+    // TODO remove conditions once StatePersistence is no longer optional
+    final Optional<State> currentState = statePersistence != null
+        ? statePersistence.getCurrentState(connectionIdRequestBody.getConnectionId()).map(StateMessageHelper::getState)
+        : configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
     LOGGER.info("currentState server: {}", currentState);
 
     final ConnectionState connectionState = new ConnectionState()
