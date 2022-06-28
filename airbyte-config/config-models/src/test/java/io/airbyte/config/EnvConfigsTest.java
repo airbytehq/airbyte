@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
+import io.airbyte.config.Configs.JobErrorReportingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -176,6 +177,27 @@ class EnvConfigsTest {
 
     envMap.put(EnvConfigs.TRACKING_STRATEGY, "LOGGING");
     assertEquals(Configs.TrackingStrategy.LOGGING, config.getTrackingStrategy());
+  }
+
+  @Test
+  void testErrorReportingStrategy() {
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, null);
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "abc");
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "logging");
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "sentry");
+    assertEquals(JobErrorReportingStrategy.SENTRY, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "LOGGING");
+    assertEquals(JobErrorReportingStrategy.LOGGING, config.getJobErrorReportingStrategy());
+
+    envMap.put(EnvConfigs.JOB_ERROR_REPORTING_STRATEGY, "SENTRY");
+    assertEquals(JobErrorReportingStrategy.SENTRY, config.getJobErrorReportingStrategy());
   }
 
   @Test

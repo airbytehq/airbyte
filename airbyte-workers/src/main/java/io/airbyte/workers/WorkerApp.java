@@ -41,6 +41,9 @@ import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClientFactory;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -134,7 +137,9 @@ public class WorkerApp {
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
+  private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
+  private final FeatureFlags featureFlags;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -193,7 +198,8 @@ public class WorkerApp {
             jobTracker,
             configRepository,
             jobCreator,
-            streamResetPersistence),
+            streamResetPersistence,
+            jobErrorReporter),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
         new CheckConnectionActivityImpl(
@@ -266,7 +272,8 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        featureFlags.useStreamCapableState());
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
@@ -435,8 +442,11 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+    final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
+    final JobErrorReporter jobErrorReporter =
+        new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
 
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -464,7 +474,9 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker,
-        streamResetPersistence).start();
+        jobErrorReporter,
+        streamResetPersistence,
+        featureFlags).start();
   }
 
   public static void main(final String[] args) {
