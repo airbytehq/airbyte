@@ -49,7 +49,6 @@ public interface ServerFactory {
   class Api implements ServerFactory {
 
     @Override
-
     public ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
                                  final ConfigRepository configRepository,
                                  final SecretsRepositoryReader secretsRepositoryReader,
