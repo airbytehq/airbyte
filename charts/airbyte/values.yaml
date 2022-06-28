@@ -832,7 +832,7 @@ logs:
   ## @param logs.gcs.credentialsJson Base64 encoded json GCP credentials file contents
   gcs:
     bucket: ""
-    # If you are mounting an existing secret to extraVolumes on scheduler, server and worker
+    # If you are mounting an existing secret to extraVolumes on server and worker
     # deployments, then set credentials to the path of the mounted JSON file
     credentials: ""
     # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)

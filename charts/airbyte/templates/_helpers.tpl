@@ -180,13 +180,6 @@ Returns the GCP credentials path
 {{- end -}}
 
 {{/*
-Returns the Airbyte Scheduler Image
-*/}}
-{{- define "airbyte.schedulerImage" -}}
-{{- include "common.images.image" (dict "imageRoot" .Values.scheduler.image "global" .Values.global) -}}
-{{- end -}}
-
-{{/*
 Returns the Airbyte Server Image
 */}}
 {{- define "airbyte.serverImage" -}}
