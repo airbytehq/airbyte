@@ -18,7 +18,8 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
 import io.airbyte.config.StreamDescriptor;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.SyncMode;
@@ -31,15 +32,15 @@ import javax.annotation.Nullable;
 public class DefaultJobCreator implements JobCreator {
 
   private final JobPersistence jobPersistence;
-  private final ConfigRepository configRepository;
   private final ResourceRequirements workerResourceRequirements;
+  private final StatePersistence statePersistence;
 
   public DefaultJobCreator(final JobPersistence jobPersistence,
-                           final ConfigRepository configRepository,
-                           final ResourceRequirements workerResourceRequirements) {
+                           final ResourceRequirements workerResourceRequirements,
+                           final StatePersistence statePersistence) {
     this.jobPersistence = jobPersistence;
-    this.configRepository = configRepository;
     this.workerResourceRequirements = workerResourceRequirements;
+    this.statePersistence = statePersistence;
   }
 
   @Override
@@ -126,10 +127,8 @@ public class DefaultJobCreator implements JobCreator {
     return jobPersistence.enqueueJob(standardSync.getConnectionId().toString(), jobConfig);
   }
 
-  // TODO (https://github.com/airbytehq/airbyte/issues/13620): update this method implementation
-  // to fetch and serialize the new per-stream state format into a State object
   private Optional<State> getCurrentConnectionState(final UUID connectionId) throws IOException {
-    return configRepository.getConnectionState(connectionId);
+    return statePersistence.getCurrentState(connectionId).map(StateMessageHelper::getState);
   }
 
 }
