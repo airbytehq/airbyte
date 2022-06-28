@@ -141,6 +141,7 @@ public class WorkerApp {
   private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
   private final FeatureFlags featureFlags;
+  private final JobCreator jobCreator;
   private final StatePersistence statePersistence;
 
   public void start() {
@@ -181,7 +182,6 @@ public class WorkerApp {
   }
 
   private void registerConnectionManager(final WorkerFactory factory) {
-    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final Worker connectionUpdaterWorker =
@@ -404,6 +404,12 @@ public class WorkerApp {
     final Database jobDatabase = new Database(jobsDslContext);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final StatePersistence statePersistence = new StatePersistence(configDatabase);
+    final DefaultJobCreator jobCreator = new DefaultJobCreator(
+        jobPersistence,
+        defaultWorkerConfigs.getResourceRequirements(),
+        statePersistence);
+
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
         new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
@@ -413,7 +419,7 @@ public class WorkerApp {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
         configs.connectorSpecificResourceDefaultsEnabled(),
-        new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
+        jobCreator,
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
@@ -450,7 +456,6 @@ public class WorkerApp {
 
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
-    final StatePersistence statePersistence = new StatePersistence(configDatabase);
     new WorkerApp(
         workspaceRoot,
         defaultProcessFactory,
@@ -481,6 +486,7 @@ public class WorkerApp {
         jobErrorReporter,
         streamResetPersistence,
         featureFlags,
+        jobCreator,
         statePersistence).start();
   }
 

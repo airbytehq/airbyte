@@ -33,7 +33,8 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
 import io.airbyte.config.StreamDescriptor;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -65,7 +66,7 @@ public class DefaultJobCreatorTest {
   private static final StreamDescriptor STREAM_DESCRIPTOR2 = new StreamDescriptor().withName("stream 2").withNamespace("namespace 2");
 
   private JobPersistence jobPersistence;
-  private ConfigRepository configRepository;
+  private StatePersistence statePersistence;
   private JobCreator jobCreator;
   private ResourceRequirements workerResourceRequirements;
 
@@ -126,13 +127,13 @@ public class DefaultJobCreatorTest {
   @BeforeEach
   void setup() {
     jobPersistence = mock(JobPersistence.class);
-    configRepository = mock(ConfigRepository.class);
+    statePersistence = mock(StatePersistence.class);
     workerResourceRequirements = new ResourceRequirements()
         .withCpuLimit("0.2")
         .withCpuRequest("0.2")
         .withMemoryLimit("200Mi")
         .withMemoryRequest("200Mi");
-    jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerResourceRequirements);
+    jobCreator = new DefaultJobCreator(jobPersistence, workerResourceRequirements, statePersistence);
   }
 
   @Test
@@ -336,7 +337,8 @@ public class DefaultJobCreatorTest {
         });
 
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
-    when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
+    when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
+        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
 
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -379,7 +381,8 @@ public class DefaultJobCreatorTest {
         });
 
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
-    when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
+    when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
+        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
 
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
