@@ -315,7 +315,8 @@ public class SchedulerHandler {
     return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
-  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
   }
 
@@ -370,8 +371,10 @@ public class SchedulerHandler {
     return readJobFromResult(manualSyncResult);
   }
 
-  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException {
-    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(connectionId);
+  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
+    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
+        connectionId,
+        configRepository.getAllStreamsForConnection(connectionId));
 
     return readJobFromResult(resetConnectionResult);
   }

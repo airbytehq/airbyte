@@ -45,6 +45,8 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -979,6 +981,12 @@ public class ConfigRepository {
       throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceServiceAccount.getWorkspaceId().toString(),
         workspaceServiceAccount);
+  }
+
+  public List<StreamDescriptor> getAllStreamsForConnection(final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSync standardSync = getStandardSync(connectionId);
+    return CatalogHelpers.extractStreamDescriptors(standardSync.getCatalog());
   }
 
 }
