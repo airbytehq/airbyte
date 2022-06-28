@@ -102,12 +102,12 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT -> JsonSchemaType.NUMBER;
-      case INTEGER -> JsonSchemaType.NUMBER;
-      case BIGINT -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;
+      case INTEGER -> JsonSchemaType.INTEGER;
+      case BIGINT -> JsonSchemaType.INTEGER;
       case FLOAT, DOUBLE -> JsonSchemaType.NUMBER;
       case REAL -> JsonSchemaType.NUMBER;
       case NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
