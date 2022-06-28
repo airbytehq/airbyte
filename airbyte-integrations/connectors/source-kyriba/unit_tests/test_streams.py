@@ -115,7 +115,7 @@ def test_should_retry_401(patch_base_class):
     cfg["client"] = client
     stream = KyribaStream(**cfg)
     client.login.assert_called_once()
-    assert stream.should_retry(response_mock) == True
+    assert stream.should_retry(response_mock)
 
 def test_should_retry_401(patch_base_class):
     response_mock = MagicMock()
