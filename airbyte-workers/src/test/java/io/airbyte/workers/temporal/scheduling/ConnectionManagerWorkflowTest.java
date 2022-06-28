@@ -694,7 +694,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofMinutes(3L));
+      testEnv.sleep(Duration.ofMinutes(15L));
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
@@ -714,7 +714,7 @@ public class ConnectionManagerWorkflowTest {
     }
 
     @Test
-    @Timeout(value = 30,
+    @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset deletes streamsToReset from stream_resets table")
     public void cancelResetRemovesStreamsToReset() throws InterruptedException {
