@@ -14,7 +14,7 @@ interface CatalogDiffSectionProps {
 export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, catalog }) => {
   //note: do we have to send the catalog along for a field?
   //isChild will be used to demote headings within the accordion
-
+  console.log("section");
   const diffVerb = data[0].transformType.includes("add")
     ? "new"
     : data[0].transformType.includes("remove")
@@ -23,16 +23,22 @@ export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, ca
     ? "changed"
     : undefined;
 
-  const diffObject = data[0].transformType.includes("stream")
+  const diffType = data[0].transformType.includes("stream")
     ? "stream"
     : data[0].transformType.includes("field")
     ? "field"
     : undefined;
   return (
     <div className={styles.sectionContainer}>
-      {/* generic header */}
-      <div>
-        <FormattedMessage id={`connection.updateSchema.${diffVerb}`} />
+      {/* header: {number} {descriptor} {object} */}
+      <div className={styles.sectionHeader}>
+        {data.length}{" "}
+        <FormattedMessage
+          id={`connection.updateSchema.${diffVerb}`}
+          values={{
+            item: <FormattedMessage id={`connection.updateSchema.${diffType}`} values={{ count: data.length }} />,
+          }}
+        />
       </div>
       {/* update stream should make an accordion, others should make a row */}
       {data.map((item) => {

@@ -335,8 +335,9 @@
   "connection.updateSchema.new": "new {item}",
   "connection.updateSchema.removed": "removed {item}",
   "connection.updateSchema.changed": "{item} with changes",
-  "connection.updateSchema.tableCount": "{count, plural, one {table} other {tables}}",
-  "connection.updateSchema.fieldCount": "{count, plural, one {field} other {fields}}",
+  "connection.updateSchema.stream": "{count, plural, one {table} other {tables}}",
+  "connection.updateSchema.field": "{count, plural, one {field} other {fields}}",
+
   "connection.newConnection": "+ New connection",
   "connection.newConnectionTitle": "New connection",
   "connection.noConnections": "Connection list is empty",

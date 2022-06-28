@@ -23,13 +23,15 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
   return (
     <Modal title={<FormattedMessage id="connection.updateSchema.completed" />} onClose={() => null}>
       <div className={styles.modalContent}>
-        {addedStreams.length > 1 && <CatalogDiffSection data={addedStreams} catalog={catalog} />}
-        {removedStreams.length > 1 && <CatalogDiffSection data={removedStreams} catalog={catalog} />}
-        {updatedStreams.length > 1 && <CatalogDiffSection data={updatedStreams} catalog={catalog} />}
+        {addedStreams.length > 0 && <CatalogDiffSection data={addedStreams} catalog={catalog} />}
+        {removedStreams.length > 0 && <CatalogDiffSection data={removedStreams} catalog={catalog} />}
+        {updatedStreams.length > 0 && <CatalogDiffSection data={updatedStreams} catalog={catalog} />}
       </div>
-      <LoadingButton onClick={() => setDiffAcknowledged(true)}>
-        <FormattedMessage id="connection.updateSchema.confirm" />
-      </LoadingButton>
+      <div className={styles.buttonContainer}>
+        <LoadingButton onClick={() => setDiffAcknowledged(true)}>
+          <FormattedMessage id="connection.updateSchema.confirm" />
+        </LoadingButton>
+      </div>
     </Modal>
   );
 };

@@ -1,4 +1,12 @@
 .modalContent {
   display: flex;
   flex-direction: column;
+  width: 596px;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  margin: 20px 15px 20px 15px;
 }
