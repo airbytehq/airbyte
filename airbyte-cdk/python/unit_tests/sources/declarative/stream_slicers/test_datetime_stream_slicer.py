@@ -18,7 +18,7 @@ end_date_now = InterpolatedString(
     "{{ today_utc() }}",
 )
 end_date = InterpolatedString("2021-01-10")
-cursor_value = InterpolatedString("{{ stream_state['date'] }}")
+cursor_value = "date"
 timezone = datetime.timezone.utc
 
 datetime_format = "%Y-%m-%d"
