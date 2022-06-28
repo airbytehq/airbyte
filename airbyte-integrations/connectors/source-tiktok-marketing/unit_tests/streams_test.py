@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock, PropertyMock, patch
@@ -26,6 +26,7 @@ CONFIG = {
     "secret": "secret",
     "authenticator": None,
     "start_date": START_DATE,
+    "end_date": END_DATE,
     "app_id": 1234,
     "advertiser_id": 0,
 }
@@ -34,6 +35,7 @@ CONFIG_SANDBOX = {
     "secret": "secret",
     "authenticator": None,
     "start_date": START_DATE,
+    "end_date": END_DATE,
     "app_id": 1234,
     "advertiser_id": 2000,
 }
@@ -62,13 +64,13 @@ def advertiser_ids_fixture():
     ],
 )
 def test_get_time_interval(pendulum_now_mock, granularity, intervals_len):
-    intervals = BasicReports._get_time_interval(start_date="2020-01-01", granularity=granularity)
+    intervals = BasicReports._get_time_interval(start_date="2020-01-01", ending_date="2020-03-01", granularity=granularity)
     assert len(list(intervals)) == intervals_len
 
 
 @patch.object(pendulum, "now", return_value=pendulum.parse("2018-12-25"))
 def test_get_time_interval_past(pendulum_now_mock_past):
-    intervals = BasicReports._get_time_interval(start_date="2020-01-01", granularity=ReportGranularity.DAY)
+    intervals = BasicReports._get_time_interval(start_date="2020-01-01", ending_date="2020-01-01", granularity=ReportGranularity.DAY)
     assert len(list(intervals)) == 1
 
 
@@ -121,10 +123,10 @@ def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pend
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 36),
-        (AdGroupsReports, 33),
-        (AdvertisersReports, 11),
-        (CampaignsReports, 10),
+        (AdsReports, 54),
+        (AdGroupsReports, 51),
+        (AdvertisersReports, 29),
+        (CampaignsReports, 28),
         (AdvertisersAudienceReports, 6),
         (AdsAudienceReports, 30),
     ],
@@ -138,10 +140,10 @@ def test_basic_reports_get_metrics_day(stream, metrics_number):
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 36),
-        (AdGroupsReports, 33),
-        (AdvertisersReports, 9),
-        (CampaignsReports, 10),
+        (AdsReports, 54),
+        (AdGroupsReports, 51),
+        (AdvertisersReports, 27),
+        (CampaignsReports, 28),
         (AdvertisersAudienceReports, 6),
     ],
 )

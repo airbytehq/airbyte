@@ -4,6 +4,7 @@ import {
   UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithEmailLink,
   sendPasswordResetEmail,
   confirmPasswordReset,
   updateProfile,
@@ -18,7 +19,7 @@ import {
 
 import { Provider } from "config";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { ErrorCodes } from "packages/cloud/services/auth/types";
+import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
 interface AuthService {
   login(email: string, password: string): Promise<UserCredential>;
@@ -38,6 +39,8 @@ interface AuthService {
   sendEmailVerifiedLink(): Promise<void>;
 
   updateEmail(email: string, password: string): Promise<void>;
+
+  signInWithEmailLink(email: string): Promise<UserCredential>;
 }
 
 export class GoogleAuthService implements AuthService {
@@ -151,6 +154,25 @@ export class GoogleAuthService implements AuthService {
 
   async confirmEmailVerify(code: string): Promise<void> {
     return applyActionCode(this.auth, code);
+  }
+
+  async signInWithEmailLink(email: string): Promise<UserCredential> {
+    try {
+      return await signInWithEmailLink(this.auth, email);
+    } catch (e) {
+      switch (e?.code) {
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", EmailLinkErrorCodes.EMAIL_MISMATCH);
+        case AuthErrorCodes.INVALID_OOB_CODE:
+          // The link was already used
+          throw new Error(EmailLinkErrorCodes.LINK_INVALID);
+        case AuthErrorCodes.EXPIRED_OOB_CODE:
+          // The link expired
+          throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
+      }
+
+      throw e;
+    }
   }
 
   signOut(): Promise<void> {

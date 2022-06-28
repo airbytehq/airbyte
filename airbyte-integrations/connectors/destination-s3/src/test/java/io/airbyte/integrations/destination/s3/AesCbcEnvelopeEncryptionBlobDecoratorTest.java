@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import java.io.ByteArrayOutputStream;
@@ -25,12 +29,14 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
   public static final String INITIALIZATION_VECTOR = "04YDvMCXpvTb2ilggLbDJQ==";
   // A small CSV file, which looks similar to what destination-s3 might upload
   public static final String PLAINTEXT = """
-      adc66b6e-6051-42db-b683-d978a51c3c02,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.046
-      0e253b28-bec6-4a90-8622-629d3e542982,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.047
-      """;
-  // The encryption of the plaintext, using the CEK and IV defined above (base64-encoded). Equivalent to:
+                                         adc66b6e-6051-42db-b683-d978a51c3c02,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.046
+                                         0e253b28-bec6-4a90-8622-629d3e542982,"{""campaign.resource_name"":""cus""}",2022-04-04 22:32:50.047
+                                         """;
+  // The encryption of the plaintext, using the CEK and IV defined above (base64-encoded). Equivalent
+  // to:
   // base64Encode(encrypt("AES-CBC", PLAINTEXT, CONTENT_ENCRYPTING_KEY, INITIALIZATION_VECTOR)
-  public static final String CIPHERTEXT = "IRfz0FN05Y9yyne+0V+G14xYjA4B0+ter7qniDheIu9UM3Fdmu/mqjyFvYFIRTroP5kNJ1SH3FaArE5aHkrWMPwSkczkhArajfYX+UEfGH68YyWOSnpdxuviTTgK3Ee3OVTz3ZlziOB8jCMjupJ9pqkLnxg7Ghe3BQ1puOHGFDMmIgiP4Zfz0fkdlUyZOvsJ7xpncD24G6IIJNwOyo4CedULgueHdybmxr4oddhAja8QxJxZzlfZl4suJ+KWvt78MSdkRlp+Ip99U8n0O7BLJA==";
+  public static final String CIPHERTEXT =
+      "IRfz0FN05Y9yyne+0V+G14xYjA4B0+ter7qniDheIu9UM3Fdmu/mqjyFvYFIRTroP5kNJ1SH3FaArE5aHkrWMPwSkczkhArajfYX+UEfGH68YyWOSnpdxuviTTgK3Ee3OVTz3ZlziOB8jCMjupJ9pqkLnxg7Ghe3BQ1puOHGFDMmIgiP4Zfz0fkdlUyZOvsJ7xpncD24G6IIJNwOyo4CedULgueHdybmxr4oddhAja8QxJxZzlfZl4suJ+KWvt78MSdkRlp+Ip99U8n0O7BLJA==";
   // The encryption of the CEK, using the KEK defined above (base64-encoded). Equivalent to:
   // base64Encode(encrypt("AES-ECB", CONTENT_ENCRYPTING_KEY, KEY_ENCRYPTING_KEY)
   public static final String ENCRYPTED_CEK = "Ck5u5cKqcY+bcFBrpsPHHUNw5Qx8nYDJ2Vqt6XG6kwxjVAJQKKljPv9NDsG6Ncoc";
@@ -42,8 +48,7 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
     decorator = new AesCbcEnvelopeEncryptionBlobDecorator(
         new SecretKeySpec(BASE64_DECODER.decode(KEY_ENCRYPTING_KEY), "AES"),
         new SecretKeySpec(BASE64_DECODER.decode(CONTENT_ENCRYPTING_KEY), "AES"),
-        BASE64_DECODER.decode(INITIALIZATION_VECTOR)
-    );
+        BASE64_DECODER.decode(INITIALIZATION_VECTOR));
   }
 
   @Test
@@ -54,14 +59,12 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
       IOUtils.write(
           PLAINTEXT,
           wrapped,
-          StandardCharsets.UTF_8
-      );
+          StandardCharsets.UTF_8);
     }
 
     Assertions.assertArrayEquals(
         BASE64_DECODER.decode(CIPHERTEXT),
-        stream.toByteArray()
-    );
+        stream.toByteArray());
   }
 
   @Test
@@ -72,16 +75,13 @@ public class AesCbcEnvelopeEncryptionBlobDecoratorTest {
         metadata,
         Map.of(
             AesCbcEnvelopeEncryptionBlobDecorator.ENCRYPTED_CONTENT_ENCRYPTING_KEY, "the_cek",
-            AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "the_iv"
-        )
-    );
+            AesCbcEnvelopeEncryptionBlobDecorator.INITIALIZATION_VECTOR, "the_iv"));
 
     Assertions.assertEquals(
         Map.of(
             "the_cek", ENCRYPTED_CEK,
-            "the_iv", INITIALIZATION_VECTOR
-        ),
-        metadata
-    );
+            "the_iv", INITIALIZATION_VECTOR),
+        metadata);
   }
+
 }

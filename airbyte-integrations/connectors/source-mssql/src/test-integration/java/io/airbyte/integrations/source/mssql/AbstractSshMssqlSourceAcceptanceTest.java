@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
@@ -10,7 +10,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -28,7 +27,6 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -39,10 +37,11 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
+  private static final Network network = Network.newNetwork();
+  private static JsonNode config;
   private String dbName;
   private MSSQLServerContainer<?> db;
   private final SshBastionContainer bastion = new SshBastionContainer();
-  private static JsonNode config;
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -58,7 +57,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -73,18 +72,19 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),
-            config.get("port").asInt()), null);
+            config.get("port").asInt()),
+        null);
     return new Database(dslContext);
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
-        .withNetwork(bastion.getNetWork())
+        .withNetwork(network)
         .acceptLicense();
     db.start();
   }

@@ -29,7 +29,7 @@ const TextInputsSection = styled.div`
 `;
 
 const EmailSection: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const user = useCurrentUser();
 
   const emailService = useEmail();
@@ -38,7 +38,7 @@ const EmailSection: React.FC = () => {
   const { errorMessage, successMessage, loading, updateData } = useWorkspaceEditor();
 
   const onChange = async (data: { news: boolean; securityUpdates: boolean }) => {
-    await updateData({ ...workspace, ...data });
+    await updateData({ ...workspace, ...data, anonymousDataCollection: !!workspace.anonymousDataCollection });
   };
 
   return (
@@ -93,8 +93,8 @@ const EmailSection: React.FC = () => {
                 successMessage={successMessage}
                 onChange={onChange}
                 preferencesValues={{
-                  news: workspace.news,
-                  securityUpdates: workspace.securityUpdates,
+                  news: !!workspace.news,
+                  securityUpdates: !!workspace.securityUpdates,
                 }}
               />
               <ChangeEmailFooter style={{ display: "none" }}>

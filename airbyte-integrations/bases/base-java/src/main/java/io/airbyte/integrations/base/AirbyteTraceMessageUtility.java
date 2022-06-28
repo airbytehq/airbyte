@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -9,8 +9,8 @@ import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import java.util.Arrays;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 public final class AirbyteTraceMessageUtility {
 
@@ -53,7 +53,7 @@ public final class AirbyteTraceMessageUtility {
                 .withFailureType(failureType)
                 .withMessage(displayMessage)
                 .withInternalMessage(e.toString())
-                .withStackTrace(Arrays.toString(e.getStackTrace()))));
+                .withStackTrace(ExceptionUtils.getStackTrace(e))));
   }
 
   private static AirbyteMessage makeAirbyteMessageFromTraceMessage(AirbyteTraceMessage airbyteTraceMessage) {

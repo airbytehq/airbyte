@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redshift;
@@ -9,6 +9,7 @@ import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestina
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.USERNAME;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
+import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
 import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,15 +23,19 @@ import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.destination.redshift.enums.RedshiftDataTmpTableMode;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
+import io.airbyte.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.integrations.destination.s3.NoEncryption;
 import io.airbyte.integrations.destination.s3.S3Destination;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Map;
@@ -42,21 +47,31 @@ import org.slf4j.LoggerFactory;
 public class RedshiftStagingS3Destination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
-  private final RedshiftDataTmpTableMode redshiftDataTmpTableMode;
 
-  public RedshiftStagingS3Destination(final RedshiftDataTmpTableMode redshiftDataTmpTableMode) {
-    super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations(redshiftDataTmpTableMode));
-    this.redshiftDataTmpTableMode = redshiftDataTmpTableMode;
+  public RedshiftStagingS3Destination() {
+    super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
+  }
+
+  private boolean isEphemeralKeysAndPurgingStagingData(JsonNode config, EncryptionConfig encryptionConfig) {
+    return !isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
   }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
-    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
+    final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
+    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
+        EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
+    if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(
+              "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
+    }
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, s3Config.getBucketPath());
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
-        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, redshiftDataTmpTableMode);
+        new RedshiftS3StagingSqlOperations(nameTransformer, s3Config.getS3Client(), s3Config, encryptionConfig);
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
@@ -82,11 +97,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public DataSource getDataSource(final JsonNode config) {
     final var jdbcConfig = getJdbcConfig(config);
     return DataSourceFactory.create(
-            jdbcConfig.get(USERNAME).asText(),
-            jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
-            RedshiftInsertDestination.DRIVER_CLASS,
-            jdbcConfig.get(JDBC_URL).asText(),
-            SSL_JDBC_PARAMETERS);
+        jdbcConfig.get(USERNAME).asText(),
+        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+        RedshiftInsertDestination.DRIVER_CLASS,
+        jdbcConfig.get(JDBC_URL).asText(),
+        SSL_JDBC_PARAMETERS);
   }
 
   @Override
@@ -109,16 +124,19 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3DestinationConfig s3Config = getS3DestinationConfig(config);
+    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
+        EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
+    final JsonNode s3Options = findS3Options(config);
+    final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     return new StagingConsumerFactory().create(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
-        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, redshiftDataTmpTableMode),
+        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX)),
         config,
         catalog,
-        isPurgeStagingData(config));
+        isPurgeStagingData(s3Options));
   }
 
   private boolean isPurgeStagingData(final JsonNode config) {

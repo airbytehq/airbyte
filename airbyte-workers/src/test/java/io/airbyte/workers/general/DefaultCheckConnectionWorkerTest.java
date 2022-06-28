@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.general;
@@ -101,11 +101,13 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFail() {
+  public void testProcessFail() throws WorkerException {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
+
+    assertEquals(Status.FAILED, output.getStatus());
   }
 
   @Test
@@ -113,6 +115,7 @@ public class DefaultCheckConnectionWorkerTest {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
+
     assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 

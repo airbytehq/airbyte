@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -124,8 +124,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")
-    );
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
     dataSources.add(dataSource);
     return dataSource;
   }

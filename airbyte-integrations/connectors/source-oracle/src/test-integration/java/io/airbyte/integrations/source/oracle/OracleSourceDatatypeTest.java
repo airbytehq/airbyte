@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -37,7 +37,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -56,7 +57,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 

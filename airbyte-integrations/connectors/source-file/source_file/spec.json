@@ -24,7 +24,7 @@
         "type": "string",
         "title": "Reader Options",
         "description": "This should be a string in JSON format. It depends on the chosen file format to provide additional options and tune its behavior.",
-        "examples": ["{}", "{'sep': ' '}"]
+        "examples": ["{}", "{\"sep\": \" \"}"]
       },
       "url": {
         "type": "string",

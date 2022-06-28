@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -58,7 +58,8 @@ class OracleSourceTest {
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 

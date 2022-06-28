@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
@@ -49,7 +50,7 @@ public class MqttDestination extends BaseConnector implements Destination {
               COLUMN_NAME_EMITTED_AT, System.currentTimeMillis(),
               COLUMN_NAME_DATA, Jsons.jsonNode(ImmutableMap.of("test-key", "test-value"))));
 
-          final MqttMessage message = new MqttMessage(payload.toString().getBytes());
+          final MqttMessage message = new MqttMessage(payload.toString().getBytes(Charsets.UTF_8));
           message.setQos(mqttConfig.getQos());
           message.setRetained(mqttConfig.isRetainedMessage());
 

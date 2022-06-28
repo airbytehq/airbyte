@@ -28,11 +28,6 @@ To start contributing:
 
 ## Build with `gradle`
 
-:::info
-
-If you're using Mac M1 \(Apple Silicon\) machines, you may run into some problems (Temporal failing during runs, and some connectors not working). See the [GitHub issue](https://github.com/airbytehq/airbyte/issues/2017) for more information.
-
-:::
 
 To compile and build just the platform \(not all the connectors\):
 

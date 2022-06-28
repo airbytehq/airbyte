@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -20,7 +20,6 @@ import java.util.Map;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junit.jupiter.api.BeforeEach;
 
 public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 

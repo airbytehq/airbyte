@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.destination;
@@ -92,6 +92,8 @@ public abstract class DestinationAcceptanceTest {
 
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
+
+  private static final String DUMMY_CATALOG_NAME = "DummyCatalog";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DestinationAcceptanceTest.class);
 
@@ -415,11 +417,26 @@ public abstract class DestinationAcceptanceTest {
     final AirbyteCatalog catalog =
         Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredCatalog, false);
 
+    // We need to make sure that other streams\tables\files in the same location will not be
+    // affected\deleted\overridden by our activities during first, second or any future sync.
+    // So let's create a dummy data that will be checked after all sync. It should remain the same
+    final AirbyteCatalog dummyCatalog =
+        Jsons.deserialize(MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile), AirbyteCatalog.class);
+    dummyCatalog.getStreams().get(0).setName(DUMMY_CATALOG_NAME);
+    final ConfiguredAirbyteCatalog configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(dummyCatalog);
+    // update messages to set new dummy stream name
+    firstSyncMessages.stream().filter(message -> message.getRecord() != null)
+        .forEach(message -> message.getRecord().setStream(DUMMY_CATALOG_NAME));
+    // sync dummy data
+    runSyncAndVerifyStateOutput(config, firstSyncMessages, configuredDummyCatalog, false);
+
+    // Run second sync
     final List<AirbyteMessage> secondSyncMessages = Lists.newArrayList(
         new AirbyteMessage()
             .withType(Type.RECORD)
@@ -442,6 +459,10 @@ public abstract class DestinationAcceptanceTest {
     runSyncAndVerifyStateOutput(config, secondSyncMessages, configuredCatalog, false);
     final String defaultSchema = getDefaultSchema(config);
     retrieveRawRecordsAndAssertSameMessages(catalog, secondSyncMessages, defaultSchema);
+
+    // verify that other streams in the same location were not affected. If something fails here,
+    // then this need to be fixed in connectors logic to override only required streams
+    retrieveRawRecordsAndAssertSameMessages(dummyCatalog, firstSyncMessages, defaultSchema);
   }
 
   /**
@@ -709,7 +730,7 @@ public abstract class DestinationAcceptanceTest {
             .withEmittedAt(Instant.now().toEpochMilli())
             .withData(Jsons.jsonNode(ImmutableMap.builder()
                 .put("id", 3)
-                .put("currency", generateBigString(0))
+                .put("currency", generateBigString(getGenerateBigStringAddExtraCharacters()))
                 .put("date", "2020-10-10T00:00:00Z")
                 .put("HKD", 10.5)
                 .put("NZD", 1.14)
@@ -730,6 +751,10 @@ public abstract class DestinationAcceptanceTest {
         .limit(length)
         .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
         .toString();
+  }
+
+  protected int getGenerateBigStringAddExtraCharacters() {
+    return 0;
   }
 
   /**
@@ -1081,7 +1106,7 @@ public abstract class DestinationAcceptanceTest {
 
     destination.start(destinationConfig, jobRoot);
     messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
@@ -1340,7 +1365,7 @@ public abstract class DestinationAcceptanceTest {
         .format("Added %s messages to each of %s streams", currentRecordNumberForStream,
             currentStreamNumber));
     // Close destination
-    destination.notifyEndOfStream();
+    destination.notifyEndOfInput();
   }
 
   private final static String LOREM_IPSUM =

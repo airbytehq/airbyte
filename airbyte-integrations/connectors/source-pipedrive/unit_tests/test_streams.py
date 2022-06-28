@@ -1,19 +1,22 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import pytest
 from airbyte_cdk.models import SyncMode
-
 from source_pipedrive.streams import (
-    PipedriveStream,
-    ActivityFields,
-    Leads,
     Activities,
+    ActivityFields,
+    DealFields,
     Deals,
+    Leads,
+    OrganizationFields,
     Organizations,
+    PersonFields,
     Persons,
+    PipedriveStream,
     Pipelines,
     Stages,
-    DealFields,
-    OrganizationFields,
-    PersonFields
 )
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
@@ -51,21 +54,12 @@ def test_path_refresh(config_refresh):
         (OrganizationFields, "organizationFields"),
         (PersonFields, "personFields"),
         (Leads, "leads"),
-    ]
+    ],
 )
 def test_streams_full_refresh(stream, endpoint, requests_mock, config_refresh):
     body = {
         "success": "true",
-        "data": [
-            {
-                "id": 1,
-                "update_time": "2020-10-14T11:30:36.551Z"
-            },
-            {
-                "id": 2,
-                "update_time": "2020-10-14T11:30:36.551Z"
-            }
-        ]
+        "data": [{"id": 1, "update_time": "2020-10-14T11:30:36.551Z"}, {"id": 2, "update_time": "2020-10-14T11:30:36.551Z"}],
     }
 
     response = setup_response(200, body)
@@ -89,21 +83,12 @@ def test_streams_full_refresh(stream, endpoint, requests_mock, config_refresh):
         Pipelines,
         Stages,
         # Users
-    ]
+    ],
 )
 def test_streams_incremental_sync(stream, requests_mock, config_incremental):
     body = {
         "success": "true",
-        "data": [
-            {
-                "id": 1,
-                "update_time": "2020-10-14T11:30:36.551Z"
-            },
-            {
-                "id": 2,
-                "update_time": "2020-11-14T11:30:36.551Z"
-            }
-        ]
+        "data": [{"id": 1, "update_time": "2020-10-14T11:30:36.551Z"}, {"id": 2, "update_time": "2020-11-14T11:30:36.551Z"}],
     }
 
     response = setup_response(200, body)
@@ -123,8 +108,5 @@ def test_streams_incremental_sync(stream, requests_mock, config_incremental):
 
 def setup_response(status, body):
     return [
-        {
-            "json": body,
-            "status_code": status
-        },
+        {"json": body, "status_code": status},
     ]

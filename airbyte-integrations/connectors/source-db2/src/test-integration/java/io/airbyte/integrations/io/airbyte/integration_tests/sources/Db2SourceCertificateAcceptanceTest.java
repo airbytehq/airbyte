@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -15,6 +15,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -104,7 +105,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("port", db.getMappedPort(50000))
+        .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -125,8 +126,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         config.get("username").asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
-        jdbcUrl
-    );
+        jdbcUrl);
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

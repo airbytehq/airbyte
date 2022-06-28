@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -11,11 +11,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
-import io.airbyte.api.model.ImportRequestBody;
-import io.airbyte.api.model.UploadRead;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.ImportRead;
+import io.airbyte.api.model.generated.ImportRead.StatusEnum;
+import io.airbyte.api.model.generated.ImportRequestBody;
+import io.airbyte.api.model.generated.UploadRead;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -125,7 +125,7 @@ public class ArchiveHandlerTest {
     jobDatabase = databaseProviders.createNewJobsDatabase();
     configDatabase = databaseProviders.createNewConfigsDatabase();
     jobPersistence = new DefaultJobPersistence(jobDatabase);
-    seedPersistence = YamlSeedConfigPersistence.getDefault();
+    seedPersistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
     jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(false)
         .copySecrets(false)
@@ -145,7 +145,7 @@ public class ArchiveHandlerTest {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
-        YamlSeedConfigPersistence.getDefault(),
+        seedPersistence,
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
         true);
