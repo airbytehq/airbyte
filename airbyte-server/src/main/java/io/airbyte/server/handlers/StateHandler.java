@@ -6,8 +6,6 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
-import io.airbyte.api.model.generated.ConnectionStateType;
-import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.server.converters.StateConverter;
