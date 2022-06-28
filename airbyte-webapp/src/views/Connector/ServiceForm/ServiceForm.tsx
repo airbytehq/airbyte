@@ -1,7 +1,7 @@
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useToggle } from "react-use";
+import { useDeepCompareEffect, useToggle } from "react-use";
 
 import { FormChangeTracker } from "components/FormChangeTracker";
 
@@ -40,17 +40,18 @@ const FormikPatch: React.FC = () => {
  */
 const PatchInitialValuesWithWidgetConfig: React.FC<{
   schema: JSONSchema7;
-}> = ({ schema }) => {
+  initialValues: ServiceFormValues;
+}> = ({ schema, initialValues }) => {
   const { widgetsInfo } = useServiceForm();
-  const { resetForm } = useFormikContext<ServiceFormValues>();
+  const { values, setFieldValue } = useFormikContext<ServiceFormValues>();
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const widgetsInfoEntries = Object.entries(widgetsInfo);
 
     // set all const fields to form field values, so we could send form
     const patchedConstValues = widgetsInfoEntries
       .filter(([_, value]) => isDefined(value.const))
-      .reduce((acc, [key, value]) => setIn(acc, key, value.const), {} as ServiceFormValues);
+      .reduce((acc, [key, value]) => setIn(acc, key, value.const), initialValues);
 
     // set default fields as current values, so values could be populated correctly
     // fix for https://github.com/airbytehq/airbyte/issues/6791
@@ -58,9 +59,9 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
       .filter(([key, value]) => isDefined(value.default) && !isDefined(getIn(patchedConstValues, key)))
       .reduce((acc, [key, value]) => setIn(acc, key, value.default), patchedConstValues);
 
-    resetForm({
-      values: patchedDefaultValues,
-    });
+    if (patchedDefaultValues?.connectionConfiguration) {
+      setFieldValue("connectionConfiguration", patchedDefaultValues.connectionConfiguration);
+    }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [schema]);
@@ -232,6 +233,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={onFormSubmit}
+      enableReinitialize
     >
       {({ dirty }) => (
         <ServiceFormContextProvider
@@ -247,7 +249,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           {!props.isEditMode && <SetDefaultName />}
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
-          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} />
+          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
             errorMessage={props.errorMessage}
