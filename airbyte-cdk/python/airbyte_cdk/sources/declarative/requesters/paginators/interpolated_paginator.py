@@ -6,15 +6,17 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.types import Config
 
 
 class InterpolatedPaginator(Paginator):
-    def __init__(self, next_page_token_template: Mapping[str, str], decoder: Decoder, config):
+    def __init__(self, *, next_page_token_template: Mapping[str, str], config: Config, decoder: Optional[Decoder] = None):
         self._next_page_token_template = InterpolatedMapping(next_page_token_template, JinjaInterpolation())
-        self._decoder = decoder
+        self._decoder = decoder or JsonDecoder()
         self._config = config
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
