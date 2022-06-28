@@ -311,7 +311,7 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
@@ -652,7 +652,7 @@
 - name: Orbit
   sourceDefinitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
   dockerRepository: airbyte/source-orbit
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/orbit
   icon: orbit.svg
   sourceType: api
@@ -1109,6 +1109,6 @@
   sourceDefinitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
   dockerRepository: airbyte/source-firebolt
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.firebolt.io/
+  documentationUrl: https://docs.airbyte.io/integrations/sources/firebolt
   sourceType: database
   releaseStage: alpha
