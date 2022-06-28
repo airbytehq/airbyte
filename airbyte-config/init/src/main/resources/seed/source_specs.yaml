@@ -2719,7 +2719,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.5"
+- dockerImage: "airbyte/source-gitlab:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/gitlab"
     connectionSpecification:
