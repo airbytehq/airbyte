@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
 import { CatalogDiffAccordion } from "./CatalogDiffAccordion";
-import { CatalogDiffRow } from "./CatalogDiffRow";
 import styles from "./CatalogDiffSection.module.scss";
+import { StreamRow } from "./StreamRow";
 
 interface CatalogDiffSectionProps {
   data: StreamTransform[];
@@ -45,7 +45,7 @@ export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, ca
         return item.transformType === "update_stream" ? (
           <CatalogDiffAccordion data={item.updateStream} catalog={catalog} />
         ) : (
-          <CatalogDiffRow item={item} catalog={catalog} />
+          <StreamRow item={item} catalog={catalog} />
         );
       })}
     </div>

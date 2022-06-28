@@ -14,8 +14,8 @@ interface CatalogDiffModalProps {
   catalog: AirbyteCatalog;
   setDiffAcknowledged: Dispatch<SetStateAction<boolean>>;
 }
-
 export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff, catalog, setDiffAcknowledged }) => {
+  console.log(catalogDiff);
   const addedStreams = catalogDiff.transforms.filter((item) => item.transformType === "add_stream");
   const removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
   const updatedStreams = catalogDiff.transforms.filter((item) => item.transformType === "update_stream");

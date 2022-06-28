@@ -1,0 +1,47 @@
+@use "../../../../scss/colors";
+// @use "../../../../views/Connection/CatalogTree/StreamHeader";  do this instead of copy/pasting the icon stuff below once import chaos mastered
+
+.row {
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  align-items: center;
+  padding: 5px 20px 5px 20px;
+  gap: 10px;
+  border-bottom: 1px solid colors.$white;
+  width: 100%;
+
+  &.add {
+    background-color: colors.$green-50; //todo: this probably doesn't match the theme either
+  }
+  &.remove {
+    background-color: #ffe4e8; //todo: this doesn't match the red-50 in the theme?
+  }
+}
+
+.icon {
+  margin-top: -1px;
+  &.plus {
+    color: colors.$green;
+  }
+  &.minus {
+    color: colors.$red;
+  }
+}
+
+.syncModeBox {
+  font-size: 11px;
+  line-height: 12px;
+  border-radius: 5px;
+  background: colors.$grey-100;
+  padding: 5px 9px 5px 9px;
+  width: 276px;
+  opacity: 50%;
+  &.remove {
+    background: colors.$red-100;
+  }
+}
+
+.name {
+  width: 230px;
+}
