@@ -757,25 +757,6 @@ public class ConfigRepository {
     return persistence.listConfigs(ConfigSchema.DESTINATION_OAUTH_PARAM, DestinationOAuthParameter.class);
   }
 
-  /**
-   * @deprecated Use StatePersistence instead
-   */
-  @Deprecated(forRemoval = true)
-  // use StatePersistence instead
-  public Optional<State> getConnectionState(final UUID connectionId) throws IOException {
-    try {
-      final StandardSyncState connectionState = persistence.getConfig(
-          ConfigSchema.STANDARD_SYNC_STATE,
-          connectionId.toString(),
-          StandardSyncState.class);
-      return Optional.of(connectionState.getState());
-    } catch (final ConfigNotFoundException e) {
-      return Optional.empty();
-    } catch (final JsonValidationException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
   @Deprecated(forRemoval = true)
   // use StatePersistence instead
   public void updateConnectionState(final UUID connectionId, final State state) throws IOException {
