@@ -82,10 +82,10 @@ Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https:
 :::code
 **Example** 
 If a job was created for an Alpha source to a Beta destination, and the outcome of the job is a success, the following metrics are displayed:
-`job_created_by_release_stage\[“alpha”\] = 1;`
-`job_created_by_release_stage\[“beta”\] = 1;`
-`job_failed_by_release_stage\[“alpha”\] = 1;`
-`job_succeeded_by_release_stage\[“beta”\] = 1;`
+`job_created_by_release_stage\[“alpha”\] = 1;`  
+`job_created_by_release_stage\[“beta”\] = 1;`  
+`job_failed_by_release_stage\[“alpha”\] = 1;`  
+`job_succeeded_by_release_stage\[“beta”\] = 1;`  
 
 **Note:** Each job has a source and destination, so each metric is counted twice — once for source and once for destination.
 
