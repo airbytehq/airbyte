@@ -50,6 +50,8 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
+  public static final String JOB_ERROR_REPORTING_STRATEGY = "JOB_ERROR_REPORTING_STRATEGY";
+  public static final String JOB_ERROR_REPORTING_SENTRY_DSN = "JOB_ERROR_REPORTING_SENTRY_DSN";
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
@@ -803,6 +805,23 @@ public class EnvConfigs implements Configs {
         return TrackingStrategy.LOGGING;
       }
     });
+  }
+
+  @Override
+  public JobErrorReportingStrategy getJobErrorReportingStrategy() {
+    return getEnvOrDefault(JOB_ERROR_REPORTING_STRATEGY, JobErrorReportingStrategy.LOGGING, s -> {
+      try {
+        return JobErrorReportingStrategy.valueOf(s.toUpperCase());
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + JobErrorReportingStrategy.LOGGING);
+        return JobErrorReportingStrategy.LOGGING;
+      }
+    });
+  }
+
+  @Override
+  public String getJobErrorReportingSentryDSN() {
+    return getEnvOrDefault(JOB_ERROR_REPORTING_SENTRY_DSN, "");
   }
 
   // APPLICATIONS
