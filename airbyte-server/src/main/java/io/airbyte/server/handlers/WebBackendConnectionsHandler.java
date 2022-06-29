@@ -382,7 +382,7 @@ public class WebBackendConnectionsHandler {
         final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
         final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
         final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
-        streamsToReset = apiStreamsToReset.stream().map(streamDescriptor -> ProtocolConverters.streamDescriptorToProtocol(streamDescriptor)).toList();
+        streamsToReset = apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
       }
 
       ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
@@ -511,7 +511,7 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  protected static List<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
+  static List<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
     return catalogDiff.getTransforms().stream().map(StreamTransform::getStreamDescriptor).toList();
   }
 
