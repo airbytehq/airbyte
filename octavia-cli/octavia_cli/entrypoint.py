@@ -14,11 +14,18 @@ from .api_http_headers import ApiHttpHeader, merge_api_headers, set_api_headers_
 from .apply import commands as apply_commands
 from .check_context import check_api_health, check_is_initialized, check_workspace_exists
 from .generate import commands as generate_commands
+from .get import commands as get_commands
 from .init import commands as init_commands
 from .list import commands as list_commands
 from .telemetry import TelemetryClient, build_user_agent
 
-AVAILABLE_COMMANDS: List[click.Command] = [list_commands._list, init_commands.init, generate_commands.generate, apply_commands.apply]
+AVAILABLE_COMMANDS: List[click.Command] = [
+    list_commands._list,
+    get_commands.get,
+    init_commands.init,
+    generate_commands.generate,
+    apply_commands.apply,
+]
 
 
 def set_context_object(

@@ -2,7 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from http import HTTPStatus
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -41,7 +43,7 @@ from source_github.streams import (
     WorkflowRuns,
 )
 
-from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental, urlbase
+from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 
@@ -68,15 +70,18 @@ def test_internal_server_error_retry(time_mock):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_text", "expected_backoff_time"),
+    ("http_status", "response_headers", "expected_backoff_time"),
     [
-        (HTTPStatus.BAD_GATEWAY, "", 60),
+        (HTTPStatus.BAD_GATEWAY, {}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
 )
-def test_backoff_time(http_status, response_text, expected_backoff_time):
+@patch("time.time", return_value=1655804424.0)
+def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    response_mock.text = response_text
+    response_mock.headers = response_headers
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
@@ -85,12 +90,27 @@ def test_backoff_time(http_status, response_text, expected_backoff_time):
 @responses.activate
 @patch("time.sleep")
 def test_retry_after(time_mock):
+    first_request = True
+
+    def request_callback(request):
+        nonlocal first_request
+        if first_request:
+            first_request = False
+            return (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "")
+        return (HTTPStatus.OK, {}, '{"login": "airbytehq"}')
+
+    responses.add_callback(
+        responses.GET,
+        "https://api.github.com/orgs/airbytehq",
+        callback=request_callback,
+        content_type="application/json",
+    )
+
     stream = Organizations(organizations=["airbytehq"])
-    responses.add("GET", "https://api.github.com/orgs/airbytehq", json={"login": "airbytehq"}, headers={"Retry-After": "10"})
     read_full_refresh(stream)
-    assert time_mock.call_args[0][0] == 10
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
 
 
 @responses.activate
@@ -762,85 +782,38 @@ def test_streams_read_full_refresh():
 @responses.activate
 def test_stream_reviews_incremental_read():
 
-    url_pulls = "https://api.github.com/repos/organization/repository/pulls"
-
     repository_args_with_start_date = {
         "start_date": "2000-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
-        "repositories": ["organization/repository"],
+        "repositories": ["airbytehq/airbyte"],
     }
-    stream = Reviews(parent=PullRequests(**repository_args_with_start_date), **repository_args_with_start_date)
+    stream = Reviews(**repository_args_with_start_date)
+    stream.page_size = 2
 
-    responses.add(
-        "GET",
-        url_pulls,
-        json=[
-            {"updated_at": "2022-01-01T00:00:00Z", "number": 1},
-            {"updated_at": "2022-01-02T00:00:00Z", "number": 2},
-        ],
-    )
+    f = Path(__file__).parent / "graphql_reviews_responses.json"
+    response_objects = json.load(open(f))
 
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/1/reviews",
-        json=[{"id": 1000, "body": "commit1"}, {"id": 1001, "body": "commit1"}],
-    )
+    def request_callback(request):
+        return (HTTPStatus.OK, {}, json.dumps(response_objects.pop(0)))
 
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/2/reviews",
-        json=[{"id": 1002, "body": "commit1"}],
+    responses.add_callback(
+        responses.POST,
+        "https://api.github.com/graphql",
+        callback=request_callback,
+        content_type="application/json",
     )
 
     stream_state = {}
     records = read_incremental(stream, stream_state)
+    assert [r["id"] for r in records] == [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008]
+    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:01Z"}}
+    assert len(responses.calls) == 4
 
-    assert records == [
-        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1001, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1002, "pull_request_updated_at": "2022-01-02T00:00:00Z", "repository": "organization/repository"},
-    ]
-
-    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-02T00:00:00Z"}}
-
-    responses.add(
-        "GET",
-        url_pulls,
-        json=[
-            {"updated_at": "2022-01-03T00:00:00Z", "number": 1},
-            {"updated_at": "2022-01-02T00:00:00Z", "number": 2},
-            {"updated_at": "2022-01-04T00:00:00Z", "number": 3},
-        ],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/1/reviews",
-        json=[{"id": 1000, "body": "commit1"}, {"id": 1001, "body": "commit2"}],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/3/reviews",
-        json=[{"id": 1003, "body": "commit1"}],
-    )
-
+    responses.calls.reset()
     records = read_incremental(stream, stream_state)
-
-    assert records == [
-        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit2", "id": 1001, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1003, "pull_request_updated_at": "2022-01-04T00:00:00Z", "repository": "organization/repository"},
-    ]
-
-    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-04T00:00:00Z"}}
-
-    assert len(responses.calls) == 6
-    assert urlbase(responses.calls[0].request.url) == url_pulls
-    # make sure parent stream PullRequests used ascending sorting for both HTTP requests
-    assert responses.calls[0].request.params["direction"] == "asc"
-    assert urlbase(responses.calls[3].request.url) == url_pulls
-    assert responses.calls[3].request.params["direction"] == "asc"
+    assert [r["id"] for r in records] == [1000, 1007, 1009]
+    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:02Z"}}
+    assert len(responses.calls) == 4
 
 
 @responses.activate

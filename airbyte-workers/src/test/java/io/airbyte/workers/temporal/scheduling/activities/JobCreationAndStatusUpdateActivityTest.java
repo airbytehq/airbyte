@@ -22,12 +22,12 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -35,6 +35,7 @@ import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -95,6 +96,9 @@ public class JobCreationAndStatusUpdateActivityTest {
   private JobTracker mJobtracker;
 
   @Mock
+  private JobErrorReporter mJobErrorReporter;
+
+  @Mock
   private ConfigRepository mConfigRepository;
 
   @Mock
@@ -143,7 +147,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(Mockito.mock(StandardSync.class));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -165,7 +169,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, List.of(), streamsToReset))
           .thenReturn(Optional.of(JOB_ID));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, true));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -293,10 +297,22 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobFailure() throws IOException {
+      final Attempt mAttempt = Mockito.mock(Attempt.class);
+      Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
+
+      final Job mJob = Mockito.mock(Job.class);
+      Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
+      Mockito.when(mJob.getConfig()).thenReturn(new JobConfig());
+      Mockito.when(mJob.getLastFailedAttempt()).thenReturn(Optional.of(mAttempt));
+
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenReturn(mJob);
+
       jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason"));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
       Mockito.verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      Mockito.verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
     @Test

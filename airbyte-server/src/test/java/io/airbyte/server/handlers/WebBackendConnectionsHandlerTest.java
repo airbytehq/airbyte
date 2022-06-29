@@ -82,12 +82,14 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -113,6 +115,7 @@ class WebBackendConnectionsHandlerTest {
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
+    final StateHandler stateHandler = mock(StateHandler.class);
     operationsHandler = mock(OperationsHandler.class);
     final SourceHandler sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
@@ -120,7 +123,9 @@ class WebBackendConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     eventRunner = mock(EventRunner.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
+    wbHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
         sourceHandler,
         destinationHandler,
         jobHistoryHandler,
@@ -231,7 +236,7 @@ class WebBackendConnectionsHandlerTest {
         .isSyncing(expected.getIsSyncing())
         .catalogDiff(new CatalogDiff().transforms(List.of(
             new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
-                .addStream(new StreamDescriptor().name("users-data1"))
+                .streamDescriptor(new StreamDescriptor().name("users-data1"))
                 .updateStream(null))))
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
@@ -609,6 +614,13 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
+    final List<io.airbyte.protocol.models.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
+    when(configRepository.getAllStreamsForConnection(expected.getConnectionId())).thenReturn(connectionStreams);
+
+    final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();
+    when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
+    when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
+
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
@@ -618,7 +630,7 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());
     final InOrder orderVerifier = inOrder(eventRunner);
-    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(), connectionStreams);
     orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 

@@ -56,7 +56,6 @@ const SidebarPopout: React.FC<{
               label: (
                 <Item href={config.links.slackLink} target="_blank">
                   <Icon>
-                    {/*@ts-ignore slack icon fails here*/}
                     <FontAwesomeIcon icon={faSlack} />
                   </Icon>
                   <FormattedMessage id="sidebar.joinSlack" />

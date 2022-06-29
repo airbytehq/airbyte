@@ -524,6 +524,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added new stream Videometrics                                                      |                                                        |
 | 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                      |
 | 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                      |
 | 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                   |
