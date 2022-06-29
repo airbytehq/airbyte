@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -13,10 +14,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -26,14 +29,21 @@ import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
-import io.airbyte.integrations.source.relationaldb.StateManager;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteGlobalState;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -41,9 +51,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +114,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -213,7 +225,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     // create it.
     final AirbyteConnectionStatus check = check(config);
 
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+    if (check.getStatus().equals(Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
 
@@ -227,27 +239,34 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    /**
-     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
-     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
-     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
-     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
-     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
-     * part
-     */
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig)) {
+    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database),
-          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return handler.getIncrementalIterators(
+          PostgresCdcTargetPosition.targetPosition(database), false);
+      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),
+          new PostgresCdcStateHandler(stateManager),
+          new PostgresCdcConnectorMetadataInjector(),
+          PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig),
           emittedAt);
+      if (streamsToSnapshot.isEmpty()) {
+        return Collections.singletonList(incrementalIteratorSupplier.get());
+      }
+
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
+          new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
+          PostgresCdcProperties.getSnapshotProperties(), emittedAt);
+      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  //TODO(Subodh) : add logic of identifying new streams after PR https://github.com/airbytehq/airbyte/pull/13609 is merged
+  protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+    return Collections.emptyList();
   }
 
   @VisibleForTesting
@@ -402,6 +421,27 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     properties.set(CDC_DELETED_AT, stringType);
 
     return stream;
+  }
+
+  // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+  // state
+  @Override
+  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
+      final AirbyteGlobalState globalState = new AirbyteGlobalState()
+          .withSharedState(Jsons.jsonNode(new CdcState()))
+          .withStreamStates(List.of());
+      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+    } else {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.STREAM)
+          .withStream(new AirbyteStreamState()));
+    }
+  }
+
+  @Override
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   public static void main(final String[] args) throws Exception {

@@ -20,9 +20,9 @@ export interface OauthOutputSpec {
 
 type OAuthOutputSpec = { properties: Record<string, { type: string; path_in_connector_config: string[] }> } | undefined;
 
-export function serverProvidedOauthPaths(connector?: ConnectorDefinitionSpecification): {
-  [key: string]: { path_in_connector_config: string[] };
-} {
+export function serverProvidedOauthPaths(
+  connector?: ConnectorDefinitionSpecification
+): Record<string, { path_in_connector_config: string[] }> {
   return {
     ...((connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthOutputSpecification as OAuthOutputSpec)
       ?.properties ?? {}),

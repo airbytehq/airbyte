@@ -220,6 +220,36 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+            - name: METRIC_CLIENT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: METRIC_CLIENT
+            - name: OTEL_COLLECTOR_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: OTEL_COLLECTOR_ENDPOINT
+            - name: ACTIVITY_MAX_ATTEMPT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: ACTIVITY_MAX_ATTEMPT
+            - name: ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS
+            - name: ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS
+            - name: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
           ports:
             - containerPort: 9000 # for heartbeat server
             - containerPort: 9001 # start temporal worker port pool

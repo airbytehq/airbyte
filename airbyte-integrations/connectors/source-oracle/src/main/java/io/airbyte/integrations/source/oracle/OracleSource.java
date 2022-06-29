@@ -93,6 +93,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         schemas.add(schema.asText());
       }
     }
+
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+      additionalParameters.addAll(List.of(config.get("jdbc_url_params").asText().split("&")));
+    }
+
     if (!additionalParameters.isEmpty()) {
       final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
       configBuilder.put("connection_properties", connectionParams);

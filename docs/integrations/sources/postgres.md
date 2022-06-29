@@ -25,17 +25,17 @@ On Airbyte Cloud, only TLS connections to your Postgres instance are supported. 
 
 ## Getting Started \(Airbyte Open-Source\)
 
-#### Requirements
+### Requirements
 
 1. Postgres `v9.3.x` or above
 2. Allow connections from Airbyte to your Postgres database \(if they exist in separate VPCs\)
 3. Create a dedicated read-only Airbyte user with access to all tables needed for replication
 
-#### 1. Make sure your database is accessible from the machine running Airbyte
+### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your Postgres instance is via the check connection tool in the UI.
 
-#### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
+### 2. Create a dedicated read-only user with access to the relevant tables \(Recommended but optional\)
 
 This step is optional but highly recommended for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
@@ -61,7 +61,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO airbyte;
 -- Allow user to see tables created in the future
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <username>;
 ```
-
+#### Syncing a subset of columns
 Currently, there is no way to sync a subset of columns using the Postgres source connector.
 - When setting up a connection, you can only choose which tables to sync, but not columns.
 - If the user can only access a subset of columns, the connection check will pass. However, the data sync will fail with a `permission denied` exception.
@@ -74,10 +74,27 @@ GRANT SELECT ON TABLE <view_name> IN SCHEMA <schema_name> to <user_name>;
 ```
 
 This issue is tracked in [\#9771](https://github.com/airbytehq/airbyte/issues/9771).
+### <a name="jdbc-url-params"></a>3. (Advanced) Configure Additional JDBC URL Parameters
 
-#### 3. Optionally, set up CDC. Follow the guide [below](postgres.md#setting-up-cdc-for-postgres) to do so.
+This is an advanced configuration option. Users are advised to use it with caution. If you need to customize the JDBC connection beyond common options you can specify additional JDBC URL parameters in `JDBC URL Params` field. The value of `JDBC URL Params` field
+should have the form of key-value pairs separated by the symbol `&`. 
 
-#### 4. That's it!
+E.g. `key1=value1&key2=value2&key3=value3`
+
+These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Postgres database.
+
+Do not use any of the following keys in `JDBC URL Params` field, because they will be overwritten by Airbyte:
+ * currentSchema
+ * user
+ * password
+ * ssl
+ * sslmode
+
+You can read about JDBC URL parameters supported by [Postgres in Postgres JDBC Driver Documentation](https://jdbc.postgresql.org/documentation/head/connect.html).
+
+### 4. Optionally, set up CDC. Follow the guide [below](#setting-up-cdc-for-postgres) to do so.
+
+### 5. That's it!
 
 Your database user should now be ready for use with Airbyte.
 
@@ -113,19 +130,19 @@ Please read the [CDC docs](../../understanding-airbyte/cdc.md) for an overview o
 
 Follow one of these guides to enable logical replication:
 
-* [Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc.](postgres.md#cdc-on-bare-metal-vms-ec2-gce-etc-docker-etc.)
-* [AWS Postgres RDS or Aurora](postgres.md#cdc-on-aws-postgres-rds-or-aurora)
-* [Azure Database for Postgres](postgres.md#cdc-on-azure-database-for-postgres)
+* [Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc.](#cdc-on-bare-metal-vms-ec2-gce-etc-docker-etc)
+* [AWS Postgres RDS or Aurora](#cdc-on-aws-postgres-rds-or-aurora)
+* [Azure Database for Postgres](#cdc-on-azure-database-for-postgres)
 
 #### 2. Add user-level permissions
 
 We recommend using a user specifically for Airbyte's replication so you can minimize access. This Airbyte user for your instance needs to be granted `REPLICATION` and `LOGIN` permissions. You can create a role with `CREATE ROLE <name> REPLICATION LOGIN;` and grant that role to the user. You still need to make sure the user can connect to the database, use the schema, and to use `SELECT` on tables \(the same are required for non-CDC incremental syncs and all full refreshes\).
 
-#### 3. Select replication plugin
+#### <a name="replication-plugin"></a>3. Select replication plugin
 
 We recommend using a `pgoutput` plugin as it is the standard logical decoding plugin in Postgres. In case the replication table contains a lot of big JSON blobs and table size exceeds 1 GB, we recommend using a `wal2json` instead. Please note that `wal2json` may require additional installation for Bare Metal, VMs \(EC2/GCE/etc\), Docker, etc. For more information read [wal2json documentation](https://github.com/eulerto/wal2json).
 
-#### 4. Create replication slot
+#### <a name="replication-slot"></a>4. Create replication slot
 
 Next, you will need to create a replication slot. Here is the query used to create a replication slot called `airbyte_slot`:
 
@@ -135,7 +152,7 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 
 If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
-#### 5. Create publications and replication identities for tables
+#### <a name="publications-replication"></a>5. Create publications and replication identities for tables
 
 For each table you want to replicate with CDC, you should add the replication identity \(the method of distinguishing between rows\) first. We recommend using `ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;` to use primary keys to distinguish between rows. After setting the replication identity, you will need to run `CREATE PUBLICATION airbyte_publication FOR TABLE <tbl1, tbl2, tbl3>;`. This publication name is customizable. Please refer to the [Postgres docs](https://www.postgresql.org/docs/10/sql-alterpublication.html) if you need to add or remove tables from your publication in the future.
 
@@ -144,6 +161,18 @@ Please note that:
 - The publication should **include all the tables and only the tables that need to be synced**. Otherwise, data from these tables may not be replicated correctly.
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
+
+#### 5. Create replication slot
+
+Next, you will need to create a replication slot. It's important to create the publication first (as in step 4) before creating the replication slot. Otherwise, you can run into exceptions if there is any update to the database between the creation of the two.
+
+Here is the query used to create a replication slot called `airbyte_slot`:
+
+```text
+SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
+```
+
+If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
 #### 6. Start syncing
 
@@ -169,7 +198,7 @@ max_replication_slots = 1
 
 After setting these values you will need to restart your instance.
 
-Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
+Finally, [follow the rest of steps above](#setting-up-cdc-for-postgres).
 
 ### CDC on AWS Postgres RDS or Aurora
 
@@ -177,7 +206,7 @@ Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgre
 * Find your cluster parameter group. You will either edit the parameters for this group or create a copy of this parameter group to edit. If you create a copy you will need to change your cluster's parameter group before restarting.
 * Within the parameter group page, search for `rds.logical_replication`. Select this row and click on the `Edit parameters` button. Set this value to `1`.
 * Wait for a maintenance window to automatically restart the instance or restart it manually.
-* Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
+* Finally, [follow the rest of steps above](#setting-up-cdc-for-postgres).
 
 ### CDC on Azure Database for Postgres
 
@@ -188,9 +217,9 @@ az postgres server configuration set --resource-group group --server-name server
 az postgres server restart --resource-group group --name server
 ```
 
-Finally, [follow the rest of steps above](postgres.md#setting-up-cdc-for-postgres).
+Finally, [follow the rest of steps above](#setting-up-cdc-for-postgres).
 
-## Connection via SSH Tunnel
+## <a name="ssh-tunnel"></a>Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a Postgres instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
 
@@ -235,7 +264,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `character varying`, `varchar`        | string         |                                                                                                                                                 |
 | `cidr`                                | string         |                                                                                                                                                 |
 | `circle`                              | string         |                                                                                                                                                 |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight. Does not support B.C. dates. Issue: [#8903](https://github.com/airbytehq/airbyte/issues/8903).         |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight                                                                                                         |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
 | `hstore`                              | string         |                                                                                                                                                 |
 | `inet`                                | string         |                                                                                                                                                 |
@@ -249,32 +278,58 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `macaddr8`                            | string         |                                                                                                                                                 |
 | `money`                               | number         |                                                                                                                                                 |
 | `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
-| `path`                                | string         |                                                                                                             |
-| `pg_lsn`                              | string         |                                                                                                             |
-| `point`                               | string         |                                                                                                             |
-| `polygon`                             | string         |                                                                                                             |
-| `real`, `float4`                      | number         |                                                                                                             |
-| `smallint`, `int2`                    | number         |                                                                                                             |
-| `smallserial`, `serial2`              | number         |                                                                                                             |
-| `serial`, `serial4`                   | number         |                                                                                                             |
-| `text`                                | string         |                                                                                                             |
-| `time`                                | string         |                                                                                                             |
-| `timetz`                              | string         |                                                                                                             |
-| `timestamp`                           | string         |                                                                                                             |
-| `timestamptz`                         | string         |                                                                                                             |
-| `tsquery`                             | string         |                                                                                                             |
-| `tsvector`                            | string         |                                                                                                             |
-| `uuid`                                | string         |                                                                                                             |
-| `xml`                                 | string         |                                                                                                             |
-| `enum`                                | string         |                                                                                                             |
-| `tsrange`                             | string         |                                                                                                             |
-| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                           |
-| composite type                        | string         |                                                                                                             |
+| `path`                                | string         |                                                                                                                                                 |
+| `pg_lsn`                              | string         |                                                                                                                                                 |
+| `point`                               | string         |                                                                                                                                                 |
+| `polygon`                             | string         |                                                                                                                                                 |
+| `real`, `float4`                      | number         |                                                                                                                                                 |
+| `smallint`, `int2`                    | number         |                                                                                                                                                 |
+| `smallserial`, `serial2`              | number         |                                                                                                                                                 |
+| `serial`, `serial4`                   | number         |                                                                                                                                                 |
+| `text`                                | string         |                                                                                                                                                 |
+| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                    |
+| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                       |
+| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                               |
+| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                  |
+| `tsquery`                             | string         |                                                                                                                                                 |
+| `tsvector`                            | string         |                                                                                                                                                 |
+| `uuid`                                | string         |                                                                                                                                                 |
+| `xml`                                 | string         |                                                                                                                                                 |
+| `enum`                                | string         |                                                                                                                                                 |
+| `tsrange`                             | string         |                                                                                                                                                 |
+| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                               |
+| composite type                        | string         |                                                                                                                                                 |
+
+## Troubleshooting
+
+### Sync data from Postgres hot standby server
+
+when the connector is reading from a Postgres replica that is configured as a Hot Standby, any update from the primary server will terminate queries on the replica after a certain amount of time, default to 30 seconds. This default waiting time is obviously not enough to sync any meaning amount of data. See the `Handling Query Conflicts` section in the Postgres [documentation](https://www.postgresql.org/docs/14/hot-standby.html#HOT-STANDBY-CONFLICT) for detailed explanations.
+
+Here is the typical exception:
+```
+Caused by: org.postgresql.util.PSQLException: FATAL: terminating connection due to conflict with recovery
+    Detail: User query might have needed to see row versions that must be removed.
+    Hint: In a moment you should be able to reconnect to the database and repeat your command.
+```
+
+Possible solutions include:
+- [Recommended] Set [`hot_standby_feedback`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK) to `true` on the replica server. This parameter will prevent the primary server from deleting the write-ahead logs when the replica is busy serving user queries. However, the downside is that the write-ahead log will increase in size.
+- [Recommended] Sync data when there is no update running in the primary server, or sync data from the primary server.
+- [Not Recommended] Increase [`max_standby_archive_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-ARCHIVE-DELAY) and [`max_standby_streaming_delay`](https://www.postgresql.org/docs/14/runtime-config-replication.html#GUC-MAX-STANDBY-STREAMING-DELAY) to be larger than the amount of time needed to complete the data sync. However, it is usually hard to tell how much time it will take to sync all the data. This approach is not very practical.
+
+One optimization on the Airbyte side is to break one large and long sync into multiple small ones. This improvement is tracked in https://github.com/airbytehq/airbyte/issues/13783.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                           | Subject                                                                                                         |
 |:--------|:-----------|:-------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.29  | 2022-06-29 | [14265](https://github.com/airbytehq/airbyte/pull/14265) | Upgrade postgresql JDBC version to 42.3.5                                                                       |
+| 0.4.26 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.4.25  | 2022-06-15 | [13823](https://github.com/airbytehq/airbyte/pull/13823) | Publish adaptive postgres source that enforces ssl on cloud + Debezium version upgrade to 1.9.2 from 1.4.2  |
+| 0.4.24  | 2022-06-14 | [13549](https://github.com/airbytehq/airbyte/pull/13549) | Fixed truncated precision if the value of microseconds or seconds is 0 |
+| 0.4.23  | 2022-06-13 | [13655](https://github.com/airbytehq/airbyte/pull/13745) | Fixed handling datetime cursors when upgrading from older versions of the connector |
+| 0.4.22  | 2022-06-09 | [13655](https://github.com/airbytehq/airbyte/pull/13655) | Fixed bug with unsupported date-time datatypes during incremental sync |
 | 0.4.21  | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size |
 | 0.4.20  | 2022-06-02 | [13367](https://github.com/airbytehq/airbyte/pull/13367) | Added convertion hstore to json format |
 | 0.4.19  | 2022-05-25 | [13166](https://github.com/airbytehq/airbyte/pull/13166) | Added timezone awareness and handle BC dates |
@@ -327,4 +382,5 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | 0.1.7   | 2021-01-08 | [1307](https://github.com/airbytehq/airbyte/pull/1307) | Migrate Postgres and MySql to use new JdbcSource                                                                |
 | 0.1.6   | 2020-12-09 | [1172](https://github.com/airbytehq/airbyte/pull/1172) | Support incremental sync                                                                                        |
 | 0.1.5   | 2020-11-30 | [1038](https://github.com/airbytehq/airbyte/pull/1038) | Change JDBC sources to discover more than standard schemas                                                      |
-| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file                                                                         |
+| 0.1.4   | 2020-11-30 | [1046](https://github.com/airbytehq/airbyte/pull/1046) | Add connectors using an index YAML file                                                                         |**
+

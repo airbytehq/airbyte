@@ -34,6 +34,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
 
   private static final String STREAM_NAME = "JDBC_SPACE.ID_AND_NAME";
   private static final String STREAM_NAME2 = "JDBC_SPACE.STARSHIPS";
+  private static final Network network = Network.newNetwork();
   private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
   private OracleContainer db;
 
@@ -84,7 +85,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   }
 
   private void startTestContainers() {
-    sshBastionContainer.initAndStartBastion();
+    sshBastionContainer.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
@@ -93,7 +94,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()
-        .withNetwork(sshBastionContainer.getNetWork());;
+        .withNetwork(network);
     db.start();
   }
 
@@ -111,7 +112,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())

@@ -6,7 +6,7 @@ import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import { Status } from "../types";
 
-const _statusConfig: { status: Status; statusIconStatus?: StatusIconStatus; titleId: string }[] = [
+const _statusConfig: Array<{ status: Status; statusIconStatus?: StatusIconStatus; titleId: string }> = [
   { status: Status.ACTIVE, statusIconStatus: "success", titleId: "connection.successSync" },
   { status: Status.INACTIVE, statusIconStatus: "inactive", titleId: "connection.disabledConnection" },
   { status: Status.FAILED, titleId: "connection.failedSync" },

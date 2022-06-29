@@ -6,10 +6,10 @@ package io.airbyte.config.persistence;
 
 import static org.jooq.impl.DSL.noCondition;
 
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.StreamResetRecord;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -38,7 +38,7 @@ public class StreamResetPersistence {
   }
 
   /*
-   * Get a list of streamDescriptors for streams that have pending or running resets
+   * Get a list of StreamDescriptors for streams that have pending or running resets
    */
   public List<StreamDescriptor> getStreamResets(final UUID connectionId) throws IOException {
     return database.query(ctx -> ctx.select(DSL.asterisk())

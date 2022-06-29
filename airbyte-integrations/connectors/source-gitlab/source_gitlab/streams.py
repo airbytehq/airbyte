@@ -306,6 +306,11 @@ class Jobs(GitlabChildStream):
         return record
 
 
+class GroupIssueBoards(GitlabChildStream):
+    path_template = "groups/{id}/boards"
+    flatten_parent_id = True
+
+
 class Users(GitlabChildStream):
     pass
 

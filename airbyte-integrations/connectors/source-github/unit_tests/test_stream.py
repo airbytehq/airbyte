@@ -2,7 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from http import HTTPStatus
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -10,6 +12,7 @@ import requests
 import responses
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
 from responses import matchers
+from source_github import streams
 from source_github.streams import (
     Branches,
     Collaborators,
@@ -37,9 +40,10 @@ from source_github.streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowRuns,
 )
 
-from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental, urlbase
+from .utils import ProjectsResponsesAPI, read_full_refresh, read_incremental
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 
@@ -66,15 +70,18 @@ def test_internal_server_error_retry(time_mock):
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_text", "expected_backoff_time"),
+    ("http_status", "response_headers", "expected_backoff_time"),
     [
-        (HTTPStatus.BAD_GATEWAY, "", 60),
+        (HTTPStatus.BAD_GATEWAY, {}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
     ],
 )
-def test_backoff_time(http_status, response_text, expected_backoff_time):
+@patch("time.time", return_value=1655804424.0)
+def test_backoff_time(time_mock, http_status, response_headers, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.status_code = http_status
-    response_mock.text = response_text
+    response_mock.headers = response_headers
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
@@ -83,12 +90,27 @@ def test_backoff_time(http_status, response_text, expected_backoff_time):
 @responses.activate
 @patch("time.sleep")
 def test_retry_after(time_mock):
+    first_request = True
+
+    def request_callback(request):
+        nonlocal first_request
+        if first_request:
+            first_request = False
+            return (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "")
+        return (HTTPStatus.OK, {}, '{"login": "airbytehq"}')
+
+    responses.add_callback(
+        responses.GET,
+        "https://api.github.com/orgs/airbytehq",
+        callback=request_callback,
+        content_type="application/json",
+    )
+
     stream = Organizations(organizations=["airbytehq"])
-    responses.add("GET", "https://api.github.com/orgs/airbytehq", json={"login": "airbytehq"}, headers={"Retry-After": "10"})
     read_full_refresh(stream)
-    assert time_mock.call_args[0][0] == 10
-    assert len(responses.calls) == 1
+    assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert responses.calls[1].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
 
 
 @responses.activate
@@ -568,9 +590,9 @@ def test_stream_project_cards():
 def test_stream_comments():
 
     repository_args_with_start_date = {
-        "repositories": ["organization/repository"],
+        "repositories": ["organization/repository", "airbytehq/airbyte"],
         "page_size_for_large_streams": 2,
-        "start_date": "2022-02-02T10:10:03Z",
+        "start_date": "2022-02-02T10:10:01Z",
     }
 
     stream = Comments(**repository_args_with_start_date)
@@ -578,10 +600,10 @@ def test_stream_comments():
     data = [
         {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
         {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:10:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:10:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:10:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:10:12Z"},
+        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
+        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
+        {"id": 5, "updated_at": "2022-02-02T10:12:10Z"},
+        {"id": 6, "updated_at": "2022-02-02T10:12:12Z"},
     ]
 
     api_url = "https://api.github.com/repos/organization/repository/issues/comments"
@@ -590,39 +612,110 @@ def test_stream_comments():
         "GET",
         api_url,
         json=data[0:2],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:03Z"}, strict_match=False)],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:01Z", "per_page": "2"})],
     )
 
     responses.add(
         "GET",
         api_url,
-        json=data[2:4],
+        json=data[1:3],
         headers={
             "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
         },
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z"}, strict_match=False)],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "per_page": "2"})],
     )
 
     responses.add(
         "GET",
         api_url,
-        json=data[4:6],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "page": "2", "per_page": "2"}, strict_match=False)],
+        json=data[3:5],
+        headers={
+            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
+        },
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "page": "2", "per_page": "2"})],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[5:],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:04Z", "page": "3", "per_page": "2"})],
+    )
+
+    data = [
+        {"id": 1, "updated_at": "2022-02-02T10:11:02Z"},
+        {"id": 2, "updated_at": "2022-02-02T10:11:04Z"},
+        {"id": 3, "updated_at": "2022-02-02T10:13:06Z"},
+        {"id": 4, "updated_at": "2022-02-02T10:13:08Z"},
+        {"id": 5, "updated_at": "2022-02-02T10:13:10Z"},
+        {"id": 6, "updated_at": "2022-02-02T10:13:12Z"},
+    ]
+
+    api_url = "https://api.github.com/repos/airbytehq/airbyte/issues/comments"
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[0:2],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:01Z", "per_page": "2"})],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[1:3],
+        headers={
+            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
+        },
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:11:04Z", "per_page": "2"})],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[3:5],
+        headers={
+            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
+        },
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:11:04Z", "page": "2", "per_page": "2"})],
+    )
+
+    responses.add(
+        "GET",
+        api_url,
+        json=data[5:],
+        match=[matchers.query_param_matcher({"since": "2022-02-02T10:11:04Z", "page": "3", "per_page": "2"})],
     )
 
     stream_state = {}
     records = read_incremental(stream, stream_state)
-    assert records == [{"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"}]
-    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:04Z"}}
+    assert records == [
+        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
+        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
+        {"id": 1, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:02Z"},
+        {"id": 2, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:04Z"},
+    ]
+
+    assert stream_state == {
+        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:11:04Z"},
+        "organization/repository": {"updated_at": "2022-02-02T10:10:04Z"},
+    }
 
     records = read_incremental(stream, stream_state)
     assert records == [
-        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:06Z"},
-        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:08Z"},
-        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:10Z"},
-        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:12Z"},
+        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
+        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:08Z"},
+        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:10Z"},
+        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:12Z"},
+        {"id": 3, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:06Z"},
+        {"id": 4, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:08Z"},
+        {"id": 5, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:10Z"},
+        {"id": 6, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:12Z"},
     ]
-    assert stream_state == {"organization/repository": {"updated_at": "2022-02-02T10:10:12Z"}}
+    assert stream_state == {
+        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:13:12Z"},
+        "organization/repository": {"updated_at": "2022-02-02T10:12:12Z"},
+    }
 
 
 @responses.activate
@@ -689,85 +782,38 @@ def test_streams_read_full_refresh():
 @responses.activate
 def test_stream_reviews_incremental_read():
 
-    url_pulls = "https://api.github.com/repos/organization/repository/pulls"
-
     repository_args_with_start_date = {
         "start_date": "2000-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
-        "repositories": ["organization/repository"],
+        "repositories": ["airbytehq/airbyte"],
     }
-    stream = Reviews(parent=PullRequests(**repository_args_with_start_date), **repository_args_with_start_date)
+    stream = Reviews(**repository_args_with_start_date)
+    stream.page_size = 2
 
-    responses.add(
-        "GET",
-        url_pulls,
-        json=[
-            {"updated_at": "2022-01-01T00:00:00Z", "number": 1},
-            {"updated_at": "2022-01-02T00:00:00Z", "number": 2},
-        ],
-    )
+    f = Path(__file__).parent / "graphql_reviews_responses.json"
+    response_objects = json.load(open(f))
 
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/1/reviews",
-        json=[{"id": 1000, "body": "commit1"}, {"id": 1001, "body": "commit1"}],
-    )
+    def request_callback(request):
+        return (HTTPStatus.OK, {}, json.dumps(response_objects.pop(0)))
 
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/2/reviews",
-        json=[{"id": 1002, "body": "commit1"}],
+    responses.add_callback(
+        responses.POST,
+        "https://api.github.com/graphql",
+        callback=request_callback,
+        content_type="application/json",
     )
 
     stream_state = {}
     records = read_incremental(stream, stream_state)
+    assert [r["id"] for r in records] == [1000, 1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008]
+    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:01Z"}}
+    assert len(responses.calls) == 4
 
-    assert records == [
-        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1001, "pull_request_updated_at": "2022-01-01T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1002, "pull_request_updated_at": "2022-01-02T00:00:00Z", "repository": "organization/repository"},
-    ]
-
-    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-02T00:00:00Z"}}
-
-    responses.add(
-        "GET",
-        url_pulls,
-        json=[
-            {"updated_at": "2022-01-03T00:00:00Z", "number": 1},
-            {"updated_at": "2022-01-02T00:00:00Z", "number": 2},
-            {"updated_at": "2022-01-04T00:00:00Z", "number": 3},
-        ],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/1/reviews",
-        json=[{"id": 1000, "body": "commit1"}, {"id": 1001, "body": "commit2"}],
-    )
-
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/organization/repository/pulls/3/reviews",
-        json=[{"id": 1003, "body": "commit1"}],
-    )
-
+    responses.calls.reset()
     records = read_incremental(stream, stream_state)
-
-    assert records == [
-        {"body": "commit1", "id": 1000, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit2", "id": 1001, "pull_request_updated_at": "2022-01-03T00:00:00Z", "repository": "organization/repository"},
-        {"body": "commit1", "id": 1003, "pull_request_updated_at": "2022-01-04T00:00:00Z", "repository": "organization/repository"},
-    ]
-
-    assert stream_state == {"organization/repository": {"pull_request_updated_at": "2022-01-04T00:00:00Z"}}
-
-    assert len(responses.calls) == 6
-    assert urlbase(responses.calls[0].request.url) == url_pulls
-    # make sure parent stream PullRequests used ascending sorting for both HTTP requests
-    assert responses.calls[0].request.params["direction"] == "asc"
-    assert urlbase(responses.calls[3].request.url) == url_pulls
-    assert responses.calls[3].request.params["direction"] == "asc"
+    assert [r["id"] for r in records] == [1000, 1007, 1009]
+    assert stream_state == {"airbytehq/airbyte": {"updated_at": "2000-01-01T00:00:02Z"}}
+    assert len(responses.calls) == 4
 
 
 @responses.activate
@@ -878,3 +924,122 @@ def test_stream_commit_comment_reactions_incremental_read():
         {"id": 154935432, "comment_id": 55538826, "created_at": "2022-02-01T16:00:00Z", "repository": "airbytehq/integration-test"},
         {"id": 154935433, "comment_id": 55538827, "created_at": "2022-02-01T17:00:00Z", "repository": "airbytehq/integration-test"},
     ]
+
+
+@responses.activate
+def test_stream_workflow_runs_read_incremental(monkeypatch):
+
+    repository_args_with_start_date = {
+        "repositories": ["org/repos"],
+        "page_size_for_large_streams": 30,
+        "start_date": "2022-01-01T00:00:00Z",
+    }
+
+    monkeypatch.setattr(streams, "DEFAULT_PAGE_SIZE", 1)
+    stream = WorkflowRuns(**repository_args_with_start_date)
+
+    data = [
+        {"id": 4, "created_at": "2022-02-05T00:00:00Z", "updated_at": "2022-02-05T00:00:00Z", "repository": {"full_name": "org/repos"}},
+        {"id": 3, "created_at": "2022-01-15T00:00:00Z", "updated_at": "2022-01-15T00:00:00Z", "repository": {"full_name": "org/repos"}},
+        {"id": 2, "created_at": "2022-01-03T00:00:00Z", "updated_at": "2022-01-03T00:00:00Z", "repository": {"full_name": "org/repos"}},
+        {"id": 1, "created_at": "2022-01-02T00:00:00Z", "updated_at": "2022-01-02T00:00:00Z", "repository": {"full_name": "org/repos"}},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[0:1]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=2>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1"}, strict_match=True)],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[1:2]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=3>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1", "page": "2"}, strict_match=True)],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[2:3]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=4>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1", "page": "3"}, strict_match=True)],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[3:4]},
+        match=[matchers.query_param_matcher({"per_page": "1", "page": "4"}, strict_match=True)],
+    )
+
+    state = {}
+    records = read_incremental(stream, state)
+    assert state == {"org/repos": {"updated_at": "2022-02-05T00:00:00Z"}}
+
+    assert records == [
+        {"id": 4, "repository": {"full_name": "org/repos"}, "created_at": "2022-02-05T00:00:00Z", "updated_at": "2022-02-05T00:00:00Z"},
+        {"id": 3, "repository": {"full_name": "org/repos"}, "created_at": "2022-01-15T00:00:00Z", "updated_at": "2022-01-15T00:00:00Z"},
+        {"id": 2, "repository": {"full_name": "org/repos"}, "created_at": "2022-01-03T00:00:00Z", "updated_at": "2022-01-03T00:00:00Z"},
+        {"id": 1, "repository": {"full_name": "org/repos"}, "created_at": "2022-01-02T00:00:00Z", "updated_at": "2022-01-02T00:00:00Z"},
+    ]
+
+    assert len(responses.calls) == 4
+
+    data.insert(
+        0,
+        {
+            "id": 5,
+            "created_at": "2022-02-07T00:00:00Z",
+            "updated_at": "2022-02-07T00:00:00Z",
+            "repository": {"full_name": "org/repos"},
+        },
+    )
+
+    data[2]["updated_at"] = "2022-02-08T00:00:00Z"
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[0:1]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=2>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1"}, strict_match=True)],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[1:2]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=3>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1", "page": "2"}, strict_match=True)],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[2:3]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=4>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1", "page": "3"}, strict_match=True)],
+    )
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repos/actions/runs",
+        json={"total_count": len(data), "workflow_runs": data[3:4]},
+        headers={"Link": '<https://api.github.com/repositories/283046497/actions/runs?per_page=1&page=5>; rel="next"'},
+        match=[matchers.query_param_matcher({"per_page": "1", "page": "4"}, strict_match=True)],
+    )
+
+    responses.calls.reset()
+    records = read_incremental(stream, state)
+
+    assert state == {"org/repos": {"updated_at": "2022-02-08T00:00:00Z"}}
+    assert records == [
+        {"id": 5, "repository": {"full_name": "org/repos"}, "created_at": "2022-02-07T00:00:00Z", "updated_at": "2022-02-07T00:00:00Z"},
+        {"id": 3, "repository": {"full_name": "org/repos"}, "created_at": "2022-01-15T00:00:00Z", "updated_at": "2022-02-08T00:00:00Z"},
+    ]
+
+    assert len(responses.calls) == 4

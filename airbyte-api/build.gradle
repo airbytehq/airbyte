@@ -28,7 +28,8 @@ task generateApiServer(type: GenerateTask) {
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-            'ConnectionStateObject'             : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     generateApiDocumentation = false
@@ -70,7 +71,8 @@ task generateApiClient(type: GenerateTask) {
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-            'ConnectionStateObject'             : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     library = "native"
@@ -103,7 +105,8 @@ task generateApiDocs(type: GenerateTask) {
             'DestinationDefinitionSpecification': 'com.fasterxml.jackson.databind.JsonNode',
             'DestinationConfiguration'          : 'com.fasterxml.jackson.databind.JsonNode',
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
-            'ConnectionStateObject'             : 'com.fasterxml.jackson.databind.JsonNode',
+            'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
+            'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
     ]
 
     generateApiDocumentation = false
