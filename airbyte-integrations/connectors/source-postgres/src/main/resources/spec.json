@@ -126,7 +126,9 @@
                 "title": "Initial Waiting Time in Seconds (Advanced)",
                 "description": "The amount of time the connector will wait when it launches to figure out whether there is new data to sync or not. Default to 30 seconds. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\">initial waiting time</a>.",
                 "default": 0,
-                "order": 4
+                "order": 4,
+                "min": 5,
+                "max": 1200
               }
             }
           }

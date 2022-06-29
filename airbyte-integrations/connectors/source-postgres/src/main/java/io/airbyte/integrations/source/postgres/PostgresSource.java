@@ -239,6 +239,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final Duration initialWaitingTime = sourceConfig.has("initial_waiting_seconds")
           ? Duration.ofSeconds(sourceConfig.get("initial_waiting_seconds").asLong())
           : CDC_FIRST_RECORD_TIMEOUT;
+      LOGGER.info("Initial Debezium waiting time: {}s", initialWaitingTime.getSeconds());
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig),
