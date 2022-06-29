@@ -16,6 +16,7 @@ import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.Schema;
+import com.google.cloud.bigquery.StandardSQLTypeName;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsBigQueryDenormalizedRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.util.TestBigQueryDenormalizedRecordFormatter;
@@ -100,6 +101,28 @@ public class BigQueryDenormalizedUtilsTest {
     assertEquals(LegacySQLTypeName.STRING, fields.get("name").getType());
     // test field date_of_birth
     assertEquals(LegacySQLTypeName.DATE, fields.get("date_of_birth").getType());
+  }
+
+  @Test
+  void testSchemaWithBigInteger() {
+    final JsonNode jsonNodeSchema = getSchemaWithBigInteger();
+    GcsBigQueryDenormalizedRecordFormatter rf = new GcsBigQueryDenormalizedRecordFormatter(
+        jsonNodeSchema, new BigQuerySQLNameTransformer());
+
+    final Schema bigQuerySchema = rf.getBigQuerySchema(jsonNodeSchema);
+
+    final FieldList fields = bigQuerySchema.getFields();
+
+    assertEquals(4, fields.size());
+    // test field _airbyte_ab_id
+    assertEquals(LegacySQLTypeName.STRING, fields.get("_airbyte_ab_id").getType());
+    // test field _airbyte_emitted_at
+    assertEquals(LegacySQLTypeName.TIMESTAMP, fields.get("_airbyte_emitted_at").getType());
+
+    // test field updated_at
+    assertEquals(LegacySQLTypeName.TIMESTAMP, fields.get("updated_at").getType());
+    // test field salary
+    assertEquals(StandardSQLTypeName.INT64, fields.get("salary").getType().getStandardType());
   }
 
   @Test
