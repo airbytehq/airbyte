@@ -11,7 +11,7 @@ from jinja2.exceptions import UndefinedError
 
 
 class JinjaInterpolation(Interpolation):
-    def __init__(self):
+    def __init__(self, datetime_format: str = "%Y-%m-%d"):
         self._environment = Environment()
         # Defines some utility methods that can be called from template strings
         # eg "{{ today_utc() }}
@@ -19,7 +19,7 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
         self._environment.globals["timestamp"] = (
-            lambda dt: int(dt) if isinstance(dt, numbers.Number) else int(datetime.datetime.strptime(dt, "%Y-%m-%d").timestamp())
+            lambda dt: int(dt) if isinstance(dt, numbers.Number) else int(datetime.datetime.strptime(dt, datetime_format).timestamp())
         )
         self._environment.globals["max"] = lambda a, b: max(a, b)
 
