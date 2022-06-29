@@ -691,7 +691,6 @@ public class ConnectionManagerWorkflowTest {
 
       startWorkflowAndWaitUntilReady(workflow, input);
 
-      testEnv.sleep(Duration.ofSeconds(30L));
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();

@@ -430,7 +430,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     if (workflowState.isDoneWaiting()) {
       workflowState.setCancelledForReset(true);
-      CancellationScope.current().cancel();
+      cancellableSyncWorkflow.cancel();
+      //CancellationScope.current().cancel();
     } else {
       workflowState.setSkipScheduling(true);
     }
