@@ -2,6 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+
+from airbyte_cdk.sources.declarative.date.min_max_date import MinMaxDate
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -14,6 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 
 factory = DeclarativeComponentFactory()
 
@@ -79,6 +83,35 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
+def test_datetime_stream_slicer():
+    content = """
+    stream_slicer:
+        class_name: airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer
+        options:
+            datetime_format: "%Y-%m-%d"
+        start_date:
+            class_name: airbyte_cdk.sources.declarative.date.min_max_date.MinMaxDate
+            date: "{{ config['start_time'] }}"
+            min_date: "{{ config['start_time'] + day_delta(2) }}"
+        end_date: "{{ config['end_time'] }}"
+        step: "10d"
+        cursor_value: "created"
+    """
+
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert type(stream_slicer) == DatetimeStreamSlicer
+    assert stream_slicer._timezone == datetime.timezone.utc
+    assert type(stream_slicer._start_date) == MinMaxDate
+    assert stream_slicer._start_date._datetime_format == "%Y-%m-%d"
+    assert stream_slicer._start_date._timezone == datetime.timezone.utc
+    assert stream_slicer._start_date._date_interpolator._string == "{{ config['start_time'] }}"
+    assert stream_slicer._start_date._min_date_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
+    assert stream_slicer._end_date == "{{ config['end_time'] }}"
+    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._cursor_value == "created"
 
 
 def test_full_config():
