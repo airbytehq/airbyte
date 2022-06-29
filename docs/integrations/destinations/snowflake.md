@@ -165,6 +165,14 @@ Field | Description |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 
 
+### Private/Public key authentication
+    You need to generate private key - openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+
+    Based on private key we need to generate public key with - openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
+    Add generated public key to snowflake user - alter user <user_name> set rsa_public_key=<public_key_value>;
+
+
+
 To use AWS S3 as the cloud storage, enter the information for the S3 bucket you created in Step 2:
 
 | Field | Description |
