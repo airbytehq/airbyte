@@ -102,11 +102,12 @@ public class BigQueryDenormalizedUtilsTest {
     // test field date_of_birth
     assertEquals(LegacySQLTypeName.DATE, fields.get("date_of_birth").getType());
   }
+
   @Test
   void testSchemaWithBigInteger() {
     final JsonNode jsonNodeSchema = getSchemaWithBigInteger();
     GcsBigQueryDenormalizedRecordFormatter rf = new GcsBigQueryDenormalizedRecordFormatter(
-            jsonNodeSchema, new BigQuerySQLNameTransformer());
+        jsonNodeSchema, new BigQuerySQLNameTransformer());
 
     final Schema bigQuerySchema = rf.getBigQuerySchema(jsonNodeSchema);
 
