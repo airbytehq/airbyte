@@ -34,6 +34,7 @@ module.exports = function (plop) {
   const genericSourceInputRoot = '../source-generic';
   const genericJdbcSourceInputRoot = '../source-java-jdbc';
   const httpApiInputRoot = '../source-python-http-api';
+  const filesSourceInputRoot = '../source-python-files';
   const javaDestinationInput = '../destination-java';
   const pythonDestinationInputRoot = '../destination-python';
 
@@ -43,6 +44,7 @@ module.exports = function (plop) {
   const genericSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const genericJdbcSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const httpApiOutputRoot = `${outputDir}/source-{{dashCase name}}`;
+  const filesSourceOutputRoot = `${outputDir}/source-{{dashCase name}}`;
   const javaDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
   const pythonDestinationOutputRoot = `${outputDir}/destination-{{dashCase name}}`;
   const sourceConnectorImagePrefix = 'airbyte/source-'
@@ -133,6 +135,36 @@ module.exports = function (plop) {
         path: `${httpApiOutputRoot}/.dockerignore`
       },
       {type: 'emitSuccess', outputPath: httpApiOutputRoot}
+    ]
+  });
+
+  plop.setGenerator('Python Files Source', {
+    description: 'Generate a Source that reads files from a container (e.g. S3).',
+    prompts: [{type: 'input', name: 'name', message: 'Source name e.g: "google-cloud-storage"'}],
+    actions: [
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: filesSourceOutputRoot,
+        base: filesSourceInputRoot,
+        templateFiles: `${filesSourceInputRoot}/**/**`,
+      },
+      // common acceptance tests
+      {
+        abortOnFail: true,
+        type:'addMany',
+        destination: filesSourceOutputRoot,
+        base: sourceAcceptanceTestFilesInputRoot,
+        templateFiles: `${sourceAcceptanceTestFilesInputRoot}/**/**`,
+      },
+      // plop doesn't add dotfiles by default so we manually add them
+      {
+        type:'add',
+        abortOnFail: true,
+        templateFile: `${filesSourceInputRoot}/.dockerignore.hbs`,
+        path: `${filesSourceOutputRoot}/.dockerignore`
+      },
+      {type: 'emitSuccess', outputPath: filesSourceOutputRoot}
     ]
   });
 
