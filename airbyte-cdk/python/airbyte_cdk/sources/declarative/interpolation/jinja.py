@@ -6,6 +6,7 @@ import datetime
 import numbers
 
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
+from dateutil import parser
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 
@@ -19,7 +20,9 @@ class JinjaInterpolation(Interpolation):
         self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
         self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
         self._environment.globals["timestamp"] = (
-            lambda dt: int(dt) if isinstance(dt, numbers.Number) else int(datetime.datetime.strptime(dt, datetime_format).timestamp())
+            lambda dt: int(dt)
+            if isinstance(dt, numbers.Number)
+            else int(parser.parse(dt).replace(tzinfo=datetime.timezone.utc).timestamp())
         )
         self._environment.globals["max"] = lambda a, b: max(a, b)
 
