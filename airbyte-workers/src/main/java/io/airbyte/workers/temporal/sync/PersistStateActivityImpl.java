@@ -4,32 +4,32 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.config.persistence.StatePersistence;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class PersistStateActivityImpl implements PersistStateActivity {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PersistStateActivityImpl.class);
-  private final Path workspaceRoot;
-  private final ConfigRepository configRepository;
-
-  public PersistStateActivityImpl(final Path workspaceRoot, final ConfigRepository configRepository) {
-    this.workspaceRoot = workspaceRoot;
-    this.configRepository = configRepository;
-  }
+  private final StatePersistence statePersistence;
+  private final FeatureFlags featureFlags;
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {
     final State state = syncOutput.getState();
     if (state != null) {
       try {
-        configRepository.updateConnectionState(connectionId, state);
+        final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
+        if (maybeStateWrapper.isPresent()) {
+          statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
+        }
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }

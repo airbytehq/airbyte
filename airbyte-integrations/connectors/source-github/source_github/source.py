@@ -217,7 +217,7 @@ class SourceGithub(AbstractSource):
             Releases(**repository_args_with_start_date),
             Repositories(**organization_args_with_start_date),
             ReviewComments(**repository_args_with_start_date),
-            Reviews(parent=pull_requests_stream, **repository_args_with_start_date),
+            Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
             teams_stream,
