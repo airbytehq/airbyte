@@ -70,6 +70,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -713,11 +714,10 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @Test
+    @RepeatedTest(500)
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset deletes streamsToReset from stream_resets table")
-    @Disabled
     public void cancelResetRemovesStreamsToReset() throws InterruptedException {
       final UUID connectionId = UUID.randomUUID();
       final UUID testId = UUID.randomUUID();

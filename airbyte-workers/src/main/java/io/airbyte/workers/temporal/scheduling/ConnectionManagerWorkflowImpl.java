@@ -409,7 +409,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return;
     }
     workflowState.setCancelled(true);
-    cancellableSyncWorkflow.cancel();
+    CancellationScope.current().cancel();
   }
 
   @Override
