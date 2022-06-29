@@ -35,6 +35,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = stream_slicer
+        print(f"state: {state}")
         self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None
@@ -243,5 +244,11 @@ class SimpleRetriever(Retriever, HttpStream):
         # FIXME: this is not passing the cursor field because it is always known at init time
         return self._iterator.stream_slices(sync_mode, stream_state)
 
-    def get_state(self) -> MutableMapping[str, Any]:
+    @property
+    def state(self) -> MutableMapping[str, Any]:
         return self._state.get_stream_state()
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        self._state.set_state(value)

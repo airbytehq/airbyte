@@ -23,7 +23,7 @@ def test():
     checkpoint_interval = 1000
 
     retriever = MagicMock()
-    retriever.get_state.return_value = state
+    retriever.state = state
     retriever.read_records.return_value = records
     retriever.stream_slices.return_value = stream_slices
     retriever.state_checkpoint_interval = checkpoint_interval

@@ -3,6 +3,7 @@ lists_stream:
   options:
     name: "bounces"
     primary_key: email
+    cursor_field: ["created"]
     url_base: "https://api.sendgrid.com"
     schema_loader:
       file_path: "./source_sendgrid/schemas/{{options.name}}.json"
@@ -16,23 +17,24 @@ lists_stream:
           request_parameters:
             offset: "{{ next_page_token['offset'] }}"
             limit: "*ref(limit)"
+            start_time: "{{ max(stream_state['created'], timestamp(stream_slice['start_date'])) }}"
+            end_time: "{{ timestamp(stream_slice['end_date']) }}"
         authenticator:
           type: "TokenAuthenticator"
           token: "{{ config.apikey }}"
       record_selector:
         extractor:
           transform: "_"
+      state:
+        initial_mapping:
+          created: "{{ last_record.created }}"
       stream_slicer:
         type: "DatetimeStreamSlicer"
         start_time: "2017-01-01"
         end_time: "2022-01-01"
-        step: "1000d"
-        cursor_field: "created"
+        step: "10d"
+        cursor_value: "{{ stream_state['created'] }}"
         datetime_format: "%Y-%m-%d"
-        request_options_provider:
-          request_parameters:
-            start_time: "{{ timestamp(start_time) }}"
-            end_time: "{{ timestamp(end_time) }}"
 streams:
   - "*ref(lists_stream)"
 check:
