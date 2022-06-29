@@ -57,6 +57,9 @@ public class BasicAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
+  private static final SyncMode INCREMENTAL_SYNC_MODE = SyncMode.INCREMENTAL;
+  private static final DestinationSyncMode DESTINATION_SYNC_MODE_APPEND = DestinationSyncMode.APPEND;
+
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
@@ -566,12 +569,10 @@ public class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
+        .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
+        .destinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
 
     LOGGER.info("Testing connection update when temporal is in a terminal state");
@@ -611,12 +612,10 @@ public class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
+        .syncMode(INCREMENTAL_SYNC_MODE)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
+        .destinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
 
     LOGGER.info("Testing manual sync when temporal is in a terminal state");
@@ -653,12 +652,10 @@ public class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND_DEDUP;
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
+        .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode)
+        .destinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
 
     LOGGER.info("Testing reset connection when temporal is in a terminal state");
@@ -722,25 +719,16 @@ public class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
-
-    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
-    // instead of assertFalse to avoid NPE from unboxed.
-    assertNull(stream.getSourceDefinedCursor());
-    assertTrue(stream.getDefaultCursorField().isEmpty());
-    assertTrue(stream.getSourceDefinedPrimaryKey().isEmpty());
 
     // Set the source to a version that does not support per-stream state
     LOGGER.info("Setting source connector to pre-per-stream state version {}...",
         AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
     testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
 
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
+        .syncMode(INCREMENTAL_SYNC_MODE)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
+        .destinationSyncMode(DESTINATION_SYNC_MODE_APPEND));
     final UUID connectionId =
         testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
@@ -778,7 +766,6 @@ public class BasicAcceptanceTests {
     testHarness.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
 
     // reset back to no data.
-
     LOGGER.info("Starting {} reset", testInfo.getDisplayName());
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
@@ -790,13 +777,16 @@ public class BasicAcceptanceTests {
         STREAM_NAME));
 
     // sync one more time. verify it is the equivalent of a full refresh.
+    final String expectedState = "{\"cdc\":false,\"streams\":[{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\"}]}";
     LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
-    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    final ConnectionState state = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
+    LOGGER.info("state after sync 3: {}", state);
 
     testHarness.assertSourceAndDestinationDbInSync(false);
+    assertEquals(Jsons.deserialize(expectedState), state.getState());
   }
 
   @Test
@@ -809,25 +799,16 @@ public class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
-
-    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
-    // instead of assertFalse to avoid NPE from unboxed.
-    assertNull(stream.getSourceDefinedCursor());
-    assertTrue(stream.getDefaultCursorField().isEmpty());
-    assertTrue(stream.getSourceDefinedPrimaryKey().isEmpty());
 
     // Set the source to a version that does not support per-stream state
     LOGGER.info("Setting source connector to pre-per-stream state version {}...",
         AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
     testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
 
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
+        .syncMode(INCREMENTAL_SYNC_MODE)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
+        .destinationSyncMode(DESTINATION_SYNC_MODE_APPEND));
     final UUID connectionId =
         testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
@@ -838,10 +819,6 @@ public class BasicAcceptanceTests {
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     testHarness.assertSourceAndDestinationDbInSync(false);
-
-    // get contents of source before mutating records.
-    final Database sourceDatabase = testHarness.getSourceDatabase();
-    final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(sourceDatabase, STREAM_NAME);
 
     // Set source to a version that supports per-stream state
     testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
@@ -862,6 +839,7 @@ public class BasicAcceptanceTests {
 
     assertTrue(result.isPresent());
     assertEquals(0, result.get().getAttempt().getRecordsSynced());
+    assertEquals(0, result.get().getAttempt().getTotalStats().getRecordsEmitted());
     testHarness.assertSourceAndDestinationDbInSync(false);
   }
 
