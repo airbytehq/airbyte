@@ -96,7 +96,7 @@ public class SnowflakeDatabase {
       dataSource.setPassword(credentials.get("password").asText());
 
     } else if (credentials != null && credentials.has(PRIVATE_KEY_FIELD_NAME)) {
-      LOGGER.debug("Login mode with private key is used");
+      LOGGER.debug("Login mode with key pair is used");
       dataSource.setUsername(username);
       String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
       createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
