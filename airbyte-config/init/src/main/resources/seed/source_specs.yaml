@@ -868,7 +868,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.7"
+- dockerImage: "airbyte/source-bing-ads:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bing-ads"
     connectionSpecification:
@@ -880,10 +880,6 @@
       - "client_id"
       - "refresh_token"
       - "reports_start_date"
-      - "hourly_reports"
-      - "daily_reports"
-      - "weekly_reports"
-      - "monthly_reports"
       additionalProperties: true
       properties:
         auth_method:
@@ -934,38 +930,6 @@
             \ Any data generated before this date will not be replicated in reports.\
             \ This is a UTC date in YYYY-MM-DD format."
           order: 5
-        hourly_reports:
-          title: "Enable hourly-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ an hourly time window. More information about report aggregation can\
-            \ be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
-        daily_reports:
-          title: "Enable daily-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ a daily time window. More information about report aggregation can be\
-            \ found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
-        weekly_reports:
-          title: "Enable weekly-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ a weekly time window running from Sunday to Saturday. More information\
-            \ about report aggregation can be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
-        monthly_reports:
-          title: "Enable monthly-aggregate reports"
-          type: "boolean"
-          description: "Toggle this to enable replicating reports aggregated using\
-            \ a monthly time window. More information about report aggregation can\
-            \ be found in <a href=\"https://docs.airbyte.com/integrations/sources/bing-ads/#report-aggregation\"\
-            >the docs</a>."
-          default: false
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -2620,7 +2584,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.36"
+- dockerImage: "airbyte/source-github:0.2.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2755,7 +2719,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.5"
+- dockerImage: "airbyte/source-gitlab:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/gitlab"
     connectionSpecification:
@@ -3092,6 +3056,65 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.0.1"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Google Analytics Data API Spec"
+      type: "object"
+      required:
+      - "property_id"
+      - "json_credentials"
+      - "report_name"
+      - "dimensions"
+      - "metrics"
+      - "date_ranges_start_date"
+      - "date_ranges_end_date"
+      additionalProperties: false
+      properties:
+        property_id:
+          type: "string"
+          title: "Property ID"
+          description: "A Google Analytics GA4 property identifier whose events are\
+            \ tracked. Specified in the URL path and not the body"
+          order: 1
+        json_credentials:
+          type: "string"
+          title: "JSON Credentials"
+          description: "The JSON key of the Service Account to use for authorization"
+          airbyte_secret: true
+          order: 2
+        report_name:
+          type: "string"
+          title: "Report Name"
+          description: "The report name"
+          order: 3
+        dimensions:
+          type: "string"
+          title: "Dimensions"
+          description: "Comma seprated report dimensions https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#dimensions"
+          order: 4
+        metrics:
+          type: "string"
+          title: "Metrics"
+          description: "Comma seprated report metrics https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#metrics"
+          order: 5
+        date_ranges_start_date:
+          type: "string"
+          title: "Date Range Start Date"
+          description: "The start date. One of the values Ndaysago, yesterday, today\
+            \ or in the format YYYY-MM-DD"
+          order: 6
+        date_ranges_end_date:
+          type: "string"
+          title: "Date Range End Date"
+          description: "The end date. One of the values Ndaysago, yesterday, today\
+            \ or in the format YYYY-MM-DD"
+          order: 7
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-google-directory:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-directory"
@@ -3886,7 +3909,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.19"
+- dockerImage: "airbyte/source-intercom:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -6346,6 +6369,41 @@
           description: "Property key names to extract from all events, in order to\
             \ enrich ledger entries corresponding to an event deduction."
           order: 5
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-orbit:0.1.1"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/orbit"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Orbit Source Spec"
+      type: "object"
+      required:
+      - "api_token"
+      - "workspace"
+      additionalProperties: false
+      properties:
+        api_token:
+          type: "string"
+          airbyte_secret: true
+          title: "API Token"
+          description: "Authorizes you to work with Orbit workspaces associated with\
+            \ the token."
+          order: 0
+        workspace:
+          type: "string"
+          title: "Workspace"
+          description: "The unique name of the workspace that your API token is associated\
+            \ with."
+          order: 1
+        start_date:
+          type: "string"
+          title: "Start Date"
+          description: "Date in the format 2022-06-26. Only load members whose last\
+            \ activities are after this date."
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          order: 2
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -9095,7 +9153,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:0.1.12"
+- dockerImage: "airbyte/source-tiktok-marketing:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
@@ -9299,7 +9357,7 @@
         oauthFlowOutputParameters:
         - - "token"
         - - "key"
-- dockerImage: "airbyte/source-twilio:0.1.5"
+- dockerImage: "airbyte/source-twilio:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/twilio"
     connectionSpecification:
@@ -9536,7 +9594,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zendesk-chat:0.1.7"
+- dockerImage: "airbyte/source-zendesk-chat:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-chat"
     connectionSpecification:
@@ -9795,7 +9853,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.10"
+- dockerImage: "airbyte/source-zendesk-support:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
