@@ -12,7 +12,6 @@ interface Props {
 export const Content = styled.div<{ $small?: boolean }>`
   height: 25px;
   width: 25px;
-  border-radius: ${({ $small }) => ($small ? 0 : 50)}%;
   overflow: hidden;
 `;
 
