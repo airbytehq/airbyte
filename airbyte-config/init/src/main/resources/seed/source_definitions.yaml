@@ -104,7 +104,7 @@
 - name: Bing Ads
   sourceDefinitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
   dockerRepository: airbyte/source-bing-ads
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/bing-ads
   icon: bingads.svg
   sourceType: api
@@ -303,7 +303,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.36
+  dockerImageTag: 0.2.38
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -311,7 +311,7 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
@@ -332,6 +332,14 @@
   icon: google-analytics.svg
   sourceType: api
   releaseStage: beta
+- name: Google Analytics Data API
+  sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
+  dockerRepository: airbyte/source-google-analytics-data-api
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-data-api
+  icon: google-analytics.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Directory
   sourceDefinitionId: d19ae824-e289-4b14-995a-0632eb46d246
   dockerRepository: airbyte/source-google-directory
@@ -398,7 +406,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.70
+  dockerImageTag: 0.1.72
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -422,7 +430,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.19
+  dockerImageTag: 0.1.20
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -530,10 +538,18 @@
   icon: marketo.svg
   sourceType: api
   releaseStage: alpha
+- name: Metabase
+  sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
+  dockerRepository: airbyte/source-metabase
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/metabase
+  icon: metabase.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.4.3
+  dockerImageTag: 0.4.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -581,7 +597,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.5.13
+  dockerImageTag: 0.5.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -620,7 +636,7 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.15
+  dockerImageTag: 0.3.17
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
@@ -631,6 +647,14 @@
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/orb
   icon: orb.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Orbit
+  sourceDefinitionId: 95bcc041-1d1a-4c2e-8802-0ca5b1bfa36a
+  dockerRepository: airbyte/source-orbit
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.io/integrations/sources/orbit
+  icon: orbit.svg
   sourceType: api
   releaseStage: alpha
 - sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
@@ -652,7 +676,7 @@
 - name: Paypal Transaction
   sourceDefinitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
   dockerRepository: airbyte/source-paypal-transaction
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/paypal-transaction
   icon: paypal.svg
   sourceType: api
@@ -723,7 +747,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.26
+  dockerImageTag: 0.4.28
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -937,7 +961,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
@@ -953,7 +977,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
@@ -995,12 +1019,13 @@
   dockerRepository: airbyte/source-webflow
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/webflow
+  icon: webflow.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Chat
   sourceDefinitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
   dockerRepository: airbyte/source-zendesk-chat
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-chat
   icon: zendesk.svg
   sourceType: api
@@ -1016,7 +1041,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.10
+  dockerImageTag: 0.2.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api
@@ -1084,6 +1109,6 @@
   sourceDefinitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
   dockerRepository: airbyte/source-firebolt
   dockerImageTag: 0.1.0
-  documentationUrl: https://docs.firebolt.io/
+  documentationUrl: https://docs.airbyte.io/integrations/sources/firebolt
   sourceType: database
   releaseStage: alpha

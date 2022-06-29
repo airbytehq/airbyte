@@ -50,6 +50,8 @@ public class EnvConfigs implements Configs {
   public static final String CONFIG_ROOT = "CONFIG_ROOT";
   public static final String DOCKER_NETWORK = "DOCKER_NETWORK";
   public static final String TRACKING_STRATEGY = "TRACKING_STRATEGY";
+  public static final String JOB_ERROR_REPORTING_STRATEGY = "JOB_ERROR_REPORTING_STRATEGY";
+  public static final String JOB_ERROR_REPORTING_SENTRY_DSN = "JOB_ERROR_REPORTING_SENTRY_DSN";
   public static final String DEPLOYMENT_MODE = "DEPLOYMENT_MODE";
   public static final String DATABASE_USER = "DATABASE_USER";
   public static final String DATABASE_PASSWORD = "DATABASE_PASSWORD";
@@ -164,6 +166,10 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
   private static final int DEFAULT_DATABASE_INITIALIZATION_TIMEOUT_MS = 60 * 1000;
+
+  private static final String VAULT_ADDRESS = "VAULT_ADDRESS";
+  private static final String VAULT_PREFIX = "VAULT_PREFIX";
+  private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
 
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
@@ -335,6 +341,21 @@ public class EnvConfigs implements Configs {
   public SecretPersistenceType getSecretPersistenceType() {
     final var secretPersistenceStr = getEnvOrDefault(SECRET_PERSISTENCE, SecretPersistenceType.TESTING_CONFIG_DB_TABLE.name());
     return SecretPersistenceType.valueOf(secretPersistenceStr);
+  }
+
+  @Override
+  public String getVaultAddress() {
+    return getEnv(VAULT_ADDRESS);
+  }
+
+  @Override
+  public String getVaultPrefix() {
+    return getEnvOrDefault(VAULT_PREFIX, "");
+  }
+
+  @Override
+  public String getVaultToken() {
+    return getEnv(VAULT_AUTH_TOKEN);
   }
 
   // Database
@@ -784,6 +805,23 @@ public class EnvConfigs implements Configs {
         return TrackingStrategy.LOGGING;
       }
     });
+  }
+
+  @Override
+  public JobErrorReportingStrategy getJobErrorReportingStrategy() {
+    return getEnvOrDefault(JOB_ERROR_REPORTING_STRATEGY, JobErrorReportingStrategy.LOGGING, s -> {
+      try {
+        return JobErrorReportingStrategy.valueOf(s.toUpperCase());
+      } catch (final IllegalArgumentException e) {
+        LOGGER.info(s + " not recognized, defaulting to " + JobErrorReportingStrategy.LOGGING);
+        return JobErrorReportingStrategy.LOGGING;
+      }
+    });
+  }
+
+  @Override
+  public String getJobErrorReportingSentryDSN() {
+    return getEnvOrDefault(JOB_ERROR_REPORTING_SENTRY_DSN, "");
   }
 
   // APPLICATIONS

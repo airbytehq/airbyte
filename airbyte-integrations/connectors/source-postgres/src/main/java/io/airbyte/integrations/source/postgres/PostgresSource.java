@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -39,7 +40,6 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -49,7 +49,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,12 +248,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
   }
 
-  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
-    return any.isPresent();
-  }
-
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
     final boolean isCdc = config.hasNonNull("replication_method")
@@ -417,10 +410,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
           .withStreamStates(List.of());
-      return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+      return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
     } else {
       return List.of(new AirbyteStateMessage()
-          .withStateType(AirbyteStateType.STREAM)
+          .withType(AirbyteStateType.STREAM)
           .withStream(new AirbyteStreamState()));
     }
   }

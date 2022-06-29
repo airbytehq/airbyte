@@ -24,6 +24,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -194,12 +195,14 @@ public class ServerApp implements ServerRunnable {
 
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
-
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+
     final TemporalClient temporalClient = new TemporalClient(
         TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace()),
         configs.getWorkspaceRoot(),
-        temporalService);
+        temporalService,
+        streamResetPersistence);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =

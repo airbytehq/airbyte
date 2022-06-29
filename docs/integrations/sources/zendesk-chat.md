@@ -72,6 +72,7 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.8 | 2022-06-28 | [13387](https://github.com/airbytehq/airbyte/pull/13387) | Add state checkpoint to allow long runs |
 | 0.1.7 | 2022-05-25 | [12883](https://github.com/airbytehq/airbyte/pull/12883) | Passing timeout in request to prevent a stuck connection |
 | 0.1.6 | 2021-12-15 | [7313](https://github.com/airbytehq/airbyte/pull/7313) | Added support of `OAuth 2.0` authentication. [8819](https://github.com/airbytehq/airbyte/pull/8819) Fixed the issue with `created_at` can now be `null` for `bans` stream |
 | 0.1.5 | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425) | Update title, description fields in spec |

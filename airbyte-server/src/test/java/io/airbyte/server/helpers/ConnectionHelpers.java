@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +41,8 @@ public class ConnectionHelpers {
   private static final String FIELD_NAME = "id";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
+
+  public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
   // only intended for unit tests, so intentionally set very high to ensure they aren't being used
   // elsewhere

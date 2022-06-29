@@ -302,7 +302,8 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
-| 0.4.3   | 2022-07-17 | [13887](https://github.com/airbytehq/airbyte/pull/13887) | Increase version to include changes from [13854](https://github.com/airbytehq/airbyte/pull/13854)           |
+| 0.4.8   | 2022-06-24 | [14121](https://github.com/airbytehq/airbyte/pull/14121) |Omit using 'USE' keyword on Azure SQL with CDC            |
+| 0.4.3   | 2022-06-17 | [13887](https://github.com/airbytehq/airbyte/pull/13887) | Increase version to include changes from [13854](https://github.com/airbytehq/airbyte/pull/13854)           |
 | 0.4.2   | 2022-06-06 | [13435](https://github.com/airbytehq/airbyte/pull/13435) | Adjust JDBC fetch size based on max memory and max row size                                            |
 | 0.4.1   | 2022-05-25 | [13419](https://github.com/airbytehq/airbyte/pull/13419) | Correct enum for Standard method.                                                                      |
 | 0.4.0   | 2022-05-25 | [12759](https://github.com/airbytehq/airbyte/pull/12759) [13168](https://github.com/airbytehq/airbyte/pull/13168) | For CDC, Add option to ignore existing data and only sync new changes from the database.               |
