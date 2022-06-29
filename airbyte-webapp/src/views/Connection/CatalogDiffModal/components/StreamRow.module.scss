@@ -12,10 +12,10 @@
   width: 100%;
 
   &.add {
-    background-color: colors.$green-50; //todo: this probably doesn't match the theme either
+    background-color: colors.$green-50;
   }
   &.remove {
-    background-color: #ffe4e8; //todo: this doesn't match the red-50 in the theme?
+    background-color: colors.$red-50;
   }
 }
 
