@@ -408,7 +408,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
     }
 
-    @RepeatedTest(100)
+    @Test
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that the sync is properly deleted")
@@ -638,7 +638,7 @@ public class ConnectionManagerWorkflowTest {
           .jobCancelledWithAttemptNumber(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
     }
 
-    @RepeatedTest(100)
+    @Test
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a non-running workflow starts a reset job")
@@ -670,7 +670,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @RepeatedTest(100)
+    @Test
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
@@ -714,7 +714,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @RepeatedTest(100)
+    @Test
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset deletes streamsToReset from stream_resets table")
