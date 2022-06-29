@@ -18,6 +18,7 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -110,13 +111,10 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
-            .getNetworks()
-            .get(((Network.NetworkImpl) network).getName())
-            .getIpAddress()))
+        .put("host", HostPortResolver.resolveHost(db))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
         .put("database", database)
         .put("schema", schemaName)
         .put("ssl", false);
@@ -179,7 +177,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   }
 
   private void initAndStartJdbcContainer() {
-    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-GA-ubuntu-16.04")
+    db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-CU16-ubuntu-20.04")
         .withNetwork(network)
         .acceptLicense();
     db.start();
