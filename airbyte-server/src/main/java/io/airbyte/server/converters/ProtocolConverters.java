@@ -11,10 +11,6 @@ import io.airbyte.api.model.generated.StreamDescriptor;
  */
 public class ProtocolConverters {
 
-  public static StreamDescriptor streamDescriptorToApi(final io.airbyte.config.StreamDescriptor protocolStreamDescriptor) {
-    return new StreamDescriptor().name(protocolStreamDescriptor.getName()).namespace(protocolStreamDescriptor.getNamespace());
-  }
-
   public static StreamDescriptor streamDescriptorToApi(final io.airbyte.protocol.models.StreamDescriptor protocolStreamDescriptor) {
     return new StreamDescriptor().name(protocolStreamDescriptor.getName()).namespace(protocolStreamDescriptor.getNamespace());
   }
