@@ -34,6 +34,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.JSONB;
@@ -508,8 +509,15 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper stateWrapper = new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(jsonState);
     statePersistence.updateOrCreateState(connectionId, stateWrapper);
 
-    final State readState = configRepository.getConnectionState(connectionId).orElseThrow();
-    Assertions.assertEquals(readState.getState(), stateWrapper.getLegacyState());
+    // Making sure we still follow the legacy format
+    final List<State> readStates = dslContext
+        .selectFrom("state")
+        .where(DSL.field("connection_id").eq(connectionId))
+        .fetch().map(r -> Jsons.deserialize(r.get(DSL.field("state", JSONB.class)).data(), State.class))
+        .stream().toList();
+    Assertions.assertEquals(1, readStates.size());
+
+    Assertions.assertEquals(readStates.get(0).getState(), stateWrapper.getLegacyState());
   }
 
   @BeforeEach

@@ -51,11 +51,13 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -73,6 +75,7 @@ import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -112,6 +115,8 @@ class SchedulerHandlerTest {
       .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
 
+  private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("1");
+
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
   private SecretsRepositoryWriter secretsRepositoryWriter;
@@ -123,6 +128,7 @@ class SchedulerHandlerTest {
   private JobPersistence jobPersistence;
   private EventRunner eventRunner;
   private JobConverter jobConverter;
+  private StatePersistence statePersistence;
 
   @BeforeEach
   void setup() {
@@ -138,6 +144,7 @@ class SchedulerHandlerTest {
     configRepository = mock(ConfigRepository.class);
     secretsRepositoryWriter = mock(SecretsRepositoryWriter.class);
     jobPersistence = mock(JobPersistence.class);
+    statePersistence = mock(StatePersistence.class);
     eventRunner = mock(EventRunner.class);
 
     jobConverter = spy(new JobConverter(WorkerEnvironment.DOCKER, LogConfigs.EMPTY));
@@ -581,7 +588,7 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testResetConnection() throws IOException {
+  void testResetConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID connectionId = UUID.randomUUID();
 
     final long jobId = 123L;
@@ -591,7 +598,11 @@ class SchedulerHandlerTest {
         .jobId(Optional.of(jobId))
         .build();
 
-    when(eventRunner.resetConnection(connectionId))
+    final List<StreamDescriptor> streamDescriptors = List.of(STREAM_DESCRIPTOR);
+    when(configRepository.getAllStreamsForConnection(connectionId))
+        .thenReturn(streamDescriptors);
+
+    when(eventRunner.resetConnection(connectionId, streamDescriptors))
         .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
@@ -599,7 +610,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(eventRunner).resetConnection(connectionId);
+    verify(eventRunner).resetConnection(connectionId, streamDescriptors);
   }
 
   @Test
