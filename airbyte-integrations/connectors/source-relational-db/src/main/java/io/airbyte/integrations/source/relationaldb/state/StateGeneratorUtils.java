@@ -148,7 +148,8 @@ public class StateGeneratorUtils {
    * Tests whether the provided {@link StreamDescriptor} is valid. A valid descriptor is defined as
    * one that has a non-{@code null} name.
    *
-   * See https://github.com/airbytehq/airbyte/blob/e63458fabb067978beb5eaa74d2bc130919b419f/docs/understanding-airbyte/airbyte-protocol.md
+   * See
+   * https://github.com/airbytehq/airbyte/blob/e63458fabb067978beb5eaa74d2bc130919b419f/docs/understanding-airbyte/airbyte-protocol.md
    * for more details
    *
    * @param streamDescriptor A {@link StreamDescriptor} to be validated.
@@ -180,21 +181,7 @@ public class StateGeneratorUtils {
                 .withStreamState(Jsons.jsonNode(s)))
             .collect(
                 Collectors.toList()));
-    return new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState);
-  }
-
-  /**
-   * Converts a {@link AirbyteStateType#GLOBAL} state message into a list of
-   * {@link AirbyteStateType#STREAM} messages.
-   *
-   * @param airbyteStateMessage A {@link AirbyteStateType#GLOBAL} state message.
-   * @return A list {@link AirbyteStateType#STREAM} state messages.
-   */
-  public static List<AirbyteStateMessage> convertGlobalStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
-    return airbyteStateMessage.getGlobal().getStreamStates().stream()
-        .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState().withStreamDescriptor(s.getStreamDescriptor()).withStreamState(s.getStreamState())))
-        .collect(Collectors.toList());
+    return new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState);
   }
 
   /**
@@ -206,7 +193,7 @@ public class StateGeneratorUtils {
    */
   public static List<AirbyteStateMessage> convertLegacyStateToStreamState(final AirbyteStateMessage airbyteStateMessage) {
     return Jsons.object(airbyteStateMessage.getData(), DbState.class).getStreams().stream()
-        .map(s -> new AirbyteStateMessage().withStateType(AirbyteStateType.STREAM)
+        .map(s -> new AirbyteStateMessage().withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()
                 .withStreamDescriptor(new StreamDescriptor().withNamespace(s.getStreamNamespace()).withName(s.getStreamName()))
                 .withStreamState(Jsons.jsonNode(s))))

@@ -6,11 +6,13 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.extractors.http_extractor import HttpExtractor
+from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
+from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
@@ -22,18 +24,18 @@ class SimpleRetriever(Retriever, HttpStream):
         primary_key,
         requester: Requester,
         paginator: Paginator,
-        extractor: HttpExtractor,
-        stream_slicer: StreamSlicer,
-        state: State,
+        record_selector: HttpSelector,
+        stream_slicer: Optional[StreamSlicer] = SingleSlice,
+        state: Optional[State] = None,
     ):
         self._name = name
         self._primary_key = primary_key
         self._paginator = paginator
         self._requester = requester
-        self._extractor = extractor
+        self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = stream_slicer
-        self._state: State = state.deep_copy()
+        self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None
 
@@ -190,7 +192,9 @@ class SimpleRetriever(Retriever, HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         self._last_response = response
-        records = self._extractor.extract_records(response)
+        records = self._record_selector.select_records(
+            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
         self._last_records = records
         return records
 
