@@ -35,7 +35,6 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
-import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
@@ -53,6 +52,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonValidationException;
@@ -359,7 +359,7 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
 
-    final ConnectionRead connectionRead;
+    ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
 
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
