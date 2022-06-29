@@ -21,7 +21,6 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.util.HostPortResolver;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
