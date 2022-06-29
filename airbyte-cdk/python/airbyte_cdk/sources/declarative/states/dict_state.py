@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Mapping, Union
+from typing import Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.state import State
@@ -25,20 +25,12 @@ class StateType(Enum):
 class DictState(State):
     stream_state_field = "stream_state"
 
-    def __init__(self, initial_mapping: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
+    def __init__(self, initial_mapping: Mapping[str, str] = None, config=None):
         if initial_mapping is None:
             initial_mapping = dict()
         if config is None:
             config = dict()
         self._templates_to_evaluate = initial_mapping
-        if type(state_type) == str:
-            self._state_type = StateType[state_type].value
-        elif type(state_type) == StateType:
-            self._state_type = state_type.value
-        elif type(state_type) == type:
-            self._state_type = state_type
-        else:
-            raise Exception(f"Unexpected type for state_type. Got {state_type}")
         self._interpolator = JinjaInterpolation()
         self._context = dict()
         self._config = config

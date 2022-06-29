@@ -19,7 +19,7 @@ class DeclarativeStream(Stream):
     def __init__(self, name, primary_key, schema_loader: SchemaLoader, retriever: Retriever, cursor_field: Optional[List[str]] = None):
         self._name = name
         self._primary_key = primary_key
-        self._cursor_field = cursor_field
+        self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
         self._retriever = retriever
 
