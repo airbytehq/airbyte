@@ -30,7 +30,8 @@ To access the Sandbox environment:
 3. On the source setup page, select **Tiktok Marketing** from the Source type dropdown and enter a name for this connector.
 4. Select `OAuth2.0` Authorization method, then click `Authenticate your account`.
 5. Log in and Authorize to the Tiktok account
-6. click `Set up source`
+6. Choose required Start date
+7. click `Set up source`.
 
 **For Airbyte OSS:**
 
@@ -536,10 +537,11 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
-| 0.1.13  | 2022-06-18 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |
+| 0.1.14  | 2022-06-29 | [13890](https://github.com/airbytehq/airbyte/pull/13890) | Removed granularity config option                                                             |                                               |
+| 0.1.13  | 2022-06-28 | [13650](https://github.com/airbytehq/airbyte/pull/13650) | Added video metrics to report streams                                                         |                                                        |
 | 0.1.12  | 2022-05-24 | [13127](https://github.com/airbytehq/airbyte/pull/13127) | Fixed integration test                                                                        |
 | 0.1.11  | 2022-04-27 | [12838](https://github.com/airbytehq/airbyte/pull/12838) | Added end date configuration for tiktok                                                       |
-| 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authentication method                                                  |
+| 0.1.10  | 2022-05-07 | [12545](https://github.com/airbytehq/airbyte/pull/12545) | Removed odd production authenication method                                                   |
 | 0.1.9   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                              |
 | 0.1.8   | 2022-04-28 | [12435](https://github.com/airbytehq/airbyte/pull/12435) | updated spec descriptions                                                                     |
 | 0.1.7   | 2022-04-27 | [12380](https://github.com/airbytehq/airbyte/pull/12380) | fixed spec descriptions and documentation                                                     |

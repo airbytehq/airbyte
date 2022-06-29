@@ -56,7 +56,6 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
-        .setPartSize(config.getFormatConfig().getPartSize())
         .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);

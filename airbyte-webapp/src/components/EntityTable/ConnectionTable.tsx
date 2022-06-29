@@ -46,7 +46,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onChangeS
         search: queryString.stringify(
           {
             sortBy: field,
-            order: order,
+            order,
           },
           { skipNull: true }
         ),

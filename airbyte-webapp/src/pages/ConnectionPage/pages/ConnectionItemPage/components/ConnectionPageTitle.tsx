@@ -54,7 +54,7 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
     },
     {
       id: ConnectionSettingsRoutes.TRANSFORMATION,
-      name: <FormattedMessage id={"connectionForm.transformation.title"} />,
+      name: <FormattedMessage id="connectionForm.transformation.title" />,
     },
   ];
 

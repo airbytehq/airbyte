@@ -32,6 +32,24 @@ NOT_AUDIENCE_METRICS = [
     "secondary_goal_result_rate",
     "cash_spend",
     "voucher_spend",
+    "video_play_actions",
+    "video_watched_2s",
+    "video_watched_6s",
+    "average_video_play",
+    "average_video_play_per_user",
+    "video_views_p25",
+    "video_views_p50",
+    "video_views_p75",
+    "video_views_p100",
+    "profile_visits",
+    "likes",
+    "comments",
+    "shares",
+    "follows",
+    "clicks_on_music_disc",
+    "real_time_app_install",
+    "real_time_app_install_cost",
+    "app_install",
 ]
 
 T = TypeVar("T")
@@ -505,7 +523,35 @@ class BasicReports(IncrementalTiktokStream, ABC):
 
     def _get_metrics(self):
         # common metrics for all reporting levels
-        result = ["spend", "cpc", "cpm", "impressions", "clicks", "ctr", "reach", "cost_per_1000_reached", "frequency"]
+        result = [
+            "spend",
+            "cpc",
+            "cpm",
+            "impressions",
+            "clicks",
+            "ctr",
+            "reach",
+            "cost_per_1000_reached",
+            "frequency",
+            "video_play_actions",
+            "video_watched_2s",
+            "video_watched_6s",
+            "average_video_play",
+            "average_video_play_per_user",
+            "video_views_p25",
+            "video_views_p50",
+            "video_views_p75",
+            "video_views_p100",
+            "profile_visits",
+            "likes",
+            "comments",
+            "shares",
+            "follows",
+            "clicks_on_music_disc",
+            "real_time_app_install",
+            "real_time_app_install_cost",
+            "app_install",
+        ]
 
         if self.report_level == ReportLevel.ADVERTISER and self.report_granularity == ReportGranularity.DAY:
             # https://ads.tiktok.com/marketing_api/docs?id=1707957200780290
