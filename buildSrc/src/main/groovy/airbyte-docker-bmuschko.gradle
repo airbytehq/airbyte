@@ -3,6 +3,10 @@ import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 class AirbyteDockerBmuschkoConfiguration {
     Map<String, String> dockerfileToImageName
     Collection<Task> additionalDependencies
+    // By default, we will attempt to build both arm64 and amd64 images.
+    // For modules which cannot be built as both of those architectures, this
+    // option allows forcing a specific arch.
+    String archOverride
 }
 
 /**
@@ -72,7 +76,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                     taskName += "-${dockerfileName}"
                 }
 
-                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName)
+                def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName, extension.archOverride)
 
                 buildDockerImageTask.dependsOn copyFilesTask
                 allTask.dependsOn buildDockerImageTask
@@ -83,15 +87,24 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
         }
     }
 
-    static def createTask(Project project, String taskName, String imageName, String dockerfileName) {
+    static def createTask(Project project, String taskName, String imageName, String dockerfileName, String archOverride) {
         if (project.file(dockerfileName).exists()) {
             def buildDockerImageTask = project.task(taskName, type: DockerBuildImage) {
                 def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
                 def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
+
+                if (archOverride != null) {
+                    arch = archOverride
+                }
                 def isArm64 = arch == "aarch64" || arch == "arm64"
 
+                // TODO should the other env vars also be affected by archOverride?
+                // normalization doesn't depend on any of them, but plausibly other modules could need this?
                 def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'linux/amd64'
+                if (archOverride != null) {
+                    buildPlatform = 'linux/amd64'
+                }
                 def alpineImage = System.getenv('ALPINE_IMAGE') ?: isArm64 ? 'arm64v8/alpine:3.14' : 'amd64/alpine:3.14'
                 def nginxImage = System.getenv('NGINX_IMAGE') ?: isArm64 ? 'arm64v8/nginx:1.19-alpine' : 'amd64/nginx:1.19-alpine'
                 def openjdkImage = System.getenv('JDK_IMAGE') ?: isArm64 ? "arm64v8/openjdk:${jdkVersion}-slim" : "amd64/openjdk:${jdkVersion}-slim"
