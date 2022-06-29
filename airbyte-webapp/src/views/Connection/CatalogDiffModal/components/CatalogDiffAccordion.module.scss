@@ -1,0 +1,15 @@
+.accordionContainer {
+  width: 100%;
+}
+
+.accordionButton {
+  width: 100%;
+  background: none;
+  border: none;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 30px 5px 20px;
+}

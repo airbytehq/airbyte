@@ -43,7 +43,7 @@ export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, ca
       {/* update stream should make an accordion, others should make a row */}
       {data.map((item) => {
         return item.transformType === "update_stream" ? (
-          <CatalogDiffAccordion data={item.updateStream} catalog={catalog} />
+          <CatalogDiffAccordion data={item} catalog={catalog} />
         ) : (
           <StreamRow item={item} catalog={catalog} />
         );
