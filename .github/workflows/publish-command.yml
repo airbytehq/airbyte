@@ -297,7 +297,7 @@ jobs:
           sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
+          SENTRY_ORG: airbytehq
           SENTRY_PROJECT: connector-incident-management
       - name: Check if connector in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()

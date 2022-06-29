@@ -77,7 +77,6 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.secretsRepositoryWriter = secretsRepositoryWriter;
     ConfigurationApiFactory.synchronousSchedulerClient = synchronousSchedulerClient;
     ConfigurationApiFactory.archiveTtlManager = archiveTtlManager;
-    ConfigurationApiFactory.statePersistence = statePersistence;
     ConfigurationApiFactory.mdc = mdc;
     ConfigurationApiFactory.configsDatabase = configsDatabase;
     ConfigurationApiFactory.jobsDatabase = jobsDatabase;
@@ -90,6 +89,7 @@ public class ConfigurationApiFactory implements Factory<ConfigurationApi> {
     ConfigurationApiFactory.eventRunner = eventRunner;
     ConfigurationApiFactory.configsFlyway = configsFlyway;
     ConfigurationApiFactory.jobsFlyway = jobsFlyway;
+    ConfigurationApiFactory.statePersistence = statePersistence;
   }
 
   @Override

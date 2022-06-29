@@ -45,6 +45,8 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -759,22 +761,6 @@ public class ConfigRepository {
 
   @Deprecated(forRemoval = true)
   // use StatePersistence instead
-  public Optional<State> getConnectionState(final UUID connectionId) throws IOException {
-    try {
-      final StandardSyncState connectionState = persistence.getConfig(
-          ConfigSchema.STANDARD_SYNC_STATE,
-          connectionId.toString(),
-          StandardSyncState.class);
-      return Optional.of(connectionState.getState());
-    } catch (final ConfigNotFoundException e) {
-      return Optional.empty();
-    } catch (final JsonValidationException e) {
-      throw new IllegalStateException(e);
-    }
-  }
-
-  @Deprecated(forRemoval = true)
-  // use StatePersistence instead
   public void updateConnectionState(final UUID connectionId, final State state) throws IOException {
     LOGGER.info("Updating connection {} state: {}", connectionId, state);
     final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
@@ -995,6 +981,12 @@ public class ConfigRepository {
       throws JsonValidationException, IOException {
     persistence.writeConfig(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceServiceAccount.getWorkspaceId().toString(),
         workspaceServiceAccount);
+  }
+
+  public List<StreamDescriptor> getAllStreamsForConnection(final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardSync standardSync = getStandardSync(connectionId);
+    return CatalogHelpers.extractStreamDescriptors(standardSync.getCatalog());
   }
 
 }
