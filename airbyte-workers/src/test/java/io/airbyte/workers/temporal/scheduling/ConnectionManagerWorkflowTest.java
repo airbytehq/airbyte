@@ -291,7 +291,7 @@ public class ConnectionManagerWorkflowTest {
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofMinutes(1L)); // any value here, just so it's started
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any value here, just so it's past the empty workflow run
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -339,7 +339,7 @@ public class ConnectionManagerWorkflowTest {
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.connectionUpdated();
-      testEnv.sleep(Duration.ofSeconds(20L));
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -528,7 +528,6 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @Disabled
     @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
@@ -560,10 +559,7 @@ public class ConnectionManagerWorkflowTest {
 
       workflow.cancelJob();
 
-      // TODO
-      // For some reason this transiently fails if it is below the runtime.
-      // However, this should be reported almost immediately. I think this is a bug.
-      testEnv.sleep(Duration.ofMinutes(SleepingSyncWorkflow.RUN_TIME.toMinutes() + 1));
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
@@ -612,10 +608,7 @@ public class ConnectionManagerWorkflowTest {
 
       workflow.deleteConnection();
 
-      // TODO
-      // For some reason this transiently fails if it is below the runtime.
-      // However, this should be reported almost immediately. I think this is a bug.
-      testEnv.sleep(Duration.ofMinutes(SleepingSyncWorkflow.RUN_TIME.toMinutes() + 1));
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
@@ -670,7 +663,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @Test
+    @RepeatedTest(100)
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
@@ -851,7 +844,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).attemptFailureWithAttemptNumber(Mockito.any());
       Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce()).jobFailure(Mockito.any());
@@ -888,7 +881,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
       Mockito.verifyNoInteractions(mAutoDisableConnectionActivity);
     }
 
@@ -949,7 +942,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.SOURCE, FailureType.CONFIG_ERROR)));
@@ -988,7 +981,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
@@ -1028,7 +1021,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity, atLeastOnce())
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
@@ -1062,7 +1055,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.SOURCE)));
@@ -1098,7 +1091,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.NORMALIZATION)));
@@ -1132,7 +1125,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DBT)));
@@ -1166,7 +1159,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.PERSISTENCE)));
@@ -1200,7 +1193,7 @@ public class ConnectionManagerWorkflowTest {
       testEnv.sleep(Duration.ofMinutes(1));
 
       workflow.submitManualSync();
-      testEnv.sleep(Duration.ofMinutes(1L)); // any time after no-waiting manual run
+      Thread.sleep(500); // any time after no-waiting manual run
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.REPLICATION)));
@@ -1293,7 +1286,7 @@ public class ConnectionManagerWorkflowTest {
       // Sleep test env for half of restart delay, so that we know we are in the middle of the delay
       testEnv.sleep(ConnectionManagerWorkflowImpl.WORKFLOW_FAILURE_RESTART_DELAY.dividedBy(2));
       workflow.retryFailedActivity();
-      testEnv.sleep(Duration.ofSeconds(30L));
+      Thread.sleep(500); // any time after no-waiting manual run
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
