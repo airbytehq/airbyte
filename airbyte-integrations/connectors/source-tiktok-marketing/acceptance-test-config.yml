@@ -55,7 +55,7 @@ tests:
       configured_catalog_path: "integration_tests/streams_with_day_granularity.json"
       timeout_seconds: 1200
     - config_path: "secrets/prod_config_with_lifetime_granularity.json"
-      configured_catalog_path: "integration_tests/prod_config_with_lifetime_granularity.json"
+      configured_catalog_path: "integration_tests/streams_with_lifetime_granularity.json"
       timeout_seconds: 1200
 
   incremental:
