@@ -55,6 +55,14 @@ class DeclarativeComponentFactory:
         return {**d1, **d2}
 
     def _create_subcomponent(self, key, definition, kwargs, config, parent_class):
+        """
+        There are 5 ways to define a component.
+        1. dict with "class_name" field -> create an object of type "class_name"
+        2. dict with "type" field -> lookup the `CLASS_TYPES_REGISTRY` to find the type of object and create an object of that type
+        3. a dict with a type that can be inferred. If the parent class's constructor has type hints, we can infer the type of the object to create by looking up the `DEFAULT_IMPLEMENTATIONS_REGISTRY` map
+        4. list: loop over the list and create objects for its items
+        5. anything else -> return as is
+        """
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
@@ -100,6 +108,8 @@ class DeclarativeComponentFactory:
         interface = type_hints.get(parameter_name)
         origin = get_origin(interface)
         if origin == Union:
+            # Handling Optional, which are implement as a Union[T, None]
+            # the interface we're looking for being the first type argument
             args = get_args(interface)
             interface = args[0]
 
