@@ -109,7 +109,7 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
   };
 
   const inputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value;
+    const { value } = event.currentTarget;
     if (value) {
       setConnectionName(event.currentTarget.value);
     }

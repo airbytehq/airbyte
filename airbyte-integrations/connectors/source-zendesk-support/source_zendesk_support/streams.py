@@ -3,6 +3,7 @@
 #
 
 import calendar
+import re
 import time
 from abc import ABC
 from collections import deque
@@ -29,6 +30,15 @@ from requests_futures.sessions import PICKLE_ERROR, FuturesSession
 DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
 END_OF_STREAM_KEY: str = "end_of_stream"
+
+
+def to_int(s):
+    "https://github.com/airbytehq/airbyte/issues/13673"
+    if isinstance(s, str):
+        res = re.findall(r"[-+]?\d+", s)
+        if res:
+            return res[0]
+    return s
 
 
 class SourceZendeskException(Exception):
@@ -78,7 +88,7 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
 
-        retry_after = int(response.headers.get("Retry-After", 0))
+        retry_after = int(to_int(response.headers.get("Retry-After", 0)))
         if retry_after > 0:
             return retry_after
 

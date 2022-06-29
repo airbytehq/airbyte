@@ -58,7 +58,7 @@ const ServiceFormContextProvider: React.FC<{
   const { values } = useFormikContext<ServiceFormValues>();
   const { hasFeature } = useFeatureService();
 
-  const serviceType = values.serviceType;
+  const { serviceType } = values;
   const selectedService = useMemo(
     () => availableServices.find((s) => Connector.id(s) === serviceType),
     [availableServices, serviceType]

@@ -21,6 +21,7 @@ import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStatus;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
@@ -49,6 +50,9 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.StreamDescriptor;
+import io.airbyte.api.model.generated.StreamTransform;
+import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
@@ -78,13 +82,14 @@ import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceDefinitionHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.helper.ConnectionHelper;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -105,12 +110,12 @@ class WebBackendConnectionsHandlerTest {
   private WebBackendConnectionRead expected;
   private WebBackendConnectionRead expectedWithNewSchema;
   private EventRunner eventRunner;
-  private ConnectionHelper connectionHelper;
   private ConfigRepository configRepository;
 
   @BeforeEach
   public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
+    final StateHandler stateHandler = mock(StateHandler.class);
     operationsHandler = mock(OperationsHandler.class);
     final SourceHandler sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
@@ -118,8 +123,9 @@ class WebBackendConnectionsHandlerTest {
     configRepository = mock(ConfigRepository.class);
     schedulerHandler = mock(SchedulerHandler.class);
     eventRunner = mock(EventRunner.class);
-    connectionHelper = mock(ConnectionHelper.class);
-    wbHandler = new WebBackendConnectionsHandler(connectionsHandler,
+    wbHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
         sourceHandler,
         destinationHandler,
         jobHistoryHandler,
@@ -228,6 +234,10 @@ class WebBackendConnectionsHandlerTest {
         .latestSyncJobCreatedAt(expected.getLatestSyncJobCreatedAt())
         .latestSyncJobStatus(expected.getLatestSyncJobStatus())
         .isSyncing(expected.getIsSyncing())
+        .catalogDiff(new CatalogDiff().transforms(List.of(
+            new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
+                .streamDescriptor(new StreamDescriptor().name("users-data1"))
+                .updateStream(null))))
         .resourceRequirements(new ResourceRequirements()
             .cpuRequest(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
@@ -350,7 +360,6 @@ class WebBackendConnectionsHandlerTest {
     when(operationsHandler.listOperationsForConnection(connectionIdRequestBody)).thenReturn(operationReadList);
 
     return wbHandler.webBackendGetConnection(webBackendConnectionIdRequestBody);
-
   }
 
   @Test
@@ -468,10 +477,12 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionCreate!\nCongratulations, but you're not done yet..\n"
-            + "\tYou should update WebBackendConnectionsHandler::toConnectionCreate\n"
-            + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionCreate\n"
-            + "Then you can add the field name here to make this test pass. Cheers!";
+        """
+        If this test is failing, it means you added a field to ConnectionCreate!
+        Congratulations, but you're not done yet..
+        \tYou should update WebBackendConnectionsHandler::toConnectionCreate
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionCreate
+        Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
 
@@ -487,10 +498,12 @@ class WebBackendConnectionsHandlerTest {
         .collect(Collectors.toSet());
 
     final String message =
-        "If this test is failing, it means you added a field to ConnectionUpdate!\nCongratulations, but you're not done yet..\n"
-            + "\tYou should update WebBackendConnectionsHandler::toConnectionUpdate\n"
-            + "\tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate\n"
-            + "Then you can add the field name here to make this test pass. Cheers!";
+        """
+        If this test is failing, it means you added a field to ConnectionUpdate!
+        Congratulations, but you're not done yet..
+        \tYou should update WebBackendConnectionsHandler::toConnectionUpdate
+        \tand ensure that the field is tested in WebBackendConnectionsHandlerTest::testToConnectionUpdate
+        Then you can add the field name here to make this test pass. Cheers!""";
     assertEquals(handledMethods, methods, message);
   }
 
@@ -601,6 +614,13 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
+    final List<io.airbyte.protocol.models.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
+    when(configRepository.getAllStreamsForConnection(expected.getConnectionId())).thenReturn(connectionStreams);
+
+    final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();
+    when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
+    when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
+
     final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
@@ -610,7 +630,7 @@ class WebBackendConnectionsHandlerTest {
     verify(schedulerHandler, times(0)).syncConnection(connectionId);
     verify(connectionsHandler, times(1)).updateConnection(any());
     final InOrder orderVerifier = inOrder(eventRunner);
-    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId());
+    orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(), connectionStreams);
     orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 

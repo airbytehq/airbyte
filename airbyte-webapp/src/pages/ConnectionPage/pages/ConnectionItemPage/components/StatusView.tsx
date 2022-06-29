@@ -87,7 +87,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
 
   const resetDataBtn = (
     <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={onResetDataButtonClick}>
-      <FormattedMessage id={"connection.resetData"} />
+      <FormattedMessage id="connection.resetData" />
     </Button>
   );
 
@@ -99,11 +99,11 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
       onClick={() => startAction({ action: onSync })}
     >
       {showFeedback ? (
-        <FormattedMessage id={"sources.syncingNow"} />
+        <FormattedMessage id="sources.syncingNow" />
       ) : (
         <>
           <TryArrow icon={faRedoAlt} />
-          <FormattedMessage id={"sources.syncNow"} />
+          <FormattedMessage id="sources.syncNow" />
         </>
       )}
     </SyncButton>
@@ -114,14 +114,14 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
       <StyledContentCard
         title={
           <Title>
-            <FormattedMessage id={"sources.syncHistory"} />
+            <FormattedMessage id="sources.syncHistory" />
             {connection.status === ConnectionStatus.active && (
               <div>
                 <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id={"connection.pendingSync"} />
+                  <FormattedMessage id="connection.pendingSync" />
                 </ToolTip>
                 <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id={"connection.pendingSync"} />
+                  <FormattedMessage id="connection.pendingSync" />
                 </ToolTip>
               </div>
             )}
