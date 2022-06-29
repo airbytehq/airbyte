@@ -372,7 +372,7 @@ public class WebBackendConnectionsHandler {
       final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
       final List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset;
 
-      if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET) {
+      if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET || stateType == ConnectionStateType.GLOBAL) {
         streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
       } else {
         final ConfiguredAirbyteCatalog existingConfiguredCatalog =
