@@ -280,65 +280,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator = connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           """
-                 SELECT DISTINCT table_catalog,
-                                 table_schema,
-                                 table_name,
-                                 privilege_type
-                 FROM            information_schema.table_privileges
-                 WHERE           grantee = ?
-                 AND             privilege_type = 'SELECT'
-                 UNION ALL
-                 SELECT r.rolname           AS table_catalog,
-                        n.nspname           AS table_schema,
-                        c.relname           AS table_name,
-                        -- the initial query is supposed to get a SELECT type. Since we use a UNION query
-                        -- to get Views that we can read (i.e. select) - then lets fill this columns with SELECT
-                        -- value to keep the backward-compatibility
-                        COALESCE ('SELECT') AS privilege_type
+                 SELECT nspname as table_schema,
+                        relname as table_name
                  FROM   pg_class c
-                 JOIN   pg_namespace n
-                 ON     n.oid = relnamespace
-                 JOIN   pg_roles r
-                 ON     r.oid = relowner,
-                 Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
-                        Regexp_split_to_array(acl, '=|/') s
-                 WHERE  r.rolname = ?
-                 AND    (
-                               nspname = 'public'
-                          OR   nspname = ?)
-                        -- 'm' means Materialized View
-                 AND    c.relkind = 'm'
-                 AND    (
-                               -- all grants
-                               c.relacl IS NULL
-                               -- read grant
-                        OR     s[2] = 'r')
-                 UNION
-                 SELECT DISTINCT table_catalog,
-                         table_schema,
-                         table_name,
-                         privilege_type
-                 FROM            information_schema.table_privileges p
-                 JOIN			 information_schema.applicable_roles r ON p.grantee = r.role_name
-                 WHERE   r.grantee in
-                (WITH RECURSIVE membership_tree(grpid, userid) AS (
-                    SELECT pg_roles.oid, pg_roles.oid
-                    FROM pg_roles WHERE oid = (select oid from pg_roles where  rolname=?)
-                  UNION ALL
-                    SELECT m_1.roleid, t_1.userid
-                    FROM pg_auth_members m_1, membership_tree t_1
-                    WHERE m_1.member = t_1.grpid
-                )
-                SELECT DISTINCT m.rolname AS grpname
-                FROM membership_tree t, pg_roles r, pg_roles m
-                WHERE t.grpid = m.oid AND t.userid = r.oid)
-                 AND             privilege_type = 'SELECT';
+                 JOIN   pg_namespace n on c.relnamespace = n.oid
+                 WHERE  has_table_privilege(c.oid, 'SELECT')
+                 AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
+                 and    nspname = ?
           """);
-      final String username = getUsername(database.getDatabaseConfig());
-      ps.setString(1, username);
-      ps.setString(2, username);
-      ps.setString(3, username);
-      ps.setString(4, username);
+      ps.setString(1, schema);
       return ps;
     };
 
