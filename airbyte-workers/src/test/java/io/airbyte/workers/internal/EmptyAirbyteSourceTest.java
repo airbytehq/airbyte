@@ -92,7 +92,7 @@ public class EmptyAirbyteSourceTest {
   public void testGlobal() throws Exception {
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -147,7 +147,7 @@ public class EmptyAirbyteSourceTest {
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", NOT_RESET_STREAM_NAME));
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b"));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -189,7 +189,7 @@ public class EmptyAirbyteSourceTest {
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b"));
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", NEW_STREAM));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", NEW_STREAM));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -227,7 +227,7 @@ public class EmptyAirbyteSourceTest {
   public void testPerStream() throws Exception {
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -250,7 +250,7 @@ public class EmptyAirbyteSourceTest {
     // This should never happen but nothing keeps us from processing the reset and not fail
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c", "d"));
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -274,7 +274,7 @@ public class EmptyAirbyteSourceTest {
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b"));
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", NEW_STREAM));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", NEW_STREAM));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -295,7 +295,7 @@ public class EmptyAirbyteSourceTest {
   @Test
   public void testLegacyWithNewConfigMissingStream() {
 
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -319,7 +319,7 @@ public class EmptyAirbyteSourceTest {
 
   @Test
   public void testLegacyWithNewConfig() throws Exception {
-    final List<io.airbyte.config.StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(streamToReset);
@@ -352,7 +352,7 @@ public class EmptyAirbyteSourceTest {
         .isEmpty();
   }
 
-  private void testReceiveNullStreamState(final io.airbyte.config.StreamDescriptor streamDescriptor) {
+  private void testReceiveNullStreamState(final StreamDescriptor streamDescriptor) {
     final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
     Assertions.assertThat(maybeMessage)
         .isNotEmpty();
@@ -373,9 +373,9 @@ public class EmptyAirbyteSourceTest {
         name -> new StreamDescriptor().withName(name)).toList();
   }
 
-  private List<io.airbyte.config.StreamDescriptor> getConfigStreamDescriptorFromName(final List<String> names) {
+  private List<StreamDescriptor> getConfigStreamDescriptorFromName(final List<String> names) {
     return names.stream().map(
-        name -> new io.airbyte.config.StreamDescriptor().withName(name)).toList();
+        name -> new StreamDescriptor().withName(name)).toList();
   }
 
   private void legacyStateResult() {

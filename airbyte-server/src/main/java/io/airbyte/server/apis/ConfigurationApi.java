@@ -106,6 +106,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -127,6 +128,7 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.validation.json.JsonSchemaValidator;
@@ -149,6 +151,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   private final ConnectionsHandler connectionsHandler;
   private final OperationsHandler operationsHandler;
   private final SchedulerHandler schedulerHandler;
+  private final StateHandler stateHandler;
   private final JobHistoryHandler jobHistoryHandler;
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
   private final HealthCheckHandler healthCheckHandler;
@@ -170,6 +173,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
                           final FileTtlManager archiveTtlManager,
                           final Database configsDatabase,
                           final Database jobsDatabase,
+                          final StatePersistence statePersistence,
                           final TrackingClient trackingClient,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
@@ -197,6 +201,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         logConfigs,
         eventRunner);
 
+    stateHandler = new StateHandler(statePersistence);
     connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
@@ -223,6 +228,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
     webBackendConnectionsHandler = new WebBackendConnectionsHandler(
         connectionsHandler,
+        stateHandler,
         sourceHandler,
         destinationHandler,
         jobHistoryHandler,
@@ -725,12 +731,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return execute(() -> schedulerHandler.getState(connectionIdRequestBody));
-  }
-
-  @Override
-  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return null;
+    return execute(() -> stateHandler.getState(connectionIdRequestBody));
   }
 
   // SCHEDULER
@@ -810,11 +811,6 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
-    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
-  }
-
-  @Override
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
     return execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
   }
@@ -822,6 +818,16 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
+  }
+
+  @Override
+  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
+    return execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
+  }
+
+  @Override
+  public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
+    return execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
   // ARCHIVES
@@ -851,7 +857,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     return execute(() -> archiveHandler.importIntoWorkspace(importRequestBody));
   }
 
-  public boolean canImportDefinitons() {
+  public boolean canImportDefinitions() {
     return archiveHandler.canImportDefinitions();
   }
 
@@ -859,7 +865,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
     try {
       return call.call();
     } catch (final ConfigNotFoundException e) {
-      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType().toString(), e.getConfigId()),
+      throw new IdNotFoundKnownException(String.format("Could not find configuration for %s: %s.", e.getType(), e.getConfigId()),
           e.getConfigId(), e);
     } catch (final JsonValidationException e) {
       throw new BadObjectSchemaKnownException(
