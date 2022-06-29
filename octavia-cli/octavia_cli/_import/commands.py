@@ -9,6 +9,7 @@ import airbyte_api_client
 import click
 from octavia_cli.apply import resources
 from octavia_cli.base_commands import OctaviaCommand
+from octavia_cli.check_context import requires_init
 from octavia_cli.generate import definitions, renderers
 from octavia_cli.get.commands import get_json_representation
 from octavia_cli.get.resources import Connection as UnmanagedConnection
@@ -33,7 +34,7 @@ def build_help_message(resource_type: str) -> str:
 def import_source_or_destination(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
-    ResourceCls: Type[Union[UnmanagedSource, UnmanagedDestination]],
+    ResourceClass: Type[Union[UnmanagedSource, UnmanagedDestination]],
     resource_to_get: str,
 ) -> str:
     """Helper function to import sources & destinations.
@@ -41,15 +42,15 @@ def import_source_or_destination(
     Args:
         api_client (airbyte_api_client.ApiClient): the Airbyte API client.
         workspace_id (str): current Airbyte workspace id.
-        ResourceCls (Union[UnmanagedSource, UnmanagedDestination]): the Airbyte Resource Class.
+        ResourceClass (Union[UnmanagedSource, UnmanagedDestination]): the Airbyte Resource Class.
         resource_to_get (str): the name or ID of the resource in the current Airbyte workspace id.
 
     Returns:
         str: The generated import message.
     """
-    remote_configuration = json.loads(get_json_representation(api_client, workspace_id, ResourceCls, resource_to_get))
+    remote_configuration = json.loads(get_json_representation(api_client, workspace_id, ResourceClass, resource_to_get))
 
-    resource_type = ResourceCls.__name__.lower()
+    resource_type = ResourceClass.__name__.lower()
 
     definition = definitions.factory(resource_type, api_client, workspace_id, remote_configuration[f"{resource_type}_definition_id"])
 
@@ -61,7 +62,7 @@ def import_source_or_destination(
     )
     message = f"✅ - Imported {resource_type} {managed_resource.name} in {new_configuration_path}. State stored in {state.path}"
     click.echo(click.style(message, fg="green"))
-    message = f"⚠️  - Please update any secrets stored in {state.path}"
+    message = f"⚠️  - Please update any secrets stored in {new_configuration_path}"
     click.echo(click.style(message, fg="yellow"))
 
 
@@ -128,6 +129,7 @@ def _import(ctx: click.Context):  # pragma: no cover
 @_import.command(cls=OctaviaCommand, name="source", help=build_help_message("source"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
+@requires_init
 def source(ctx: click.Context, resource: str):
     click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSource, resource))
 
@@ -135,6 +137,7 @@ def source(ctx: click.Context, resource: str):
 @_import.command(cls=OctaviaCommand, name="destination", help=build_help_message("destination"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
+@requires_init
 def destination(ctx: click.Context, resource: str):
     click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedDestination, resource))
 
@@ -142,6 +145,7 @@ def destination(ctx: click.Context, resource: str):
 @_import.command(cls=OctaviaCommand, name="connection", help=build_help_message("connection"))
 @click.argument("resource", type=click.STRING)
 @click.pass_context
+@requires_init
 def connection(ctx: click.Context, resource: str):
     click.echo(import_connection(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], resource))
 

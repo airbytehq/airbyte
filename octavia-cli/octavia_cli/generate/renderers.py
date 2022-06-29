@@ -156,7 +156,7 @@ class BaseRenderer(abc.ABC):
         Returns:
             str: Full path to the output path.
         """
-        directory = os.path.join(project_path, f"{definition_type}s", slugify(resource_name))
+        directory = os.path.join(project_path, f"{definition_type}s", slugify(resource_name, separator="_"))
         if not os.path.exists(directory):
             os.makedirs(directory)
         return Path(os.path.join(directory, "configuration.yaml"))
@@ -198,7 +198,7 @@ class BaseRenderer(abc.ABC):
                 f.write(rendered_yaml)
         return output_path
 
-    def import_configuration(self, project_path: Path, configuration: dict) -> Path:
+    def import_configuration(self, project_path: str, configuration: dict) -> Path:
         """Import the resource configuration. Save the yaml file to disk. Return the output_path
         Args:
             project_path (str): Current project path.
@@ -254,6 +254,20 @@ class ConnectionRenderer(BaseRenderer):
 
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
     definition = ConnectionDefinition
+    KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION = [
+        "connection_id",
+        "name",
+        "source_id",
+        "destination_id",
+        "latest_sync_job_created_at",
+        "latest_sync_job_status",
+        "source",
+        "destination",
+        "is_syncing",
+        "operation_ids",
+        "catalog_id",
+        "catalog_diff",
+    ]
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
         """Connection renderer constructor.
@@ -299,21 +313,7 @@ class ConnectionRenderer(BaseRenderer):
         """
         rendered = self._render()
         data = yaml.safe_load(rendered)
-        keys_to_remove = [
-            "connection_id",
-            "name",
-            "source_id",
-            "destination_id",
-            "latest_sync_job_created_at",
-            "latest_sync_job_status",
-            "source",
-            "destination",
-            "is_syncing",
-            "operation_ids",
-            "catalog_id",
-            "catalog_diff",
-        ]
-        data["configuration"] = {k: v for k, v in configuration.items() if k not in keys_to_remove}
+        data["configuration"] = {k: v for k, v in configuration.items() if k not in self.KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION}
         if "operations" in data["configuration"] and len(data["configuration"]["operations"]) == 0:
             data["configuration"].pop("operations")
         output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)

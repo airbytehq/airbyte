@@ -392,7 +392,14 @@ class BaseResource(abc.ABC):
     def manage(
         self, resource_id: str
     ) -> Union[Tuple[SourceRead, ResourceState], Tuple[DestinationRead, ResourceState], Tuple[ConnectionRead, ResourceState]]:
-        # TODO docstring
+        """Declare a remote resource as locally managed by creating a local state
+
+        Args:
+            resource_id (str): Remote resource ID.
+
+        Returns:
+            Union[Tuple[SourceRead, ResourceState], Tuple[DestinationRead, ResourceState], Tuple[ConnectionRead, ResourceState]]: The remote resource model instance and its local state.
+        """
         self.state = ResourceState.create(self.configuration_path, self.configuration_hash, self.workspace_id, resource_id)
 
         return self.remote_resource, self.state
