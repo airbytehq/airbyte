@@ -14,7 +14,7 @@ Please follow our [Code of conduct](code-of-conduct.md) in the context of any co
 
 ## Airbyte specification
 
-Before you can start contributing, you need to understand [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+Before you can start contributing, you need to understand [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md).
 
 ## First-time contributors, welcome!
 

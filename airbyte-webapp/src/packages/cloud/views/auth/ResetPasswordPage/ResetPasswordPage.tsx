@@ -48,7 +48,7 @@ const ResetPasswordPage: React.FC = () => {
               : FormikBag.setFieldError("email", "login.unknownError");
           }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (

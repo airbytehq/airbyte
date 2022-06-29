@@ -1,0 +1,19 @@
+@use "../../scss/variables";
+
+.page {
+  overflow-y: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.headerError {
+  padding-top: 25px;
+}
+
+.content {
+  overflow-y: auto;
+  padding-top: 17px;
+  height: 100%;
+  padding-bottom: variables.$spacing-page-bottom;
+}
