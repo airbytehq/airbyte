@@ -1,54 +1,35 @@
 # Zendesk Support
 
-This page guides you through the process of setting up the Zendesk Support source connector.
+This page guides you through setting up the Zendesk Support source connector.
 
-This source can sync data for the [Zendesk Support API](https://developer.zendesk.com/api-reference/apps/apps-support-api/introduction/). This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Incremental sync are implemented on API side by its filters.
+## Prerequisites
 
-## Prerequisites (Airbyte Cloud)
-* `Start Date` - the starting point for the data replication.
-* `Subdomain` - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
-* Your Zendesk Account with configured permissions to fetch the data.
+- Locate your Zendesk subdomain found in your account URL. For example, if your account URL is `https://{MY_SUBDOMAIN}.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
+- (For Airbyte OSS) Find the email address associated with your Zendesk account. Also, generate an [API token](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token) for the account.
 
-## Prerequisites (Airbyte Open Source)
-* `Start Date` - the starting point for the data replication.
-* `Subdomain` - This is your Zendesk subdomain that can be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where MY_SUBDOMAIN is the value of your subdomain.
-* The `Email` used to register your Zendesk Account.
-* The `API Token` generated for your Zendesk Account.
+## Set up the Zendesk Support source connector
 
-## Step 1: Set up Zendesk Support
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+2. Click **Sources** and then click **+ New source**. 
+3. On the Set up the source page, select **Zendesk Support** from the Source type dropdown.
+4. Enter a name for your source.
+5. For **Subdomain**, enter your [Zendesk subdomain](#prerequisites).
+6. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. You can use OAuth or an API key to authenticate your Zendesk Support account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+    - To authenticate using OAuth for Airbyte Cloud, click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account. 
+    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter your [API key](#prerequisites). Enter the **Email** associated with your Zendesk Support account.   
+8. Click **Set up source**.
 
-1. Create your `Zendesk Account` or use existing one, check [this link](thttps://www.zendesk.com/register/#step-1)
-2. Prepare the `API Token` for usage, check [this link](https://support.zendesk.com/hc/en-us/articles/4408889192858-Generating-a-new-API-token)
-3. Find your `Subdomain`, this could be found in your account URL. For example, in https://{MY_SUBDOMAIN}.zendesk.com/, where `MY_SUBDOMAIN` is the value of your subdomain.
+## Supported sync modes
 
-## Step 2: Set up the Zendesk Support source connector in Airbyte
+The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+ - Full Refresh - overwrite
+ - Full Refresh - append
+ - Incremental - append
 
-**For Airbyte Cloud:**
+## Supported streams 
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Zendesk Support** from the Source type dropdown and enter a name for this connector.
-4. Fill in `Subdomain` value.
-5. Click `Authenticate your account`.
-6. Log in and Authorize to the Zendesk Support account.
-7. Choose required `Start Date`.
-8. Click `Set up source`.
-
-**For Airbyte OSS:**
-
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Zendesk Support** from the Source type dropdown. 
-4. Enter `Subdomain` value.
-5. In `Authentication *` section choose `API Token`.
-    * Enter your `API Token` - the value of the API token generated. See the [generating API Token](https://support.zendesk.com/hc/en-us/articles/226022787-Generating-a-new-API-token) for more information.
-    * `Email` - the user email for your Zendesk account.
-7. Choose required `Start Date`.
-8. Click `Set up source`.
-
-### Supported Streams & Sync Modes
-
-This Source is capable of syncing the following core Streams:
+The Zendesk Support source connector supports the following streams:
 
 * [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 * [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles)
@@ -69,22 +50,18 @@ This Source is capable of syncing the following core Streams:
 * [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/)
 * [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export)
 
-
-The Zendesk Support source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
- - Full Refresh - overwrite
- - Full Refresh - append
- - Incremental - append
-
-### Performance considerations
+## Performance considerations
 
 The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
 
-The Zendesk connector should not run into Zendesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Zendesk connector ideally should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-### CHANGELOG
+## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.11` | 2022-06-24 | [14112](https://github.com/airbytehq/airbyte/pull/14112) | Fixed "Retry-After" non integer value                                                                                                                                                                                              |
+| `0.2.10` | 2022-06-14 | [13757](https://github.com/airbytehq/airbyte/pull/13757) | Fixed the bug with `TicketMetrics` stream, HTTP Error 429, caused by lots of API requests                                                                                                                                          |
 | `0.2.9`  | 2022-05-27 | [13261](https://github.com/airbytehq/airbyte/pull/13261) | Bugfix for the unhandled [ChunkedEncodingError](https://github.com/airbytehq/airbyte/issues/12591) and [ConnectionError](https://github.com/airbytehq/airbyte/issues/12155)                                                        |
 | `0.2.8`  | 2022-05-20 | [13055](https://github.com/airbytehq/airbyte/pull/13055) | Fixed minor issue for stream `ticket_audits` schema                                                                                                                                                                                |
 | `0.2.7`  | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                                                                                                                                                            |

@@ -9,6 +9,8 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
 
     implementation libs.otel.semconv
+    implementation libs.otel.sdk
+    implementation libs.otel.sdk.testing
     implementation platform(libs.otel.bom)
     implementation("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
@@ -18,7 +20,7 @@ dependencies {
 
     testImplementation project(':airbyte-config:config-persistence')
     testImplementation project(':airbyte-test-utils')
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
 }
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

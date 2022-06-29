@@ -1,71 +1,61 @@
 # HubSpot
 
-This page contains the setup guide and reference information for the HubSpot source connector.
+This page guides you through setting up the HubSpot source connector.
 
-## Prerequisites
+## Prerequisite
 
-Chose `start date` which is any data before this date will not be replicated and should be UTC date and time in the format 2017-01-25T00:00:00Z. 
+You can use OAuth or an API key to authenticate your HubSpot account. If you choose to use OAuth, you need to configure the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for the following streams:
 
-## Setup guide
-### Step 1: Set up HubSpot
-
-If you are using OAuth, most of the streams require the appropriate [scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) enabled for the API account.
-
-| Stream | Required Scope |
-| :--- | :--- |
-| `campaigns` | `content` |
-| `companies` | `contacts` |
-| `contact_lists` | `contacts` |
-| `contacts` | `contacts` |
-| `contacts_list_memberships` | `contacts` |
-| `deal_pipelines` | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
-| `deals` | `contacts` |
-| `email_events` | `content` |
-| `engagements` | `contacts` |
-| `engagements_emails` | `sales-email-read` |
-| `feedback_submissions` | `crm.objects.feedback_submissions.read` |
-| `forms` | `forms` |
-| `form_submissions`| `forms` |
-| `line_items` | `e-commerce` |
-| `owners` | `contacts` |
-| `products` | `e-commerce` |
-| `property_history` | `contacts` |
-| `quotes` | no scope required |
-| `subscription_changes` | `content` |
-| `tickets` | `tickets` |
-| `workflows` | `automation` |
+| Stream                      | Required Scope                                                                   |
+|:----------------------------|:---------------------------------------------------------------------------------|
+| `campaigns`                 | `content`                                                                        |
+| `companies`                 | `contacts`                                                                       |
+| `contact_lists`             | `contacts`                                                                       |
+| `contacts`                  | `contacts`                                                                       |
+| `contacts_list_memberships` | `contacts`                                                                       |
+| `deal_pipelines`            | either the `contacts` scope \(to fetch deals pipelines\) or the `tickets` scope. |
+| `deals`                     | `contacts`                                                                       |
+| `email_events`              | `content`                                                                        |
+| `engagements`               | `contacts`                                                                       |
+| `engagements_emails`        | `sales-email-read`                                                               |
+| `feedback_submissions`      | `crm.objects.feedback_submissions.read`                                          |
+| `forms`                     | `forms`                                                                          |
+| `form_submissions`          | `forms`                                                                          |
+| `line_items`                | `e-commerce`                                                                     |
+| `owners`                    | `contacts`                                                                       |
+| `products`                  | `e-commerce`                                                                     |
+| `property_history`          | `contacts`                                                                       |
+| `quotes`                    | no scope required                                                                |
+| `subscription_changes`      | `content`                                                                        |
+| `tickets`                   | `tickets`                                                                        |
+| `workflows`                 | `automation`                                                                     |
 
 
-## Step 2: Set up the HubSpot connector in Airbyte
+## Set up the HubSpot source connector
 
-### For Airbyte Cloud:
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the HubSpot connector and select **HubSpot** from the Source type dropdown. 
-4. Click `Authenticate your account` to sign in with Google and authorize your account.
-5. Fill out a `start date`.
-6. You're done.
-
-### For Airbyte OSS:
-1. Fill out a `API Key`.
-2. Fill out a `start date`.
-3. You're done.
-
-To obtain the API Key for the account, go to settings -&gt; integrations \(under the account banner\) -&gt; API Key. If you already have an API Key you can use that. Otherwise, generate a new one. See [docs](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for more details.
-
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+2. Click **Sources** and then click **+ New source**. 
+3. On the Set up the source page, select **HubSpot** from the Source type dropdown.
+4. Enter a name for your source.
+5. For **Start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. You can use OAuth or an API key to authenticate your HubSpot account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+    - To authenticate using OAuth for Airbyte Cloud, ensure you have [set the appropriate scopes for HubSpot](#prerequisite) and then click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account. 
+    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key) for your HubSpot account.    
+    :::note
+    Check the [performance considerations](#performance-considerations) before using an API key.
+    :::
+7. Click **Set up source**.
 
 ## Supported sync modes
 
 The HubSpot source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
+ - Full Refresh
+ - Incremental
 
 ## Supported Streams
+
+The HubSpot source connector supports the following streams:
 
 * [Campaigns](https://developers.hubspot.com/docs/methods/email/get_campaign_data)
 * [Companies](https://developers.hubspot.com/docs/api/crm/companies) \(Incremental\)
@@ -97,17 +87,17 @@ The HubSpot source connector supports the following [sync modes](https://docs.ai
 
 ### A note on the `engagements` stream
 
-Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`.
+Objects in the `engagements` stream can have one of the following types: `note`, `email`, `task`, `meeting`, `call`. Depending on the type of engagement, different properties is set for that object in the `engagements_metadata` table in the destination:
 
-Depending on the type of engagement, different properties will be set for that object in the `engagements_metadata` table in the destination.
+- A `call` engagement has a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
+- An `email` engagement has a corresponding `engagements_metadata` object with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
+- A `meeting` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
+- A `note` engagement has a corresponding `engagements_metadata` object with non-null values in the `body` column.
+- A `task` engagement has a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
 
-* A `call` engagement will have a corresponding `engagements_metadata` object with non-null values in the `toNumber`, `fromNumber`, `status`, `externalId`, `durationMilliseconds`, `externalAccountId`, `recordingUrl`, `body`, and `disposition` columns.
-* An `email` engagement will have a corresponding `engagements_metadata` object with with non-null values in the `subject`, `html`, and `text` columns. In addition, there will be records in four related tables, `engagements_metadata_from`, `engagements_metadata_to`, `engagements_metadata_cc`, `engagements_metadata_bcc`.
-* A `meeting` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `startTime`, `endTime`, and `title` columns.
-* A `note` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body` column.
-* A `task` engagement will have a corresponding `engagements_metadata` object with non-null values in the `body`, `status`, and `forObjectType` columns.
-
-**Note**: HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
+:::note
+HubSpot API currently only supports `quotes` endpoint using API Key, using OAuth it is impossible to access this stream (as reported by [community.hubspot.com](https://community.hubspot.com/t5/APIs-Integrations/Help-with-using-Feedback-CRM-API-and-Quotes-CRM-API/m-p/449104/highlight/true#M44411)).
+:::
 
 ## Performance considerations
 
@@ -129,10 +119,20 @@ Example of the output message when trying to read `workflows` stream with missin
 
 HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
 
+## Tutorials
+
+Now that you have set up the Mailchimp source connector, check out the following Hubspot tutorial:
+
+[Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.72  | 2022-06-24 | [14054](https://github.com/airbytehq/airbyte/pull/14054) | Extended error logging                                                                                                                         |
+| 0.1.71  | 2022-06-24 | [14102](https://github.com/airbytehq/airbyte/pull/14102) | Removed legacy `AirbyteSentry` dependency from the code                                                                                        | 
+| 0.1.70  | 2022-06-16 | [13837](https://github.com/airbytehq/airbyte/pull/13837) | Fix the missing data in CRM streams issue                                                                                                      |
+| 0.1.69  | 2022-06-10 | [13691](https://github.com/airbytehq/airbyte/pull/13691) | Fix the `URI Too Long` issue                                                                                                                   |
 | 0.1.68  | 2022-06-08 | [13596](https://github.com/airbytehq/airbyte/pull/13596) | Fix for the `property_history` which did not emit records                                                                                      |
 | 0.1.67  | 2022-06-07 | [13566](https://github.com/airbytehq/airbyte/pull/13566) | Report which scopes are missing to the user                                                                                                    |
 | 0.1.66  | 2022-06-05 | [13475](https://github.com/airbytehq/airbyte/pull/13475) | Scope `crm.objects.feedback_submissions.read` added for `feedback_submissions` stream                                                          |

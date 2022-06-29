@@ -5,11 +5,12 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -174,14 +175,12 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     // when we run incremental sync again there should be no new records. Run a sync with the latest
     // state message and assert no records were emitted.
-    final JsonNode latestState = stateMessages.get(stateMessages.size() - 1).getData();
+    final JsonNode latestState = Jsons.jsonNode(supportsPerStream() ? stateMessages : List.of(Iterables.getLast(stateMessages)));
     // RESET MASTER removes all binary log files that are listed in the index file,
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
 
-    // Uncaught exceptions are now handled by the AirbyteExceptionHandler, so
-    // it will not be thrown outside the connector execution.
-    assertDoesNotThrow(() -> filterRecords(runRead(configuredCatalog, latestState)));
+    assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
   }
 
 }

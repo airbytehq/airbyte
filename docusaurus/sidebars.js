@@ -212,6 +212,7 @@ module.exports = {
       },
       items: [
         'contributing-to-airbyte/code-of-conduct',
+        'contributing-to-airbyte/maintainer-code-of-conduct',
         'contributing-to-airbyte/developing-locally',
         'contributing-to-airbyte/developing-on-docker',
         'contributing-to-airbyte/developing-on-kubernetes',
@@ -219,7 +220,6 @@ module.exports = {
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/gradle-cheatsheet',
         'contributing-to-airbyte/gradle-dependency-update',
-        'contributing-to-airbyte/monorepo-python-development',
         {
           type: 'link',
           label: 'Connector template',
@@ -247,8 +247,8 @@ module.exports = {
       label: 'Understand Airbyte',
       items: [
         'understanding-airbyte/beginners-guide-to-catalog',
-        'understanding-airbyte/catalog',
-        'understanding-airbyte/airbyte-specification',
+        'understanding-airbyte/airbyte-protocol',
+        'understanding-airbyte/airbyte-protocol-docker',
         'understanding-airbyte/basic-normalization',
         {
           type: 'category',

@@ -52,14 +52,15 @@ interface AccountFormProps {
 }
 
 const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessage, errorMessage }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <Formik
       initialValues={{ email }}
-      validateOnBlur={true}
+      validateOnBlur
       validateOnChange={false}
       validationSchema={accountValidationSchema}
+      enableReinitialize
       onSubmit={onSubmit}
     >
       {({ isSubmitting, dirty, values }) => (
