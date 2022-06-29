@@ -408,7 +408,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
     }
 
-    @Test
+    @RepeatedTest(100)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that the sync is properly deleted")
@@ -430,7 +430,7 @@ public class ConnectionManagerWorkflowTest {
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.deleteConnection();
-      testEnv.sleep(Duration.ofMinutes(20L));
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -638,7 +638,7 @@ public class ConnectionManagerWorkflowTest {
           .jobCancelledWithAttemptNumber(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
     }
 
-    @Test
+    @RepeatedTest(100)
     @Timeout(value = 2,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a non-running workflow starts a reset job")
@@ -660,7 +660,7 @@ public class ConnectionManagerWorkflowTest {
       startWorkflowAndWaitUntilReady(workflow, input);
       testEnv.sleep(Duration.ofMinutes(5L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofMinutes(15L));
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> events = testStateListener.events(testId);
 
@@ -670,7 +670,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @Test
+    @RepeatedTest(100)
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
@@ -695,7 +695,7 @@ public class ConnectionManagerWorkflowTest {
       workflow.submitManualSync();
       testEnv.sleep(Duration.ofSeconds(30L));
       workflow.resetConnection();
-      testEnv.sleep(Duration.ofMinutes(15L));
+      Thread.sleep(500);
 
       final Queue<ChangedStateEvent> eventQueue = testStateListener.events(testId);
       final List<ChangedStateEvent> events = new ArrayList<>(eventQueue);
@@ -718,7 +718,6 @@ public class ConnectionManagerWorkflowTest {
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset deletes streamsToReset from stream_resets table")
-    @Disabled
     public void cancelResetRemovesStreamsToReset() throws InterruptedException {
       final UUID connectionId = UUID.randomUUID();
       final UUID testId = UUID.randomUUID();
