@@ -62,8 +62,8 @@
         "type": "object",
         "oneOf": [
           {
-            "type": "object",
             "title": "OAuth2.0",
+            "type": "object",
             "order": 0,
             "required": ["access_token", "refresh_token"],
             "properties": {
@@ -96,6 +96,28 @@
                 "type": "string",
                 "title": "Refresh Token",
                 "description": "Refresh Token for making authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 0,
+            "required": ["auth_type", "private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
                 "airbyte_secret": true
               }
             }
