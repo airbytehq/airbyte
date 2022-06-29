@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -36,6 +37,7 @@ import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -53,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -339,6 +342,63 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals((recordsToCreate * 3) + recordsCreatedBeforeTestCount,
         recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
             .size());
+  }
+
+  @Test
+  public void testTableWithTimestampColDefault() throws Exception {
+    createAndPopulateTimestampTable();
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+    ));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
+        .toDefaultConfiguredCatalog(catalog);
+
+    // set all streams to incremental.
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), configuredCatalog, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertEquals(1, stateAfterFirstBatch.size());
+    assertNotNull(stateAfterFirstBatch.get(0).getData());
+    assertExpectedStateMessages(stateAfterFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
+        dataFromFirstBatch);
+
+    assertEquals(6, recordsFromFirstBatch.size());
+  }
+
+  private void createAndPopulateTimestampTable() {
+    createTable(MODELS_SCHEMA, "time_stamp_table",
+        columnClause(ImmutableMap.of("id", "INTEGER", "name", "VARCHAR(200)", "created_at", "TIMESTAMPTZ NOT NULL DEFAULT NOW()"), Optional.of("id")));
+    final List<JsonNode> timestampRecords = ImmutableList.of(
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 11000, "name" , "blah1")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 12000, "name" , "blah2")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 13000, "name" , "blah3")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 14000, "name" , "blah4")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 15000, "name" , "blah5")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 16000, "name" , "blah6")));
+    for (final JsonNode recordJson : timestampRecords) {
+      executeQuery(
+          String.format("INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');", MODELS_SCHEMA, "time_stamp_table",
+              "id", "name",
+              recordJson.get("id").asInt(), recordJson.get("name").asText()));
+    }
   }
 
   //TODO (Subodh): This should be a generic test
