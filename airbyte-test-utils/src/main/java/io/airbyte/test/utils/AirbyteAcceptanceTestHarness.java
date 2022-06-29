@@ -42,6 +42,7 @@ import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.SourceCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
+import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
@@ -110,6 +111,10 @@ public class AirbyteAcceptanceTestHarness {
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
+
+  public static final String POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION = "0.4.26";
+
+  public static final String POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION = "0.4.28";
 
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
@@ -274,7 +279,8 @@ public class AirbyteAcceptanceTestHarness {
     isGke = System.getenv().containsKey("IS_GKE");
     isMac = System.getProperty("os.name").startsWith("Mac");
     useExternalDeployment =
-        System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
+        System.getenv("USE_EXTERNAL_DEPLOYMENT") != null &&
+            System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
   }
 
   private WorkflowClient getWorkflowClient() {
@@ -624,6 +630,11 @@ public class AirbyteAcceptanceTestHarness {
         .findFirst()
         .orElseThrow()
         .getSourceDefinitionId();
+  }
+
+  public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
+    apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
+        .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
   }
 
   private void clearSourceDbData() throws SQLException {

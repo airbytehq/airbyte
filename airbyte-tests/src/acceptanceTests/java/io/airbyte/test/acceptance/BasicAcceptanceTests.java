@@ -712,7 +712,160 @@ public class BasicAcceptanceTests {
     assertEquals(JobStatus.CANCELLED, connectionSyncReadAfterReset.getStatus());
   }
 
-  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
+  @Test
+  public void testSyncAfterUpgradeToPerStreamState(final TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    final String connectionName = "test-connection";
+    final SourceRead source = testHarness.createPostgresSource();
+    final UUID sourceId = source.getSourceId();
+    final UUID sourceDefinitionId = source.getSourceDefinitionId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
+
+    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
+    // instead of assertFalse to avoid NPE from unboxed.
+    assertNull(stream.getSourceDefinedCursor());
+    assertTrue(stream.getDefaultCursorField().isEmpty());
+    assertTrue(stream.getSourceDefinedPrimaryKey().isEmpty());
+
+    // Set the source to a version that does not support per-stream state
+    LOGGER.info("Setting source connector to pre-per-stream state version {}...",
+        AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    testHarness.assertSourceAndDestinationDbInSync(false);
+
+    // Set source to a version that supports per-stream state
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
+    LOGGER.info("Upgraded source connector per-stream state supported version {}.",
+        AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
+
+    // add new records and run again.
+    final Database sourceDatabase = testHarness.getSourceDatabase();
+    // get contents of source before mutating records.
+    final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(sourceDatabase, STREAM_NAME);
+    expectedRecords.add(Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()));
+    // add a new record
+    sourceDatabase.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    // mutate a record that was already synced with out updating its cursor value. if we are actually
+    // full refreshing, this record will appear in the output and cause the test to fail. if we are,
+    // correctly, doing incremental, we will not find this value in the destination.
+    sourceDatabase.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
+
+    LOGGER.info("Starting {} sync 2", testInfo.getDisplayName());
+    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    testHarness.assertRawDestinationContains(expectedRecords, new SchemaTableNamePair("public", STREAM_NAME));
+
+    // reset back to no data.
+
+    LOGGER.info("Starting {} reset", testInfo.getDisplayName());
+    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitWhileJobHasStatus(apiClient.getJobsApi(), jobInfoRead.getJob(),
+        Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING, JobStatus.INCOMPLETE, JobStatus.FAILED));
+
+    LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    testHarness.assertRawDestinationContains(Collections.emptyList(), new SchemaTableNamePair("public",
+        STREAM_NAME));
+
+    // sync one more time. verify it is the equivalent of a full refresh.
+    LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
+    final JobInfoRead connectionSyncRead3 =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
+    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    testHarness.assertSourceAndDestinationDbInSync(false);
+  }
+
+  @Test
+  public void testSyncAfterUpgradeToPerStreamStateWithNoNewData(final TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
+    final String connectionName = "test-connection";
+    final SourceRead source = testHarness.createPostgresSource();
+    final UUID sourceId = source.getSourceId();
+    final UUID sourceDefinitionId = source.getSourceDefinitionId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final AirbyteStream stream = catalog.getStreams().get(0).getStream();
+
+    assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
+    // instead of assertFalse to avoid NPE from unboxed.
+    assertNull(stream.getSourceDefinedCursor());
+    assertTrue(stream.getDefaultCursorField().isEmpty());
+    assertTrue(stream.getSourceDefinedPrimaryKey().isEmpty());
+
+    // Set the source to a version that does not support per-stream state
+    LOGGER.info("Setting source connector to pre-per-stream state version {}...",
+        AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+    LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    testHarness.assertSourceAndDestinationDbInSync(false);
+
+    // get contents of source before mutating records.
+    final Database sourceDatabase = testHarness.getSourceDatabase();
+    final List<JsonNode> expectedRecords = testHarness.retrieveSourceRecords(sourceDatabase, STREAM_NAME);
+
+    // Set source to a version that supports per-stream state
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
+    LOGGER.info("Upgraded source connector per-stream state supported version {}.",
+        AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
+
+    // sync one more time. verify that nothing has been synced
+    LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
+    final JobInfoRead connectionSyncRead3 =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
+    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+    final JobInfoRead syncJob = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead3.getJob().getId()));
+    final Optional<AttemptInfoRead> result = syncJob.getAttempts().stream()
+        .sorted((a, b) -> Long.compare(b.getAttempt().getEndedAt(), a.getAttempt().getEndedAt()))
+        .findFirst();
+
+    assertTrue(result.isPresent());
+    assertEquals(0, result.get().getAttempt().getRecordsSynced());
+    testHarness.assertSourceAndDestinationDbInSync(false);
+  }
+
+  // This test is disabled because it takes a couple of minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
   @Disabled
