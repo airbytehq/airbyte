@@ -13,10 +13,10 @@ const Content = styled.div<{ primary?: boolean }>`
   margin-top: 10px;
 `;
 
-type IProps = {
+interface IProps {
   className?: string;
   primary?: boolean;
-};
+}
 
 const Version: React.FC<IProps> = ({ className, primary }) => {
   const config = useConfig();

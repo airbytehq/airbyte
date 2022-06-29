@@ -1,9 +1,9 @@
 {
   "accept_terms": true,
-  "databricks_server_hostname": "required",
-  "databricks_http_path": "required",
+  "databricks_server_hostname": "abc-12345678-wxyz.cloud.databricks.com",
+  "databricks_http_path": "sql/protocolvx/o/1234567489/0000-1111111-abcd90",
   "databricks_port": "443",
-  "databricks_personal_access_token": "required",
+  "databricks_personal_access_token": "dapi0123456789abcdefghij0123456789AB",
   "database_schema": "public",
   "data_source": {
     "data_source_type": "S3",

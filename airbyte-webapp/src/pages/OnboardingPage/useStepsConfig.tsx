@@ -11,13 +11,13 @@ const useStepsConfig = (
 ): {
   currentStep: StepType;
   setCurrentStep: (step: StepType) => void;
-  steps: { name: JSX.Element; id: StepType }[];
+  steps: Array<{ name: JSX.Element; id: StepType }>;
 } => {
   const getInitialStep = () => {
     if (hasSources) {
       if (hasDestinations) {
         if (hasConnections) {
-          return StepType.FINAl;
+          return StepType.FINAL;
         }
         return StepType.SET_UP_CONNECTION;
       }
@@ -68,7 +68,7 @@ const useStepsConfig = (
         //     : undefined
       },
       {
-        id: StepType.FINAl,
+        id: StepType.FINAL,
         name: <FormattedMessage id="onboarding.final" />,
       },
     ],

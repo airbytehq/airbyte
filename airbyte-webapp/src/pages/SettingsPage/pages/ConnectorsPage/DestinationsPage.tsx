@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
-import { DestinationDefinition } from "core/domain/connector";
+import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import useConnector from "hooks/services/useConnector";
 import {
   useDestinationDefinitionList,
@@ -14,7 +14,7 @@ import ConnectorsView from "./components/ConnectorsView";
 
 const DestinationsPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { destinations } = useDestinationList();
 
@@ -43,8 +43,8 @@ const DestinationsPage: React.FC = () => {
     [feedbackList, formatMessage, updateDestinationDefinition]
   );
 
-  const usedDestinationDefinitions = useMemo<DestinationDefinition[]>(() => {
-    const destinationDefinitionMap = new Map<string, DestinationDefinition>();
+  const usedDestinationDefinitions = useMemo<DestinationDefinitionRead[]>(() => {
+    const destinationDefinitionMap = new Map<string, DestinationDefinitionRead>();
     destinations.forEach((destination) => {
       const destinationDefinition = destinationDefinitions.find(
         (destinationDefinition) => destinationDefinition.destinationDefinitionId === destination.destinationDefinitionId

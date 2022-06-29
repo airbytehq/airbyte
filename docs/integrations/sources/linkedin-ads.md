@@ -1,12 +1,124 @@
 # LinkedIn Ads
 
-## Sync overview
+This page guides you through the process of setting up the LinkedIn Ads source connector.
+The LinkedIn Ads source connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Ads.
 
-The LinkedIn Ads source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
+### For Airbyte Cloud
+* The LinkedIn Ads account with permission to access data from accounts you want to sync.
 
-This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python). Airbyte uses [LinkedIn Marketing Developer Platform - API](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/marketing-integrations-overview) to fetch data from LinkedIn Ads.
+### For Airbyte Open Source
+* The LinkedIn Ads account with permission to access data from accounts you want to sync.
+* Authentication Options:
+   * OAuth2.0:
+      * `Client ID` from your `Developer Application`
+      * `Client Secret` from your `Developer Application`
+      * `Refresh Token` obtained from successfull authorization with `Client ID` + `Client Secret`
+   * Access Token:
+      * `Access Token` obtained from successfull authorization with `Client ID` + `Client Secret`
 
-### Output schema
+## Step 1: Set up LinkedIn Ads
+
+1. **Login to LinkedIn as the API user.**
+2. **Create an App** [here](https://www.linkedin.com/developers/apps):
+   * `App Name`: airbyte-source
+   * `Company`: search and find your company LinkedIn page
+   * `Privacy policy URL`: link to company privacy policy
+   * `Business email`: developer/admin email address
+   * `App logo`: Airbyte's \(or Company's\) logo
+   * `Products`: Select [Marketing Developer Platform](https://www.linkedin.com/developers/apps/122632736/products/marketing-developer-platform) \(checkbox\)
+   * Review/agree to legal terms and create app.
+3. **Verify App**:
+   * Provide the verify URL to your Company's LinkedIn Admin to verify and authorize the app.
+   * Once verified, select the App in the Console [here](https://www.linkedin.com/developers/apps).
+   * **Review the `Auth` tab**:
+     * Record `client_id` and `client_secret` \(for later steps\).
+     * Review permissions and ensure app has the permissions \(above\).
+     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
+     * Review the `Products` tab and ensure `Marketing Developer Platform` has been added and approved \(listed in the `Products` section/tab\).
+     * Review the `Usage & limits` tab. This shows the daily application and user/member limits with percent used for each resource endpoint.
+
+4. **Authorize App**:
+
+   (Required for Airbyte Open Source, Optional for Airbyte Cloud)
+   
+   The authorization token `lasts  60-days before expiring`. The connector app will need to be reauthorized when the authorization token expires.
+
+   Create an Authorization URL with the following pattern:
+
+   * The permissions set you need to use is: `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
+   * URL pattern: Provide the scope from permissions above \(with + delimiting each permission\) and replace the other highlighted parameters: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
+   * Modify and open the `url` in the browser.
+   * Once redirected, click `Allow` to authorize app.
+   * The browser will be redirected to the `redirect_uri`. Record the `code` parameter listed in the redirect URL in the Browser header URL.
+
+5. **Run the following curl command** using `Terminal` or `Command line` with the parameters replaced to return your  `access_token`. The `access_token` expires in 2-months.
+
+   (Required for Airbyte Open Source, Optional for Airbyte Cloud)
+
+   ```text
+    curl -0 -v -X POST https://www.linkedin.com/oauth/v2/accessToken\
+    -H "Accept: application/json"\
+    -H "application/x-www-form-urlencoded"\
+    -d "grant_type=authorization_code"\
+    -d "code=YOUR_CODE"\
+    -d "client_id=YOUR_CLIENT_ID"\
+    -d "client_secret=YOUR_CLIENT_SECRET"\
+    -d "redirect_uri=YOUR_REDIRECT_URI"
+   ```
+
+6. **Use the `access_token`** from response from the `Step 5` to autorize LinkedIn Ads connector.
+
+   (Required for Airbyte Open Source, Optional for Airbyte Cloud)
+
+### Notes:
+
+The API user account should be assigned the following permissions for the API endpoints:
+Endpoints such as: `Accounts`, `Account Users`, `Ad Direct Sponsored Contents`, `Campaign Groups`, `Campaings`, `Creatives` requires the next permissions set:
+* `r_ads`: read ads \(Recommended\), `rw_ads`: read-write ads
+Endpoints such as: `Ad Analytics by Campaign`, `Ad Analytics by Creatives` requires the next permissions set:
+* `r_ads_reporting`: read ads reporting
+The complete set of permissions is:
+* `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
+
+The API user account should be assigned one of the following roles:
+* ACCOUNT\_BILLING\_ADMIN
+* ACCOUNT\_MANAGER
+* CAMPAIGN\_MANAGER
+* CREATIVE\_MANAGER
+* VIEWER \(Recommended\)
+
+## Step 2: Set up the source connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **LinkedIn Ads** from the Source type dropdown and enter a name for this connector.
+4. Add `Start Date` - the starting point for your data replication.
+5. Add your `Account IDs (Optional)` if required.
+6. Click `Authenticate your account`.
+7. Log in and Authorize to the LinkedIn Ads account
+8. click `Set up source`.
+
+**For Airbyte OSS:**
+
+1. Go to local Airbyte page.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+3. On the Set up the source page, enter the name for the connector and select **LinkedIn Ads** from the Source type dropdown. 
+4. Add `Start Date` - the starting point for your data replication.
+5. Add your `Account IDs (Optional)` if required.
+6. Choose between Authentication Options:
+   * OAuth2.0:
+      * Copy and paste info from your **LinkedIn Ads developer application**:
+         * `Client ID` 
+         * `Client Secret`
+         * Obtain the `Refresh Token` using **Set up LinkedIn Ads** guide steps and paste it into corresponding field.
+   * Access Token:
+      * Obtain the `Access Token` using **Set up LinkedIn Ads** guide steps and paste it into corresponding field.
+7. Click `Set up source`.
+
+## Supported Streams and Sync Modes
 
 This Source is capable of syncing the following data as streams:
 
@@ -19,9 +131,20 @@ This Source is capable of syncing the following data as streams:
 * [Ad Analytics by Campaign](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics)
 * [Ad Analytics by Creative](https://docs.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl#ad-analytics) 
 
+
+| Sync Mode                                 | Supported?\(Yes/No\) | 
+| :---------------------------------------- | :------------------- |
+| Full Refresh Overwrite Sync               | Yes                  |  
+| Full Refresh Append Sync                  | Yes                  |       
+| Incremental - Append Sync                 | Yes                  |       
+| Incremental - Append + Deduplication Sync | Yes                  |  
+
+
 ### NOTE:
 
-`Ad Direct Sponsored Contents` includes the information about VIDEO ADS, as well as SINGLE IMAGE ADS and other directly sponsored ads your account might have.
+`Ad Direct Sponsored Contents` stream includes the information about VIDEO ADS, as well as SINGLE IMAGE ADS and other directly sponsored ads your account might have.
+
+For Analytics Streams such as: `Ad Analytics by Campaign`, `Ad Analytics by Creative` the `pivot` column name is renamed to `_pivot` to handle the data normalization correctly and avoid name conflicts with certain destinations.
 
 ### Data type mapping
 
@@ -35,15 +158,6 @@ This Source is capable of syncing the following data as streams:
 | `boolean`        | `boolean`    | True/False                 |
 | `string`         | `string`     |                            |
 
-### Features
-
-| Feature                                   | Supported?\(Yes/No\) | 
-| :---------------------------------------- | :------------------- |
-| Full Refresh Overwrite Sync               | Yes                  |  
-| Full Refresh Append Sync                  | Yes                  |       
-| Incremental - Append Sync                 | Yes                  |       
-| Incremental - Append + Deduplication Sync | Yes                  |       
-| Namespaces                                | No                   |      
 
 ### Performance considerations
 
@@ -61,77 +175,13 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 After 5 unsuccessful attempts - the connector will stop the sync operation. In such cases check your Rate Limits [on this page](https://www.linkedin.com/developers/apps) &gt; Choose you app &gt; Analytics. 
 
-## Getting started
-The API user account should be assigned the following permissions for the API endpoints:
-Endpoints such as: `Accounts`, `Account Users`, `Ad Direct Sponsored Contents`, `Campaign Groups`, `Campaings`, `Creatives` requires the next permissions set:
-* `r_ads`: read ads \(Recommended\), `rw_ads`: read-write ads
-Endpoints such as: `Ad Analytics by Campaign`, `Ad Analytics by Creatives` requires the next permissions set:
-* `r_ads_reporting`: read ads reporting
-The complete set of permissions is:
-* `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-
-The API user account should be assigned one of the following roles:
-* ACCOUNT\_BILLING\_ADMIN
-* ACCOUNT\_MANAGER
-* CAMPAIGN\_MANAGER
-* CREATIVE\_MANAGER
-* VIEWER \(Recommended\)
-
-### Authentication
-There are 2 authentication methods:
-##### Generate the `Access Token`
-The source LinkedIn uses `access_token` provided in the UI connector's settings to make API requests. Access tokens expire after `2 months from generating date (60 days)` and require a user to manually authenticate again. If you receive a `401 invalid token response`, the error logs will state that your access token has expired and to re-authenticate your connection to generate a new token. This is described more [here](https://docs.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow?context=linkedin/context).
-1. **Login to LinkedIn as the API user.**
-2. **Create an App** [here](https://www.linkedin.com/developers/apps):
-   * `App Name`: airbyte-source
-   * `Company`: search and find your company LinkedIn page
-   * `Privacy policy URL`: link to company privacy policy
-   * `Business email`: developer/admin email address
-   * `App logo`: Airbyte's \(or Company's\) logo
-   * `Products`: Select [Marketing Developer Platform](https://www.linkedin.com/developers/apps/122632736/products/marketing-developer-platform) \(checkbox\)
-
-     Review/agree to legal terms and create app.
-3. **Verify App**:
-   * Provide the verify URL to your Company's LinkedIn Admin to verify and authorize the app.
-   * Once verified, select the App in the Console [here](https://www.linkedin.com/developers/apps).
-   * **Review the `Auth` tab**:
-     * Record `client_id` and `client_secret` \(for later steps\).
-     * Review permissions and ensure app has the permissions \(above\).
-     * Oauth 2.0 settings: Provide a `redirect_uri` \(for later steps\): `https://airbyte.io`
-     * Review the `Products` tab and ensure `Marketing Developer Platform` has been added and approved \(listed in the `Products` section/tab\).
-     * Review the `Usage & limits` tab. This shows the daily application and user/member limits with percent used for each resource endpoint.
-4. **Authorize App**: \(The authorization token `lasts 60-days before expiring`. The connector app will need to be reauthorized when the authorization token expires.\):
-
-    Create an Authorization URL with the following pattern:
-
-   * The permissions set you need to use is: `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-   * URL pattern: Provide the scope from permissions above \(with + delimiting each permission\) and replace the other highlighted parameters: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`
-   * Modify and open the `url` in the browser.
-   * Once redirected, click `Allow` to authorize app.
-   * The browser will be redirected to the `redirect_uri`. Record the `code` parameter listed in the redirect URL in the Browser header URL.
-
-5. **Run the following curl command** using `Terminal` or `Command line` with the parameters replaced to return your `access_token`. The `access_token` expires in 2-months.
-
-   ```text
-    curl -0 -v -X POST https://www.linkedin.com/oauth/v2/accessToken\
-    -H "Accept: application/json"\
-    -H "application/x-www-form-urlencoded"\
-    -d "grant_type=authorization_code"\
-    -d "code=YOUR_CODE"\
-    -d "client_id=YOUR_CLIENT_ID"\
-    -d "client_secret=YOUR_CLIENT_SECRET"\
-    -d "redirect_uri=YOUR_REDIRECT_URI"
-   ```
-
-6. **Use the `access_token`** from response from the `Step 5` to autorize LinkedIn Ads connector.
-
-##### OAuth2 authentication
-The source LinkedIn supports the oAuth2 protocol. Everyone can use it directly via the Airbyte Web interface. As result Airbyte server will save a 'refresh_token' which expire after `1 year from generating date (356 days)` and require a user to manually authenticate again.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
-| :------ | :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
+|:--------| :--------- | :-----------------------------------------------------   | :---------------------------------------------------------------------------------------------------------------- |
+| 0.1.8   | 2022-06-07 | [13495](https://github.com/airbytehq/airbyte/pull/13495) | Fixed `base-normalization` issue on `Destination Redshift` caused by wrong casting of `pivot` column |
+| 0.1.7   | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy |
 | 0.1.6   | 2022-04-04 | [11690](https://github.com/airbytehq/airbyte/pull/11690) | Small documenation corrections                                                                                    |
 | 0.1.5   | 2021-12-21 | [8984](https://github.com/airbytehq/airbyte/pull/8984)   | Update connector fields title/description                                                                         |
 | 0.1.4   | 2021-12-02 | [8382](https://github.com/airbytehq/airbyte/pull/8382)   | Modify log message in rate-limit cases                                                                            |

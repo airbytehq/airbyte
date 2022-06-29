@@ -1,30 +1,39 @@
-import { Field, FieldProps, setIn } from "formik";
+import { Field, FieldProps, setIn, useFormikContext } from "formik";
 import React, { useCallback } from "react";
 
-import { AirbyteStreamConfiguration, DestinationSyncMode, SyncSchemaStream } from "core/domain/catalog";
-import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import { SyncSchemaStream } from "core/domain/catalog";
+import { AirbyteStreamConfiguration, DestinationSyncMode } from "core/request/AirbyteClient";
+import { ConnectionFormValues, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { CatalogSection } from "./CatalogSection";
 
-type IProps = {
+interface CatalogTreeProps {
   streams: SyncSchemaStream[];
   destinationSupportedSyncModes: DestinationSyncMode[];
   onChangeStream: (stream: SyncSchemaStream) => void;
-};
+  mode?: ConnectionFormMode;
+}
 
-const CatalogTree: React.FC<IProps> = ({ streams, destinationSupportedSyncModes, onChangeStream }) => {
+const CatalogTree: React.FC<CatalogTreeProps> = ({ streams, destinationSupportedSyncModes, onChangeStream, mode }) => {
   const onUpdateStream = useCallback(
-    (id: string, newConfig: Partial<AirbyteStreamConfiguration>) => {
+    (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
       if (streamNode) {
-        const newStreamNode = setIn(streamNode, "config", Object.assign({}, streamNode.config, newConfig));
+        const newStreamNode = setIn(streamNode, "config", { ...streamNode.config, ...newConfig });
 
         onChangeStream(newStreamNode);
       }
     },
     [streams, onChangeStream]
   );
+
+  const { initialValues } = useFormikContext<ConnectionFormValues>();
+
+  const changedStreams = streams.filter((stream, idx) => {
+    return stream.config?.selected !== initialValues.syncCatalog.streams[idx].config?.selected;
+  });
 
   return (
     <>
@@ -40,6 +49,8 @@ const CatalogTree: React.FC<IProps> = ({ streams, destinationSupportedSyncModes,
               streamNode={streamNode}
               destinationSupportedSyncModes={destinationSupportedSyncModes}
               updateStream={onUpdateStream}
+              mode={mode}
+              changedSelected={changedStreams.includes(streamNode) && mode === "edit"}
             />
           )}
         </Field>

@@ -11,7 +11,6 @@ airbytePython {
 
 dependencies {
     implementation project(':airbyte-workers')
-    implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
@@ -33,7 +32,6 @@ airbyteDocker.dependsOn(checkSshScriptCopy)
 assemble.dependsOn(checkSshScriptCopy)
 test.dependsOn(checkSshScriptCopy)
 
-installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
 integrationTest.dependsOn(build)
 
 

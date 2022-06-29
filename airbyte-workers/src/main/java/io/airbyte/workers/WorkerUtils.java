@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.WorkerDestinationConfig;
@@ -13,7 +14,11 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,6 +98,20 @@ public class WorkerUtils {
         .withDestinationConnectionConfiguration(sync.getDestinationConfiguration())
         .withCatalog(sync.getCatalog())
         .withState(sync.getState());
+  }
+
+  public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
+    return syncInput.getCatalog().getStreams().stream().collect(
+        Collectors.toMap(
+            k -> {
+              return streamNameWithNamespace(k.getStream().getNamespace(), k.getStream().getName());
+            },
+            v -> v.getStream().getJsonSchema()));
+
+  }
+
+  public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
+    return Objects.toString(namespace, "").trim() + streamName.trim();
   }
 
   // todo (cgardens) - there are 2 sources of truth for job path. we need to reduce this down to one,

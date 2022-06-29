@@ -11,6 +11,9 @@ tests:
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
       status: "succeed"
+    # # for Avro format
+    - config_path: "secrets/avro_config.json"
+      status: "succeed"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       status: "succeed"
@@ -21,6 +24,8 @@ tests:
     - config_path: "secrets/config.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
+    # # for Avro format
+    - config_path: "secrets/avro_config.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
   basic_read:
@@ -36,6 +41,12 @@ tests:
       configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
       expect_records:
         path: "integration_tests/parquet_expected_records.txt"
+      # for Avro format
+    - config_path: "secrets/avro_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      expect_records:
+        path: "integration_tests/expected_records_avro.txt"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -61,6 +72,13 @@ tests:
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
+    # for Avro format
+    - config_path: "secrets/avro_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      cursor_paths:
+        test: ["_ab_source_file_last_modified"]
+      future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -78,6 +96,10 @@ tests:
     - config_path: "secrets/parquet_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+    # for Avro format
+    - config_path: "secrets/avro_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalog.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800

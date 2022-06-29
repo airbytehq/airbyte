@@ -1,0 +1,16 @@
+name: "Shared Issues"
+on:
+  issues:
+    types: [opened, labeled, unlabeled]
+
+jobs:
+  shared-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nick-fields/private-action-loader@v3
+        with:
+          pal-repo-token: "${{ secrets.OCTAVIA_PAT }}"
+          pal-repo-name: airbytehq/workflow-actions@production
+          # the following input gets passed to the private action
+          token: "${{ secrets.OCTAVIA_PAT }}"
+          command: "issue"

@@ -1,17 +1,18 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
+import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
-import FrequencyConfig from "config/FrequencyConfig.json";
+import { getFrequencyConfig } from "config/utils";
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
-import { equal } from "utils/objects";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
-import ReplicationView from "./components/ReplicationView";
+import { ReplicationView } from "./components/ReplicationView";
 import SettingsView from "./components/SettingsView";
 import StatusView from "./components/StatusView";
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
@@ -24,12 +25,13 @@ const ConnectionItemPage: React.FC = () => {
   const connectionId = params.connectionId || "";
   const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
   const connection = useGetConnection(connectionId);
+  const [isStatusUpdating, setStatusUpdating] = useState(false);
 
   const { source, destination } = connection;
 
   const analyticsService = useAnalyticsService();
 
-  const frequency = FrequencyConfig.find((item) => equal(item.config, connection.schedule));
+  const frequency = getFrequencyConfig(connection.schedule);
 
   const onAfterSaveSchema = () => {
     analyticsService.track("Source - Action", {
@@ -38,9 +40,11 @@ const ConnectionItemPage: React.FC = () => {
       connector_source_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.text,
+      frequency: frequency?.type,
     });
   };
+
+  const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
 
   return (
     <MainPageWithScroll
@@ -58,13 +62,24 @@ const ConnectionItemPage: React.FC = () => {
           ]}
         />
       }
-      pageTitle={<ConnectionPageTitle source={source} destination={destination} currentStep={currentStep} />}
+      pageTitle={
+        <ConnectionPageTitle
+          source={source}
+          destination={destination}
+          connection={connection}
+          currentStep={currentStep}
+          onStatusUpdating={setStatusUpdating}
+        />
+      }
+      error={
+        isConnectionDeleted ? <AlertBanner alertType="connectionDeleted" id="connection.connectionDeletedView" /> : null
+      }
     >
       <Suspense fallback={<LoadingPage />}>
         <Routes>
           <Route
             path={ConnectionSettingsRoutes.STATUS}
-            element={<StatusView connection={connection} frequencyText={frequency?.text} />}
+            element={<StatusView connection={connection} isStatusUpdating={isStatusUpdating} />}
           />
           <Route
             path={ConnectionSettingsRoutes.REPLICATION}
@@ -74,8 +89,11 @@ const ConnectionItemPage: React.FC = () => {
             path={ConnectionSettingsRoutes.TRANSFORMATION}
             element={<TransformationView connection={connection} />}
           />
-          <Route path={ConnectionSettingsRoutes.SETTINGS} element={<SettingsView connectionId={connectionId} />} />
-          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace={true} />} />
+          <Route
+            path={ConnectionSettingsRoutes.SETTINGS}
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <SettingsView connectionId={connectionId} />}
+          />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
         </Routes>
       </Suspense>
     </MainPageWithScroll>

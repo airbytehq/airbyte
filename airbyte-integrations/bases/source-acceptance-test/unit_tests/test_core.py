@@ -1,11 +1,23 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    Level,
+    TraceType,
+    Type,
+)
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
@@ -142,6 +154,95 @@ def test_read(schema, record, should_fail):
             t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
     else:
         t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
+
+
+@pytest.mark.parametrize(
+    "output, expect_trace_message_on_failure, should_fail",
+    [
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                )
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                ),
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=112, error=AirbyteErrorTraceMessage(message="oh no!!")),
+                ),
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                )
+            ],
+            True,
+            True,
+        ),
+        ([], True, True),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                )
+            ],
+            False,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                )
+            ],
+            False,
+            False,
+        ),
+        ([], False, False),
+    ],
+)
+def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failure, should_fail):
+    t = _TestBasicRead()
+    input_config = BasicReadTestConfig(expect_trace_message_on_failure=expect_trace_message_on_failure)
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.return_value = output
+
+    with patch.object(pytest, "skip", return_value=None):
+        if should_fail:
+            with pytest.raises(AssertionError, match="Connector should emit at least one error trace message"):
+                t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
+        else:
+            t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
 
 
 @pytest.mark.parametrize(

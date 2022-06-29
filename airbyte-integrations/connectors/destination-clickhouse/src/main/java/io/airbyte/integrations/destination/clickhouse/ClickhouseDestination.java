@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -18,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +28,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestination.class);
 
-  public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
@@ -68,7 +71,9 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
       final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
@@ -78,6 +83,12 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 

@@ -1,11 +1,18 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import mock_open, patch
 
 import pytest
-from octavia_cli.generate import renderers
+import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.airbyte_stream import AirbyteStream
+from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
+from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
+from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
+from airbyte_api_client.model.sync_mode import SyncMode
+from octavia_cli.generate import renderers, yaml_dumpers
 
 
 class TestFieldToRender:
@@ -268,9 +275,15 @@ class TestConnectionRenderer:
         assert connection_renderer.destination == mock_destination
 
     def test_catalog_to_yaml(self, mocker):
-        catalog = {"camelCase": "camelCase", "snake_case": "camelCase", "myArray": ["a", "b"]}
+        stream = AirbyteStream(
+            default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")]
+        )
+        config = AirbyteStreamConfiguration(
+            alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
+        )
+        catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
         yaml_catalog = renderers.ConnectionRenderer.catalog_to_yaml(catalog)
-        assert yaml_catalog == "camelCase: camelCase\nmyArray:\n  - a\n  - b\nsnake_case: camelCase\n"
+        assert yaml_catalog == yaml.dump(catalog.to_dict(), Dumper=yaml_dumpers.CatalogDumper, default_flow_style=False)
 
     def test_write_yaml(self, mocker, mock_source, mock_destination):
         mocker.patch.object(renderers.ConnectionRenderer, "_get_output_path")
@@ -287,9 +300,11 @@ class TestConnectionRenderer:
         connection_renderer.TEMPLATE.render.assert_called_with(
             {
                 "connection_name": connection_renderer.resource_name,
-                "source_id": mock_source.resource_id,
-                "destination_id": mock_destination.resource_id,
+                "source_configuration_path": mock_source.configuration_path,
+                "destination_configuration_path": mock_destination.configuration_path,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                "supports_dbt": connection_renderer.destination.definition.supports_dbt,
             }
         )
 
@@ -302,9 +317,11 @@ class TestConnectionRenderer:
         connection_renderer.TEMPLATE.render.assert_called_with(
             {
                 "connection_name": connection_renderer.resource_name,
-                "source_id": connection_renderer.source.resource_id,
-                "destination_id": connection_renderer.destination.resource_id,
+                "source_configuration_path": connection_renderer.source.configuration_path,
+                "destination_configuration_path": connection_renderer.destination.configuration_path,
                 "catalog": connection_renderer.catalog_to_yaml.return_value,
+                "supports_normalization": connection_renderer.destination.definition.supports_normalization,
+                "supports_dbt": connection_renderer.destination.definition.supports_dbt,
             }
         )
         assert rendered == connection_renderer.TEMPLATE.render.return_value

@@ -38,8 +38,8 @@ const CircleLoader = ({ title }: Props): JSX.Element => (
         gradientUnits="userSpaceOnUse"
         gradientTransform="translate(0 0)"
       >
-        <stop id="eDwmAshgIQE3-fill-0" offset="17.9167%" stop-color="#d1d1db" />
-        <stop id="eDwmAshgIQE3-fill-1" offset="100%" stop-color="rgba(209,209,219,0)" />
+        <stop id="eDwmAshgIQE3-fill-0" offset="17.9167%" stopColor="#d1d1db" />
+        <stop id="eDwmAshgIQE3-fill-1" offset="100%" stopColor="rgba(209,209,219,0)" />
       </linearGradient>
     </defs>
     {title && <title>{title}</title>}
@@ -47,15 +47,15 @@ const CircleLoader = ({ title }: Props): JSX.Element => (
       <g>
         <path
           d="M8,0.5C3.85775,0.5,0.5,3.85775,0.5,8s3.35775,7.5,7.5,7.5v-2c-3.03768,0-5.5-2.4623-5.5-5.5s2.46232-5.5,5.5-5.5v-2Z"
-          clip-rule="evenodd"
+          clipRule="evenodd"
           fill="url(#eDwmAshgIQE3-fill)"
-          fill-rule="evenodd"
+          fillRule="evenodd"
         />
         <path
           d="M8,15.5c4.1423,0,7.5-3.3577,7.5-7.5s-3.3577-7.5-7.5-7.5v2c3.0377,0,5.5,2.46232,5.5,5.5s-2.4623,5.5-5.5,5.5v2Z"
-          clip-rule="evenodd"
+          clipRule="evenodd"
           fill="#d1d1db"
-          fill-rule="evenodd"
+          fillRule="evenodd"
         />
       </g>
     </g>

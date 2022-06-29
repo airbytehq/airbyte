@@ -14,6 +14,7 @@ import { useInitService } from "services/useInitService";
 import { getUtmFromStorage } from "utils/utmStorage";
 
 import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
+import { EmailLinkErrorCodes } from "./types";
 
 export type AuthUpdatePassword = (email: string, currentPassword: string, newPassword: string) => Promise<void>;
 
@@ -36,12 +37,14 @@ export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
 export type AuthLogout = () => void;
 
-type AuthContextApi = {
+interface AuthContextApi {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
+  loggedOut: boolean;
   login: AuthLogin;
+  signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
@@ -50,7 +53,7 @@ type AuthContextApi = {
   sendEmailVerification: AuthSendEmailVerification;
   verifyEmail: AuthVerifyEmail;
   logout: AuthLogout;
-};
+}
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
@@ -65,8 +68,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
   const authService = useInitService(() => new GoogleAuthService(() => auth), [auth]);
 
   const onAfterAuth = useCallback(
-    async (currentUser: FbUser) => {
-      const user = await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
+    async (currentUser: FbUser, user?: User) => {
+      user ??= await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
       loggedIn({ user, emailVerified: currentUser.emailVerified });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,6 +99,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       inited: state.inited,
       isLoading: state.loading,
       emailVerified: state.emailVerified,
+      loggedOut: state.loggedOut,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
@@ -105,8 +109,8 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       async logout(): Promise<void> {
         await authService.signOut();
+        queryClient.removeQueries();
         loggedOut();
-        await queryClient.invalidateQueries();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);
@@ -130,6 +134,26 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       },
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
+      },
+      async signUpWithEmailLink({ name, email, password, news }): Promise<void> {
+        let firebaseUser: FbUser;
+
+        try {
+          ({ user: firebaseUser } = await authService.signInWithEmailLink(email));
+          await authService.updatePassword(password);
+        } catch (e) {
+          await authService.signOut();
+          if (e.message === EmailLinkErrorCodes.LINK_EXPIRED) {
+            await userService.resendWithSignInLink({ email });
+          }
+          throw e;
+        }
+
+        if (firebaseUser) {
+          const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
+          await userService.update({ userId: user.userId, authUserId: firebaseUser.uid, name, news });
+          await onAfterAuth(firebaseUser, { ...user, name });
+        }
       },
       async signUp(form: {
         email: string;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -11,11 +11,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.model.ImportRead;
-import io.airbyte.api.model.ImportRead.StatusEnum;
-import io.airbyte.api.model.ImportRequestBody;
-import io.airbyte.api.model.UploadRead;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.ImportRead;
+import io.airbyte.api.model.generated.ImportRead.StatusEnum;
+import io.airbyte.api.model.generated.ImportRequestBody;
+import io.airbyte.api.model.generated.UploadRead;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -38,11 +38,14 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.DefaultJobPersistence;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.File;
 import java.io.IOException;
@@ -56,6 +59,9 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,6 +80,8 @@ public class ArchiveHandlerTest {
   private static final AirbyteVersion VERSION = new AirbyteVersion("0.6.8");
   private static PostgreSQLContainer<?> container;
 
+  private DataSource dataSource;
+  private DSLContext dslContext;
   private Database jobDatabase;
   private Database configDatabase;
   private JobPersistence jobPersistence;
@@ -111,11 +119,13 @@ public class ArchiveHandlerTest {
 
   @BeforeEach
   public void setup() throws Exception {
-    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(container);
+    dataSource = DatabaseConnectionHelper.createDataSource(container);
+    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
+    final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
     jobDatabase = databaseProviders.createNewJobsDatabase();
     configDatabase = databaseProviders.createNewConfigsDatabase();
     jobPersistence = new DefaultJobPersistence(jobDatabase);
-    seedPersistence = YamlSeedConfigPersistence.getDefault();
+    seedPersistence = new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
     jsonSecretsProcessor = JsonSecretsProcessor.builder()
         .maskSecrets(false)
         .copySecrets(false)
@@ -135,7 +145,7 @@ public class ArchiveHandlerTest {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         jobPersistence,
-        YamlSeedConfigPersistence.getDefault(),
+        seedPersistence,
         new WorkspaceHelper(configRepository, jobPersistence),
         new NoOpFileTtlManager(),
         true);
@@ -143,8 +153,8 @@ public class ArchiveHandlerTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    jobDatabase.close();
-    configDatabase.close();
+    dslContext.close();
+    DataSourceFactory.close(dataSource);
   }
 
   /**

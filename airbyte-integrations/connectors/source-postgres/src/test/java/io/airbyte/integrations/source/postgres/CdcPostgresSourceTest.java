@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -20,19 +20,28 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
 import io.airbyte.db.PgLsn;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,12 +52,13 @@ import org.testcontainers.utility.MountableFile;
 
 abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String PUBLICATION = "publication";
+  protected static final String SLOT_NAME_BASE = "debezium_slot";
+  protected static final String PUBLICATION = "publication";
   private PostgreSQLContainer<?> container;
 
-  private String dbName;
-  private Database database;
+  protected String dbName;
+  protected Database database;
+  private DSLContext dslContext;
   private PostgresSource source;
   private JsonNode config;
 
@@ -56,7 +66,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @AfterEach
   void tearDown() throws Exception {
-    database.close();
+    dslContext.close();
     container.close();
   }
 
@@ -76,7 +86,9 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     config = getConfig(dbName);
     final String fullReplicationSlot = SLOT_NAME_BASE + "_" + dbName;
-    database = getDatabaseFromConfig(config);
+    dslContext = getDslContext(config);
+    database = getDatabase(dslContext);
+    super.setup();
     database.query(ctx -> {
       ctx.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + getPluginName() + "');");
       ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
@@ -84,7 +96,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       return null;
     });
 
-    super.setup();
   }
 
   private JsonNode getConfig(final String dbName) {
@@ -106,15 +117,19 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .build());
   }
 
-  private Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
+  }
+
+  private static DSLContext getDslContext(final JsonNode config) {
+    return DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
+            config.get("port").asInt(),
             config.get("database").asText()),
-        "org.postgresql.Driver",
         SQLDialect.POSTGRES);
   }
 
@@ -161,14 +176,16 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected CdcTargetPosition cdcLatestTargetPosition() {
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver");
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            DatabaseDriver.POSTGRESQL.getDriverClassName(),
+            String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())));
+
     return PostgresCdcTargetPosition.targetPosition(database);
   }
 
@@ -233,6 +250,72 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   @Override
   public String createSchemaQuery(final String schemaName) {
     return "CREATE SCHEMA " + schemaName + ";";
+  }
+
+  @Override
+  @Test
+  public void testRecordsProducedDuringAndAfterSync() throws Exception {
+
+    final int recordsToCreate = 20;
+    // first batch of records. 20 created here and 6 created in setup method.
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertEquals(1, stateAfterFirstBatch.size());
+    assertNotNull(stateAfterFirstBatch.get(0).getData());
+    assertExpectedStateMessages(stateAfterFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
+        dataFromFirstBatch);
+    assertEquals((MODEL_RECORDS.size() + recordsToCreate), recordsFromFirstBatch.size());
+
+    // second batch of records again 20 being created
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, state);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    assertEquals(1, stateAfterSecondBatch.size());
+    assertNotNull(stateAfterSecondBatch.get(0).getData());
+    assertExpectedStateMessages(stateAfterSecondBatch);
+
+    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
+        dataFromSecondBatch);
+    assertEquals(recordsToCreate * 2, recordsFromSecondBatch.size(),
+        "Expected 40 records to be replicated in the second sync.");
+
+    // sometimes there can be more than one of these at the end of the snapshot and just before the
+    // first incremental.
+    final Set<AirbyteRecordMessage> recordsFromFirstBatchWithoutDuplicates = removeDuplicates(
+        recordsFromFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromSecondBatchWithoutDuplicates = removeDuplicates(
+        recordsFromSecondBatch);
+
+    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
+    assertTrue(recordsCreatedBeforeTestCount < recordsFromFirstBatchWithoutDuplicates.size(),
+        "Expected first sync to include records created while the test was running.");
+    assertEquals((recordsToCreate * 3) + recordsCreatedBeforeTestCount,
+        recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
+            .size());
   }
 
 }

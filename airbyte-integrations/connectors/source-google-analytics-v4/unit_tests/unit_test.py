@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -11,7 +11,7 @@ from urllib.parse import unquote
 
 import pendulum
 import pytest
-from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from freezegun import freeze_time
 from source_google_analytics_v4.source import (
@@ -81,10 +81,10 @@ def mock_api_returns_no_records(requests_mock):
 @pytest.fixture
 def mock_api_returns_valid_records(requests_mock):
     """API returns valid data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_with_records.json")),
-    )
+    response = json.loads(read_file("response_golden_data.json"))
+    for report in response["reports"]:
+        assert report["data"]["isDataGolden"] is True
+    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=response)
 
 
 @pytest.fixture
@@ -99,10 +99,10 @@ def mock_api_returns_sampled_results(requests_mock):
 @pytest.fixture
 def mock_api_returns_is_data_golden_false(requests_mock):
     """API returns valid data for given date based slice"""
-    yield requests_mock.post(
-        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
-        json=json.loads(read_file("response_is_data_golden_false.json")),
-    )
+    response = json.loads(read_file("response_non_golden_data.json"))
+    for report in response["reports"]:
+        assert "isDataGolden" not in report["data"]
+    yield requests_mock.post("https://analyticsreporting.googleapis.com/v4/reports:batchGet", json=response)
 
 
 @pytest.fixture
@@ -310,13 +310,15 @@ def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_
 
 
 @freeze_time("2021-11-30")
-def test_stream_slices_limited_by_current_date(test_config, mock_metrics_dimensions_type_list_link):
+def test_stream_slice_limits(test_config, mock_metrics_dimensions_type_list_link):
     test_config["window_in_days"] = 14
     g = GoogleAnalyticsV4IncrementalObjectsBase(config=test_config)
     stream_state = {"ga_date": "2021-11-25"}
     slices = g.stream_slices(stream_state=stream_state)
     current_date = pendulum.now().date().strftime("%Y-%m-%d")
-    assert slices == [{"startDate": "2021-11-26", "endDate": current_date}]
+    expected_start_date = "2021-11-24"  # always resync two days back
+    expected_end_date = current_date  # do not try to sync future dates
+    assert slices == [{"startDate": expected_start_date, "endDate": expected_end_date}]
 
 
 @freeze_time("2021-11-30")
@@ -370,3 +372,12 @@ def test_connection_fail_due_to_http_status(
         assert "Please check the permissions for the requested view_id" in error
         assert test_config["view_id"] in error
     assert json_resp["error"] in error
+
+
+def test_is_data_golden_flag_missing_equals_false(
+    mock_api_returns_is_data_golden_false, test_config, configured_catalog, mock_metrics_dimensions_type_list_link, mock_auth_call
+):
+    source = SourceGoogleAnalyticsV4()
+    for message in source.read(logging.getLogger(), test_config, configured_catalog):
+        if message.type == Type.RECORD:
+            assert message.record.data["isDataGolden"] is False

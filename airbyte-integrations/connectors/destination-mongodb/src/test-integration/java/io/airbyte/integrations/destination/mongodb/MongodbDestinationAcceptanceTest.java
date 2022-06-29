@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -12,11 +12,10 @@ import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.util.ArrayList;
-import java.util.List;
-
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.ArrayList;
+import java.util.List;
 import org.bson.Document;
 import org.testcontainers.containers.MongoDBContainer;
 
@@ -110,26 +109,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.stop();
     container.close();
-  }
-
-  @Override
-  protected TestDataComparator getTestDataComparator() {
-    return new AdvancedTestDataComparator();
-  }
-
-  @Override
-  protected boolean supportBasicDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportArrayDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportObjectDataTypeTest() {
-    return true;
   }
 
   /* Helpers */

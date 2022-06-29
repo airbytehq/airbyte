@@ -180,13 +180,6 @@ Returns the GCP credentials path
 {{- end -}}
 
 {{/*
-Returns the Airbyte Scheduler Image
-*/}}
-{{- define "airbyte.schedulerImage" -}}
-{{- include "common.images.image" (dict "imageRoot" .Values.scheduler.image "global" .Values.global) -}}
-{{- end -}}
-
-{{/*
 Returns the Airbyte Server Image
 */}}
 {{- define "airbyte.serverImage" -}}
@@ -237,4 +230,15 @@ Construct comma separated list of key/value pairs from object (useful for ENV va
 {{- $kvList = printf "%s=%s" $key $value | mustAppend $kvList -}}
 {{- end -}}
 {{ join "," $kvList }}
+{{- end -}}
+
+{{/*
+Construct semi-colon delimited list of comma separated key/value pairs from array of objects (useful for ENV var values)
+*/}}
+{{- define "airbyte.flattenArrayMap" -}}
+{{- $mapList := list -}}
+{{- range $element := . -}}
+{{- $mapList = include "airbyte.flattenMap" $element | mustAppend $mapList -}}
+{{- end -}}
+{{ join ";" $mapList }}
 {{- end -}}

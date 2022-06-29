@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -158,7 +158,13 @@ class ParentAsyncJob(AsyncJob):
         new_jobs = []
         for job in self._jobs:
             if job.failed:
-                new_jobs.extend(job.split_job())
+                try:
+                    new_jobs.extend(job.split_job())
+                except ValueError as split_limit_error:
+                    logger.error(split_limit_error)
+                    logger.info(f'can\'t split "{job}" any smaller, attempting to retry the job.')
+                    job.restart()
+                    new_jobs.append(job)
             else:
                 new_jobs.append(job)
         return new_jobs
@@ -202,7 +208,7 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(AdSet)
         elif isinstance(self._edge_object, AdSet):
             return self._split_by_edge_class(Ad)
-        raise RuntimeError("The job is already splitted to the smallest size.")
+        raise ValueError("The job is already splitted to the smallest size.")
 
     def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
         """Split insight job by creating insight jobs from lower edge object, i.e.
