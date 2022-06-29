@@ -10,5 +10,5 @@ package io.airbyte.protocol.models.transform_models;
 public enum FieldTransformType {
   ADD_FIELD,
   REMOVE_FIELD,
-  UPDATE_FIELD
+  UPDATE_FIELD_SCHEMA
 }

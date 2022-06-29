@@ -667,14 +667,49 @@ public class BasicAcceptanceTests {
 
     testHarness.terminateTemporalWorkflow(connectionId);
 
-    apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(JobConfigType.RESET_CONNECTION, jobInfoRead.getJob().getConfigType());
+  }
 
-    LOGGER.info("Waiting for workflow to be recreated...");
-    Thread.sleep(500);
+  @Test
+  @Order(17)
+  public void testResetCancelsRunningSync() throws Exception {
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
 
-    final WorkflowState workflowState = testHarness.getWorkflowState(connectionId);
-    assertTrue(workflowState.isRunning());
-    assertTrue(workflowState.isResetConnection());
+    final SourceRead source = testHarness.createSource(
+        "E2E Test Source -" + UUID.randomUUID(),
+        workspaceId,
+        sourceDefinition.getSourceDefinitionId(),
+        Jsons.jsonNode(ImmutableMap.builder()
+            .put("type", "INFINITE_FEED")
+            .put("message_interval", 1000)
+            .put("max_records", Duration.ofMinutes(5).toSeconds())
+            .build()));
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = source.getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+
+    // wait to get out of PENDING
+    final JobRead jobRead = waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+    assertEquals(JobStatus.RUNNING, jobRead.getStatus());
+
+    // send reset request while sync is still running
+    final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    assertEquals(JobConfigType.RESET_CONNECTION, jobInfoRead.getJob().getConfigType());
+
+    // verify that sync job was cancelled
+    final JobRead connectionSyncReadAfterReset =
+        apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId())).getJob();
+    assertEquals(JobStatus.CANCELLED, connectionSyncReadAfterReset.getStatus());
   }
 
   // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
