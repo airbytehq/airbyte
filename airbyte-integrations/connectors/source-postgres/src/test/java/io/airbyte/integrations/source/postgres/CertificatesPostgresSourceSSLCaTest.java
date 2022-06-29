@@ -11,9 +11,10 @@ class CertificatesPostgresSourceSSLCaTest extends AbstractPostgresSourceSSLCerti
   @Override
   public ImmutableMap getSSLCertificateConfig() {
     return ImmutableMap.builder()
-            .put("mode", "verify-ca")
-            .put("ca_certificate", certs.getLeft())
-            .put("client_key_password", PASSWORD)
-            .build();
+        .put("mode", "verify-ca")
+        .put("ca_certificate", certs.getLeft())
+        .put("client_key_password", PASSWORD)
+        .build();
   }
+
 }

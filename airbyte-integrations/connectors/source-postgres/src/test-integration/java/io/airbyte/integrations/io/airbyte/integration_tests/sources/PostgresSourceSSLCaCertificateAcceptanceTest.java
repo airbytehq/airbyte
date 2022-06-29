@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static io.airbyte.db.PostgresUtils.getCertificate;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -22,17 +24,13 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.util.HashMap;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
-import static io.airbyte.db.PostgresUtils.getCertificate;
 
 public class PostgresSourceSSLCaCertificateAcceptanceTest extends SourceAcceptanceTest {
 
@@ -44,10 +42,11 @@ public class PostgresSourceSSLCaCertificateAcceptanceTest extends SourceAcceptan
   private JsonNode config;
   protected static final String PASSWORD = "Passw0rd";
   protected static Triple<String, String, String> certs;
+
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-            .asCompatibleSubstituteFor("postgres"));
+        .asCompatibleSubstituteFor("postgres"));
     container.start();
     certs = getCertificate(container);
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
@@ -63,10 +62,10 @@ public class PostgresSourceSSLCaCertificateAcceptanceTest extends SourceAcceptan
         .put("ssl", true)
         .put("replication_method", replicationMethod)
         .put("ssl_mode", ImmutableMap.builder()
-                .put("mode", "verify-ca")
-                .put("ca_certificate", certs.getLeft())
-                .put("client_key_password", PASSWORD)
-                .build())
+            .put("mode", "verify-ca")
+            .put("ca_certificate", certs.getLeft())
+            .put("client_key_password", PASSWORD)
+            .build())
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(

@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.db.PostgresUtils.getCertificate;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -14,19 +16,16 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import org.apache.commons.lang3.tuple.Triple;
-import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.DockerImageName;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import static io.airbyte.db.PostgresUtils.getCertificate;
+import org.apache.commons.lang3.tuple.Triple;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
@@ -51,12 +50,12 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
         .put("database", db.getDatabaseName())
         .put("ssl", true)
         .put("ssl_mode", ImmutableMap.builder()
-             .put("mode", "verify-full")
-             .put("ca_certificate", certs.getLeft())
-             .put("client_certificate", certs.getMiddle())
-             .put("client_key", certs.getRight())
-             .put("client_key_password", "Passw0rd")
-             .build())
+            .put("mode", "verify-full")
+            .put("ca_certificate", certs.getLeft())
+            .put("client_certificate", certs.getMiddle())
+            .put("client_key", certs.getRight())
+            .put("client_key_password", "Passw0rd")
+            .build())
         .build());
   }
 
@@ -148,7 +147,7 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-            .asCompatibleSubstituteFor("postgres"));
+        .asCompatibleSubstituteFor("postgres"));
     db.start();
     certs = getCertificate(db);
   }

@@ -4,6 +4,14 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.db.PostgresUtils.getCertificate;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
+import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -25,6 +33,13 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -38,22 +53,6 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static io.airbyte.db.PostgresUtils.getCertificate;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 abstract class AbstractPostgresSourceSSLCertificatesTest {
 
@@ -101,7 +100,7 @@ abstract class AbstractPostgresSourceSSLCertificatesTest {
   @BeforeAll
   static void init() throws IOException, InterruptedException {
     PSQL_DB = new PostgreSQLContainer(DockerImageName.parse("postgres:bullseye")
-            .asCompatibleSubstituteFor("postgres"));
+        .asCompatibleSubstituteFor("postgres"));
     PSQL_DB.start();
     certs = getCertificate(PSQL_DB);
   }

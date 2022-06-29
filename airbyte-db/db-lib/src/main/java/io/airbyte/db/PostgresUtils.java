@@ -9,12 +9,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import org.apache.commons.lang3.tuple.Triple;
-import org.testcontainers.containers.PostgreSQLContainer;
-
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Triple;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresUtils {
 
@@ -36,7 +35,8 @@ public class PostgresUtils {
     container.execInContainer("su", "-c", "openssl req -new -x509 -sha256 -key ca.key -out ca.crt -subj \"/CN=localhost\"");
     container.execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out server.key");
     container.execInContainer("su", "-c", "openssl req -new -sha256 -key server.key -out server.csr -subj \"/CN=localhost\"");
-    container.execInContainer("su", "-c", "openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256");
+    container.execInContainer("su", "-c",
+        "openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 365 -sha256");
     container.execInContainer("su", "-c", "cp server.key /etc/ssl/private/");
     container.execInContainer("su", "-c", "cp server.crt /etc/ssl/private/");
     container.execInContainer("su", "-c", "cp ca.crt /etc/ssl/private/");
@@ -47,14 +47,15 @@ public class PostgresUtils {
     container.execInContainer("su", "-c", "echo \"ssl_key_file = '/etc/ssl/private/server.key'\" >> /var/lib/postgresql/data/postgresql.conf");
     container.execInContainer("su", "-c", "echo \"ssl_ca_file = '/etc/ssl/private/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf");
     container.execInContainer("su", "-c", "mkdir root/.postgresql");
-    container.execInContainer("su", "-c", "echo \"hostssl    all    all    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf");
+    container.execInContainer("su", "-c",
+        "echo \"hostssl    all    all    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf");
 
     var caCert = container.execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
 
     container.execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out client.key");
     container.execInContainer("su", "-c", "openssl req -new -sha256 -key client.key -out client.csr -subj \"/CN=postgres\"");
     container.execInContainer("su", "-c",
-            "openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365 -sha256");
+        "openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 365 -sha256");
     container.execInContainer("su", "-c", "cp client.crt ~/.postgresql/postgresql.crt");
     container.execInContainer("su", "-c", "cp client.key ~/.postgresql/postgresql.key");
     container.execInContainer("su", "-c", "chmod 0600 ~/.postgresql/postgresql.crt ~/.postgresql/postgresql.key");

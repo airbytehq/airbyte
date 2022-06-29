@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.postgres;
 
+import static io.airbyte.db.PostgresUtils.getCertificate;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -14,20 +16,15 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
-
-import static io.airbyte.db.PostgresUtils.getCertificate;
 
 // todo (cgardens) - DRY this up with PostgresDestinationAcceptanceTest
 public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
@@ -53,12 +50,12 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
         .put("ssl_mode", ImmutableMap.builder()
-               .put("mode", "verify-full")
-               .put("ca_certificate", certs.getLeft())
-               .put("client_certificate", certs.getMiddle())
-               .put("client_key", certs.getRight())
-               .put("client_key_password", PASSWORD)
-               .build())
+            .put("mode", "verify-full")
+            .put("ca_certificate", certs.getLeft())
+            .put("client_certificate", certs.getMiddle())
+            .put("client_key", certs.getRight())
+            .put("client_key_password", PASSWORD)
+            .build())
         .build());
   }
 
@@ -149,7 +146,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
     db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-            .asCompatibleSubstituteFor("postgres"));
+        .asCompatibleSubstituteFor("postgres"));
     db.start();
     certs = getCertificate(db);
   }
