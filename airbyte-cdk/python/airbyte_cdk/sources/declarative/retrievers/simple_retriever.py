@@ -106,6 +106,7 @@ class SimpleRetriever(Retriever, HttpStream):
         Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
+        # Warning: use self.state instead of the stream_state passed as argument!
         return self._requester.request_headers(self.state, stream_slice, next_page_token)
 
     def request_body_data(
@@ -123,6 +124,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        # Warning: use self.state instead of the stream_state passed as argument!
         return self._requester.request_body_data(self.state, stream_slice, next_page_token)
 
     def request_body_json(
@@ -136,6 +138,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
+        # Warning: use self.state instead of the stream_state passed as argument!
         return self._requester.request_body_json(self.state, stream_slice, next_page_token)
 
     def request_kwargs(
@@ -149,6 +152,7 @@ class SimpleRetriever(Retriever, HttpStream):
         Any option listed in https://docs.python-requests.org/en/latest/api/#requests.adapters.BaseAdapter.send for can be returned from
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
+        # Warning: use self.state instead of the stream_state passed as argument!
         return self._requester.request_kwargs(self.state, stream_slice, next_page_token)
 
     def path(
@@ -167,6 +171,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
+        # Warning: use self.state instead of the stream_state passed as argument!
         return self._requester.request_params(self.state, stream_slice, next_page_token)
 
     @property
@@ -191,6 +196,7 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
         records = self._record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -219,13 +225,13 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = self.state
-        records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)
+        # Warning: use self.state instead of the stream_state passed as argument!
+        records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
-            self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r)
+            self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_response=self._last_response, last_record=r)
             yield r
         else:
-            self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_reponse=self._last_response)
+            self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_reponse=self._last_response)
             yield from []
 
     def stream_slices(
@@ -239,6 +245,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :param stream_state:
         :return:
         """
+        # Warning: use self.state instead of the stream_state passed as argument!
         return self._iterator.stream_slices(sync_mode, self.state)
 
     @property
