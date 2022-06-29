@@ -28,12 +28,10 @@ def test_simple_retriever():
     iterator = MagicMock()
     stream_slices = [{"date": "2022-01-01"}, {"date": "2022-01-02"}]
     iterator.stream_slices.return_value = stream_slices
+    underlying_state = {"date": "2021-01-01"}
+    iterator.get_stream_state.return_value = underlying_state
 
     response = requests.Response()
-
-    state = MagicMock()
-    underlying_state = {"date": "2021-01-01"}
-    state.get_stream_state.return_value = underlying_state
 
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
@@ -62,10 +60,7 @@ def test_simple_retriever():
     use_cache = True
     requester.use_cache = use_cache
 
-    retriever = SimpleRetriever("stream_name", primary_key, requester, paginator, record_selector, iterator, state)
-
-    # hack because we clone the state...
-    retriever._state = state
+    retriever = SimpleRetriever("stream_name", primary_key, requester, paginator, record_selector, iterator)
 
     assert retriever.primary_key == primary_key
     assert retriever.url_base == url_base

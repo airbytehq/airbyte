@@ -41,16 +41,13 @@ class JinjaInterpolation(Interpolation):
     def _literal_eval(self, result):
         try:
             return ast.literal_eval(result)
-        except (ValueError, SyntaxError) as e:
-            print(f"error: {e}: {result}")
+        except (ValueError, SyntaxError):
             return result
 
     def _eval(self, s: str, context):
         try:
-            print(f"evaluating {s} with {context}")
             return self._environment.from_string(s).render(context)
-        except TypeError as e:
+        except TypeError:
             # The string is a static value, not a jinja template
             # It can be returned as is
-            print(f"eval error {e}")
             return s

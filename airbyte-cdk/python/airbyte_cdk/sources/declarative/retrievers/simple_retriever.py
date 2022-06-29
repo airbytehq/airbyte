@@ -10,8 +10,6 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
-from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -26,7 +24,6 @@ class SimpleRetriever(Retriever, HttpStream):
         paginator: Paginator,
         record_selector: HttpSelector,
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
-        state: State = None,
     ):
         self._name = name
         self._primary_key = primary_key
@@ -35,7 +32,6 @@ class SimpleRetriever(Retriever, HttpStream):
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
         self._iterator: StreamSlicer = stream_slicer
-        self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None
 
@@ -114,7 +110,7 @@ class SimpleRetriever(Retriever, HttpStream):
         Specifies request headers.
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
-        stream_state = self._state.get_stream_state()
+        stream_state = self._iterator.get_stream_state()
         return self._requester.request_headers(stream_state, stream_slice, next_page_token)
 
     def request_body_data(
@@ -132,7 +128,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
-        stream_state = self._state.get_stream_state()
+        stream_state = self._iterator.get_stream_state()
         return self._requester.request_body_data(stream_state, stream_slice, next_page_token)
 
     def request_body_json(
@@ -146,13 +142,13 @@ class SimpleRetriever(Retriever, HttpStream):
 
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
-        stream_state = self._state.get_stream_state()
+        stream_state = self._iterator.get_stream_state()
         return self._requester.request_body_json(stream_state, stream_slice, next_page_token)
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        stream_state = self._state.get_stream_state()
+        stream_state = self._iterator.get_stream_state()
         return self._requester.get_path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
@@ -161,16 +157,13 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        stream_state = self._state.get_stream_state()
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
-        print(f"getting params for : {stream_state}")
-        print(f"getting params for(self state) : {self._state.get_stream_state()}")
-        request_params = self._requester.request_params(self._state.get_stream_state(), stream_slice, next_page_token)
-        stream_slicer_request_params = self._iterator.request_params(self._state.get_stream_state(), stream_slice, next_page_token)
+        request_params = self._requester.request_params(self._iterator.get_stream_state(), stream_slice, next_page_token)
+        stream_slicer_request_params = self._iterator.request_params(stream_slice)
         return {**request_params, **stream_slicer_request_params}
 
     @property
@@ -195,7 +188,7 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        stream_state = self._state.get_stream_state()
+        stream_state = self._iterator.get_stream_state()
         self._last_response = response
         records = self._record_selector.select_records(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
@@ -224,14 +217,15 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        stream_state = self._state.get_stream_state()
-        print(f"read_stream_state: {stream_state}")
+        stream_state = self._iterator.get_stream_state()
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, stream_state)
         for r in records_generator:
-            self._state.update_state(stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r)
+            self._iterator.update_state(
+                stream_slice=stream_slice, stream_state=stream_state, last_response=self._last_response, last_record=r
+            )
             yield r
         else:
-            self._state.update_state(
+            self._iterator.update_state(
                 stream_slice=stream_slice,
                 stream_state=stream_state,
                 last_reponse=self._last_response,
@@ -250,7 +244,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # FIXME: this is not passing the cursor field because it is always known at init time
-        return self._iterator.stream_slices(sync_mode, self._state.get_stream_state())
+        return self._iterator.stream_slices(sync_mode, self._iterator.get_stream_state())
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -265,15 +259,16 @@ class SimpleRetriever(Retriever, HttpStream):
          State should try to be as small as possible but at the same time descriptive enough to restore
          syncing process from the point where it stopped.
         """
-        return self._state.get_stream_state()
+        return self._iterator.get_stream_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
         print(f"setstate: {value}")
-        self._state.set_state(value)
+        self._iterator.update_state(stream_state=value)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         print(f"get_updated_state: {current_stream_state}")
-        state = self._state.get_stream_state()
+        state = self._iterator.get_stream_state()
+        print(f"state: {state}")
         return state

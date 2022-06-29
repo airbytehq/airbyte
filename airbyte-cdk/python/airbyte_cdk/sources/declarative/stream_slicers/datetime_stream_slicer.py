@@ -60,6 +60,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._config = config
         self._cursor_field = cursor_field
         self._request_options_provider = request_options_provider
+        self._cursor_value = None
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
@@ -117,10 +118,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
         return datetime.timedelta(**time_params)
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ):
-        start_time_from_cursor = stream_state.get(self._cursor_field)
+    def request_params(self, stream_slice: Mapping[str, Any]):
+        # fixme need to move the stream slice to the update state method.
+        # then this becomes as simple
+        start_time_from_cursor = self._cursor_value
         start_time_from_slice = datetime.datetime.strptime(stream_slice.get("start_date"), self._datetime_format).timestamp()
 
         if start_time_from_cursor and start_time_from_cursor > start_time_from_slice:
@@ -129,6 +130,26 @@ class DatetimeStreamSlicer(StreamSlicer):
             start_time = start_time_from_slice
 
         end_time = stream_slice.get("end_date")
-        return self._request_options_provider.request_params(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token, start_time=start_time, end_time=end_time
-        )
+        return self._request_options_provider.request_params(start_time=start_time, end_time=end_time)
+
+    def update_state(self, **kwargs):
+        stream_state = kwargs.get("stream_state")
+        last_record = kwargs.get("last_record")
+
+        if stream_state:
+            start_time_from_cursor = stream_state.get(self._cursor_field)
+        else:
+            start_time_from_cursor = self._cursor_value
+
+        if start_time_from_cursor:
+            cursor = start_time_from_cursor
+        else:
+            cursor = self._cursor_value
+
+        if last_record:
+            cursor = last_record[self._cursor_field]
+
+        self._cursor_value = max(self._cursor_value, cursor) if self._cursor_value else cursor
+
+    def get_stream_state(self):
+        return {self._cursor_field: self._cursor_value}
