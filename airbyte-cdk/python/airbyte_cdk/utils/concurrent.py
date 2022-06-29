@@ -20,7 +20,7 @@ class StopException(Exception):
 
 @total_ordering
 class Message:
-    prio = 0
+    prio = 2
     number = 0
     counter = itertools.count()
 
