@@ -128,6 +128,12 @@
 			 "null",
 			 "string"
 		  ]
-	   }
+	   },
+	   "Date of Feeding Consult":{
+		"type":[
+		   "null",
+		   "string"
+		]
+	 }
 	}
  }
