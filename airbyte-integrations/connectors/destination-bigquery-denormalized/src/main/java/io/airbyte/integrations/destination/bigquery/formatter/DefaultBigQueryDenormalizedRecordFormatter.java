@@ -293,6 +293,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     final Builder builder = Field.newBuilder(fieldName, StandardSQLTypeName.STRING);
     JsonNode updatedFileDefinition = getFileDefinition(fieldDefinition);
     JsonNode type = updatedFileDefinition.get(TYPE_FIELD);
+    final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
     final List<JsonSchemaType> fieldTypes = getTypes(fieldName, type);
     for (int i = 0; i < fieldTypes.size(); i++) {
       final JsonSchemaType fieldType = fieldTypes.get(i);
@@ -306,8 +307,15 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           case NULL -> {
             builder.setType(StandardSQLTypeName.STRING);
           }
-          case STRING, NUMBER, INTEGER, BOOLEAN -> {
+          case STRING, INTEGER, BOOLEAN -> {
             builder.setType(primaryType.getBigQueryType());
+          }
+          case NUMBER -> {
+            if (airbyteType != null && airbyteType.asText().equals("big_integer")) {
+              builder.setType(StandardSQLTypeName.INT64);
+            } else {
+              builder.setType(primaryType.getBigQueryType());
+            }
           }
           case ARRAY -> {
             final JsonNode items;
@@ -348,7 +356,6 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
     // If a specific format is defined, use their specific type instead of the JSON's one
     final JsonNode fieldFormat = updatedFileDefinition.get(FORMAT_FIELD);
-    final JsonNode airbyteType = updatedFileDefinition.get(AIRBYTE_TYPE);
     if (fieldFormat != null) {
       final JsonSchemaFormat schemaFormat = JsonSchemaFormat.fromJsonSchemaFormat(fieldFormat.asText(),
           (airbyteType != null ? airbyteType.asText() : null));
