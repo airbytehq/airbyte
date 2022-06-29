@@ -69,7 +69,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -183,7 +183,7 @@ public class ConnectionManagerWorkflowTest {
       setupSpecificChildWorkflow(EmptySyncWorkflow.class);
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that a successful workflow retries and waits")
@@ -226,7 +226,7 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test workflow does not wait to run after a failure")
@@ -267,7 +267,7 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test workflow which receives a manual run signal stops waiting")
@@ -315,7 +315,7 @@ public class ConnectionManagerWorkflowTest {
           .isEmpty();
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test workflow which receives an update signal stops waiting, doesn't run, and doesn't update the job status")
@@ -363,7 +363,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a non-running workflow doesn't do anything")
@@ -406,7 +406,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verifyNoInteractions(mJobCreationAndStatusUpdateActivity);
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that the sync is properly deleted")
@@ -455,7 +455,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verify(mConnectionDeletionActivity, Mockito.times(1)).deleteConnection(Mockito.any());
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that fresh workflow cleans the job state")
@@ -486,7 +486,7 @@ public class ConnectionManagerWorkflowTest {
       setupSpecificChildWorkflow(SleepingSyncWorkflow.class);
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test workflow which receives a manual sync while running a scheduled sync does nothing")
@@ -526,7 +526,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a running workflow cancels the sync")
@@ -629,7 +629,7 @@ public class ConnectionManagerWorkflowTest {
           .jobCancelledWithAttemptNumber(Mockito.argThat(new HasCancellationFailure(JOB_ID, ATTEMPT_ID)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a non-running workflow starts a reset job")
@@ -661,7 +661,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that resetting a running workflow cancels the running workflow")
@@ -705,7 +705,7 @@ public class ConnectionManagerWorkflowTest {
 
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset deletes streamsToReset from stream_resets table")
@@ -734,7 +734,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.verify(mStreamResetActivity).deleteStreamResetRecordsForJob(new DeleteStreamResetRecordsForJobInput(connectionId, JOB_ID));
     }
 
-    @RepeatedTest(10)
+    @Test
     @DisplayName("Test that running workflow which receives an update signal waits for the current run and reports the job status")
     public void updatedSignalReceivedWhileRunning() throws InterruptedException {
 
@@ -813,7 +813,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(1));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that auto disable activity is touched during failure")
@@ -850,7 +850,7 @@ public class ConnectionManagerWorkflowTest {
           .autoDisableFailingConnection(new AutoDisableConnectionActivityInput(connectionId, Mockito.any()));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that auto disable activity is not touched during job success")
@@ -908,7 +908,7 @@ public class ConnectionManagerWorkflowTest {
       Mockito.when(mConfigFetchActivity.getMaxAttempt()).thenReturn(new GetMaxAttemptOutput(1));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that Source CHECK failures are recorded")
@@ -946,7 +946,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.SOURCE, FailureType.CONFIG_ERROR)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that Destination CHECK failures are recorded")
@@ -985,7 +985,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that reset workflows do not CHECK the source")
@@ -1025,7 +1025,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that source and destination failures are recorded")
@@ -1061,7 +1061,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DESTINATION)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that normalization failure is recorded")
@@ -1095,7 +1095,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.NORMALIZATION)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that dbt failure is recorded")
@@ -1129,7 +1129,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.DBT)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that persistence failure is recorded")
@@ -1163,7 +1163,7 @@ public class ConnectionManagerWorkflowTest {
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.PERSISTENCE)));
     }
 
-    @RepeatedTest(10)
+    @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that replication worker failure is recorded")
@@ -1257,7 +1257,7 @@ public class ConnectionManagerWorkflowTest {
       assertWorkflowWasContinuedAsNew();
     }
 
-    @RepeatedTest(10)
+    @Test
     void testCanRetryFailedActivity() throws InterruptedException {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
           .thenThrow(ApplicationFailure.newNonRetryableFailure("", ""))
