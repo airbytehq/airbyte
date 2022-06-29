@@ -108,7 +108,7 @@ public class AirbyteAcceptanceTestHarness {
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
-  private static final String DEFAULT_POSTGRES_DOCKER_IMAGE_NAME = "postgres:13-alpine";
+  public static final String DEFAULT_POSTGRES_DOCKER_IMAGE_NAME = "postgres:13-alpine";
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
