@@ -88,7 +88,7 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
         The response has a Retry-After header that tells you for how many seconds to wait before retrying.
         """
 
-        retry_after = int(to_int(response.headers.get("Retry-After", 0)))
+        retry_after = int(response.headers.get("Retry-After", "0").split(",")[0])
         if retry_after > 0:
             return retry_after
 
