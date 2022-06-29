@@ -43,7 +43,7 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
   initialValues: ServiceFormValues;
 }> = ({ schema, initialValues }) => {
   const { widgetsInfo } = useServiceForm();
-  const { values, setFieldValue } = useFormikContext<ServiceFormValues>();
+  const { setFieldValue } = useFormikContext<ServiceFormValues>();
 
   useDeepCompareEffect(() => {
     const widgetsInfoEntries = Object.entries(widgetsInfo);
