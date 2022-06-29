@@ -3,15 +3,18 @@
 exports[`<PersonQuoteCover /> should render with default props 1`] = `
 <DocumentFragment>
   <div
-    class="image"
-    data-testid="background-image"
+    class="container"
   >
+    <div
+      class="image"
+      data-testid="background-image"
+    />
     <div
       class="overlay"
       data-testid="gradient-overlay"
     />
     <div
-      class="container"
+      class="contentContainer"
     >
       <blockquote
         class="quote"
@@ -49,16 +52,19 @@ exports[`<PersonQuoteCover /> should render with default props 1`] = `
 exports[`<PersonQuoteCover /> should render with default props and without background image 1`] = `
 <DocumentFragment>
   <div
-    class="image"
-    data-testid="background-image"
-    style="background-image: none;"
+    class="container"
   >
+    <div
+      class="image"
+      data-testid="background-image"
+      style="background-image: none;"
+    />
     <div
       class="overlay"
       data-testid="gradient-overlay"
     />
     <div
-      class="container"
+      class="contentContainer"
     >
       <blockquote
         class="quote"
@@ -96,17 +102,20 @@ exports[`<PersonQuoteCover /> should render with default props and without backg
 exports[`<PersonQuoteCover /> should render with overridden props 1`] = `
 <DocumentFragment>
   <div
-    class="image"
-    data-testid="background-image"
-    style="background-image: url(/image.png);"
+    class="container"
   >
+    <div
+      class="image"
+      data-testid="background-image"
+      style="background-image: url(/image.png);"
+    />
     <div
       class="overlay"
       data-testid="gradient-overlay"
       style="background: blue;"
     />
     <div
-      class="container"
+      class="contentContainer"
     >
       <blockquote
         class="quote"

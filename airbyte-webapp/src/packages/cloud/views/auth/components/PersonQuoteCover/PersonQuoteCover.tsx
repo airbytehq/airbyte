@@ -26,9 +26,10 @@ export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
   quoteAuthorJobTitleStyle,
 }) => {
   return (
-    <div className={styles.image} style={backgroundImageStyle} data-testid="background-image">
+    <div className={styles.container}>
+      <div className={styles.image} style={backgroundImageStyle} data-testid="background-image" />
       <div className={styles.overlay} style={overlayGradientStyle} data-testid="gradient-overlay" />
-      <div className={styles.container}>
+      <div className={styles.contentContainer}>
         <blockquote className={styles.quote} style={quoteTextStyle} data-testid="quote">
           <p>{quoteText ? quoteText : <FormattedMessage id="login.quoteText" />}</p>
         </blockquote>
