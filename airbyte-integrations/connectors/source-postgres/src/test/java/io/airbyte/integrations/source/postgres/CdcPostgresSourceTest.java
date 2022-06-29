@@ -104,6 +104,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
         .put("plugin", getPluginName())
+        .put("initial_waiting_seconds", 5)
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()

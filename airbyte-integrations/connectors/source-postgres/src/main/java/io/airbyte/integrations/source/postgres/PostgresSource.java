@@ -47,6 +47,7 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -228,18 +229,20 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+      final Duration initialWaitingTime = sourceConfig.has("initial_waiting_seconds")
+          ? Duration.ofSeconds(sourceConfig.get("initial_waiting_seconds").asLong())
+          : CDC_FIRST_RECORD_TIMEOUT;
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database),
           PostgresCdcProperties.getDebeziumProperties(sourceConfig),
-          catalog, false, CDC_FIRST_RECORD_TIMEOUT, CDC_SUBSEQUENT_RECORD_TIMEOUT);
+          catalog, false, initialWaitingTime, CDC_SUBSEQUENT_RECORD_TIMEOUT);
       return handler.getIncrementalIterators(
           new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),

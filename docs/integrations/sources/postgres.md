@@ -174,7 +174,18 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 
 If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
-#### 6. Start syncing
+#### <a name="initial-waiting-time"></a>6. [Optional] Set up initial waiting time
+The Postgres connector may need some time to start processing the data under the CDC modes. There are two reasons for that:
+- When the connection is set up for the first time and a snapshot is needed;
+- When there is a lot of change logs to process.
+
+The default initial waiting time for Postgres is 30 seconds. The connector will adjust this time automatically. Usually you don't need to change it. However, if there are known changes in the database, but the connector is not able to read those changes, the root cause may be insufficient waiting time, and you can increase this waiting time (e.g. set to 300 seconds) to test if it is the root cause.
+
+The downside of a long initial waiting time is that even though there is no new data to sync, the connector will also wait for this amount of time before it shuts down to make sure there is actually no new data to sync, which can increase the connector cost.
+
+When this parameter is empty or a value <= `0`, the connector will use the default 30 seconds.
+
+#### 7. Start syncing
 
 When configuring the source, select CDC and provide the replication slot and publication you just created. You should be ready to sync data with CDC!
 
