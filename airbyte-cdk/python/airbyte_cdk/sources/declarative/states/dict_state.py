@@ -43,6 +43,9 @@ class DictState(State):
         self._context = dict()
         self._config = config
 
+    def set_state(self, state):
+        self._context[self.stream_state_field] = state
+
     def update_state(self, **kwargs):
         stream_state = kwargs.get(self.stream_state_field)
         prev_stream_state = self.get_stream_state() or stream_state
@@ -61,7 +64,7 @@ class DictState(State):
             self._interpolator.eval(name, self._config): self._interpolator.eval(value, self._config, **self._context)
             for name, value in self._templates_to_evaluate.items()
         }
-        updated_state = {name: self._state_type(value) for name, value in updated_state.items() if value}
+        updated_state = {name: value for name, value in updated_state.items() if value}
 
         if prev_state:
             next_state = {name: _get_max(name=name, val=value, other_state=prev_state) for name, value in updated_state.items()}
