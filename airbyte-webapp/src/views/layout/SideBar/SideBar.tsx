@@ -63,7 +63,6 @@ const SideBar: React.FC = () => {
     const isChild = location.pathname.split("/").length > 4 && !location.pathname.includes("settings");
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
-  console.log("ok");
   return (
     <Bar>
       <div>
