@@ -25,7 +25,7 @@ exports[`<PersonQuoteCover /> should render with default props 1`] = `
         </p>
       </blockquote>
       <img
-        alt="company logo"
+        alt=""
         class="companyLogo"
         data-testid="company logo"
         src="/images/testimonials/cartdotcom-logo.svg"
@@ -75,7 +75,7 @@ exports[`<PersonQuoteCover /> should render with default props and without backg
         </p>
       </blockquote>
       <img
-        alt="company logo"
+        alt=""
         class="companyLogo"
         data-testid="company logo"
         src="/images/testimonials/cartdotcom-logo.svg"
@@ -127,7 +127,7 @@ exports[`<PersonQuoteCover /> should render with overridden props 1`] = `
         </p>
       </blockquote>
       <img
-        alt="company logo"
+        alt=""
         class="companyLogo"
         data-testid="company logo"
         src="/new-logo.svg"

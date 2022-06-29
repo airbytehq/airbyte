@@ -36,7 +36,7 @@ export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
         <img
           src={logoImageSrc ? logoImageSrc : "/images/testimonials/cartdotcom-logo.svg"}
           className={styles.companyLogo}
-          alt="company logo"
+          alt=""
           data-testid="company logo"
         />
         <div>
