@@ -44,6 +44,9 @@ airbyteDockerBmuschko {
         'redshift.Dockerfile': 'normalization-redshift',
     ]
     additionalDependencies = [checkSshScriptCopy]
+
+    // The dbt base image isn't published for arm64 as of 2022-07-28, so only build the amd64 image
+    archOverride = 'amd64'
 }
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
