@@ -234,14 +234,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
-    /*
-     * If a customer sets up a postgres source with cdc parameters (replication_slot and publication)
-     * but selects all the tables in FULL_REFRESH mode then we would still end up going through this
-     * path. We do have a check in place for debezium to make sure only tales in INCREMENTAL mode are
-     * synced {@link DebeziumRecordPublisher#getTableWhitelist(ConfiguredAirbyteCatalog)} but we should
-     * have a check here as well to make sure that if no table is in INCREMENTAL mode then skip this
-     * part.
-     */
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
