@@ -16,7 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -32,15 +35,29 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.Field;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
@@ -237,6 +254,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     return source;
   }
 
+  protected Source getCustomSource(final List<ConfiguredAirbyteStream> streamsToSnapshot) {
+    return new PostgresSource() {
+      @Override
+      protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+        return streamsToSnapshot;
+      }
+    };
+  }
+
   @Override
   protected JsonNode getConfig() {
     return config;
@@ -316,6 +342,141 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals((recordsToCreate * 3) + recordsCreatedBeforeTestCount,
         recordsFromFirstBatchWithoutDuplicates.size() + recordsFromSecondBatchWithoutDuplicates
             .size());
+  }
+
+  @Test
+  public void testTableWithTimestampColDefault() throws Exception {
+    createAndPopulateTimestampTable();
+    final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING),
+                Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+    ));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
+        .toDefaultConfiguredCatalog(catalog);
+
+    // set all streams to incremental.
+    configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), configuredCatalog, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertEquals(1, stateAfterFirstBatch.size());
+    assertNotNull(stateAfterFirstBatch.get(0).getData());
+    assertExpectedStateMessages(stateAfterFirstBatch);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
+        dataFromFirstBatch);
+
+    assertEquals(6, recordsFromFirstBatch.size());
+  }
+
+  private void createAndPopulateTimestampTable() {
+    createTable(MODELS_SCHEMA, "time_stamp_table",
+        columnClause(ImmutableMap.of("id", "INTEGER", "name", "VARCHAR(200)", "created_at", "TIMESTAMPTZ NOT NULL DEFAULT NOW()"), Optional.of("id")));
+    final List<JsonNode> timestampRecords = ImmutableList.of(
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 11000, "name" , "blah1")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 12000, "name" , "blah2")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 13000, "name" , "blah3")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 14000, "name" , "blah4")),
+        Jsons.jsonNode(ImmutableMap
+            .of("id", 15000, "name" , "blah5")),
+        Jsons
+            .jsonNode(ImmutableMap
+                .of("id", 16000, "name" , "blah6")));
+    for (final JsonNode recordJson : timestampRecords) {
+      executeQuery(
+          String.format("INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');", MODELS_SCHEMA, "time_stamp_table",
+              "id", "name",
+              recordJson.get("id").asInt(), recordJson.get("name").asText()));
+    }
+  }
+
+  //TODO (Subodh): This should be a generic test
+  @Test
+  public void newTableSnapshotTest() throws Exception {
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
+        dataFromFirstBatch);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+    assertEquals(1, stateAfterFirstBatch.size());
+    assertNotNull(stateAfterFirstBatch.get(0).getData());
+    assertExpectedStateMessages(stateAfterFirstBatch);
+
+    assertEquals((MODEL_RECORDS.size()), recordsFromFirstBatch.size());
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordsFromFirstBatch);
+
+    final JsonNode state = stateAfterFirstBatch.get(0).getData();
+
+    final ConfiguredAirbyteCatalog newTables = CatalogHelpers
+        .toDefaultConfiguredCatalog(new AirbyteCatalog().withStreams(List.of(
+            CatalogHelpers.createAirbyteStream(
+                    MODELS_STREAM_NAME + "_random",
+                    MODELS_SCHEMA + "_random",
+                    Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
+                    Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
+                    Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random"))))));
+
+    newTables.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
+    final List<ConfiguredAirbyteStream> combinedStreams = new ArrayList<>();
+    combinedStreams.addAll(CONFIGURED_CATALOG.getStreams());
+    combinedStreams.addAll(newTables.getStreams());
+
+    final ConfiguredAirbyteCatalog updatedCatalog = new ConfiguredAirbyteCatalog().withStreams(combinedStreams);
+
+    /*
+     * Write 20 records to the existing table
+     */
+    final Set<JsonNode> recordsWritten = new HashSet<>();
+    for (int recordsCreated = 0; recordsCreated < 20; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 100 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      recordsWritten.add(record);
+      writeModelRecord(record);
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getCustomSource(newTables.getStreams())
+        .read(getConfig(), updatedCatalog, state);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    final Map<String, Set<AirbyteRecordMessage>> recordsStreamWise = extractRecordMessagesStreamWise(dataFromSecondBatch);
+    assertEquals(1, stateAfterSecondBatch.size());
+    assertNotNull(stateAfterSecondBatch.get(0).getData());
+    assertExpectedStateMessages(stateAfterSecondBatch);
+
+    assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME));
+    assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME + "_random"));
+
+    final Set<AirbyteRecordMessage> recordsForModelsStreamFromSecondBatch = recordsStreamWise.get(MODELS_STREAM_NAME);
+    final Set<AirbyteRecordMessage> recordsForModelsRandomStreamFromSecondBatch = recordsStreamWise.get(MODELS_STREAM_NAME + "_random");
+
+    assertEquals((MODEL_RECORDS_RANDOM.size()), recordsForModelsRandomStreamFromSecondBatch.size());
+    assertEquals(20, recordsForModelsStreamFromSecondBatch.size());
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS_RANDOM), recordsForModelsRandomStreamFromSecondBatch,
+        recordsForModelsRandomStreamFromSecondBatch.stream().map(AirbyteRecordMessage::getStream).collect(
+            Collectors.toSet()), Sets
+            .newHashSet(MODELS_STREAM_NAME + "_random"),
+        MODELS_SCHEMA + "_random");
+    assertExpectedRecords(recordsWritten, recordsForModelsStreamFromSecondBatch);
+
   }
 
 }

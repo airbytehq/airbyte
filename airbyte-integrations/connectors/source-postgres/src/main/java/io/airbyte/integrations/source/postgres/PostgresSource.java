@@ -14,10 +14,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -33,6 +35,7 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteGlobalState;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -48,10 +51,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,7 +114,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -221,7 +225,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     // create it.
     final AirbyteConnectionStatus check = check(config);
 
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+    if (check.getStatus().equals(Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
 
@@ -238,16 +242,31 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database),
-          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return handler.getIncrementalIterators(
+          PostgresCdcTargetPosition.targetPosition(database), false);
+      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),
+          new PostgresCdcStateHandler(stateManager),
+          new PostgresCdcConnectorMetadataInjector(),
+          PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig),
           emittedAt);
+      if (streamsToSnapshot.isEmpty()) {
+        return Collections.singletonList(incrementalIteratorSupplier.get());
+      }
+
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
+          new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
+          PostgresCdcProperties.getSnapshotProperties(), emittedAt);
+      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  //TODO(Subodh) : add logic of identifying new streams after PR https://github.com/airbytehq/airbyte/pull/13609 is merged
+  protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+    return Collections.emptyList();
   }
 
   @VisibleForTesting

@@ -7,12 +7,16 @@ package io.airbyte.integrations.source.relationaldb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -20,7 +24,6 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.state.AirbyteStateMessageListTypeReference;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -65,6 +68,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     BaseConnector implements Source, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
+  // TODO: Remove when the flag is not use anymore
+  private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
@@ -521,16 +526,18 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
-    if (initialStateJson == null) {
-      return generateEmptyInitialState(config);
-    } else {
-      try {
-        return Jsons.object(initialStateJson, new AirbyteStateMessageListTypeReference());
-      } catch (final IllegalArgumentException e) {
-        LOGGER.warn("Defaulting to legacy state object...");
-        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(initialStateJson));
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson, featureFlags.useStreamCapableState());
+    return typedState.map((state) -> {
+      switch (state.getStateType()) {
+        case GLOBAL:
+          return List.of(state.getGlobal());
+        case STREAM:
+          return state.getStateMessages();
+        case LEGACY:
+        default:
+          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(state.getLegacyState()));
       }
-    }
+    }).orElse(generateEmptyInitialState(config));
   }
 
   /**

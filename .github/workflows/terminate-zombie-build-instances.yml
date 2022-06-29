@@ -1,6 +1,7 @@
 # Required since we cannot guarantee instances are always terminated.
 # Also a failsafe against a dev writing a workflow that does not terminate build instances.
-# The average runtime as of this commit is ~20 mins. Set this to an hour for some buffer.
+# Though the average Airbyte build runtime as of this commit is ~20 mins, connector builds
+# can take up to 3 hours. Set this to 3 hours to include these longer runs.
 name: Terminate Zombie Build Instances
 
 on:
@@ -12,7 +13,7 @@ jobs:
   terminate:
     runs-on: ubuntu-latest
     steps:
-      - name: List and Terminate Instances Older Than an Hour
+      - name: List and Terminate Instances Older Than 3 Hours
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -21,6 +22,8 @@ jobs:
         run: |
           set -euxo pipefail
 
+          TIME_LIMIT=10800 # 3 hours
+
           aws configure set default.region us-east-2
 
           # See https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/describe-instances.html for describe command.
@@ -28,7 +31,7 @@ jobs:
           export to_terminate=$(aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge Name=instance-state-name,Values=running \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
           | jq 'def toZ(str): str | (split("+")[0] + "Z") | fromdate ;
-              flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - 3600) ) )')
+              flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - $TIME_LIMIT) ) )')
 
           echo "MARKED FOR TERMINATION: ${to_terminate}"
 
