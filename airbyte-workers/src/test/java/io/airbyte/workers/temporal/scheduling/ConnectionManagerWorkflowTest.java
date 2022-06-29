@@ -717,6 +717,7 @@ public class ConnectionManagerWorkflowTest {
     @Timeout(value = 60,
              unit = TimeUnit.SECONDS)
     @DisplayName("Test that cancelling a reset deletes streamsToReset from stream_resets table")
+    @Disabled
     public void cancelResetRemovesStreamsToReset() throws InterruptedException {
       final UUID connectionId = UUID.randomUUID();
       final UUID testId = UUID.randomUUID();
