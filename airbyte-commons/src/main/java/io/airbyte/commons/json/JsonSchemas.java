@@ -133,9 +133,8 @@ public class JsonSchemas {
    *        optional, nothing will be collected, otherwise, whatever is returned will be collected and
    *        returned by the final collection.
    * @param <T> - type of objects being collected
-   * @return - collection of all items that were collected during the traversal. Returns a { @link
-   *         Collection } because there is no order or uniqueness guarantee so neither List nor Set
-   *         make sense.
+   * @return - collection of all items that were collected during the traversal. Returns values in
+   *         preoorder traversal order.
    */
   public static <T> List<T> traverseJsonSchemaWithFilteredCollector(final JsonNode jsonSchema,
                                                                     final BiFunction<JsonNode, List<FieldNameOrList>, Optional<T>> mapper) {
