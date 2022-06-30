@@ -37,6 +37,7 @@ def test_get_value_from_a_list_of_mappings():
     [
         ("test_timestamp_from_timestamp", "{{ timestamp(1621439283) }}", 1621439283),
         ("test_timestamp_from_string", "{{ timestamp('2021-05-19') }}", 1621382400),
+        ("test_timestamp_from_rfc3339", "{{ timestamp('2017-01-01T00:00:00.0Z') }}", 1483228800),
     ],
 )
 def test_timestamp(test_name, s, expected_value):
