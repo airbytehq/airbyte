@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
     RetryResponseStatus,
     StaticConstantBackoffStrategy,
     WaitTimeFromHeaderBackoffStrategy,
+    WaitUntilTimeFromHeaderBackoffStrategy,
 )
 
 
@@ -202,5 +203,24 @@ def test_wait_time_from_header(test_name, header, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.headers = {"wait_time": 60}
     backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header)
+    backoff = backoff_stratery.backoff(response_mock)
+    assert backoff == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    "test_name, header, wait_until, min_wait, expected_backoff_time",
+    [
+        ("test_wait_until_time_from_header", "wait_until", 1600000060.0, None, 60),
+        ("test_wait_until_negative_time", "wait_until", 1500000000.0, None, None),
+        ("test_wait_until_time_less_than_min", "wait_until", 1600000060.0, 120, 120),
+        ("test_wait_until_no_header", "absent_header", 1600000000.0, None, None),
+        ("test_wait_until_no_header_with_min", "absent_header", 1600000000.0, 60, 60),
+    ],
+)
+@patch("time.time", return_value=1600000000.0)
+def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, min_wait, expected_backoff_time):
+    response_mock = MagicMock()
+    response_mock.headers = {"wait_until": wait_until}
+    backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(header, min_wait)
     backoff = backoff_stratery.backoff(response_mock)
     assert backoff == expected_backoff_time
