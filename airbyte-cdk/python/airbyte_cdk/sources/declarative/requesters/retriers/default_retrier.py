@@ -74,19 +74,24 @@ class StaticConstantBackoffStrategy(BackoffStrategy):
 
 
 class DefaultRetrier(Retrier):
+    DEFAULT_BACKOFF_STRATEGSY = ExponentialBackoffStrategy()
+
     def __init__(
         self,
         retry_response_filter: HttpResponseFilter = None,
         ignore_response_filter: HttpResponseFilter = None,
         max_retries: Optional[int] = 5,
         retry_factor: float = 5,
-        backoff_strategy: Optional[BackoffStrategy] = None,
+        backoff_strategy: Optional[List[BackoffStrategy]] = None,
     ):
         self._max_retries = max_retries
         self._retry_factor = retry_factor
         self._retry_response_filter = retry_response_filter or HttpResponseFilter()
         self._ignore_response_filter = ignore_response_filter or HttpResponseFilter([])
-        self._backoff_strategy = backoff_strategy or ExponentialBackoffStrategy()
+        if backoff_strategy:
+            self._backoff_strategy = backoff_strategy + [DefaultRetrier.DEFAULT_BACKOFF_STRATEGSY]
+        else:
+            self._backoff_strategy = [DefaultRetrier.DEFAULT_BACKOFF_STRATEGSY]
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -107,4 +112,8 @@ class DefaultRetrier(Retrier):
             return NonRetriableResponseStatus.FAIL
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self._backoff_strategy.backoff(response)
+        for backoff_strategy in self._backoff_strategy:
+            backoff = backoff_strategy.backoff(response)
+            if backoff:
+                return backoff
+        return backoff
