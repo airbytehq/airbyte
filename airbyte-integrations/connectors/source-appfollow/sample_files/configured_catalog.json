@@ -9,6 +9,9 @@
             "properties": {
               "ext_id": {
                 "type": "string"
+              },
+              "cid": {
+                "type": "string"
               }
             }
           },

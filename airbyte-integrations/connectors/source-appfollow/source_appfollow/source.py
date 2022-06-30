@@ -69,8 +69,7 @@ class AppfollowStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        params = {"cid": 'foo'}
-        return params
+        return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -78,8 +77,8 @@ class AppfollowStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         response_json = response.json()
-        yield from response_json.get("data", [])
-
+        logger.log(logging.DEBUG, f"Response: {response_json}")
+        yield from response_json.get("list", [])
 
 class Ratings(AppfollowStream):
     """
@@ -87,9 +86,10 @@ class Ratings(AppfollowStream):
     """
     primary_key = None 
 
-    def __init__(self, ext_id: str, **kwargs):
+    def __init__(self, ext_id: str, cid: str, **kwargs):
         super().__init__(**kwargs)
         self.ext_id = ext_id
+        self.cid = cid
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -109,7 +109,8 @@ class SourceAppfollow(AbstractSource):
         logger.info("Checking Appfollow API connection...")
         try:
             ext_id = config["ext_id"]
-            response = requests.get(f"https://api.appfollow.io/ratings?ext_id={ext_id}")
+            cid = config["cid"]
+            response = requests.get(f"https://api.appfollow.io/ratings?ext_id={ext_id}&cid={cid}")
             if response.status_code == 200:
                 return True, None
             else:
@@ -123,5 +124,5 @@ class SourceAppfollow(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        args = {"ext_id": config["ext_id"]}
+        args = {"ext_id": config["ext_id"], "cid": config["cid"]}
         return [Ratings(**args)]
