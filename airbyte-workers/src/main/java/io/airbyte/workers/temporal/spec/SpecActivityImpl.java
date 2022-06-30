@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.spec;
 
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobGetSpecConfig;
@@ -34,6 +35,7 @@ public class SpecActivityImpl implements SpecActivity {
   private final LogConfigs logConfigs;
   private final JobPersistence jobPersistence;
   private final String airbyteVersion;
+  private final FeatureFlags featureFlags;
 
   public SpecActivityImpl(final WorkerConfigs workerConfigs,
                           final ProcessFactory processFactory,
@@ -41,7 +43,8 @@ public class SpecActivityImpl implements SpecActivity {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final JobPersistence jobPersistence,
-                          final String airbyteVersion) {
+                          final String airbyteVersion,
+                          final FeatureFlags featureFlags) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;
@@ -49,6 +52,7 @@ public class SpecActivityImpl implements SpecActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
+    this.featureFlags = featureFlags;
   }
 
   public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
@@ -79,7 +83,8 @@ public class SpecActivityImpl implements SpecActivity {
           launcherConfig.getAttemptId().intValue(),
           launcherConfig.getDockerImage(),
           processFactory,
-          workerConfigs.getResourceRequirements());
+          workerConfigs.getResourceRequirements(),
+          featureFlags);
 
       return new DefaultGetSpecWorker(workerConfigs, integrationLauncher);
     };

@@ -213,7 +213,8 @@ public class WorkerApp {
             workerEnvironment,
             logConfigs,
             jobPersistence,
-            airbyteVersion),
+            airbyteVersion,
+            featureFlags),
         new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier),
         new StreamResetActivityImpl(streamResetPersistence, jobPersistence));
   }
@@ -243,7 +244,7 @@ public class WorkerApp {
         .registerActivitiesImplementations(
             new DiscoverCatalogActivityImpl(discoverWorkerConfigs, discoverProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment,
                 logConfigs,
-                jobPersistence, airbyteVersion));
+                jobPersistence, airbyteVersion, featureFlags));
   }
 
   private void registerCheckConnection(final WorkerFactory factory) {
@@ -253,7 +254,7 @@ public class WorkerApp {
     checkConnectionWorker
         .registerActivitiesImplementations(
             new CheckConnectionActivityImpl(checkWorkerConfigs, checkProcessFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-                jobPersistence, airbyteVersion));
+                jobPersistence, airbyteVersion, featureFlags));
   }
 
   private void registerGetSpec(final WorkerFactory factory) {
@@ -261,7 +262,7 @@ public class WorkerApp {
     specWorker.registerWorkflowImplementationTypes(SpecWorkflowImpl.class);
     specWorker.registerActivitiesImplementations(
         new SpecActivityImpl(specWorkerConfigs, specProcessFactory, workspaceRoot, workerEnvironment, logConfigs, jobPersistence,
-            airbyteVersion));
+            airbyteVersion, featureFlags));
   }
 
   private ReplicationActivityImpl getReplicationActivityImpl(final WorkerConfigs workerConfigs,
@@ -277,7 +278,7 @@ public class WorkerApp {
         logConfigs,
         jobPersistence,
         airbyteVersion,
-        featureFlags.useStreamCapableState());
+        featureFlags);
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,

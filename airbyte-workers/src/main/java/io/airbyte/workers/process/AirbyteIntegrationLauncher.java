@@ -194,8 +194,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
         WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
-        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState())
-    );
+        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()));
   }
 
 }

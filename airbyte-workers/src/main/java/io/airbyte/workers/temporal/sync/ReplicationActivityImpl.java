@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -65,7 +66,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private final JobPersistence jobPersistence;
   private final String airbyteVersion;
-  private final boolean useStreamCapableState;
+  private final FeatureFlags featureFlags;
 
   public ReplicationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
                                  final WorkerConfigs workerConfigs,
@@ -76,9 +77,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final LogConfigs logConfigs,
                                  final JobPersistence jobPersistence,
                                  final String airbyteVersion,
-                                 final boolean useStreamCapableState) {
+                                 final FeatureFlags featureFlags) {
     this(containerOrchestratorConfig, workerConfigs, processFactory, secretsHydrator, workspaceRoot, workerEnvironment, logConfigs,
-        new AirbyteConfigValidator(), jobPersistence, airbyteVersion, useStreamCapableState);
+        new AirbyteConfigValidator(), jobPersistence, airbyteVersion, featureFlags);
   }
 
   @VisibleForTesting
@@ -92,7 +93,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                           final AirbyteConfigValidator validator,
                           final JobPersistence jobPersistence,
                           final String airbyteVersion,
-                          final boolean useStreamCapableState) {
+                          final FeatureFlags featureFlags) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
@@ -103,7 +104,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
-    this.useStreamCapableState = useStreamCapableState;
+    this.featureFlags = featureFlags;
   }
 
   @Override
@@ -197,18 +198,20 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           Math.toIntExact(sourceLauncherConfig.getAttemptId()),
           sourceLauncherConfig.getDockerImage(),
           processFactory,
-          syncInput.getSourceResourceRequirements());
+          syncInput.getSourceResourceRequirements(),
+          featureFlags);
       final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
           destinationLauncherConfig.getJobId(),
           Math.toIntExact(destinationLauncherConfig.getAttemptId()),
           destinationLauncherConfig.getDockerImage(),
           processFactory,
-          syncInput.getDestinationResourceRequirements());
+          syncInput.getDestinationResourceRequirements(),
+          featureFlags);
 
       // reset jobs use an empty source to induce resetting all data in destination.
       final AirbyteSource airbyteSource =
           sourceLauncherConfig.getDockerImage().equals(WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB)
-              ? new EmptyAirbyteSource(useStreamCapableState)
+              ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
 
       return new DefaultReplicationWorker(
