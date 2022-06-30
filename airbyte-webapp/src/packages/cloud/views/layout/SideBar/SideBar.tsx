@@ -27,7 +27,7 @@ import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
-import styles from "./Sidebar.module.scss";
+import styles from "../../../../../views/layout/SideBar/SideBar.module.scss";
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
