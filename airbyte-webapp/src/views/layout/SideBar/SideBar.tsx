@@ -53,9 +53,7 @@ const HelpIcon = styled(FontAwesomeIcon)`
   line-height: 21px;
 `;
 
-const SideBar: React.FC = () => {
-  const config = useConfig();
-  const workspace = useCurrentWorkspace();
+export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
@@ -64,7 +62,14 @@ const SideBar: React.FC = () => {
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
 
-  const navLinkClassName = ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
+  return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
+};
+
+const SideBar: React.FC = () => {
+  const config = useConfig();
+  const workspace = useCurrentWorkspace();
+
+  const navLinkClassName = useCalculateSidebarStyles();
 
   return (
     <Bar>
