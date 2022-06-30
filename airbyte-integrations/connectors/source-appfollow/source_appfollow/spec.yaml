@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - ext_id
     - cid
+    - api_secret
   additionalProperties: false
   properties:
     ext_id:
@@ -16,3 +17,8 @@ connectionSpecification:
       type: string
       title: client id
       description: client id provided by Appfollow
+    api_secret:
+      type: string
+      title: api secret
+      description: api secret provided by Appfollow
+      airbyte_secret: true

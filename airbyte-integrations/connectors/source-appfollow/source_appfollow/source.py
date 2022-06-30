@@ -11,7 +11,7 @@ import logging
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
 logger = logging.getLogger("airbyte")
 
@@ -69,7 +69,7 @@ class AppfollowStream(HttpStream, ABC):
         TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
         Usually contains common params e.g. pagination size etc.
         """
-        return {}
+        return {'ext_id': self.ext_id, 'cid': self.cid}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
@@ -106,11 +106,13 @@ class SourceAppfollow(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
+        # TODO: basic flipping auth
         logger.info("Checking Appfollow API connection...")
+        headers = {"Authorization": f"Bearer {config['api_secret']}"}
         try:
             ext_id = config["ext_id"]
             cid = config["cid"]
-            response = requests.get(f"https://api.appfollow.io/ratings?ext_id={ext_id}&cid={cid}")
+            response = requests.get(f"https://api.appfollow.io/ratings?ext_id={ext_id}&cid={cid}", headers=headers)
             if response.status_code == 200:
                 return True, None
             else:
@@ -124,5 +126,6 @@ class SourceAppfollow(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
+        auth = BasicHttpAuthenticator(username=config["api_secret"], password=config["api_secret"])
         args = {"ext_id": config["ext_id"], "cid": config["cid"]}
-        return [Ratings(**args)]
+        return [Ratings(authenticator=auth, **args)]
