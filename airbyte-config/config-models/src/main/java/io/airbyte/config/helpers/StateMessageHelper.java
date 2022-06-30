@@ -8,6 +8,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Iterables;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -72,6 +73,25 @@ public class StateMessageHelper {
 
       }
     }
+  }
+
+  /**
+   * Converts a StateWrapper to a State
+   *
+   * LegacyStates are directly serialized into the state. GlobalStates and StreamStates are serialized
+   * as a list of AirbyteStateMessage in the state attribute.
+   *
+   * @param stateWrapper the StateWrapper to convert
+   * @return the Converted State
+   */
+  @SuppressWarnings("UnnecessaryDefault")
+  public static State getState(final StateWrapper stateWrapper) {
+    return switch (stateWrapper.getStateType()) {
+      case LEGACY -> new State().withState(stateWrapper.getLegacyState());
+      case STREAM -> new State().withState(Jsons.jsonNode(stateWrapper.getStateMessages()));
+      case GLOBAL -> new State().withState(Jsons.jsonNode(List.of(stateWrapper.getGlobal())));
+      default -> throw new RuntimeException("Unexpected StateType " + stateWrapper.getStateType());
+    };
   }
 
   private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {

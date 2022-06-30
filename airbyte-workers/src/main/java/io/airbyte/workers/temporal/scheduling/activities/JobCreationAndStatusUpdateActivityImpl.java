@@ -15,7 +15,6 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -25,6 +24,7 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
@@ -74,8 +74,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       failNonTerminalJobs(input.getConnectionId());
 
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
-      if (input.isReset()) {
+      final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
+      log.info("Found the following streams to reset for connection {}: {}", input.getConnectionId(), streamsToReset);
 
+      if (!streamsToReset.isEmpty()) {
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
 
         final StandardDestinationDefinition destinationDef =
@@ -88,7 +90,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           standardSyncOperations.add(standardSyncOperation);
         }
 
-        final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
         final Optional<Long> jobIdOptional =
             jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations, streamsToReset);
 
