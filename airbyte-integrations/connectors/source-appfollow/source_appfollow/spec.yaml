@@ -1,13 +1,13 @@
-documentationUrl: https://docsurl.com
+documentationUrl: https://docs.airbyte.io/integrations/sources/appfollow
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: Appfollow Spec
   type: object
   required:
-    - TODO
+    - ext_id
   additionalProperties: false
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    ext_id:
       type: string
-      description: describe me
+      title: app external id
+      description: for App Store — this is 9-10 digits identification number; for Google Play — this is bundle name;
