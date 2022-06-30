@@ -514,8 +514,8 @@ You can edit the configuration and run `octavia apply` to continue managing it w
 
 Import an existing destination to manage it with octavia-cli. You can use a destination ID or name.
 
-| **Argument**       | **Description**  |
-| -------------------| -----------------|
+| **Argument**       | **Description**       |
+| -------------------| ----------------------|
 | `DESTINATION_ID`   | The destination id.   |
 | `DESTINATION_NAME` | The destination name. |
 
@@ -535,10 +535,10 @@ You can edit the configuration and run `octavia apply` to continue managing it w
 
 Import an existing connection to manage it with octavia-cli. You can use a connection ID or name.
 
-| **Argument**       | **Description**  |
-| -------------------| -----------------|
-| `CONNECTION_ID`     | The connection id.   |
-| `CONNECTION_NAME`   | The connection name. |
+| **Argument**      | **Description**      |
+| ------------------| ---------------------|
+| `CONNECTION_ID`   | The connection id.   |
+| `CONNECTION_NAME` | The connection name. |
 
 **Examples**:
 
