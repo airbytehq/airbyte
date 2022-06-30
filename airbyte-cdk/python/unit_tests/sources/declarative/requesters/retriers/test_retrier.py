@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import (
+    ChainRetrier,
     DefaultRetrier,
     HttpResponseFilter,
     NonRetriableResponseStatus,
@@ -140,3 +141,53 @@ def test_default_retrier(
     assert retrier.should_retry(response_mock) == should_retry
     if isinstance(should_retry, RetryResponseStatus):
         assert retrier.backoff_time(response_mock) == should_retry.retry_in
+
+
+@pytest.mark.parametrize(
+    "test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior",
+    [
+        ("test_chain_retrier_ok_ok", NonRetriableResponseStatus.Ok, NonRetriableResponseStatus.Ok, NonRetriableResponseStatus.Ok),
+        (
+            "test_chain_retrier_ignore_fail",
+            NonRetriableResponseStatus.IGNORE,
+            NonRetriableResponseStatus.FAIL,
+            NonRetriableResponseStatus.IGNORE,
+        ),
+        (
+            "test_chain_retrier_fail_ignore",
+            NonRetriableResponseStatus.FAIL,
+            NonRetriableResponseStatus.IGNORE,
+            NonRetriableResponseStatus.IGNORE,
+        ),
+        (
+            "test_chain_retrier_ignore_retry",
+            NonRetriableResponseStatus.IGNORE,
+            RetryResponseStatus(None),
+            NonRetriableResponseStatus.IGNORE,
+        ),
+        (
+            "test_chain_retrier_retry_ignore",
+            RetryResponseStatus(None),
+            NonRetriableResponseStatus.IGNORE,
+            NonRetriableResponseStatus.IGNORE,
+        ),
+        ("test_chain_retrier_retry_fail", RetryResponseStatus(None), NonRetriableResponseStatus.FAIL, RetryResponseStatus(None)),
+        ("test_chain_retrier_fail_retry", NonRetriableResponseStatus.FAIL, RetryResponseStatus(None), RetryResponseStatus(None)),
+        ("test_chain_retrier_ignore_ok", NonRetriableResponseStatus.IGNORE, NonRetriableResponseStatus.Ok, NonRetriableResponseStatus.Ok),
+        ("test_chain_retrier_ok_ignore", NonRetriableResponseStatus.Ok, NonRetriableResponseStatus.IGNORE, NonRetriableResponseStatus.Ok),
+        ("test_chain_retrier_ok_retry", NonRetriableResponseStatus.Ok, RetryResponseStatus(None), NonRetriableResponseStatus.Ok),
+        ("test_chain_retrier_retry_ok", RetryResponseStatus(None), NonRetriableResponseStatus.Ok, NonRetriableResponseStatus.Ok),
+        ("test_chain_retrier_return_first_retry", RetryResponseStatus(60), RetryResponseStatus(100), RetryResponseStatus(60)),
+    ],
+)
+def test_chain_retrier_first_retrier_ignores_second_fails(test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior):
+    first_retier = MagicMock()
+    first_retier.should_retry.return_value = first_retrier_behavior
+    second_retrier = MagicMock()
+    second_retrier.should_retry.return_value = second_retrier_behavior
+    second_retrier.should_retry.return_value = second_retrier_behavior
+    retriers = [first_retier, second_retrier]
+    retrier = ChainRetrier(retriers)
+    response_mock = MagicMock()
+    response_mock.ok = first_retrier_behavior == NonRetriableResponseStatus.Ok or second_retrier_behavior == NonRetriableResponseStatus.Ok
+    assert retrier.should_retry(response_mock) == expected_behavior

@@ -73,6 +73,48 @@ class StaticConstantBackoffStrategy(BackoffStrategy):
         self._backoff_time_in_seconds = backoff_time_in_seconds
 
 
+class ChainRetrier(Retrier):
+    def __init__(self, retriers: List[Retrier]):
+        self._retriers = retriers
+        assert self._retriers
+
+    @property
+    def max_retries(self) -> Union[int, None]:
+        # FIXME i think this should be moved to the backoff strategy!
+        return self._iterate(Retrier.max_retries)
+
+    @property
+    def retry_factor(self) -> float:
+        return self._iterate(Retrier.retry_factor)
+
+    def should_retry(self, response: requests.Response) -> bool:
+        retry = None
+        ignore = False
+        for retrier in self._retriers:
+            should_retry = retrier.should_retry(response)
+            if should_retry == NonRetriableResponseStatus.Ok:
+                return NonRetriableResponseStatus.Ok
+            if should_retry == NonRetriableResponseStatus.IGNORE:
+                ignore = True
+            elif not isinstance(retry, RetryResponseStatus):
+                retry = should_retry
+        if ignore:
+            return NonRetriableResponseStatus.IGNORE
+        else:
+            return retry
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        pass
+
+    def _iterate(self, f):
+        val = None
+        for retrier in self._retriers:
+            val = f(retrier)
+            if val:
+                return val
+        return val
+
+
 class DefaultRetrier(Retrier):
     DEFAULT_BACKOFF_STRATEGSY = ExponentialBackoffStrategy()
 
