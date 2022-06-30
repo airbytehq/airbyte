@@ -228,7 +228,7 @@ class LineItems(IncrementalXolaStream):
     cursor_field = "updatedAt"
     seller_id = None
     fields_to_remove = ["demographics", "adjustments", "guestsData", "guests", "waivers", "reminders2", 
-                        "pluginFees", "addOns", "priceScheme", "group", "cancellationPolicy"]
+                        "pluginFees", "addOns", "priceScheme", "group", "cancellationPolicy", "cancellation.policy"]
 
     def __init__(self, seller_id: str, x_api_key: str, **kwargs):
         super().__init__(x_api_key, **kwargs)

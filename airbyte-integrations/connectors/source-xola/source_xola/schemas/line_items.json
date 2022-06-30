@@ -106,12 +106,6 @@
         "string"
       ]
     },
-    "cancellation_policy" : {
-    	"type": [
-        "null",
-        "string"
-      ]
-    },
     "cancellation_refundable" : {
     	"type": [
         "null",
