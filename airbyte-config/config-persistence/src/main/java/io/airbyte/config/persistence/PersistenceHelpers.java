@@ -1,9 +1,14 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.config.persistence;
 
 import org.jooq.Condition;
 import org.jooq.Field;
 
 public class PersistenceHelpers {
+
   /**
    * Helper function to handle null or equal case for the optional strings
    *
@@ -16,4 +21,5 @@ public class PersistenceHelpers {
   public static Condition isNullOrEquals(final Field<String> field, final String value) {
     return value != null ? field.eq(value) : field.isNull();
   }
+
 }

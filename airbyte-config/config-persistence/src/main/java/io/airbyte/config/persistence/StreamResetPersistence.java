@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.jooq.Condition;
-import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Table;
