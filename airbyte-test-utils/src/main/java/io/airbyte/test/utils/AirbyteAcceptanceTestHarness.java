@@ -84,6 +84,7 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 /**
@@ -109,7 +110,10 @@ public class AirbyteAcceptanceTestHarness {
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
-  public static final String DEFAULT_POSTGRES_DOCKER_IMAGE_NAME = "postgres:13-alpine";
+  private static final DockerImageName DESTINATION_POSTGRES_IMAGE_NAME = DockerImageName.parse("postgres:13-alpine");
+
+  private static final DockerImageName SOURCE_POSTGRES_IMAGE_NAME = DockerImageName.parse("debezium/postgres:13-alpine")
+      .asCompatibleSubstituteFor("postgres");
 
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
@@ -169,15 +173,6 @@ public class AirbyteAcceptanceTestHarness {
 
   public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
       throws URISyntaxException, IOException, InterruptedException {
-    this(apiClient, defaultWorkspaceId, DEFAULT_POSTGRES_DOCKER_IMAGE_NAME, DEFAULT_POSTGRES_DOCKER_IMAGE_NAME);
-  }
-
-  @SuppressWarnings("UnstableApiUsage")
-  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient,
-                                      final UUID defaultWorkspaceId,
-                                      final String sourceDatabaseDockerImageName,
-                                      final String destinationDatabaseDockerImageName)
-      throws URISyntaxException, IOException, InterruptedException {
     // reads env vars to assign static variables
     assignEnvVars();
     this.apiClient = apiClient;
@@ -187,12 +182,12 @@ public class AirbyteAcceptanceTestHarness {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
     if (!isGke) {
-      sourcePsql = new PostgreSQLContainer(sourceDatabaseDockerImageName)
+      sourcePsql = new PostgreSQLContainer(SOURCE_POSTGRES_IMAGE_NAME)
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
 
-      destinationPsql = new PostgreSQLContainer(destinationDatabaseDockerImageName);
+      destinationPsql = new PostgreSQLContainer(DESTINATION_POSTGRES_IMAGE_NAME);
       destinationPsql.start();
     }
 
@@ -425,11 +420,11 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public ConnectionRead createConnection(final String name,
-                                         final UUID sourceId,
-                                         final UUID destinationId,
-                                         final List<UUID> operationIds,
-                                         final AirbyteCatalog catalog,
-                                         final ConnectionSchedule schedule)
+      final UUID sourceId,
+      final UUID destinationId,
+      final List<UUID> operationIds,
+      final AirbyteCatalog catalog,
+      final ConnectionSchedule schedule)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -708,9 +703,9 @@ public class AirbyteAcceptanceTestHarness {
 
   @SuppressWarnings("BusyWait")
   public static JobRead waitWhileJobHasStatus(final JobsApi jobsApi,
-                                              final JobRead originalJob,
-                                              final Set<JobStatus> jobStatuses,
-                                              final Duration maxWaitTime)
+      final JobRead originalJob,
+      final Set<JobStatus> jobStatuses,
+      final Duration maxWaitTime)
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
 
