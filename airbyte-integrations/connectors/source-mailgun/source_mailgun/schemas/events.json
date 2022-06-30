@@ -179,6 +179,9 @@
     "timestamp": {
       "type": "string"
     },
+    "utc_timestamp": {
+      "type": "string"
+    },
     "user_variables_content": {
       "type": ["null", "string"]
     },

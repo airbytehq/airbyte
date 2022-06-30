@@ -64,13 +64,7 @@ class MailgunStream(HttpStream, ABC):
 
     @staticmethod
     def _pre_parse_response(response: requests.Response) -> List:
-        items = response.json()["items"]
-        for item in items:
-            
-            # TODO convert floating epoch time to datetime string.
-            item["timestamp"] =  str(datetime.datetime.fromtimestamp(item["timestamp"], datetime.timezone.utc))
-        return items
-
+        return response.json()["items"]
 
 class Domains(MailgunStream):
     """
@@ -167,6 +161,15 @@ class Events(IncrementalMailgunStream):
         for period in self.chunk_timestamps_range(start_date):
             yield {"begin": period[0], "end": period[1]}
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        items = response.json()["items"]
+        for item in items:
+            #  converting floating epoch time to datetime string.
+            item["utc_timestamp"] =  str(datetime.datetime.fromtimestamp(item["timestamp"], datetime.timezone.utc))
+        return items
 
 class SourceMailgun(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
