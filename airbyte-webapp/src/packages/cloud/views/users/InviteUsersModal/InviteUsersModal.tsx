@@ -9,6 +9,8 @@ import { Cell, Header, Row } from "components/SimpleTableComponents";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
@@ -40,6 +42,11 @@ const FormHeader = styled(Header)`
 
 const FormRow = styled(Row)`
   margin-bottom: 8px;
+`;
+
+const DeleteButton = styled(Button)`
+  width: 34px;
+  height: 34px;
 `;
 
 const ROLE_OPTIONS = [
@@ -82,7 +89,7 @@ export const InviteUsersModal: React.FC<{
           );
         }}
       >
-        {({ values, isValid, isSubmitting, dirty }) => {
+        {({ values, isValid, isSubmitting, dirty, setFieldValue }) => {
           return (
             <Form>
               <Content>
@@ -129,6 +136,20 @@ export const InviteUsersModal: React.FC<{
                               </Field>
                             </Cell>
                           )}
+                          <DeleteButton
+                            type="button"
+                            iconOnly
+                            disabled={values.users.length < 2}
+                            onClick={() => {
+                              setFieldValue("users", [
+                                ...values.users.slice(0, index),
+                                ...values.users.slice(index + 1),
+                              ]);
+                            }}
+                            secondary
+                          >
+                            <FontAwesomeIcon icon={faTimes} />
+                          </DeleteButton>
                         </FormRow>
                       ))}
                       <Button
