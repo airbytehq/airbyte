@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
     HttpResponseFilter,
     NonRetriableResponseStatus,
     RetryResponseStatus,
+    StaticConstantBackoffStrategy,
 )
 
 
@@ -32,12 +33,21 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
 
 
 @pytest.mark.parametrize(
-    "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry",
+    "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy",
     [
-        ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None)),
-        ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.Ok),
-        ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.Ok),
-        ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, NonRetriableResponseStatus.FAIL),
+        ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
+        (
+            "test_bad_gateway_constant_retry",
+            HTTPStatus.BAD_GATEWAY,
+            None,
+            None,
+            {},
+            RetryResponseStatus(60),
+            StaticConstantBackoffStrategy(60),
+        ),
+        ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.Ok, None),
+        ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.Ok, None),
+        ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, NonRetriableResponseStatus.FAIL, None),
         (
             "test_403_ignore_error_message",
             HTTPStatus.FORBIDDEN,
@@ -45,6 +55,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             HttpResponseFilter(error_message_contain="found"),
             {},
             NonRetriableResponseStatus.IGNORE,
+            None,
         ),
         (
             "test_403_dont_ignore_error_message",
@@ -53,8 +64,9 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             HttpResponseFilter(error_message_contain="not_found"),
             {},
             NonRetriableResponseStatus.FAIL,
+            None,
         ),
-        ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, RetryResponseStatus(None)),
+        ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, RetryResponseStatus(None), None),
         (
             "test_ignore_403",
             HTTPStatus.FORBIDDEN,
@@ -62,6 +74,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             HttpResponseFilter(http_codes=[HTTPStatus.FORBIDDEN]),
             {},
             NonRetriableResponseStatus.IGNORE,
+            None,
         ),
         (
             "test_403_with_predicate",
@@ -70,6 +83,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             None,
             {},
             RetryResponseStatus(None),
+            None,
         ),
         (
             "test_403_with_predicate",
@@ -78,18 +92,31 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             None,
             {},
             NonRetriableResponseStatus.FAIL,
+            None,
         ),
-        ("test_retry_403", HTTPStatus.FORBIDDEN, HttpResponseFilter([HTTPStatus.FORBIDDEN]), None, {}, RetryResponseStatus(None)),
+        (
+            "test_retry_403",
+            HTTPStatus.FORBIDDEN,
+            HttpResponseFilter([HTTPStatus.FORBIDDEN]),
+            None,
+            {},
+            RetryResponseStatus(None),
+            None,
+        ),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
-def test_default_retrier(time_mock, test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry):
+def test_default_retrier(
+    time_mock, test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy
+):
     response_mock = MagicMock()
     response_mock.status_code = http_code
     response_mock.headers = response_headers
     response_mock.json.return_value = {"code": "1000", "error": "found"}
     response_mock.ok = http_code < 400
-    retrier = DefaultRetrier(retry_response_filter=retry_response_filter, ignore_response_filter=ignore_response_filter)
+    retrier = DefaultRetrier(
+        retry_response_filter=retry_response_filter, ignore_response_filter=ignore_response_filter, backoff_strategy=backoff_strategy
+    )
     assert retrier.should_retry(response_mock) == should_retry
     if isinstance(should_retry, RetryResponseStatus):
         assert retrier.backoff_time(response_mock) == should_retry.retry_in

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from abc import abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional, Union
@@ -53,6 +54,25 @@ class RetryResponseStatus:
 ResponseStatus = Union[NonRetriableResponseStatus, RetryResponseStatus]
 
 
+class BackoffStrategy:
+    @abstractmethod
+    def backoff(self, response: requests.Response) -> Optional[float]:
+        pass
+
+
+class ExponentialBackoffStrategy(BackoffStrategy):
+    def backoff(self, response: requests.Response) -> Optional[float]:
+        return None
+
+
+class StaticConstantBackoffStrategy(BackoffStrategy):
+    def backoff(self, response: requests.Response) -> Optional[float]:
+        return self._backoff_time_in_seconds
+
+    def __init__(self, backoff_time_in_seconds: float):
+        self._backoff_time_in_seconds = backoff_time_in_seconds
+
+
 class DefaultRetrier(Retrier):
     def __init__(
         self,
@@ -60,11 +80,13 @@ class DefaultRetrier(Retrier):
         ignore_response_filter: HttpResponseFilter = None,
         max_retries: Optional[int] = 5,
         retry_factor: float = 5,
+        backoff_strategy: Optional[BackoffStrategy] = None,
     ):
         self._max_retries = max_retries
         self._retry_factor = retry_factor
         self._retry_response_filter = retry_response_filter or HttpResponseFilter()
         self._ignore_response_filter = ignore_response_filter or HttpResponseFilter([])
+        self._backoff_strategy = backoff_strategy or ExponentialBackoffStrategy()
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -85,4 +107,4 @@ class DefaultRetrier(Retrier):
             return NonRetriableResponseStatus.FAIL
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return None
+        return self._backoff_strategy.backoff(response)
