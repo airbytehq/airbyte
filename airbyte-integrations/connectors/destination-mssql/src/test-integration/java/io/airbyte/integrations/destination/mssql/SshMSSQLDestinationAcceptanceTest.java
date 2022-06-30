@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -18,13 +17,11 @@ import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
-import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.MSSQLServerContainer;
 import org.testcontainers.containers.Network;
 
@@ -51,7 +48,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), getMSSQLDbConfigBuilder(db));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put("schema", schemaName));
   }
 
   @Override
@@ -106,17 +103,6 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
       result.add(resolved.toUpperCase());
     }
     return result;
-  }
-
-  public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
-    return ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(db))
-        .put("port", HostPortResolver.resolvePort(db))
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("database", database)
-        .put("schema", schemaName)
-        .put("ssl", false);
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
