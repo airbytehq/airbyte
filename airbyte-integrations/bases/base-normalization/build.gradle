@@ -58,12 +58,24 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
-    dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-redshift:buildDockerImage'
     dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
 }
+
+// not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
+// and as such it depends on the docker images.
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:bases:base-normalization:buildDockerImage'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-redshift:buildDockerImage'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
 
 integrationTest.dependsOn("customIntegrationTestPython")
 customIntegrationTests.dependsOn("customIntegrationTestPython")
