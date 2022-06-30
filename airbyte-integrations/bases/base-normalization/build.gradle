@@ -54,7 +54,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     module = "pytest"
     command = "-s integration_tests"
 
-    dependsOn ':airbyte-integrations:bases:base-normalization:buildDockerImage-all'
+    dependsOn ':airbyte-integrations:bases:base-normalization:buildDockerImage'
 
     dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
