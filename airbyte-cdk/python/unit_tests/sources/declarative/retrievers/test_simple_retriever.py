@@ -13,7 +13,7 @@ primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
 
 
-def test():
+def test_simple_retriever():
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.request_params.return_value = request_params
@@ -62,7 +62,15 @@ def test():
     use_cache = True
     requester.use_cache = use_cache
 
-    retriever = SimpleRetriever("stream_name", primary_key, requester, paginator, record_selector, iterator, state)
+    retriever = SimpleRetriever(
+        "stream_name",
+        primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=iterator,
+        state=state,
+    )
 
     # hack because we clone the state...
     retriever._state = state
