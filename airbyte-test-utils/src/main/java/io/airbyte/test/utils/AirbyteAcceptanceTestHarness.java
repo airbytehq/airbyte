@@ -420,11 +420,11 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public ConnectionRead createConnection(final String name,
-      final UUID sourceId,
-      final UUID destinationId,
-      final List<UUID> operationIds,
-      final AirbyteCatalog catalog,
-      final ConnectionSchedule schedule)
+                                         final UUID sourceId,
+                                         final UUID destinationId,
+                                         final List<UUID> operationIds,
+                                         final AirbyteCatalog catalog,
+                                         final ConnectionSchedule schedule)
       throws ApiException {
     final ConnectionRead connection = apiClient.getConnectionApi().createConnection(
         new ConnectionCreate()
@@ -703,9 +703,9 @@ public class AirbyteAcceptanceTestHarness {
 
   @SuppressWarnings("BusyWait")
   public static JobRead waitWhileJobHasStatus(final JobsApi jobsApi,
-      final JobRead originalJob,
-      final Set<JobStatus> jobStatuses,
-      final Duration maxWaitTime)
+                                              final JobRead originalJob,
+                                              final Set<JobStatus> jobStatuses,
+                                              final Duration maxWaitTime)
       throws InterruptedException, ApiException {
     JobRead job = originalJob;
 
