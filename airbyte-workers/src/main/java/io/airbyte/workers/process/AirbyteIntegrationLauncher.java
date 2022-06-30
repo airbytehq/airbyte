@@ -52,14 +52,13 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
-                                    final ResourceRequirements resourceRequirement,
-                                    final FeatureFlags featureFlags) {
+                                    final ResourceRequirements resourceRequirement) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
-    this.featureFlags = featureFlags;
+    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   @Override

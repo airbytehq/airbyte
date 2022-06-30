@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.check.connection;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardCheckConnectionInput;
@@ -36,7 +35,6 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   private final LogConfigs logConfigs;
   private final JobPersistence jobPersistence;
   private final String airbyteVersion;
-  private final FeatureFlags featureFlags;
 
   public CheckConnectionActivityImpl(final WorkerConfigs workerConfigs,
                                      final ProcessFactory processFactory,
@@ -45,8 +43,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final JobPersistence jobPersistence,
-                                     final String airbyteVersion,
-                                     final FeatureFlags featureFlags) {
+                                     final String airbyteVersion) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -55,7 +52,6 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
-    this.featureFlags = featureFlags;
   }
 
   public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
@@ -88,8 +84,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           Math.toIntExact(launcherConfig.getAttemptId()),
           launcherConfig.getDockerImage(),
           processFactory,
-          workerConfigs.getResourceRequirements(),
-          featureFlags);
+          workerConfigs.getResourceRequirements());
 
       return new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher);
     };

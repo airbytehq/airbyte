@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.discover.catalog;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardDiscoverCatalogInput;
@@ -39,7 +38,6 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final LogConfigs logConfigs;
   private final JobPersistence jobPersistence;
   private final String airbyteVersion;
-  private final FeatureFlags featureFlags;
 
   public DiscoverCatalogActivityImpl(final WorkerConfigs workerConfigs,
                                      final ProcessFactory processFactory,
@@ -48,8 +46,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final WorkerEnvironment workerEnvironment,
                                      final LogConfigs logConfigs,
                                      final JobPersistence jobPersistence,
-                                     final String airbyteVersion,
-                                     final FeatureFlags featureFlags) {
+                                     final String airbyteVersion) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
@@ -58,7 +55,6 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
-    this.featureFlags = featureFlags;
   }
 
   public AirbyteCatalog run(final JobRunConfig jobRunConfig,
@@ -91,7 +87,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     return () -> {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
-              processFactory, workerConfigs.getResourceRequirements(), featureFlags);
+              processFactory, workerConfigs.getResourceRequirements());
       final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory();
       return new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
     };

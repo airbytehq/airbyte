@@ -61,7 +61,7 @@ class AirbyteIntegrationLauncherTest {
   @BeforeEach
   void setUp() {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), featureFlags);
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements());
   }
 
   @Test
