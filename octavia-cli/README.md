@@ -157,7 +157,7 @@ You can also use a custom YAML file (one is already created on init in `api_http
 
 ```yaml
 headers:
-  Authorization: Basic foobar==
+  Authorization: Bearer my-secret-token
   User-Agent: octavia-cli/0.0.0
 ```
 
