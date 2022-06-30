@@ -30,10 +30,10 @@ class SandboxEnvSpec(BaseModel):
     auth_type: str = Field(default="sandbox_access_token", const=True, order=0)
     # it is string because UI has the bug https://github.com/airbytehq/airbyte/issues/6875
     advertiser_id: str = Field(
-        title="Advertiser ID", description="The Advertiser ID which generated for the developer's Sandbox application."
+        title="Advertiser ID", description="The Advertiser ID which generated for the developer's Sandbox application.", order=2
     )
 
-    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", airbyte_secret=True)
+    access_token: str = Field(title="Access Token", description="The long-term authorized access token.", order=1)
 
 
 class SourceTiktokMarketingSpec(BaseModel):
@@ -72,7 +72,6 @@ class SourceTiktokMarketingSpec(BaseModel):
         'href="https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation">the docs</a>.',
         enum=[g.value for g in ReportGranularity],
         order=3,
-        airbyte_hidden=True,
     )
 
     @classmethod
