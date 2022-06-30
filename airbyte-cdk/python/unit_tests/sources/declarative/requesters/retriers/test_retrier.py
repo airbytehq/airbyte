@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
     NonRetriableResponseStatus,
     RetryResponseStatus,
     StaticConstantBackoffStrategy,
+    WaitTimeFromHeaderBackoffStrategy,
 )
 
 
@@ -191,3 +192,15 @@ def test_chain_retrier_first_retrier_ignores_second_fails(test_name, first_retri
     response_mock = MagicMock()
     response_mock.ok = first_retrier_behavior == NonRetriableResponseStatus.Ok or second_retrier_behavior == NonRetriableResponseStatus.Ok
     assert retrier.should_retry(response_mock) == expected_behavior
+
+
+@pytest.mark.parametrize(
+    "test_name, header, expected_backoff_time",
+    [("test_wait_time_from_header", "wait_time", 60), ("test_wait_time_from_header", "absent_header", None)],
+)
+def test_wait_time_from_header(test_name, header, expected_backoff_time):
+    response_mock = MagicMock()
+    response_mock.headers = {"wait_time": 60}
+    backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header)
+    backoff = backoff_stratery.backoff(response_mock)
+    assert backoff == expected_backoff_time
