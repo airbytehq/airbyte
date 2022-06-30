@@ -57,9 +57,6 @@ public class BasicAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
-  private static final SyncMode INCREMENTAL_SYNC_MODE = SyncMode.INCREMENTAL;
-  private static final DestinationSyncMode DESTINATION_SYNC_MODE_APPEND = DestinationSyncMode.APPEND;
-
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
@@ -613,7 +610,7 @@ public class BasicAcceptanceTests {
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(INCREMENTAL_SYNC_MODE)
+        .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
         .primaryKey(List.of(List.of(COLUMN_NAME))));
@@ -726,9 +723,9 @@ public class BasicAcceptanceTests {
     testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
 
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(INCREMENTAL_SYNC_MODE)
+        .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(DESTINATION_SYNC_MODE_APPEND));
+        .destinationSyncMode(DestinationSyncMode.APPEND));
     final UUID connectionId =
         testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
@@ -807,9 +804,9 @@ public class BasicAcceptanceTests {
     testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
 
     catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(INCREMENTAL_SYNC_MODE)
+        .syncMode(SyncMode.INCREMENTAL)
         .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(DESTINATION_SYNC_MODE_APPEND));
+        .destinationSyncMode(DestinationSyncMode.APPEND));
     final UUID connectionId =
         testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
     LOGGER.info("Beginning {} sync 1", testInfo.getDisplayName());
