@@ -314,8 +314,15 @@ class ConnectionRenderer(BaseRenderer):
         rendered = self._render()
         data = yaml.safe_load(rendered)
         data["configuration"] = {k: v for k, v in configuration.items() if k not in self.KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION}
-        if "operations" in data["configuration"] and len(data["configuration"]["operations"]) == 0:
-            data["configuration"].pop("operations")
+        if "operations" in data["configuration"]:
+            if len(data["configuration"]["operations"]) == 0:
+                data["configuration"].pop("operations")
+            else:
+                for operation in data["configuration"]["operations"]:
+                    if "workspace_id" in operation:
+                        operation.pop("workspace_id")
+                    if "operation_id" in operation:
+                        operation.pop("operation_id")
         output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
         if self._confirm_overwrite(output_path):
             with open(output_path, "wb") as f:
