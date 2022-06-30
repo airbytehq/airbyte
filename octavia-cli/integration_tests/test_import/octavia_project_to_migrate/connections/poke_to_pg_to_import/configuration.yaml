@@ -1,8 +1,8 @@
 # Configuration for connection poke_to_pg
 definition_type: connection
 resource_name: poke_to_pg_to_import
-source_configuration_path: sources/poke/configuration.yaml
-destination_configuration_path: destinations/poke/configuration.yaml
+source_configuration_path: sources/poke_to_import/configuration.yaml
+destination_configuration_path: destinations/postgres_to_import/configuration.yaml
 
 # EDIT THE CONFIGURATION BELOW!
 configuration:
