@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -707,6 +708,57 @@ class WebBackendConnectionsHandlerTest {
             new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream"),
             new io.airbyte.protocol.models.StreamDescriptor().withName("updateStream")));
     orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
+  }
+
+  @Test
+  void testUpdateConnectionWithUpdatedSchemaPerStreamNoStreamsToReset() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
+        .namespaceDefinition(expected.getNamespaceDefinition())
+        .namespaceFormat(expected.getNamespaceFormat())
+        .prefix(expected.getPrefix())
+        .connectionId(expected.getConnectionId())
+        .schedule(expected.getSchedule())
+        .status(expected.getStatus())
+        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
+        .withRefreshedCatalog(true);
+
+    // state is per-stream
+    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(expected.getConnectionId());
+    when(stateHandler.getState(connectionIdRequestBody)).thenReturn(new ConnectionState().stateType(ConnectionStateType.STREAM));
+    when(configRepository.getConfiguredCatalogForConnection(expected.getConnectionId()))
+        .thenReturn(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog());
+
+    final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
+    when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+
+    when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
+        new ConnectionRead().connectionId(expected.getConnectionId()));
+    final ConnectionRead connectionRead = new ConnectionRead()
+        .connectionId(expected.getConnectionId())
+        .sourceId(expected.getSourceId())
+        .destinationId(expected.getDestinationId())
+        .name(expected.getName())
+        .namespaceDefinition(expected.getNamespaceDefinition())
+        .namespaceFormat(expected.getNamespaceFormat())
+        .prefix(expected.getPrefix())
+        .syncCatalog(expectedWithNewSchema.getSyncCatalog())
+        .status(expected.getStatus())
+        .schedule(expected.getSchedule());
+    when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
+    when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
+
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
+
+    assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
+
+    final ConnectionIdRequestBody connectionId = new ConnectionIdRequestBody().connectionId(result.getConnectionId());
+    verify(schedulerHandler, times(0)).resetConnection(connectionId);
+    verify(schedulerHandler, times(0)).syncConnection(connectionId);
+    verify(connectionsHandler, times(1)).updateConnection(any());
+    final InOrder orderVerifier = inOrder(eventRunner);
+    orderVerifier.verify(eventRunner, times(0)).synchronousResetConnection(eq(connectionId.getConnectionId()), any());
+    orderVerifier.verify(eventRunner, times(0)).startNewManualSync(connectionId.getConnectionId());
   }
 
   @Test

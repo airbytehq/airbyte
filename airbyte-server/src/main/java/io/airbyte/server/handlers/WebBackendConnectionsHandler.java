@@ -385,12 +385,14 @@ public class WebBackendConnectionsHandler {
         streamsToReset = apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
       }
 
-      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-          webBackendConnectionUpdate.getConnectionId(),
-          streamsToReset);
-      verifyManualOperationResult(manualOperationResult);
-      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      verifyManualOperationResult(manualOperationResult);
+      if (!streamsToReset.isEmpty()) {
+        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+            webBackendConnectionUpdate.getConnectionId(),
+            streamsToReset);
+        verifyManualOperationResult(manualOperationResult);
+        manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        verifyManualOperationResult(manualOperationResult);
+      }
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
