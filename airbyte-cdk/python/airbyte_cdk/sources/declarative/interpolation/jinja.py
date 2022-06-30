@@ -13,7 +13,7 @@ from jinja2.exceptions import UndefinedError
 
 
 class JinjaInterpolation(Interpolation):
-    def __init__(self, datetime_format: str = "%Y-%m-%d"):
+    def __init__(self):
         self._environment = Environment()
         # Defines some utility methods that can be called from template strings
         # eg "{{ today_utc() }}
