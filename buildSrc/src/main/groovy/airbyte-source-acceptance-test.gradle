@@ -36,8 +36,8 @@ class AirbyteSourceAcceptanceTestPlugin implements Plugin<Project> {
         if (project.hasProperty('airbyteDockerTest')){
             project.sourceAcceptanceTest.dependsOn(project.airbyteDockerTest)
         }
-        if (project.hasProperty('buildDockerImage-all')) {
-            project.sourceAcceptanceTest.dependsOn(project.'buildDockerImage-all')
+        if (project.hasProperty('buildDockerImage')) {
+            project.sourceAcceptanceTest.dependsOn(project.'buildDockerImage')
         }
         // make sure we create the integrationTest task once
         if (!project.tasks.findByName('integrationTest')) {

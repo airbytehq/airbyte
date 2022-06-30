@@ -39,8 +39,8 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
             if(project.hasProperty('airbyteDocker')) {
                 dependsOn project.airbyteDocker
             }
-            if (project.hasProperty('buildDockerImage-all')) {
-                dependsOn project.'buildDockerImage-all'
+            if (project.hasProperty('buildDockerImage')) {
+                dependsOn project.'buildDockerImage'
             }
 
             maxHeapSize = '3g'
