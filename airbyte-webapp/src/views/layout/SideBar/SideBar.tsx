@@ -57,7 +57,6 @@ export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    console.log(isActive);
     const isChild = location.pathname.split("/").length > 4 && !location.pathname.includes("settings");
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
