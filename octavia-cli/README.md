@@ -142,7 +142,7 @@ docker-compose run octavia-cli <command>`
 | `--airbyte-url`                          | Airbyte instance URL.                                                             | `AIRBYTE_URL`              | `http://localhost:8000`                                |
 | `--workspace-id`                         | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
 | `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
-| `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | not supported.             | None                                                   |
+| `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | None                       | None                                                   |
 | `--api-http-headers-file-path`           | Path to the YAML file that contains custom HTTP Headers to send to Airbyte's API. | None                       | None                                                   |
 
 #### Using custom HTTP headers
