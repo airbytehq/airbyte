@@ -66,3 +66,82 @@ The advice here is best-effort and by no means comprehensive. Please reach out o
 
 If you've been running Airbyte in production and have more tips up your sleeve, we welcome contributions!
 
+## Recommended Metrics
+Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https://docs.airbyte.com/operator-guides/collecting-metrics/)
+
+### Key Metrics 
+
+<table>
+  <tr>
+   <td><strong>Key Metrics</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>oldest_pending_job_age_secs
+   </td>
+   <td>Shows how long a pending job waits before it is scheduled. If a job is in pending state for a long time, more workers may be required.
+   </td>
+  </tr>
+  <tr>
+   <td>oldest_running_job_age_secs
+   </td>
+   <td>Shows how long the oldest job has been running. A running job that is too large can indicate stuck jobs. This is relative to each job’s runtime. 
+   </td>
+  </tr>
+  <tr>
+   <td>job_failed_by_release_stage
+   </td>
+   <td>Shows jobs that have failed in that release stage and is tagged as alpha, beta, or GA.
+   </td>
+  </tr>
+</table>
+      
+        :::note
+
+        Metrics with `by_release_stage` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.  
+        
+        :::
+
+:::code
+
+**Example**
+
+If a job was created for an Alpha source to a Beta destination, and the outcome of the job is a success, the following metrics are displayed:
+
+`job_created_by_release_stage\[“alpha”\] = 1;`  
+`job_created_by_release_stage\[“beta”\] = 1;`  
+`job_failed_by_release_stage\[“alpha”\] = 1;`  
+`job_succeeded_by_release_stage\[“beta”\] = 1;`  
+
+**Note:** Each job has a source and destination, so each metric is counted twice — once for source and once for destination.
+
+:::
+
+<table>
+  <tr>
+   <td><strong>Additional Recommended Metrics</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>num_running_jobs & num_pending_jobs
+   </td>
+   <td>Shows how many jobs are currently running and how many jobs are in pending state. These help you understand the general system state.
+   </td>
+  </tr>
+  <tr>
+   <td>job_succeeded_by_release_stage
+   </td>
+   <td>Shows successful jobs in that release stage and is tagged as alpha, beta, or GA.
+   </td>
+  </tr>
+  <tr>
+   <td>job_created_by_release_stage
+   </td>
+   <td>Shows the jobs created in that release stage and is tagged as alpha, beta, or GA.
+   </td>
+  </tr>
+</table>
