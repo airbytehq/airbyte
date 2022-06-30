@@ -1402,29 +1402,6 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/state/type/get:
-    post:
-      tags:
-        - connection
-      summary: Fetch the current type for a connection.
-      operationId: getStateType
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConnectionStateType"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/search:
     post:
       tags:
@@ -2017,6 +1994,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/state/get_type:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state type for a connection.
+      operationId: getStateType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionStateType"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/workspace/state:
@@ -4082,6 +4082,7 @@ components:
       type: object
       required:
         - transformType
+        - streamDescriptor
       properties:
         transformType:
           type: string
@@ -4089,9 +4090,7 @@ components:
             - add_stream
             - remove_stream
             - update_stream
-        addStream:
-          $ref: "#/components/schemas/StreamDescriptor"
-        removeStream:
+        streamDescriptor:
           $ref: "#/components/schemas/StreamDescriptor"
         updateStream:
           type: array
@@ -4103,6 +4102,7 @@ components:
       description: "Describes the difference between two Streams."
       required:
         - transformType
+        - fieldName
       properties:
         transformType:
           type: string
@@ -4110,39 +4110,39 @@ components:
             - add_field
             - remove_field
             - update_field_schema
+        fieldName:
+          $ref: "#/components/schemas/FieldName"
         addField:
-          $ref: "#/components/schemas/FieldNameAndSchema"
+          $ref: "#/components/schemas/FieldAdd"
         removeField:
-          $ref: "#/components/schemas/FieldNameAndSchema"
+          $ref: "#/components/schemas/FieldRemove"
         updateFieldSchema:
           $ref: "#/components/schemas/FieldSchemaUpdate"
-    FieldNameAndSchema:
+    FieldAdd:
       type: object
-      required:
-        - fieldName
-        - fieldSchema
       properties:
-        fieldName:
-          type: array
-          items:
-            type: string
-        fieldSchema:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldRemove:
+      type: object
+      properties:
+        schema:
           $ref: "#/components/schemas/FieldSchema"
     FieldSchemaUpdate:
       type: object
       required:
-        - fieldName
         - oldSchema
         - newSchema
       properties:
-        fieldName:
-          type: array
-          items:
-            type: string
         oldSchema:
           $ref: "#/components/schemas/FieldSchema"
         newSchema:
           $ref: "#/components/schemas/FieldSchema"
+    FieldName:
+      description: A field name is a list of strings that form the path to the field.
+      type: array
+      items:
+        type: string
     FieldSchema:
       description: JSONSchema representation of the field
       type: object

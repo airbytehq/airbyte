@@ -15,7 +15,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="octavia-cli",
-    version="0.39.23",
+    version="0.39.29",
     description="A command line interface to manage Airbyte configurations",
     long_description=README,
     author="Airbyte",

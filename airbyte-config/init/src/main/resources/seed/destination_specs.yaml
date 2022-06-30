@@ -285,7 +285,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-bigquery:1.1.9"
+- dockerImage: "airbyte/destination-bigquery:1.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -366,7 +366,6 @@
           order: 3
           oneOf:
           - title: "Standard Inserts"
-            additionalProperties: false
             required:
             - "method"
             properties:
@@ -374,7 +373,6 @@
                 type: "string"
                 const: "Standard"
           - title: "GCS Staging"
-            additionalProperties: false
             required:
             - "method"
             - "gcs_bucket_name"
@@ -497,7 +495,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.9"
+- dockerImage: "airbyte/destination-bigquery-denormalized:1.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/bigquery"
     connectionSpecification:
@@ -538,7 +536,6 @@
           order: 2
           oneOf:
           - title: "Standard Inserts"
-            additionalProperties: false
             required:
             - "method"
             properties:
@@ -546,7 +543,6 @@
                 type: "string"
                 const: "Standard"
           - title: "GCS Staging"
-            additionalProperties: false
             type: "object"
             required:
             - "method"
@@ -1460,7 +1456,103 @@
     - "overwrite"
     - "append"
     supportsNamespaces: true
-- dockerImage: "airbyte/destination-gcs:0.2.8"
+- dockerImage: "airbyte/destination-firebolt:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/destinations/firebolt"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Firebolt Spec"
+      type: "object"
+      required:
+      - "username"
+      - "password"
+      - "database"
+      additionalProperties: false
+      properties:
+        username:
+          type: "string"
+          title: "Username"
+          description: "Firebolt email address you use to login."
+          examples:
+          - "username@email.com"
+          order: 0
+        password:
+          type: "string"
+          title: "Password"
+          description: "Firebolt password."
+          airbyte_secret: true
+          order: 1
+        account:
+          type: "string"
+          title: "Account"
+          description: "Firebolt account to login."
+        host:
+          type: "string"
+          title: "Host"
+          description: "The host name of your Firebolt database."
+          examples:
+          - "api.app.firebolt.io"
+        database:
+          type: "string"
+          title: "Database"
+          description: "The database to connect to."
+        engine:
+          type: "string"
+          title: "Engine"
+          description: "Engine name or url to connect to."
+        loading_method:
+          type: "object"
+          title: "Loading Method"
+          description: "Loading method used to select the way data will be uploaded\
+            \ to Firebolt"
+          oneOf:
+          - title: "SQL Inserts"
+            additionalProperties: false
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "SQL"
+          - title: "External Table via S3"
+            additionalProperties: false
+            required:
+            - "method"
+            - "s3_bucket"
+            - "s3_region"
+            - "aws_key_id"
+            - "aws_key_secret"
+            properties:
+              method:
+                type: "string"
+                const: "S3"
+              s3_bucket:
+                type: "string"
+                title: "S3 bucket name"
+                description: "The name of the S3 bucket."
+              s3_region:
+                type: "string"
+                title: "S3 region name"
+                description: "Region name of the S3 bucket."
+                examples:
+                - "us-east-1"
+              aws_key_id:
+                type: "string"
+                title: "AWS Key ID"
+                airbyte_secret: true
+                description: "AWS access key granting read and write access to S3."
+              aws_key_secret:
+                type: "string"
+                title: "AWS Key Secret"
+                airbyte_secret: true
+                description: "Corresponding secret part of the AWS Key"
+    supportsIncremental: true
+    supportsNormalization: false
+    supportsDBT: true
+    supported_destination_sync_modes:
+    - "overwrite"
+    - "append"
+- dockerImage: "airbyte/destination-gcs:0.2.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/gcs"
     connectionSpecification:
@@ -1472,7 +1564,6 @@
       - "gcs_bucket_path"
       - "credential"
       - "format"
-      additionalProperties: false
       properties:
         gcs_bucket_name:
           title: "GCS Bucket Name"
@@ -3622,7 +3713,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.40"
+- dockerImage: "airbyte/destination-redshift:0.3.46"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -3680,7 +3771,6 @@
           description: "The method how the data will be uploaded to the database."
           oneOf:
           - title: "Standard"
-            additionalProperties: false
             required:
             - "method"
             properties:
@@ -3688,7 +3778,6 @@
                 type: "string"
                 const: "Standard"
           - title: "S3 Staging"
-            additionalProperties: false
             required:
             - "method"
             - "s3_bucket_name"
@@ -3773,6 +3862,45 @@
                   \ the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"\
                   > docs</a> for details."
                 default: true
+              encryption:
+                title: "Encryption"
+                type: "object"
+                description: "How to encrypt the staging data"
+                default:
+                  encryption_type: "none"
+                oneOf:
+                - title: "No encryption"
+                  description: "Staging data will be stored in plaintext."
+                  type: "object"
+                  required:
+                  - "encryption_type"
+                  properties:
+                    encryption_type:
+                      type: "string"
+                      const: "none"
+                      enum:
+                      - "none"
+                      default: "none"
+                - title: "AES-CBC envelope encryption"
+                  description: "Staging data will be encrypted using AES-CBC envelope\
+                    \ encryption."
+                  type: "object"
+                  required:
+                  - "encryption_type"
+                  properties:
+                    encryption_type:
+                      type: "string"
+                      const: "aes_cbc_envelope"
+                      enum:
+                      - "aes_cbc_envelope"
+                      default: "aes_cbc_envelope"
+                    key_encrypting_key:
+                      type: "string"
+                      title: "Key"
+                      description: "The key, base64-encoded. Must be either 128, 192,\
+                        \ or 256 bits. Leave blank to have Airbyte generate an ephemeral\
+                        \ key for each sync."
+                      airbyte_secret: true
     supportsIncremental: true
     supportsNormalization: true
     supportsDBT: true
@@ -3823,7 +3951,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.8"
+- dockerImage: "airbyte/destination-s3:0.3.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -3835,7 +3963,6 @@
       - "s3_bucket_path"
       - "s3_bucket_region"
       - "format"
-      additionalProperties: false
       properties:
         access_key_id:
           type: "string"
@@ -4242,7 +4369,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.29"
+- dockerImage: "airbyte/destination-snowflake:0.4.30"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4373,7 +4500,6 @@
           order: 8
           oneOf:
           - title: "Select another option"
-            additionalProperties: false
             description: "Select another option"
             required:
             - "method"
@@ -4386,7 +4512,6 @@
                 - "Standard"
                 default: "Standard"
           - title: "[Recommended] Internal Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file.\
               \ Recommended for large production workloads for better speed and scalability."
@@ -4401,7 +4526,6 @@
                 - "Internal Staging"
                 default: "Internal Staging"
           - title: "AWS S3 Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
               \ for large production workloads for better speed and scalability."
@@ -4523,7 +4647,6 @@
                         \ key for each sync."
                       airbyte_secret: true
           - title: "GCS Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended\
               \ for large production workloads for better speed and scalability."
@@ -4570,7 +4693,6 @@
                 multiline: true
                 order: 3
           - title: "Azure Blob Storage Staging"
-            additionalProperties: false
             description: "Writes large batches of records to a file, uploads the file\
               \ to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload\
               \ the file. Recommended for large production workloads for better speed\

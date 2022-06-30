@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -47,6 +48,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
   @BeforeEach
@@ -137,10 +139,10 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         final AirbyteGlobalState globalState = new AirbyteGlobalState()
             .withSharedState(Jsons.jsonNode(new CdcState()))
             .withStreamStates(List.of());
-        return List.of(new AirbyteStateMessage().withStateType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
       } else {
         return List.of(new AirbyteStateMessage()
-            .withStateType(AirbyteStateType.STREAM)
+            .withType(AirbyteStateType.STREAM)
             .withStream(new AirbyteStreamState()));
       }
     }
