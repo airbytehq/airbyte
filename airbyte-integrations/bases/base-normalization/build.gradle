@@ -104,6 +104,8 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
 
 // DATs have some additional tests that exercise normalization code paths,
 // so we want to run these in addition to the base-normalization integration tests.
+// If you add more items here, make sure to also to have CI fetch their credentials.
+// See git history for an example.
 integrationTest.dependsOn(":airbyte-integrations:connectors:destination-bigquery:integrationTest")
 integrationTest.dependsOn(":airbyte-integrations:connectors:destination-postgres:integrationTest")
 integrationTest.dependsOn(":airbyte-integrations:connectors:destination-snowflake:integrationTest")
