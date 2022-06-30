@@ -2,7 +2,7 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useAsyncFn, useUnmount } from "react-use";
+import { useAsyncFn, useUnmount, useToggle } from "react-use";
 import styled from "styled-components";
 
 import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
@@ -89,8 +89,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
   const connectionService = useConnectionService();
   const [diffAcknowledged, setDiffAcknowledged] = useState(false);
-  console.log(diffAcknowledged, setDiffAcknowledged);
-
+  const [schemaUpdateModalOpen, setSchemaUpdateModalOpen] = useToggle(false);
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
@@ -191,14 +190,14 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   return (
     <Content>
       <Card>
-        {!isRefreshingCatalog && connection.catalogDiff && !diffAcknowledged && (
+        {schemaUpdateModalOpen && !diffAcknowledged && (
           <CatalogDiffModal
             catalogDiff={connection.catalogDiff}
             catalog={connection.syncCatalog}
             setDiffAcknowledged={setDiffAcknowledged}
           />
         )}
-        {connection ? (
+        {!isRefreshingCatalog && connection ? (
           <ConnectionForm
             mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
