@@ -35,7 +35,9 @@ else
     export SUB_BUILD="CONNECTORS_BASE"
     # avoid schema conflicts when multiple tests for normalization are run concurrently
     export RANDOM_TEST_SCHEMA="true"
+    # TODO remove airbyteDocker once we fully migrate to the new task
     ./gradlew --no-daemon --scan airbyteDocker
+    ./gradlew --no-daemon --scan buildDockerImage
   elif [[ "$connector" == *"bases"* ]]; then
     connector_name=$(echo $connector | cut -d / -f 2)
     selected_performance_test=$(echo "$all_performance_tests" | grep "^$connector_name$" || echo "")

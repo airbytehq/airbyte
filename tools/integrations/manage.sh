@@ -57,7 +57,7 @@ cmd_build() {
     ./gradlew --no-daemon "$(_to_gradle_path "$path" build)"
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
-      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
+      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:buildDockerImage
     fi
 
     ./gradlew --no-daemon "$(_to_gradle_path "$path" integrationTest)"
