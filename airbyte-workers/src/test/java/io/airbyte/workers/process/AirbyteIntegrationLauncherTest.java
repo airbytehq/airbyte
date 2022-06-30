@@ -15,6 +15,7 @@ import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
@@ -49,7 +50,8 @@ class AirbyteIntegrationLauncherTest {
   private static final Map<String, String> JOB_METADATA = Map.of(
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
-      WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT));
+      WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
+      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(false));
 
   private WorkerConfigs workerConfigs;
   @Mock
