@@ -1,3 +1,6 @@
+@use "../../../../scss/colors";
+@use "../components/StreamRow.module.scss";
+
 .sectionContainer {
   display: flex;
   flex-direction: column;
@@ -8,4 +11,23 @@
   font-weight: 500;
   line-height: 17px;
   padding: 15px 20px 15px 20px;
+}
+
+.sectionSubHeader {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px 10px 0px 45px;
+  gap: 10px;
+  width: 100%;
+  height: 22px;
+
+  & th {
+    @extend .nameCell;
+    text-align: left;
+    font-weight: 400;
+    font-size: 10px;
+    color: colors.$grey;
+    line-height: 12px;
+  }
 }

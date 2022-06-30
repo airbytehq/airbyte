@@ -16,16 +16,16 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
   //do we already have a reusable accordion that accepts children? if so use that...
   console.log(data);
   //todo: this is basically the same set of filters as what happens at the root level with the streams... should that logic be exported/combined?
-  // const addedFields = data?.filter((item) => item.transformType === "add_field");
-  // const removedFields = data?.filter((item) => item.transformType === "remove_field");
-  // const updatedFields = data?.filter((item) => item.transformType === "update_field_schema");
 
   // /* TODO:    1. Timebox trying out a Headless UI accordion here, otherwise can implement our own
   //             2. Accordion will have a header with the caret, the name, and the number of added/removed/udpated fields...
   //             3. maybe a cimpler way to pass those props?
   //   */
 
-  const updatedFields = data.updateStream;
+  const fieldTransforms = data.updateStream;
+  const addedFields = fieldTransforms?.filter((item) => item.transformType === "add_field");
+  const removedFields = fieldTransforms?.filter((item) => item.transformType === "remove_field");
+  const updatedFields = fieldTransforms?.filter((item) => item.transformType === "update_field_schema");
 
   return (
     <div className={styles.accordionContainer}>
@@ -34,10 +34,11 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
           <>
             <Accordion.Button className={styles.accordionButton}>
               <ModificationIcon />{" "}
-              {open ? <FontAwesomeIcon icon={faAngleRight} /> : <FontAwesomeIcon icon={faAngleDown} />}
-              <div />
+              {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
+              <td className={styles.nameCell}>{data.streamDescriptor.namespace}</td>
+              <td className={styles.nameCell}>{data.streamDescriptor.name}</td>
             </Accordion.Button>
-            <Accordion.Panel>This is the panel</Accordion.Panel>
+            <Accordion.Panel>howdy</Accordion.Panel>
           </>
         )}
       </Accordion>

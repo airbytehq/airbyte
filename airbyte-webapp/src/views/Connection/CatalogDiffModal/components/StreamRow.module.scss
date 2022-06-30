@@ -27,6 +27,9 @@
   &.minus {
     color: colors.$red;
   }
+  &.mod {
+    color: colors.$blue-100;
+  }
 }
 
 .syncModeBox {
@@ -42,6 +45,6 @@
   }
 }
 
-.name {
-  width: 230px;
+.nameCell {
+  width: 150px;
 }

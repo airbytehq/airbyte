@@ -15,16 +15,47 @@ interface CatalogDiffModalProps {
   setDiffAcknowledged: Dispatch<SetStateAction<boolean>>;
 }
 export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff, catalog, setDiffAcknowledged }) => {
-  console.log(catalogDiff);
-  const addedStreams = catalogDiff.transforms.filter((item) => item.transformType === "add_stream");
-  const removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
+  let addedStreams = catalogDiff.transforms.filter((item) => item.transformType === "add_stream");
+  let removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
   let updatedStreams = catalogDiff.transforms.filter((item) => item.transformType === "update_stream");
 
+  if (!addedStreams.length) {
+    addedStreams = [
+      {
+        transformType: "add_stream",
+        streamDescriptor: { namespace: "apple", name: "banana" },
+      },
+      {
+        transformType: "add_stream",
+        streamDescriptor: { namespace: "apple", name: "carrot" },
+      },
+    ];
+  }
+  if (!removedStreams.length) {
+    removedStreams = [
+      {
+        transformType: "remove_stream",
+        streamDescriptor: { namespace: "apple", name: "dragonfruit" },
+      },
+      {
+        transformType: "remove_stream",
+        streamDescriptor: { namespace: "apple", name: "eclair" },
+      },
+      {
+        transformType: "remove_stream",
+        streamDescriptor: { namespace: "apple", name: "fishcake" },
+      },
+      {
+        transformType: "remove_stream",
+        streamDescriptor: { namespace: "apple", name: "gelatin_mold" },
+      },
+    ];
+  }
   if (!updatedStreams.length) {
     updatedStreams = [
       {
         transformType: "update_stream",
-        streamDescriptor: { namespace: "apple", name: "banana" },
+        streamDescriptor: { namespace: "apple", name: "harissa_paste" },
         updateStream: [
           { transformType: "add_field", fieldName: ["users", "phone"] },
           { transformType: "add_field", fieldName: ["users", "email"] },
@@ -43,11 +74,9 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
   return (
     <Modal title={<FormattedMessage id="connection.updateSchema.completed" />} onClose={() => null}>
       <div className={styles.modalContent}>
-        {addedStreams.length > 0 && <CatalogDiffSection data={addedStreams} catalog={catalog} />}
         {removedStreams.length > 0 && <CatalogDiffSection data={removedStreams} catalog={catalog} />}
-        {/* {updatedStreams.length > 0 &&  */}
-        <CatalogDiffSection data={updatedStreams} catalog={catalog} />
-        {/* } */}
+        {addedStreams.length > 0 && <CatalogDiffSection data={addedStreams} catalog={catalog} />}
+        {updatedStreams.length > 0 && <CatalogDiffSection data={updatedStreams} catalog={catalog} />}
       </div>
       <div className={styles.buttonContainer}>
         <LoadingButton onClick={() => setDiffAcknowledged(true)}>

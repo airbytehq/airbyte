@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import { FormattedMessage } from "react-intl";
 
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
@@ -6,15 +7,13 @@ import { CatalogDiffAccordion } from "./CatalogDiffAccordion";
 import styles from "./CatalogDiffSection.module.scss";
 import { StreamRow } from "./StreamRow";
 
-interface CatalogDiffSectionProps {
+interface StreamSectionProps {
   data: StreamTransform[];
   catalog: AirbyteCatalog;
 }
 
-export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, catalog }) => {
+export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog }) => {
   //note: do we have to send the catalog along for a field?
-  //isChild will be used to demote headings within the accordion
-  console.log("section");
   const diffVerb = data[0].transformType.includes("add")
     ? "new"
     : data[0].transformType.includes("remove")
@@ -28,9 +27,15 @@ export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, ca
     : data[0].transformType.includes("field")
     ? "field"
     : undefined;
+
+  console.log(data[0].transformType);
+
+  const subheaderStyles = classnames(styles.sectionSubHeader, {
+    [styles.padLeft]: data[0].transformType === "update_stream",
+  });
+
   return (
     <div className={styles.sectionContainer}>
-      {/* header: {number} {descriptor} {object} */}
       <div className={styles.sectionHeader}>
         {data.length}{" "}
         <FormattedMessage
@@ -40,14 +45,20 @@ export const CatalogDiffSection: React.FC<CatalogDiffSectionProps> = ({ data, ca
           }}
         />
       </div>
-      {/* update stream should make an accordion, others should make a row */}
-      {data.map((item) => {
-        return item.transformType === "update_stream" ? (
-          <CatalogDiffAccordion data={item} catalog={catalog} />
-        ) : (
-          <StreamRow item={item} catalog={catalog} />
-        );
-      })}
+      <table>
+        <tr className={subheaderStyles}>
+          <th>Namespace</th>
+          <th> Stream name</th>
+          <th />
+        </tr>
+        {data.map((item) => {
+          return item.transformType === "update_stream" ? (
+            <CatalogDiffAccordion data={item} catalog={catalog} />
+          ) : (
+            <StreamRow item={item} catalog={catalog} />
+          );
+        })}
+      </table>
     </div>
   );
 };
