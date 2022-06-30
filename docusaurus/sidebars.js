@@ -220,7 +220,6 @@ module.exports = {
         'contributing-to-airbyte/code-style',
         'contributing-to-airbyte/gradle-cheatsheet',
         'contributing-to-airbyte/gradle-dependency-update',
-        'contributing-to-airbyte/monorepo-python-development',
         {
           type: 'link',
           label: 'Connector template',
@@ -248,7 +247,6 @@ module.exports = {
       label: 'Understand Airbyte',
       items: [
         'understanding-airbyte/beginners-guide-to-catalog',
-        'understanding-airbyte/catalog',
         'understanding-airbyte/airbyte-protocol',
         'understanding-airbyte/airbyte-protocol-docker',
         'understanding-airbyte/basic-normalization',

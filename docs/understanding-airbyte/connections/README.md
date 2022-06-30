@@ -4,13 +4,13 @@ A connection is a configuration for syncing data between a source and a destinat
 
 * Sync schedule: when to trigger a sync of the data.
 * Destination [Namespace](../namespaces.md) and stream names: where the data will end up being written.
-* A catalog selection: which [streams and fields](../catalog.md) to replicate from the source
+* A catalog selection: which [streams and fields](../airbyte-protocol.md#catalog) to replicate from the source
 * Sync mode: how streams should be replicated \(read and write\):
 * Optional transformations: how to convert Airbyte protocol messages \(raw JSON blob\) data into some other data representations. 
 
 ## Sync schedules
 
-Sync schedules are explained below. For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](../catalog.md).
+Sync schedules are explained below. For information about catalog selections, see [AirbyteCatalog & ConfiguredAirbyteCatalog](../airbyte-protocol.md#catalog).
 
 Syncs will be triggered by either:
 

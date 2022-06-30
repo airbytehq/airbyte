@@ -699,6 +699,13 @@ where 1 = 1
         return col
 
     def generate_scd_type_2_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]]) -> Any:
+        """
+        This model pulls data from the ID-hashing model and appends it to a log of record updates. When inserting an update to a record, it also
+        checks whether that record had a previously-existing row in the SCD model; if it does, then that previous row's end_at column is set to
+        the new update's start_at.
+
+        See the docs for more details: https://docs.airbyte.com/understanding-airbyte/basic-normalization#normalization-metadata-columns
+        """
         cursor_field = self.get_cursor_field(column_names)
         order_null = f"is null asc,\n            {cursor_field} desc"
         if self.destination_type.value == DestinationType.ORACLE.value:
@@ -1026,6 +1033,10 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 raise ValueError(f"No path specified for stream {self.stream_name}")
 
     def generate_final_model(self, from_table: str, column_names: Dict[str, Tuple[str, str]], unique_key: str = "") -> Any:
+        """
+        This is the table that the user actually wants. In addition to the columns that the source outputs, it has some additional metadata columns;
+        see the basic normalization docs for an explanation: https://docs.airbyte.com/understanding-airbyte/basic-normalization#normalization-metadata-columns
+        """
         template = Template(
             """
 -- Final base SQL model

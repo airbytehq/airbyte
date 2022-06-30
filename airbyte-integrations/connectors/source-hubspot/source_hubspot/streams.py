@@ -5,11 +5,10 @@
 
 import sys
 import time
-import urllib.parse
 from abc import ABC, abstractmethod
-from functools import lru_cache
+from functools import cached_property, lru_cache
 from http import HTTPStatus
-from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import backoff
 import pendulum as pendulum
@@ -22,11 +21,7 @@ from airbyte_cdk.sources.utils.sentry import AirbyteSentry
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
-from source_hubspot.helpers import GroupByKey, IRecordPostProcessor, StoreAsIs
-
-# The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
-# so it was decided to limit the length of the `properties` parameter to 15000 characters.
-PROPERTIES_PARAM_MAX_LENGTH = 15000
+from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -58,30 +53,6 @@ CUSTOM_FIELD_TYPE_TO_VALUE = {
 }
 
 CUSTOM_FIELD_VALUE_TO_TYPE = {v: k for k, v in CUSTOM_FIELD_TYPE_TO_VALUE.items()}
-
-
-def split_properties(properties_list: List[str]) -> Iterator[Tuple[str]]:
-    summary_length = 0
-    local_properties = []
-    for property_ in properties_list:
-        current_property_length = len(urllib.parse.quote(f"property={property_}&"))
-        if current_property_length + summary_length >= PROPERTIES_PARAM_MAX_LENGTH:
-            yield local_properties
-            local_properties = []
-            summary_length = 0
-
-        local_properties.append(property_)
-        summary_length += current_property_length
-
-    if local_properties:
-        yield local_properties
-
-
-def too_many_properties(properties_list: List[str]) -> bool:
-    # Do not iterate over the generator until the end. Here we need to know if it produces more than one record
-    generator = split_properties(properties_list)
-    _ = next(generator)
-    return next(generator, None) is not None
 
 
 def retry_connection_handler(**kwargs):
@@ -260,6 +231,13 @@ class Stream(HttpStream, ABC):
     ) -> str:
         return self.url
 
+    @cached_property
+    def _property_wrapper(self) -> IURLPropertyRepresentation:
+        properties = list(self.properties.keys())
+        if "v1" in self.url:
+            return APIv1Property(properties)
+        return APIv3Property(properties)
+
     def __init__(self, api: API, start_date: str = None, credentials: Mapping[str, Any] = None, **kwargs):
         super().__init__(**kwargs)
         self._api: API = api
@@ -291,12 +269,12 @@ class Stream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-        params: Mapping[str, Any] = None,
+        properties: IURLPropertyRepresentation = None,
     ) -> requests.Response:
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request_params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if params:
-            request_params.update(params)
+        if properties:
+            request_params.update(properties.as_url_param())
 
         request = self._create_prepared_request(
             path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -322,7 +300,6 @@ class Stream(HttpStream, ABC):
 
     def _read_stream_records(
         self,
-        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -338,10 +315,10 @@ class Stream(HttpStream, ABC):
         post_processor: IRecordPostProcessor = GroupByKey(self.primary_key) if group_by_pk else StoreAsIs()
         response = None
 
-        for properties in split_properties(properties_list):
-            params = {"property": properties}
+        properties = self._property_wrapper
+        for chunk in properties.split():
             response = self.handle_request(
-                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, params=params
+                stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token, properties=chunk
             )
             for record in self._transform(self.parse_response(response, stream_state=stream_state)):
                 post_processor.add_record(record)
@@ -363,10 +340,9 @@ class Stream(HttpStream, ABC):
             with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
                 while not pagination_complete:
 
-                    properties_list = list(self.properties.keys())
-                    if properties_list and too_many_properties(properties_list):
+                    properties = self._property_wrapper
+                    if properties and properties.too_many_properties:
                         records, response = self._read_stream_records(
-                            properties_list=properties_list,
                             stream_slice=stream_slice,
                             stream_state=stream_state,
                             next_page_token=next_page_token,
@@ -376,7 +352,7 @@ class Stream(HttpStream, ABC):
                             stream_slice=stream_slice,
                             stream_state=stream_state,
                             next_page_token=next_page_token,
-                            params={"property": properties_list},
+                            properties=properties,
                         )
                         records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
@@ -797,12 +773,12 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     def _process_search(
         self,
-        properties_list: List[str],
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Tuple[List, requests.Response]:
         stream_records = {}
+        properties_list = list(self.properties.keys())
         payload = (
             {
                 "filters": [{"value": int(self._state.timestamp() * 1000), "propertyName": self.last_modified_field, "operator": "GTE"}],
@@ -836,11 +812,8 @@ class CRMSearchStream(IncrementalStream, ABC):
         latest_cursor = None
         with AirbyteSentry.start_transaction("read_records", self.name), AirbyteSentry.start_transaction_span("read_records"):
             while not pagination_complete:
-                properties_list = list(self.properties.keys())
-
                 if self.state:
                     records, raw_response = self._process_search(
-                        properties_list,
                         next_page_token=next_page_token,
                         stream_state=stream_state,
                         stream_slice=stream_slice,
@@ -848,7 +821,6 @@ class CRMSearchStream(IncrementalStream, ABC):
 
                 else:
                     records, raw_response = self._read_stream_records(
-                        properties_list=properties_list,
                         stream_slice=stream_slice,
                         stream_state=stream_state,
                         next_page_token=next_page_token,
