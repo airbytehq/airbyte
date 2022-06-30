@@ -285,10 +285,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  FROM   pg_class c
                  JOIN   pg_namespace n on c.relnamespace = n.oid
                  WHERE  has_table_privilege(c.oid, 'SELECT')
+                 -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
                  AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
-                 and    nspname = ?
+                 and    ((? is null) OR nspname = ?)
           """);
       ps.setString(1, schema);
+      ps.setString(2, schema);
       return ps;
     };
 
