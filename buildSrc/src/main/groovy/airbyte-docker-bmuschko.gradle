@@ -10,11 +10,10 @@ class AirbyteDockerBmuschkoConfiguration {
 }
 
 /**
- * Creates 'buildDockerImage*' tasks based on dockerfileToImageName. If dockerfileToImageName does not contain an entry for 'Dockerfile',
- * this plugin will assume that there should be a ['Dockerfile': project.name] entry. This entry will be mapped to the buildDockerImage task;
- * all others will be mapped to buildDockerImage-<dockerfileName>.
+ * Creates 'buildDockerImage-*' tasks based on dockerfileToImageName. If dockerfileToImageName does not contain an entry for 'Dockerfile',
+ * this plugin will assume that there should be a ['Dockerfile': project.name] entry.
  *
- * Also creates a buildDockerImage-all task, which simply executes all of the buildDockerImage tasks (including the default 'Dockerfile' entry).
+ * Also creates a buildDockerImage task, which simply executes all of the buildDockerImage-XYZ tasks.
  *
  * These tasks depend on project.assemble, and register themselves as dependencies of project.build. If other tasks need to run before buildDockerImage,
  * you can list them in additionalDependencies.
@@ -24,7 +23,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
         def extension = project.extensions.create('airbyteDockerBmuschko', AirbyteDockerBmuschkoConfiguration)
 
         // Create a noop task to aggregate all the individual Dockerfile builds together
-        def allTask = project.task('buildDockerImage-all')
+        def allTask = project.task('buildDockerImage')
 
         // AirbyteDockerBmuschkoConfiguration's values aren't available until after Gradle fully evaluates the project, so we need to wait until that happens.
         project.afterEvaluate {
@@ -69,13 +68,7 @@ class AirbyteDockerBmuschkoPlugin implements Plugin<Project> {
                 def dockerfileName = entry.getKey()
                 def imageName = entry.getValue()
 
-                // For the Dockerfile task, we want to use the name buildDockerImage rather than buildDockerImage-Dockerfile
-                // (again, this is just for convenience)
-                def taskName = 'buildDockerImage'
-                if (!'Dockerfile'.equals(dockerfileName)) {
-                    taskName += "-${dockerfileName}"
-                }
-
+                def taskName = "buildDockerImage-${dockerfileName}"
                 def buildDockerImageTask = createTask(project, taskName, imageName, dockerfileName, extension.archOverride)
 
                 buildDockerImageTask.dependsOn copyFilesTask
