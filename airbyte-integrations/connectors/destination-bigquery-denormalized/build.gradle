@@ -26,7 +26,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery-denormalized')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').buildDockerImage.outputs)
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').'buildDockerImage-Dockerfile'.outputs)
     integrationTestJavaImplementation project(':airbyte-db:db-lib')
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
