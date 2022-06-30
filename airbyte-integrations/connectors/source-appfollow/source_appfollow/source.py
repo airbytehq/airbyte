@@ -4,9 +4,11 @@
 
 
 from abc import ABC
+from distutils.log import info
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+from requests.auth import HTTPBasicAuth
 import logging
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -106,13 +108,12 @@ class SourceAppfollow(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        # TODO: basic flipping auth
         logger.info("Checking Appfollow API connection...")
-        headers = {"Authorization": f"Bearer {config['api_secret']}"}
         try:
             ext_id = config["ext_id"]
             cid = config["cid"]
-            response = requests.get(f"https://api.appfollow.io/ratings?ext_id={ext_id}&cid={cid}", headers=headers)
+            api_secret = config["api_secret"]
+            response = requests.get(f"https://api.appfollow.io/ratings?ext_id={ext_id}&cid={cid}", auth=HTTPBasicAuth(api_secret, api_secret))
             if response.status_code == 200:
                 return True, None
             else:
