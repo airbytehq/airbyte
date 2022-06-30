@@ -89,6 +89,7 @@ const FormRoot: React.FC<FormRootProps> = ({
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
           hasSuccess={hasSuccess}
+          isValid={isValid}
         />
       )}
     </FormContainer>
