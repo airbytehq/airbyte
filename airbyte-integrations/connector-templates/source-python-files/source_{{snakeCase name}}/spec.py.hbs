@@ -1,0 +1,33 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+
+from pydantic import BaseModel, Field
+
+from airbyte_cdk.sources.streams.files import SourceFilesAbstractSpec
+
+
+class Source{{properCase name}}Spec(SourceFilesAbstractSpec, BaseModel):
+    class Config:
+        title = "{{properCase name}} Source Spec"
+
+    class {{properCase name}}Provider(BaseModel):
+        class Config:
+            title = "{{properCase name}}"
+
+        # TODO: add any neccessary fields here (and delete the example comments)
+
+        # example of a mandatory field
+        # bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.", order=0)
+
+        # example of an optional, secret field
+        # optional_secret: Optional[str] = Field(
+        #    title="Secret Key",
+        #    default=None,
+        #    description="In order to access private storage, this connector requires credentials with the correct permissions."
+        #    airbyte_secret=True,
+        #    order=1,
+        #)
+
+    provider: {{properCase name}}Provider
