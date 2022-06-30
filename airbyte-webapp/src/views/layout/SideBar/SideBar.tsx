@@ -14,6 +14,7 @@ import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../pages/routePaths";
+import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
 import DocsIcon from "./components/DocsIcon";
 import OnboardingIcon from "./components/OnboardingIcon";
@@ -22,7 +23,6 @@ import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
 import styles from "./SideBar.module.scss";
-import ConnectionsIcon from "./components/ConnectionsIcon";
 
 const Bar = styled.nav`
   width: 100px;
@@ -89,13 +89,7 @@ const SideBar: React.FC = () => {
             </li>
           ) : null}
           <li>
-<<<<<<< HEAD
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Onboarding}>
-              <OnboardingIcon /></NavLink>
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Connections}>
-=======
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
->>>>>>> 01edbe6da6 (class name utility)
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
@@ -115,31 +109,6 @@ const SideBar: React.FC = () => {
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
-                <FormattedMessage id="sidebar.update" />
-              </Text>
-            </a>
-          </li>
-          <li>
-            <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-              {({ onOpen }) => (
-                <div className={styles.menuItem} onClick={onOpen}>
-                  <DocsIcon />
-                  <Text>
-                    <FormattedMessage id="sidebar.resources" />
-                  </Text>
-                </div>
-              )}
-            </SidebarPopout>
-          </li>
-
-          <li>
-            <NavLink className={({ isActive }) => menuItemStyle(isActive)} to={RoutePaths.Settings}>
-              <React.Suspense fallback={null}>
-                <NotificationIndicator />
-              </React.Suspense>
-              <SettingsIcon />
-              <Text>
-                <FormattedMessage id="sidebar.settings" />
               </Text>
             </NavLink>
           </li>
@@ -168,17 +137,7 @@ const SideBar: React.FC = () => {
         </li>
 
         <li>
-<<<<<<< HEAD
-          <NavLink
-            className={({ isActive }) => menuItemStyle(isActive)}
-            to={RoutePaths.Settings}
-            // isActive={(_, location) =>
-            //   location.pathname.startsWith(RoutePaths.Settings)
-            // }
-          >
-=======
           <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
->>>>>>> 01edbe6da6 (class name utility)
             <React.Suspense fallback={null}>
               <NotificationIndicator />
             </React.Suspense>
