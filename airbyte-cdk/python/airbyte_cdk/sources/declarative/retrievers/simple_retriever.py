@@ -23,9 +23,9 @@ class SimpleRetriever(Retriever, HttpStream):
         name,
         primary_key,
         requester: Requester,
-        paginator: Paginator,
         record_selector: HttpSelector,
-        stream_slicer: Optional[StreamSlicer] = SingleSlice,
+        paginator: Paginator = None,
+        stream_slicer: Optional[StreamSlicer] = SingleSlice(),
         state: Optional[State] = None,
     ):
         self._name = name
@@ -34,7 +34,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
-        self._iterator: StreamSlicer = stream_slicer
+        self._iterator = stream_slicer
         self._state: State = (state or DictState()).deep_copy()
         self._last_response = None
         self._last_records = None
