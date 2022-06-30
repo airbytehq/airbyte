@@ -1,0 +1,241 @@
+{
+  "type": "object",
+  "properties": {
+    "campaigns": {
+      "type": ["null", "array"]
+    },
+    "client_info_client_name": {
+          "type": ["null", "string"]
+    },
+    "client_info_client_os": {
+      "type": ["null", "string"]
+    },
+    "client_info_client_type": {
+      "type": ["null", "string"]
+    },
+    "client_info_device_type": {
+      "type": ["null", "string"]
+    },
+    "client_info_user_agent": {
+      "type": ["null", "string"]
+    },
+    "delivery_status_attempt_no": {
+      "type": ["null", "number"]
+    },
+    "delivery_status_certificate_verified": {
+      "type": ["null", "boolean"]
+    },
+    "delivery_status_code": {
+      "type": ["null", "number", "string"]
+    },
+    "delivery_status_description": {
+      "type": ["null", "string"]
+    },
+    "delivery_status_message": {
+      "type": ["null", "string"]
+    },
+    "delivery_status_mx_host": {
+      "type": ["null", "string"]
+    },
+    "delivery_status_retry_seconds": {
+      "type": ["null", "number"]
+    },
+    "delivery_status_session_seconds": {
+      "type": ["null", "number"]
+    },
+    "delivery_status_tls": {
+      "type": ["null", "boolean"]
+    },
+    "delivery_status_utf8": {
+      "type": ["null", "boolean"]
+    },
+    "envelop_sender": {
+      "type": ["null", "string"]
+    },
+    "envelop_sending_ip": {
+      "type": ["null", "string"]
+    },
+    "envelop_targets": {
+      "type": ["null", "string"]
+    },
+    "envelop_transport": {
+      "type": ["null", "string"]
+    },
+    "event": {
+      "type": "string"
+    },
+    "flags_is_authenticated": {
+      "type": ["null", "boolean"]
+    },
+    "flags_is_delayed_bounce": {
+      "type": ["null", "boolean"]
+    },
+    "flags_is_routed": {
+      "type": ["null", "boolean"]
+    },
+    "flags_is_system_test": {
+      "type": ["null", "boolean"]
+    },
+    "flags_is_test_mode": {
+      "type": ["null", "boolean"]
+    },
+    "geolocation_city": {
+      "type": ["null", "string"]
+    },
+    "geolocation_country": {
+      "type": ["null", "string"]
+    },
+    "geolocation_region": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "ip": {
+      "type": ["null", "string"]
+    },
+    "log_level": {
+      "type": ["null", "string"]
+    },
+    "message_attachments": {
+      "type": ["null", "array"]
+    },
+    "message_headers_from": {
+      "type": ["null", "string"]
+    },
+    "message_headers_message_id": {
+      "type": ["null", "string"]
+    },
+    "message_headers_subject": {
+      "type": ["null", "string"]
+    },
+    "message_headers_to": {
+      "type": ["null", "string"]
+    },
+    "message_recipients": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "message_size": {
+      "type": ["null", "number"]
+    },
+    "method": {
+      "type": ["null", "string"]
+    },
+    "routes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "expression": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "match": {
+            "type": ["null", "object"],
+            "properties": {
+              "recipient": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "storage_key": {
+      "type": ["null", "string"]
+    },
+    "storage_url": {
+      "type": ["null", "string"]
+    },
+    "reason": {
+      "type": ["null", "string"]
+    },
+	"reject_description": {
+	  "type": ["null", "string"]
+	},
+	"reject_reason": {
+	  "type": ["null", "string"]
+	},
+    "recipient": {
+      "type": ["null", "string"]
+    },
+    "recipient_domain": {
+      "type": ["null", "string"]
+    },
+    "severity": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "user_variables_content": {
+      "type": ["null", "string"]
+    },
+     "user_variables_link": {
+      "type": ["null", "string"]
+    },
+    "user_variables_avatar": {
+      "type": ["null", "string"]
+    },
+    "user_variables_from_user": {
+      "type": ["null", "string"]
+    },
+	"user_variables_target_name": {
+	  "type": ["null", "string"]
+	},
+	"user_variables_button_title": {
+	  "type": ["null", "string"]
+	},
+    "user_variables_unsubscribed_link": {
+      "type": ["null", "string"]
+    },
+    "user_variables_trigger_name": {
+      "type": ["null", "string"]
+    },
+    "user_variables_link_to_conversation": {
+      "type": ["null", "string"]
+    },
+    "user_variables_request_location": {
+      "type": ["null", "string"]
+    },
+    "user_variables_name": {
+      "type": ["null", "string"]
+    },
+    "user_variables_request_name": {
+      "type": ["null", "string"]
+    },
+    "user_variables_request_avatar": {
+      "type": ["null", "string"]
+    },
+	"user_variables_link_to_profile": {
+	  "type": ["null", "string"]
+	},
+	"user_variables_from_name": {
+	  "type": ["null", "string"]
+	},
+    "user_variables_from_location": {
+      "type": ["null", "string"]
+    },
+    "user_variables_reason": {
+      "type": ["null", "string"]
+    },
+    "user_variables_photo_url": {
+      "type": ["null", "string"]
+    },
+    "user_variables_head_title": {
+      "type": ["null", "string"]
+    }
+    
+  }
+}
