@@ -116,8 +116,6 @@ public class AirbyteAcceptanceTestHarness {
 
   public static final String POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION = "0.4.26";
 
-  public static final String POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION = "0.4.28";
-
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
   private static final String OUTPUT_STREAM_PREFIX = "output_table_";
