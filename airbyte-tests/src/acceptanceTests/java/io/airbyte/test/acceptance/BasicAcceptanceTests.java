@@ -57,6 +57,10 @@ public class BasicAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
+  private static final Boolean WITH_SCD_TABLE = true;
+
+  private static final Boolean WITHOUT_SCD_TABLE = false;
+
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
@@ -324,7 +328,7 @@ public class BasicAcceptanceTests {
       sleep(Duration.ofSeconds(30).toMillis());
     }
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
   }
 
   @Test
@@ -369,7 +373,7 @@ public class BasicAcceptanceTests {
 
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
   }
 
   @Test
@@ -395,7 +399,7 @@ public class BasicAcceptanceTests {
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
 
-    testHarness.assertSourceAndDestinationDbInSync(true);
+    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
 
     // add new records and run again.
     final Database source = testHarness.getSourceDatabase();
@@ -448,7 +452,7 @@ public class BasicAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
     // add new records and run again.
     final Database source = testHarness.getSourceDatabase();
@@ -489,7 +493,7 @@ public class BasicAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
   }
 
@@ -717,6 +721,11 @@ public class BasicAcceptanceTests {
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
+    // Fetch the current/most recent source definition version
+    final SourceDefinitionRead sourceDefinitionRead =
+        apiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
+    final String currentSourceDefintionVersion = sourceDefinitionRead.getDockerImageTag();
+
     // Set the source to a version that does not support per-stream state
     LOGGER.info("Setting source connector to pre-per-stream state version {}...",
         AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
@@ -735,12 +744,11 @@ public class BasicAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
     // Set source to a version that supports per-stream state
-    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
-    LOGGER.info("Upgraded source connector per-stream state supported version {}.",
-        AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, currentSourceDefintionVersion);
+    LOGGER.info("Upgraded source connector per-stream state supported version {}.", currentSourceDefintionVersion);
 
     // add new records and run again.
     final Database sourceDatabase = testHarness.getSourceDatabase();
@@ -783,7 +791,7 @@ public class BasicAcceptanceTests {
     final ConnectionState state = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     LOGGER.info("state after sync 3: {}", state);
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertEquals(Jsons.deserialize(expectedState), state.getState());
   }
 
@@ -797,6 +805,11 @@ public class BasicAcceptanceTests {
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+
+    // Fetch the current/most recent source definition version
+    final SourceDefinitionRead sourceDefinitionRead =
+        apiClient.getSourceDefinitionApi().getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(sourceDefinitionId));
+    final String currentSourceDefintionVersion = sourceDefinitionRead.getDockerImageTag();
 
     // Set the source to a version that does not support per-stream state
     LOGGER.info("Setting source connector to pre-per-stream state version {}...",
@@ -816,21 +829,20 @@ public class BasicAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
     // Set source to a version that supports per-stream state
-    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
-    LOGGER.info("Upgraded source connector per-stream state supported version {}.",
-        AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_PER_STREAM_STATE_CONNECTOR_VERSION);
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, currentSourceDefintionVersion);
+    LOGGER.info("Upgraded source connector per-stream state supported version {}.", currentSourceDefintionVersion);
 
     // sync one more time. verify that nothing has been synced
-    LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
-    final JobInfoRead connectionSyncRead3 =
+    LOGGER.info("Starting {} sync 2", testInfo.getDisplayName());
+    final JobInfoRead connectionSyncRead2 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
-    LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+    LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    final JobInfoRead syncJob = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead3.getJob().getId()));
+    final JobInfoRead syncJob = apiClient.getJobsApi().getJobInfo(new JobIdRequestBody().id(connectionSyncRead2.getJob().getId()));
     final Optional<AttemptInfoRead> result = syncJob.getAttempts().stream()
         .sorted((a, b) -> Long.compare(b.getAttempt().getEndedAt(), a.getAttempt().getEndedAt()))
         .findFirst();
@@ -838,7 +850,7 @@ public class BasicAcceptanceTests {
     assertTrue(result.isPresent());
     assertEquals(0, result.get().getAttempt().getRecordsSynced());
     assertEquals(0, result.get().getAttempt().getTotalStats().getRecordsEmitted());
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
   }
 
   // This test is disabled because it takes a couple of minutes to run, as it is testing timeouts.
