@@ -38,6 +38,24 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
         ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.Ok, None),
         ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.Ok, None),
         ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, NonRetriableResponseStatus.FAIL, None),
+        (
+            "test_403_ignore_error_message",
+            HTTPStatus.FORBIDDEN,
+            None,
+            HttpResponseFilter(error_message_contain="found"),
+            {},
+            NonRetriableResponseStatus.IGNORE,
+            None,
+        ),
+        (
+            "test_403_dont_ignore_error_message",
+            HTTPStatus.FORBIDDEN,
+            None,
+            HttpResponseFilter(error_message_contain="not_found"),
+            {},
+            NonRetriableResponseStatus.FAIL,
+            None,
+        ),
         ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, RetryResponseStatus(None), None),
         (
             "test_ignore_403",
@@ -76,7 +94,7 @@ def test_default_retrier(
     response_mock = MagicMock()
     response_mock.status_code = http_code
     response_mock.headers = response_headers
-    response_mock.json.return_value = {"code": "1000"}
+    response_mock.json.return_value = {"code": "1000", "error": "found"}
     response_mock.ok = http_code < 400
     retrier = DefaultRetrier(retry_response_filter=retry_response_filter, ignore_response_filter=ignore_response_filter)
     assert retrier.should_retry(response_mock) == should_retry

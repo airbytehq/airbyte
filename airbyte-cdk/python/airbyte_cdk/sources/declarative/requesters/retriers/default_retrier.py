@@ -9,20 +9,34 @@ from typing import List, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 
 class HttpResponseFilter:
     TOO_MANY_REQUESTS_ERRORS = [429]
     DEFAULT_RETRIABLE_ERRORS = [x for x in range(500, 600)] + TOO_MANY_REQUESTS_ERRORS
 
-    def __init__(self, http_codes: List[int] = None, predicate: str = ""):
+    def __init__(self, http_codes: List[int] = None, error_message_contain: str = None, predicate: str = ""):
         self._http_codes = http_codes or HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS
         self._predicate = InterpolatedBoolean(predicate)
+        self._error_message_contains = error_message_contain
 
     def matches(self, response: requests.Response) -> bool:
-        return response.status_code in self._http_codes or (
-            self._predicate and self._predicate.eval(None, decoded_response=response.json())
+        return (
+            response.status_code in self._http_codes
+            or (self._response_matches_predicate(response))
+            or (self._response_contains_error_message(response))
         )
+
+    def _response_matches_predicate(self, response: requests.Response) -> bool:
+        return self._predicate and self._predicate.eval(None, decoded_response=response.json())
+
+    def _response_contains_error_message(self, response: requests.Response) -> bool:
+        print(f"self._error_message_contains: {self._error_message_contains}")
+        if not self._error_message_contains:
+            return False
+        else:
+            return self._error_message_contains in HttpStream.parse_response_error_message(response)
 
 
 class NonRetriableResponseStatus(Enum):
