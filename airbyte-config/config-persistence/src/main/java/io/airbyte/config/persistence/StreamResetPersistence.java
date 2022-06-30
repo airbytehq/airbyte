@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.jooq.Condition;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.Table;
@@ -60,7 +61,7 @@ public class StreamResetPersistence {
       condition.or(
           DSL.field(CONNECTION_ID_COL).eq(connectionId)
               .and(DSL.field(STREAM_NAME_COL).eq(streamDescriptor.getName()))
-              .and(DSL.field(STREAM_NAMESPACE_COL).eq(streamDescriptor.getNamespace())));
+              .and(PersistenceHelpers.isNullOrEquals(DSL.val(STREAM_NAMESPACE_COL), streamDescriptor.getNamespace())));
     }
 
     database.query(ctx -> ctx.deleteFrom(DSL_TABLE_STREAM_RESET)).where(condition).execute();

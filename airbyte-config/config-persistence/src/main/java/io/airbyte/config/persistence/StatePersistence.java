@@ -155,8 +155,8 @@ public class StatePersistence {
       final boolean hasState = ctx.selectFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
-              isNullOrEquals(STATE.STREAM_NAME, streamName),
-              isNullOrEquals(STATE.NAMESPACE, namespace))
+              PersistenceHelpers.isNullOrEquals(STATE.STREAM_NAME, streamName),
+              PersistenceHelpers.isNullOrEquals(STATE.NAMESPACE, namespace))
           .fetch().isNotEmpty();
 
       // NOTE: the legacy code was storing a State object instead of just the State data field. We kept
@@ -192,8 +192,8 @@ public class StatePersistence {
             .set(STATE.STATE_, jsonbState)
             .where(
                 STATE.CONNECTION_ID.eq(connectionId),
-                isNullOrEquals(STATE.STREAM_NAME, streamName),
-                isNullOrEquals(STATE.NAMESPACE, namespace))
+                PersistenceHelpers.isNullOrEquals(STATE.STREAM_NAME, streamName),
+                PersistenceHelpers.isNullOrEquals(STATE.NAMESPACE, namespace))
             .execute();
       }
 
@@ -202,23 +202,10 @@ public class StatePersistence {
       ctx.deleteFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
-              isNullOrEquals(STATE.STREAM_NAME, streamName),
-              isNullOrEquals(STATE.NAMESPACE, namespace))
+              PersistenceHelpers.isNullOrEquals(STATE.STREAM_NAME, streamName),
+              PersistenceHelpers.isNullOrEquals(STATE.NAMESPACE, namespace))
           .execute();
     }
-  }
-
-  /**
-   * Helper function to handle null or equal case for the optional strings
-   *
-   * We need to have an explicit check for null values because NULL != "str" is NULL, not a boolean.
-   *
-   * @param field the targeted field
-   * @param value the value to check
-   * @return The Condition that performs the desired check
-   */
-  private static Condition isNullOrEquals(final Field<String> field, final String value) {
-    return value != null ? field.eq(value) : field.isNull();
   }
 
   /**
