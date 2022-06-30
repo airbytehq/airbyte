@@ -54,9 +54,10 @@ tests:
         path: "integration_tests/expected_records_avro.txt"
     # for JSON format
     - config_path: "secrets/json_config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/json_configured_catalog.json"
       expect_records:
-      path: "integration_tests/json_expected_records.jsonl"
+        path: "integration_tests/json_expected_records.jsonl"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -91,9 +92,10 @@ tests:
       future_state_path: "integration_tests/abnormal_state.json"
     # for JSON format
     - config_path: "secrets/json_config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/json_configured_catalog.json"
       cursor_paths:
-      test: [ "_ab_source_file_last_modified" ]
+        test: [ "_ab_source_file_last_modified" ]
       future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
@@ -118,6 +120,7 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
     # for JSON format
     - config_path: "secrets/json_config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/json_configured_catalog.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
