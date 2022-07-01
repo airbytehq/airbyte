@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 # Basic full refresh stream
 class TimelyIntegrationStream(HttpStream, ABC):
     FIRST_PAGE = 1
-
+    primary_key = "id"
     url_base = "https://api.timelyapp.com/1.1/"
 
     def __init__(self, account_id: str, start_date: str, bearer_token: str, **kwargs):
@@ -46,13 +46,10 @@ class TimelyIntegrationStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-
         return response.json()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-
         results = response.json()
-
         if results:
             if len(results) > 0:
                 url_query = urlparse(response.url).query
@@ -64,8 +61,8 @@ class TimelyIntegrationStream(HttpStream, ABC):
                 return new_params
 
 
-class events(TimelyIntegrationStream):
-
+class Events(TimelyIntegrationStream):
+    # https://dev.timelyapp.com/#list-all-events
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -75,7 +72,7 @@ class events(TimelyIntegrationStream):
         return f"{account_id}/events?since={start_date}&upto={upto}"
 
 
-class SourceTimelyIntegration(AbstractSource):
+class SourceTimely(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         account_id = config["account_id"]
         start_date = config["start_date"]
@@ -92,6 +89,5 @@ class SourceTimelyIntegration(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         args = {"bearer_token": config["bearer_token"], "account_id": config["account_id"], "start_date": config["start_date"]}
-        return [events(**args)]
+        return [Events(**args)]

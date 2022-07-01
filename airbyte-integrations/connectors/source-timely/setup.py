@@ -16,7 +16,7 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_timely_integration",
+    name="source_timely",
     description="Source implementation for Timely Integration.",
     author="Airbyte",
     author_email="contact@airbyte.io",

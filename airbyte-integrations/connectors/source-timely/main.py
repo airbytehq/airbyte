@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_timely_integration import SourceTimelyIntegration
+from source_timely import SourceTimely
 
 if __name__ == "__main__":
-    source = SourceTimelyIntegration()
+    source = SourceTimely()
     launch(source, sys.argv[1:])

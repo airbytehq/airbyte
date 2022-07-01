@@ -10,7 +10,7 @@
       "account_id": {
         "title":"account_id",
         "type": "string",
-        "description": "describe me"
+        "description": "Timely account id"
       },
       "start_date":{
         "title":"startDate",
@@ -22,7 +22,7 @@
       "bearer_token":{
         "title":"Bearer token",
         "type": "string",
-        "description": "describe me"
+        "description": "Timely bearer token"
       }
     }
   }

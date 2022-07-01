@@ -1,6 +1,6 @@
 *
 !Dockerfile
 !main.py
-!source_timely_integration
+!source_timely
 !setup.py
 !secrets
