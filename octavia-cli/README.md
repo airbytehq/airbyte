@@ -138,11 +138,11 @@ docker-compose run octavia-cli <command>`
 ### `octavia` command flags
 
 | **Flag**                                 | **Description**                                                                   | **Env Variable**           | **Default**                                            |
-| ---------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ | ---- |
+| ---------------------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------ |
 | `--airbyte-url`                          | Airbyte instance URL.                                                             | `AIRBYTE_URL`              | `http://localhost:8000`                                |
 | `--workspace-id`                         | Airbyte workspace id.                                                             | `AIRBYTE_WORKSPACE_ID`     | The first workspace id found on your Airbyte instance. |
 | `--enable-telemetry/--disable-telemetry` | Enable or disable the sending of telemetry data.                                  | `OCTAVIA_ENABLE_TELEMETRY` | True                                                   |
-| `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | not supported.             | None                                                   | None |
+| `--api-http-header`                      | HTTP Header value pairs passed while calling Airbyte's API                        | None                       | None                                                   |
 | `--api-http-headers-file-path`           | Path to the YAML file that contains custom HTTP Headers to send to Airbyte's API. | None                       | None                                                   |
 
 #### Using custom HTTP headers
@@ -157,7 +157,7 @@ You can also use a custom YAML file (one is already created on init in `api_http
 
 ```yaml
 headers:
-  Authorization: Basic foobar==
+  Authorization: Bearer my-secret-token
   User-Agent: octavia-cli/0.0.0
 ```
 
@@ -183,6 +183,9 @@ headers:
 | **`octavia get source`**                  | Get the JSON representation of an existing source in current the Airbyte workspace.      |
 | **`octavia get destination`**             | Get the JSON representation of an existing destination in the current Airbyte workspace. |
 | **`octavia get connection`**              | Get the JSON representation of an existing connection in the current Airbyte workspace.  |
+| **`octavia import source`**               | Import an existing source to manage it with octavia-cli.                                 |
+| **`octavia import destination`**          | Import an existing destination to manage it with octavia-cli.                            |
+| **`octavia import connection`**           | Import an existing connection to manage it with octavia-cli.                             |
 | **`octavia generate source`**             | Generate a local YAML configuration for a new source.                                    |
 | **`octavia generate destination`**        | Generate a local YAML configuration for a new destination.                               |
 | **`octavia generate connection`**         | Generate a local YAML configuration for a new connection.                                |
@@ -485,6 +488,70 @@ $ octavia get connection "Poke To PG"
   "sourceCatalogId": "18102e7c-5340-4000-85f3-204ab7715801"
 }
 ```
+
+#### `octavia import source <SOURCE_ID> or <SOURCE_NAME>`
+
+Import an existing source to manage it with octavia-cli. You can use a source ID or name.
+
+| **Argument**  | **Description**  |
+| --------------| -----------------|
+| `SOURCE_ID`   | The source id.   |
+| `SOURCE_NAME` | The source name. |
+
+**Examples**:
+
+```bash
+$ octavia import source poke
+🐙 - Octavia is targetting your Airbyte instance running at http://localhost:8000 on workspace 75658e4f-e5f0-4e35-be0c-bdad33226c94.
+✅ - Imported source poke in sources/poke/configuration.yaml. State stored in sources/poke/state_75658e4f-e5f0-4e35-be0c-bdad33226c94.yaml
+⚠️  - Please update any secrets stored in sources/poke/configuration.yaml
+```
+You know have local configuration file for an Airbyte source that was already existing. 
+You need to edit any secret value that exist in this configuration as secrets are not imported.
+You can edit the configuration and run `octavia apply` to continue managing it with octavia-cli.
+
+#### `octavia import destination <DESTINATION_ID> or <DESTINATION_NAME>`
+
+Import an existing destination to manage it with octavia-cli. You can use a destination ID or name.
+
+| **Argument**       | **Description**       |
+| -------------------| ----------------------|
+| `DESTINATION_ID`   | The destination id.   |
+| `DESTINATION_NAME` | The destination name. |
+
+**Examples**:
+
+```bash
+$ octavia import destination pg
+🐙 - Octavia is targetting your Airbyte instance running at http://localhost:8000 on workspace 75658e4f-e5f0-4e35-be0c-bdad33226c94.
+✅ - Imported destination pg in destinations/pg/configuration.yaml. State stored in destinations/pg/state_75658e4f-e5f0-4e35-be0c-bdad33226c94.yaml
+⚠️  - Please update any secrets stored in destinations/pg/configuration.yaml
+```
+You know have local configuration file for an Airbyte destination that was already existing. 
+You need to edit any secret value that exist in this configuration as secrets are not imported.
+You can edit the configuration and run `octavia apply` to continue managing it with octavia-cli.
+
+#### `octavia import connection <CONNECTION_ID> or <CONNECTION_NAME>`
+
+Import an existing connection to manage it with octavia-cli. You can use a connection ID or name.
+
+| **Argument**      | **Description**      |
+| ------------------| ---------------------|
+| `CONNECTION_ID`   | The connection id.   |
+| `CONNECTION_NAME` | The connection name. |
+
+**Examples**:
+
+```bash
+$ octavia import connection poke-to-pg
+🐙 - Octavia is targetting your Airbyte instance running at http://localhost:8000 on workspace 75658e4f-e5f0-4e35-be0c-bdad33226c94.
+✅ - Imported connection poke-to-pg in connections/poke-to-pg/configuration.yaml. State stored in connections/poke-to-pg/state_75658e4f-e5f0-4e35-be0c-bdad33226c94.yaml
+⚠️  - Please update any secrets stored in connections/poke-to-pg/configuration.yaml
+```
+You know have local configuration file for an Airbyte connection that was already existing. 
+**N.B.: You first need to import the source and destination used by the connection.**
+You can edit the configuration and run `octavia apply` to continue managing it with octavia-cli.
+
 #### `octavia generate source <DEFINITION_ID> <SOURCE_NAME>`
 
 Generate a YAML configuration for a source.
@@ -607,13 +674,14 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 ## Changelog
 
-| Version | Date       | Description                                                  | PR                                                          |
-| ------- | ---------- | ------------------------------------------------------------ | ----------------------------------------------------------- |
-| 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
-| 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces           | [#13070](https://github.com/airbytehq/airbyte/pull/12727)   |
-| 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers                       | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
-| 0.39.14 | 2022-05-12 | Enable normalization on connection                           | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
-| 0.37.0  | 2022-05-05 | Use snake case in connection fields                          | [#12133](https://github.com/airbytehq/airbyte/pull/12133)   |
-| 0.35.68 | 2022-04-15 | Improve telemetry                                            | [#12072](https://github.com/airbytehq/airbyte/issues/11896) |
-| 0.35.68 | 2022-04-12 | Add telemetry                                                | [#11896](https://github.com/airbytehq/airbyte/issues/11896) |
-| 0.35.61 | 2022-04-07 | Alpha release                                                | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)   |
+| Version | Date       | Description                                                                           | PR                                                          |
+| ------- | ---------- | --------------------------------------------------------------------------------------| ----------------------------------------------------------- |
+| 0.39.31 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
+| 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
+| 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces                                    | [#13070](https://github.com/airbytehq/airbyte/pull/12727)   |
+| 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers                                                | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
+| 0.39.14 | 2022-05-12 | Enable normalization on connection                                                    | [#12727](https://github.com/airbytehq/airbyte/pull/12727)   |
+| 0.37.0  | 2022-05-05 | Use snake case in connection fields                                                   | [#12133](https://github.com/airbytehq/airbyte/pull/12133)   |
+| 0.35.68 | 2022-04-15 | Improve telemetry                                                                     | [#12072](https://github.com/airbytehq/airbyte/issues/11896) |
+| 0.35.68 | 2022-04-12 | Add telemetry                                                                         | [#11896](https://github.com/airbytehq/airbyte/issues/11896) |
+| 0.35.61 | 2022-04-07 | Alpha release                                                                         | [EPIC](https://github.com/airbytehq/airbyte/issues/10704)   |
