@@ -14,6 +14,23 @@ from airbyte_cdk.sources.declarative.requesters.retriers.retrier import (
 
 
 class ChainRetrier(Retrier):
+    """
+    Sample config chaining 2 different retriers:
+        retrier:
+          type: "ChainRetrier"
+          retriers:
+            - retry_response_filter:
+                predicate: "{{ 'codase' in decoded_response }}"
+              backoff_strategy:
+                - type: "ConstantBackoffStrategy"
+                  backoff_time_in_seconds: 5
+            - retry_response_filter:
+                http_codes: [ 403 ]
+              backoff_strategy:
+                - type: "ConstantBackoffStrategy"
+                  backoff_time_in_seconds: 10
+    """
+
     def __init__(self, retriers: List[Retrier]):
         self._retriers = retriers
         assert self._retriers
