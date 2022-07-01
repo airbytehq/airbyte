@@ -49,7 +49,9 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
                 {data.streamDescriptor.name}
               </div>
               <div>
-                <ImageBlock />
+                {removedFields.length > 0 && <ImageBlock num={removedFields.length} color="red" />}
+                {addedFields.length > 0 && <ImageBlock num={addedFields.length} color="green" />}
+                {updatedFields.length > 0 && <ImageBlock num={updatedFields.length} color="blue" />}
               </div>
             </Accordion.Button>
             <Accordion.Panel>
