@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Optional, Union
 
 import requests
@@ -16,6 +17,35 @@ from airbyte_cdk.sources.declarative.requesters.retriers.retrier import (
 
 
 class DefaultRetrier(Retrier):
+    """
+    Sample configs:
+
+    1. retry 10 times
+    `
+        retrier:
+          max_retries: 10
+    `
+    2. backoff for 5 seconds
+    `
+        retrier:
+          backoff_strategy:
+            - type: "ConstantBackoffStrategy"
+              backoff_time_in_seconds: 5
+    `
+    3. retry on HTTP 404
+    `
+        retrier:
+          retry_response_filter:
+            http_codes: [ 404 ]
+    `
+    4. ignore HTTP 404
+    `
+        retrier:
+          ignore_response_filter:
+            http_codes: [ 404 ]
+    `
+    """
+
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy()
 
     def __init__(
