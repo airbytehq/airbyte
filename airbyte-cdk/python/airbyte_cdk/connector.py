@@ -8,7 +8,7 @@ import logging
 import os
 import pkgutil
 from abc import ABC, abstractmethod
-from typing import Any, Mapping, Optional, Generic, TypeVar, Protocol
+from typing import Any, Generic, Mapping, Optional, Protocol, TypeVar
 
 import yaml
 from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification
