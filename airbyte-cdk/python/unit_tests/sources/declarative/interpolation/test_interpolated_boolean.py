@@ -30,6 +30,8 @@ config = {
         ("test_empty_dict_is_false", "{{ config['empty_dict'] }}", False),
         ("test_empty_tuple_is_false", "{{ config['empty_tuple'] }}", False),
         ("test_lowercase_false", '{{ "false" }}', False),
+        ("test_False", "{{ False }}", False),
+        ("test_True", "{{ True }}", True),
         ("test_value_in_array", "{{ 1 in config['non_empty_array'] }}", True),
         ("test_value_not_in_array", "{{ 2 in config['non_empty_array'] }}", False),
     ],
