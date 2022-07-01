@@ -1021,6 +1021,14 @@
   icon: zoom.svg
   sourceType: api
   releaseStage: alpha
+- name: Netsuite
+  sourceDefinitionId: ffbe4d67-ce92-4594-8d74-de3201089868
+  dockerRepository: airbyte/source-netsuite
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/netsuite
+  icon: netsuite.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Zuora
   sourceDefinitionId: 3dc3037c-5ce8-4661-adc2-f7a9e3c5ece5
   dockerRepository: airbyte/source-zuora
