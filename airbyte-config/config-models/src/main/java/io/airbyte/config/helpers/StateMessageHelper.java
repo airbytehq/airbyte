@@ -15,7 +15,9 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class StateMessageHelper {
 
   public static class AirbyteStateMessageListTypeReference extends TypeReference<List<AirbyteStateMessage>> {}
@@ -96,10 +98,12 @@ public class StateMessageHelper {
 
   private static StateWrapper provideGlobalState(final AirbyteStateMessage stateMessages, final boolean useStreamCapableState) {
     if (useStreamCapableState) {
+      log.error("____________ global");
       return new StateWrapper()
           .withStateType(StateType.GLOBAL)
           .withGlobal(stateMessages);
     } else {
+      log.error("____________ old legacy from global");
       return new StateWrapper()
           .withStateType(StateType.LEGACY)
           .withLegacyState(stateMessages.getData());
@@ -115,10 +119,12 @@ public class StateMessageHelper {
    */
   private static StateWrapper provideStreamState(final List<AirbyteStateMessage> stateMessages, final boolean useStreamCapableState) {
     if (useStreamCapableState) {
+      log.error("____________ stream");
       return new StateWrapper()
           .withStateType(StateType.STREAM)
           .withStateMessages(stateMessages);
     } else {
+      log.error("____________ old legacy from stream");
       return new StateWrapper()
           .withStateType(StateType.LEGACY)
           .withLegacyState(Iterables.getLast(stateMessages).getData());
@@ -126,6 +132,7 @@ public class StateMessageHelper {
   }
 
   private static StateWrapper getLegacyStateWrapper(final JsonNode state) {
+    log.error("____________ old legacy");
     return new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(state);

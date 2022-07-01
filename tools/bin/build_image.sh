@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -xe
 
 ROOT_DIR="$1"
 PROJECT_DIR="$2"

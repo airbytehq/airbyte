@@ -45,8 +45,11 @@ public class StateConverter {
    */
   private static ConnectionStateType convertStateType(final @Nullable StateWrapper stateWrapper) {
     if (stateWrapper == null || stateWrapper.getStateType() == null) {
+      System.out.println("____________________ NOT SET");
       return ConnectionStateType.NOT_SET;
     } else {
+      System.out.println("____________________  SET");
+      System.out.println("____________________  returned: " + Enums.convertTo(stateWrapper.getStateType(), ConnectionStateType.class));
       return Enums.convertTo(stateWrapper.getStateType(), ConnectionStateType.class);
     }
   }

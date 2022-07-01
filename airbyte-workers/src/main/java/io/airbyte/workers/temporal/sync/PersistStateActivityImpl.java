@@ -14,8 +14,10 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
+@Slf4j
 public class PersistStateActivityImpl implements PersistStateActivity {
 
   private final StatePersistence statePersistence;
@@ -27,7 +29,10 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     if (state != null) {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
+
+        log.error("____________________: " + maybeStateWrapper);
         if (maybeStateWrapper.isPresent()) {
+          log.error("____________________: " + maybeStateWrapper.get());
           statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
         }
       } catch (final IOException e) {

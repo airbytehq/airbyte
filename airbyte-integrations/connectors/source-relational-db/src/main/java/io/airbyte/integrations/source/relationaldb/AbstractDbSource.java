@@ -530,11 +530,14 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return typedState.map((state) -> {
       switch (state.getStateType()) {
         case GLOBAL:
+          LOGGER.error("___________________________ Global");
           return List.of(state.getGlobal());
         case STREAM:
+          LOGGER.error("___________________________ STREAM");
           return state.getStateMessages();
         case LEGACY:
         default:
+          LOGGER.error("___________________________ LEGACY");
           return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(state.getLegacyState()));
       }
     }).orElse(generateEmptyInitialState(config));

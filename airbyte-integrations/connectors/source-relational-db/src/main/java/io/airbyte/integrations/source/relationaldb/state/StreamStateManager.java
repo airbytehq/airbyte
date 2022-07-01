@@ -63,6 +63,11 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
 
       if (cursorInfo.isPresent()) {
         LOGGER.debug("Generating state message for {}...", pair);
+        LOGGER.error("____________ Generating state " + new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            // Temporarily include legacy state for backwards compatibility with the platform
+            .withData(Jsons.jsonNode(StateGeneratorUtils.generateDbState(pairToCursorInfoMap)))
+            .withStream(StateGeneratorUtils.generateStreamState(pair.get(), cursorInfo.get())).toString());
         return new AirbyteStateMessage()
             .withType(AirbyteStateType.STREAM)
             // Temporarily include legacy state for backwards compatibility with the platform

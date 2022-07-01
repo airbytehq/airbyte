@@ -55,7 +55,7 @@
       "type": ["null", "string"]
     },
     "media_url": {
-       "type": "string"
+      "type": "string"
     },
     "encryption_details": {
       "properties": {

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Global implementation of the {@link StateManager} interface.
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
  * This implementation generates a single, global state object for the state tracked by this
  * manager.
  */
+@Slf4j
 public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
 
   /**
@@ -73,6 +75,8 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
     final DbState dbState = StateGeneratorUtils.generateDbState(getPairToCursorInfoMap())
         .withCdc(true)
         .withCdcState(getCdcStateManager().getCdcState());
+
+    log.error("____________ Generating GLOBAL State");
 
     return new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
