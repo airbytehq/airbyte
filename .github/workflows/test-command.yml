@@ -111,11 +111,9 @@ jobs:
           source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }}
           # normalization also runs destination-specific tests, so fetch their creds also
-          if test 'bases/base-normalization' '=' ${{ github.event.inputs.connector }}; then
-            ci_credentials destination-bigquery
-            ci_credentials destination-postgres
-            ci_credentials destination-snowflake
-          fi
+          ci_credentials destination-bigquery
+          ci_credentials destination-postgres
+          ci_credentials destination-snowflake
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
