@@ -118,3 +118,30 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     assert retriever.should_retry(requests.Response()) == expected_should_retry
     if isinstance(requester_response, RetryResponseStatus):
         assert retriever.backoff_time(requests.Response()) == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    "test_name, status_code, response_status, len_expected_records",
+    [
+        ("test_parse_response_fails_if_should_retry_is_fail", 404, NonRetriableResponseStatus.FAIL, None),
+        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, NonRetriableResponseStatus.Ok, 1),
+        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, NonRetriableResponseStatus.IGNORE, 0),
+    ],
+)
+def test_parse_response(test_name, status_code, response_status, len_expected_records):
+    requester = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = [{"id": 100}]
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    response = requests.Response()
+    response.status_code = status_code
+    requester.should_retry.return_value = response_status
+    if len_expected_records is None:
+        try:
+            retriever.parse_response(response, stream_state={})
+            assert False
+        except requests.exceptions.HTTPError:
+            pass
+    else:
+        records = retriever.parse_response(response, stream_state={})
+        assert len(records) == len_expected_records

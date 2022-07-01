@@ -9,7 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import RetryResponseStatus
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
@@ -199,6 +199,12 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        response_status = self._requester.should_retry(response)
+        if response_status == NonRetriableResponseStatus.FAIL:
+            response.raise_for_status()
+        elif response_status == NonRetriableResponseStatus.IGNORE:
+            return []
+
         # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
         records = self._record_selector.select_records(
