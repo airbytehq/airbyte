@@ -2,11 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import requests
+from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from requests.auth import AuthBase
 
 
@@ -22,20 +23,28 @@ class Oauth2Authenticator(AuthBase):
         client_id: str,
         client_secret: str,
         refresh_token: str,
+        config: Mapping[str, Any] = None,
         scopes: List[str] = None,
-        token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
+        refresh_request_body: Mapping[str, Any] = None,
     ):
-        self.token_refresh_endpoint = token_refresh_endpoint
-        self.client_secret = client_secret
-        self.client_id = client_id
-        self.refresh_token = refresh_token
+        self.config = config
+        self.token_refresh_endpoint = InterpolatedString(token_refresh_endpoint)
+        self.client_secret = InterpolatedString(client_secret)
+        self.client_id = InterpolatedString(client_id)
+        self.refresh_token = InterpolatedString(refresh_token)
         self.scopes = scopes
-        self.access_token_name = access_token_name
-        self.expires_in_name = expires_in_name
+        self.access_token_name = InterpolatedString(access_token_name)
+        self.expires_in_name = InterpolatedString(expires_in_name)
+        self.refresh_request_body = InterpolatedMapping(refresh_request_body)
 
-        self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
+        self._token_expiry_date = (
+            pendulum.parse(InterpolatedString(token_expiry_date).eval(self.config))
+            if token_expiry_date
+            else pendulum.now().subtract(days=1)
+        )
         self._access_token = None
 
     def __call__(self, request):
@@ -61,13 +70,19 @@ class Oauth2Authenticator(AuthBase):
         """Override to define additional parameters"""
         payload: MutableMapping[str, Any] = {
             "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "refresh_token": self.refresh_token,
+            "client_id": self.client_id.eval(self.config),
+            "client_secret": self.client_secret.eval(self.config),
+            "refresh_token": self.refresh_token.eval(self.config),
         }
 
         if self.scopes:
             payload["scopes"] = self.scopes
+
+        if self.refresh_request_body:
+            for key, val in self.refresh_request_body.eval(self.config).items():
+                # We defer to existing oauth constructs over custom configured fields
+                if key not in payload:
+                    payload[key] = val
 
         return payload
 
@@ -76,9 +91,11 @@ class Oauth2Authenticator(AuthBase):
         returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response = requests.request(
+                method="POST", url=self.token_refresh_endpoint.eval(self.config), data=self.get_refresh_request_body()
+            )
             response.raise_for_status()
             response_json = response.json()
-            return response_json[self.access_token_name], response_json[self.expires_in_name]
+            return response_json[self.access_token_name.eval(self.config)], response_json[self.expires_in_name.eval(self.config)]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
