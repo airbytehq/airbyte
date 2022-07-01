@@ -41,14 +41,14 @@ public class DefaultStateAggregator implements StateAggregator {
    * We can not have 2 different state types given to the same instance of this class. This method set
    * the type if it is not. If the state type doesn't exist in the message, it is set to LEGACY
    */
-  private void checkTypeOrSetType(AirbyteStateType stateType) {
-    if (stateType == null) {
-      stateType = AirbyteStateType.LEGACY;
+  private void checkTypeOrSetType(AirbyteStateType inputStateType) {
+    if (inputStateType == null) {
+      inputStateType = AirbyteStateType.LEGACY;
     }
     if (this.stateType == null) {
-      this.stateType = stateType;
+      this.stateType = inputStateType;
     }
-    Preconditions.checkArgument(this.stateType == stateType);
+    Preconditions.checkArgument(this.stateType == inputStateType, "We recieved 2 different state type which is not allowed");
   }
 
 }
