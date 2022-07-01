@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.jooq.Condition;
+import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.impl.DSL;
@@ -58,21 +59,42 @@ public class StreamResetPersistence {
     database.query(ctx -> ctx.deleteFrom(STREAM_RESET)).where(condition).execute();
   }
 
-  /*
+  /**
    * Create stream resets for a given connection. This is called to create stream reset records for
    * resets that are going to be run.
+   *
+   * It will not attempt to create entries for any stream that already exists in the stream_reset
+   * table.
    */
   public void createStreamResets(final UUID connectionId, final List<StreamDescriptor> streamsToCreate) throws IOException {
-    for (final StreamDescriptor streamDescriptor : streamsToCreate) {
-      final OffsetDateTime timestamp = OffsetDateTime.now();
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    database.transaction(ctx -> {
+      createStreamResets(ctx, connectionId, streamsToCreate, timestamp);
+      return null;
+    });
+  }
 
-      database.query(ctx -> ctx.insertInto(STREAM_RESET)
-          .set(STREAM_RESET.ID, UUID.randomUUID())
-          .set(STREAM_RESET.CONNECTION_ID, connectionId)
-          .set(STREAM_RESET.STREAM_NAME, streamDescriptor.getName())
-          .set(STREAM_RESET.STREAM_NAMESPACE, streamDescriptor.getNamespace())
-          .set(STREAM_RESET.CREATED_AT, timestamp)
-          .set(STREAM_RESET.UPDATED_AT, timestamp)).execute();
+  private void createStreamResets(final DSLContext ctx,
+                                  final UUID connectionId,
+                                  final List<StreamDescriptor> streamsToCreate,
+                                  final OffsetDateTime timestamp) {
+    for (final StreamDescriptor streamDescriptor : streamsToCreate) {
+      final boolean streamExists = ctx.fetchExists(
+          STREAM_RESET,
+          STREAM_RESET.CONNECTION_ID.eq(connectionId),
+          STREAM_RESET.STREAM_NAME.eq(streamDescriptor.getName()),
+          PersistenceHelpers.isNullOrEquals(STREAM_RESET.STREAM_NAMESPACE, streamDescriptor.getNamespace()));
+
+      if (!streamExists) {
+        ctx.insertInto(STREAM_RESET)
+            .set(STREAM_RESET.ID, UUID.randomUUID())
+            .set(STREAM_RESET.CONNECTION_ID, connectionId)
+            .set(STREAM_RESET.STREAM_NAME, streamDescriptor.getName())
+            .set(STREAM_RESET.STREAM_NAMESPACE, streamDescriptor.getNamespace())
+            .set(STREAM_RESET.CREATED_AT, timestamp)
+            .set(STREAM_RESET.UPDATED_AT, timestamp)
+            .execute();
+      }
     }
   }
 
