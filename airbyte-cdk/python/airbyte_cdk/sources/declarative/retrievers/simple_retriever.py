@@ -200,6 +200,9 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        # if fail -> raise exception
+        # if ignore -> ignore response and return no records
+        # else -> delegate to record selector
         response_status = self._requester.should_retry(response)
         if response_status == NonRetriableResponseStatus.FAIL:
             response.raise_for_status()
