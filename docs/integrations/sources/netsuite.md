@@ -22,4 +22,4 @@ All record types, including custom ones.
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.1.0   | 2022-05-23 | [11738](https://github.com/airbytehq/airbyte/pull/11738) | The Netsuite Source is created |
+| 0.1.0   | 2022-05-23 | [13086](https://github.com/airbytehq/airbyte/pull/13086) | The Netsuite Source is created |
