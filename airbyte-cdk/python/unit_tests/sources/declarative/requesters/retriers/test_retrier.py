@@ -22,24 +22,6 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
 
 
 @pytest.mark.parametrize(
-    "test_name, http_code, response_headers, should_retry, backoff_time",
-    [
-        # ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, {}, True, 60),
-        # ("test_retry_after", HTTPStatus.BAD_GATEWAY, {"Retry-After": 120}, True, 120),
-        # ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, {"X-RateLimit-Reset": 1655804724}, True, 300.0),
-    ],
-)
-@patch("time.time", return_value=1655804424.0)
-def test_something(time_mock, test_name, http_code, response_headers, should_retry, backoff_time):
-    response_mock = MagicMock()
-    response_mock.status_code = http_code
-    response_mock.headers = response_headers
-    retrier = DefaultRetrier()
-    assert retrier.should_retry(response_mock) == should_retry
-    assert retrier._backoff_time(response_mock) == backoff_time
-
-
-@pytest.mark.parametrize(
     "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy",
     [
         ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
