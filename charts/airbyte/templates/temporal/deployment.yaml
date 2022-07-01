@@ -20,6 +20,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.imagePullSecrets }}
+        {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
       {{- if .Values.temporal.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.temporal.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
@@ -66,7 +69,6 @@ spec:
         {{- if .Values.temporal.containerSecurityContext }}
         securityContext: {{- toYaml .Values.temporal.containerSecurityContext | nindent 10 }}
         {{- end }}
-        resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"

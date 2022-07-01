@@ -39,7 +39,6 @@ class RedshiftStreamCopierTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStreamCopierTest.class);
 
-  private static final int PART_SIZE = 5;
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   // The full path would be something like
@@ -71,7 +70,6 @@ class RedshiftStreamCopierTest {
         "fake-region")
         .withEndpoint("fake-endpoint")
         .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
-        .withPartSize(PART_SIZE)
         .get();
 
     copier = new RedshiftStreamCopier(

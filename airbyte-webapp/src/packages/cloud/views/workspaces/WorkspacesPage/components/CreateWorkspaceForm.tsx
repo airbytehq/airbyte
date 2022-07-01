@@ -43,7 +43,7 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({ onSubmit }) =
       }}
       validationSchema={CreateWorkspaceFormValidationSchema}
       onSubmit={onSubmit}
-      validateOnBlur={true}
+      validateOnBlur
     >
       {({ isSubmitting }) => (
         <CreationForm>

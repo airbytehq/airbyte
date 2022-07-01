@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -15,8 +16,14 @@ import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.protocol.models.AirbyteGlobalState;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
+import java.util.List;
 import java.sql.SQLException;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -42,6 +49,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
   @BeforeEach
@@ -74,11 +82,6 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
-
-  }
-
-  @Override
   public JsonNode getConfig() {
     return config;
   }
@@ -86,6 +89,16 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public String getDriverClass() {
     return PostgresTestSource.DRIVER_CLASS;
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
+  }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+
   }
 
   @AfterAll
@@ -122,6 +135,27 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     @Override
     public Set<String> getExcludedInternalNameSpaces() {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
+    }
+
+    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
+    // state
+    @Override
+    protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+      if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
+        final AirbyteGlobalState globalState = new AirbyteGlobalState()
+            .withSharedState(Jsons.jsonNode(new CdcState()))
+            .withStreamStates(List.of());
+        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
+      } else {
+        return List.of(new AirbyteStateMessage()
+            .withType(AirbyteStateType.STREAM)
+            .withStream(new AirbyteStreamState()));
+      }
+    }
+
+    @Override
+    protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+      return AirbyteStateType.STREAM;
     }
 
     public static void main(final String[] args) throws Exception {

@@ -17,7 +17,7 @@
     "merged": {
       "type": ["null", "boolean"]
     },
-    "mergeable": {
+    "is_mergeable": {
       "type": ["null", "string"]
     },
     "can_be_rebased": {
@@ -25,6 +25,9 @@
     },
     "merge_state_status": {
       "type": ["null", "string"]
+    },
+    "merged_by": {
+      "$ref": "user_graphql.json"
     },
     "merged_by": {
       "type": ["null", "object"],

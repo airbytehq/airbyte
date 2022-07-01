@@ -19,6 +19,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.imagePullSecrets }}
+        {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
       automountServiceAccountToken: true
       {{- if .Values.worker.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.worker.nodeSelector "context" $) | nindent 8 }}
@@ -264,22 +267,22 @@ spec:
         - name: ACTIVITY_MAX_ATTEMPT
           valueFrom:
             configMapKeyRef:
-              name: { { include "common.names.fullname" . } }-env
+              name: {{ include "common.names.fullname" . }}-env
               key: ACTIVITY_MAX_ATTEMPT
         - name: ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS
           valueFrom:
             configMapKeyRef:
-              name: { { include "common.names.fullname" . } }-env
+              name: {{ include "common.names.fullname" . }}-env
               key: ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS
         - name: ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS
           valueFrom:
             configMapKeyRef:
-              name: { { include "common.names.fullname" . } }-env
+              name: {{ include "common.names.fullname" . }}-env
               key: ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS
         - name: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
           valueFrom:
             configMapKeyRef:
-              name: { { include "common.names.fullname" . } }-env
+              name: {{ include "common.names.fullname" . }}-env
               key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
         {{- if .Values.worker.extraEnv }}
         {{ .Values.worker.extraEnv | toYaml | nindent 8 }}

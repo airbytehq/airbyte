@@ -75,6 +75,8 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
         .put("password", "")
         .build());
 
+    config = Jsons.clone(configWithoutDbName);
+
     dataSource = DataSourceFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
@@ -88,7 +90,6 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-    config = Jsons.clone(configWithoutDbName);
     ((ObjectNode) config).put("database", dbName);
 
     super.setup();
