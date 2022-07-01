@@ -13,6 +13,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
@@ -55,13 +56,13 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
 
-  const connection = useMemo(
+  const connection = useMemo<ConnectionFormProps["connection"]>(
     () => ({
       name: connectionFormValues?.name ?? "",
       namespaceDefinition: connectionFormValues?.namespaceDefinition,
       namespaceFormat: connectionFormValues?.namespaceFormat,
       prefix: connectionFormValues?.prefix,
-      schedule: connectionFormValues?.schedule,
+      schedule: connectionFormValues?.schedule ?? undefined,
       syncCatalog: schema,
       destination,
       source,
