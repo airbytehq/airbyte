@@ -107,14 +107,17 @@ class DeclarativeComponentFactory:
     def get_default_type(parameter_name, parent_class):
         type_hints = get_type_hints(parent_class.__init__)
         interface = type_hints.get(parameter_name)
+        print(f"interface: {interface}")
         origin = get_origin(interface)
-        if origin == Union:
+        print(f"origin: {origin}")
+        if origin:
             # Handling Optional, which are implement as a Union[T, None]
             # the interface we're looking for being the first type argument
             args = get_args(interface)
             interface = args[0]
 
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
+        print(f"expected_type: {expected_type}")
         return expected_type
 
     @staticmethod

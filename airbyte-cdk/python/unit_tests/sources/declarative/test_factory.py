@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
@@ -211,6 +212,25 @@ def test_create_requester():
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
     assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"
     assert component._name == "lists"
+
+
+def test_create_chain_retrier():
+    content = """
+        retrier:
+          class_name: "airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier.ChainRetrier"
+          retriers:
+            - retry_response_filter:
+                predicate: "{{ 'code' in decoded_response }}"
+            - retry_response_filter:
+                http_codes: [ 403 ]
+    """
+    config = parser.parse(content)
+    component = factory.create_component(config["retrier"], input_config)()
+    assert len(component._retriers) == 2
+    assert isinstance(component._retriers[0], DefaultRetrier)
+    assert component._retriers[0]._retry_response_filter._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._retriers[1]._retry_response_filter._http_codes == [403]
+    assert isinstance(component, ChainRetrier)
 
 
 def test_full_config_with_defaults():

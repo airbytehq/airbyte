@@ -15,6 +15,7 @@ class HttpResponseFilter:
 
     def __init__(self, http_codes: Set[int] = None, error_message_contain: str = None, predicate: str = ""):
         self._http_codes = http_codes or HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS
+        print(f"input predicate: {predicate}")
         self._predicate = InterpolatedBoolean(predicate)
         self._error_message_contains = error_message_contain
 

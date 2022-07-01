@@ -20,7 +20,6 @@ class ChainRetrier(Retrier):
 
     @property
     def max_retries(self) -> Union[int, None]:
-        # FIXME i think this should be moved to the backoff strategy!
         return self._iterate(Retrier.max_retries)
 
     @property
@@ -46,7 +45,7 @@ class ChainRetrier(Retrier):
     def _iterate(self, f):
         val = None
         for retrier in self._retriers:
-            val = f(retrier)
+            val = retrier.f
             if val:
                 return val
         return val
