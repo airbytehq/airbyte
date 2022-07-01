@@ -4,10 +4,19 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.*;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.CHECK_JOB;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.DISCOVER_JOB;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.JOB_TYPE;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.READ_STEP;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SPEC_JOB;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_JOB;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_STEP;
+import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerConfigs;
@@ -17,8 +26,12 @@ import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class AirbyteIntegrationLauncherTest {
 
   private static final String JOB_ID = "0";
@@ -37,16 +50,19 @@ class AirbyteIntegrationLauncherTest {
   private static final Map<String, String> JOB_METADATA = Map.of(
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
-      WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT));
+      WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
+      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(false));
 
   private WorkerConfigs workerConfigs;
+  @Mock
   private ProcessFactory processFactory;
   private AirbyteIntegrationLauncher launcher;
+  @Mock
+  private FeatureFlags featureFlags;
 
   @BeforeEach
   void setUp() {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    processFactory = Mockito.mock(ProcessFactory.class);
     launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements());
   }
 

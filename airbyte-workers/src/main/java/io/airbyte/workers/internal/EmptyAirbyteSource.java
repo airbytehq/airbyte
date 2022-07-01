@@ -83,16 +83,22 @@ public class EmptyAirbyteSource implements AirbyteSource {
          */
         isResetBasedForConfig = false;
       } else {
-        stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState(), useStreamCapableState);
+        if (workerSourceConfig.getState() != null) {
+          stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState(), useStreamCapableState);
 
-        if (stateWrapper.isPresent() &&
-            stateWrapper.get().getStateType() == StateType.LEGACY &&
-            !isResetAllStreamsInCatalog(workerSourceConfig)) {
-          log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
-          throw new IllegalStateException("Try to perform a partial reset on a legacy state");
+          if (stateWrapper.isPresent() &&
+              stateWrapper.get().getStateType() == StateType.LEGACY &&
+              !isResetAllStreamsInCatalog(workerSourceConfig)) {
+            log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
+            throw new IllegalStateException("Try to perform a partial reset on a legacy state");
+          }
+
+          isResetBasedForConfig = true;
+        } else {
+          /// No state
+          isResetBasedForConfig = false;
         }
 
-        isResetBasedForConfig = true;
       }
     }
     isStarted = true;

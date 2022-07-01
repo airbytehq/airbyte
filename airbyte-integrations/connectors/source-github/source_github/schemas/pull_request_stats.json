@@ -17,7 +17,7 @@
     "merged": {
       "type": ["null", "boolean"]
     },
-    "mergeable": {
+    "is_mergeable": {
       "type": ["null", "string"]
     },
     "can_be_rebased": {
