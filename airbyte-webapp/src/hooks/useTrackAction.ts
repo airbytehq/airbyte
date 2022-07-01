@@ -48,7 +48,6 @@ interface TrackConnectionActionProperties {
 
 export const useTrackAction = (namespace: TrackActionNamespace, legacyType?: TrackActionLegacyType) => {
   const analyticsService = useAnalyticsService();
-  console.log(analyticsService);
 
   return useCallback(
     (
