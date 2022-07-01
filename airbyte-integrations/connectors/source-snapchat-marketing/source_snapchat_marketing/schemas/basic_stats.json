@@ -1,0 +1,11 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "impressions": {
+      "type": ["null", "number"]
+    },
+    "spend": {
+      "type": ["null", "number"]
+    }
+  }
+}
