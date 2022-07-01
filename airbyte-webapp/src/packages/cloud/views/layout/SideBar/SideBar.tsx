@@ -26,7 +26,7 @@ import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicato
 import { useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
-import styles from "../../../../../views/layout/SideBar/SideBar.module.scss";
+import styles from "../../../../../views/layout/SideBar/SideBar.module.scss"; // eslint-disable-line
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
