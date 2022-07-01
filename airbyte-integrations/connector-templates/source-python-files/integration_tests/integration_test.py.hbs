@@ -1,0 +1,72 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+
+import json
+import logging
+from pathlib import Path
+from typing import Iterator, List, Mapping
+
+import pytest
+from source_{{snakeCase name}}.source import Source{{properCase name}}
+from source_{{snakeCase name}}.stream import {{properCase name}}Stream
+
+from airbyte_cdk.sources.streams.files.test_framework.custom_integration_test import AbstractFilesStreamIntegrationTest
+
+
+# This is a custom integration test specifically for files sources. 
+# It is additional to any unit tests and the general source acceptance tests.
+# It would be a good idea to implement this to ensure robustness of the connector, however it is not an absolute requirement.
+# If this isn't being implemented straight away, mass comment out the rest of the file so it can be implemented in the future.
+
+
+HERE = Path(__file__).resolve().parent
+SAMPLE_DIR = HERE.joinpath("sample_files/")
+LOGGER = logging.getLogger("airbyte")
+
+
+class Test{{properCase name}}Stream(AbstractFilesStreamIntegrationTest):
+    @property
+    def stream_class(self) -> type:
+        return {{properCase name}}Stream
+
+    @property
+    def credentials(self) -> Mapping:
+        filename = HERE.parent / "secrets/config.json"
+        with open(filename) as json_file:
+            config = json.load(json_file)
+
+        # TODO: return a dict with just the credentials from the secrets config
+        # e.g. for s3
+        # return {
+        #     "aws_access_key_id": config["provider"]["aws_access_key_id"],
+        #     "aws_secret_access_key": config["provider"]["aws_secret_access_key"],
+        # }
+
+    def provider(self, bucket_name: str) -> Mapping:
+        # TODO: return a dict that represents the provider object from the config
+            # - don't include the credentials
+            # use the `bucket_name` param for the container/bucket/etc.
+
+    def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
+        """
+        See source-s3 for an example of what this method needs to achieve.
+
+        :param cloud_bucket_name: name of bucket/container/etc.
+        :param credentials: mapping of provider specific credentials
+        :param files_to_upload: list of paths to local files to upload
+        :param private: whether or not to make the files private and require credentials to read, defaults to True
+        :yield: url filepath to uploaded file
+        """
+        # TODO: code this functionality
+
+    def teardown_infra(self, cloud_bucket_name: str, credentials: Mapping) -> None:
+        """
+        Provider-specific logic to tidy up any cloud resources.
+        See source-s3 for example.
+
+        :param cloud_bucket_name: name of bucket/container/etc.
+        :param credentials: mapping of provider specific credentials
+        """
+        # TODO: code this functionality 
