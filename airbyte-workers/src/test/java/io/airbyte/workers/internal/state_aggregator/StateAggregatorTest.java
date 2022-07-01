@@ -100,7 +100,7 @@ public class StateAggregatorTest {
   public void testStreamState() {
     final AirbyteStateMessage state1 = getStreamMessage("a", 1);
     final AirbyteStateMessage state2 = getStreamMessage("b", 2);
-    final AirbyteStateMessage state3 = getStreamMessage("b", 2);
+    final AirbyteStateMessage state3 = getStreamMessage("b", 3);
 
     stateAggregator.ingest(state1);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
