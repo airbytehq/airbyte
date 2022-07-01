@@ -1434,21 +1434,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         LOGGER.warn(ConfigSchema.STANDARD_SYNC_OPERATION + NOT_FOUND);
       }
 
-      if (configs.containsKey(ConfigSchema.STANDARD_SYNC)) {
-        configs.get(ConfigSchema.STANDARD_SYNC).map(c -> (StandardSync) c).forEach(c -> writeStandardSync(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_SYNC);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_SYNC + NOT_FOUND);
-      }
-
-      if (configs.containsKey(ConfigSchema.STANDARD_SYNC_STATE)) {
-        configs.get(ConfigSchema.STANDARD_SYNC_STATE).map(c -> (StandardSyncState) c)
-            .forEach(c -> writeStandardSyncState(Collections.singletonList(c), ctx));
-        originalConfigs.remove(ConfigSchema.STANDARD_SYNC_STATE);
-      } else {
-        LOGGER.warn(ConfigSchema.STANDARD_SYNC_STATE + NOT_FOUND);
-      }
-
       if (configs.containsKey(ConfigSchema.ACTOR_CATALOG)) {
         configs.get(ConfigSchema.ACTOR_CATALOG).map(c -> (ActorCatalog) c)
             .forEach(c -> writeActorCatalog(Collections.singletonList(c), ctx));
@@ -1463,6 +1448,21 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         originalConfigs.remove(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT);
       } else {
         LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + NOT_FOUND);
+      }
+
+      if (configs.containsKey(ConfigSchema.STANDARD_SYNC)) {
+        configs.get(ConfigSchema.STANDARD_SYNC).map(c -> (StandardSync) c).forEach(c -> writeStandardSync(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.STANDARD_SYNC);
+      } else {
+        LOGGER.warn(ConfigSchema.STANDARD_SYNC + NOT_FOUND);
+      }
+
+      if (configs.containsKey(ConfigSchema.STANDARD_SYNC_STATE)) {
+        configs.get(ConfigSchema.STANDARD_SYNC_STATE).map(c -> (StandardSyncState) c)
+            .forEach(c -> writeStandardSyncState(Collections.singletonList(c), ctx));
+        originalConfigs.remove(ConfigSchema.STANDARD_SYNC_STATE);
+      } else {
+        LOGGER.warn(ConfigSchema.STANDARD_SYNC_STATE + NOT_FOUND);
       }
 
       if (!originalConfigs.isEmpty()) {
