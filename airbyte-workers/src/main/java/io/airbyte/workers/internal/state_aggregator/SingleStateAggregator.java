@@ -2,24 +2,20 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.internal;
+package io.airbyte.workers.internal.state_aggregator;
 
-import com.google.common.base.Preconditions;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
 
-public class SingleStateAggregator implements StateAggregator {
+class SingleStateAggregator implements StateAggregator {
 
   AirbyteStateMessage state;
 
   @Override
   public void ingest(final AirbyteStateMessage stateMessage) {
-    final AirbyteStateType stateType = stateMessage.getType();
-    Preconditions.checkArgument(stateType == AirbyteStateType.GLOBAL || stateType == AirbyteStateType.LEGACY || stateType == null);
-
     state = stateMessage;
   }
 

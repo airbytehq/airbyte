@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.internal;
+package io.airbyte.workers.internal.state_aggregator;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.State;
