@@ -5,10 +5,10 @@
 
 from pydantic import BaseModel, Field
 
-from airbyte_cdk.sources.streams.files import SourceFilesAbstractSpec
+from airbyte_cdk.sources.streams.files import FilesSpec
 
 
-class Source{{properCase name}}Spec(SourceFilesAbstractSpec, BaseModel):
+class Source{{properCase name}}Spec(FilesSpec, BaseModel):
     class Config:
         title = "{{properCase name}} Source Spec"
 
