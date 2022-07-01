@@ -83,7 +83,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
          */
         isResetBasedForConfig = false;
       } else {
-        if (workerSourceConfig.getState() != null ) {
+        if (workerSourceConfig.getState() != null) {
           stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState(), useStreamCapableState);
 
           if (stateWrapper.isPresent() &&
