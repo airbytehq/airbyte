@@ -10,7 +10,17 @@ from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import
 
 
 class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
+    """
+    Extract time at which we can retry the request from response header
+    and wait for the difference between now and that time
+    """
+
     def __init__(self, header: str, min_wait: Optional[float] = None):
+        """
+
+        :param header: header to read wait time from
+        :param min_wait: minimum time to wait for safety
+        """
         self._header = header
         self._min_wait = min_wait
 
