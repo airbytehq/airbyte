@@ -676,7 +676,7 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 
 | Version | Date       | Description                                                                           | PR                                                          |
 | ------- | ---------- | --------------------------------------------------------------------------------------| ----------------------------------------------------------- |
-| 0.39.30 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
+| 0.39.31 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
 | 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |
 | 0.39.19 | 2022-06-16 | Allow connection management on multiple workspaces                                    | [#13070](https://github.com/airbytehq/airbyte/pull/12727)   |
 | 0.39.19 | 2022-06-15 | Allow users to set custom HTTP headers                                                | [#12893](https://github.com/airbytehq/airbyte/pull/12893)   |
