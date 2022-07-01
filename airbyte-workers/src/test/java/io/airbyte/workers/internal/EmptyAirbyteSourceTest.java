@@ -352,6 +352,39 @@ public class EmptyAirbyteSourceTest {
         .isEmpty();
   }
 
+  @Test
+  public void testLegacyWithNullState() throws Exception {
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+
+    final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
+        .withStreamsToReset(streamToReset);
+    final ConfiguredAirbyteCatalog airbyteCatalogWithExtraStream = new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
+
+    final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
+        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
+        .withCatalog(airbyteCatalogWithExtraStream);
+
+    emptyAirbyteSource.start(workerSourceConfig, null);
+
+    final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
+    Assertions.assertThat(maybeMessage)
+        .isNotEmpty();
+
+    final AirbyteMessage message = maybeMessage.get();
+    Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
+
+    final AirbyteStateMessage stateMessage = message.getState();
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.LEGACY);
+    Assertions.assertThat(stateMessage.getData()).isEqualTo(Jsons.emptyObject());
+
+    Assertions.assertThat(emptyAirbyteSource.attemptRead())
+        .isEmpty();
+  }
+
   private void testReceiveNullStreamState(final StreamDescriptor streamDescriptor) {
     final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
     Assertions.assertThat(maybeMessage)
