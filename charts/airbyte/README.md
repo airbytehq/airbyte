@@ -225,8 +225,8 @@ Helm charts for Airbyte.
 | `postgresql.postgresqlDatabase`                    | Airbyte Postgresql database                                                               | `db-airbyte` |
 | `postgresql.existingSecret`                        | Name of an existing secret containing the PostgreSQL password ('postgresql-password' key) | `""`         |
 | `postgresql.containerSecurityContext.runAsNonRoot` | Ensures the container will run with a non-root user                                       | `true`       |
-| `postgresql.commonAnnotations.helm.sh/hook`        | It will determine when the hook should be rendered                                        | `undefined`  |
-| `postgresql.commonAnnotations.helm.sh/hook-weight` | The order in which the hooks are executed. If weight is lower, it has higher priority     | `undefined`  |
+| `postgresql.commonAnnotations.helm.sh/hook`        | It will determine when the hook should be rendered                                        | `pre-install,pre-upgrade` |
+| `postgresql.commonAnnotations.helm.sh/hook-weight` | The order in which the hooks are executed. If weight is lower, it has higher priority     | `-1`                      
 | `externalDatabase.host`                            | Database host                                                                             | `localhost`  |
 | `externalDatabase.user`                            | non-root Username for Airbyte Database                                                    | `airbyte`    |
 | `externalDatabase.password`                        | Database password                                                                         | `""`         |
