@@ -5,9 +5,9 @@
 package io.airbyte.integrations.destination.s3.credential;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
-public class S3InstanceProfileCredentialConfig implements S3CredentialConfig {
+public class S3AWSDefaultProfileCredentialConfig implements S3CredentialConfig {
 
   @Override
   public S3CredentialType getCredentialType() {
@@ -16,7 +16,7 @@ public class S3InstanceProfileCredentialConfig implements S3CredentialConfig {
 
   @Override
   public AWSCredentialsProvider getS3CredentialsProvider() {
-    return new InstanceProfileCredentialsProvider(false);
+    return new DefaultAWSCredentialsProviderChain();
   }
 
 }
