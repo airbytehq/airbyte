@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.workers.internal;
 
 import com.google.common.base.Preconditions;
@@ -11,14 +15,16 @@ public class SingleStateAggregator implements StateAggregator {
 
   AirbyteStateMessage state;
 
-  @Override public void ingest(final AirbyteStateMessage stateMessage) {
+  @Override
+  public void ingest(final AirbyteStateMessage stateMessage) {
     final AirbyteStateType stateType = stateMessage.getType();
     Preconditions.checkArgument(stateType == AirbyteStateType.GLOBAL || stateType == AirbyteStateType.LEGACY || stateType == null);
 
     state = stateMessage;
   }
 
-  @Override public State getAggregated() {
+  @Override
+  public State getAggregated() {
     if (state.getType() == null || state.getType() == AirbyteStateType.LEGACY) {
       return new State().withState(state.getData());
     } else {
@@ -26,4 +32,5 @@ public class SingleStateAggregator implements StateAggregator {
           .withState(Jsons.jsonNode(List.of(state)));
     }
   }
+
 }
