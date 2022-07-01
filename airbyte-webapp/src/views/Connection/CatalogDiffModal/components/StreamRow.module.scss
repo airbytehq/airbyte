@@ -47,4 +47,9 @@
 
 .nameCell {
   width: 150px;
+  text-align: left;
+  & .row {
+    display: flex;
+    flex-direction: row;
+  }
 }

@@ -1,6 +1,7 @@
 import { faAngleDown, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Disclosure as Accordion } from "@headlessui/react";
+import classnames from "classnames";
 
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
@@ -27,16 +28,24 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
   const removedFields = fieldTransforms.filter((item) => item.transformType === "remove_field");
   const updatedFields = fieldTransforms.filter((item) => item.transformType === "update_field_schema");
 
+  // eslint-disable-next-line css-modules/no-undef-class
+  const nameCellStyle = classnames(styles.nameCell, styles.row);
+
   return (
     <div className={styles.accordionContainer}>
       <Accordion>
         {({ open }) => (
           <>
             <Accordion.Button className={styles.accordionButton}>
-              <ModificationIcon />{" "}
-              {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
-              <div className={styles.nameCell}>{data.streamDescriptor.namespace}</div>
-              <div className={styles.nameCell}>{data.streamDescriptor.name}</div>
+              <ModificationIcon />
+              <div className={nameCellStyle}>
+                {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
+                {data.streamDescriptor.namespace}
+              </div>
+              <div className={nameCellStyle}>
+                {"        "}
+                {data.streamDescriptor.name}
+              </div>
             </Accordion.Button>
             <Accordion.Panel>
               {removedFields.length > 0 && (
