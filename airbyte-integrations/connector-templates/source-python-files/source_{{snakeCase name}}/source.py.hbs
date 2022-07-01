@@ -5,8 +5,11 @@
 
 from airbyte_cdk.sources.abstract_files_source import AbstractFilesSource
 
+from source_{{snakeCase name}}.stream import {{properCase name}}Stream
+from source_{{snakeCase name}}.spec import Source{{properCase name}}Spec
+
 
 class Source{{properCase name}}(AbstractFilesSource):
-    stream_class = IncrementalFilesStream{{properCase name}}
+    stream_class = {{properCase name}}Stream
     spec_class = Source{{properCase name}}Spec
     documentation_url = "https://docs.airbyte.io/integrations/sources/{{snakeCase name}}"

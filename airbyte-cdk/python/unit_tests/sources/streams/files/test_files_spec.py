@@ -29,7 +29,7 @@ class MockSpec(FilesSpec, BaseModel):
 
 
 class TestFilesSpec:
-    def test_post_processing_no_provder(self):
+    def test_post_processing_no_provider(self):
         with pytest.raises(RuntimeError):
             MockBrokenSpec.schema()
 
