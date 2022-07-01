@@ -11,6 +11,12 @@ from requests.auth import AuthBase
 
 
 class AbstractOauth2Authenticator(AuthBase):
+    """
+    Abstract class for an OAuth authenticators that implements the OAuth token refresh flow. The authenticator
+    is designed to generically perform the refresh flow without regard to how config fields are get/set by
+    delegating that behavior to the classes implementing the interface.
+    """
+
     def __call__(self, request):
         request.headers.update(self.get_auth_header())
         return request

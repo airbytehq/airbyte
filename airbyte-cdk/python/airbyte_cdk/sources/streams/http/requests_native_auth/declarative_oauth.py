@@ -12,8 +12,9 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import
 
 class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
     """
-    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
-    The generated access token is attached to each request via the Authorization header.
+    Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
+    a declarative connector configuration file. Credentials can be defined explicitly or via interpolation
+    at runtime. The generated access token is attached to each request via the Authorization header.
     """
 
     def __init__(
