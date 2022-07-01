@@ -141,6 +141,7 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.39  | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274) | Rename field `mergeable` to `is_mergeable`                                                                   |
 | 0.2.38  | 2022-06-27 | [13989](https://github.com/airbytehq/airbyte/pull/13989) | Use GraphQL for `reviews` stream                                                                           |
 | 0.2.37  | 2022-06-21 | [13955](https://github.com/airbytehq/airbyte/pull/13955) | Fix "secondary rate limit" not retrying                                                                    |
 | 0.2.36  | 2022-06-20 | [13926](https://github.com/airbytehq/airbyte/pull/13926) | Break point added for `workflows_runs` stream                                                              |
