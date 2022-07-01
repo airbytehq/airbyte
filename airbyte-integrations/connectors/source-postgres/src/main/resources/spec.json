@@ -69,12 +69,12 @@
       },
       "ssl_mode": {
         "title": "SSL modes",
-        "description": "SSL connection configuration modes. \n <b>disable</b> - don't care about security and don't want to pay the overhead for encryption\n <b>allow</b> - don't care about security but will pay the overhead for encryption if the server insists on it\n <b>prefer</b> - don't care about encryption but will pay the overhead of encryption if the server supports it\n <b>require</b> - want my data to be encrypted, and I accept the overhead. I trust that the network will make sure I always connect to the server I want\n  <b>verify-ca</b> - want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server that I trust\n  <b>verify-full</b> - want my data encrypted, and I accept the overhead. I want to be sure that I connect to a server I trust, and that it's the one I specify\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
+        "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and source database\n <b>allow</b> - Chose this mode to enable encryption only when required by the source database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the source database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the source database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the source database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the source database server\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
           {
-            "title": "Disable",
+            "title": "disable",
             "additionalProperties": false,
             "description": "Disable SSL.",
             "required": ["mode"],
@@ -89,7 +89,7 @@
             }
           },
           {
-            "title": "Allow",
+            "title": "allow",
             "additionalProperties": false,
             "description": "Allow SSL mode.",
             "required": ["mode"],
@@ -104,7 +104,7 @@
             }
           },
           {
-            "title": "Prefer",
+            "title": "prefer",
             "additionalProperties": false,
             "description": "Prefer SSL mode.",
             "required": ["mode"],
@@ -119,7 +119,7 @@
             }
           },
           {
-            "title": "Require",
+            "title": "require",
             "additionalProperties": false,
             "description": "Require SSL mode.",
             "required": ["mode"],
@@ -134,7 +134,7 @@
             }
           },
           {
-            "title": "Verify-ca",
+            "title": "verify-ca",
             "additionalProperties": false,
             "description": "Verify-ca SSL mode.",
             "required": ["mode", "ca_certificate"],
@@ -164,7 +164,7 @@
             }
           },
           {
-            "title": "Verify-full",
+            "title": "verify-full",
             "additionalProperties": false,
             "description": "Verify-full SSL mode.",
             "required": [
