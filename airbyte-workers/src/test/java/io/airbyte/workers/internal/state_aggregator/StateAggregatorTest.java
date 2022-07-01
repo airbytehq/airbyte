@@ -16,7 +16,9 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,11 +37,11 @@ public class StateAggregatorTest {
   @ParameterizedTest
   @EnumSource(AirbyteStateType.class)
   public void testCantMixType(final AirbyteStateType stateType) {
-    final List<AirbyteStateType> allTypes = Lists.newArrayList(LEGACY, GLOBAL, STREAM);
+    final Stream<AirbyteStateType> allTypes = Arrays.stream(AirbyteStateType.values());
 
     stateAggregator.ingest(getEmptyMessage(stateType));
 
-    final List<AirbyteStateType> differentTypes = allTypes.stream().filter(type -> type != stateType).toList();
+    final List<AirbyteStateType> differentTypes = allTypes.filter(type -> type != stateType).toList();
     differentTypes.forEach(differentType -> Assertions.assertThatThrownBy(() -> stateAggregator.ingest(getEmptyMessage(differentType))));
   }
 
