@@ -55,8 +55,8 @@ export const useGetDebugInfoJob = (
           // keep incoming for some time after the job has already been marked as finished.
           const lastAttemptEndTimestamp = data?.attempts[data.attempts.length - 1].attempt.endedAt;
           // While no attempt ended timestamp exists yet (i.e. the job is still running) or it hasn't ended
-          // more than 6 minutes (6 * 60 * 1000ms) ago, keep refetching
-          return lastAttemptEndTimestamp && Date.now() - lastAttemptEndTimestamp * 1000 > 6 * 60 * 1000 ? false : 2500;
+          // more than 2 minutes (2 * 60 * 1000ms) ago, keep refetching
+          return lastAttemptEndTimestamp && Date.now() - lastAttemptEndTimestamp * 1000 > 2 * 60 * 1000 ? false : 2500;
         },
     enabled,
   });
