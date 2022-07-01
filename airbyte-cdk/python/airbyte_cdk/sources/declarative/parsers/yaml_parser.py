@@ -22,8 +22,7 @@ class YamlParser(ConfigParser):
         """
         input_mapping = yaml.safe_load(config_str)
         evaluated_config = {}
-        res = self.preprocess_dict(input_mapping, evaluated_config, "")
-        return res
+        return self.preprocess_dict(input_mapping, evaluated_config, "")
 
     def preprocess_dict(self, input_mapping, evaluated_mapping, path):
         """
