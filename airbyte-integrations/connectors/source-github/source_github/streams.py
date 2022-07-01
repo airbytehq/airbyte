@@ -721,6 +721,9 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
                 record["repository"] = self._get_name(repository)
                 if record["merged_by"]:
                     record["merged_by"]["type"] = record["merged_by"].pop("__typename")
+                # to avoid conflict with old field 'mergeable' of type 'boolean' in REST API
+                if "mergeable" in record:
+                    record["is_mergeable"] = record.pop("mergeable")
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
