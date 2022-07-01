@@ -51,6 +51,27 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
+  void testCreateSameResetTwiceOnlyCreateItOnce() throws Exception {
+    final UUID connectionId = UUID.randomUUID();
+    final StreamDescriptor streamDescriptor1 = new StreamDescriptor().withName("n1").withNamespace("ns2");
+    final StreamDescriptor streamDescriptor2 = new StreamDescriptor().withName("n2");
+
+    streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor1, streamDescriptor2));
+
+    final List<StreamDescriptor> result = streamResetPersistence.getStreamResets(connectionId);
+    System.out.println(dslContext.selectFrom("stream_reset").fetch());
+    assertEquals(2, result.size());
+
+    streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor1));
+    System.out.println(dslContext.selectFrom("stream_reset").fetch());
+    assertEquals(2, streamResetPersistence.getStreamResets(connectionId).size());
+
+    streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor2));
+    System.out.println(dslContext.selectFrom("stream_reset").fetch());
+    assertEquals(2, streamResetPersistence.getStreamResets(connectionId).size());
+  }
+
+  @Test
   void testCreateAndGetAndDeleteStreamResets() throws Exception {
     final List<StreamDescriptor> streamResetList = new ArrayList<>();
     final StreamDescriptor streamDescriptor1 = new StreamDescriptor().withName("stream_name_1").withNamespace("stream_namespace_1");
