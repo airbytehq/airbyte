@@ -18,7 +18,6 @@ from source_tiktok_marketing.streams import Ads, Advertisers, JsonUpdatedState
 
 SANDBOX_CONFIG_FILE = "secrets/config.json"
 PROD_CONFIG_FILE = "secrets/prod_config.json"
-PROD_CONFIG_DAY_FILE = "secrets/prod_config_day.json"
 
 
 @pytest.fixture(scope="module")
@@ -134,9 +133,8 @@ def test_random_items(prepared_prod_args):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 10),
-        (SANDBOX_CONFIG_FILE, 8),
-        (PROD_CONFIG_DAY_FILE, 13),
+        (PROD_CONFIG_FILE, 26),
+        (SANDBOX_CONFIG_FILE, 19),
     ],
 )
 def test_source_streams(config, stream_len):
@@ -175,11 +173,6 @@ def test_source_check_connection_ok(config, logger_mock):
 def test_source_check_connection_failed(config, logger_mock):
     with patch.object(Advertisers, "read_records", return_value=0):
         assert SourceTiktokMarketing().check_connection(logger_mock, config=config)[0] is False
-
-
-SANDBOX_CONFIG_FILE = "secrets/config.json"
-PROD_CONFIG_FILE = "secrets/prod_config.json"
-PROD_CONFIG_DAY_FILE = "secrets/prod_config_day.json"
 
 
 @pytest.mark.parametrize(
