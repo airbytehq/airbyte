@@ -41,7 +41,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         self.refresh_request_body = InterpolatedMapping(refresh_request_body)
 
         self.token_expiry_date = (
-            InterpolatedString(token_expiry_date).eval(self.config) if token_expiry_date else pendulum.now().subtract(days=1)
+            pendulum.parse(InterpolatedString(token_expiry_date).eval(self.config))
+            if token_expiry_date
+            else pendulum.now().subtract(days=1)
         )
         self.access_token = None
 
