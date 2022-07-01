@@ -49,6 +49,7 @@ setup(
         "deepdiff~=5.7.0",
         "pyyaml~=6.0",
         "analytics-python~=1.4.0",
+        "python-slugify~=6.1.2",
     ],
     python_requires=">=3.9.11",
     extras_require={
