@@ -34,5 +34,5 @@ class RequestOptionsProvider(ABC):
     @abstractmethod
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
+    ) -> Mapping[str, str]:
         pass
