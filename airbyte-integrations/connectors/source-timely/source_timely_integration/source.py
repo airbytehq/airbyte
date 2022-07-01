@@ -1,7 +1,12 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs, urlparse
+
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -25,12 +30,9 @@ class TimelyIntegrationStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
 
         if next_page_token is None:
-            return {"page": self.FIRST_PAGE, 
-                    "per_page":"1000",
-                    "account_id": self.account_id}
+            return {"page": self.FIRST_PAGE, "per_page": "1000", "account_id": self.account_id}
 
         return next_page_token
-
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         bearer_token = self.bearer_token
@@ -60,6 +62,7 @@ class TimelyIntegrationStream(HttpStream, ABC):
                 if "page" in new_params:
                     new_params["page"] = int(new_params["page"]) + 1
                 return new_params
+
 
 class events(TimelyIntegrationStream):
 
