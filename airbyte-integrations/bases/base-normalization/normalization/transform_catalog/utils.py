@@ -60,7 +60,12 @@ def is_number(property_type) -> bool:
 
 
 def is_integer(definition: dict) -> bool:
-    if "airbyte_type" in definition and definition["airbyte_type"] == "integer":
+    # By default, {type: integer} will be treated as a long (see is_long)
+    return "airbyte_type" in definition and definition["airbyte_type"] == "integer"
+
+
+def is_long(definition: dict) -> bool:
+    if "airbyte_type" in definition and definition["airbyte_type"] == "long":
         return True
     property_type = definition["type"]
     if is_string(property_type) or is_number(property_type):
@@ -71,7 +76,7 @@ def is_integer(definition: dict) -> bool:
 
 def is_boolean(definition: dict) -> bool:
     property_type = definition["type"]
-    if is_string(property_type) or is_number(property_type) or is_integer(definition):
+    if is_string(property_type) or is_number(property_type) or is_integer(definition) or is_long(definition):
         # Handle union type, give priority to wider scope types
         return False
     return property_type == "boolean" or "boolean" in property_type
@@ -94,7 +99,7 @@ def is_simple_property(definition: dict) -> bool:
         property_type = "object"
     else:
         property_type = definition["type"]
-    return is_string(property_type) or is_integer(definition) or is_number(property_type) or is_boolean(definition)
+    return is_string(property_type) or is_integer(definition) or is_long(definition) or is_number(property_type) or is_boolean(definition)
 
 
 def is_combining_node(properties: dict) -> Set[str]:
