@@ -70,13 +70,15 @@ export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
 
   return (
     <tr className={rowStyle}>
-      {diffType === "add" ? (
-        <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />
-      ) : diffType === "remove" ? (
-        <FontAwesomeIcon icon={faMinus} size="1x" className={iconStyle} />
-      ) : (
-        <ModificationIcon />
-      )}
+      <td>
+        {diffType === "add" ? (
+          <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />
+        ) : diffType === "remove" ? (
+          <FontAwesomeIcon icon={faMinus} size="1x" className={iconStyle} />
+        ) : (
+          <ModificationIcon />
+        )}
+      </td>
       {namespace && <td className={styles.nameCell}>{namespace}</td>}
       <td className={styles.nameCell}>{itemName}</td>
       {syncModeString && streamConfig && streamConfig?.selected && (

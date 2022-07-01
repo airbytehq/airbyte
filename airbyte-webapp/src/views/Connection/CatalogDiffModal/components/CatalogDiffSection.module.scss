@@ -6,13 +6,6 @@
   flex-direction: column;
 }
 
-.sectionHeader {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 17px;
-  padding: 15px 20px 15px 20px;
-}
-
 .sectionSubHeader {
   display: flex;
   flex-direction: row;
@@ -30,4 +23,15 @@
     color: colors.$grey;
     line-height: 12px;
   }
+}
+
+.sectionHeader {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+  padding: 15px 20px 15px 20px;
+}
+
+.padLeft {
+  padding-left: 50px;
 }

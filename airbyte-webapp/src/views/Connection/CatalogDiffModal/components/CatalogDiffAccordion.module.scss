@@ -1,4 +1,5 @@
-@forward "../components/StreamRow.module.scss";
+@use "../components/StreamRow.module.scss";
+@use "../components/CatalogDiffSection.module.scss";
 
 .accordionContainer {
   width: 100%;

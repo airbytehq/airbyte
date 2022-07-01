@@ -1,0 +1,8 @@
+@use "./CatalogDiffSection.module.scss";
+
+.accordionSubHeader {
+  @extend .sectionSubHeader;
+  & th {
+    font-size: 10px;
+  }
+}
