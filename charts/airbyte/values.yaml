@@ -1,8 +1,8 @@
 ## @section Global Parameters
-
-## @param global.imageRegistry Global Docker image registry
 ##
 global:
+  ## @param global.imageRegistry Global Docker image registry
+  ##
   imageRegistry: ""
 
 ## @section Common Parameters
@@ -24,6 +24,13 @@ serviceAccount:
   create: true
   annotations: {}
   name: airbyte-admin
+
+## @param imagePullSecrets Array of image pull secrets.
+##
+## Example:
+## imagePullSecrets:
+##   - docker-secret
+imagePullSecrets: []
 
 ## @param version Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.
 ## If changing the image tags below, you should probably also update this.
