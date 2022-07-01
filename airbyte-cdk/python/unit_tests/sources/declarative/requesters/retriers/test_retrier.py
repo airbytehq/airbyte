@@ -5,15 +5,19 @@ from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 import pytest
+from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.wait_time_from_header_backoff_strategy import (
+    WaitTimeFromHeaderBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
+    WaitUntilTimeFromHeaderBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import (
-    ChainRetrier,
     DefaultRetrier,
     HttpResponseFilter,
     NonRetriableResponseStatus,
     RetryResponseStatus,
-    StaticConstantBackoffStrategy,
-    WaitTimeFromHeaderBackoffStrategy,
-    WaitUntilTimeFromHeaderBackoffStrategy,
 )
 
 
@@ -32,7 +36,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
     response_mock.headers = response_headers
     retrier = DefaultRetrier()
     assert retrier.should_retry(response_mock) == should_retry
-    assert retrier.backoff_time(response_mock) == backoff_time
+    assert retrier._backoff_time(response_mock) == backoff_time
 
 
 @pytest.mark.parametrize(
@@ -46,7 +50,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             None,
             {},
             RetryResponseStatus(60),
-            [StaticConstantBackoffStrategy(60)],
+            [ConstantBackoffStrategy(60)],
         ),
         ("test_exponential_backoff_returns_none_wait", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
         (
@@ -56,7 +60,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             None,
             {},
             RetryResponseStatus(None),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGSY],
+            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY],
         ),
         ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
         (
@@ -66,7 +70,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             None,
             {},
             RetryResponseStatus(60),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGSY, StaticConstantBackoffStrategy(60)],
+            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY, ConstantBackoffStrategy(60)],
         ),
         ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.Ok, None),
         ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.Ok, None),
@@ -94,7 +98,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
             "test_ignore_403",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(http_codes=[HTTPStatus.FORBIDDEN]),
+            HttpResponseFilter(http_codes={HTTPStatus.FORBIDDEN}),
             {},
             NonRetriableResponseStatus.IGNORE,
             None,
@@ -120,7 +124,7 @@ def test_something(time_mock, test_name, http_code, response_headers, should_ret
         (
             "test_retry_403",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter([HTTPStatus.FORBIDDEN]),
+            HttpResponseFilter({HTTPStatus.FORBIDDEN}),
             None,
             {},
             RetryResponseStatus(None),
@@ -142,7 +146,7 @@ def test_default_retrier(
     )
     assert retrier.should_retry(response_mock) == should_retry
     if isinstance(should_retry, RetryResponseStatus):
-        assert retrier.backoff_time(response_mock) == should_retry.retry_in
+        assert retrier._backoff_time(response_mock) == should_retry.retry_in
 
 
 @pytest.mark.parametrize(
