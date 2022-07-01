@@ -1,26 +1,15 @@
 import { faGripLinesVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import { useWindowSize } from "react-use";
-import styled from "styled-components";
 
-import { DocumentationPanel } from "../../../components/DocumentationPanel/DocumentationPanel";
-import styles from "./ConnectorDocumentationLayout.module.css";
+import { DocumentationPanel } from "components/DocumentationPanel";
+
+import styles from "./ConnectorDocumentationLayout.module.scss";
 import { useDocumentationPanelContext } from "./DocumentationPanelContext";
-
-const PanelGrabber = styled.div`
-  height: 100vh;
-  padding: 6px;
-  display: flex;
-`;
-
-const GrabberHandle = styled(FontAwesomeIcon)`
-  margin: auto;
-  height: 25px;
-  color: ${({ theme }) => theme.greyColor20};
-`;
 
 interface PanelContainerProps {
   dimensions?: {
@@ -42,7 +31,14 @@ const LeftPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>>
           </h3>
         </div>
       )}
-      <div className={width < 550 ? `${styles.noScroll}` : `${styles.fullHeight}`}>{children}</div>{" "}
+      <div
+        className={classNames(styles.container, {
+          [styles.noScroll]: width < 550,
+          [styles.fullHeight]: width > 550,
+        })}
+      >
+        {children}
+      </div>
     </>
   );
 };
@@ -53,7 +49,7 @@ const RightPanelContainer: React.FC<React.PropsWithChildren<PanelContainerProps>
   return (
     <>
       {width < 350 ? (
-        <div className={`${styles.lightOverlay}`}>
+        <div className={styles.lightOverlay}>
           <h2 className={styles.rotatedHeader}>Setup Guide</h2>
         </div>
       ) : (
@@ -70,14 +66,14 @@ export const ConnectorDocumentationLayout: React.FC = ({ children }) => {
 
   return (
     <ReflexContainer orientation="vertical" windowResizeAware>
-      <ReflexElement className={`left-pane ${styles.leftPanelClass}`} propagateDimensions minSize={150}>
+      <ReflexElement className={classNames("left-pane", styles.leftPanelStyle)} propagateDimensions minSize={150}>
         <LeftPanelContainer>{children}</LeftPanelContainer>
       </ReflexElement>
       {documentationPanelOpen && (
         <ReflexSplitter style={{ border: 0, background: "rgba(255, 165, 0, 0)" }}>
-          <PanelGrabber>
-            <GrabberHandle icon={faGripLinesVertical} size={"1x"} />
-          </PanelGrabber>
+          <div className={styles.panelGrabber}>
+            <FontAwesomeIcon className={styles.grabberHandleIcon} icon={faGripLinesVertical} size="1x" />
+          </div>
         </ReflexSplitter>
       )}
       {screenWidth > 500 && documentationPanelOpen && (

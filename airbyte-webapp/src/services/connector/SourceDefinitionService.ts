@@ -4,7 +4,6 @@ import { useConfig } from "config";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
 import { SourceDefinitionCreate, SourceDefinitionRead } from "../../core/request/AirbyteClient";
@@ -36,13 +35,9 @@ const useSourceDefinitionList = (): {
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
 } => {
   const service = useGetSourceDefinitionService();
-  const workspace = useCurrentWorkspace();
 
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([
-      service.list(workspace.workspaceId),
-      service.listLatest(),
-    ]);
+    const [definition, latestDefinition] = await Promise.all([service.list(), service.listLatest()]);
 
     const sourceDefinitions = definition.sourceDefinitions.map((source) => {
       const withLatest = latestDefinition.sourceDefinitions.find(

@@ -1,0 +1,62 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.leftPanelStyle {
+  min-width: 200px;
+  position: relative;
+}
+
+.darkOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 10;
+  background-color: #1a194d;
+  opacity: 0.9;
+  color: white;
+  text-align: center;
+  vertical-align: middle;
+  padding: 400px 30px 30px 30px;
+}
+
+.container > *:last-child {
+  padding-bottom: variables.$spacing-page-bottom;
+}
+
+.noScroll {
+  overflow: hidden;
+  max-height: 100%;
+}
+
+.fullHeight {
+  height: 100%;
+}
+
+.lightOverlay {
+  height: 100%;
+  width: 100%;
+  background-color: #ffffff;
+  text-align: center;
+  vertical-align: middle;
+  overflow: hidden;
+  padding-top: 80px;
+}
+
+.rotatedHeader {
+  transform: rotate(-90deg);
+  white-space: nowrap;
+}
+
+.panelGrabber {
+  height: 100vh;
+  padding: 6px;
+  display: flex;
+}
+
+.grabberHandleIcon {
+  margin: auto;
+  height: 25px;
+  color: colors.$grey-100;
+}

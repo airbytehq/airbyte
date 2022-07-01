@@ -133,7 +133,7 @@ public class S3StorageOperations extends BlobStorageOperations {
    * @return the uploaded filename, which is different from the serialized buffer filename
    */
   private String loadDataIntoBucket(final String objectPath, final SerializableBuffer recordsData) throws IOException {
-    final long partSize = s3Config.getFormatConfig() != null ? s3Config.getFormatConfig().getPartSize() : DEFAULT_PART_SIZE;
+    final long partSize = DEFAULT_PART_SIZE;
     final String bucket = s3Config.getBucketName();
     final String fullObjectKey = objectPath + getPartId(objectPath) + getExtension(recordsData.getFilename());
 

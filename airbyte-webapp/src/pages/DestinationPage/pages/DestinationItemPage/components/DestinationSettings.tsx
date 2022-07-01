@@ -1,6 +1,5 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import DeleteBlock from "components/DeleteBlock";
 
@@ -12,16 +11,12 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 
-const Content = styled.div`
-  max-width: 813px;
-  width: 80%;
-  margin: 19px auto;
-`;
+import styles from "./DestinationSettings.module.scss";
 
-type DestinationsSettingsProps = {
+interface DestinationsSettingsProps {
   currentDestination: DestinationRead;
   connectionsWithDestination: WebBackendConnectionRead[];
-};
+}
 
 const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   currentDestination,
@@ -52,7 +47,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
     });
 
   return (
-    <Content>
+    <div className={styles.content}>
       <ConnectorCard
         isEditMode
         onSubmit={onSubmitForm}
@@ -67,7 +62,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
         title={<FormattedMessage id="destination.destinationSettings" />}
       />
       <DeleteBlock type="destination" onDelete={onDelete} />
-    </Content>
+    </div>
   );
 };
 
