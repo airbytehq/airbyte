@@ -109,13 +109,13 @@ jobs:
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
           source venv/bin/activate
-          echo 'fetching for ${{ github.event.inputs.connector }}'
           ci_credentials ${{ github.event.inputs.connector }}
           # normalization also runs destination-specific tests, so fetch their creds also
-          echo 'fetching for destinations'
-          ci_credentials destination-bigquery
-          ci_credentials destination-postgres
-          ci_credentials destination-snowflake
+          if test 'bases/base-normalization' '=' ${{ matrix.connector }}; then
+            ci_credentials destination-bigquery
+            ci_credentials destination-postgres
+            ci_credentials destination-snowflake
+          fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
 
