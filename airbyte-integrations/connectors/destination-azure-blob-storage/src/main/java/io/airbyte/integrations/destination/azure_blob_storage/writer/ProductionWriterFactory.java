@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage.writer;
@@ -20,21 +20,18 @@ public class ProductionWriterFactory implements AzureBlobStorageWriterFactory {
   @Override
   public AzureBlobStorageWriter create(final AzureBlobStorageDestinationConfig config,
                                        final AppendBlobClient appendBlobClient,
-                                       final ConfiguredAirbyteStream configuredStream,
-                                       final boolean isNewlyCreatedBlob)
+                                       final ConfiguredAirbyteStream configuredStream)
       throws Exception {
     final AzureBlobStorageFormat format = config.getFormatConfig().getFormat();
 
     if (format == AzureBlobStorageFormat.CSV) {
       LOGGER.debug("Picked up CSV format writer");
-      return new AzureBlobStorageCsvWriter(config, appendBlobClient, configuredStream,
-          isNewlyCreatedBlob);
+      return new AzureBlobStorageCsvWriter(config, appendBlobClient, configuredStream);
     }
 
     if (format == AzureBlobStorageFormat.JSONL) {
       LOGGER.debug("Picked up JSONL format writer");
-      return new AzureBlobStorageJsonlWriter(config, appendBlobClient, configuredStream,
-          isNewlyCreatedBlob);
+      return new AzureBlobStorageJsonlWriter(config, appendBlobClient, configuredStream);
     }
 
     throw new RuntimeException("Unexpected AzureBlobStorage destination format: " + format);

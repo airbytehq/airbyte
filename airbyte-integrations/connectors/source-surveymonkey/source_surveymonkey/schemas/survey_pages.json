@@ -3,22 +3,22 @@
   "type": "object",
   "properties": {
     "title": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "description": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "position": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "question_count": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "href": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

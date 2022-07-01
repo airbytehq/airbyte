@@ -13,7 +13,7 @@
 
 Connectors can be written in any language. However the most common languages are:
 
-* Python 3.7.0
+* Python 3.9.0
 * [Java 17](https://jdk.java.net/archive/)
 
 ## **Frontend**
@@ -26,7 +26,8 @@ Connectors can be written in any language. However the most common languages are
 
 * CI/CD: [GitHub Actions](https://github.com/features/actions)
 * Containerization: [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
-* Linter \(Frontend\): [Prettier](https://prettier.io/)
+* Linter \(Frontend\): [ESLint](https://eslint.org/)
+* Formatter \(Frontend\): [Prettier](https://prettier.io/)
 * Formatter \(Backend\): [Spotless](https://github.com/diffplug/spotless)
 
 ## FAQ
@@ -37,7 +38,7 @@ JDBC makes writing reusable database connector frameworks fairly easy, saving us
 
 ### _Why are most REST API connectors written in Python?_
 
-Most contributors felt comfortable writing in Python, so we created a [Python CDK](../connector-development/cdk-python/) to accelerate this development. You can write a connector from scratch in any language as long as it follows the [Airbyte Specification](airbyte-specification.md).
+Most contributors felt comfortable writing in Python, so we created a [Python CDK](../connector-development/cdk-python/) to accelerate this development. You can write a connector from scratch in any language as long as it follows the [Airbyte Specification](airbyte-protocol.md).
 
 ### _Why did we choose to build the server with Java?_
 

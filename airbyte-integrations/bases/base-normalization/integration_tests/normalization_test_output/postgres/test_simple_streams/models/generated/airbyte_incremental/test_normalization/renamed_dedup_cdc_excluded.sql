@@ -9,6 +9,7 @@
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},
+    _ab_cdc_updated_at,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at,
@@ -17,5 +18,5 @@ from {{ ref('renamed_dedup_cdc_excluded_scd') }}
 -- renamed_dedup_cdc_excluded from {{ source('test_normalization', '_airbyte_raw_renamed_dedup_cdc_excluded') }}
 where 1 = 1
 and _airbyte_active_row = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

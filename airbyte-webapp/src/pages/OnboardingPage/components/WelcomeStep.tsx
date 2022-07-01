@@ -2,15 +2,18 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import TitlesBlock from "./TitlesBlock";
-import HighlightedText from "./HighlightedText";
-import VideoItem from "./VideoItem";
 import { BigButton } from "components/CenteredPageComponents";
 
-type WelcomeStepProps = {
-  onSubmit: () => void;
+import { useConfig } from "config";
+
+import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
+import VideoItem from "./VideoItem";
+
+interface WelcomeStepProps {
+  onNextStep: () => void;
   userName?: string;
-};
+}
 
 const Videos = styled.div`
   width: 100%;
@@ -22,10 +25,13 @@ const Videos = styled.div`
   margin: 20px 0 67px;
 `;
 
-const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
+const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
+  const config = useConfig();
+
   return (
     <>
       <TitlesBlock
+        testId="onboarding.welcome"
         title={
           userName ? (
             <FormattedMessage
@@ -40,7 +46,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
         <FormattedMessage
           id="onboarding.welcomeUser.text"
           values={{
-            b: (...b: React.ReactNode[]) => (
+            b: (b: React.ReactNode) => (
               <>
                 <b>{b}</b>
                 <br />
@@ -58,11 +64,11 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onSubmit }) => {
         <FormattedMessage id="onboarding.or" />
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
-          videoId="sKDviQrOAbU"
           img="/videoCover.png"
+          link={config.links.demoLink}
         />
       </Videos>
-      <BigButton onClick={onSubmit} shadow>
+      <BigButton onClick={onNextStep} shadow>
         <FormattedMessage id="onboarding.firstConnection" />
       </BigButton>
     </>

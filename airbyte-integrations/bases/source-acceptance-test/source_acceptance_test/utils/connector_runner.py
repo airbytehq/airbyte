@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,7 +10,7 @@ from typing import Iterable, List, Mapping, Optional
 
 import docker
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
-from docker.errors import ContainerError
+from docker.errors import ContainerError, NotFound
 from docker.models.containers import Container
 from pydantic import ValidationError
 
@@ -88,7 +88,7 @@ class ConnectorRunner:
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state, **kwargs))
         return output
 
-    def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
+    def run(self, cmd, config=None, state=None, catalog=None, raise_container_error: bool = True, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
         logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
@@ -98,13 +98,12 @@ class ConnectorRunner:
             command=cmd,
             working_dir="/data",
             volumes=volumes,
-            auto_remove=True,
+            network_mode="host",
             detach=True,
             **kwargs,
         )
-
         with open(self.output_folder / "raw", "wb+") as f:
-            for line in self.read(container, command=cmd):
+            for line in self.read(container, command=cmd, with_ext=raise_container_error):
                 f.write(line.encode())
                 try:
                     yield AirbyteMessage.parse_raw(line)
@@ -140,8 +139,12 @@ class ConnectorRunner:
                 exception += line
             else:
                 yield line
-
-        exit_status = container.wait()
+        try:
+            exit_status = container.wait()
+            container.remove()
+        except NotFound as err:
+            logging.error(f"Waiting error: {err}, logs: {exception or line}")
+            raise
         if exit_status["StatusCode"]:
             error = exit_status["Error"] or exception or line
             logging.error(f"Docker container was failed, " f'code {exit_status["StatusCode"]}, error:\n{error}')

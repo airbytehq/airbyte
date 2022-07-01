@@ -9,12 +9,14 @@
     "properties": {
       "access_token": {
         "type": "string",
+        "title": "Access Token",
         "airbyte_secret": true,
-        "description": "API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/mailchimp\">docs</a> for information on how to generate this key."
+        "description": "Access Token for making authenticated requests."
       },
       "store_name": {
         "type": "string",
-        "description": "Store name. All API URLs start with https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain name of your store."
+        "title": "Store Name",
+        "description": "The name of Cart.com Online Store. All API URLs start with https://[mystorename.com]/api/v1/, where [mystorename.com] is the domain name of your store."
       },
       "start_date": {
         "title": "Start Date",

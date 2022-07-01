@@ -146,6 +146,9 @@
     },
     "allocation_limit": {
       "type": ["null", "integer"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

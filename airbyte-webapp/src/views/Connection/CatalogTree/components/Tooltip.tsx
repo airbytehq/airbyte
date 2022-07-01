@@ -3,8 +3,7 @@ import styled from "styled-components";
 
 const TooltipContainer = styled.div`
   background: ${({ theme }) => theme.textColor90};
-  box-shadow: 0 24px 38px rgba(53, 53, 66, 0.14),
-    0 9px 46px rgba(53, 53, 66, 0.12), 0 11px 15px rgba(53, 53, 66, 0.2);
+  box-shadow: 0 24px 38px rgba(53, 53, 66, 0.14), 0 9px 46px rgba(53, 53, 66, 0.12), 0 11px 15px rgba(53, 53, 66, 0.2);
   border-radius: 4px;
   padding: 5px 8px 3px;
   font-weight: 500;
@@ -22,12 +21,16 @@ const TooltipContainer = styled.div`
   }
 `;
 
-type TooltipProps = {
-  items: string[];
+interface TooltipProps {
+  items?: string[];
   className?: string;
-};
+}
 
-const Tooltip: React.FC<TooltipProps> = ({ items, className }) => {
+const Tooltip: React.FC<TooltipProps> = ({ items = [], className }) => {
+  if (items.length === 0) {
+    return null;
+  }
+
   return (
     <TooltipContainer className={className}>
       {items.map((value, key) => (

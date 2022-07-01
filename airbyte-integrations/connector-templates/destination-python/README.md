@@ -1,6 +1,6 @@
-# {{titleCase name}} Destination
+# {{capitalCase name}} Destination
 
-This is the repository for the {{titleCase name}} destination connector, written in Python.
+This is the repository for the {{capitalCase name}} destination connector, written in Python.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/{{dashCase name}}).
 
 ## Local development

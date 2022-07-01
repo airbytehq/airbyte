@@ -83,6 +83,15 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-jira:dev discover --co
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-jira:dev read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
+#### Acceptance Tests
+Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
+If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
+To run your integration tests with acceptance tests, from the connector root, run
+```
+docker build . --no-cache -t airbyte/source-jira:dev \
+&& python -m pytest -p source_acceptance_test.plugin
+```
+
 ### Integration Tests
 1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-jira:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.

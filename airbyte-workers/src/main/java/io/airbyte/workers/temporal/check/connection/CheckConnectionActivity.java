@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.check.connection;
@@ -10,13 +10,25 @@ import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @ActivityInterface
 public interface CheckConnectionActivity {
 
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  class CheckConnectionInput {
+
+    private JobRunConfig jobRunConfig;
+    private IntegrationLauncherConfig launcherConfig;
+    private StandardCheckConnectionInput connectionConfiguration;
+
+  }
+
   @ActivityMethod
-  StandardCheckConnectionOutput run(JobRunConfig jobRunConfig,
-                                    IntegrationLauncherConfig launcherConfig,
-                                    StandardCheckConnectionInput connectionConfiguration);
+  StandardCheckConnectionOutput run(CheckConnectionInput input);
 
 }

@@ -1,0 +1,6 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "integer",
+  "enum": [0, 1, 2, 3, 4],
+  "description": "0: doang_hair (unknown); 1: manual_warehouse_user; 2: manual_customer_user; 3: ftp; 4: api"
+}

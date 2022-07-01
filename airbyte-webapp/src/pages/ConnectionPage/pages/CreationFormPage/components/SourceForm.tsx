@@ -1,71 +1,56 @@
-import React, { useState } from "react";
-import { useResource } from "rest-hooks";
+import React, { useEffect, useState } from "react";
 
-import useRouter from "hooks/useRouter";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import useSource from "hooks/services/useSourceHook";
-
-// TODO: create separate component for source and destinations forms
-import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { ConnectionConfiguration } from "core/domain/connection";
-import useWorkspace from "hooks/services/useWorkspace";
+import { useCreateSource } from "hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
+import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type IProps = {
+interface ConnectionCreateSourceFormProps {
   afterSubmit: () => void;
-};
+}
 
-const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
+export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
-  const [errorStatusRequest, setErrorStatusRequest] = useState(null);
-  const { workspace } = useWorkspace();
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
-  const { createSource } = useSource();
+  const { sourceDefinitions } = useSourceDefinitionList();
+  const { mutateAsync: createSource } = useCreateSource();
 
   const onSubmitSourceStep = async (values: {
     name: string;
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    setErrorStatusRequest(null);
-
-    const connector = sourceDefinitions.find(
-      (item) => item.sourceDefinitionId === values.serviceType
-    );
-    try {
-      const result = await createSource({ values, sourceConnector: connector });
-      setSuccessRequest(true);
-      setTimeout(() => {
-        setSuccessRequest(false);
-        push(
-          {},
-          {
-            state: {
-              ...(location.state as Record<string, unknown>),
-              sourceId: result.sourceId,
-            },
-          }
-        );
-        afterSubmit();
-      }, 2000);
-    } catch (e) {
-      setErrorStatusRequest(e);
+    const sourceConnector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
+    if (!sourceConnector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
     }
+    const result = await createSource({ values, sourceConnector });
+    setSuccessRequest(true);
+    setTimeout(() => {
+      setSuccessRequest(false);
+      push(
+        {},
+        {
+          state: {
+            ...(location.state as Record<string, unknown>),
+            sourceId: result.sourceId,
+          },
+        }
+      );
+      afterSubmit();
+    }, 2000);
   };
 
-  return (
-    <SourceForm
-      onSubmit={onSubmitSourceStep}
-      sourceDefinitions={sourceDefinitions}
-      hasSuccess={successRequest}
-      error={errorStatusRequest}
-    />
-  );
-};
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
 
-export default SourceFormComponent;
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
+  return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
+};

@@ -9,10 +9,11 @@
 select
     {{ dbt_utils.surrogate_key([
         adapter.quote('id'),
+        '_ab_cdc_updated_at',
     ]) }} as _airbyte_renamed_dedup_cdc_excluded_hashid,
     tmp.*
 from {{ ref('renamed_dedup_cdc_excluded_ab2') }} tmp
 -- renamed_dedup_cdc_excluded
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

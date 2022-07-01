@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:0.19.0
+FROM fishtownanalytics/dbt:1.0.0
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install SSH Tunneling dependencies
@@ -20,8 +20,7 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code
 RUN pip install .
-# Based of https://github.com/dbeatty10/dbt-mysql/tree/dev/0.19.0
-RUN pip install dbt-mysql==0.19.0
+RUN pip install dbt-mysql==1.0.0
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 # Download external dbt dependencies

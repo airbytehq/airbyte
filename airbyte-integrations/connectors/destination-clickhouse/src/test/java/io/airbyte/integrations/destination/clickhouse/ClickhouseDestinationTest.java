@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -9,7 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Databases;
+import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
@@ -22,10 +24,12 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterAll;
@@ -44,6 +48,17 @@ public class ClickhouseDestinationTest {
   private static ConfiguredAirbyteCatalog catalog;
   private static JsonNode config;
 
+  private static final Map<String, String> CONFIG_WITH_SSL = ImmutableMap.of(
+      "host", "localhost",
+      "port", "1337",
+      "username", "user",
+      "database", "db");
+
+  private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
+      CONFIG_WITH_SSL,
+      ImmutableMap.of(
+          "ssl", "false"));
+
   @BeforeAll
   static void init() {
     db = new ClickHouseContainer("yandex/clickhouse-server");
@@ -56,8 +71,8 @@ public class ClickhouseDestinationTest {
         CatalogHelpers.createConfiguredAirbyteStream(
             STREAM_NAME,
             DB_NAME,
-            Field.of("id", JsonSchemaPrimitive.NUMBER),
-            Field.of("name", JsonSchemaPrimitive.STRING))));
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING))));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
@@ -74,6 +89,20 @@ public class ClickhouseDestinationTest {
   static void cleanUp() {
     db.stop();
     db.close();
+  }
+
+  @Test
+  void testDefaultParamsNoSSL() {
+    final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
+        Jsons.jsonNode(CONFIG_NO_SSL));
+    assertEquals(new HashMap<>(), defaultProperties);
+  }
+
+  @Test
+  void testDefaultParamsWithSSL() {
+    final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
+        Jsons.jsonNode(CONFIG_WITH_SSL));
+    assertEquals(ClickhouseDestination.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
   @Test
@@ -97,14 +126,15 @@ public class ClickhouseDestinationTest {
             .withData(Jsons.jsonNode(ImmutableMap.of(DB_NAME + "." + STREAM_NAME, 10)))));
     consumer.close();
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:clickhouse://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        ClickhouseDestination.DRIVER_CLASS);
+    final JdbcDatabase database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            config.get("username").asText(),
+            config.get("password").asText(),
+            ClickhouseDestination.DRIVER_CLASS,
+            String.format("jdbc:clickhouse://%s:%s/%s",
+                config.get("host").asText(),
+                config.get("port").asText(),
+                config.get("database").asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(

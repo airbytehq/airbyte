@@ -1,15 +1,15 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import datetime
+import logging
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from typing import Optional
 
-from airbyte_cdk.logger import AirbyteLogger
-
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 class EventTimer:
@@ -41,7 +41,7 @@ class EventTimer:
             event = self.stack.pop(0)
             event.finish()
         else:
-            logger.warn(f"{self.name} finish_event called without start_event")
+            logger.warning(f"{self.name} finish_event called without start_event")
 
     def report(self, order_by="name"):
         """
@@ -60,7 +60,7 @@ class EventTimer:
 class Event:
     name: str
     start: float = field(default_factory=time.perf_counter_ns)
-    end: float = field(default=None)
+    end: Optional[float] = field(default=None)
 
     @property
     def duration(self) -> float:

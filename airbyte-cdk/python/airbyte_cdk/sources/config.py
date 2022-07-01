@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Dict
@@ -17,9 +17,9 @@ class BaseConfig(BaseModel):
     """
 
     @classmethod
-    def schema(cls, **kwargs) -> Dict[str, Any]:
+    def schema(cls, *args, **kwargs) -> Dict[str, Any]:
         """We're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema(**kwargs)
+        schema = super().schema(*args, **kwargs)
         rename_key(schema, old_key="anyOf", new_key="oneOf")  # UI supports only oneOf
         expand_refs(schema)
         schema.pop("description", None)  # description added from the docstring

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -23,7 +23,7 @@ public class DynamodbChecker {
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamodbChecker.class);
 
   public static void attemptDynamodbWriteAndDelete(final DynamodbDestinationConfig dynamodbDestinationConfig) throws Exception {
-    final var prefix = dynamodbDestinationConfig.getTableName();
+    final var prefix = dynamodbDestinationConfig.getTableNamePrefix();
     final String outputTableName = prefix + "_airbyte_connection_test_" + UUID.randomUUID().toString().replaceAll("-", "");
     attemptWriteAndDeleteDynamodbItem(dynamodbDestinationConfig, outputTableName);
   }

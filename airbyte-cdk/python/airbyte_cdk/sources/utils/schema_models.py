@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Dict, Optional, Type
@@ -77,8 +77,8 @@ class BaseSchemaModel(BaseModel):
                         prop["oneOf"] = [{"type": "null"}, {"$ref": ref}]
 
     @classmethod
-    def schema(cls, **kwargs) -> Dict[str, Any]:
+    def schema(cls, *args, **kwargs) -> Dict[str, Any]:
         """We're overriding the schema classmethod to enable some post-processing"""
-        schema = super().schema(**kwargs)
+        schema = super().schema(*args, **kwargs)
         expand_refs(schema)
         return schema

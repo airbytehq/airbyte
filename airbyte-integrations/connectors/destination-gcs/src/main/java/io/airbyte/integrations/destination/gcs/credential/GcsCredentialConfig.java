@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs.credential;
 
-public interface GcsCredentialConfig {
+import io.airbyte.integrations.destination.s3.credential.BlobStorageCredentialConfig;
+import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
+import java.util.Optional;
 
-  GcsCredential getCredentialType();
+public interface GcsCredentialConfig extends BlobStorageCredentialConfig<GcsCredentialType> {
+
+  Optional<S3CredentialConfig> getS3CredentialConfig();
 
 }

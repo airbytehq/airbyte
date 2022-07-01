@@ -78,6 +78,12 @@
         "type": "integer",
         "default": 500
       },
+      "polling_time": {
+        "title": "Polling Time",
+        "description": "Amount of time Kafka connector should try to poll for messages.",
+        "type": "integer",
+        "default": 100
+      },
       "protocol": {
         "title": "Protocol",
         "type": "object",
@@ -141,7 +147,13 @@
                 "description": "The SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.",
                 "type": "string",
                 "default": "GSSAPI",
-                "enum": ["GSSAPI", "OAUTHBEARER", "SCRAM-SHA-256"]
+                "enum": [
+                  "GSSAPI",
+                  "OAUTHBEARER",
+                  "SCRAM-SHA-256",
+                  "SCRAM-SHA-512",
+                  "PLAIN"
+                ]
               },
               "sasl_jaas_config": {
                 "title": "SASL JAAS Config",

@@ -1,14 +1,17 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,6 +42,11 @@ public class StagingDatabaseCsvSheetGenerator implements CsvSheetGenerator {
         id,
         Jsons.serialize(recordMessage.getData()),
         Timestamp.from(Instant.ofEpochMilli(recordMessage.getEmittedAt())));
+  }
+
+  @Override
+  public List<Object> getDataRow(final JsonNode formattedData) {
+    return new LinkedList<>(Collections.singletonList(Jsons.serialize(formattedData)));
   }
 
 }

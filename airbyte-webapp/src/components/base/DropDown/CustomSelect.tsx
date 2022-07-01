@@ -1,5 +1,5 @@
-import styled from "styled-components";
 import Select, { Props } from "react-select";
+import styled from "styled-components";
 
 export const CustomSelect = styled(Select)<
   {
@@ -13,11 +13,7 @@ export const CustomSelect = styled(Select)<
     box-shadow: none;
     border: 1px solid
       ${({ theme, $withBorder, $error }) =>
-        $error
-          ? theme.dangerColor
-          : $withBorder
-          ? theme.greyColor30
-          : theme.greyColor0};
+        $error ? theme.dangerColor : $withBorder ? theme.greyColor30 : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
     font-size: 14px;
@@ -25,8 +21,7 @@ export const CustomSelect = styled(Select)<
     min-height: 36px;
 
     &:hover {
-      border-color: ${({ theme, $error }) =>
-        $error ? theme.dangerColor : theme.greyColor20};
+      border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor20)};
       background: ${({ theme }) => theme.greyColor20};
     }
 

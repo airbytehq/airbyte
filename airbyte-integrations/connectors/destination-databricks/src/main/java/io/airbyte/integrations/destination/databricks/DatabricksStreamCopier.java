@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -10,7 +10,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
-import io.airbyte.integrations.destination.jdbc.copy.s3.LegacyS3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;
@@ -24,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This implementation is similar to {@link LegacyS3StreamCopier}. The difference is that this
+ * This implementation is similar to {@link StreamCopier}. The difference is that this
  * implementation creates Parquet staging files, instead of CSV ones.
  * <p>
  * </p>
@@ -192,20 +191,25 @@ public class DatabricksStreamCopier implements StreamCopier {
     }
   }
 
+  @Override
+  public void closeNonCurrentStagingFileWriters() throws Exception {
+    parquetWriter.close(false);
+  }
+
+  @Override
+  public String getCurrentFile() {
+    return "";
+  }
+
   /**
    * The staging data location is s3://<bucket-name>/<bucket-path>/<staging-folder>. This method
    * creates an {@link S3DestinationConfig} whose bucket path is <bucket-path>/<staging-folder>.
    */
   static S3DestinationConfig getStagingS3DestinationConfig(final S3DestinationConfig config, final String stagingFolder) {
-    return new S3DestinationConfig(
-        config.getEndpoint(),
-        config.getBucketName(),
-        String.join("/", config.getBucketPath(), stagingFolder),
-        config.getBucketRegion(),
-        config.getAccessKeyId(),
-        config.getSecretAccessKey(),
-        // use default parquet format config
-        new S3ParquetFormatConfig(MAPPER.createObjectNode()));
+    return S3DestinationConfig.create(config)
+        .withBucketPath(String.join("/", config.getBucketPath(), stagingFolder))
+        .withFormatConfig(new S3ParquetFormatConfig(MAPPER.createObjectNode()))
+        .get();
   }
 
 }

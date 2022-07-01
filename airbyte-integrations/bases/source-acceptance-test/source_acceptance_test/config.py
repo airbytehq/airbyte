@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -58,16 +58,14 @@ class ExpectedRecordsConfig(BaseModel):
 
     @validator("exact_order", always=True)
     def validate_exact_order(cls, exact_order, values):
-        if "extra_fields" in values:
-            if values["extra_fields"] and not exact_order:
-                raise ValueError("exact_order must be on if extra_fields enabled")
+        if "extra_fields" in values and values["extra_fields"] and not exact_order:
+            raise ValueError("exact_order must be on if extra_fields enabled")
         return exact_order
 
     @validator("extra_records", always=True)
     def validate_extra_records(cls, extra_records, values):
-        if "extra_fields" in values:
-            if values["extra_fields"] and extra_records:
-                raise ValueError("extra_records must by off if extra_fields enabled")
+        if "extra_fields" in values and values["extra_fields"] and extra_records:
+            raise ValueError("extra_records must be off if extra_fields enabled")
         return extra_records
 
 
@@ -81,6 +79,7 @@ class BasicReadTestConfig(BaseConfig):
     validate_data_points: bool = Field(
         False, description="Set whether we need to validate that all fields in all streams contained at least one data point"
     )
+    expect_trace_message_on_failure: bool = Field(True, description="Ensure that a trace message is emitted when the connector crashes")
     timeout_seconds: int = timeout_seconds
 
 
@@ -107,6 +106,14 @@ class IncrementalConfig(BaseConfig):
     )
     future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
     timeout_seconds: int = timeout_seconds
+    threshold_days: int = Field(
+        description="Allow records to be emitted with a cursor value this number of days before the state cursor",
+        default=0,
+        ge=0,
+    )
+    skip_comprehensive_incremental_tests: Optional[bool] = Field(
+        description="Determines whether to skip more granular testing for incremental syncs", default=False
+    )
 
 
 class TestConfig(BaseConfig):

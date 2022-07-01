@@ -1,28 +1,23 @@
+import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
 
 import { Button } from "components";
-type IProps = {
-  logs: string[];
+
+import { JobDebugInfoRead } from "core/request/AirbyteClient";
+
+interface DownloadButtonProps {
+  jobDebugInfo: JobDebugInfoRead;
   fileName: string;
-};
+}
 
-const Download = styled(Button)`
-  position: absolute;
-  top: 9px;
-  right: 11px;
-`;
-
-const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
-  const formatMessage = useIntl().formatMessage;
+const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName }) => {
+  const { formatMessage } = useIntl();
 
   const downloadFileWithLogs = () => {
     const element = document.createElement("a");
-    const file = new Blob([logs.join("\n")], {
+    const file = new Blob([jobDebugInfo.attempts.flatMap((info) => info.logs.logLines).join("\n")], {
       type: "text/plain;charset=utf-8",
     });
     element.href = URL.createObjectURL(file);
@@ -33,7 +28,7 @@ const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
   };
 
   return (
-    <Download
+    <Button
       onClick={downloadFileWithLogs}
       secondary
       title={formatMessage({
@@ -41,7 +36,7 @@ const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
       })}
     >
       <FontAwesomeIcon icon={faFileDownload} />
-    </Download>
+    </Button>
   );
 };
 

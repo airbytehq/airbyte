@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.jsonl;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
+import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import alex.mojaki.s3upload.StreamTransferManager;
@@ -13,7 +14,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.util.ConfigTestUtils;
-import io.airbyte.integrations.destination.s3.util.S3StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,7 @@ public class S3JsonlFormatConfigTest {
   public void testHandlePartSizeConfig() throws IllegalAccessException {
 
     final JsonNode config = ConfigTestUtils.getBaseConfig(Jsons.deserialize("{\n"
-        + "  \"format_type\": \"JSONL\",\n"
-        + "  \"part_size_mb\": 6\n"
+        + "  \"format_type\": \"JSONL\"\n"
         + "}"));
 
     final S3DestinationConfig s3DestinationConfig = S3DestinationConfig
@@ -35,15 +35,14 @@ public class S3JsonlFormatConfigTest {
 
     final S3FormatConfig formatConfig = s3DestinationConfig.getFormatConfig();
     assertEquals("JSONL", formatConfig.getFormat().name());
-    assertEquals(6, formatConfig.getPartSize());
 
     // Assert that is set properly in config
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
+        .create(s3DestinationConfig.getBucketName(), "objectKey", null)
+        .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * 6, partSizeBytes);
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
   @Test
@@ -57,12 +56,12 @@ public class S3JsonlFormatConfigTest {
         .getS3DestinationConfig(config);
     ConfigTestUtils.assertBaseConfig(s3DestinationConfig);
 
-    final StreamTransferManager streamTransferManager = S3StreamTransferManagerHelper.getDefault(
-        s3DestinationConfig.getBucketName(), "objectKey", null,
-        s3DestinationConfig.getFormatConfig().getPartSize());
+    final StreamTransferManager streamTransferManager = StreamTransferManagerFactory
+        .create(s3DestinationConfig.getBucketName(), "objectKey", null)
+        .get();
 
     final Integer partSizeBytes = (Integer) FieldUtils.readField(streamTransferManager, "partSize", true);
-    assertEquals(MB * 5, partSizeBytes); // 5MB is a default value if nothing provided explicitly
+    assertEquals(MB * DEFAULT_PART_SIZE_MB, partSizeBytes);
   }
 
 }

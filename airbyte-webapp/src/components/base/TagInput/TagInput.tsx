@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import TagItem, { IItemProps } from "./TagItem";
 
-const MainContainer = styled.div<{ error?: boolean }>`
+const MainContainer = styled.div<{ error?: boolean; disabled?: boolean }>`
   width: 100%;
   min-height: 36px;
   border-radius: 4px;
@@ -15,18 +15,18 @@ const MainContainer = styled.div<{ error?: boolean }>`
   flex-direction: row;
   flex-wrap: wrap;
   align-self: stretch;
-  border: 1px solid
-    ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor0};
-  background: ${(props) =>
-    props.error ? props.theme.greyColor10 : props.theme.greyColor0};
+  border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
+  background: ${(props) => (props.error ? props.theme.greyColor10 : props.theme.greyColor0)};
   caret-color: ${({ theme }) => theme.primaryColor};
 
-  &:hover {
-    background: ${({ theme }) => theme.greyColor20};
-    border-color: ${(props) =>
-      props.error ? props.theme.dangerColor : props.theme.greyColor20};
-  }
+  ${({ disabled, theme, error }) =>
+    !disabled &&
+    `
+      &:hover {
+        background: ${theme.greyColor20};
+        border-color: ${error ? theme.dangerColor : theme.greyColor20};
+      }
+    `}
 
   &:focus,
   &:focus-within {
@@ -51,7 +51,7 @@ const InputElement = styled.input`
   }
 `;
 
-type TagInputProps = {
+export interface TagInputProps {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
   value: IItemProps[];
   className?: string;
@@ -64,9 +64,9 @@ type TagInputProps = {
   onEnter: (value?: string | number | readonly string[]) => void;
   onDelete: (value: string) => void;
   onError?: () => void;
-};
+}
 
-const TagInput: React.FC<TagInputProps> = ({
+export const TagInput: React.FC<TagInputProps> = ({
   inputProps,
   onEnter,
   value,
@@ -95,9 +95,7 @@ const TagInput: React.FC<TagInputProps> = ({
       return;
     }
 
-    const isValid = validationRegex
-      ? !!inputElement.current?.value.match(validationRegex)
-      : true;
+    const isValid = validationRegex ? !!inputElement.current?.value.match(validationRegex) : true;
 
     if (isValid) {
       onEnter(currentInputValue);
@@ -134,8 +132,7 @@ const TagInput: React.FC<TagInputProps> = ({
     }
   };
 
-  const inputPlaceholder =
-    !value.length && inputProps?.placeholder ? inputProps.placeholder : "";
+  const inputPlaceholder = !value.length && inputProps?.placeholder ? inputProps.placeholder : "";
 
   return (
     <MainContainer
@@ -143,6 +140,7 @@ const TagInput: React.FC<TagInputProps> = ({
       onClick={handleContainerClick}
       className={className}
       error={error}
+      disabled={disabled}
     >
       {value.map((item, key) => (
         <TagItem
@@ -157,7 +155,7 @@ const TagInput: React.FC<TagInputProps> = ({
         {...inputProps}
         name={name}
         disabled={disabled}
-        autoComplete={"off"}
+        autoComplete="off"
         placeholder={inputPlaceholder}
         ref={inputElement}
         onBlur={handleInputBlur}
@@ -171,6 +169,3 @@ const TagInput: React.FC<TagInputProps> = ({
     </MainContainer>
   );
 };
-
-export { TagInput };
-export type { TagInputProps };

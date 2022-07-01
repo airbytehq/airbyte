@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.util;
@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 
 public class ConfigTestUtils {
 
@@ -29,8 +30,9 @@ public class ConfigTestUtils {
     assertEquals("test-bucket-name", s3DestinationConfig.getBucketName());
     assertEquals("test_path", s3DestinationConfig.getBucketPath());
     assertEquals("us-east-2", s3DestinationConfig.getBucketRegion());
-    assertEquals("some-test-key-id", s3DestinationConfig.getAccessKeyId());
-    assertEquals("some-test-access-key", s3DestinationConfig.getSecretAccessKey());
+    final S3AccessKeyCredentialConfig credentialConfig = (S3AccessKeyCredentialConfig) s3DestinationConfig.getS3CredentialConfig();
+    assertEquals("some-test-key-id", credentialConfig.getAccessKeyId());
+    assertEquals("some-test-access-key", credentialConfig.getSecretAccessKey());
   }
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.text;
@@ -20,7 +20,7 @@ public class Names {
    */
   public static String toAlphanumericAndUnderscore(final String s) {
     return Normalizer.normalize(s, Normalizer.Form.NFKD)
-        .replaceAll("\\p{M}", "")
+        .replaceAll("\\p{M}", "") // P{M} matches a code point that is not a combining mark (unicode)
         .replaceAll("\\s+", "_")
         .replaceAll(NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN, "_");
   }

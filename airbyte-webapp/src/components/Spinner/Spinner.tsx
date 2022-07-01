@@ -1,10 +1,10 @@
 import React from "react";
 import styled, { keyframes } from "styled-components";
 
-type IProps = {
+interface IProps {
   backgroundColor?: string;
   small?: boolean;
-};
+}
 
 export const SpinAnimation = keyframes`
   0% {
@@ -28,8 +28,7 @@ const SpinnerWheel = styled.div<{ small?: boolean }>`
 const BreakRec = styled.div<IProps>`
   width: 13px;
   height: 7px;
-  background: ${({ theme, backgroundColor }) =>
-    backgroundColor ? backgroundColor : theme.whiteColor};
+  background: ${({ theme, backgroundColor }) => (backgroundColor ? backgroundColor : theme.whiteColor)};
   top: -4px;
   position: relative;
   margin: 0 auto;

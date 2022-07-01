@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -80,7 +80,10 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
@@ -96,16 +99,26 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
         partial_schema = {
             "type": ["null", "object"],
-            "properties": {"str": {"type": "string"}, "int": {"type": "integer"}, "obj": {"$ref": "shared_schema.json"}},
+            "properties": {
+                "str": {"type": "string"},
+                "int": {"type": "integer"},
+                "obj": {"$ref": "shared_schema.json"},
+            },
         }
 
-        referenced_schema = {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}
+        referenced_schema = {
+            "type": ["null", "object"],
+            "properties": {"k1": {"type": "string"}},
+        }
 
         create_schema("complex_schema", partial_schema)
         create_schema("shared/shared_schema", referenced_schema)
@@ -122,8 +135,19 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}]},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {
+                            "type": ["null", "object"],
+                            "properties": {"k1": {"type": "string"}},
+                        },
+                    ]
+                },
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
         partial_schema = {
@@ -131,7 +155,12 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "shared_schema.json#/definitions/type_one"}]},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"$ref": "shared_schema.json#/definitions/type_one"},
+                    ]
+                },
                 "obj": {"$ref": "shared_schema.json#/definitions/type_one"},
             },
         }
@@ -139,7 +168,10 @@ class TestResourceSchemaLoader:
         referenced_schema = {
             "definitions": {
                 "type_one": {"$ref": "shared_schema.json#/definitions/type_nested"},
-                "type_nested": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "type_nested": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             }
         }
 

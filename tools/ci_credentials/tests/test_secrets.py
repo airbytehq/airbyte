@@ -105,7 +105,16 @@ def test_read(connector_name, gsm_secrets, expected_secrets):
             "connector": connector_name,
         }
     } for i, k in enumerate(gsm_secrets)]}
-    matcher_secret = re.compile("https://secretmanager.googleapis.com/v1/.+/versions/latest:access")
+
+    matcher_versions = re.compile("https://secretmanager.googleapis.com/v1/.+/versions")
+    versions_response_list = [{"json": {
+        "versions": [{
+            "name": f"projects/<fake_id>/secrets/SECRET_{connector_name.upper()}_{i}_CREDS/versions/1",
+            "state": "ENABLED",
+        }]
+    }} for i in range(len(gsm_secrets))]
+
+    matcher_secret = re.compile("https://secretmanager.googleapis.com/v1/.+/1:access")
     secrets_response_list = [{
         "json": {"payload": {"data": base64.b64encode(json.dumps(v).encode()).decode("utf-8")}}
     } for v in gsm_secrets.values()]
@@ -116,6 +125,7 @@ def test_read(connector_name, gsm_secrets, expected_secrets):
         m.get(matcher_gsm_list, json=secrets_list)
         m.post(matcher_gsm_list, json={"name": "<fake_name>"})
         m.post(matcher_version, json={})
+        m.get(matcher_versions, versions_response_list)
         m.get(matcher_secret, secrets_response_list)
 
         secrets = [(*k, v.replace(" ", "")) for k, v in loader.read_from_gsm().items()]

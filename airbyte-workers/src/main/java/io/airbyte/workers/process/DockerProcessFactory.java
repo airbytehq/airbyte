@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -10,11 +10,12 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
 import io.airbyte.workers.WorkerUtils;
+import io.airbyte.workers.exception.WorkerException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 public class DockerProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DockerProcessFactory.class);
+  private static final int DOCKER_NAME_LEN_LIMIT = 128;
 
   private static final Path DATA_MOUNT_DESTINATION = Path.of("/data");
   private static final Path LOCAL_MOUNT_DESTINATION = Path.of("/local");
@@ -38,7 +40,6 @@ public class DockerProcessFactory implements ProcessFactory {
   private final Path workspaceRoot;
   private final String localMountSource;
   private final String networkName;
-  private final boolean isOrchestrator;
   private final Path imageExistsScriptPath;
 
   /**
@@ -48,20 +49,17 @@ public class DockerProcessFactory implements ProcessFactory {
    * @param workspaceMountSource workspace volume
    * @param localMountSource local volume
    * @param networkName docker network
-   * @param isOrchestrator if the process needs to be able to launch containers
    */
   public DockerProcessFactory(final WorkerConfigs workerConfigs,
                               final Path workspaceRoot,
                               final String workspaceMountSource,
                               final String localMountSource,
-                              final String networkName,
-                              final boolean isOrchestrator) {
+                              final String networkName) {
     this.workerConfigs = workerConfigs;
     this.workspaceRoot = workspaceRoot;
     this.workspaceMountSource = workspaceMountSource;
     this.localMountSource = localMountSource;
     this.networkName = networkName;
-    this.isOrchestrator = isOrchestrator;
     this.imageExistsScriptPath = prepareImageExistsScript();
   }
 
@@ -80,7 +78,8 @@ public class DockerProcessFactory implements ProcessFactory {
   }
 
   @Override
-  public Process create(final String jobId,
+  public Process create(final String jobType,
+                        final String jobId,
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
@@ -89,6 +88,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final String entrypoint,
                         final ResourceRequirements resourceRequirements,
                         final Map<String, String> labels,
+                        final Map<String, String> jobMetadata,
                         final Map<Integer, Integer> internalToExternalPorts,
                         final String... args)
       throws WorkerException {
@@ -105,55 +105,47 @@ public class DockerProcessFactory implements ProcessFactory {
         IOs.writeFile(jobRoot, file.getKey(), file.getValue());
       }
 
-      List<String> cmd;
+      LOGGER.info("Creating docker job ID: {}", jobId);
+      final List<String> cmd = Lists.newArrayList(
+          "docker",
+          "run",
+          "--rm",
+          "--init",
+          "-i",
+          "-w",
+          rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
+          "--log-driver",
+          "none");
+      final String containerName = ProcessFactory.createProcessName(imageName, jobType, jobId, attempt, DOCKER_NAME_LEN_LIMIT);
+      cmd.add("--name");
+      cmd.add(containerName);
 
-      // todo: add --expose 80 to each
-
-      if (isOrchestrator) {
-        cmd = Lists.newArrayList(
-            "docker",
-            "run",
-            "--rm",
-            "--init",
-            "-i",
-            "-v",
-            String.format("%s:%s", workspaceMountSource, workspaceRoot), // real workspace root, not a rebased version
-            "-v",
-            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-            "-v",
-            "/var/run/docker.sock:/var/run/docker.sock", // needs to be able to run docker in docker
-            "-w",
-            jobRoot.toString(), // real jobroot, not rebased version
-            "--network",
-            networkName,
-            "--log-driver",
-            "none");
-      } else {
-        cmd = Lists.newArrayList(
-            "docker",
-            "run",
-            "--rm",
-            "--init",
-            "-i",
-            "-v",
-            String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION), // uses job data mount
-            "-v",
-            String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION),
-            "-w",
-            rebasePath(jobRoot).toString(), // rebases the job root on the job data mount
-            "--network",
-            networkName,
-            "--log-driver",
-            "none");
+      if (networkName != null) {
+        cmd.add("--network");
+        cmd.add(networkName);
       }
+
+      if (workspaceMountSource != null) {
+        cmd.add("-v");
+        cmd.add(String.format("%s:%s", workspaceMountSource, DATA_MOUNT_DESTINATION));
+      }
+
+      if (localMountSource != null) {
+        cmd.add("-v");
+        cmd.add(String.format("%s:%s", localMountSource, LOCAL_MOUNT_DESTINATION));
+      }
+
+      final Map<String, String> allEnvMap = MoreMaps.merge(jobMetadata, workerConfigs.getEnvMap());
+      for (final Map.Entry<String, String> envEntry : allEnvMap.entrySet()) {
+        cmd.add("-e");
+        cmd.add(envEntry.getKey() + "=" + envEntry.getValue());
+      }
+
       if (!Strings.isNullOrEmpty(entrypoint)) {
         cmd.add("--entrypoint");
         cmd.add(entrypoint);
       }
       if (resourceRequirements != null) {
-        if (!Strings.isNullOrEmpty(resourceRequirements.getCpuRequest())) {
-          cmd.add(String.format("--cpu-shares=%s", resourceRequirements.getCpuRequest()));
-        }
         if (!Strings.isNullOrEmpty(resourceRequirements.getCpuLimit())) {
           cmd.add(String.format("--cpus=%s", resourceRequirements.getCpuLimit()));
         }

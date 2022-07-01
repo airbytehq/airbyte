@@ -35,12 +35,22 @@
         "examples": ["airbyte5storage"]
       },
       "azure_blob_storage_account_key": {
+        "title": "Azure Blob Storage account key",
         "description": "The Azure blob storage account key.",
         "airbyte_secret": true,
         "type": "string",
         "examples": [
           "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
         ]
+      },
+      "azure_blob_storage_output_buffer_size": {
+        "title": "Azure Blob Storage output buffer size (Megabytes)",
+        "type": "integer",
+        "description": "The amount of megabytes to buffer for the output stream to Azure. This will impact memory footprint on workers, but may need adjustment for performance and appropriate block size in Azure.",
+        "minimum": 1,
+        "maximum": 2047,
+        "default": 5,
+        "examples": [5]
       },
       "format": {
         "title": "Output Format",

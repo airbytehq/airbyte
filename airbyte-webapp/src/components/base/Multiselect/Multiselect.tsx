@@ -1,6 +1,6 @@
 import { Multiselect as ReactMultiselect } from "react-widgets";
-import styled from "styled-components";
 import { MultiselectProps as WidgetMultiselectProps } from "react-widgets/lib/Multiselect";
+import styled from "styled-components";
 import "react-widgets/dist/css/react-widgets.css";
 
 type MultiselectProps = {
@@ -37,8 +37,8 @@ const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
   & .rw-popup {
     border: 0.5px solid ${({ theme }) => theme.greyColor20};
     border-radius: 4px;
-    box-shadow: 0 8px 10px 0 rgba(11, 10, 26, 0.04),
-      0 3px 14px 0 rgba(11, 10, 26, 0.08), 0 5px 5px 0 rgba(11, 10, 26, 0.12);
+    box-shadow: 0 8px 10px 0 rgba(11, 10, 26, 0.04), 0 3px 14px 0 rgba(11, 10, 26, 0.08),
+      0 5px 5px 0 rgba(11, 10, 26, 0.12);
   }
 
   & .rw-popup-container {
@@ -63,11 +63,8 @@ const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
     font-size: 14px;
     line-height: 20px;
     font-weight: normal;
-    border: 1px solid
-      ${(props) =>
-        props.error ? props.theme.dangerColor : props.theme.greyColor0};
-    background: ${(props) =>
-      props.error ? props.theme.greyColor10 : props.theme.greyColor0};
+    border: 1px solid ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor0)};
+    background: ${(props) => (props.error ? props.theme.greyColor10 : props.theme.greyColor0)};
     caret-color: ${({ theme }) => theme.primaryColor};
 
     & > div {
@@ -91,8 +88,7 @@ const Multiselect = styled(ReactMultiselect)<MultiselectProps>`
     &:hover {
       box-shadow: none;
       background: ${({ theme }) => theme.greyColor20};
-      border-color: ${(props) =>
-        props.error ? props.theme.dangerColor : props.theme.greyColor20};
+      border-color: ${(props) => (props.error ? props.theme.dangerColor : props.theme.greyColor20)};
     }
 
     & .rw-multiselect-taglist {

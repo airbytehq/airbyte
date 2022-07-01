@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.normalization;
@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class NormalizationRunnerFactoryTest {
 
+  public static final String NORMALIZATION_VERSION = "dev";
   private ProcessFactory processFactory;
 
   @BeforeEach
@@ -32,10 +33,11 @@ class NormalizationRunnerFactoryTest {
       assertEquals(entry.getValue().getValue(),
           ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
               new WorkerConfigs(new EnvConfigs()),
-              String.format("%s:0.1.0", entry.getKey()), processFactory)).getDestinationType());
+              String.format("%s:0.1.0", entry.getKey()), processFactory, NORMALIZATION_VERSION)).getDestinationType());
     }
     assertThrows(IllegalStateException.class,
-        () -> NormalizationRunnerFactory.create(new WorkerConfigs(new EnvConfigs()), "airbyte/destination-csv:0.1.0", processFactory));
+        () -> NormalizationRunnerFactory.create(new WorkerConfigs(new EnvConfigs()), "airbyte/destination-csv:0.1.0", processFactory,
+            NORMALIZATION_VERSION));
   }
 
 }

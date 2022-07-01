@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.util;
@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class MoreLists {
 
@@ -33,6 +34,32 @@ public class MoreLists {
     final ArrayList<T> reversed = new ArrayList<>(list);
     Collections.reverse(reversed);
     return reversed;
+  }
+
+  /**
+   * Concatenate multiple lists into one list.
+   *
+   * @param lists to concatenate
+   * @param <T> type
+   * @return a new concatenated list
+   */
+  @SafeVarargs
+  public static <T> List<T> concat(final List<T>... lists) {
+    return Stream.of(lists).flatMap(List::stream).toList();
+  }
+
+  /**
+   * Copies provided list and adds the new item to the copy.
+   *
+   * @param list list to copy and add to
+   * @param toAdd item to add
+   * @param <T> type of list
+   * @return new list with contents of provided list and the added item
+   */
+  public static <T> List<T> add(final List<T> list, final T toAdd) {
+    final ArrayList<T> newList = new ArrayList<>(list);
+    newList.add(toAdd);
+    return newList;
   }
 
 }

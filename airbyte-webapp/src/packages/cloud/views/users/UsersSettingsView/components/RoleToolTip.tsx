@@ -1,9 +1,10 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
+
+import ToolTip from "components/ToolTip";
 
 import InfoIcon from "./InfoIcon";
-import ToolTip from "components/ToolTip";
 
 const Info = styled.div`
   margin-left: 7px;
@@ -37,29 +38,14 @@ const RoleToolTip: React.FC = () => {
     >
       <>
         <LineBlock>
-          <FormattedMessage
-            id="settings.accessManagement.roleViewers"
-            values={{
-              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-            }}
-          />
+          <FormattedMessage id="settings.accessManagement.roleViewers" />
         </LineBlock>
         <LineBlock>
-          <FormattedMessage
-            id="settings.accessManagement.roleEditors"
-            values={{
-              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-            }}
-          />
+          <FormattedMessage id="settings.accessManagement.roleEditors" />
         </LineBlock>
 
         <LineBlock>
-          <FormattedMessage
-            id="settings.accessManagement.roleAdmin"
-            values={{
-              b: (...b: React.ReactNode[]) => <strong>{b}</strong>,
-            }}
-          />
+          <FormattedMessage id="settings.accessManagement.roleAdmin" />
         </LineBlock>
       </>
     </ToolTip>

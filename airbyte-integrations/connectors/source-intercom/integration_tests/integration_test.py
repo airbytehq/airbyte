@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -93,7 +93,7 @@ def test_companies_scroll(stream_attributes):
     # read all records
     records = []
     for slice in stream2.stream_slices(sync_mode=SyncMode.full_refresh):
-        records += list(stream2.read_records(sync_mode=SyncMode, stream_slice=slice))
+        records += list(stream2.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
     assert len(records) == 3
     assert (time.time() - start_time) > 60.0
 

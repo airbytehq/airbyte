@@ -14,6 +14,9 @@
   "email_events": {
     "timestamp": "2021-02-23T00:00:00Z"
   },
+  "engagements": {
+    "lastUpdated": 1614038400000
+  },
   "line_items": {
     "updatedAt": "2021-02-23T00:00:00Z"
   },

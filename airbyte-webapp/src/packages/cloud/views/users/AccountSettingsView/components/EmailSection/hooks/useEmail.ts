@@ -1,6 +1,6 @@
+import { AuthErrorCodes } from "firebase/auth";
 import { FormikHelpers } from "formik/dist/types";
 import { useState } from "react";
-import { AuthErrorCodes } from "firebase/auth";
 import { useIntl } from "react-intl";
 
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -10,10 +10,7 @@ import { FormValues } from "../typings";
 type UseEmailHook = () => {
   successMessage: string;
   errorMessage: string;
-  updateEmail: (
-    values: FormValues,
-    { setSubmitting, setFieldValue }: FormikHelpers<FormValues>
-  ) => void;
+  updateEmail: (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => void;
 };
 
 const useEmail: UseEmailHook = () => {
@@ -22,10 +19,7 @@ const useEmail: UseEmailHook = () => {
   const { formatMessage } = useIntl();
   const { updateEmail } = useAuthService();
 
-  const onUpdateEmail = async (
-    values: FormValues,
-    { setSubmitting, setFieldValue }: FormikHelpers<FormValues>
-  ) => {
+  const onUpdateEmail = async (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => {
     setSubmitting(true);
 
     setSuccessMessage("");

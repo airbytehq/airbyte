@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -20,6 +20,11 @@ public record S3CopyConfig(boolean purgeStagingData, S3DestinationConfig s3Confi
     } else {
       return config.get("purge_staging_data").asBoolean();
     }
+  }
+
+  public static S3CopyConfig getS3CopyConfig(final JsonNode config) {
+    return new S3CopyConfig(S3CopyConfig.shouldPurgeStagingData(config),
+        S3DestinationConfig.getS3DestinationConfig(config));
   }
 
 }

@@ -3,11 +3,11 @@ import styled from "styled-components";
 
 import Spinner from "components/Spinner";
 
-export type FeedbackBlockProps = {
+export interface FeedbackBlockProps {
   isLoading?: boolean;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const SuccessBlock = styled.div`
   margin: -10px 10px;
@@ -22,11 +22,7 @@ const ErrorBlock = styled(SuccessBlock)`
   color: ${({ theme }) => theme.dangerColor};
 `;
 
-const FeedbackBlock: React.FC<FeedbackBlockProps> = ({
-  isLoading,
-  errorMessage,
-  successMessage,
-}) => {
+const FeedbackBlock: React.FC<FeedbackBlockProps> = ({ isLoading, errorMessage, successMessage }) => {
   if (isLoading) {
     return (
       <SuccessBlock>

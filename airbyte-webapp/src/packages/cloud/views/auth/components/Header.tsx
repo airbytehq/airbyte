@@ -1,11 +1,14 @@
-import React from "react";
-import styled from "styled-components";
-import { Link } from "react-router-dom";
-import { FormattedMessage } from "react-intl";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
+import { FormattedMessage } from "react-intl";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
 
 import { Button } from "components";
+
+import { useConfig } from "config";
+
 import { CloudRoutes } from "../../../cloudRoutes";
 
 const Links = styled.div`
@@ -16,13 +19,10 @@ const Links = styled.div`
   align-items: center;
 `;
 
-const BackLink = styled.div`
+const BackLink = styled.a`
   font-style: normal;
   font-weight: bold;
-  font-size: 14px;
-  line-height: 17px;
   color: ${({ theme }) => theme.primaryColor};
-  cursor: pointer;
 
   &:hover {
     opacity: 0.8;
@@ -40,28 +40,24 @@ const TextBlock = styled.div`
   display: inline-block;
 `;
 
-type HeaderProps = {
+interface HeaderProps {
   toLogin?: boolean;
-};
+}
 
 const Header: React.FC<HeaderProps> = ({ toLogin }) => {
+  const { links } = useConfig();
+
   return (
     <Links>
-      <BackLink>
+      <BackLink href={links.webpageLink}>
         <FontAwesomeIcon icon={faArrowLeft} />
         <TextBlock>Back</TextBlock>
       </BackLink>
       <FormLink>
         <TextBlock>
-          <FormattedMessage
-            id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"}
-          />
+          <FormattedMessage id={toLogin ? "login.haveAccount" : "login.DontHaveAccount"} />
         </TextBlock>
-        <Button
-          secondary
-          as={Link}
-          to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}
-        >
+        <Button secondary as={Link} to={toLogin ? CloudRoutes.Login : CloudRoutes.Signup}>
           <FormattedMessage id={toLogin ? "login.login" : "login.signup"} />
         </Button>
       </FormLink>

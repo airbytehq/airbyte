@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "NameKey": {
+      "$ref": "location_name_key.json"
+    },
+    "Id": {
+      "type": "integer"
+    }
+  }
+}

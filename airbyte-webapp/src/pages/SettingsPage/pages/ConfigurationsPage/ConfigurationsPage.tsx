@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
-
-import { useConfig } from "config";
+import styled from "styled-components";
 
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
-import { DeploymentService } from "core/resources/DeploymentService";
+
+import { useConfig } from "config";
+import { DeploymentService } from "core/domain/deployment/DeploymentService";
+import { useServicesProvider } from "core/servicesProvider";
+
 import ImportConfigurationModal from "./components/ImportConfigurationModal";
 import LogsContent from "./components/LogsContent";
-import { useServicesProvider } from "core/servicesProvider";
 
 const Content = styled.div`
   max-width: 813px;
@@ -58,18 +59,14 @@ const ConfigurationsPage: React.FC = () => {
 
         return new Promise((resolve, reject) => {
           reader.onloadend = async (e) => {
-            // setError("");
-            // setIsLoading(true);
             const file = e?.target?.result;
             if (!file) {
               throw new Error("No file");
             }
-            try {
-              const deploymentService = getService<DeploymentService>(
-                "DeploymentService"
-              );
-              await deploymentService.importDeployment(file);
 
+            try {
+              const deploymentService = getService<DeploymentService>("DeploymentService");
+              await deploymentService.importDeployment(new Blob([file]));
               window.location.reload();
               resolve(true);
             } catch (e) {
@@ -85,19 +82,14 @@ const ConfigurationsPage: React.FC = () => {
   );
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
-    const deploymentService = getService<DeploymentService>(
-      "DeploymentService"
-    );
-
+    const deploymentService = getService<DeploymentService>("DeploymentService");
     const file = await deploymentService.exportDeployment();
     window.location.assign(file);
   }, []);
 
   return (
     <Content>
-      <HeadTitle
-        titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]}
-      />
+      <HeadTitle titles={[{ id: "sidebar.settings" }, { id: "admin.configuration" }]} />
       <ContentCard title={<FormattedMessage id="admin.export" />}>
         <ButtonContent>
           <LoadingButton onClick={onExport} isLoading={loadingExport}>
@@ -107,12 +99,8 @@ const ConfigurationsPage: React.FC = () => {
             <FormattedMessage
               id="admin.exportConfigurationText"
               values={{
-                lnk: (...lnk: React.ReactNode[]) => (
-                  <DocLink
-                    target="_blank"
-                    href={config.ui.configurationArchiveLink}
-                    as="a"
-                  >
+                lnk: (lnk: React.ReactNode) => (
+                  <DocLink target="_blank" href={config.links.configurationArchiveLink} as="a">
                     {lnk}
                   </DocLink>
                 ),
@@ -131,7 +119,7 @@ const ConfigurationsPage: React.FC = () => {
             <FormattedMessage
               id="admin.importConfigurationText"
               values={{
-                b: (...b: React.ReactNode[]) => <Warning>{b}</Warning>,
+                warn: (warn: React.ReactNode) => <Warning>{warn}</Warning>,
               }}
             />
           </Text>

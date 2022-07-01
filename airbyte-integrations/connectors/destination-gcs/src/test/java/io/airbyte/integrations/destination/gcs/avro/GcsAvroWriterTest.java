@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs.avro;
@@ -11,13 +11,13 @@ import static org.mockito.Mockito.mock;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
+import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import org.apache.avro.Schema;
 import org.junit.jupiter.api.Test;
 
 class GcsAvroWriterTest {
@@ -29,7 +29,7 @@ class GcsAvroWriterTest {
             "fake-bucket",
             "fake-bucketPath",
             "fake-bucketRegion",
-            null,
+            new GcsHmacKeyCredentialConfig("fake-access-id", "fake-secret"),
             new S3AvroFormatConfig(new ObjectMapper().createObjectNode())),
         mock(AmazonS3.class, RETURNS_DEEP_STUBS),
         new ConfiguredAirbyteStream()
@@ -37,10 +37,9 @@ class GcsAvroWriterTest {
                 .withNamespace("fake-namespace")
                 .withName("fake-stream")),
         Timestamp.from(Instant.ofEpochMilli(1234)),
-        mock(Schema.class),
         null);
 
-    assertEquals("fake-bucketPath/fake_namespace/fake_stream/1970_01_01_1234_0.avro", writer.getOutputPath());
+    assertEquals("fake-bucketPath/fake-namespace/fake-stream/1970_01_01_1234_0.avro", writer.getOutputPath());
   }
 
 }

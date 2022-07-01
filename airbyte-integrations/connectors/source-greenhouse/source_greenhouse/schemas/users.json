@@ -36,7 +36,7 @@
       }
     },
     "employee_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "linked_candidate_ids": {
       "type": ["null", "array"]

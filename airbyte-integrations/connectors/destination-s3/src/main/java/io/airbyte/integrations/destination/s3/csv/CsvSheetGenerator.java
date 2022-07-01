@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -19,6 +19,8 @@ public interface CsvSheetGenerator {
   List<String> getHeaderRow();
 
   List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
+
+  List<Object> getDataRow(JsonNode formattedData);
 
   final class Factory {
 

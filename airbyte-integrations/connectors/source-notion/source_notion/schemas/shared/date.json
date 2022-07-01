@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": ["null", "object"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
-    "start": { "type": "string" },
-    "end": { "type": ["null", "string"] }
+    "start": { "type": ["null", "string"] },
+    "end": { "type": ["null", "string"] },
+    "time_zone": { "type": ["null", "string"] }
   }
 }

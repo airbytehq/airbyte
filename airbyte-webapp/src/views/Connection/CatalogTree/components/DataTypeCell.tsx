@@ -1,11 +1,12 @@
 import React from "react";
-import { Cell } from "components/SimpleTableComponents";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
-type DataTypeCellProps = {
+import { Cell } from "components/SimpleTableComponents";
+
+interface DataTypeCellProps {
   nullable?: boolean;
-};
+}
 
 const Description = styled.div`
   color: ${({ theme }) => theme.greyColor40};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -22,6 +22,11 @@ public abstract class BaseSheetGenerator implements CsvSheetGenerator {
     data.add(recordMessage.getEmittedAt());
     data.addAll(getRecordColumns(recordMessage.getData()));
     return data;
+  }
+
+  @Override
+  public List<Object> getDataRow(JsonNode formattedData) {
+    return new LinkedList<>(getRecordColumns(formattedData));
   }
 
   abstract List<String> getRecordColumns(JsonNode json);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.dynamodb;
@@ -46,7 +46,7 @@ public class DynamodbWriter {
     this.dynamodb = new DynamoDB(amazonDynamodb);
     this.configuredStream = configuredStream;
     this.uploadTimestamp = uploadTimestamp;
-    this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableName(), configuredStream.getStream());
+    this.outputTableName = DynamodbOutputTableHelper.getOutputTableName(config.getTableNamePrefix(), configuredStream.getStream());
 
     final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
     if (syncMode == null) {

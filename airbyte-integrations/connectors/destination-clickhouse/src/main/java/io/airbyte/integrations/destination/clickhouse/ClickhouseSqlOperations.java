@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.clickhouse;
@@ -26,6 +26,11 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     database.execute(String.format("CREATE DATABASE IF NOT EXISTS %s;\n", schemaName));
+  }
+
+  @Override
+  public boolean isSchemaRequired() {
+    return false;
   }
 
   @Override

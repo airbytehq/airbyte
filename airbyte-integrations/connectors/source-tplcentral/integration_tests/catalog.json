@@ -1,0 +1,48 @@
+{
+  "streams": [
+    {
+      "name": "stock_summaries",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["facility_id"], ["_item_identifier_id"]]
+    },
+    {
+      "name": "customers",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_primary_key": [["_id"]]
+    },
+    {
+      "name": "items",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_cursor"],
+      "source_defined_primary_key": [["_id"]]
+    },
+    {
+      "name": "stock_details",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_cursor"],
+      "source_defined_primary_key": [["_id"]]
+    },
+    {
+      "name": "inventory",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_cursor"],
+      "source_defined_primary_key": [["_id"]]
+    },
+    {
+      "name": "orders",
+      "json_schema": {},
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["_cursor"],
+      "source_defined_primary_key": [["_id"]]
+    }
+  ]
+}

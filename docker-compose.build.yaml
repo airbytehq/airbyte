@@ -19,14 +19,7 @@ services:
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-db/lib
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  scheduler:
-    image: airbyte/scheduler:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      context: airbyte-scheduler/app
+      context: airbyte-db/db-lib
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   worker:
@@ -55,5 +48,19 @@ services:
     build:
       dockerfile: Dockerfile
       context: airbyte-temporal
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  container-orchestrator:
+    image: airbyte/container-orchestrator:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-container-orchestrator
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  metric-reporter:
+    image: airbyte/metrics-reporter:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-metrics/reporter
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}

@@ -1,81 +1,61 @@
 import React, { memo } from "react";
 import styled from "styled-components";
-import { Cell } from "components/SimpleTableComponents";
-import { CheckBox, RadioButton } from "components";
+
+import { Cell, CheckBox, RadioButton } from "components";
+
+import { useTranslateDataType } from "../../../utils/useTranslateDataType";
 import DataTypeCell from "./components/DataTypeCell";
+import { NameContainer } from "./styles";
 
 interface FieldRowProps {
   name: string;
   path: string[];
   type: string;
+  format?: string;
+  airbyte_type?: string;
   nullable?: boolean;
   destinationName: string;
   isPrimaryKey: boolean;
   isPrimaryKeyEnabled: boolean;
   isCursor: boolean;
   isCursorEnabled: boolean;
-  depth?: number;
+  anyOf?: unknown[];
+  oneOf?: unknown[];
 
   onPrimaryKeyChange: (pk: string[]) => void;
   onCursorChange: (cs: string[]) => void;
 }
 
-const FirstCell = styled(Cell)<{ depth?: number }>`
-  margin-left: ${({ depth }) => (depth ? depth * -38 : 0)}px;
+const FirstCell = styled(Cell)`
+  margin-left: -10px;
 `;
 
-const NameContainer = styled.span<{ depth?: number }>`
-  padding-left: ${({ depth }) => (depth ? depth * 59 : 0)}px;
+const LastCell = styled(Cell)`
+  margin-right: -10px;
 `;
 
-const LastCell = styled(Cell)<{ depth?: number }>`
-  margin-right: ${({ depth }) => (depth ? depth * -38 : 0)}px;
-`;
+const FieldRowInner: React.FC<FieldRowProps> = ({ onPrimaryKeyChange, onCursorChange, path, ...props }) => {
+  const dataType = useTranslateDataType(props);
 
-const RadiobuttonContainer = styled.div<{ depth?: number }>`
-  padding-right: ${({ depth }) => (depth ? depth * 38 : 0)}px;
-`;
-
-const FieldRowInner: React.FC<FieldRowProps> = ({
-  onPrimaryKeyChange,
-  onCursorChange,
-  path,
-  ...props
-}) => {
   return (
     <>
-      <FirstCell ellipsis depth={props.depth} flex={1.5}>
-        <NameContainer depth={props.depth} title={props.name}>
-          {props.name}
-        </NameContainer>
+      <FirstCell ellipsis flex={1.5}>
+        <NameContainer title={props.name}>{props.name}</NameContainer>
       </FirstCell>
-      <Cell />
-      <DataTypeCell nullable={props.nullable}>{props.type}</DataTypeCell>
-      <Cell ellipsis title={props.destinationName}>
-        {props.destinationName}
+      <DataTypeCell nullable={props.nullable}>{dataType}</DataTypeCell>
+      <Cell>
+        {props.isCursorEnabled && <RadioButton checked={props.isCursor} onChange={() => onCursorChange(path)} />}
       </Cell>
-      <Cell flex={1.5} />
       <Cell>
         {props.isPrimaryKeyEnabled && (
-          <CheckBox
-            checked={props.isPrimaryKey}
-            onChange={() => onPrimaryKeyChange(path)}
-          />
+          <CheckBox checked={props.isPrimaryKey} onChange={() => onPrimaryKeyChange(path)} />
         )}
       </Cell>
-      <LastCell depth={props.depth}>
-        {props.isCursorEnabled && (
-          <RadiobuttonContainer depth={props.depth}>
-            <RadioButton
-              checked={props.isCursor}
-              onChange={() => onCursorChange(path)}
-            />
-          </RadiobuttonContainer>
-        )}
+      <LastCell ellipsis title={props.destinationName} flex={1.5}>
+        {props.destinationName}
       </LastCell>
     </>
   );
 };
 
-const FieldRow = memo(FieldRowInner);
-export { FieldRow };
+export const FieldRow = memo(FieldRowInner);

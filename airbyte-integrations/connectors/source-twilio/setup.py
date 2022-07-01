@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,9 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock"]
 
 setup(
     name="source_twilio",
