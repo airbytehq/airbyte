@@ -3,13 +3,11 @@
 #
 
 from http import HTTPStatus
+from multiprocessing.pool import Pool
 from unittest.mock import MagicMock, patch
-import requests_mock
 
 import pytest
-from multiprocessing.pool import Pool
 from source_netsuite.source import NetsuiteStream, SourceNetsuite
-from requests_oauthlib import OAuth1
 
 config = {
     "consumer_key": "consumer_key",

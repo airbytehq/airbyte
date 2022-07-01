@@ -3,7 +3,6 @@
 #
 
 from unittest.mock import MagicMock
-import requests_mock
 
 from source_netsuite.source import SourceNetsuite
 

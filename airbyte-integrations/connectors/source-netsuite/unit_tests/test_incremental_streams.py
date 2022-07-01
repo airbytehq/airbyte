@@ -3,10 +3,11 @@
 #
 
 
+import datetime
+from unittest.mock import Mock, patch
+
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
-from unittest.mock import Mock, patch
-import datetime
 from source_netsuite.source import IncrementalNetsuiteStream, SourceNetsuite
 
 config = {

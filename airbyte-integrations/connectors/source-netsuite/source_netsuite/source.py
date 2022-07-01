@@ -4,22 +4,22 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from collections import Counter
+from datetime import date, datetime, timedelta
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
-from requests_oauthlib import OAuth1
-from datetime import datetime, timedelta, date
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests_oauthlib import OAuth1
 
 rest_path = "/services/rest/"
 record_path = rest_path + "record/v1/"
 metadata_path = record_path + "metadata-catalog/"
 schema_headers = {"Accept": "application/schema+json"}
+
 
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
@@ -48,25 +48,16 @@ class NetsuiteStream(HttpStream, ABC):
         return {
             "type": "object",
             "properties": {
-                "id": {
-                    "title": "Internal identifier",
-                    "type": "string"
-                },
-                "refName": {
-                    "title": "Reference Name",
-                    "type": ["string", "null"]
-                },
-                "externalId": {
-                    "title": "External identifier",
-                    "type": ["string", "null"]
-                },
+                "id": {"title": "Internal identifier", "type": "string"},
+                "refName": {"title": "Reference Name", "type": ["string", "null"]},
+                "externalId": {"title": "External identifier", "type": ["string", "null"]},
                 "links": {
                     "title": "Links",
                     "type": "array",
                     "readOnly": True,
                     "items": self.get_schema("/services/rest/record/v1/metadata-catalog/nsLink"),
-                }
-            }
+                },
+            },
         }
 
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
@@ -100,12 +91,16 @@ class NetsuiteStream(HttpStream, ABC):
 
             # Netsuite values can be the full name of the value and not match
             # the enum specified in the scheama
-            if record.get("enum"): del record["enum"]
+            if record.get("enum"):
+                del record["enum"]
 
             # these parts of the schema is not used by Airybte
-            if record.get("x-ns-filterable"): del record["x-ns-filterable"]
-            if record.get("x-ns-custom-field"): del record["x-ns-custom-field"]
-            if record.get("nullable"): del record["nullable"]
+            if record.get("x-ns-filterable"):
+                del record["x-ns-filterable"]
+            if record.get("x-ns-custom-field"):
+                del record["x-ns-custom-field"]
+            if record.get("nullable"):
+                del record["nullable"]
 
             ref = record.get("$ref")
             if ref:
@@ -237,7 +232,7 @@ class SourceNetsuite(AbstractSource):
         # if record types are specified make sure they are valid
         if record_types:
             # ensure there are no duplicate record types as this will break Airbyte
-            duplicates = [k for k,v in Counter(record_types).items() if v>1]
+            duplicates = [k for k, v in Counter(record_types).items() if v > 1]
             if duplicates:
                 return False, f'Duplicate record type: {", ".join(duplicates)}'
             params = {"limit": 1}
@@ -276,7 +271,7 @@ class SourceNetsuite(AbstractSource):
             IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in incremental_record_names
         ]
         custom_incremental_streams = [
-            CustomIncrementalNetsuiteStream(auth, name, base_url, strat_datetime, concurrency_limit)
+            CustomIncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit)
             for name in custom_incremental_record_names
         ]
 
