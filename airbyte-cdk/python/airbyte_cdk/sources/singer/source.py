@@ -3,8 +3,8 @@
 #
 
 
-import os
 import logging
+import os
 from typing import Any, Dict, Iterable, List, Mapping, Type
 
 from airbyte_cdk.models import AirbyteCatalog, AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
@@ -93,9 +93,7 @@ class SingerSource(BaseSource[ConfigContainer, str, str]):
         """
         return self._discover_internal(logger, config.config_path).airbyte_catalog
 
-    def read(
-        self, logger: logging.Logger, config: ConfigContainer, catalog_path: str, state_path: str = None
-    ) -> Iterable[AirbyteMessage]:
+    def read(self, logger: logging.Logger, config: ConfigContainer, catalog_path: str, state_path: str = None) -> Iterable[AirbyteMessage]:
         """
         Implements the parent class read method.
         """
