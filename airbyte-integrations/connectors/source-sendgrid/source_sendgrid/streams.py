@@ -211,7 +211,7 @@ class Messages(SendgridStream, SendgridStreamIncrementalMixin):
     def request_params(self, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         time_filter_template = "%Y-%m-%dT%H:%M:%SZ"
         params = super().request_params(stream_state=stream_state, **kwargs)
-        if type(params["start_time"]) == int:
+        if isinstance(params["start_time"], int):
             date_start = datetime.datetime.fromtimestamp(int(params["start_time"])).strftime(time_filter_template)
         else:
             date_start = params["start_time"]
