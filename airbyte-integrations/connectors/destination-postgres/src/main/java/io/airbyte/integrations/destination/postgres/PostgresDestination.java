@@ -51,10 +51,15 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     final Map<String, String> additionalParameters = new HashMap<>();
     if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
-      if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
-        additionalParameters.put("sslmode", DISABLE);
+      if (config.has(PARAM_SSL_MODE)) {
+        if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
+          additionalParameters.put("sslmode", DISABLE);
+        } else {
+          additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+        }
       } else {
-        additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
+        additionalParameters.put("ssl", "true");
+        additionalParameters.put("sslmode", "require");
       }
     }
     return additionalParameters;

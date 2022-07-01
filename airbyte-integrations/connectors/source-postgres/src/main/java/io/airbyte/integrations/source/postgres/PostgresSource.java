@@ -103,15 +103,20 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     // assume ssl if not explicitly mentioned.
     if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
-      if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
-        additionalParameters.add("sslmode=disable");
+      if (config.has(PARAM_SSL_MODE)) {
+        if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
+          additionalParameters.add("sslmode=disable");
+        } else {
+          var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
+                  .entrySet()
+                  .stream()
+                  .map(e -> e.getKey() + "=" + e.getValue())
+                  .toList();
+          additionalParameters.addAll(parametersList);
+        }
       } else {
-        var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
-            .entrySet()
-            .stream()
-            .map(e -> e.getKey() + "=" + e.getValue())
-            .toList();
-        additionalParameters.addAll(parametersList);
+        additionalParameters.add("ssl=true");
+        additionalParameters.add("sslmode=require");
       }
     }
 
