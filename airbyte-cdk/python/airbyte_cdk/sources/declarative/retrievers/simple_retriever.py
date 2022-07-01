@@ -58,10 +58,8 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def raise_on_http_errors(self) -> bool:
-        """
-        If set to False, allows opting-out of raising HTTP code exception.
-        """
-        return self._requester.raise_on_http_errors
+        # never raise on http_errors because this overrides the retrier logic...
+        return False
 
     @property
     def max_retries(self) -> Union[int, None]:

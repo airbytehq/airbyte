@@ -57,13 +57,6 @@ class Requester(ABC):
 
     @property
     @abstractmethod
-    def raise_on_http_errors(self) -> bool:
-        """
-        If set to False, allows opting-out of raising HTTP code exception.
-        """
-
-    @property
-    @abstractmethod
     def max_retries(self) -> Union[int, None]:
         """
         Specifies maximum amount of retries for backoff policy. Return None for no limit.

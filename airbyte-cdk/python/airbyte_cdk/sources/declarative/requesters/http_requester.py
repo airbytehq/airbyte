@@ -65,10 +65,6 @@ class HttpRequester(Requester):
         return self._method
 
     @property
-    def raise_on_http_errors(self) -> bool:
-        return False
-
-    @property
     def max_retries(self) -> Union[int, None]:
         return self._retrier.max_retries
 

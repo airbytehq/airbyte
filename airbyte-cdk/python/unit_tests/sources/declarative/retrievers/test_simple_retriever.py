@@ -43,8 +43,6 @@ def test_simple_retriever():
     requester.get_path.return_value = path
     http_method = HttpMethod.GET
     requester.get_method.return_value = http_method
-    raise_on_http_errors = True
-    requester.raise_on_http_errors = raise_on_http_errors
     max_retries = 10
     requester.max_retries = max_retries
     retry_factor = 2
@@ -91,7 +89,7 @@ def test_simple_retriever():
     assert retriever._last_records == records
 
     assert retriever.http_method == "GET"
-    assert retriever.raise_on_http_errors == raise_on_http_errors
+    assert not retriever.raise_on_http_errors
     assert retriever.max_retries == max_retries
     assert retriever.retry_factor == retry_factor
     assert retriever.should_retry(requests.Response())
