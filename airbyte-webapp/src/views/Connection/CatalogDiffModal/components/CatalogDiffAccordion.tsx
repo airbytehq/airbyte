@@ -3,10 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Disclosure as Accordion } from "@headlessui/react";
 import classnames from "classnames";
 
+import { ImageBlock } from "components";
+
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
 import styles from "./CatalogDiffAccordion.module.scss";
-import { DiffHeader } from "./DiffHeader";
+import { DiffFieldTable } from "./DiffFieldTable";
 import { ModificationIcon } from "./ModificationIcon";
 
 interface CatalogDiffAccordionProps {
@@ -46,24 +48,25 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
                 {"        "}
                 {data.streamDescriptor.name}
               </div>
+              <div>
+                <ImageBlock />
+              </div>
             </Accordion.Button>
             <Accordion.Panel>
               {removedFields.length > 0 && (
                 <div>
-                  <DiffHeader diffCount={removedFields.length} diffVerb="removed" diffType="field" />
-                  {/* <CatalogDiffFieldTable fieldTransforms={removedFields} /> */}
+                  {/* <DiffHeader diffCount={removedFields.length} diffVerb="removed" diffType="field" /> */}
+                  <DiffFieldTable fieldTransforms={removedFields} />
                 </div>
               )}
               {addedFields.length > 0 && (
                 <div>
-                  <DiffHeader diffCount={addedFields.length} diffVerb="new" diffType="field" />
-                  {/* <CatalogDiffFieldTable fieldTransforms={addedFields} /> */}
+                  <DiffFieldTable fieldTransforms={addedFields} />
                 </div>
               )}
               {updatedFields.length > 0 && (
                 <div>
-                  <DiffHeader diffCount={updatedFields.length} diffVerb="changed" diffType="field" />
-                  {/* <CatalogDiffFieldTable fieldTransforms={updatedFields} /> */}
+                  <DiffFieldTable fieldTransforms={updatedFields} />
                 </div>
               )}
             </Accordion.Panel>

@@ -7,13 +7,14 @@ interface DiffFieldTableProps {
   fieldTransforms: FieldTransform[];
 }
 
-export const CatalogDiffFieldTable: React.FC<DiffFieldTableProps> = ({ fieldTransforms }) => {
+export const DiffFieldTable: React.FC<DiffFieldTableProps> = ({ fieldTransforms }) => {
   return (
     <table>
       <tr className={styles.accordionSubHeader}>
         <th>
           <DiffHeader diffCount={fieldTransforms.length} diffVerb="new" diffType="field" />
         </th>
+        <th>Data type</th>
       </tr>
     </table>
   );
