@@ -41,7 +41,7 @@ def create(func, /, *args, **keywords):
 
         # interpolate the parameters
         interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
-        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v is not None}
+        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
 
         all_keywords.update(interpolated_keywords)
 
