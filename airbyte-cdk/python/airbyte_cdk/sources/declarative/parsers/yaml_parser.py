@@ -22,7 +22,9 @@ class YamlParser(ConfigParser):
         """
         input_mapping = yaml.safe_load(config_str)
         evaluated_config = {}
-        return self.preprocess_dict(input_mapping, evaluated_config, "")
+        res = self.preprocess_dict(input_mapping, evaluated_config, "")
+        print(f"evaluated_config: {evaluated_config}")
+        return res
 
     def preprocess_dict(self, input_mapping, evaluated_mapping, path):
         """
@@ -55,12 +57,15 @@ class YamlParser(ConfigParser):
         return s[ref_start + 5 : s.find(")")]
 
     def resolve_value(self, value, path):
+        print(f"value: {value}")
+        print(f"path: {path}")
         if path:
             return *path, value
         else:
             return (value,)
 
     def preprocess(self, value, evaluated_config, path):
+        print(f"preprocess with path: {path}")
         if isinstance(value, str):
             ref_key = self.get_ref_key(value)
             if ref_key is None:
@@ -84,16 +89,27 @@ class YamlParser(ConfigParser):
                 """
                 key = (ref_key,)
                 while key[-1]:
+                    print(f"key: {key}")
                     if key in evaluated_config:
                         return evaluated_config[key]
                     else:
                         split = key[-1].split(".")
                         key = *key[:-1], split[0], ".".join(split[1:])
+                print(f"full config: {evaluated_config}")
                 raise UndefinedReferenceException(path, ref_key)
         elif isinstance(value, dict):
             return self.preprocess_dict(value, evaluated_config, path)
         elif type(value) == list:
-            evaluated_list = [self.preprocess(v, evaluated_config, path) for v in value]
+            print(f"evaluating list!: {value}")
+            evaluated_list = [
+                self.preprocess(v, evaluated_config, (path[:-1], f"{path[-1]}[{index}]") if len(path) > 1 else (f"{path[-1]}[{index}]",))
+                for index, v in enumerate(value)
+            ]
+            for index, elem in enumerate(evaluated_list):
+                print(f"index: {index} elem: {elem}")
+                p = (path[:-1], f"{path[-1]}[{index}]") if len(path) > 1 else (f"{path[-1]}[{index}]",)
+                evaluated_config[p] = elem
+            print(f"done evaluating list: {evaluated_list}")
             return evaluated_list
         else:
             return value

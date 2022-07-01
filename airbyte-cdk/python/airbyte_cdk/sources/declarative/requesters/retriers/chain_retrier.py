@@ -43,6 +43,7 @@ class ChainRetrier(Retrier):
             return retry
 
     def _iterate(self, f):
+        # FIXME this is broken!
         val = None
         for retrier in self._retriers:
             val = retrier.f
