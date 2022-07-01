@@ -10,21 +10,26 @@ interface ImageBlockProps {
   num?: number;
   small?: boolean;
   color?: string;
+  light?: boolean;
 }
 
-export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small, color }) => {
+export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small, color, light }) => {
   const imageCircleClassnames = classnames({
     [styles.circle]: num,
     [styles.iconContainer]: !num || num === undefined,
     [styles.small]: small && !num,
-    [styles.darkBlue]: !small && num,
+    [styles.darkBlue]: !small && num && !color,
     [styles.green]: color === "green",
     [styles.red]: color === "red",
     [styles.blue]: color === "blue",
+    [styles.light]: light,
   });
+
+  const numberStyles = classnames(styles.number, { [styles.light]: light });
+
   return (
     <div className={imageCircleClassnames}>
-      {num ? <div className={styles.number}>{num}</div> : <div className={styles.icon}>{getIcon(img)}</div>}
+      {num ? <div className={numberStyles}>{num}</div> : <div className={styles.icon}>{getIcon(img)}</div>}
     </div>
   );
 };

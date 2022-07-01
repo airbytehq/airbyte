@@ -48,27 +48,27 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
                 {"        "}
                 {data.streamDescriptor.name}
               </div>
-              <div>
-                {removedFields.length > 0 && <ImageBlock num={removedFields.length} color="red" />}
-                {addedFields.length > 0 && <ImageBlock num={addedFields.length} color="green" />}
-                {updatedFields.length > 0 && <ImageBlock num={updatedFields.length} color="blue" />}
+              <div className={styles.iconBlock}>
+                {removedFields.length > 0 && <ImageBlock num={removedFields.length} color="red" light />}
+                {addedFields.length > 0 && <ImageBlock num={addedFields.length} color="green" light />}
+                {updatedFields.length > 0 && <ImageBlock num={updatedFields.length} color="blue" light />}
               </div>
             </Accordion.Button>
             <Accordion.Panel>
               {removedFields.length > 0 && (
                 <div>
                   {/* <DiffHeader diffCount={removedFields.length} diffVerb="removed" diffType="field" /> */}
-                  <DiffFieldTable fieldTransforms={removedFields} />
+                  <DiffFieldTable fieldTransforms={removedFields} diffVerb="removed" />
                 </div>
               )}
               {addedFields.length > 0 && (
                 <div>
-                  <DiffFieldTable fieldTransforms={addedFields} />
+                  <DiffFieldTable fieldTransforms={addedFields} diffVerb="new" />
                 </div>
               )}
               {updatedFields.length > 0 && (
                 <div>
-                  <DiffFieldTable fieldTransforms={updatedFields} />
+                  <DiffFieldTable fieldTransforms={updatedFields} diffVerb="changed" />
                 </div>
               )}
             </Accordion.Panel>

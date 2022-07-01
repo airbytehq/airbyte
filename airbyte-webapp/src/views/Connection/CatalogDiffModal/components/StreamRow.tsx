@@ -2,13 +2,13 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 
-import { AirbyteCatalog, FieldTransform, StreamTransform } from "core/request/AirbyteClient";
+import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
 import { ModificationIcon } from "./ModificationIcon";
 import styles from "./StreamRow.module.scss";
 
 interface StreamRowProps {
-  item: StreamTransform | FieldTransform;
+  item: StreamTransform;
   catalog: AirbyteCatalog;
 }
 
@@ -50,7 +50,6 @@ export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
   let syncModeString = null;
   let streamConfig = null;
   let namespace = null;
-  // const fieldType = null;
 
   let itemName = "";
 
@@ -63,9 +62,6 @@ export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
     syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`;
     itemName = item.streamDescriptor.name;
     namespace = item.streamDescriptor.namespace;
-  } else if ("fieldName" in item) {
-    itemName = item.fieldName[item.fieldName.length - 1];
-    // fieldType = item.updateFieldSchema?.newSchema;
   }
 
   return (

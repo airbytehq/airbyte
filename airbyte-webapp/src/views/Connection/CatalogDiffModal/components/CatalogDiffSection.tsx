@@ -26,8 +26,6 @@ export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog
     [styles.padLeft]: data[0].transformType === "update_stream",
   });
 
-  console.log(subheaderStyles);
-
   if (!diffVerb || !diffType) {
     return null;
   }
