@@ -73,7 +73,7 @@ METRICS = [
     'conversion_add_cart',
     'conversion_view_content',
     'conversion_add_billing',
-    # 'conversion_signups',  # Invalid query parameters in request URL:
+    # 'conversion_signups',  # Invalid query parameters in request URL
     'conversion_searches',
     'conversion_level_completes',
     'conversion_app_opens',
@@ -252,6 +252,11 @@ class SnapchatMarketingStream(HttpStream, ABC):
         So the response_root_name will be "organizations", and the response_item_name will be "organization"
         Also, the client side filtering for incremental sync is used
         """
+
+
+        self.logger.info(f"============= GranularityType:{self.name} =================")
+        self.logger.info(response.json())
+
         json_response = response.json().get(self.response_root_name)
         for resp in json_response:
             if self.response_item_name not in resp:
@@ -270,8 +275,15 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     last_slice = None
     current_slice = None
     first_run = True
+    initial_state = None
+    max_state = None
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        stream_state = kwargs.get("stream_state")
+        self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
+        self.max_state = self.initial_state
+
         stream_slices = default_stream_slices_return_value
 
         if self.depends_on_stream:
@@ -320,9 +332,12 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         Thus all the slices data are compared to the initial state, but only on the last one we write it to the stream state.
         This approach gives us the maximum state value of all the records and we exclude the state updates between slice processing
         """
-        if not current_stream_state:
-            current_stream_state = {self.cursor_field: self.start_date}
-        return {self.cursor_field: max(latest_record.get(self.cursor_field, ""), current_stream_state.get(self.cursor_field, ""))}
+        if self.first_run:
+            self.first_run = False
+            return {self.cursor_field: self.initial_state}
+        else:
+            self.max_state = max(self.max_state, latest_record[self.cursor_field])
+            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else self.initial_state}
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
@@ -415,19 +430,128 @@ class Granularity:
     data_path: str = 'timeseries_stats'
     item_path: list = ['timeseries_stat', 'timeseries']
     metrics = METRICS + METRICS_NOT_HOURLY
-    # metrics = METRICS
 
 
 class Hourly(Granularity):
+    """
+        {
+          "request_status": "SUCCESS",
+          "request_id": "c106d757-7c07-4415-b62f-78108d9dc668",
+          "timeseries_stats": [{
+              "sub_request_status": "SUCCESS",
+              "timeseries_stat": {
+                "id": "417d0269-80fb-496a-b5f3-ec0bac665144",
+                "type": "AD",
+                "granularity": "HOUR",
+                "start_time": "2022-06-24T17:00:00.000-07:00",
+                "end_time": "2022-06-28T17:00:00.000-07:00",
+                "finalized_data_end_time": "2022-06-30T11:00:00.000-07:00",
+                "conversion_data_processed_end_time": "2022-06-30T00:00:00.000Z",
+                "timeseries": [{
+                    "start_time": "2022-06-24T17:00:00.000-07:00",
+                    "end_time": "2022-06-24T18:00:00.000-07:00",
+                    "stats": {
+                      "impressions": 0,
+                      "swipes": 0,
+                      "quartile_1": 0,
+                      "quartile_2": 0,
+                      "quartile_3": 0,
+                      "view_completion": 0,
+                    }
+                  }, {
+                    "start_time": "2022-06-24T18:00:00.000-07:00",
+                    "end_time": "2022-06-24T19:00:00.000-07:00",
+                    "stats": {
+                      "impressions": 0,
+                      "swipes": 0,
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+    """
     granularity = GranularityType.HOUR
     metrics = METRICS
 
 
 class Daily(Granularity):
+    """
+        {
+          "request_status": "SUCCESS",
+          "request_id": "f2cba857-e246-43bf-b644-1a0a540e1f92",
+          "timeseries_stats": [{
+              "sub_request_status": "SUCCESS",
+              "timeseries_stat": {
+
+                "id": "417d0269-80fb-496a-b5f3-ec0bac665144",
+                "type": "AD",
+                "granularity": "DAY",
+                "start_time": "2022-06-25T00:00:00.000-07:00",
+                "end_time": "2022-06-29T00:00:00.000-07:00",
+                "finalized_data_end_time": "2022-06-30T00:00:00.000-07:00",
+                "conversion_data_processed_end_time": "2022-06-30T00:00:00.000Z",
+                "timeseries": [{
+                    "start_time": "2022-06-25T00:00:00.000-07:00",
+                    "end_time": "2022-06-26T00:00:00.000-07:00",
+                    "stats": {
+                      "impressions": 0,
+                      "swipes": 0,
+                      "quartile_1": 0,
+                      "quartile_2": 0,
+                      "quartile_3": 0,
+                    }
+                  }, {
+                    "start_time": "2022-06-26T00:00:00.000-07:00",
+                    "end_time": "2022-06-27T00:00:00.000-07:00",
+                    "stats": {
+                      "impressions": 0,
+                      "swipes": 0,
+                      "quartile_1": 0,
+                      "quartile_2": 0,
+                      "quartile_3": 0,
+                    },
+                  },
+
+                ]
+              }
+            }
+          ]
+        }
+
+
+    """
     granularity = GranularityType.DAY
 
 
 class Lifetime(Granularity):
+    """
+    {
+      "request_status": "SUCCESS",
+      "request_id": "d0cb395f-c39d-480d-b62c-24878c7d0b76",
+      "lifetime_stats": [{
+          "sub_request_status": "SUCCESS",
+          "lifetime_stat": {
+            "id": "96e5549f-4065-490e-93dd-ffb9f7973b77",
+            "type": "AD",
+            "granularity": "LIFETIME",
+            "stats": {
+              "impressions": 0,
+              "swipes": 0,
+              "quartile_1": 0,
+              "quartile_2": 0,
+            },
+            "start_time": "2016-09-26T00:00:00.000-07:00",
+            "end_time": "2022-07-01T07:00:00.000-07:00",
+            "finalized_data_end_time": "2022-07-01T07:00:00.000-07:00",
+            "conversion_data_processed_end_time": "2022-07-01T00:00:00.000Z"
+          }
+        }
+      ]
+    }
+
+    """
     granularity = GranularityType.LIFETIME
     data_path = 'lifetime_stats'
     item_path = ['lifetime_stat', 'stats']
@@ -440,32 +564,21 @@ class Total(Granularity):
 
 
 class Stats(SnapchatMarketingStream, ABC):
-    """
-    # https://marketingapi.snapchat.com/docs/#example-for-all-metrics
-    # https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
-
-    # https://marketingapi.snapchat.com/docs/#measurement
-    Measurement
+    """ stats requests can be made with TOTAL, DAY, or HOUR granularity.
+    Docs:  https://marketingapi.snapchat.com/docs/#measurement
     Measurement endpoints provides stats data that is updated approximately every 15 minutes.
-
-    All stats requests can be made with TOTAL, DAY, or HOUR granularity.
-
     """
     slice_key_name = 'id'
     schema_name = 'basic_stats'
     depends_on_stream_name = ''
 
-
     @property
-    # @abstractmethod
     def granularity(self) -> GranularityType:
         """Required granularity"""
 
     @property
-    # @abstractmethod
     def depends_on_stream(self) -> SnapchatMarketingStream:
         """Required granularity"""
-
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
 
@@ -499,10 +612,13 @@ class Stats(SnapchatMarketingStream, ABC):
     ) -> MutableMapping[str, Any]:
 
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
         params['granularity'] = self.granularity.value
+
         if not self.granularity == GranularityType.LIFETIME:
             params['start_time'] = self.start_date
             params['end_time'] = self.end_date
+
         if self.metrics:
             params['fields'] = ','.join(self.metrics)
 
@@ -510,24 +626,15 @@ class Stats(SnapchatMarketingStream, ABC):
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         """Response json came like
-        {
-            "organizations": [
-                {
-                    "organization": {
-                        "id": "some uuid",
-                        "updated_at": "2020-12-15T22:35:17.819Z",
-                        "created_at": "2020-12-15T11:13:03.910Z",
-                        ... some_other_json_fields ...
-                    }
-                }
-            ]
-        }
+
+
         So the response_root_name will be "organizations", and the response_item_name will be "organization"
         Also, the client side filtering for incremental sync is used
         """
 
         data = response.json()
-        self.logger.info(f"GranularityType:{self.granularity} DATA {data}")
+        self.logger.info(f"============= GranularityType:{self.granularity} =================")
+        self.logger.info(data)
 
         items = data.get(self.data_path, [])
 
