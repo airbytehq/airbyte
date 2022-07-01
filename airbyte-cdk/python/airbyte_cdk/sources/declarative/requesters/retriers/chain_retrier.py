@@ -20,11 +20,11 @@ class ChainRetrier(Retrier):
 
     @property
     def max_retries(self) -> Union[int, None]:
-        return self._iterate(Retrier.max_retries)
+        return self._retriers[0].max_retries
 
     @property
     def retry_factor(self) -> float:
-        return self._iterate(Retrier.retry_factor)
+        return self._retriers[0].retry_factor
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         retry = None
@@ -41,12 +41,3 @@ class ChainRetrier(Retrier):
             return NonRetriableResponseStatus.IGNORE
         else:
             return retry
-
-    def _iterate(self, f):
-        # FIXME this is broken!
-        val = None
-        for retrier in self._retriers:
-            val = retrier.f
-            if val:
-                return val
-        return val
