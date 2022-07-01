@@ -48,7 +48,8 @@ public class DefaultStateAggregator implements StateAggregator {
     if (this.stateType == null) {
       this.stateType = inputStateType;
     }
-    Preconditions.checkArgument(this.stateType == inputStateType, "Input state type " + inputStateType + " does not match the aggregator's current state type " + this.stateType);
+    Preconditions.checkArgument(this.stateType == inputStateType,
+        "Input state type " + inputStateType + " does not match the aggregator's current state type " + this.stateType);
   }
 
 }
