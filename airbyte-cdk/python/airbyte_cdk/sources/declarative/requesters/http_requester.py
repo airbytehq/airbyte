@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -12,7 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import ResponseStatus, Retrier
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
@@ -65,8 +66,7 @@ class HttpRequester(Requester):
 
     @property
     def raise_on_http_errors(self) -> bool:
-        # TODO this should be declarative
-        return True
+        return False
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -76,7 +76,9 @@ class HttpRequester(Requester):
     def retry_factor(self) -> float:
         return self._retrier.retry_factor
 
-    def should_retry(self, response: requests.Response) -> bool:
+    @lru_cache(maxsize=10)
+    def should_retry(self, response: requests.Response) -> ResponseStatus:
+        # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
         return self._retrier.should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:

@@ -4,9 +4,11 @@
 
 from unittest.mock import MagicMock
 
+import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
 primary_key = "pk"
@@ -47,10 +49,9 @@ def test_simple_retriever():
     requester.max_retries = max_retries
     retry_factor = 2
     requester.retry_factor = retry_factor
-    should_retry = True
-    requester.should_retry.return_value = should_retry
     backoff_time = 60
-    requester.backoff_time.return_value = backoff_time
+    should_retry = RetryResponseStatus(backoff_time)
+    requester.should_retry.return_value = should_retry
     request_body_data = {"body": "data"}
     requester.request_body_data.return_value = request_body_data
     request_body_json = {"body": "json"}
@@ -93,10 +94,27 @@ def test_simple_retriever():
     assert retriever.raise_on_http_errors == raise_on_http_errors
     assert retriever.max_retries == max_retries
     assert retriever.retry_factor == retry_factor
-    assert retriever.should_retry(requests.Response()) == should_retry
+    assert retriever.should_retry(requests.Response())
     assert retriever.backoff_time(requests.Response()) == backoff_time
     assert retriever.request_body_data(None, None, None) == request_body_data
     assert retriever.request_body_json(None, None, None) == request_body_json
     assert retriever.request_kwargs(None, None, None) == request_kwargs
     assert retriever.cache_filename == cache_filename
     assert retriever.use_cache == use_cache
+
+
+@pytest.mark.parametrize(
+    "test_name, requester_response, expected_should_retry, expected_backoff_time",
+    [
+        ("test_should_retry_fail", NonRetriableResponseStatus.FAIL, False, None),
+        ("test_should_retry_none_backoff", RetryResponseStatus(None), True, None),
+        ("test_should_retry_custom_backoff", RetryResponseStatus(60), True, 60),
+    ],
+)
+def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
+    requester = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=MagicMock())
+    requester.should_retry.return_value = requester_response
+    assert retriever.should_retry(requests.Response()) == expected_should_retry
+    if isinstance(requester_response, RetryResponseStatus):
+        assert retriever.backoff_time(requests.Response()) == expected_backoff_time

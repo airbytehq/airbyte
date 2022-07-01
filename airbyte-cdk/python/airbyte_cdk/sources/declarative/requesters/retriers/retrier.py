@@ -3,9 +3,25 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from enum import Enum
 from typing import Optional, Union
 
 import requests
+
+
+class NonRetriableResponseStatus(Enum):
+    Ok = ("OK",)
+    FAIL = ("FAIL",)
+    IGNORE = ("IGNORE",)
+
+
+@dataclass
+class RetryResponseStatus:
+    retry_in: Optional[float]
+
+
+ResponseStatus = Union[NonRetriableResponseStatus, RetryResponseStatus]
 
 
 class Retrier(ABC):
@@ -20,9 +36,5 @@ class Retrier(ABC):
         pass
 
     @abstractmethod
-    def should_retry(self, response: requests.Response) -> bool:
-        pass
-
-    @abstractmethod
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def should_retry(self, response: requests.Response) -> ResponseStatus:
         pass

@@ -9,6 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import RetryResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
@@ -85,7 +86,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return self._requester.should_retry(response)
+        return isinstance(self._requester.should_retry(response), RetryResponseStatus)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -97,7 +98,9 @@ class SimpleRetriever(Retriever, HttpStream):
          :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
          to the default backoff behavior (e.g using an exponential algorithm).
         """
-        return self._requester.backoff_time(response)
+        should_retry = self._requester.should_retry(response)
+        assert isinstance(should_retry, RetryResponseStatus)
+        return should_retry.retry_in
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
