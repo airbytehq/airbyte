@@ -270,6 +270,14 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
                         COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
   }
 
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement().execute(String.format("CREATE TABLE %s (text CLOB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(to_clob('clob data'))", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
+  }
+
   @Test
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(

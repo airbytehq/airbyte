@@ -118,8 +118,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                   tableInfo.getFields())
               .withSupportedSyncModes(tableInfo.getCursorFields().isEmpty() ?  Lists.newArrayList(SyncMode.FULL_REFRESH)
                       : Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys()))
-                  .withDefaultCursorField(tableInfo.getCursorFields()))
+              .withSourceDefinedPrimaryKey(Types.boxToListofList(tableInfo.getPrimaryKeys())))
           .collect(Collectors.toList());
       return new AirbyteCatalog().withStreams(streams);
     } finally {

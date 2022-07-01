@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.jdbc.test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -88,6 +89,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String TABLE_NAME_WITH_SPACES = "id and name";
   public static String TABLE_NAME_WITHOUT_PK = "id_and_name_without_pk";
   public static String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
+  public static String TABLE_NAME_WITHOUT_CURSOR_FIELD = "table_without_cursor";
 
   public static String COL_ID = "id";
   public static String COL_NAME = "name";
@@ -196,6 +198,10 @@ public abstract class JdbcSourceAcceptanceTest {
   protected String getJdbcParameterDelimiter() {
     return "&";
   }
+
+  protected void createTableWithoutCursorFields() throws SQLException {
+
+  };
 
   public void setup() throws Exception {
     source = getSource();
@@ -312,6 +318,22 @@ public abstract class JdbcSourceAcceptanceTest {
       assertTrue(expectedStream.isPresent(), String.format("Unexpected stream %s", actualStream.getName()));
       assertEquals(expectedStream.get(), actualStream);
     });
+  }
+
+  @Test
+  void testDiscoverWithNonCursorFields() throws Exception {
+    // could not find a way to add specific types that could not be used as cursor fields for mssql, db2 and snowflake
+    if (!(getDriverClass().toLowerCase().contains("microsoft") ||
+            getDriverClass().toLowerCase().contains("db2") ||
+            getDriverClass().toLowerCase().contains("snowflake") )) {
+      createTableWithoutCursorFields();
+      final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
+      AirbyteStream stream = actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
+      assertNotNull(stream);
+      assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD, stream.getName().toLowerCase());
+      assertEquals(1, stream.getSupportedSyncModes().size());
+      assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
+    }
   }
 
   protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {

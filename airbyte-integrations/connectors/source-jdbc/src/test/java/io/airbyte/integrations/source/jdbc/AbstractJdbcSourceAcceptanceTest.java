@@ -17,6 +17,7 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -70,6 +71,11 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new PostgresTestSource();
+  }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+
   }
 
   @Override

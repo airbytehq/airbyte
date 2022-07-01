@@ -15,13 +15,13 @@ import org.junit.jupiter.api.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.sql.SQLException;
+
 class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   protected static GenericContainer container;
   protected static String USER = "root";
   protected static String DATABASE = "test";
-
-  protected Database database;
 
   @BeforeEach
   public void setup() throws Exception {
@@ -70,6 +70,14 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<MysqlType> getJdbcSource() {
     return new TiDBSource();
+  }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement().execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
   }
 
   @AfterAll

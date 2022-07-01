@@ -20,6 +20,8 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.JDBCType;
+import java.sql.SQLException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

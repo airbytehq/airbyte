@@ -16,6 +16,7 @@ import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
@@ -127,5 +128,14 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
   }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement().execute(String.format("CREATE TABLE %s (`arr` Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
+  }
+
 
 }

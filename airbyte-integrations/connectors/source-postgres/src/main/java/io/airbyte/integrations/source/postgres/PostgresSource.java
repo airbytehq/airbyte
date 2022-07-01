@@ -6,6 +6,29 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static java.sql.JDBCType.BIGINT;
+import static java.sql.JDBCType.BINARY;
+import static java.sql.JDBCType.BIT;
+import static java.sql.JDBCType.BLOB;
+import static java.sql.JDBCType.BOOLEAN;
+import static java.sql.JDBCType.CHAR;
+import static java.sql.JDBCType.DATE;
+import static java.sql.JDBCType.DECIMAL;
+import static java.sql.JDBCType.DOUBLE;
+import static java.sql.JDBCType.FLOAT;
+import static java.sql.JDBCType.INTEGER;
+import static java.sql.JDBCType.LONGVARCHAR;
+import static java.sql.JDBCType.NCHAR;
+import static java.sql.JDBCType.NUMERIC;
+import static java.sql.JDBCType.NVARCHAR;
+import static java.sql.JDBCType.REAL;
+import static java.sql.JDBCType.SMALLINT;
+import static java.sql.JDBCType.TIME;
+import static java.sql.JDBCType.TIMESTAMP;
+import static java.sql.JDBCType.TIMESTAMP_WITH_TIMEZONE;
+import static java.sql.JDBCType.TIME_WITH_TIMEZONE;
+import static java.sql.JDBCType.TINYINT;
+import static java.sql.JDBCType.VARCHAR;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -13,6 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -44,6 +68,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +79,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  private final Set<JDBCType> allowedCursorTypes = Set.of(TIMESTAMP, TIMESTAMP_WITH_TIMEZONE, TIME, TIME_WITH_TIMEZONE,
+          DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL,
+          CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB);
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -114,6 +143,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
+  protected List<String> getCursorFields(List<CommonField<JDBCType>> fields) {
+    return fields.stream()
+            .filter(field -> allowedCursorTypes.contains(JDBCType.valueOf(field.getType().toString())))
+            .map(field -> field.getName())
+            .collect(Collectors.toList());
+  }
+
+
+  @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
   }
@@ -124,6 +162,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
+          .map(PostgresSource::overrideSyncModes)
           .map(PostgresSource::removeIncrementalWithoutPk)
           .map(PostgresSource::setIncrementalToSourceDefined)
           .map(PostgresSource::addCdcMetadataColumns)
@@ -248,6 +287,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
+    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   @VisibleForTesting

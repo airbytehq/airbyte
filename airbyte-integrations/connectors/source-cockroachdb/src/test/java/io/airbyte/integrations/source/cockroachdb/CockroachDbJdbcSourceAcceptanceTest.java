@@ -38,6 +38,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -174,6 +175,14 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
+  }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement().execute(String.format("CREATE TABLE %s (posts JSONB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"color\": \"black\", \"capacity\": 4000}')", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
   }
 
   @Test
