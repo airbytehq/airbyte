@@ -44,6 +44,18 @@ class DefaultRetrier(Retrier):
           ignore_response_filter:
             http_codes: [ 404 ]
     `
+    5. retry if error message contains `retrythisrequest!` substring
+    `
+        retrier:
+          retry_response_filter:
+            error_message_contain: "retrythisrequest!"
+    `
+    6. retry if 'code' is a field present in the response body
+    `
+        retrier:
+          retry_response_filter:
+            predicate: "{{ 'code' in decoded_response }}"
+    `
     """
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy()

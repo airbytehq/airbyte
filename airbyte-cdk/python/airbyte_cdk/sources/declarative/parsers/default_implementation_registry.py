@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import 
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.retriers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -38,4 +39,5 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     State: DictState,
     StreamSlicer: SingleSlice,
     Paginator: NoPagination,
+    HttpResponseFilter: HttpResponseFilter,
 }
