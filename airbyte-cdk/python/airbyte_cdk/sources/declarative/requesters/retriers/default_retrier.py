@@ -70,9 +70,10 @@ class DefaultRetrier(Retrier):
     ):
         self._max_retries = max_retries
         self._retry_factor = retry_factor
-        print(f"default retrier.retry_response_filter_input: {retry_response_filter}")
         self._retry_response_filter = retry_response_filter or HttpResponseFilter()
         self._ignore_response_filter = ignore_response_filter or HttpResponseFilter(set())
+
+        # Always add the default backoff strategy as backup
         if backoff_strategy:
             self._backoff_strategy = backoff_strategy + [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY]
         else:
@@ -87,7 +88,6 @@ class DefaultRetrier(Retrier):
         return self._retry_factor
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
-        print(f"retry filter: {self._retry_response_filter._predicate._condition}")
         if self._retry_response_filter.matches(response):
             return RetryResponseStatus(self._backoff_time(response))
         elif self._ignore_response_filter.matches(response):
