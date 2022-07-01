@@ -154,7 +154,7 @@ class BaseRenderer(abc.ABC):
             definition_type (str): Current definition_type.
             resource_name (str): Current resource_name.
         Returns:
-            str: Full path to the output path.
+            Path: Full path to the output path.
         """
         directory = os.path.join(project_path, f"{definition_type}s", slugify(resource_name, separator="_"))
         if not os.path.exists(directory):
@@ -199,12 +199,12 @@ class BaseRenderer(abc.ABC):
         return output_path
 
     def import_configuration(self, project_path: str, configuration: dict) -> Path:
-        """Import the resource configuration. Save the yaml file to disk. Return the output_path
+        """Import the resource configuration. Save the yaml file to disk and return its path.
         Args:
             project_path (str): Current project path.
             configuration (dict): The configuration of the resource.
         Returns:
-            str: Path to the resource configuration.
+            Path: Path to the resource configuration.
         """
         rendered = self._render()
         data = yaml.safe_load(rendered)
@@ -304,12 +304,12 @@ class ConnectionRenderer(BaseRenderer):
         )
 
     def import_configuration(self, project_path: Path, configuration: dict) -> Path:
-        """Import the connection configuration. Save the yaml file to disk. Return the output_path
+        """Import the connection configuration. Save the yaml file to disk and return its path.
         Args:
             project_path (str): Current project path.
             configuration (dict): The configuration of the connection.
         Returns:
-            str: Path to the connection configuration.
+            Path: Path to the connection configuration.
         """
         rendered = self._render()
         data = yaml.safe_load(rendered)
