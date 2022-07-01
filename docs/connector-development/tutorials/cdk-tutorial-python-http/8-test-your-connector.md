@@ -12,7 +12,7 @@ Place any integration tests in the `integration_tests` directory such that they 
 
 Run integration tests using `python -m pytest -s integration_tests`.
 
-More information on integration testing can be found on [the Testing Connectors doc]([url](https://docs.airbyte.com/connector-development/testing-connectors/#running-integration-tests)).
+More information on integration testing can be found on [the Testing Connectors doc](https://docs.airbyte.com/connector-development/testing-connectors/#running-integration-tests).
 
 ## Standard Tests
 
