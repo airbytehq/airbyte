@@ -427,8 +427,7 @@ class GranularityType(Enum):
 
 class Granularity:
     granularity: GranularityType
-    data_path: str = 'timeseries_stats'
-    item_path: list = ['timeseries_stat', 'timeseries']
+    response_root_name: str
     metrics = METRICS + METRICS_NOT_HOURLY
 
 
@@ -473,7 +472,9 @@ class Hourly(Granularity):
         }
     """
     granularity = GranularityType.HOUR
+    response_root_name = 'timeseries_stats'
     metrics = METRICS
+    item_path = 'timeseries'
 
 
 class Daily(Granularity):
@@ -521,9 +522,60 @@ class Daily(Granularity):
         }
 
 
+        {
+          "request_status": "SUCCESS",
+          "request_id": "fd700e7f-5823-4f01-ac09-7083017c43a4",
+          "timeseries_stats": [{
+              "sub_request_status": "SUCCESS",
+              "timeseries_stat": {
+                "id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+                "type": "AD_ACCOUNT",
+                "granularity": "DAY",
+                "start_time": "2022-06-25T00:00:00.000-07:00",
+                "end_time": "2022-06-30T00:00:00.000-07:00",
+                "finalized_data_end_time": "2022-07-01T00:00:00.000-07:00",
+                "timeseries": [{
+                    "start_time": "2022-06-25T00:00:00.000-07:00",
+                    "end_time": "2022-06-26T00:00:00.000-07:00",
+                    "stats": {
+                      "spend": 0
+                    }
+                  }, {
+                    "start_time": "2022-06-26T00:00:00.000-07:00",
+                    "end_time": "2022-06-27T00:00:00.000-07:00",
+                    "stats": {
+                      "spend": 0
+                    }
+                  }, {
+                    "start_time": "2022-06-27T00:00:00.000-07:00",
+                    "end_time": "2022-06-28T00:00:00.000-07:00",
+                    "stats": {
+                      "spend": 0
+                    }
+                  }, {
+                    "start_time": "2022-06-28T00:00:00.000-07:00",
+                    "end_time": "2022-06-29T00:00:00.000-07:00",
+                    "stats": {
+                      "spend": 0
+                    }
+                  }, {
+                    "start_time": "2022-06-29T00:00:00.000-07:00",
+                    "end_time": "2022-06-30T00:00:00.000-07:00",
+                    "stats": {
+                      "spend": 0
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+
+
     """
     granularity = GranularityType.DAY
-
+    response_root_name = 'timeseries_stats'
+    item_path = 'timeseries'
 
 class Lifetime(Granularity):
     """
@@ -551,16 +603,63 @@ class Lifetime(Granularity):
       ]
     }
 
+
+    {
+      "request_status": "SUCCESS",
+      "request_id": "55d461a7-adea-455f-ad74-dd846212902e",
+      "lifetime_stats": [{
+          "sub_request_status": "SUCCESS",
+          "lifetime_stat": {
+            "id": "d180d36e-1212-479b-84a5-8b0663ceaf82",
+            "type": "CAMPAIGN",
+            "granularity": "LIFETIME",
+            "stats": {
+              "impressions": 31,
+              "swipes": 6,
+              "quartile_1": 0,
+              "quartile_2": 0,
+              "custom_event_4": 0,
+              "custom_event_5": 0
+            },
+            "start_time": "2016-09-26T00:00:00.000-07:00",
+            "end_time": "2022-07-01T10:00:00.000-07:00",
+            "finalized_data_end_time": "2022-07-01T10:00:00.000-07:00",
+            "conversion_data_processed_end_time": "2022-07-01T00:00:00.000Z"
+          }
+        }
+      ]
+    }
+
+    {
+      "request_status": "SUCCESS",
+      "request_id": "dd239627-75d9-4465-8245-7bf781620ec0",
+      "lifetime_stats": [{
+          "sub_request_status": "SUCCESS",
+          "lifetime_stat": {
+            "id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
+            "type": "AD_ACCOUNT",
+            "granularity": "LIFETIME",
+            "stats": {
+              "spend": 168048
+            },
+            "start_time": "2016-09-26T00:00:00.000-07:00",
+            "end_time": "2022-07-01T10:00:00.000-07:00",
+            "finalized_data_end_time": "2022-07-01T10:00:00.000-07:00"
+          }
+        }
+      ]
+    }
+
+
+
     """
     granularity = GranularityType.LIFETIME
-    data_path = 'lifetime_stats'
-    item_path = ['lifetime_stat', 'stats']
+    response_root_name = 'lifetime_stats'
 
 
 class Total(Granularity):
     granularity = GranularityType.TOTAL
-    data_path = 'total_stats'
-    item_path = ['total_stat', 'stats']
+    response_root_name = 'total_stats'
 
 
 class Stats(SnapchatMarketingStream, ABC):
@@ -571,6 +670,7 @@ class Stats(SnapchatMarketingStream, ABC):
     slice_key_name = 'id'
     schema_name = 'basic_stats'
     depends_on_stream_name = ''
+    item_path: str = ''
 
     @property
     def granularity(self) -> GranularityType:
@@ -625,29 +725,23 @@ class Stats(SnapchatMarketingStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        """Response json came like
+        """Response json came like"""
+        items = super().parse_response(response = response, stream_slice=stream_slice, **kwargs)
 
+        if self.item_path:
+            for item in items:
+                item_identifiers = {
+                    'id': item['id'],
+                    'type': item['type'],
+                    'granularity': item['granularity'],
+                }
+                subitems = item.get(self.item_path)
+                for subitem in subitems:
+                    subitem.update(item_identifiers)
+                    yield subitem
+        else:
+            yield from items
 
-        So the response_root_name will be "organizations", and the response_item_name will be "organization"
-        Also, the client side filtering for incremental sync is used
-        """
-
-        data = response.json()
-        self.logger.info(f"============= GranularityType:{self.granularity} =================")
-        self.logger.info(data)
-
-        items = data.get(self.data_path, [])
-
-        for raw_item in items:
-            item = raw_item
-            for path in self.item_path:
-                if isinstance(item, dict):
-                    item = item.get(path, {})
-            if item:
-                if self.granularity == GranularityType.LIFETIME:
-                    yield item
-                else:
-                    yield from item
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """All reports have same schema"""
@@ -669,7 +763,7 @@ class AdaccountsStatsDaily(Daily, Stats):
 class AdaccountsStatsLifetime(Lifetime, Stats):
     """Adaccounts stats with Lifetime granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
     depends_on_stream = Adaccounts
-    item_path = ['lifetime_stat', 'breakdown_stats']
+    # item_path = 'breakdown_stats'
     metrics = ['spend']
 
 
