@@ -19,6 +19,12 @@ from octavia_cli.list.listings import Connections as UnmanagedConnections
 from octavia_cli.list.listings import Destinations as UnmanagedDestinations
 from octavia_cli.list.listings import Sources as UnmanagedSources
 
+RESOURCE_MAPPING = {
+    UnmanagedSources: UnmanagedSource,
+    UnmanagedDestinations: UnmanagedDestination,
+    UnmanagedConnections: UnmanagedConnection,
+}
+
 
 class MissingResourceDependencyError(click.UsageError):
     pass
@@ -129,6 +135,21 @@ def import_connection(
         click.echo(click.style(message, fg="green"))
 
 
+def import_all_sources(ctx: click.Context):
+    for _, _, resource_id in get_all_resources(ctx, UnmanagedSources).get_listing():
+        click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSource, resource_id))
+
+
+def import_all_destinations(ctx: click.Context):
+    for _, _, resource_id in get_all_resources(ctx, UnmanagedDestinations).get_listing():
+        click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedDestination, resource_id))
+
+
+def import_all_connections(ctx: click.Context):
+    for _, resource_id, _, _, _ in get_all_resources(ctx, UnmanagedConnections).get_listing():
+        click.echo(import_connection(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], resource_id))
+
+
 @click.group(
     "import",
     help=f'{build_help_message("source, destination or connection")}. ID or name can be used as argument. Example: \'octavia import source "My Pokemon source"\' or \'octavia import source cb5413b2-4159-46a2-910a-dc282a439d2d\'',
@@ -165,8 +186,9 @@ def connection(ctx: click.Context, resource: str):
 @_import.command(cls=OctaviaCommand, name="all", help=build_help_message("all"))
 @click.pass_context
 def all(ctx: click.Context):
-    for _, _, source_id in get_all_resources(ctx, UnmanagedSources).get_listing():
-        click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSource, source_id))
+    import_all_sources(ctx)
+    import_all_destinations(ctx)
+    import_all_connections(ctx)
 
 
 AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]
