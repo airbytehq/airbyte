@@ -15,6 +15,9 @@ from octavia_cli.get.commands import get_json_representation
 from octavia_cli.get.resources import Connection as UnmanagedConnection
 from octavia_cli.get.resources import Destination as UnmanagedDestination
 from octavia_cli.get.resources import Source as UnmanagedSource
+from octavia_cli.list.listings import Connections as UnmanagedConnections
+from octavia_cli.list.listings import Destinations as UnmanagedDestinations
+from octavia_cli.list.listings import Sources as UnmanagedSources
 
 
 class MissingResourceDependencyError(click.UsageError):
@@ -29,6 +32,15 @@ def build_help_message(resource_type: str) -> str:
         str: The generated help message.
     """
     return f"Import an existing {resource_type} to manage it with octavia-cli."
+
+
+def get_all_resources(
+    ctx: click.Context,
+    ResourcesClass: Type[Union[UnmanagedSources, UnmanagedDestinations, UnmanagedConnections]],
+) -> Type[Union[UnmanagedSources, UnmanagedDestinations, UnmanagedConnections]]:
+    api_client = ctx.obj["API_CLIENT"]
+    workspace_id = ctx.obj["WORKSPACE_ID"]
+    return ResourcesClass(api_client, workspace_id)
 
 
 def import_source_or_destination(
@@ -148,6 +160,13 @@ def destination(ctx: click.Context, resource: str):
 @requires_init
 def connection(ctx: click.Context, resource: str):
     click.echo(import_connection(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], resource))
+
+
+@_import.command(cls=OctaviaCommand, name="all", help=build_help_message("all"))
+@click.pass_context
+def all(ctx: click.Context):
+    for _, _, source_id in get_all_resources(ctx, UnmanagedSources).get_listing():
+        click.echo(import_source_or_destination(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSource, source_id))
 
 
 AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]
