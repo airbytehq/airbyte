@@ -34,15 +34,6 @@ def build_help_message(resource_type: str) -> str:
     return f"Import an existing {resource_type} to manage it with octavia-cli."
 
 
-def get_all_resources(
-    ctx: click.Context,
-    ResourcesClass: Type[Union[UnmanagedSources, UnmanagedDestinations, UnmanagedConnections]],
-) -> Type[Union[UnmanagedSources, UnmanagedDestinations, UnmanagedConnections]]:
-    api_client = ctx.obj["API_CLIENT"]
-    workspace_id = ctx.obj["WORKSPACE_ID"]
-    return ResourcesClass(api_client, workspace_id)
-
-
 def import_source_or_destination(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
