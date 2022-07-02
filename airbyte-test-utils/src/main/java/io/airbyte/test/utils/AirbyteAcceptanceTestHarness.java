@@ -179,7 +179,7 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId, final String postgresSqlInitFile)
-      throws URISyntaxException, IOException, InterruptedException{
+      throws URISyntaxException, IOException, InterruptedException {
     // reads env vars to assign static variables
     assignEnvVars();
     this.apiClient = apiClient;

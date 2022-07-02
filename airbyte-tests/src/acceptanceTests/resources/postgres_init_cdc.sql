@@ -32,10 +32,18 @@ INSERT
         'john'
     );
 
-CREATE ROLE airbyte_role REPLICATION LOGIN;
+CREATE
+    ROLE airbyte_role REPLICATION LOGIN;
 
-ALTER TABLE id_and_name REPLICA IDENTITY DEFAULT;
+ALTER TABLE
+    id_and_name REPLICA IDENTITY DEFAULT;
 
-CREATE PUBLICATION airbyte_publication FOR TABLE id_and_name;
+CREATE
+    PUBLICATION airbyte_publication FOR TABLE
+        id_and_name;
 
-SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
+SELECT
+    pg_create_logical_replication_slot(
+        'airbyte_slot',
+        'pgoutput'
+    );

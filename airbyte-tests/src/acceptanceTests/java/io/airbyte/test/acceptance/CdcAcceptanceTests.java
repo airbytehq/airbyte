@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.test.acceptance;
 
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_ID;
@@ -6,7 +10,6 @@ import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STREAM_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForSuccessfulJob;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobHasStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,9 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -188,15 +189,12 @@ public class CdcAcceptanceTests {
     expectedDestRecordMatchers.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
         beforeFirstUpdate,
-        Optional.empty()
-    ));
+        Optional.empty()));
 
     expectedDestRecordMatchers.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_NAME, "yennefer").build()),
         beforeFirstUpdate,
-        Optional.empty()
-    ));
-
+        Optional.empty()));
 
     LOGGER.info("Starting testIncrementalSync() sync 2");
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
@@ -266,4 +264,5 @@ public class CdcAcceptanceTests {
       }
     }
   }
+
 }
