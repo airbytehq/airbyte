@@ -19,12 +19,6 @@ from octavia_cli.list.listings import Connections as UnmanagedConnections
 from octavia_cli.list.listings import Destinations as UnmanagedDestinations
 from octavia_cli.list.listings import Sources as UnmanagedSources
 
-RESOURCE_MAPPING = {
-    UnmanagedSources: UnmanagedSource,
-    UnmanagedDestinations: UnmanagedDestination,
-    UnmanagedConnections: UnmanagedConnection,
-}
-
 
 class MissingResourceDependencyError(click.UsageError):
     pass
