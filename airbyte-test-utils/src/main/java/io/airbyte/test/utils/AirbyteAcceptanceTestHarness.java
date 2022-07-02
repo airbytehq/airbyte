@@ -135,6 +135,8 @@ public class AirbyteAcceptanceTestHarness {
   public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
   public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
+  private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
+
   private static boolean isKube;
   private static boolean isMinikube;
   private static boolean isGke;
@@ -151,6 +153,7 @@ public class AirbyteAcceptanceTestHarness {
   private AirbyteTestContainer airbyteTestContainer;
   private AirbyteApiClient apiClient;
   private final UUID defaultWorkspaceId;
+  private final String postgresSqlInitFile;
 
   private KubernetesClient kubernetesClient = null;
 
@@ -175,12 +178,13 @@ public class AirbyteAcceptanceTestHarness {
     this.apiClient = apiClient;
   }
 
-  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
-      throws URISyntaxException, IOException, InterruptedException {
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId, final String postgresSqlInitFile)
+      throws URISyntaxException, IOException, InterruptedException{
     // reads env vars to assign static variables
     assignEnvVars();
     this.apiClient = apiClient;
     this.defaultWorkspaceId = defaultWorkspaceId;
+    this.postgresSqlInitFile = postgresSqlInitFile;
 
     if (isGke && !isKube) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
@@ -219,6 +223,11 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+      throws URISyntaxException, IOException, InterruptedException {
+    this(apiClient, defaultWorkspaceId, DEFAULT_POSTGRES_INIT_SQL_FILE);
+  }
+
   public void stopDbAndContainers() {
     if (!isGke) {
       sourcePsql.stop();
@@ -239,7 +248,7 @@ public class AirbyteAcceptanceTestHarness {
     if (isGke) {
       // seed database.
       final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final Path path = Path.of(MoreResources.readResourceAsFile(postgresSqlInitFile).toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, StandardCharsets.UTF_8)) {
         if (line != null && !line.isEmpty()) {
@@ -248,10 +257,7 @@ public class AirbyteAcceptanceTestHarness {
       }
       database.query(context -> context.execute(query.toString()));
     } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
-
-      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
-      destinationPsql.start();
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(postgresSqlInitFile), sourcePsql);
     }
   }
 
