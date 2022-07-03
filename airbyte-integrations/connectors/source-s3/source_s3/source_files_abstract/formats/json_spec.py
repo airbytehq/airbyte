@@ -11,7 +11,7 @@ class JsonFormat(BaseModel):
     'This connector utilises <a href="https://pandas.pydata.org/docs/reference/api/pandas.io.json.read_json.html" target="_blank">Pandas</a> for JSON parsing.'
 
     class Config:
-        title = "json"
+        title = "Json"
 
     filetype: str = Field(Config.title, const=True)
 
