@@ -4,8 +4,10 @@
 
 package io.airbyte.scheduler.client;
 
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -27,12 +29,12 @@ public class TemporalEventRunner implements EventRunner {
     return temporalClient.startNewCancellation(connectionId);
   }
 
-  public ManualOperationResult resetConnection(final UUID connectionId) {
-    return temporalClient.resetConnection(connectionId);
+  public ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+    return temporalClient.resetConnection(connectionId, streamsToReset);
   }
 
-  public ManualOperationResult synchronousResetConnection(final UUID connectionId) {
-    return temporalClient.synchronousResetConnection(connectionId);
+  public ManualOperationResult synchronousResetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset) {
+    return temporalClient.synchronousResetConnection(connectionId, streamsToReset);
   }
 
   public void deleteConnection(final UUID connectionId) {

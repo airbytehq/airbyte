@@ -200,6 +200,7 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
         workerEnvironment,
         logConfigs,
         eventRunner);
+
     stateHandler = new StateHandler(statePersistence);
     connectionsHandler = new ConnectionsHandler(
         configRepository,

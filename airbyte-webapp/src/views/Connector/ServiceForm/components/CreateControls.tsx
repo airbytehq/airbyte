@@ -8,7 +8,7 @@ import { TestingConnectionError, FetchingConnectorError } from "./TestingConnect
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
-interface IProps {
+interface CreateControlProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
@@ -18,6 +18,7 @@ interface IProps {
 
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
+  isValid: boolean;
 }
 
 const ButtonContainer = styled.div`
@@ -31,7 +32,7 @@ const SubmitButton = styled(Button)`
   margin-left: auto;
 `;
 
-const CreateControls: React.FC<IProps> = ({
+const CreateControls: React.FC<CreateControlProps> = ({
   isTestConnectionInProgress,
   isSubmitting,
   formType,
@@ -40,6 +41,7 @@ const CreateControls: React.FC<IProps> = ({
   fetchingConnectorError,
   isLoadSchema,
   onCancelTesting,
+  isValid,
 }) => {
   if (isSubmitting) {
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
@@ -53,7 +55,7 @@ const CreateControls: React.FC<IProps> = ({
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <SubmitButton type="submit" disabled={isLoadSchema}>
+      <SubmitButton type="submit" disabled={isLoadSchema || !isValid}>
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
       </SubmitButton>
     </ButtonContainer>
