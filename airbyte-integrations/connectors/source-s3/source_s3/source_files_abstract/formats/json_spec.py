@@ -13,7 +13,10 @@ class JsonFormat(BaseModel):
     class Config:
         title = "Json"
 
-    filetype: str = Field(Config.title, const=True)
+    filetype: str = Field(
+        "json",
+        const=True,
+    )
 
     orient: str = Field(
         default="columns",
