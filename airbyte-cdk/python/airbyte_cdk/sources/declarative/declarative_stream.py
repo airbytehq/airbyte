@@ -36,7 +36,15 @@ class DeclarativeStream(Stream):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._retriever.get_state()
+        return self._retriever.state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        self._retriever.state = value
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        return self.state
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
