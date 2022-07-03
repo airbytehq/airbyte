@@ -67,6 +67,15 @@ class Ratings(AppfollowStream):
     """
     primary_key = None 
 
+    def __init__(self, country: str, **kwargs):
+        super().__init__(**kwargs)
+        self.country = country 
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        params["country"] = self.country
+        return params
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -103,4 +112,4 @@ class SourceAppfollow(AbstractSource):
         """
         auth = BasicHttpAuthenticator(username=config["api_secret"], password=config["api_secret"])
         args = {"ext_id": config["ext_id"], "cid": config["cid"]}
-        return [Ratings(authenticator=auth, **args)]
+        return [Ratings(authenticator=auth, country=config["country"], **args)]
