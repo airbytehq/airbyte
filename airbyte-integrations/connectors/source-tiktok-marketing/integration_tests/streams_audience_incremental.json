@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "ad_group_audience_reports",
+        "name": "ad_group_audience_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -13,7 +13,7 @@
     },
     {
       "stream": {
-        "name": "ads_audience_reports",
+        "name": "ads_audience_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -24,7 +24,7 @@
     },
     {
       "stream": {
-        "name": "advertisers_audience_reports",
+        "name": "advertisers_audience_reports_daily",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,

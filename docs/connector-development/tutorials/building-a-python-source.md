@@ -221,3 +221,7 @@ Note that for simple and quick testing use cases, you can also do this step [usi
 
 Each connector has its own documentation page. By convention, that page should have the following path: in `docs/integrations/sources/<source-name>.md`. For the documentation to get packaged with the docs, make sure to add a link to it in `docs/SUMMARY.md`. You can pattern match doing that from existing connectors.
 
+## Related tutorials
+For additional examples of how to use the Python CDK to build an Airbyte source connector, see the following tutorials:
+- [Python CDK Speedrun: Creating a Source](https://docs.airbyte.com/connector-development/tutorials/cdk-speedrun)
+- [Build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api) 
