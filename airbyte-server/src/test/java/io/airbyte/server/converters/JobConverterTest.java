@@ -239,8 +239,8 @@ class JobConverterTest {
     final JobConfig resetConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(new JobResetConnectionConfig().withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(
-            new io.airbyte.config.StreamDescriptor().withName("users"),
-            new io.airbyte.config.StreamDescriptor().withName("accounts")))));
+            new io.airbyte.protocol.models.StreamDescriptor().withName("users"),
+            new io.airbyte.protocol.models.StreamDescriptor().withName("accounts")))));
     final Job resetJob = new Job(
         JOB_ID,
         ConfigType.RESET_CONNECTION,

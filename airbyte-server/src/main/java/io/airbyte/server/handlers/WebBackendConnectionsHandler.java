@@ -52,6 +52,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -360,12 +361,24 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (needReset) {
-      eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-      eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+          webBackendConnectionUpdate.getConnectionId(),
+          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
+          // streams, instead of all
+          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
+      verifyManualOperationResult(manualOperationResult);
+      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      verifyManualOperationResult(manualOperationResult);
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
     return buildWebBackendConnectionRead(connectionRead);
+  }
+
+  private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
+    if (manualOperationResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+    }
   }
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)

@@ -22,12 +22,12 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
@@ -147,7 +147,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(Mockito.mock(StandardSync.class));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -169,7 +169,7 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, List.of(), streamsToReset))
           .thenReturn(Optional.of(JOB_ID));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, true));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }

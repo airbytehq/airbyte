@@ -1,0 +1,70 @@
+# Defines the minimum set of images needed to run Cloud.
+# Used to push OSS images that Cloud depends on.
+
+version: "3.7"
+
+services:
+  worker:
+    image: airbyte/worker:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-workers/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/worker:${VERSION}
+          - airbyte/worker:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
+  webapp:
+    image: airbyte/webapp:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-webapp/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/webapp:${VERSION}
+          - airbyte/webapp:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
+  metric-reporter:
+    image: airbyte/metrics-reporter:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-metrics/reporter/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/metrics-reporter:${VERSION}
+          - airbyte/metrics-reporter:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64
+  container-orchestrator:
+    image: airbyte/container-orchestrator:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-container-orchestrator/build/docker
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+      args:
+        VERSION: ${VERSION}
+      x-bake:
+        tags:
+          - airbyte/container-orchestrator:${VERSION}
+          - airbyte/container-orchestrator:${ALT_TAG:-${VERSION}}
+        platforms:
+          - linux/amd64
+          - linux/arm64

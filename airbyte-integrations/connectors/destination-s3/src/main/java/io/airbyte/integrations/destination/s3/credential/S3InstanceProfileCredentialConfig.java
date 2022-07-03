@@ -11,7 +11,7 @@ public class S3InstanceProfileCredentialConfig implements S3CredentialConfig {
 
   @Override
   public S3CredentialType getCredentialType() {
-    return S3CredentialType.INSTANCE_PROFILE;
+    return S3CredentialType.DEFAULT_PROFILE;
   }
 
   @Override
