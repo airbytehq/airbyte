@@ -34,16 +34,11 @@ public class PostgresSourceStrictEncrypt extends SpecModifyingSource implements 
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
-    var i = 1;
-    List<JsonNode> a = new ArrayList<>();
-    while (spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").has(i)) {
-      a.add(spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").get(i));
-      i++;
-    }
-    ObjectMapper mapper = new ObjectMapper();
-    ArrayNode array = mapper.valueToTree(a);
+    ArrayNode modifiedSslModes = spec.getConnectionSpecification().get("properties").get("ssl_mode").get("oneOf").deepCopy();
+    // Assume that the first item is the "disable" option; remove it
+    modifiedSslModes.remove(0);
     ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).remove("oneOf");
-    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", array);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get("ssl_mode")).put("oneOf", modifiedSslModes);
     return spec;
   }
 

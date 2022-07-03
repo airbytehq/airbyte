@@ -22,6 +22,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -40,7 +41,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -61,7 +61,7 @@ abstract class AbstractPostgresSourceSSLCertificatesTest {
   private static final String STREAM_NAME = "id_and_name";
 
   protected static final String PASSWORD = "Passw0rd";
-  protected static Triple<String, String, String> certs;
+  protected static PostgresUtils.Certificate certs;
 
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
@@ -167,12 +167,8 @@ abstract class AbstractPostgresSourceSSLCertificatesTest {
   public abstract ImmutableMap getSSLCertificateConfig();
 
   @AfterAll
-  static void cleanUp() {
+  static void cleanUp() throws Exception {
     PSQL_DB.close();
-  }
-
-  @AfterEach
-  void removeAllCertificates() throws Exception {
     final Runtime run = Runtime.getRuntime();
     runProcess("rm ca.crt", run);
     runProcess("rm client.pk8", run);

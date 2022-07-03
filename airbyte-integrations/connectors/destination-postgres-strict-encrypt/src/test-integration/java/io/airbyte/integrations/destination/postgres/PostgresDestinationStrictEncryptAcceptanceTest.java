@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -20,7 +21,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -33,7 +33,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   protected static final String PASSWORD = "Passw0rd";
-  protected static Triple<String, String, String> certs;
+  protected static PostgresUtils.Certificate certs;
 
   @Override
   protected String getImageName() {
@@ -51,9 +51,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put("database", db.getDatabaseName())
         .put("ssl_mode", ImmutableMap.builder()
             .put("mode", "verify-full")
-            .put("ca_certificate", certs.getLeft())
-            .put("client_certificate", certs.getMiddle())
-            .put("client_key", certs.getRight())
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
             .put("client_key_password", PASSWORD)
             .build())
         .build());

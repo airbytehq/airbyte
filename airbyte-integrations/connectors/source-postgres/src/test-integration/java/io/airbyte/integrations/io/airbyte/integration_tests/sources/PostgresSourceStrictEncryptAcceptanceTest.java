@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -26,7 +27,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
-import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
@@ -48,7 +48,7 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   private JsonNode config;
 
   protected static final String PASSWORD = "Passw0rd";
-  protected static Triple<String, String, String> certs;
+  protected static PostgresUtils.Certificate certs;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -68,9 +68,9 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
         .put("replication_method", replicationMethod)
         .put("ssl_mode", ImmutableMap.builder()
             .put("mode", "verify-full")
-            .put("ca_certificate", certs.getLeft())
-            .put("client_certificate", certs.getMiddle())
-            .put("client_key", certs.getRight())
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
             .put("client_key_password", PASSWORD)
             .build())
         .build());

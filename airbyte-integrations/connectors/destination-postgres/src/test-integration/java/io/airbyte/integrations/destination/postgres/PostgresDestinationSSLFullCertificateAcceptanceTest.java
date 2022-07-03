@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.JavaBaseConstants;
@@ -21,7 +22,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -31,7 +31,7 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
 
   private PostgreSQLContainer<?> db;
 
-  protected static Triple<String, String, String> certs;
+  protected static PostgresUtils.Certificate certs;
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   @Override
@@ -51,9 +51,9 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
         .put("ssl", true)
         .put("ssl_mode", ImmutableMap.builder()
             .put("mode", "verify-full")
-            .put("ca_certificate", certs.getLeft())
-            .put("client_certificate", certs.getMiddle())
-            .put("client_key", certs.getRight())
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
             .put("client_key_password", "Passw0rd")
             .build())
         .build());
@@ -156,23 +156,6 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     db.stop();
     db.close();
-    removeAllCertificates();
-  }
-
-  void removeAllCertificates() throws Exception {
-    final Runtime run = Runtime.getRuntime();
-    runProcess("rm ca.crt", run);
-    runProcess("rm client.pk8", run);
-    runProcess("rm client.crt", run);
-    runProcess("rm customkeystore", run);
-  }
-
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
-    final Process pr = run.exec(cmd);
-    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
-      pr.destroy();
-      throw new RuntimeException("Timeout while executing: " + cmd);
-    }
   }
 
 }

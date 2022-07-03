@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -26,7 +27,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Triple;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -41,7 +41,7 @@ public class PostgresSourceSSLCaCertificateAcceptanceTest extends SourceAcceptan
   private PostgreSQLContainer<?> container;
   private JsonNode config;
   protected static final String PASSWORD = "Passw0rd";
-  protected static Triple<String, String, String> certs;
+  protected static PostgresUtils.Certificate certs;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -63,7 +63,7 @@ public class PostgresSourceSSLCaCertificateAcceptanceTest extends SourceAcceptan
         .put("replication_method", replicationMethod)
         .put("ssl_mode", ImmutableMap.builder()
             .put("mode", "verify-ca")
-            .put("ca_certificate", certs.getLeft())
+            .put("ca_certificate", certs.getCaCertificate())
             .put("client_key_password", PASSWORD)
             .build())
         .build());

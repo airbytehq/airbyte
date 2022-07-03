@@ -12,7 +12,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Triple;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class PostgresUtils {
@@ -28,7 +27,7 @@ public class PostgresUtils {
   }
 
   @VisibleForTesting
-  public static Triple<String, String, String> getCertificate(PostgreSQLContainer<?> container) throws IOException, InterruptedException {
+  public static Certificate getCertificate(PostgreSQLContainer<?> container) throws IOException, InterruptedException {
     container.execInContainer("su", "-c", "psql -U test -c \"CREATE USER postgres WITH PASSWORD 'postgres';\"");
 
     container.execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out ca.key");
@@ -66,7 +65,32 @@ public class PostgresUtils {
 
     var clientKey = container.execInContainer("su", "-c", "cat client.key").getStdout().trim();
     var clientCert = container.execInContainer("su", "-c", "cat client.crt").getStdout().trim();
-    return Triple.of(caCert, clientCert, clientKey);
+    return new Certificate(caCert, clientCert, clientKey);
+  }
+
+  public static class Certificate {
+
+    private String caCertificate;
+    private String clientCertificate;
+    private String clientKey;
+
+    public Certificate(String caCertificate, String clientCertificate, String clientKey) {
+      this.caCertificate = caCertificate;
+      this.clientCertificate = clientCertificate;
+      this.clientKey = clientKey;
+    }
+
+    public String getCaCertificate() {
+      return caCertificate;
+    }
+
+    public String getClientCertificate() {
+      return clientCertificate;
+    }
+
+    public String getClientKey() {
+      return clientKey;
+    }
   }
 
 }
