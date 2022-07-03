@@ -73,7 +73,7 @@ class GithubStream(HttpStream, ABC):
             (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
             # Rate limit HTTP headers
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            or (response.headers.get("X-RateLimit-Resource") == "core" and response.headers.get("X-RateLimit-Remaining") == "0")
+            or response.headers.get("X-RateLimit-Remaining") == "0"
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
             or response.headers.get("Retry-After")
