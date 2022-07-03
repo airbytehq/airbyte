@@ -54,11 +54,9 @@ class AppfollowStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
-        TODO: Override this method to define how a response is parsed.
         :return an iterable containing each record in the response
         """
         response_json = response.json()
-        logger.log(logging.DEBUG, f"Response: {response_json.get('ratings')}")
         yield response_json
 
 class Ratings(AppfollowStream):

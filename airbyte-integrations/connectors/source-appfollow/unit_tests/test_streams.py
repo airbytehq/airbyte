@@ -12,50 +12,38 @@ from source_appfollow.source import AppfollowStream
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
+    def __init__(self):
+        self.ext_id = "00000"
+        self.cid = "000000"
+    mocker.patch.object(AppfollowStream, "__init__", __init__)
     mocker.patch.object(AppfollowStream, "path", "v0/example_endpoint")
     mocker.patch.object(AppfollowStream, "primary_key", "test_primary_key")
-    mocker.patch.object(AppfollowStream, "__abstractmethods__", set())
+    mocker.patch.object(AppfollowStream, "__abstractmethods__", set())    
 
 
 def test_request_params(patch_base_class):
     stream = AppfollowStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
-    expected_params = {}
+    inputs = {"stream_state": "test_stream_state"}
+    expected_params = {"ext_id": "00000", "cid": "000000"}
     assert stream.request_params(**inputs) == expected_params
-
-
-def test_next_page_token(patch_base_class):
-    stream = AppfollowStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
-
 
 def test_parse_response(patch_base_class):
     stream = AppfollowStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
+    mock_response = MagicMock()
+    inputs = {"stream_state": "test_stream_state", "response": mock_response}
+    expected_parsed_object = mock_response.json()
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
     stream = AppfollowStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
+    inputs = {"stream_state": "test_stream_state"}
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = AppfollowStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 
