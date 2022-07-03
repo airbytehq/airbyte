@@ -7,22 +7,19 @@ import unittest
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.date.min_max_date import MinMaxDate
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 
+datetime_format = "%Y-%m-%d"
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
 config = {"start_date": "2021-01-01"}
-start_date = InterpolatedString("{{ stream_state['date'] }}", "{{ config['start_date'] }}")
 end_date_now = InterpolatedString(
     "{{ today_utc() }}",
 )
-end_date = InterpolatedString("2021-01-10")
 cursor_value = InterpolatedString("{{ stream_state['date'] }}")
 timezone = datetime.timezone.utc
-
-datetime_format = "%Y-%m-%d"
 
 
 @pytest.fixture()
@@ -38,8 +35,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_1_day",
             None,
-            start_date,
-            end_date,
+            MinMaxDatetime("{{ config['start_date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             cursor_value,
             [
@@ -58,8 +55,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_2_day",
             None,
-            start_date,
-            end_date,
+            MinMaxDatetime("{{ config['start_date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "2d",
             cursor_value,
             [
@@ -73,8 +70,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_from_stream_state",
             {"date": "2021-01-05"},
-            start_date,
-            end_date,
+            MinMaxDatetime("{{ stream_state['date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             cursor_value,
             [
@@ -90,8 +87,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_12_day",
             None,
-            start_date,
-            end_date,
+            MinMaxDatetime("{{ config['start_date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "12d",
             cursor_value,
             [
@@ -101,8 +98,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_end_date_greater_than_now",
             None,
-            InterpolatedString("2021-12-28"),
-            InterpolatedString(f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}"),
+            MinMaxDatetime("2021-12-28", datetime_format=datetime_format),
+            MinMaxDatetime(f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}", datetime_format=datetime_format),
             "1d",
             cursor_value,
             [
@@ -116,8 +113,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_start_date_greater_than_end_date",
             {"date": "2021-01-05"},
-            InterpolatedString("2021-01-10"),
-            InterpolatedString("{{ stream_state['date'] }}"),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
+            MinMaxDatetime("{{ stream_state['date'] }}", datetime_format=datetime_format),
             "1d",
             cursor_value,
             [
@@ -127,8 +124,8 @@ def mock_datetime_now(monkeypatch):
         (
             "test_cursor_date_greater_than_start_date",
             {"date": "2021-01-05"},
-            start_date,
-            end_date,
+            MinMaxDatetime("{{ stream_state['date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             InterpolatedString("{{ stream_state['date'] }}"),
             [
@@ -138,6 +135,37 @@ def mock_datetime_now(monkeypatch):
                 {"start_date": "2021-01-08", "end_date": "2021-01-08"},
                 {"start_date": "2021-01-09", "end_date": "2021-01-09"},
                 {"start_date": "2021-01-10", "end_date": "2021-01-10"},
+            ],
+        ),
+        (
+            "test_start_date_less_than_min_date",
+            {"date": "2021-01-05"},
+            MinMaxDatetime("{{ config['start_date'] }}", min_datetime="{{ stream_state['date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
+            "1d",
+            InterpolatedString("{{ stream_state['date'] }}"),
+            [
+                {"start_date": "2021-01-05", "end_date": "2021-01-05"},
+                {"start_date": "2021-01-06", "end_date": "2021-01-06"},
+                {"start_date": "2021-01-07", "end_date": "2021-01-07"},
+                {"start_date": "2021-01-08", "end_date": "2021-01-08"},
+                {"start_date": "2021-01-09", "end_date": "2021-01-09"},
+                {"start_date": "2021-01-10", "end_date": "2021-01-10"},
+            ],
+        ),
+        (
+            "test_end_date_greater_than_max_date",
+            {"date": "2021-01-05"},
+            MinMaxDatetime("{{ config['start_date'] }}", datetime_format=datetime_format),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format=datetime_format),
+            "1d",
+            None,
+            [
+                {"start_date": "2021-01-01", "end_date": "2021-01-01"},
+                {"start_date": "2021-01-02", "end_date": "2021-01-02"},
+                {"start_date": "2021-01-03", "end_date": "2021-01-03"},
+                {"start_date": "2021-01-04", "end_date": "2021-01-04"},
+                {"start_date": "2021-01-05", "end_date": "2021-01-05"},
             ],
         ),
     ],
@@ -156,12 +184,16 @@ def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, c
         ("test_string_eval_from_stream_state", InterpolatedString("{{ stream_state['date'] }}"), "2021-01-05"),
         (
             "test_date_from_config_less_than_min_date",
-            MinMaxDate(date="{{ config['start_date'] }}", datetime_format=datetime_format, min_date="{{ stream_state['date'] }}"),
+            MinMaxDatetime(
+                datetime="{{ config['start_date'] }}", datetime_format=datetime_format, min_datetime="{{ stream_state['date'] }}"
+            ),
             "2021-01-05",
         ),
         (
             "test_date_from_state_greater_than_max_date",
-            MinMaxDate(date="{{ stream_state['date'] }}", datetime_format=datetime_format, max_date="{{ config['start_date'] }}"),
+            MinMaxDatetime(
+                datetime="{{ stream_state['date'] }}", datetime_format=datetime_format, max_datetime="{{ config['start_date'] }}"
+            ),
             "2021-01-01",
         ),
     ],

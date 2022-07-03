@@ -7,7 +7,7 @@ import re
 from typing import Any, Iterable, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.date.min_max_date import MinMaxDate
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -28,8 +28,8 @@ class DatetimeStreamSlicer(StreamSlicer):
     # FIXME: timezone should be declarative?
     def __init__(
         self,
-        start_date: Union[InterpolatedString, MinMaxDate],
-        end_date: Union[InterpolatedString, MinMaxDate],
+        start_datetime: MinMaxDatetime,
+        end_datetime: MinMaxDatetime,
         step,
         cursor_value: InterpolatedString,
         datetime_format,
@@ -38,8 +38,8 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         self._datetime_format = datetime_format
-        self._start_date = start_date
-        self._end_date = end_date
+        self._start_datetime = start_datetime
+        self._end_datetime = end_datetime
         self._step = self._parse_timedelta(step)
         self._config = config
         self._cursor_value = cursor_value
@@ -48,14 +48,17 @@ class DatetimeStreamSlicer(StreamSlicer):
         # Evaluate and compare start_date, end_date, and cursor_value based on configs and runtime state
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
-        end_date = min(self._eval_date(self._end_date, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
-        start_date = min(self._eval_date(self._start_date, **kwargs), end_date)
-        cursor_date = self.parse_date(self._cursor_value.eval(self._config, **kwargs) or start_date)
-        start_date = max(cursor_date, start_date)
-        if not self._is_start_date_valid(start_date, end_date):
-            end_date = start_date
+        end_datetime = min(self._eval_date(self._end_datetime, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
+        start_datetime = min(self._eval_date(self._start_datetime, **kwargs), end_datetime)
+        if self._cursor_value and self._cursor_value.eval(self._config, **kwargs):
+            cursor_datetime = self.parse_date(self._cursor_value.eval(self._config, **kwargs))
+        else:
+            cursor_datetime = start_datetime
+        start_datetime = max(cursor_datetime, start_datetime)
+        if not self._is_start_date_valid(start_datetime, end_datetime):
+            end_datetime = start_datetime
 
-        return self._partition_daterange(start_date, end_date, self._step)
+        return self._partition_daterange(start_datetime, end_datetime, self._step)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         dates = []
@@ -65,9 +68,9 @@ class DatetimeStreamSlicer(StreamSlicer):
             start += step
         return dates
 
-    def _eval_date(self, date: Union[InterpolatedString, MinMaxDate], **kwargs) -> datetime.datetime:
-        if isinstance(date, MinMaxDate):
-            return date.get_date(self._config, **kwargs)
+    def _eval_date(self, date: Union[InterpolatedString, MinMaxDatetime], **kwargs) -> datetime.datetime:
+        if isinstance(date, MinMaxDatetime):
+            return date.get_datetime(self._config, **kwargs)
         return self.parse_date(date.eval(self._config, **kwargs))
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
