@@ -7,7 +7,7 @@ connectionSpecification:
     - ext_id
     - cid
     - api_secret
-  additionalProperties: false
+  additionalProperties: true
   properties:
     ext_id:
       type: string
