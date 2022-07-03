@@ -56,7 +56,7 @@ class GithubStream(HttpStream, ABC):
             page = dict(parse.parse_qsl(parsed_link.query)).get("page")
             return {"page": page}
 
-    def check_graphql_rate_limit(self, response_json) -> bool:
+    def check_graphql_rate_limited(self, response_json) -> bool:
         errors = response_json.get("errors")
         if errors:
             for error in errors:
@@ -70,7 +70,7 @@ class GithubStream(HttpStream, ABC):
         retry_flag = (
             # The GitHub GraphQL API has limitations
             # https://docs.github.com/en/graphql/overview/resource-limitations
-            (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limit(response.json()))
+            (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
             # Rate limit HTTP headers
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
             or (response.headers.get("X-RateLimit-Resource") == "core" and response.headers.get("X-RateLimit-Remaining") == "0")
