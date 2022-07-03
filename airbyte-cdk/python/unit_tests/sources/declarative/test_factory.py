@@ -117,7 +117,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer._cursor_value == "created"
+    assert stream_slicer._cursor_value._string == "created"
 
 
 def test_full_config():
