@@ -56,11 +56,13 @@ class GithubStream(HttpStream, ABC):
             page = dict(parse.parse_qsl(parsed_link.query)).get("page")
             return {"page": page}
 
-    def check_graphql_rate_limit(self, response_json):
+    def check_graphql_rate_limit(self, response_json) -> bool:
         errors = response_json.get("errors")
         if errors:
             for error in errors:
-                return error.get("type") == "RATE_LIMITED"
+                if error.get("type") == "RATE_LIMITED":
+                    return True
+        return False
 
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
