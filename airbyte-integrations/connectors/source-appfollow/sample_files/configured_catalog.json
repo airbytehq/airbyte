@@ -12,6 +12,9 @@
               },
               "cid": {
                 "type": "string"
+              },
+              "country": {
+                "type": "string"
               }
             }
           },

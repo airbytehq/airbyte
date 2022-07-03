@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import json
 from abc import ABC
 from distutils.log import info
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
@@ -58,8 +58,8 @@ class AppfollowStream(HttpStream, ABC):
         :return an iterable containing each record in the response
         """
         response_json = response.json()
-        logger.log(logging.DEBUG, f"Response: {response_json}")
-        yield from response_json.get("list", [])
+        logger.log(logging.DEBUG, f"Response: {response_json.get('ratings')}")
+        yield response_json
 
 class Ratings(AppfollowStream):
     """
