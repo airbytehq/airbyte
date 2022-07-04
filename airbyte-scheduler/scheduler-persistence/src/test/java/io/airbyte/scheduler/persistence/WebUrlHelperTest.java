@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.scheduler.persistence;
 
 import java.util.UUID;
@@ -5,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class WebUrlHelperTest {
+
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID CONNECTION_ID = UUID.randomUUID();
 
@@ -35,4 +40,5 @@ public class WebUrlHelperTest {
     final String expectedUrl = String.format("http://localhost:8000/workspaces/%s/connections/%s", WORKSPACE_ID, CONNECTION_ID);
     Assertions.assertEquals(expectedUrl, connectionUrl);
   }
+
 }
