@@ -11,6 +11,8 @@ interface Feature {
   id: FeatureItem;
 }
 
+export type FeatureSet = Record<FeatureItem, boolean>;
+
 interface FeatureServiceApi {
   features: Feature[];
   registerFeature: (props: Feature[]) => void;
