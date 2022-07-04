@@ -28,8 +28,10 @@ public class JobErrorReporter {
   private static final String AIRBYTE_VERSION_META_KEY = "airbyte_version";
   private static final String FAILURE_ORIGIN_META_KEY = "failure_origin";
   private static final String FAILURE_TYPE_META_KEY = "failure_type";
+  private static final String WORKSPACE_ID_META_KEY = "workspace_id";
   private static final String CONNECTION_ID_META_KEY = "connection_id";
   private static final String CONNECTOR_NAME_META_KEY = "connector_name";
+  private static final String CONNECTOR_REPOSITORY_META_KEY = "connector_repository";
   private static final String CONNECTOR_DEFINITION_ID_META_KEY = "connector_definition_id";
   private static final String CONNECTOR_RELEASE_STAGE_META_KEY = "connector_release_stage";
 
@@ -67,6 +69,7 @@ public class JobErrorReporter {
       final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
 
       final HashMap<String, String> metadata = new HashMap<>();
+      metadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
       metadata.put(CONNECTION_ID_META_KEY, connectionId.toString());
       metadata.put(AIRBYTE_VERSION_META_KEY, airbyteVersion);
       metadata.put(DEPLOYMENT_MODE_META_KEY, deploymentMode.name());
@@ -80,6 +83,7 @@ public class JobErrorReporter {
 
           metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString());
           metadata.put(CONNECTOR_NAME_META_KEY, sourceDefinition.getName());
+          metadata.put(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository());
           metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value());
 
           jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
@@ -89,6 +93,7 @@ public class JobErrorReporter {
 
           metadata.put(CONNECTOR_DEFINITION_ID_META_KEY, destinationDefinition.getDestinationDefinitionId().toString());
           metadata.put(CONNECTOR_NAME_META_KEY, destinationDefinition.getName());
+          metadata.put(CONNECTOR_REPOSITORY_META_KEY, destinationDefinition.getDockerRepository());
           metadata.put(CONNECTOR_RELEASE_STAGE_META_KEY, destinationDefinition.getReleaseStage().value());
 
           jobErrorReportingClient.reportJobFailureReason(workspace, failureReason, dockerImage, metadata);

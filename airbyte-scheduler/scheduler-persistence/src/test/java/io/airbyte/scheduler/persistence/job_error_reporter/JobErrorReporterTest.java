@@ -27,17 +27,20 @@ import org.mockito.Mockito;
 
 public class JobErrorReporterTest {
 
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final DeploymentMode DEPLOYMENT_MODE = DeploymentMode.OSS;
   private static final String AIRBYTE_VERSION = "0.1.40";
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final String SOURCE_DEFINITION_NAME = "stripe";
+  private static final String SOURCE_DOCKER_REPOSITORY = "airbyte/source-stripe";
   private static final String SOURCE_DOCKER_IMAGE = "airbyte/source-stripe:1.2.3";
   private static final StandardSourceDefinition.ReleaseStage SOURCE_RELEASE_STAGE = StandardSourceDefinition.ReleaseStage.BETA;
   private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
   private static final String DESTINATION_DEFINITION_NAME = "snowflake";
-  private static final StandardDestinationDefinition.ReleaseStage DESTINATION_RELEASE_STAGE = StandardDestinationDefinition.ReleaseStage.BETA;
+  private static final String DESTINATION_DOCKER_REPOSITORY = "airbyte/destination-snowflake";
   private static final String DESTINATION_DOCKER_IMAGE = "airbyte/destination-snowflake:1.2.3";
+  private static final StandardDestinationDefinition.ReleaseStage DESTINATION_RELEASE_STAGE = StandardDestinationDefinition.ReleaseStage.BETA;
 
   private ConfigRepository configRepository;
   private JobErrorReportingClient jobErrorReportingClient;
@@ -76,38 +79,45 @@ public class JobErrorReporterTest {
 
     Mockito.when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPOSITORY)
             .withReleaseStage(SOURCE_RELEASE_STAGE)
             .withSourceDefinitionId(SOURCE_DEFINITION_ID)
             .withName(SOURCE_DEFINITION_NAME));
 
     Mockito.when(configRepository.getDestinationDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardDestinationDefinition()
+            .withDockerRepository(DESTINATION_DOCKER_REPOSITORY)
             .withReleaseStage(DESTINATION_RELEASE_STAGE)
             .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
             .withName(DESTINATION_DEFINITION_NAME));
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
     Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
+    Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
 
     jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, mJobSyncConfig);
 
     final Map<String, String> expectedSourceMetadata = Map.of(
+        "workspace_id", WORKSPACE_ID.toString(),
         "connection_id", CONNECTION_ID.toString(),
         "deployment_mode", DEPLOYMENT_MODE.name(),
         "airbyte_version", AIRBYTE_VERSION,
         "failure_origin", "source",
         "failure_type", "system_error",
         "connector_definition_id", SOURCE_DEFINITION_ID.toString(),
+        "connector_repository", SOURCE_DOCKER_REPOSITORY,
         "connector_name", SOURCE_DEFINITION_NAME,
         "connector_release_stage", SOURCE_RELEASE_STAGE.toString());
 
     final Map<String, String> expectedDestinationMetadata = Map.of(
+        "workspace_id", WORKSPACE_ID.toString(),
         "connection_id", CONNECTION_ID.toString(),
         "deployment_mode", DEPLOYMENT_MODE.name(),
         "airbyte_version", AIRBYTE_VERSION,
         "failure_origin", "destination",
         "failure_type", "system_error",
         "connector_definition_id", DESTINATION_DEFINITION_ID.toString(),
+        "connector_repository", DESTINATION_DOCKER_REPOSITORY,
         "connector_name", DESTINATION_DEFINITION_NAME,
         "connector_release_stage", DESTINATION_RELEASE_STAGE.toString());
 
