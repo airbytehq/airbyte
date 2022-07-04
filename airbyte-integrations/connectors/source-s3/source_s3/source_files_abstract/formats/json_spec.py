@@ -35,8 +35,7 @@ class JsonFormat(BaseModel):
             * it ends with '_time',
             * it begins with 'timestamp',
             * it is 'modified',
-            * it is 'date'
-        """,
+            * it is 'date'""",
     )
 
     lines: bool = Field(default=True, description="Read the file as a json object per line.")
