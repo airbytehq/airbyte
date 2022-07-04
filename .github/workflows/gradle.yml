@@ -50,6 +50,7 @@ jobs:
             build:
               - '.github/**'
               - 'buildSrc/**'
+              - 'tools/**'
               - '*.gradle'
             cli:
               - 'airbyte-api/**'
