@@ -1,0 +1,59 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Google Analytics Data API Spec",
+    "type": "object",
+    "required": [
+      "property_id", "json_credentials", "report_name",
+      "dimensions", "metrics", "date_ranges_start_date",
+      "date_ranges_end_date"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "property_id": {
+        "type": "string",
+        "title": "Property ID",
+        "description": "A Google Analytics GA4 property identifier whose events are tracked. Specified in the URL path and not the body",
+        "order": 1
+      },
+      "json_credentials": {
+        "type": "string",
+        "title": "JSON Credentials",
+        "description": "The JSON key of the Service Account to use for authorization",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "report_name": {
+        "type": "string",
+        "title": "Report Name",
+        "description": "The report name",
+        "order": 3
+      },
+      "dimensions": {
+        "type": "string",
+        "title": "Dimensions",
+        "description": "Comma seprated report dimensions https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#dimensions",
+        "order": 4
+      },
+      "metrics": {
+        "type": "string",
+        "title": "Metrics",
+        "description": "Comma seprated report metrics https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema#metrics",
+        "order": 5
+      },
+      "date_ranges_start_date": {
+        "type": "string",
+        "title": "Date Range Start Date",
+        "description": "The start date. One of the values Ndaysago, yesterday, today or in the format YYYY-MM-DD",
+        "order": 6
+      },
+      "date_ranges_end_date": {
+        "type": "string",
+        "title": "Date Range End Date",
+        "description": "The end date. One of the values Ndaysago, yesterday, today or in the format YYYY-MM-DD",
+        "order": 7
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -13,6 +13,8 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
 import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
+import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
@@ -52,14 +54,21 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
-  const connection = useMemo(
+  const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
+
+  const connection = useMemo<ConnectionFormProps["connection"]>(
     () => ({
+      name: connectionFormValues?.name ?? "",
+      namespaceDefinition: connectionFormValues?.namespaceDefinition,
+      namespaceFormat: connectionFormValues?.namespaceFormat,
+      prefix: connectionFormValues?.prefix,
+      schedule: connectionFormValues?.schedule ?? undefined,
       syncCatalog: schema,
       destination,
       source,
       catalogId,
     }),
-    [schema, destination, source, catalogId]
+    [connectionFormValues, schema, destination, source, catalogId]
   );
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
@@ -126,6 +135,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
               </Button>
             }
             onSubmit={onSubmitConnectionStep}
+            onChangeValues={setConnectionFormValues}
           />
         </Suspense>
       )}

@@ -24,6 +24,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -51,6 +52,8 @@ import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.TemporalClient;
+import io.airbyte.workers.temporal.TemporalUtils;
+import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -192,14 +195,20 @@ public class ServerApp implements ServerRunnable {
 
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configsDatabase);
+    final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
 
-    final TemporalClient temporalClient = TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs);
+    final TemporalClient temporalClient = new TemporalClient(
+        TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace()),
+        configs.getWorkspaceRoot(),
+        temporalService,
+        streamResetPersistence);
+
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =
         new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    final EventRunner eventRunner = new TemporalEventRunner(
-        TemporalClient.production(configs.getTemporalHost(), configs.getWorkspaceRoot(), configs));
+    final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 
     // It is important that the migration to the temporal scheduler is performed before the server
     // accepts any requests.
