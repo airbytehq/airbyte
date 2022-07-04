@@ -147,6 +147,7 @@ def test_namespace_set_to_empty_string(mocker):
         default_cursor_field=["test_cursor"],
         source_defined_cursor=True,
         source_defined_primary_key=[["primary_key"]],
+        namespace=None,
     )
     assert exp == airbyte_stream
 
