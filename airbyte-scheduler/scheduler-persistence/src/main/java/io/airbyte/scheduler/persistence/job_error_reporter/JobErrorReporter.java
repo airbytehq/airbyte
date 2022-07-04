@@ -13,6 +13,7 @@ import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.scheduler.persistence.WebUrlHelper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class JobErrorReporter {
   private static final String FAILURE_TYPE_META_KEY = "failure_type";
   private static final String WORKSPACE_ID_META_KEY = "workspace_id";
   private static final String CONNECTION_ID_META_KEY = "connection_id";
+  private static final String CONNECTION_URL_META_KEY = "connection_url";
   private static final String CONNECTOR_NAME_META_KEY = "connector_name";
   private static final String CONNECTOR_REPOSITORY_META_KEY = "connector_repository";
   private static final String CONNECTOR_DEFINITION_ID_META_KEY = "connector_definition_id";
@@ -38,16 +40,19 @@ public class JobErrorReporter {
   private final ConfigRepository configRepository;
   private final DeploymentMode deploymentMode;
   private final String airbyteVersion;
+  private final WebUrlHelper webUrlHelper;
   private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
                           final DeploymentMode deploymentMode,
                           final String airbyteVersion,
+                          final WebUrlHelper webUrlHelper,
                           final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
     this.airbyteVersion = airbyteVersion;
+    this.webUrlHelper = webUrlHelper;
     this.jobErrorReportingClient = jobErrorReportingClient;
   }
 
@@ -64,6 +69,7 @@ public class JobErrorReporter {
         .toList();
 
     final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
+    final String connectionUrl = webUrlHelper.getConnectionUrl(workspace.getWorkspaceId(), connectionId);
 
     for (final FailureReason failureReason : traceMessageFailures) {
       final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
@@ -71,6 +77,7 @@ public class JobErrorReporter {
       final HashMap<String, String> metadata = new HashMap<>();
       metadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
       metadata.put(CONNECTION_ID_META_KEY, connectionId.toString());
+      metadata.put(CONNECTION_URL_META_KEY, connectionUrl);
       metadata.put(AIRBYTE_VERSION_META_KEY, airbyteVersion);
       metadata.put(DEPLOYMENT_MODE_META_KEY, deploymentMode.name());
       metadata.put(FAILURE_ORIGIN_META_KEY, failureOrigin.value());
