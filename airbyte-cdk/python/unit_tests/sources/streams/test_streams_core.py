@@ -136,6 +136,8 @@ def test_namespace_set_to_empty_string(mocker):
     test_stream = StreamStubIncremental()
 
     mocker.patch.object(StreamStubIncremental, "get_json_schema", return_value={})
+    mocker.patch.object(StreamStubIncremental, "namespace", "")
+
     airbyte_stream = test_stream.as_airbyte_stream()
 
     exp = AirbyteStream(
