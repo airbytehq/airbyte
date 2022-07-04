@@ -1,16 +1,29 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+from requests.exceptions import HTTPError
 from unittest.mock import MagicMock
 
 from source_appfollow.source import SourceAppfollow
 
 
-def test_check_connection(mocker):
+def test_check_connection(mocker, requests_mock):
     source = SourceAppfollow()
     logger_mock, config_mock = MagicMock(), MagicMock()
+
+    # success
+    requests_mock.get("https://api.appfollow.io/ratings", json={"data": "pong!"})
     assert source.check_connection(logger_mock, config_mock) == (True, None)
+
+    # failure
+    requests_mock.get("https://api.appfollow.io/ratings", status_code=500)
+    ok, err = source.check_connection(logger_mock, config_mock)
+    assert (ok, type(err)) == (False, HTTPError)
+
+# def test_check_connection(mocker):
+#     source = SourceAppfollow()
+#     logger_mock, config_mock = MagicMock(), MagicMock()
+#     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
 def test_streams(mocker):
