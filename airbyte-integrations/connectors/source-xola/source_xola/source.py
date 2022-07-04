@@ -81,7 +81,7 @@ class XolaStream(HttpStream, ABC):
             "Accept": "application/json",
             "X-API-VERSION": "2018-06-26",
             "X-API-KEY": self.x_api_key,
-            "sort": "-id"
+            "sort": "-updatedAt"
         }
         return headers
 
@@ -174,7 +174,7 @@ class Orders(IncrementalXolaStream):
             
         params['seller'] = self.seller_id
         return params
-
+    
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         TODO: Override this method to define how a response is parsed.
@@ -221,6 +221,80 @@ class Orders(IncrementalXolaStream):
                 modified_response.append(resp)
             except:
                 pass
+        return modified_response
+
+class LineItems(IncrementalXolaStream):
+    primary_key = "order_id"
+    cursor_field = "updatedAt"
+    seller_id = None
+    fields_to_remove = ["demographics", "adjustments", "guestsData", "guests", "waivers", "reminders2", 
+                        "pluginFees", "addOns", "priceScheme", "group", "cancellationPolicy", "cancellation.policy"]
+
+    def __init__(self, seller_id: str, x_api_key: str, **kwargs):
+        super().__init__(x_api_key, **kwargs)
+        self.seller_id = seller_id
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        should return "orders". Required.
+        """
+        return "orders"
+
+    def request_params(
+            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None,
+            next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """
+        seller id is returned as a form of parameters
+        """
+        params = {}
+        if next_page_token:
+            for key in next_page_token.keys():
+                params[key] = next_page_token[key]
+        
+        if self.cursor_field in stream_state.keys():
+            params[self.cursor_field + '[gt]'] = stream_state[self.cursor_field]
+            
+        params['seller'] = self.seller_id
+        return params
+
+    def remove_column_value(self, field: str, object : dict):
+        if "." in field:
+            new_field = field.split(".",1)
+            self.remove_column_value(new_field[1], object[new_field[0]])
+        else:
+            object.pop(field)
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        """
+        TODO: Override this method to define how a response is parsed.
+        :return an iterable containing each record in the response
+        """
+        raw_response = response.json()["data"]
+        modified_response = []
+        for data in raw_response:
+            try:
+                line_items = data["items"]
+                for line_item in line_items:
+                    try:
+                        line_item["order_id"] = data["id"]
+                        line_item["createdAt"] = data["createdAt"]
+                        line_item["source"] = data["source"]
+                        line_item["updatedAt"] = data["updatedAt"]
+                        line_item["type"] = data["type"]
+                        
+                        for field in self.fields_to_remove:
+                            self.remove_column_value(field, line_item)
+
+                        modified_response.append(line_item)
+                    except:
+                        pass
+            except:
+                pass
+            
         return modified_response
 
 class Customers(IncrementalXolaStream):
@@ -281,17 +355,17 @@ class Customers(IncrementalXolaStream):
                 user_resp["order_createdAt"] = data["createdAt"]
                 user_resp["order_updatedAt"] = data["updatedAt"]
                 
-                if "customerName" in data.keys(): user_resp["customerName"] = data["customerName"]
-                if "customerEmail" in data.keys(): user_resp["customerEmail"] = data["customerEmail"]
-                if "phone" in data.keys(): user_resp["phone"] = data["phone"]
-                if "dateOfBirth" in data.keys(): user_resp["dateOfBirth"] = data["dateOfBirth"]
+                user_resp["customerName"] = data["customerName"] if "customerName" in data.keys() else ""
+                user_resp["customerEmail"] = data["customerEmail"] if "customerEmail" in data.keys() else ""
+                user_resp["phone"] = data["phone"] if "phone" in data.keys() else ""
+                user_resp["dateOfBirth"] = data["dateOfBirth"] if "dateOfBirth" in data.keys() else ""
                 
                 user_resp["user_id"] = data["traveler"]["id"] if "traveler" in data.keys() and isinstance(data["traveler"], dict) else ""
                 user_resp["customer_type"] = "organizer"
                 
-                email_userid_name_dict[user_resp["customerEmail"].lower().trim()] = {
+                email_userid_name_dict[user_resp["customerEmail"].lower().strip()] = {
                     "user_id" : user_resp["user_id"],
-                    "customerName" : user_resp["customerName"].lower().trim(),
+                    "customerName" : user_resp["customerName"].lower().strip(),
                     "phone" : user_resp["phone"] 
                 }
                 
@@ -332,10 +406,10 @@ class Customers(IncrementalXolaStream):
                                 
                                 non_sorted_customer_list.append(resp)
                                 
-                                lowerEmail = resp["customerEmail"].lower().trim()
-                                lowerName = resp["customerName"].lower().trim()
+                                lowerEmail =  resp["customerEmail"].lower().strip() if "customerEmail" in resp.keys() else ""
+                                lowerName = resp["customerName"].lower().strip() if "customerName" in resp.keys() else ""
                                 
-                                if lowerName == user_resp["customerName"].lower().trim() and lowerEmail == user_resp["customerEmail"].lower().trim(): 
+                                if lowerName == user_resp["customerName"].lower().strip() and lowerEmail == user_resp["customerEmail"].lower().strip(): 
                                     user_resp["dateOfBirth"] = resp["dateOfBirth"]
                                     user_resp["customer_type"] = "organizer,participant"
                                     
@@ -347,8 +421,9 @@ class Customers(IncrementalXolaStream):
                 
                 for customer in sorted_customer_list: 
                     
-                    lowerEmail = customer["customerEmail"].lower().trim()
-                    lowerName = customer["customerName"].lower().trim()
+                    lowerEmail = customer["customerEmail"].lower().strip() if "customerEmail" in customer.keys() else ""
+                    lowerName = customer["customerName"].lower().strip() if "customerName" in customer.keys() else ""
+                    customerPhone = customer["phone"] if "phone" in customer.keys() else ""
                     
                     if lowerEmail in email_userid_name_dict.keys():
                         
@@ -359,17 +434,19 @@ class Customers(IncrementalXolaStream):
                         if name != lowerName:
                             customer["customerEmail"] = ""
                             if customer["user_id"] == user_id: customer["user_id"] = ""
-                            if re.sub('\\D+','',customer["phone"]) == re.sub('\\D+','',phone): customer["phone"] = ""
+                            if re.sub('\\D+','',customerPhone) == re.sub('\\D+','',phone): customer["phone"] = ""
                             modified_response.append(customer)
                     else:
-                        email_userid_name_dict[customer["customerEmail"].lower().trim()] = {
+                        email_userid_name_dict[lowerEmail] = {
                             "user_id" : customer["user_id"],
-                            "customerName" : customer["customerName"].lower().trim(),
-                            "phone" : customer["phone"]
+                            "customerName" : lowerName,
+                            "phone" : customerPhone
                         }
                         modified_response.append(customer)
                 
-            except:
+            except Exception as e:
+                traceback.print_exc()
+                LOGGER.info("Error occurred while parsing waiver createdAt and updatedAt, Going ahead with wrong value of createdAt and updatedAt.", e)
                 pass
         return modified_response    
     
@@ -495,5 +572,6 @@ class SourceXola(AbstractSource):
         return [
             Orders(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
             Transactions(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
-            Customers(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
+            Customers(x_api_key=config['x-api-key'], seller_id=config['seller-id']),
+            LineItems(x_api_key=config['x-api-key'], seller_id=config['seller-id'])
         ]

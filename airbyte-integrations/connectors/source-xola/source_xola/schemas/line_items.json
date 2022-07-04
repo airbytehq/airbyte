@@ -1,0 +1,200 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "title": "Items",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+  	"order_id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "createdAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updatedAt": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "object": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "id": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "desc": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "currency": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "seller_id": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "excerpt": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "guestType": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "paymentMethod": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "group_discount_enabled": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated": {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "sortDemographics" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "cancellation_refundable" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "event_id" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "experience_id" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "arrival" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "arrivalDatetime" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "arrivalTime" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "quantity" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "shortCode" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "ticketCode" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "baseAmount" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "amount" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "status" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "guestStatus" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "waiverUrl" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    },
+    "organizer_timezone_name" : {
+    	"type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
