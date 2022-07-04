@@ -62,11 +62,10 @@ public class ElasticsearchSource extends BaseConnector implements Source {
         final var indices = connection.userIndices();
         final var mappings = connection.getMappings(indices);
 
-        JsonNode mappingsNode = mapper.convertValue(mappings, JsonNode.class);
         List<AirbyteStream> streams = new ArrayList<>();
 
         for(var index: indices) {
-            JsonNode JSONSchema = mappingsNode.get(index).get("sourceAsMap");
+            JsonNode JSONSchema = mapper.convertValue(mappings.get(index).sourceAsMap(), JsonNode.class);
             JsonNode formattedJSONSchema = formatJSONSchema(JSONSchema);
             AirbyteStream stream = new AirbyteStream();
             stream.setSupportedSyncModes(List.of(SyncMode.FULL_REFRESH));

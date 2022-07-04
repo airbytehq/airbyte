@@ -149,9 +149,8 @@ public class ElasticsearchConnection {
      */
     public Map<String, MappingMetadata> getMappings(final List<String> indices) throws IOException {
         GetMappingsRequest request = new GetMappingsRequest();
-        for(var index: indices) {
-            request.indices(index);
-        }
+        String[] copiedIndices = indices.toArray(String[]::new);
+        request.indices(copiedIndices);
         GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
         return getMappingResponse.mappings();
     }
