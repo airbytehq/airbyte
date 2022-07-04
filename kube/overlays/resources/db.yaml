@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: airbyte-db-svc
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      protocol: TCP
+  selector:
+    airbyte: db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airbyte-db
+spec:
+  replicas: 1
+  # Recreate strategy is necessary to avoid multiple simultaneous db pods running and corrupting the db state
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      airbyte: db
+  template:
+    metadata:
+      labels:
+        airbyte: db
+    spec:
+      containers:
+        - name: airbyte-db-container
+          image: airbyte/db
+          env:
+            - name: POSTGRES_DB
+              value: db-airbyte
+            - name: POSTGRES_PASSWORD
+              value: docker
+            - name: POSTGRES_USER
+              value: docker
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: airbyte-volume-db
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: airbyte-volume-db
+          persistentVolumeClaim:
+            claimName: airbyte-volume-db
