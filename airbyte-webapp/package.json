@@ -65,6 +65,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@craco/craco": "^6.4.4",
     "@storybook/addon-essentials": "^6.5.7",
     "@storybook/builder-webpack5": "^6.5.7",
     "@storybook/manager-webpack5": "^6.5.7",
@@ -102,6 +103,7 @@
     "husky": "^4.2.3",
     "license-checker": "^25.0.1",
     "lint-staged": "^12.3.7",
+    "mini-css-extract-plugin": "^2.6.1",
     "node-fetch": "^2.6.7",
     "orval": "^6.7.1",
     "prettier": "^2.6.2",
