@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -45,7 +45,8 @@ class OracleStressTest extends JdbcStressTest {
     COL_ID_TYPE = "NUMBER(38,0)";
     INSERT_STATEMENT = "INTO id_and_name (id, name) VALUES (%s,'picard-%s')";
 
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 

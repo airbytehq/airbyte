@@ -4,9 +4,9 @@ import { Theme } from "theme";
 
 import Spinner from "components/Spinner";
 
-type IProps = {
+interface IProps {
   full?: boolean;
-};
+}
 
 const Container = styled.div<IProps>`
   width: 100%;

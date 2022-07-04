@@ -4,7 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 import * as yup from "yup";
 
-import { Label, Input, LoadingButton, LabeledToggle } from "components";
+import { Label, Input, LoadingButton, LabeledSwitch } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
 
 import { WebhookPayload } from "hooks/services/useWorkspace";
@@ -51,16 +51,16 @@ const webhookValidationSchema = yup.object().shape({
   sendOnFailure: yup.boolean(),
 });
 
-type WebHookFormProps = {
+interface WebHookFormProps {
   webhook: WebhookPayload;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   onSubmit: (data: WebhookPayload) => void;
   onTest: (data: WebhookPayload) => void;
-};
+}
 
 const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMessage, errorMessage, onTest }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const feedBackBlock = (dirty: boolean, isSubmitting: boolean, webhook?: string) => {
     if (successMessage) {
@@ -93,8 +93,8 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
   return (
     <Formik
       initialValues={webhook}
-      enableReinitialize={true}
-      validateOnBlur={true}
+      enableReinitialize
+      validateOnBlur
       validateOnChange={false}
       validationSchema={webhookValidationSchema}
       onSubmit={async (values: WebhookPayload) => {
@@ -141,7 +141,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
             <Cell flex={1}>
               <Field name="sendOnFailure">
                 {({ field }: FieldProps<boolean>) => (
-                  <LabeledToggle
+                  <LabeledSwitch
                     name={field.name}
                     checked={field.value}
                     onChange={field.onChange}
@@ -153,7 +153,7 @@ const WebHookForm: React.FC<WebHookFormProps> = ({ webhook, onSubmit, successMes
             <Cell flex={1}>
               <Field name="sendOnSuccess">
                 {({ field }: FieldProps<boolean>) => (
-                  <LabeledToggle
+                  <LabeledSwitch
                     name={field.name}
                     checked={field.value}
                     onChange={field.onChange}

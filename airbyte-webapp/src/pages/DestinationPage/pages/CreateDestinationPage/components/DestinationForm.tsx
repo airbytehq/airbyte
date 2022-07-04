@@ -9,7 +9,6 @@ import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
 interface DestinationFormProps {
   onSubmit: (values: {
@@ -18,10 +17,10 @@ interface DestinationFormProps {
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
+  afterSelectConnector?: () => void;
   destinationDefinitions: DestinationDefinitionRead[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  afterSelectConnector?: () => void;
 }
 
 const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
@@ -45,18 +44,17 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
   );
+
   const {
     data: destinationDefinitionSpecification,
-    isLoading,
     error: destinationDefinitionError,
+    isLoading,
   } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
-  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
-    setDocumentationPanelOpen(false);
     setDestinationDefinitionId(destinationDefinitionId);
+
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
-    setDocumentationUrl(connector?.documentationUrl ?? "");
 
     if (afterSelectConnector) {
       afterSelectConnector();

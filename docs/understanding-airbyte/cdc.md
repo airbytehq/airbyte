@@ -39,3 +39,7 @@ We add some metadata columns for CDC sources:
 * Oracle DB
 * Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if you need CDC support on another database!
 
+## Additional information
+
+* Read our article: [Understanding Change Data Capture (CDC): Definition, Methods and Benefits](https://airbyte.com/blog/change-data-capture-definition-methods-and-benefits)
+

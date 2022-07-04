@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.utils;
@@ -41,7 +41,7 @@ public class DatabaseConnectionHelperTest {
     final DataSource dataSource = DatabaseConnectionHelper.createDataSource(container);
     assertNotNull(dataSource);
     assertEquals(HikariDataSource.class, dataSource.getClass());
-    assertEquals(5, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
+    assertEquals(10, ((HikariDataSource) dataSource).getHikariConfigMXBean().getMaximumPoolSize());
   }
 
   @Test

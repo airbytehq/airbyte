@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.check.connection;
@@ -54,7 +54,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public StandardCheckConnectionOutput run(CheckConnectionInput args) {
+  public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()

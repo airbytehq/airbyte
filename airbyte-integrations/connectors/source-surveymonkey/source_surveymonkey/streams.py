@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import tempfile
@@ -114,11 +114,7 @@ class IncrementalSurveymonkeyStream(SurveymonkeyStream, ABC):
         Return the latest state by comparing the cursor value in the latest record with the stream's most recent state object
         and returning an updated state object.
         """
-        latest_state = latest_record.get(self.cursor_field)
-        current_state = current_stream_state.get(self.cursor_field) or latest_state
-        if current_state:
-            return {self.cursor_field: max(latest_state, current_state)}
-        return {}
+        return {self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(self.cursor_field, ""))}
 
 
 class Surveys(IncrementalSurveymonkeyStream):
@@ -248,17 +244,9 @@ class SurveyResponses(IncrementalSurveymonkeyStream):
         and returning an updated state object.
         """
         survey_id = latest_record.get("survey_id")
-        latest_cursor_value = latest_record.get(self.cursor_field)
-        current_stream_state = current_stream_state or {}
-        current_state = current_stream_state.get(survey_id) if current_stream_state else None
-        if current_state:
-            current_state = current_state.get(self.cursor_field)
-        current_state_value = current_state or latest_cursor_value
-        max_value = max(current_state_value, latest_cursor_value)
-        new_value = {self.cursor_field: max_value}
-
-        current_stream_state[survey_id] = new_value
-        return current_stream_state
+        return {
+            self.cursor_field: max(latest_record.get(self.cursor_field), current_stream_state.get(survey_id, {}).get(self.cursor_field, ""))
+        }
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, **kwargs)

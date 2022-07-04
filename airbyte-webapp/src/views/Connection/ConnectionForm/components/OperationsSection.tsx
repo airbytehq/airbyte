@@ -16,13 +16,21 @@ const SectionTitle = styled.div`
   line-height: 17px;
 `;
 
-export const OperationsSection: React.FC<{
+interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
-}> = ({ destDefinition }) => {
-  const formatMessage = useIntl().formatMessage;
+  onStartEditTransformation?: () => void;
+  onEndEditTransformation?: () => void;
+}
+
+export const OperationsSection: React.FC<OperationsSectionProps> = ({
+  destDefinition,
+  onStartEditTransformation,
+  onEndEditTransformation,
+}) => {
+  const { formatMessage } = useIntl();
   const { hasFeature } = useFeatureService();
 
-  const supportsNormalization = destDefinition.supportsNormalization;
+  const { supportsNormalization } = destDefinition;
   const supportsTransformations = destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
 
   const defaultTransformation = useDefaultTransformation();
@@ -42,7 +50,14 @@ export const OperationsSection: React.FC<{
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
         <FieldArray name="transformations">
-          {(formProps) => <TransformationField defaultTransformation={defaultTransformation} {...formProps} />}
+          {(formProps) => (
+            <TransformationField
+              defaultTransformation={defaultTransformation}
+              onStartEdit={onStartEditTransformation}
+              onEndEdit={onEndEditTransformation}
+              {...formProps}
+            />
+          )}
         </FieldArray>
       )}
     </>

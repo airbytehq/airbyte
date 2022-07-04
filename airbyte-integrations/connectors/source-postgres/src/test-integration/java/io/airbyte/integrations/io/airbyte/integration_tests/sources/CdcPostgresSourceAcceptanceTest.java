@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -91,12 +91,12 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
        * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
        */
       database.query(ctx -> {
-        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
-        ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
         ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
         ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
         ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+        ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
         return null;
       });
     }

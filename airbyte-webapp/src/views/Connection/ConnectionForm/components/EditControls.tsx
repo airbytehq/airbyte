@@ -4,15 +4,16 @@ import styled from "styled-components";
 
 import { Button, LoadingButton } from "components";
 
-type IProps = {
+interface EditControlProps {
   isSubmitting: boolean;
   dirty: boolean;
+  submitDisabled?: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   editSchemeMode?: boolean;
   withLine?: boolean;
-};
+}
 
 const Warning = styled.div`
   margin-bottom: 10px;
@@ -49,9 +50,10 @@ const Line = styled.div`
   margin: 16px -27px 0 -24px;
 `;
 
-const EditControls: React.FC<IProps> = ({
+const EditControls: React.FC<EditControlProps> = ({
   isSubmitting,
   dirty,
+  submitDisabled,
   resetForm,
   successMessage,
   errorMessage,
@@ -79,18 +81,13 @@ const EditControls: React.FC<IProps> = ({
       <Buttons>
         <div>{showStatusMessage()}</div>
         <div>
-          <Button
-            type="button"
-            secondary
-            disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
-            onClick={resetForm}
-          >
+          <Button type="button" secondary disabled={isSubmitting || (!dirty && !editSchemeMode)} onClick={resetForm}>
             <FormattedMessage id="form.cancel" />
           </Button>
           <ControlButton
             type="submit"
             isLoading={isSubmitting}
-            disabled={(isSubmitting || !dirty) && (!editSchemeMode || isSubmitting)}
+            disabled={submitDisabled || isSubmitting || (!dirty && !editSchemeMode)}
           >
             {editSchemeMode ? (
               <FormattedMessage id="connection.saveAndReset" />

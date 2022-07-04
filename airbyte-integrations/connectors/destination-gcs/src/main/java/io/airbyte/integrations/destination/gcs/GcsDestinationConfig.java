@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -39,7 +39,6 @@ public class GcsDestinationConfig extends S3DestinationConfig {
         bucketRegion,
         S3DestinationConstants.DEFAULT_PATH_FORMAT,
         credentialConfig.getS3CredentialConfig().orElseThrow(),
-        S3DestinationConstants.DEFAULT_PART_SIZE_MB,
         formatConfig,
         null);
 

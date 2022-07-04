@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import source_bing_ads
@@ -28,12 +28,6 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 15
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_streams_all(mocked_client):
-    streams = SourceBingAds().streams(MagicMock())
     assert len(streams) == 25
 
 

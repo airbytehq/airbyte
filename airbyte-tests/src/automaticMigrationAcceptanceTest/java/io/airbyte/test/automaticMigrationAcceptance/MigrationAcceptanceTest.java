@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.automaticMigrationAcceptance;
@@ -12,21 +12,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.google.common.io.Resources;
-import io.airbyte.api.client.ConnectionApi;
-import io.airbyte.api.client.DestinationDefinitionApi;
-import io.airbyte.api.client.HealthApi;
-import io.airbyte.api.client.SourceDefinitionApi;
-import io.airbyte.api.client.WorkspaceApi;
-import io.airbyte.api.client.invoker.ApiClient;
-import io.airbyte.api.client.invoker.ApiException;
-import io.airbyte.api.client.model.ConnectionRead;
-import io.airbyte.api.client.model.ConnectionStatus;
-import io.airbyte.api.client.model.DestinationDefinitionRead;
-import io.airbyte.api.client.model.ImportRead;
-import io.airbyte.api.client.model.ImportRead.StatusEnum;
-import io.airbyte.api.client.model.SourceDefinitionRead;
-import io.airbyte.api.client.model.WorkspaceIdRequestBody;
-import io.airbyte.api.client.model.WorkspaceRead;
+import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.DestinationDefinitionApi;
+import io.airbyte.api.client.generated.HealthApi;
+import io.airbyte.api.client.generated.SourceDefinitionApi;
+import io.airbyte.api.client.generated.WorkspaceApi;
+import io.airbyte.api.client.invoker.generated.ApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.ConnectionRead;
+import io.airbyte.api.client.model.generated.ConnectionStatus;
+import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.client.model.generated.ImportRead;
+import io.airbyte.api.client.model.generated.ImportRead.StatusEnum;
+import io.airbyte.api.client.model.generated.SourceDefinitionRead;
+import io.airbyte.api.client.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.client.model.generated.WorkspaceRead;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.concurrency.WaitingUtils;
 import io.airbyte.commons.resources.MoreResources;

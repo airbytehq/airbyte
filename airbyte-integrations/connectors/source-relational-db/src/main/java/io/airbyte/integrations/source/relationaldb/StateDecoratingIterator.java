@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.relationaldb;
 import com.google.common.collect.AbstractIterator;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -40,7 +41,11 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     this.cursorField = cursorField;
     this.cursorType = cursorType;
     this.maxCursor = initialCursor;
-    stateManager.setIsCdc(false);
+  }
+
+  private String getCursorCandidate(final AirbyteMessage message) {
+    String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+    return (cursorCandidate != null ? cursorCandidate.replaceAll("\u0000", "") : null);
   }
 
   @Override
@@ -48,7 +53,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
     if (messageIterator.hasNext()) {
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
-        final String cursorCandidate = message.getRecord().getData().get(cursorField).asText();
+        final String cursorCandidate = getCursorCandidate(message);
         if (IncrementalUtils.compareCursors(maxCursor, cursorCandidate, cursorType) < 0) {
           maxCursor = cursorCandidate;
         }

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -8,10 +8,10 @@ from urllib.parse import quote_plus
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from source_google_search_console.streams import ROW_LIMIT, SearchAnalyticsByDate, GoogleSearchConsole
 from source_google_search_console.source import SourceGoogleSearchConsole
+from source_google_search_console.streams import ROW_LIMIT, GoogleSearchConsole, SearchAnalyticsByDate
 
-logger = logging.getLogger('airbyte')
+logger = logging.getLogger("airbyte")
 
 
 class MockResponse:
@@ -116,12 +116,9 @@ def test_updated_state():
     [
         (
             GoogleSearchConsole,
-            {'keys': ['keys']},
+            {"keys": ["keys"]},
         ),
-        (
-            SearchAnalyticsByDate,
-            {"date": "keys", "search_type": "web", "site_url": "https://domain1.com"}
-        )
+        (SearchAnalyticsByDate, {"date": "keys", "search_type": "web", "site_url": "https://domain1.com"}),
     ],
 )
 @patch.multiple(GoogleSearchConsole, __abstractmethods__=set())
@@ -171,6 +168,8 @@ def test_streams(config):
 def test_get_start_date():
     stream = SearchAnalyticsByDate(None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
     date = "2021-09-07"
-    state_date = stream._get_start_date(stream_state={"https://domain1.com": {"web": {"date": date}}}, site_url="https://domain1.com", search_type="web")
+    state_date = stream._get_start_date(
+        stream_state={"https://domain1.com": {"web": {"date": date}}}, site_url="https://domain1.com", search_type="web"
+    )
 
     assert date == str(state_date)

@@ -14,10 +14,10 @@ import { useSourceDefinitionList } from "services/connector/SourceDefinitionServ
 import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
 import { useSourceList } from "../../../../../hooks/services/useSourceHook";
 
-type IProps = {
+interface IProps {
   type: "source" | "destination";
   onSubmit: (id: string) => void;
-};
+}
 
 const FormContent = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -41,7 +41,7 @@ const existingEntityValidationSchema = yup.object().shape({
 });
 
 const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
@@ -59,18 +59,18 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
           img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       });
-    } else {
-      return destinations.map((item) => {
-        const destinationDef = destinationDefinitions.find(
-          (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
-        );
-        return {
-          label: item.name,
-          value: item.destinationId,
-          img: <ConnectorIcon icon={destinationDef?.icon} />,
-        };
-      });
     }
+    return destinations.map((item) => {
+      const destinationDef = destinationDefinitions.find(
+        (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
+      );
+      return {
+        label: item.name,
+        value: item.destinationId,
+        img: <ConnectorIcon icon={destinationDef?.icon} />,
+      };
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 

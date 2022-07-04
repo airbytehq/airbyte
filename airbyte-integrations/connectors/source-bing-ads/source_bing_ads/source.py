@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -597,16 +597,11 @@ class SourceBingAds(AbstractSource):
             Campaigns(client, config),
         ]
 
-        if config["hourly_reports"] or config["daily_reports"] or config["weekly_reports"] or config["monthly_reports"]:
-            streams.append(BudgetSummaryReport(client, config))
+        streams.append(BudgetSummaryReport(client, config))
 
-        if config["hourly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
-        if config["daily_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
-        if config["weekly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
-        if config["monthly_reports"]:
-            streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
+        streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
 
         return streams

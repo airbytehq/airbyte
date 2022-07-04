@@ -88,12 +88,11 @@ const DestinationItemPage: React.FC = () => {
 
       <PageTitle
         title={<Breadcrumbs data={breadcrumbsData} />}
-        withLine
         middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
       />
 
       <Suspense fallback={<LoadingPage />}>
-        <ApiErrorBoundary hideHeader>
+        <ApiErrorBoundary>
           <Routes>
             <Route
               path="/settings"

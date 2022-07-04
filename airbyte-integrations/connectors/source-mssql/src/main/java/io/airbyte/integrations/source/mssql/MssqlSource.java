@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mssql;
 
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
@@ -24,24 +25,27 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.relationaldb.StateManager;
+import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -218,7 +222,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
-    if (isCdc(config)) {
+    if (MssqlCdcHelper.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
@@ -237,7 +241,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
         super.getCheckOperations(config));
 
-    if (isCdc(config)) {
+    if (MssqlCdcHelper.isCdc(config)) {
       checkOperations.add(database -> assertCdcEnabledInDb(config, database));
       checkOperations.add(database -> assertCdcSchemaQueryable(config, database));
       checkOperations.add(database -> assertSqlServerAgentRunning(database));
@@ -273,8 +277,16 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   protected void assertCdcSchemaQueryable(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
-      final String sql = "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";
-      final PreparedStatement ps = connection.prepareStatement(sql);
+      boolean isAzureSQL = false;
+
+      try (Statement stmt = connection.createStatement();
+          ResultSet editionRS = stmt.executeQuery("SELECT ServerProperty('Edition')")) {
+        isAzureSQL = editionRS.next() && "SQL Azure".equals(editionRS.getString(1));
+      }
+
+      // Azure SQL does not support USE clause
+      final String sql =
+          isAzureSQL ? "SELECT * FROM cdc.change_tables" : "USE " + config.get("database").asText() + "; SELECT * FROM cdc.change_tables";      final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
           config.get("username").asText(), sql));
@@ -317,6 +329,10 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
   protected void assertSnapshotIsolationAllowed(final JsonNode config, final JdbcDatabase database)
       throws SQLException {
+    if (MssqlCdcHelper.getSnapshotIsolationConfig(config) != SnapshotIsolation.SNAPSHOT) {
+      return;
+    }
+
     final List<JsonNode> queryResponse = database.queryJsons(connection -> {
       final String sql = "SELECT name, snapshot_isolation_state FROM sys.databases WHERE name = ?";
       final PreparedStatement ps = connection.prepareStatement(sql);
@@ -348,11 +364,12 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
+      final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get("database").asText()),
-          MssqlCdcProperties.getDebeziumProperties(), catalog, true);
+          props, catalog, true);
       return handler.getIncrementalIterators(
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
@@ -361,19 +378,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
-  }
-
-  private static boolean isCdc(final JsonNode config) {
-    return config.hasNonNull("replication_method")
-        && ReplicationMethod.valueOf(config.get("replication_method").asText())
-            .equals(ReplicationMethod.CDC);
-  }
-
-  private static boolean shouldUseCDC(final ConfiguredAirbyteCatalog catalog) {
-    final Optional<SyncMode> any = catalog.getStreams().stream()
-        .map(ConfiguredAirbyteStream::getSyncMode)
-        .filter(syncMode -> syncMode == SyncMode.INCREMENTAL).findAny();
-    return any.isPresent();
   }
 
   // Note: in place mutation.
@@ -448,11 +452,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     LOGGER.info("starting source: {}", MssqlSource.class);
     new IntegrationRunner(source).run(args);
     LOGGER.info("completed source: {}", MssqlSource.class);
-  }
-
-  public enum ReplicationMethod {
-    STANDARD,
-    CDC
   }
 
 }

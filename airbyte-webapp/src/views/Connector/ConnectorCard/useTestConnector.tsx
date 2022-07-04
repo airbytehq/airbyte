@@ -22,6 +22,7 @@ export const useTestConnector = (
   onStopTesting: () => void;
   testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
   error: Error | null;
+  reset: () => void;
 } => {
   const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(props.formType);
 
@@ -31,6 +32,7 @@ export const useTestConnector = (
     isTestConnectionInProgress: isLoading,
     isSuccess,
     error,
+    reset,
     onStopTesting: () => {
       abortControllerRef.current?.abort();
       reset();
@@ -58,15 +60,13 @@ export const useTestConnector = (
             signal: controller.signal,
           };
         }
-      } else {
+      } else if (values) {
         // creating new connection
-        if (values) {
-          payload = {
-            connectionConfiguration: values.connectionConfiguration,
-            signal: controller.signal,
-            selectedConnectorDefinitionId: values.serviceType,
-          };
-        }
+        payload = {
+          connectionConfiguration: values.connectionConfiguration,
+          signal: controller.signal,
+          selectedConnectorDefinitionId: values.serviceType,
+        };
       }
 
       if (!payload) {

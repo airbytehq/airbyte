@@ -18,7 +18,7 @@ const Header = styled.div`
 `;
 
 const AccountSettingsView: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const authService = useAuthService();
   const { mutateAsync: logout, isLoading: isLoggingOut } = useMutation(() => authService.logout());
   const user = useCurrentUser();
@@ -43,7 +43,7 @@ const AccountSettingsView: React.FC = () => {
                       <LabeledInput
                         {...field}
                         label={<FormattedMessage id="settings.accountSettings.fullName" />}
-                        disabled={true}
+                        disabled
                         placeholder={formatMessage({
                           id: "settings.accountSettings.fullName.placeholder",
                         })}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.internal;
@@ -7,13 +7,13 @@ package io.airbyte.workers.internal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
+import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,9 +35,12 @@ class AirbyteMessageTrackerTest {
   @Mock
   private StateDeltaTracker mStateDeltaTracker;
 
+  @Mock
+  private StateAggregator mStateAggregator;
+
   @BeforeEach
   public void setup() {
-    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker);
+    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator);
   }
 
   @Test
@@ -53,7 +56,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromSource(s2);
 
     assertEquals(3, messageTracker.getTotalRecordsEmitted());
-    assertEquals(3 * Jsons.serialize(r1.getRecord().getData()).getBytes(Charsets.UTF_8).length, messageTracker.getTotalBytesEmitted());
+    assertEquals(3L * Jsons.getEstimatedByteSize(r1.getRecord().getData()), messageTracker.getTotalBytesEmitted());
     assertEquals(2, messageTracker.getTotalStateMessagesEmitted());
   }
 
@@ -66,6 +69,9 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessage s2 = AirbyteMessageUtils.createStateMessage(s2Value);
     final AirbyteMessage s3 = AirbyteMessageUtils.createStateMessage(s3Value);
 
+    final State expectedState = new State().withState(Jsons.jsonNode(s2Value));
+    Mockito.when(mStateAggregator.getAggregated()).thenReturn(expectedState);
+
     messageTracker.acceptFromSource(s1);
     messageTracker.acceptFromSource(s2);
     messageTracker.acceptFromSource(s3);
@@ -76,7 +82,7 @@ class AirbyteMessageTrackerTest {
     assertEquals(new State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
 
     assertTrue(messageTracker.getDestinationOutputState().isPresent());
-    assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
+    assertEquals(expectedState, messageTracker.getDestinationOutputState().get());
   }
 
   @Test
@@ -112,9 +118,9 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessage r2 = AirbyteMessageUtils.createRecordMessage(STREAM_2, 2);
     final AirbyteMessage r3 = AirbyteMessageUtils.createRecordMessage(STREAM_3, 3);
 
-    final long r1Bytes = Jsons.serialize(r1.getRecord().getData()).getBytes(Charsets.UTF_8).length;
-    final long r2Bytes = Jsons.serialize(r2.getRecord().getData()).getBytes(Charsets.UTF_8).length;
-    final long r3Bytes = Jsons.serialize(r3.getRecord().getData()).getBytes(Charsets.UTF_8).length;
+    final long r1Bytes = Jsons.getEstimatedByteSize(r1.getRecord().getData());
+    final long r2Bytes = Jsons.getEstimatedByteSize(r2.getRecord().getData());
+    final long r3Bytes = Jsons.getEstimatedByteSize(r3.getRecord().getData());
 
     messageTracker.acceptFromSource(r1);
     messageTracker.acceptFromSource(r2);

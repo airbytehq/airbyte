@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import sys
@@ -38,10 +38,6 @@ class Client:
         self,
         tenant_id: str,
         reports_start_date: str,
-        hourly_reports: bool,
-        daily_reports: bool,
-        weekly_reports: bool,
-        monthly_reports: bool,
         developer_token: str = None,
         client_id: str = None,
         client_secret: str = None,
@@ -51,10 +47,6 @@ class Client:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.refresh_token = refresh_token
         self.developer_token = developer_token
-        self.hourly_reports = hourly_reports
-        self.daily_reports = daily_reports
-        self.weekly_reports = weekly_reports
-        self.monthly_reports = monthly_reports
 
         self.client_id = client_id
         self.client_secret = client_secret

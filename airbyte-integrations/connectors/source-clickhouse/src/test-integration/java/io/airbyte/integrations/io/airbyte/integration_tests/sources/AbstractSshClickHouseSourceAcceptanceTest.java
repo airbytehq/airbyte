@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -29,6 +29,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.Network;
 
 public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -38,6 +39,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String SCHEMA_NAME = "default";
+  private static final Network network = Network.newNetwork();
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -93,12 +95,12 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine").withNetwork(bastion.getNetWork());
+    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine").withNetwork(network);
     db.start();
   }
 
