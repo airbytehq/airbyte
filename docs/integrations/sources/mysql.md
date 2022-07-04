@@ -185,6 +185,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+| 0.5.15  | 2022-06-23 | [14077](https://github.com/airbytehq/airbyte/pull/14077) | Use the new state management |
 | 0.5.13 | 2022-06-21 | [13945](https://github.com/airbytehq/airbyte/pull/13945)    | Aligned datatype test |
 | 0.5.12 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864)    | Updated stacktrace format for any trace message errors |
 | 0.5.11  | 2022-05-03 | [12544](https://github.com/airbytehq/airbyte/pull/12544)   | Prevent source from hanging under certain circumstances by adding a watcher for orphaned threads. |

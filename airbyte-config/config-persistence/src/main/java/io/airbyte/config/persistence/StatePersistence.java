@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.STATE;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.db.Database;
@@ -26,9 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
@@ -154,11 +153,13 @@ public class StatePersistence {
       final boolean hasState = ctx.selectFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
-              isNullOrEquals(STATE.STREAM_NAME, streamName),
-              isNullOrEquals(STATE.NAMESPACE, namespace))
+              PersistenceHelpers.isNullOrEquals(STATE.STREAM_NAME, streamName),
+              PersistenceHelpers.isNullOrEquals(STATE.NAMESPACE, namespace))
           .fetch().isNotEmpty();
 
-      final JSONB jsonbState = JSONB.valueOf(Jsons.serialize(state));
+      // NOTE: the legacy code was storing a State object instead of just the State data field. We kept
+      // the same behavior for consistency.
+      final JSONB jsonbState = JSONB.valueOf(Jsons.serialize(stateType != StateType.LEGACY ? state : new State().withState(state)));
       final OffsetDateTime now = OffsetDateTime.now();
 
       if (!hasState) {
@@ -189,8 +190,8 @@ public class StatePersistence {
             .set(STATE.STATE_, jsonbState)
             .where(
                 STATE.CONNECTION_ID.eq(connectionId),
-                isNullOrEquals(STATE.STREAM_NAME, streamName),
-                isNullOrEquals(STATE.NAMESPACE, namespace))
+                PersistenceHelpers.isNullOrEquals(STATE.STREAM_NAME, streamName),
+                PersistenceHelpers.isNullOrEquals(STATE.NAMESPACE, namespace))
             .execute();
       }
 
@@ -199,23 +200,10 @@ public class StatePersistence {
       ctx.deleteFrom(STATE)
           .where(
               STATE.CONNECTION_ID.eq(connectionId),
-              isNullOrEquals(STATE.STREAM_NAME, streamName),
-              isNullOrEquals(STATE.NAMESPACE, namespace))
+              PersistenceHelpers.isNullOrEquals(STATE.STREAM_NAME, streamName),
+              PersistenceHelpers.isNullOrEquals(STATE.NAMESPACE, namespace))
           .execute();
     }
-  }
-
-  /**
-   * Helper function to handle null or equal case for the optional strings
-   *
-   * We need to have an explicit check for null values because NULL != "str" is NULL, not a boolean.
-   *
-   * @param field the targeted field
-   * @param value the value to check
-   * @return The Condition that performs the desired check
-   */
-  private static Condition isNullOrEquals(final Field<String> field, final String value) {
-    return value != null ? field.eq(value) : field.isNull();
   }
 
   /**
@@ -292,9 +280,10 @@ public class StatePersistence {
    * Build a StateWrapper for Legacy state
    */
   private static StateWrapper buildLegacyState(final List<StateRecord> records) {
+    final State legacyState = Jsons.convertValue(records.get(0).state, State.class);
     return new StateWrapper()
         .withStateType(StateType.LEGACY)
-        .withLegacyState(records.get(0).state);
+        .withLegacyState(legacyState.getState());
   }
 
   /**
