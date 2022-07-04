@@ -450,7 +450,7 @@ public class WorkerApp {
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
 
     final JobNotifier jobNotifier = new JobNotifier(
-        configs.getWebappUrl(),
+        webUrlHelper,
         configRepository,
         workspaceHelper,
         TrackingClientSingleton.get());
