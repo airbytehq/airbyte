@@ -59,7 +59,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
 
   @Override
   protected JsonNode formatJsonSchema(final JsonNode jsonSchema) {
-    var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #11166 is reopened formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
+    var modifiedJsonSchema = jsonSchema.deepCopy(); // Issue #5912 is reopened (PR #11166) formatAllOfAndAnyOfFields(namingResolver, jsonSchema);
     populateEmptyArrays(modifiedJsonSchema);
     surroundArraysByObjects(modifiedJsonSchema);
     return modifiedJsonSchema;
@@ -158,11 +158,17 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
   }
 
   protected JsonNode formatData(final FieldList fields, final JsonNode root) {
+    var newData = formatJsonNode(fields, root);
+    formatDateTimeFields(fields, newData);
+    return newData;
+  }
+
+  private JsonNode formatJsonNode(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {
       return root;
     }
-    formatDateTimeFields(fields, root);
+
     if (root.isObject()) {
       return getObjectNode(fields, root);
     } else if (root.isArray()) {
@@ -176,9 +182,9 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     final List<String> dateTimeFields = BigQueryUtils.getDateTimeFieldsFromSchema(fields);
     if (!dateTimeFields.isEmpty() && !root.isNull()) {
       if (root.isArray()) {
-        root.forEach(jsonNode -> BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) jsonNode));
+        root.forEach(jsonNode -> BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, jsonNode));
       } else {
-        BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, (ObjectNode) root);
+        BigQueryUtils.transformJsonDateTimeToBigDataFormat(dateTimeFields, root);
       }
     }
   }
@@ -194,7 +200,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       subFields = arrayField.getSubFields();
     }
     return Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
-        .map(p -> formatData(subFields, p))
+        .map(p -> formatJsonNode(subFields, p))
         .map(p -> (p.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, p)) : p))
         .collect(Collectors.toList()));
   }
@@ -211,7 +217,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           return validKey;
         })
         .collect(Collectors.toMap(namingResolver::getIdentifier,
-            key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
+            key -> formatJsonNode(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
   }
 
   @Override

@@ -232,16 +232,17 @@ public class BigQueryUtils {
    *      "https://cloud.google.com/bigquery/docs/loading-data-cloud-storage-json#details_of_loading_json_data">Supported
    *      Google bigquery datatype</a> This method is responsible to adapt JSON DATETIME to Bigquery
    */
-  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final ObjectNode data) {
+  public static void transformJsonDateTimeToBigDataFormat(final List<String> dateTimeFields, final JsonNode data) {
     dateTimeFields.forEach(e -> {
-      if (data.findValue(e) != null && !data.get(e).isNull()) {
+      if (data.isObject() && data.findValue(e) != null && !data.get(e).isNull()) {
+        ObjectNode dataObject = (ObjectNode) data;
         JsonNode value = data.findValue(e);
         if (value.isArray()) {
           ArrayNode arrayNode = (ArrayNode) value;
-          ArrayNode newArrayNode = data.putArray(e);
+          ArrayNode newArrayNode = dataObject.putArray(e);
           arrayNode.forEach(jsonNode -> newArrayNode.add(getFormattedBigQueryDateTime(jsonNode.asText())));
         } else if (value.isTextual()) {
-          data.put(e, getFormattedBigQueryDateTime(data.findValue(e).asText()));
+          dataObject.put(e, getFormattedBigQueryDateTime(value.asText()));
         } else {
           throw new RuntimeException("Unexpected transformation case");
         }

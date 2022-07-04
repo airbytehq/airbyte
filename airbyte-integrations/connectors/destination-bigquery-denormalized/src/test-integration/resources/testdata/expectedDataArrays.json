@@ -5,7 +5,10 @@
   "simple_string": "simple string",
   "array_1": [
     {
-      "big_query_array": [1]
+      "big_query_array": [1, 2]
+    },
+    {
+      "big_query_array": [2, 3]
     }
   ],
   "array_4": [
@@ -26,6 +29,20 @@
               "big_query_array": [5]
             }
           ]
+        }
+      ]
+    }
+  ],
+  "array_6": [
+    {
+      "big_query_array": ["2021-10-11T06:36:53", "2020-10-10T01:00:00"]
+    }
+  ],
+  "array_7": [
+    {
+      "big_query_array": [
+        {
+          "big_query_array": ["2021-10-11T06:36:53", "2020-10-10T01:00:00"]
         }
       ]
     }
