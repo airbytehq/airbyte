@@ -225,7 +225,7 @@ font-style: italic;
   <li><a href="#deleteConnection"><code><span class="http-method">post</span> /v1/connections/delete</code></a></li>
   <li><a href="#getConnection"><code><span class="http-method">post</span> /v1/connections/get</code></a></li>
   <li><a href="#getState"><code><span class="http-method">post</span> /v1/state/get</code></a></li>
-  <li><a href="#getStateType"><code><span class="http-method">post</span> /v1/state/type/get</code></a></li>
+  <li><a href="#getStateType"><code><span class="http-method">post</span> /v1/web_backend/state/get_type</code></a></li>
   <li><a href="#listAllConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/connections/list_all</code></a></li>
   <li><a href="#listConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/connections/list</code></a></li>
   <li><a href="#resetConnection"><code><span class="http-method">post</span> /v1/connections/reset</code></a></li>
@@ -729,8 +729,8 @@ font-style: italic;
   <div class="method"><a name="getStateType"/>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/state/type/get</code></pre></div>
-    <div class="method-summary">Fetch the current type for a connection. (<span class="nickname">getStateType</span>)</div>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/state/get_type</code></pre></div>
+    <div class="method-summary">Fetch the current state type for a connection. (<span class="nickname">getStateType</span>)</div>
     <div class="method-notes"></div>
 
 
@@ -8017,70 +8017,42 @@ font-style: italic;
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "catalogDiff" : {
     "transforms" : [ {
-      "removeStream" : {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
       },
       "transformType" : "add_stream",
-      "addStream" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
       "updateStream" : [ {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       }, {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       } ]
     }, {
-      "removeStream" : {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
       },
       "transformType" : "add_stream",
-      "addStream" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
       "updateStream" : [ {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       }, {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       } ]
     } ]
   },
@@ -8244,70 +8216,42 @@ font-style: italic;
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "catalogDiff" : {
     "transforms" : [ {
-      "removeStream" : {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
       },
       "transformType" : "add_stream",
-      "addStream" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
       "updateStream" : [ {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       }, {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       } ]
     }, {
-      "removeStream" : {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
       },
       "transformType" : "add_stream",
-      "addStream" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
       "updateStream" : [ {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       }, {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       } ]
     } ]
   },
@@ -8535,70 +8479,42 @@ font-style: italic;
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "catalogDiff" : {
       "transforms" : [ {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       }, {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       } ]
     },
@@ -8709,70 +8625,42 @@ font-style: italic;
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "catalogDiff" : {
       "transforms" : [ {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       }, {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       } ]
     },
@@ -8941,70 +8829,42 @@ font-style: italic;
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "catalogDiff" : {
       "transforms" : [ {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       }, {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       } ]
     },
@@ -9115,70 +8975,42 @@ font-style: italic;
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "catalogDiff" : {
       "transforms" : [ {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       }, {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       } ]
     },
@@ -9347,70 +9179,42 @@ font-style: italic;
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "catalogDiff" : {
       "transforms" : [ {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       }, {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       } ]
     },
@@ -9521,70 +9325,42 @@ font-style: italic;
     "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "catalogDiff" : {
       "transforms" : [ {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       }, {
-        "removeStream" : {
+        "streamDescriptor" : {
           "name" : "name",
           "namespace" : "namespace"
         },
         "transformType" : "add_stream",
-        "addStream" : {
-          "name" : "name",
-          "namespace" : "namespace"
-        },
         "updateStream" : [ {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         }, {
-          "updateFieldSchema" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
-          "addField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          },
+          "updateFieldSchema" : { },
+          "fieldName" : [ "fieldName", "fieldName" ],
+          "addField" : { },
           "transformType" : "add_field",
-          "removeField" : {
-            "fieldName" : [ "fieldName", "fieldName" ]
-          }
+          "removeField" : { }
         } ]
       } ]
     },
@@ -9749,70 +9525,42 @@ font-style: italic;
   "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
   "catalogDiff" : {
     "transforms" : [ {
-      "removeStream" : {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
       },
       "transformType" : "add_stream",
-      "addStream" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
       "updateStream" : [ {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       }, {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       } ]
     }, {
-      "removeStream" : {
+      "streamDescriptor" : {
         "name" : "name",
         "namespace" : "namespace"
       },
       "transformType" : "add_stream",
-      "addStream" : {
-        "name" : "name",
-        "namespace" : "namespace"
-      },
       "updateStream" : [ {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       }, {
-        "updateFieldSchema" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
-        "addField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        },
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
         "transformType" : "add_field",
-        "removeField" : {
-          "fieldName" : [ "fieldName", "fieldName" ]
-        }
+        "removeField" : { }
       } ]
     } ]
   },
@@ -10583,7 +10331,8 @@ font-style: italic;
     <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
-    <li><a href="#FieldNameAndSchema"><code>FieldNameAndSchema</code> - </a></li>
+    <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
+    <li><a href="#FieldRemove"><code>FieldRemove</code> - </a></li>
     <li><a href="#FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a></li>
     <li><a href="#FieldTransform"><code>FieldTransform</code> - </a></li>
     <li><a href="#GlobalState"><code>GlobalState</code> - </a></li>
@@ -11232,19 +10981,24 @@ font-style: italic;
     </div>  <!-- field-items -->
   </div>
   <div class="model">
-    <h3><a name="FieldNameAndSchema"><code>FieldNameAndSchema</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <h3><a name="FieldAdd"><code>FieldAdd</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
-<div class="param">fieldSchema </div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">FieldSchema</a></span>  </div>
+      <div class="param">schema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">FieldSchema</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="FieldRemove"><code>FieldRemove</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">schema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">FieldSchema</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="FieldSchemaUpdate"><code>FieldSchemaUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
-      <div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
-<div class="param">oldSchema </div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">FieldSchema</a></span>  </div>
+      <div class="param">oldSchema </div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">FieldSchema</a></span>  </div>
 <div class="param">newSchema </div><div class="param-desc"><span class="param-type"><a href="#FieldSchema">FieldSchema</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -11255,8 +11009,9 @@ font-style: italic;
       <div class="param">transformType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">add_field</div><div class="param-enum">remove_field</div><div class="param-enum">update_field_schema</div>
-<div class="param">addField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldNameAndSchema">FieldNameAndSchema</a></span>  </div>
-<div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldNameAndSchema">FieldNameAndSchema</a></span>  </div>
+<div class="param">fieldName </div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span> A field name is a list of strings that form the path to the field. </div>
+<div class="param">addField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldAdd">FieldAdd</a></span>  </div>
+<div class="param">removeField (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldRemove">FieldRemove</a></span>  </div>
 <div class="param">updateFieldSchema (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldSchemaUpdate">FieldSchemaUpdate</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
@@ -11867,8 +11622,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
       <div class="param">transformType </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
         <div class="param-enum-header">Enum:</div>
         <div class="param-enum">add_stream</div><div class="param-enum">remove_stream</div><div class="param-enum">update_stream</div>
-<div class="param">addStream (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
-<div class="param">removeStream (optional)</div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
+<div class="param">streamDescriptor </div><div class="param-desc"><span class="param-type"><a href="#StreamDescriptor">StreamDescriptor</a></span>  </div>
 <div class="param">updateStream (optional)</div><div class="param-desc"><span class="param-type"><a href="#FieldTransform">array[FieldTransform]</a></span> list of field transformations. order does not matter. </div>
     </div>  <!-- field-items -->
   </div>

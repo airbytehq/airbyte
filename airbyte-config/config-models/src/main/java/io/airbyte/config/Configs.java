@@ -466,6 +466,17 @@ public interface Configs {
    */
   TrackingStrategy getTrackingStrategy();
 
+  /**
+   * Define whether to send job failure events to Sentry or log-only. Airbyte internal use.
+   */
+  JobErrorReportingStrategy getJobErrorReportingStrategy();
+
+  /**
+   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry.
+   * Used with SENTRY error reporting strategy. Airbyte internal use.
+   */
+  String getJobErrorReportingSentryDSN();
+
   // APPLICATIONS
   // Worker
   /**
@@ -575,6 +586,11 @@ public interface Configs {
 
   enum TrackingStrategy {
     SEGMENT,
+    LOGGING
+  }
+
+  enum JobErrorReportingStrategy {
+    SENTRY,
     LOGGING
   }
 
