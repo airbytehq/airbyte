@@ -254,15 +254,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     return source;
   }
 
-  protected Source getCustomSource(final List<ConfiguredAirbyteStream> streamsToSnapshot) {
-    return new PostgresSource() {
-      @Override
-      protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
-        return streamsToSnapshot;
-      }
-    };
-  }
-
   @Override
   protected JsonNode getConfig() {
     return config;
@@ -451,16 +442,17 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
 
-    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getCustomSource(newTables.getStreams())
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
         .read(getConfig(), updatedCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
     final Map<String, Set<AirbyteRecordMessage>> recordsStreamWise = extractRecordMessagesStreamWise(dataFromSecondBatch);
-    assertEquals(1, stateAfterSecondBatch.size());
+    assertEquals(2, stateAfterSecondBatch.size());
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateAfterSecondBatch.get(0).getType());
+    assertEquals(stateAfterFirstBatch.get(0).getGlobal().getSharedState(), stateAfterSecondBatch.get(0).getGlobal().getSharedState());
     assertNotNull(stateAfterSecondBatch.get(0).getData());
-    assertExpectedStateMessages(stateAfterSecondBatch);
 
     assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME));
     assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME + "_random"));
