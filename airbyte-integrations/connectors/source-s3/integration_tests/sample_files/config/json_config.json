@@ -1,0 +1,14 @@
+{
+  "dataset": "test",
+  "provider": {
+    "storage": "S3",
+    "bucket": "airbyte-integration-test",
+    "aws_access_key_id": "sfsdfsdf",
+    "aws_secret_access_key": "sdfsfdsfsdf",
+    "path_prefix": "jsonfile/",
+    "endpoint": "https://s3.ap-southeast-2.amazonaws.com"
+  },
+  "format": { "filetype": "json","convert_dates": true },
+  "path_pattern": "**",
+  "schema": "{}"
+}
