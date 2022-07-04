@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.generated.DestinationCloneConfiguration;
+import io.airbyte.api.model.generated.DestinationCloneRequestBody;
 import io.airbyte.api.model.generated.DestinationCreate;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -269,7 +271,7 @@ class DestinationHandlerTest {
   }
 
   @Test
-  void testCloneDestination() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testCloneDestinationWithConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
     final DestinationConnection clonedConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
     final DestinationRead expectedDestinationRead = new DestinationRead()
         .name(clonedConnection.getName())
@@ -286,7 +288,9 @@ class DestinationHandlerTest {
         .connectionConfiguration(destinationConnection.getConfiguration())
         .destinationName(standardDestinationDefinition.getName());
 
-    final DestinationIdRequestBody destinationIdRequestBody = new DestinationIdRequestBody().destinationId(destinationRead.getDestinationId());
+    final DestinationCloneConfiguration destinationCloneConfiguration = new DestinationCloneConfiguration().name("Copy Name");
+    final DestinationCloneRequestBody destinationCloneRequestBody = new DestinationCloneRequestBody()
+        .destinationCloneId(destinationRead.getDestinationId()).destinationConfiguration(destinationCloneConfiguration);
 
     when(uuidGenerator.get()).thenReturn(clonedConnection.getDestinationId());
     when(secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
@@ -300,7 +304,45 @@ class DestinationHandlerTest {
         destinationDefinitionSpecificationRead.getConnectionSpecification()))
             .thenReturn(destinationConnection.getConfiguration());
 
-    final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationIdRequestBody);
+    final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationCloneRequestBody);
+
+    assertEquals(expectedDestinationRead, actualDestinationRead);
+  }
+
+  @Test
+  void testCloneDestinationWithoutConfiguration() throws JsonValidationException, ConfigNotFoundException, IOException {
+    final DestinationConnection clonedConnection = DestinationHelpers.generateDestination(standardDestinationDefinition.getDestinationDefinitionId());
+    final DestinationRead expectedDestinationRead = new DestinationRead()
+        .name(clonedConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(clonedConnection.getWorkspaceId())
+        .destinationId(clonedConnection.getDestinationId())
+        .connectionConfiguration(clonedConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
+    final DestinationRead destinationRead = new DestinationRead()
+        .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
+        .workspaceId(destinationConnection.getWorkspaceId())
+        .destinationId(destinationConnection.getDestinationId())
+        .connectionConfiguration(destinationConnection.getConfiguration())
+        .destinationName(standardDestinationDefinition.getName());
+
+    final DestinationCloneRequestBody destinationCloneRequestBody =
+        new DestinationCloneRequestBody().destinationCloneId(destinationRead.getDestinationId());
+
+    when(uuidGenerator.get()).thenReturn(clonedConnection.getDestinationId());
+    when(secretsRepositoryReader.getDestinationConnectionWithSecrets(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
+    when(configRepository.getDestinationConnection(clonedConnection.getDestinationId())).thenReturn(clonedConnection);
+
+    when(configRepository.getStandardDestinationDefinition(destinationDefinitionSpecificationRead.getDestinationDefinitionId()))
+        .thenReturn(standardDestinationDefinition);
+    when(configRepository.getDestinationDefinitionFromDestination(destinationConnection.getDestinationId()))
+        .thenReturn(standardDestinationDefinition);
+    when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+        destinationDefinitionSpecificationRead.getConnectionSpecification()))
+            .thenReturn(destinationConnection.getConfiguration());
+
+    final DestinationRead actualDestinationRead = destinationHandler.cloneDestination(destinationCloneRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
   }
