@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional, Union
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -23,21 +23,6 @@ class JsonFormat(BaseModel):
         description='The expected JSON string format. Details can be found in the <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_json.html">Pandas documentation</a>',
         examples=["split", "records", "index", "columns", "values", "table"],
     )
-
-    convert_dates: Union[bool, List[str]] = Field(
-        default=True, description="A list of columns to parse for dates; If True, then try to parse date-like columns, default is True."
-    )
-
-    keep_default_dates: bool = Field(
-        default=True,
-        description="""If parsing dates (convert_dates is not False), then try to parse the default datelike columns. A column label is datelike if one of these conditions is verified:
-            * it ends with '_at',
-            * it ends with '_time',
-            * it begins with 'timestamp',
-            * it is 'modified',
-            * it is 'date'""",
-    )
-
     lines: bool = Field(default=True, description="Read the file as a json object per line.")
 
     chunk_size: int = Field(

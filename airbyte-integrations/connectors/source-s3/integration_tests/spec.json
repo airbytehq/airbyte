@@ -178,21 +178,6 @@
                 "examples":["split", "records", "index", "columns", "values", "table"],
                 "type": "string"
               },
-              "convert_dates": {
-                "title": "Convert Dates",
-                "description": "A list of columns to parse for dates; If True, then try to parse date-like columns, default is True.",
-                "default": true,
-                "anyOf":[
-                  { "type": "boolean" },
-                  { "type": "array", "items": { "type": "string" } }
-                ]
-              },
-              "keep_default_dates": {
-                "title": "Keep Default Dates",
-                "description": "If parsing dates (convert_dates is not False), then try to parse the default datelike columns. A column label is datelike if one of these conditions is verified:\n            * it ends with '_at',\n            * it ends with '_time',\n            * it begins with 'timestamp',\n            * it is 'modified',\n            * it is 'date'",
-                "default": true,
-                "type": "boolean"
-              },
               "lines": {
                 "title": "Lines",
                 "description": "Read the file as a json object per line.",
