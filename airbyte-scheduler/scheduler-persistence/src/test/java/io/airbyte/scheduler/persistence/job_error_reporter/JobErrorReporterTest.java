@@ -153,6 +153,10 @@ public class JobErrorReporterTest {
             .withSourceDefinitionId(SOURCE_DEFINITION_ID)
             .withName(SOURCE_DEFINITION_NAME));
 
+    final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
+    Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
+    Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
+
     Mockito.doThrow(new RuntimeException("some exception"))
         .when(jobErrorReportingClient)
         .reportJobFailureReason(Mockito.any(), Mockito.eq(sourceFailureReason), Mockito.any(), Mockito.any());
