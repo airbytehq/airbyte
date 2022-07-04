@@ -194,7 +194,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
   @Test
   void testCheckWithKeyPairAuth() throws Exception {
-    final JsonNode credentialsJsonString = Jsons.deserialize(Files.readString(Paths.get("secrets/config_key_pair.json")));
+    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
     final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
@@ -211,7 +211,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/config_key_pair.json")));
+    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     final String defaultSchema = getDefaultSchema(config);
