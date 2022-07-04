@@ -150,6 +150,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
       final StreamDescriptor streamDescriptor = streamsToReset.poll();
       return Optional.of(getNullStreamStateMessage(streamDescriptor));
     } else {
+      hasEmittedState.compareAndSet(false, true);
       return Optional.empty();
     }
   }

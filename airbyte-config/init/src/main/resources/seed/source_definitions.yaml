@@ -303,7 +303,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.39
+  dockerImageTag: 0.2.40
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -331,7 +331,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Google Analytics Data API
   sourceDefinitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
   dockerRepository: airbyte/source-google-analytics-data-api
@@ -426,7 +426,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/instagram
   icon: instagram.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
@@ -660,7 +660,7 @@
 - sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
   name: Outreach
   dockerRepository: airbyte/source-outreach
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/outreach
   icon: outreach.svg
   sourceType: api
@@ -965,7 +965,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: generally_available
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello

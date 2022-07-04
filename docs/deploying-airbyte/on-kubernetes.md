@@ -201,7 +201,7 @@ Example `kustomization.yaml` file:
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-bases:
+resources:
   - https://github.com/airbytehq/airbyte.git/kube/overlays/stable?ref=master
 ```
 
