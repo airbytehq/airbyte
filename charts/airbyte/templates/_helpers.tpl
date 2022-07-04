@@ -51,6 +51,18 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Create the image pull secrets
+*/}}
+{{- define "common.imagePullSecrets" -}}
+{{- if .Values.imagePullSecrets }}
+{{- printf "imagePullSecrets:" }}
+  {{- range .Values.imagePullSecrets }}
+    {{- printf "- name: %s" . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "airbyte.serviceAccountName" -}}
