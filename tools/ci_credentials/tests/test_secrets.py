@@ -146,8 +146,8 @@ def test_read(connector_name, gsm_secrets, expected_secrets):
               "airbyte-integrations/connectors/source-test2/secrets/auth.json"]),
 
             ("base-normalization", {"test.json": "test_value", "auth.json": "test_auth"},
-             ["airbyte-integrations/resources/base-normalization/secrets/test.json",
-              "airbyte-integrations/resources/base-normalization/secrets/auth.json"]),
+             ["airbyte-integrations/bases/base-normalization/secrets/test.json",
+              "airbyte-integrations/bases/base-normalization/secrets/auth.json"]),
     ),
     ids=["single", "multi", "base-normalization"],
 )

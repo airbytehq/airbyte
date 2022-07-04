@@ -223,12 +223,12 @@ class SecretsLoader:
         return {k: v[1] for k, v in secrets.items()}
 
     def write_to_storage(self, secrets: Mapping[Tuple[str, str], str]) -> int:
-        """Tries to save target secrets to the airbyte-integrations/connectors|resources/{connector_name}/secrets folder"""
+        """Tries to save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder"""
         if not secrets:
             return 0
         for (connector_name, filename), secret_value in secrets.items():
             if connector_name == "base-normalization":
-                secrets_dir = f"airbyte-integrations/resources/{connector_name}/secrets"
+                secrets_dir = f"airbyte-integrations/bases/{connector_name}/secrets"
             else:
                 secrets_dir = f"airbyte-integrations/connectors/{connector_name}/secrets"
 
