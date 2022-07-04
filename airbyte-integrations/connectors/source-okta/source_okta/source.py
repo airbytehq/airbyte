@@ -9,6 +9,7 @@ from urllib import parse
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -111,6 +112,19 @@ class Groups(IncrementalOktaStream):
     def path(self, **kwargs) -> str:
         return "groups"
 
+class GroupMembers(IncrementalOktaStream):
+    cursor_field = "lastUpdated"
+    primary_key = "id"
+
+    def stream_slices(self, **kwargs):
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"group_id": group["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        group_id = stream_slice["group_id"]
+        return f"groups/{group_id}/users"
+
 
 class Logs(IncrementalOktaStream):
 
@@ -186,4 +200,5 @@ class SourceOkta(AbstractSource):
             Groups(**initialization_params),
             Logs(**initialization_params),
             Users(**initialization_params),
+            GroupMembers(**initialization_params)
         ]
