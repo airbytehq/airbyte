@@ -14,7 +14,7 @@ from .stream import IncrementalFileStreamS3
 
 class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
     class Config:
-        title = "S3 Source Spec"
+        title = "Amazon S3 Source Spec"
 
     class S3Provider(BaseModel):
         class Config:
