@@ -83,8 +83,7 @@ The Google Ads source connector supports the following[ sync modes](https://docs
 
 ## Supported Streams
 
-This source is capable of syncing the following tables described below and has the feature of sync custom queries using GAGL.
-
+This source is capable of syncing the tables described below and can sync custom queries using GAGL.
 ### Main Tables
 
 - [accounts](https://developers.google.com/google-ads/api/fields/v9/customer)
