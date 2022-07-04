@@ -10,7 +10,6 @@
     },
     "attributes": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "automationPercentage": {
           "type": ["null", "number"]
@@ -143,6 +142,5 @@
         }
       }
     }
-  },
-  "additionalProperties": true
+  }
 }

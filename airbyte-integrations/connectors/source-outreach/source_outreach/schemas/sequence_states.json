@@ -10,7 +10,6 @@
     },
     "attributes": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "activeAt": {
           "type": ["null", "string"],
@@ -80,6 +79,5 @@
         }
       }
     }
-  },
-  "additionalProperties": true
+  }
 }

@@ -10,7 +10,6 @@
     },
     "attributes": {
       "type": ["null", "object"],
-      "additionalProperties": true,
       "properties": {
         "addedAt": {
           "type": ["null", "string"],
@@ -741,6 +740,5 @@
         }
       }
     }
-  },
-  "additionalProperties": true
+  }
 }
