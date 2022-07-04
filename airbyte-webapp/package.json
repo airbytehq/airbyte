@@ -6,9 +6,9 @@
     "node": ">=16.0.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "BUILD_PATH='./build/app' react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "BUILD_PATH='./build/app' craco build",
+    "test": "craco test",
     "test:coverage": "npm test -- --coverage --watchAll=false",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "storybook": "start-storybook -p 9009 --quiet",
@@ -138,8 +138,6 @@
     ]
   },
   "jest": {
-    "transformIgnorePatterns": [
-      "node_moduels/(?!rehype-slug/.*)"
-    ]
+    "transformIgnorePatterns": []
   }
 }
