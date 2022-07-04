@@ -167,8 +167,12 @@ abstract class AbstractPostgresSourceSSLCertificatesTest {
   public abstract ImmutableMap getSSLCertificateConfig();
 
   @AfterAll
-  static void cleanUp() throws Exception {
+  static void cleanUp() {
     PSQL_DB.close();
+  }
+
+  @AfterEach
+  void removeCertificates() throws Exception {
     final Runtime run = Runtime.getRuntime();
     runProcess("rm ca.crt", run);
     runProcess("rm client.pk8", run);
