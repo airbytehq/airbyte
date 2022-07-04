@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -17,6 +18,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -25,6 +27,13 @@ import org.junit.jupiter.api.Test;
 class SnowflakeDestinationIntegrationTest {
 
   private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
+
+  @Test
+  void testCheckWithKeyPairAuth() throws Exception {
+    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
+    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+  }
 
   @Test
   void testCheckFailsWithInvalidPermissions() throws Exception {
