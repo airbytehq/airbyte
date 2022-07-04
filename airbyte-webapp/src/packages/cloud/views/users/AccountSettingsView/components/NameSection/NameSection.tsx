@@ -5,17 +5,17 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { LoadingButton } from "components";
 import { LabeledInput } from "components/LabeledInput";
 
+import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { RowFieldItem } from "packages/cloud/views/auth/components/FormComponents";
+import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
-import { useName } from "./hooks";
-import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
-import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
+import { useChangeName } from "./hooks";
 
-const NameSection: React.FC = () => {
+export const NameSection: React.FC = () => {
   const { formatMessage } = useIntl();
   const user = useCurrentUser();
-  const { changeName, successMessage, errorMessage } = useName();
+  const { changeName, successMessage, errorMessage } = useChangeName();
 
   return (
     <SettingsCard title={<FormattedMessage id="settings.account" />}>
@@ -47,7 +47,7 @@ const NameSection: React.FC = () => {
               <LoadingButton type="submit" isLoading={isSubmitting}>
                 <FormattedMessage id="settings.accountSettings.updateName" />
               </LoadingButton>
-              <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} isLoading={isSubmitting} />
+              <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} />
             </Form>
           )}
         </Formik>
@@ -55,5 +55,3 @@ const NameSection: React.FC = () => {
     </SettingsCard>
   );
 };
-
-export default NameSection;

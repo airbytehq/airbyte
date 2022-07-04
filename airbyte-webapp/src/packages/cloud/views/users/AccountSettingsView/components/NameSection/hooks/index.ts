@@ -1,1 +1,1 @@
-export { default as useName } from "./useName";
+export { useChangeName } from "./useName";

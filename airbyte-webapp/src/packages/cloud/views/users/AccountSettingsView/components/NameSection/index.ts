@@ -1,1 +1,1 @@
-export { default as NameSection } from "./NameSection";
+export { NameSection } from "./NameSection";

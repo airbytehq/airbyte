@@ -115,9 +115,12 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         loggedOut();
       },
       async updateName(name: string): Promise<void> {
-        await userService.changeName(state.currentUser?.authUserId || "", state.currentUser?.userId || "", name);
+        if (!state.currentUser) {
+          return;
+        }
+        await userService.changeName(state.currentUser.authUserId, state.currentUser.userId, name);
+        await authService.updateProfile(name);
         updateUserName({ value: name });
-        return authService.updateProfile(name);
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);

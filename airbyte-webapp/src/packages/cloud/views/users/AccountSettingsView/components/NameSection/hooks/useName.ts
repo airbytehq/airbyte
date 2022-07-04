@@ -4,7 +4,7 @@ import { useIntl } from "react-intl";
 
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
-import { FormValues } from "../typings";
+import { FormValues } from "../types";
 
 type UseNameHook = () => {
   successMessage: string;
@@ -12,7 +12,7 @@ type UseNameHook = () => {
   changeName: (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => void;
 };
 
-const useName: UseNameHook = () => {
+export const useChangeName: UseNameHook = () => {
   const { updateName } = useAuthService();
   const { formatMessage } = useIntl();
   const [successMessage, setSuccessMessage] = useState<string>("");
@@ -48,5 +48,3 @@ const useName: UseNameHook = () => {
 
   return { successMessage, errorMessage, changeName };
 };
-
-export default useName;
