@@ -4,12 +4,12 @@ kind: Kustomization
 namespace: default
 
 resources:
-  - ../resources
+  - ../resources/kustomization.yaml
 
 images:
   - name: airbyte/db
     newTag: 0.39.32-alpha
-  - name: airbyte/bootloader
+  - name: airbyte/bootloadgser
     newTag: 0.39.32-alpha
   - name: airbyte/server
     newTag: 0.39.32-alpha
