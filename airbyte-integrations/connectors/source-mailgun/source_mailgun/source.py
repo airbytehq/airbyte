@@ -168,7 +168,8 @@ class Events(IncrementalMailgunStream):
         items = response.json()["items"]
         for item in items:
             #  converting floating epoch time to datetime string.
-            item["utc_timestamp"] =  str(datetime.datetime.fromtimestamp(item["timestamp"], datetime.timezone.utc))
+            time = datetime.datetime.fromtimestamp(item["timestamp"], datetime.timezone.utc)
+            item["utc_timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         return items
 
 class SourceMailgun(AbstractSource):
