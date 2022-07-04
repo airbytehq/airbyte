@@ -23,10 +23,14 @@ import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -187,6 +191,36 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
 
     assertEquals(Status.SUCCEEDED, runCheckWithCatchedException(deprecatedStyleConfig));
   }
+
+  @Test
+  void testCheckWithKeyPairAuth() throws Exception {
+    final JsonNode credentialsJsonString = Jsons.deserialize(Files.readString(Paths.get("secrets/config_key_pair.json")));
+    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+  }
+
+  @ParameterizedTest
+  @ArgumentsSource(DataArgumentsProvider.class)
+  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
+    if (!normalizationFromSpec()) {
+      return;
+    }
+
+    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+
+    final JsonNode config = Jsons.deserialize(Files.readString(Paths.get("secrets/config_key_pair.json")));
+    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
+    final String defaultSchema = getDefaultSchema(config);
+    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+    assertSameMessages(messages, actualMessages, true);
+  }
+
+
+  //normalization test
 
   /**
    * This test is disabled because it is very slow, and should only be run manually for now.

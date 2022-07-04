@@ -126,7 +126,7 @@
             "title": "Username and Password",
             "type": "object",
             "required": ["password"],
-            "order": 1,
+            "order": 2,
             "properties": {
               "password": {
                 "description": "The password associated with the username.",
