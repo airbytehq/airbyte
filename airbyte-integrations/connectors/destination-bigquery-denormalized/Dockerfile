@@ -17,5 +17,5 @@ ENV ENABLE_SENTRY true
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=1.1.9
+LABEL io.airbyte.version=1.1.12
 LABEL io.airbyte.name=airbyte/destination-bigquery-denormalized

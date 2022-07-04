@@ -19,6 +19,7 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.DatabaseConfigPersistence;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -41,6 +42,9 @@ import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClient;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReportingClientFactory;
 import io.airbyte.scheduler.persistence.job_factory.DefaultSyncJobFactory;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
@@ -67,6 +71,7 @@ import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl
 import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivityImpl;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivityImpl;
+import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
@@ -134,7 +139,11 @@ public class WorkerApp {
   private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final JobNotifier jobNotifier;
   private final JobTracker jobTracker;
+  private final JobErrorReporter jobErrorReporter;
   private final StreamResetPersistence streamResetPersistence;
+  private final FeatureFlags featureFlags;
+  private final JobCreator jobCreator;
+  private final StatePersistence statePersistence;
 
   public void start() {
     final Map<String, String> mdc = MDC.getCopyOfContextMap();
@@ -174,7 +183,6 @@ public class WorkerApp {
   }
 
   private void registerConnectionManager(final WorkerFactory factory) {
-    final JobCreator jobCreator = new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements());
     final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
     final Worker connectionUpdaterWorker =
@@ -193,7 +201,8 @@ public class WorkerApp {
             jobTracker,
             configRepository,
             jobCreator,
-            streamResetPersistence),
+            streamResetPersistence,
+            jobErrorReporter),
         new ConfigFetchActivityImpl(configRepository, jobPersistence, configs, () -> Instant.now().getEpochSecond()),
         new ConnectionDeletionActivityImpl(connectionHelper),
         new CheckConnectionActivityImpl(
@@ -205,7 +214,8 @@ public class WorkerApp {
             logConfigs,
             jobPersistence,
             airbyteVersion),
-        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier));
+        new AutoDisableConnectionActivityImpl(configRepository, jobPersistence, featureFlags, configs, jobNotifier),
+        new StreamResetActivityImpl(streamResetPersistence, jobPersistence));
   }
 
   private void registerSync(final WorkerFactory factory) {
@@ -219,7 +229,7 @@ public class WorkerApp {
         defaultWorkerConfigs,
         defaultProcessFactory);
 
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(workspaceRoot, configRepository);
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
@@ -266,7 +276,8 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        featureFlags.useStreamCapableState());
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,
@@ -395,6 +406,12 @@ public class WorkerApp {
     final Database jobDatabase = new Database(jobsDslContext);
 
     final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    final StatePersistence statePersistence = new StatePersistence(configDatabase);
+    final DefaultJobCreator jobCreator = new DefaultJobCreator(
+        jobPersistence,
+        defaultWorkerConfigs.getResourceRequirements(),
+        statePersistence);
+
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
         new Deployment(configs.getDeploymentMode(), jobPersistence.getDeployment().orElseThrow(), configs.getWorkerEnvironment()),
@@ -404,13 +421,15 @@ public class WorkerApp {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final SyncJobFactory jobFactory = new DefaultSyncJobFactory(
         configs.connectorSpecificResourceDefaultsEnabled(),
-        new DefaultJobCreator(jobPersistence, configRepository, defaultWorkerConfigs.getResourceRequirements()),
+        jobCreator,
         configRepository,
         new OAuthConfigSupplier(configRepository, trackingClient));
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
     final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
-    final TemporalClient temporalClient = new TemporalClient(workflowClient, configs.getWorkspaceRoot(), temporalService);
+    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+
+    final TemporalClient temporalClient = new TemporalClient(workflowClient, configs.getWorkspaceRoot(), temporalService, streamResetPersistence);
     TemporalUtils.configureTemporalNamespace(temporalService);
 
     final TemporalWorkerRunFactory temporalWorkerRunFactory = new TemporalWorkerRunFactory(
@@ -435,7 +454,9 @@ public class WorkerApp {
 
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
+    final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
+    final JobErrorReporter jobErrorReporter =
+        new JobErrorReporter(configRepository, configs.getDeploymentMode(), configs.getAirbyteVersionOrWarning(), jobErrorReportingClient);
 
     new WorkerApp(
         workspaceRoot,
@@ -464,7 +485,11 @@ public class WorkerApp {
         containerOrchestratorConfig,
         jobNotifier,
         jobTracker,
-        streamResetPersistence).start();
+        jobErrorReporter,
+        streamResetPersistence,
+        featureFlags,
+        jobCreator,
+        statePersistence).start();
   }
 
   public static void main(final String[] args) {

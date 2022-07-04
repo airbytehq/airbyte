@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
 import io.airbyte.integrations.destination.s3.credential.S3CredentialType;
-import io.airbyte.integrations.destination.s3.credential.S3InstanceProfileCredentialConfig;
+import io.airbyte.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,7 +88,7 @@ public class S3DestinationConfig {
     if (config.has("access_key_id")) {
       credentialConfig = new S3AccessKeyCredentialConfig(config.get("access_key_id").asText(), config.get("secret_access_key").asText());
     } else {
-      credentialConfig = new S3InstanceProfileCredentialConfig();
+      credentialConfig = new S3AWSDefaultProfileCredentialConfig();
     }
     builder = builder.withCredentialConfig(credentialConfig);
 
@@ -154,7 +154,7 @@ public class S3DestinationConfig {
     final AWSCredentialsProvider credentialsProvider = credentialConfig.getS3CredentialsProvider();
     final S3CredentialType credentialType = credentialConfig.getCredentialType();
 
-    if (credentialType == S3CredentialType.INSTANCE_PROFILE) {
+    if (credentialType == S3CredentialType.DEFAULT_PROFILE) {
       return AmazonS3ClientBuilder.standard()
           .withRegion(bucketRegion)
           .withCredentials(credentialsProvider)

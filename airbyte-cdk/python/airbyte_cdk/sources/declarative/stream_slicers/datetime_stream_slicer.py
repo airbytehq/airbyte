@@ -36,6 +36,12 @@ class DatetimeStreamSlicer(StreamSlicer):
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
+        if isinstance(start_time, str):
+            start_time = InterpolatedString(start_time)
+        if isinstance(end_time, str):
+            end_time = InterpolatedString(end_time)
+        if isinstance(cursor_value, str):
+            cursor_value = InterpolatedString(cursor_value)
         self._datetime_format = datetime_format
         self._start_time = self.parse_date(start_time.eval(config))
         self._end_time = self.parse_date(end_time.eval(config))
@@ -72,6 +78,8 @@ class DatetimeStreamSlicer(StreamSlicer):
                 return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
             else:
                 return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
+        elif isinstance(date, int):
+            return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
         return date
 
     def is_start_date_valid(self, start_date: datetime) -> bool:

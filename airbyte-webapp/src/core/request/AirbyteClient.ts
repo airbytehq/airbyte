@@ -418,15 +418,22 @@ export interface FieldSchema {
   [key: string]: any;
 }
 
+/**
+ * A field name is a list of strings that form the path to the field.
+ */
+export type FieldName = string[];
+
 export interface FieldSchemaUpdate {
-  fieldName: string[];
   oldSchema: FieldSchema;
   newSchema: FieldSchema;
 }
 
-export interface FieldNameAndSchema {
-  fieldName: string[];
-  fieldSchema: FieldSchema;
+export interface FieldRemove {
+  schema?: FieldSchema;
+}
+
+export interface FieldAdd {
+  schema?: FieldSchema;
 }
 
 export type FieldTransformTransformType = typeof FieldTransformTransformType[keyof typeof FieldTransformTransformType];
@@ -443,8 +450,9 @@ export const FieldTransformTransformType = {
  */
 export interface FieldTransform {
   transformType: FieldTransformTransformType;
-  addField?: FieldNameAndSchema;
-  removeField?: FieldNameAndSchema;
+  fieldName: FieldName;
+  addField?: FieldAdd;
+  removeField?: FieldRemove;
   updateFieldSchema?: FieldSchemaUpdate;
 }
 
@@ -457,6 +465,13 @@ export const StreamTransformTransformType = {
   remove_stream: "remove_stream",
   update_stream: "update_stream",
 } as const;
+
+export interface StreamTransform {
+  transformType: StreamTransformTransformType;
+  streamDescriptor: StreamDescriptor;
+  /** list of field transformations. order does not matter. */
+  updateStream?: FieldTransform[];
+}
 
 /**
  * Describes the difference between two Airbyte catalogs.
@@ -478,6 +493,16 @@ export const ConnectionStateType = {
 
 export interface StateBlob {
   [key: string]: any;
+}
+
+export interface StreamState {
+  streamDescriptor: StreamDescriptor;
+  streamState?: StateBlob;
+}
+
+export interface GlobalState {
+  shared_state?: StateBlob;
+  streamStates: StreamState[];
 }
 
 /**
@@ -542,6 +567,10 @@ export interface JobDebugInfoRead {
 export interface JobInfoRead {
   job: JobRead;
   attempts: AttemptInfoRead[];
+}
+
+export interface JobReadList {
+  jobs: JobWithAttemptsRead[];
 }
 
 export type AttemptStatus = typeof AttemptStatus[keyof typeof AttemptStatus];
@@ -635,27 +664,31 @@ export const JobStatus = {
   cancelled: "cancelled",
 } as const;
 
+export interface JobWithAttemptsRead {
+  job?: JobRead;
+  attempts?: AttemptRead[];
+}
+
+export interface JobDebugRead {
+  id: JobId;
+  configType: JobConfigType;
+  configId: string;
+  status: JobStatus;
+  airbyteVersion: string;
+  sourceDefinition: SourceDefinitionRead;
+  destinationDefinition: DestinationDefinitionRead;
+}
+
 export interface StreamDescriptor {
   name: string;
   namespace?: string;
 }
 
-export interface StreamTransform {
-  transformType: StreamTransformTransformType;
-  addStream?: StreamDescriptor;
-  removeStream?: StreamDescriptor;
-  /** list of field transformations. order does not matter. */
-  updateStream?: FieldTransform[];
-}
-
-export interface StreamState {
-  streamDescriptor: StreamDescriptor;
-  streamState?: StateBlob;
-}
-
-export interface GlobalState {
-  shared_state?: StateBlob;
-  streamStates: StreamState[];
+/**
+ * contains information about how a reset was configured. only populated if the job was a reset.
+ */
+export interface ResetConfig {
+  streamsToReset?: StreamDescriptor[];
 }
 
 export interface JobIdRequestBody {
@@ -674,15 +707,13 @@ export const JobConfigType = {
   reset_connection: "reset_connection",
 } as const;
 
-export interface JobDebugRead {
-  id: JobId;
-  configType: JobConfigType;
+export interface JobListRequestBody {
+  configTypes: JobConfigType[];
   configId: string;
-  status: JobStatus;
-  airbyteVersion: string;
-  sourceDefinition: SourceDefinitionRead;
-  destinationDefinition: DestinationDefinitionRead;
+  pagination?: Pagination;
 }
+
+export type JobId = number;
 
 export interface JobRead {
   id: JobId;
@@ -691,25 +722,8 @@ export interface JobRead {
   createdAt: number;
   updatedAt: number;
   status: JobStatus;
-  streams?: StreamDescriptor[];
+  resetConfig?: ResetConfig;
 }
-
-export interface JobWithAttemptsRead {
-  job?: JobRead;
-  attempts?: AttemptRead[];
-}
-
-export interface JobReadList {
-  jobs: JobWithAttemptsRead[];
-}
-
-export interface JobListRequestBody {
-  configTypes: JobConfigType[];
-  configId: string;
-  pagination?: Pagination;
-}
-
-export type JobId = number;
 
 export type DataType = typeof DataType[keyof typeof DataType];
 
@@ -916,6 +930,10 @@ export const ConnectionStatus = {
   deprecated: "deprecated",
 } as const;
 
+export interface ConnectionReadList {
+  connections: ConnectionRead[];
+}
+
 export interface WebBackendConnectionCreate {
   /** Optional name of the connection */
   name?: string;
@@ -959,6 +977,38 @@ export interface DbMigrationRequestBody {
 
 export type ConnectionId = string;
 
+export interface WebBackendConnectionSearch {
+  connectionId?: ConnectionId;
+  name?: string;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  sourceId?: SourceId;
+  destinationId?: DestinationId;
+  schedule?: ConnectionSchedule;
+  status?: ConnectionStatus;
+  source?: SourceSearch;
+  destination?: DestinationSearch;
+}
+
+export interface ConnectionSearch {
+  connectionId?: ConnectionId;
+  name?: string;
+  namespaceDefinition?: NamespaceDefinitionType;
+  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
+  namespaceFormat?: string;
+  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
+  prefix?: string;
+  sourceId?: SourceId;
+  destinationId?: DestinationId;
+  schedule?: ConnectionSchedule;
+  status?: ConnectionStatus;
+  source?: SourceSearch;
+  destination?: DestinationSearch;
+}
+
 export interface ConnectionRead {
   connectionId: ConnectionId;
   name: string;
@@ -975,10 +1025,6 @@ export interface ConnectionRead {
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
   sourceCatalogId?: string;
-}
-
-export interface ConnectionReadList {
-  connections: ConnectionRead[];
 }
 
 export interface WebBackendConnectionUpdate {
@@ -1045,6 +1091,15 @@ export interface DestinationReadList {
  */
 export type DestinationConfiguration = unknown;
 
+export interface DestinationSearch {
+  destinationDefinitionId?: DestinationDefinitionId;
+  destinationId?: DestinationId;
+  workspaceId?: WorkspaceId;
+  connectionConfiguration?: DestinationConfiguration;
+  name?: string;
+  destinationName?: string;
+}
+
 export interface DestinationUpdate {
   destinationId: DestinationId;
   connectionConfiguration: DestinationConfiguration;
@@ -1064,47 +1119,6 @@ export interface DestinationCoreConfig {
 }
 
 export type DestinationId = string;
-
-export interface DestinationSearch {
-  destinationDefinitionId?: DestinationDefinitionId;
-  destinationId?: DestinationId;
-  workspaceId?: WorkspaceId;
-  connectionConfiguration?: DestinationConfiguration;
-  name?: string;
-  destinationName?: string;
-}
-
-export interface WebBackendConnectionSearch {
-  connectionId?: ConnectionId;
-  name?: string;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  sourceId?: SourceId;
-  destinationId?: DestinationId;
-  schedule?: ConnectionSchedule;
-  status?: ConnectionStatus;
-  source?: SourceSearch;
-  destination?: DestinationSearch;
-}
-
-export interface ConnectionSearch {
-  connectionId?: ConnectionId;
-  name?: string;
-  namespaceDefinition?: NamespaceDefinitionType;
-  /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
-  namespaceFormat?: string;
-  /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
-  prefix?: string;
-  sourceId?: SourceId;
-  destinationId?: DestinationId;
-  schedule?: ConnectionSchedule;
-  status?: ConnectionStatus;
-  source?: SourceSearch;
-  destination?: DestinationSearch;
-}
 
 export interface DestinationRead {
   destinationDefinitionId: DestinationDefinitionId;
@@ -1136,13 +1150,14 @@ export interface DestinationDefinitionSpecificationRead {
   supportsNormalization?: boolean;
 }
 
-export interface PrivateDestinationDefinitionReadList {
-  destinationDefinitions: PrivateDestinationDefinitionRead[];
-}
-
 export interface DestinationDefinitionIdWithWorkspaceId {
   destinationDefinitionId: DestinationDefinitionId;
   workspaceId: WorkspaceId;
+}
+
+export interface CustomDestinationDefinitionUpdate {
+  workspaceId: WorkspaceId;
+  destinationDefinition: DestinationDefinitionUpdate;
 }
 
 export interface CustomDestinationDefinitionCreate {
@@ -1168,6 +1183,10 @@ export interface PrivateDestinationDefinitionRead {
   granted: boolean;
 }
 
+export interface PrivateDestinationDefinitionReadList {
+  destinationDefinitions: PrivateDestinationDefinitionRead[];
+}
+
 export interface DestinationDefinitionReadList {
   destinationDefinitions: DestinationDefinitionRead[];
 }
@@ -1176,11 +1195,6 @@ export interface DestinationDefinitionUpdate {
   destinationDefinitionId: DestinationDefinitionId;
   dockerImageTag?: string;
   resourceRequirements?: ActorDefinitionResourceRequirements;
-}
-
-export interface CustomDestinationDefinitionUpdate {
-  workspaceId: WorkspaceId;
-  destinationDefinition: DestinationDefinitionUpdate;
 }
 
 export interface DestinationDefinitionCreate {
@@ -1192,13 +1206,13 @@ export interface DestinationDefinitionCreate {
   resourceRequirements?: ActorDefinitionResourceRequirements;
 }
 
-export interface DestinationDefinitionIdRequestBody {
-  destinationDefinitionId: DestinationDefinitionId;
-}
-
 export type DestinationAuthSpecification = AuthSpecification;
 
 export type DestinationDefinitionId = string;
+
+export interface DestinationDefinitionIdRequestBody {
+  destinationDefinitionId: DestinationDefinitionId;
+}
 
 export interface SourceSearch {
   sourceDefinitionId?: SourceDefinitionId;
@@ -2550,24 +2564,6 @@ export const getState = (
 };
 
 /**
- * @summary Fetch the current type for a connection.
- */
-export const getStateType = (
-  connectionIdRequestBody: ConnectionIdRequestBody,
-  options?: SecondParameter<typeof apiOverride>
-) => {
-  return apiOverride<ConnectionStateType>(
-    {
-      url: `/v1/state/type/get`,
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      data: connectionIdRequestBody,
-    },
-    options
-  );
-};
-
-/**
  * @summary Search connections
  */
 export const searchConnections = (
@@ -3051,6 +3047,24 @@ export const webBackendSearchConnections = (
 };
 
 /**
+ * @summary Fetch the current state type for a connection.
+ */
+export const getStateType = (
+  connectionIdRequestBody: ConnectionIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<ConnectionStateType>(
+    {
+      url: `/v1/web_backend/state/get_type`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: connectionIdRequestBody,
+    },
+    options
+  );
+};
+
+/**
  * @summary Returns the current state of a workspace
  */
 export const webBackendGetWorkspaceState = (
@@ -3324,7 +3338,6 @@ export type ListAllConnectionsForWorkspaceResult = NonNullable<
 >;
 export type GetConnectionResult = NonNullable<Awaited<ReturnType<typeof getConnection>>>;
 export type GetStateResult = NonNullable<Awaited<ReturnType<typeof getState>>>;
-export type GetStateTypeResult = NonNullable<Awaited<ReturnType<typeof getStateType>>>;
 export type SearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof searchConnections>>>;
 export type DeleteConnectionResult = NonNullable<Awaited<ReturnType<typeof deleteConnection>>>;
 export type SyncConnectionResult = NonNullable<Awaited<ReturnType<typeof syncConnection>>>;
@@ -3362,6 +3375,7 @@ export type WebBackendGetConnectionResult = NonNullable<Awaited<ReturnType<typeo
 export type WebBackendCreateConnectionResult = NonNullable<Awaited<ReturnType<typeof webBackendCreateConnection>>>;
 export type WebBackendUpdateConnectionResult = NonNullable<Awaited<ReturnType<typeof webBackendUpdateConnection>>>;
 export type WebBackendSearchConnectionsResult = NonNullable<Awaited<ReturnType<typeof webBackendSearchConnections>>>;
+export type GetStateTypeResult = NonNullable<Awaited<ReturnType<typeof getStateType>>>;
 export type WebBackendGetWorkspaceStateResult = NonNullable<Awaited<ReturnType<typeof webBackendGetWorkspaceState>>>;
 export type ListJobsForResult = NonNullable<Awaited<ReturnType<typeof listJobsFor>>>;
 export type GetJobInfoResult = NonNullable<Awaited<ReturnType<typeof getJobInfo>>>;

@@ -4,8 +4,8 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import lombok.val;
 import org.apache.commons.lang3.RandomUtils;
