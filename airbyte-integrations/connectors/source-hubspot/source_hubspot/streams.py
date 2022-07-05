@@ -16,7 +16,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
@@ -113,6 +113,11 @@ class API:
 
         return credentials_title == "OAuth Credentials"
 
+    def is_private_app(self) -> bool:
+        credentials_title = self.credentials.get("credentials_title")
+
+        return credentials_title == "Private App Credentials"
+
     def get_authenticator(self) -> Optional[Oauth2Authenticator]:
         if self.is_oauth2():
             return Oauth2Authenticator(
@@ -121,6 +126,8 @@ class API:
                 client_secret=self.credentials["client_secret"],
                 refresh_token=self.credentials["refresh_token"],
             )
+        elif self.is_private_app():
+            return TokenAuthenticator(token=self.credentials["access_token"])
         else:
             return None
 
@@ -129,7 +136,7 @@ class API:
         self.credentials = credentials
         credentials_title = credentials.get("credentials_title")
 
-        if self.is_oauth2():
+        if self.is_oauth2() or self.is_private_app():
             self._session.auth = self.get_authenticator()
         elif credentials_title == "API Key Credentials":
             self._session.params["hapikey"] = credentials.get("api_key")

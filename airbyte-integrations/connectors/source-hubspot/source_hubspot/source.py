@@ -87,7 +87,8 @@ class SourceHubspot(AbstractSource):
         api = self.get_api(config=config)
         common_params = dict(api=api, start_date=start_date, credentials=credentials)
 
-        if credentials.get("credentials_title") == "OAuth Credentials":
+        credentials_title = credentials.get("credentials_title")
+        if credentials_title == "OAuth Credentials" or credentials_title == "Private App Credentials":
             common_params["authenticator"] = api.get_authenticator()
         return common_params
 
