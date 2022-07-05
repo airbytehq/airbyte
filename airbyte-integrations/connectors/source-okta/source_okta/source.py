@@ -167,9 +167,10 @@ class Logs(IncrementalOktaStream):
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["since"] = latest_entry
-            # [TDD] When the cursor value from the stream state is abnormally large, set until
-            # o/w the server side that sets now to until will throw an error:
-            #   The "until" date must be later than the "since" date
+            # [Test-driven Development] Set until When the cursor value from the stream state
+            #   is abnormally large, otherwise the server side that sets now to until
+            #   will throw an error: The "until" date must be later than the "since" date
+            # https://developer.okta.com/docs/reference/api/system-log/#request-parameters
             parsed = pendulum.parse(latest_entry)
             utc_now = pendulum.utcnow()
             if parsed > utc_now:
