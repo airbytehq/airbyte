@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.WebBackendApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.*;
@@ -33,6 +34,9 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
+import org.elasticsearch.client.ml.job.config.Job;
+import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
@@ -63,12 +67,18 @@ public class BasicAcceptanceTests {
 
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
+  private static WebBackendApi webBackendApi;
   private static UUID workspaceId;
   private static PostgreSQLContainer sourcePsql;
 
   @BeforeAll
   public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("localhost")
+            .setPort(8001)
+            .setBasePath("/api"));
+    webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
             .setHost("localhost")
             .setPort(8001)
@@ -853,7 +863,125 @@ public class BasicAcceptanceTests {
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
   }
 
-  // This test is disabled because it takes a couple of minutes to run, as it is testing timeouts.
+  @Test
+  @Order(-5)
+  public void testResetAllWhenSchemaIsModified() throws Exception {
+    final String sourceTable1 = "test_table42";
+    final String sourceTable2 = "test_table51";
+    final Database sourceDb = testHarness.getSourceDatabase();
+    final Database destDb = testHarness.getDestinationDatabase();
+    sourceDb.query(ctx -> {
+      ctx.createTableIfNotExists(sourceTable1).columns(DSL.field("name", SQLDataType.VARCHAR)).execute();
+      ctx.truncate(sourceTable1).execute();
+      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("john").execute();
+      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("bob").execute();
+
+      ctx.createTableIfNotExists(sourceTable2).columns(DSL.field("value", SQLDataType.VARCHAR)).execute();
+      ctx.truncate(sourceTable2).execute();
+      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v1").execute();
+      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v2").execute();
+      return null;
+    });
+
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
+
+    final ConnectionRead connection =
+        testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, null);
+
+    // Run initial sync
+    final JobInfoRead syncRead =
+        apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
+
+    sourceDb.query(ctx -> {
+      System.out.println(ctx.selectFrom(sourceTable1).fetch());
+      System.out.println(ctx.selectFrom(sourceTable2).fetch());
+      return null;
+    });
+    destDb.query(ctx -> {
+      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
+      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
+      return null;
+    });
+    testHarness.assertSourceAndDestinationDbInSync(false);
+
+    // Patch some data in the source
+    // Adding a new rows to make sure we sync more data
+    // Removing a couple rows to make sure that we trigger a full reset
+    sourceDb.query(ctx -> {
+      ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("alice").execute();
+      ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v3").execute();
+
+      ctx.deleteFrom(DSL.table(sourceTable1)).where(DSL.field("name").eq("john")).execute();
+      ctx.deleteFrom(DSL.table(sourceTable2)).where(DSL.field("value").eq("v2")).execute();
+      return null;
+    });
+
+    // Update with refreshed catalog
+    final WebBackendConnectionUpdate update = new WebBackendConnectionUpdate()
+        .connectionId(connection.getConnectionId())
+        .name(connection.getName())
+        .operationIds(connection.getOperationIds())
+        .namespaceDefinition(connection.getNamespaceDefinition())
+        .namespaceFormat(connection.getNamespaceFormat())
+        .syncCatalog(connection.getSyncCatalog())
+        .schedule(connection.getSchedule())
+        .sourceCatalogId(connection.getSourceCatalogId())
+        .status(connection.getStatus())
+        .withRefreshedCatalog(true);
+    final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
+
+    destDb.query(ctx -> {
+      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
+      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
+      return null;
+    });
+
+    // Wait until the sync from the UpdateConnection is finished
+    final JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
+    System.out.println(syncFromTheUpdate.toString());
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
+
+    sourceDb.query(ctx -> {
+      System.out.println(ctx.selectFrom(sourceTable1).fetch());
+      System.out.println(ctx.selectFrom(sourceTable2).fetch());
+      return null;
+    });
+    destDb.query(ctx -> {
+      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
+      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
+      return null;
+    });
+
+    testHarness.assertSourceAndDestinationDbInSync(false);
+  }
+
+  private JobRead getMostRecentSyncJobId(UUID connectionId) throws Exception {
+    return apiClient.getJobsApi()
+        .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
+        .getJobs()
+        .stream().findFirst().map(JobWithAttemptsRead::getJob).orElseThrow();
+  }
+
+  private JobRead waitUntilTheNextJobIsStarted(final UUID connectionId) throws Exception {
+    final JobRead lastJob = getMostRecentSyncJobId(connectionId);
+    if (lastJob.getStatus() != JobStatus.SUCCEEDED) {
+      return lastJob;
+    }
+
+    JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
+      Thread.sleep(Duration.ofSeconds(10).toMillis());
+      mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+    }
+    return mostRecentSyncJob;
+  }
+
+  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
   @Disabled
