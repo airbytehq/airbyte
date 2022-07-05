@@ -354,7 +354,7 @@ public class DefaultJobCreatorTest {
 
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
     when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
-        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState()));
+        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
 
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -407,7 +407,7 @@ public class DefaultJobCreatorTest {
 
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
     when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
-        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState()));
+        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
 
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())

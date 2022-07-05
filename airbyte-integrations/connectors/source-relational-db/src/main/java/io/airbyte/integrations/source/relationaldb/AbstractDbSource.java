@@ -526,7 +526,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * @return The deserialized object representation of the state.
    */
   protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
-    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson);
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson, featureFlags.useStreamCapableState());
     return typedState.map((state) -> {
       switch (state.getStateType()) {
         case GLOBAL:

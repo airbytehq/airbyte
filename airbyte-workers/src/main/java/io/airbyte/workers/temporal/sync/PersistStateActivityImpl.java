@@ -26,7 +26,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     final State state = syncOutput.getState();
     if (state != null) {
       try {
-        final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState());
+        final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
           statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
         }
