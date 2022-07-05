@@ -156,6 +156,7 @@ def connection(ctx: click.Context, resource: str):
 
 @_import.command(cls=OctaviaCommand, name="all", help=build_help_message("all"))
 @click.pass_context
+@requires_init
 def all(ctx: click.Context):
     api_client, workspace_id = ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"]
     for _, _, resource_id in UnmanagedSources(api_client, workspace_id).get_listing():

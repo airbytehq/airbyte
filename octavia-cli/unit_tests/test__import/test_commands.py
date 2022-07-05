@@ -169,7 +169,7 @@ def test_import_connection(mocker, context_object, source_exists, source_was_cre
             commands.import_connection(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], "resource_to_get")
 
 
-@pytest.mark.parametrize("command", [commands.source, commands.destination, commands.connection])
+@pytest.mark.parametrize("command", [commands.source, commands.destination, commands.connection, commands.all])
 def test_import_not_initialized(command):
     runner = CliRunner()
     result = runner.invoke(command, obj={"PROJECT_IS_INITIALIZED": False})
