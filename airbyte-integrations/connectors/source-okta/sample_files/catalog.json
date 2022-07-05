@@ -38,7 +38,7 @@
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
-      "cursor_field": ["published"],
+      "cursor_field": ["id"],
       "primary_key": [["id"]]
     }
   ]
