@@ -96,7 +96,7 @@ public class AirbyteDebeziumHandler {
                                                                        final CdcMetadataInjector cdcMetadataInjector,
                                                                        final Properties connectorProperties,
                                                                        final Instant emittedAt) {
-    LOGGER.info("using CDC: {}", true);
+    LOGGER.info("Using CDC: {}", true);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
