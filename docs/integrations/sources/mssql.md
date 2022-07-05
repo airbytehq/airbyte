@@ -16,7 +16,7 @@ The MSSQL source does not alter the schema present in your database. Depending o
 
 ## Troubleshooting
 
-You may run into an issue where the connector provides wrong values for some data types. See [discussions](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
+You may run into an issue where the connector provides wrong values for some data types. See [discussion](https://github.com/airbytehq/airbyte/issues/4270) on unexpected behaviour for certain datatypes.
 
 Note: Currently hierarchyid and sql_variant are not processed in CDC migration type (not supported by debezium). For more details please check 
 [this ticket](https://github.com/airbytehq/airbyte/issues/14411)
