@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+    implementation 'io.sentry:sentry:6.1.0'
+
     implementation project(':airbyte-analytics')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:config-models')
@@ -16,7 +18,7 @@ dependencies {
     implementation project(':airbyte-scheduler:scheduler-models')
 
     testImplementation libs.flyway.core
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
     testImplementation project(':airbyte-test-utils')
 }
 

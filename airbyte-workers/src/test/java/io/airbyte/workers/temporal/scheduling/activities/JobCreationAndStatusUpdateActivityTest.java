@@ -7,14 +7,17 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -23,12 +26,16 @@ import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.StreamResetPersistence;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
+import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -50,6 +57,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -88,15 +96,32 @@ public class JobCreationAndStatusUpdateActivityTest {
   private JobTracker mJobtracker;
 
   @Mock
+  private JobErrorReporter mJobErrorReporter;
+
+  @Mock
   private ConfigRepository mConfigRepository;
+
+  @Mock
+  private JobCreator mJobCreator;
+
+  @Mock
+  private StreamResetPersistence mStreamResetPersistence;
 
   @InjectMocks
   private JobCreationAndStatusUpdateActivityImpl jobCreationAndStatusUpdateActivity;
 
   private static final UUID CONNECTION_ID = UUID.randomUUID();
+  private static final UUID DESTINATION_ID = UUID.randomUUID();
+  private static final UUID DESTINATION_DEFINITION_ID = UUID.randomUUID();
+  private static final String DOCKER_REPOSITORY = "docker-repo";
+  private static final String DOCKER_IMAGE_TAG = "0.0.1";
+  private static final String DOCKER_IMAGE_NAME = DockerUtils.getTaggedImageName(DOCKER_REPOSITORY, DOCKER_IMAGE_TAG);
   private static final long JOB_ID = 123L;
   private static final int ATTEMPT_ID = 0;
   private static final int ATTEMPT_NUMBER = 1;
+  private static final StreamDescriptor STREAM_DESCRIPTOR1 = new StreamDescriptor().withName("stream 1").withNamespace("namespace 1");
+  private static final StreamDescriptor STREAM_DESCRIPTOR2 = new StreamDescriptor().withName("stream 2").withNamespace("namespace 2");
+
   private static final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
       .withStandardSyncSummary(
           new StandardSyncSummary()
@@ -122,7 +147,29 @@ public class JobCreationAndStatusUpdateActivityTest {
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
           .thenReturn(Mockito.mock(StandardSync.class));
 
-      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID, false));
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
+
+      Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
+    }
+
+    @Test
+    @DisplayName("Test reset job creation")
+    public void createResetJob() throws JsonValidationException, ConfigNotFoundException, IOException {
+      final StandardSync standardSync = new StandardSync().withDestinationId(DESTINATION_ID);
+      Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
+      final DestinationConnection destination = new DestinationConnection().withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
+      Mockito.when(mConfigRepository.getDestinationConnection(DESTINATION_ID)).thenReturn(destination);
+      final StandardDestinationDefinition destinationDefinition = new StandardDestinationDefinition()
+          .withDockerRepository(DOCKER_REPOSITORY)
+          .withDockerImageTag(DOCKER_IMAGE_TAG);
+      Mockito.when(mConfigRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID)).thenReturn(destinationDefinition);
+      final List<StreamDescriptor> streamsToReset = List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2);
+      Mockito.when(mStreamResetPersistence.getStreamResets(CONNECTION_ID)).thenReturn(streamsToReset);
+
+      Mockito.when(mJobCreator.createResetConnectionJob(destination, standardSync, DOCKER_IMAGE_NAME, List.of(), streamsToReset))
+          .thenReturn(Optional.of(JOB_ID));
+
+      final JobCreationOutput output = jobCreationAndStatusUpdateActivity.createNewJob(new JobCreationInput(CONNECTION_ID));
 
       Assertions.assertThat(output.getJobId()).isEqualTo(JOB_ID);
     }
@@ -250,10 +297,22 @@ public class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     public void setJobFailure() throws IOException {
+      final Attempt mAttempt = Mockito.mock(Attempt.class);
+      Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
+
+      final Job mJob = Mockito.mock(Job.class);
+      Mockito.when(mJob.getScope()).thenReturn(CONNECTION_ID.toString());
+      Mockito.when(mJob.getConfig()).thenReturn(new JobConfig());
+      Mockito.when(mJob.getLastFailedAttempt()).thenReturn(Optional.of(mAttempt));
+
+      Mockito.when(mJobPersistence.getJob(JOB_ID))
+          .thenReturn(mJob);
+
       jobCreationAndStatusUpdateActivity.jobFailure(new JobFailureInput(JOB_ID, "reason"));
 
       Mockito.verify(mJobPersistence).failJob(JOB_ID);
       Mockito.verify(mJobNotifier).failJob(eq("reason"), Mockito.any());
+      Mockito.verify(mJobErrorReporter).reportSyncJobFailure(eq(CONNECTION_ID), eq(failureSummary), Mockito.any());
     }
 
     @Test

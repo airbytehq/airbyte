@@ -338,6 +338,101 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testDiscoverDifferentGrantAvailability() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("create table not_granted_table_name_1(column_1 integer);");
+          ctx.fetch("create table not_granted_table_name_2(column_1 integer);");
+          ctx.fetch("create table not_granted_table_name_3(column_1 integer);");
+          ctx.fetch("create table table_granted_by_role(column_1 integer);");
+          ctx.fetch("create table test_table_granted_directly(column_1 integer);");
+          ctx.fetch("create table table_granted_by_role_with_options(column_1 integer);");
+          ctx.fetch("create table test_table_granted_directly_with_options(column_1 integer);");
+
+          ctx.fetch("create materialized view not_granted_mv_name_1 as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
+          ctx.fetch("create materialized view not_granted_mv_name_2 as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
+          ctx.fetch("create materialized view not_granted_mv_name_3 as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
+          ctx.fetch("create materialized view mv_granted_by_role as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
+          ctx.fetch(
+              "create materialized view test_mv_granted_directly as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
+          ctx.fetch(
+              "create materialized view mv_granted_by_role_with_options as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
+          ctx.fetch(
+              "create materialized view test_mv_granted_directly_with_options as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
+
+          ctx.fetch("create view not_granted_view_name_1(column_1) as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
+          ctx.fetch("create view not_granted_view_name_2(column_1) as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
+          ctx.fetch("create view not_granted_view_name_3(column_1) as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
+          ctx.fetch("create view view_granted_by_role(column_1) as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
+          ctx.fetch(
+              "create view test_view_granted_directly(column_1) as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
+          ctx.fetch(
+              "create view view_granted_by_role_with_options(column_1) as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
+          ctx.fetch(
+              "create view test_view_granted_directly_with_options(column_1) as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
+
+          ctx.fetch("create role test_role;");
+
+          ctx.fetch("grant delete on not_granted_table_name_2 to test_role;");
+          ctx.fetch("grant delete on not_granted_mv_name_2 to test_role;");
+          ctx.fetch("grant delete on not_granted_view_name_2 to test_role;");
+
+          ctx.fetch("grant select on table_granted_by_role to test_role;");
+          ctx.fetch("grant select on mv_granted_by_role to test_role;");
+          ctx.fetch("grant select on view_granted_by_role to test_role;");
+
+          ctx.fetch("grant select on table_granted_by_role_with_options to test_role with grant option;");
+          ctx.fetch("grant select on mv_granted_by_role_with_options to test_role with grant option;");
+          ctx.fetch("grant select on view_granted_by_role_with_options to test_role with grant option;");
+
+          ctx.fetch("create user new_test_user;");
+          ctx.fetch("ALTER USER new_test_user WITH PASSWORD 'new_pass';");
+          ctx.fetch("GRANT CONNECT ON DATABASE test TO new_test_user;");
+
+          ctx.fetch("grant test_role to new_test_user;");
+
+          ctx.fetch("grant delete on not_granted_table_name_3 to new_test_user;");
+          ctx.fetch("grant delete on not_granted_mv_name_3 to new_test_user;");
+          ctx.fetch("grant delete on not_granted_view_name_3 to new_test_user;");
+
+          ctx.fetch("grant select on test_table_granted_directly to new_test_user;");
+          ctx.fetch("grant select on test_mv_granted_directly to new_test_user;");
+          ctx.fetch("grant select on test_view_granted_directly to new_test_user;");
+
+          ctx.fetch("grant select on test_table_granted_directly_with_options to test_role with grant option;");
+          ctx.fetch("grant select on test_mv_granted_directly_with_options to test_role with grant option;");
+          ctx.fetch("grant select on test_view_granted_directly_with_options to test_role with grant option;");
+          return null;
+        });
+      }
+
+      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      Set<String> expectedVisibleNames = Sets.newHashSet(
+          "table_granted_by_role",
+          "table_granted_by_role_with_options",
+          "test_table_granted_directly",
+          "test_table_granted_directly_with_options",
+          "mv_granted_by_role",
+          "mv_granted_by_role_with_options",
+          "test_mv_granted_directly",
+          "test_mv_granted_directly_with_options",
+          "test_view_granted_directly",
+          "test_view_granted_directly_with_options",
+          "view_granted_by_role",
+          "view_granted_by_role_with_options");
+
+      assertEquals(tableNames, expectedVisibleNames);
+
+      db.stop();
+    }
+  }
+
+  @Test
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(

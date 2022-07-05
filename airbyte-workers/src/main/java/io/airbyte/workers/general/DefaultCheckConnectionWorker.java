@@ -14,7 +14,9 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.*;
+import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.WorkerConstants;
+import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
@@ -79,11 +81,17 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         LOGGER.debug("Check connection job received output: {}", output);
         return output;
       } else {
-        throw new WorkerException(String.format("Error checking connection, status: %s, exit code: %d", status, exitCode));
+        final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
+
+        LOGGER.error(message);
+        return new StandardCheckConnectionOutput()
+            .withStatus(Status.FAILED)
+            .withMessage(message);
       }
 
     } catch (final Exception e) {
-      throw new WorkerException("Error while getting checking connection.", e);
+      LOGGER.error("Unexpected error while checking connection: ", e);
+      throw new WorkerException("Unexpected error while getting checking connection.", e);
     }
   }
 

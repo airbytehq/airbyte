@@ -19,9 +19,8 @@ export class InsufficientPermissionsErrorBoundary extends React.Component<
   static getDerivedStateFromError(error: CommonRequestError): BoundaryState {
     if (error.message.startsWith("Insufficient permissions")) {
       return { hasError: true, message: error.message };
-    } else {
-      throw error;
     }
+    throw error;
   }
 
   state = initialState;

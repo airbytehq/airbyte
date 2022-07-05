@@ -19,5 +19,5 @@ select
 from {{ source('test_normalization', '_airbyte_raw_pos_dedup_cdcx') }} as table_alias
 -- pos_dedup_cdcx
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

@@ -24,7 +24,7 @@ function upgradeSchemaLegacyAuth(
   const spec = connectorSpecification.authSpecification.oauth2Specification;
   return applyFuncAt(
     connectorSpecification.connectionSpecification as JSONSchema7Definition,
-    (spec?.rootObject ?? []) as (string | number)[],
+    (spec?.rootObject ?? []) as Array<string | number>,
     (schema) => {
       // Very hacky way to allow placing button within section
       // @ts-expect-error json schema

@@ -104,6 +104,8 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
+    state_checkpoint_interval = 1000
+
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
@@ -186,6 +188,7 @@ class AgentTimelines(TimeIncrementalStream):
     cursor_field = "start_time"
     data_field = "agent_timeline"
     name = "agent_timeline"
+    limit = 1000
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
@@ -226,6 +229,7 @@ class Chats(TimeIncrementalStream):
 
     cursor_field = "update_timestamp"
     data_field = "chats"
+    limit = 1000
 
 
 class Shortcuts(Stream):

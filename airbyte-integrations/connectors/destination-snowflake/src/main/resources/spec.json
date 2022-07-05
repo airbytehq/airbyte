@@ -132,7 +132,6 @@
         "oneOf": [
           {
             "title": "Select another option",
-            "additionalProperties": false,
             "description": "Select another option",
             "required": ["method"],
             "properties": {
@@ -147,7 +146,6 @@
           },
           {
             "title": "[Recommended] Internal Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to Snowflake, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": ["method"],
             "properties": {
@@ -162,7 +160,6 @@
           },
           {
             "title": "AWS S3 Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to S3, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -233,27 +230,19 @@
                 "airbyte_secret": true,
                 "order": 4
               },
-              "part_size": {
-                "type": "integer",
-                "default": 5,
-                "examples": [5],
-                "description": "Optional. Increase this if syncing tables larger than 100GB. Only relevant for COPY. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.",
-                "title": "Stream Part Size",
-                "order": 5
-              },
               "purge_staging_data": {
                 "title": "Purge Staging Files and Tables",
                 "type": "boolean",
                 "description": "Whether to delete the staging files from S3 after completing the sync. See the docs for details. Only relevant for COPY. Defaults to true.",
                 "default": true,
-                "order": 6
+                "order": 5
               },
               "encryption": {
                 "title": "Encryption",
                 "type": "object",
                 "description": "How to encrypt the staging data",
                 "default": { "encryption_type": "none" },
-                "order": 7,
+                "order": 6,
                 "oneOf": [
                   {
                     "title": "No encryption",
@@ -295,7 +284,6 @@
           },
           {
             "title": "GCS Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to GCS, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -338,7 +326,6 @@
           },
           {
             "title": "Azure Blob Storage Staging",
-            "additionalProperties": false,
             "description": "Writes large batches of records to a file, uploads the file to Azure Blob Storage, then uses <pre>COPY INTO table</pre> to upload the file. Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",

@@ -46,7 +46,7 @@ const Logs: React.FC<LogsProps> = ({ logsArray }) => {
           lineClassName="logLine"
           highlightLineClassName="highlightLogLine"
           selectableLines
-          follow={true}
+          follow
           style={{ background: "transparent" }}
           scrollToLine={undefined}
           highlight={[]}

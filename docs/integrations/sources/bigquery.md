@@ -88,6 +88,7 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.8 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.7 | 2022-04-11 | [11484](https://github.com/airbytehq/airbyte/pull/11484) | BigQuery connector escape column names            |
 | 0.1.6 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.5 | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications |
