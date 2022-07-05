@@ -29,13 +29,6 @@ class SnowflakeDestinationIntegrationTest {
   private final SnowflakeSQLNameTransformer namingResolver = new SnowflakeSQLNameTransformer();
 
   @Test
-  void testCheckWithKeyPairAuth() throws Exception {
-    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
-    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
-  }
-
-  @Test
   void testCheckFailsWithInvalidPermissions() throws Exception {
     // TODO(sherifnada) this test case is assumes config.json does not have permission to access the
     // schema

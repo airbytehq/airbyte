@@ -211,7 +211,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
 
-    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
+    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/copy_s3_config.json")));
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
 
     final String defaultSchema = getDefaultSchema(config);
