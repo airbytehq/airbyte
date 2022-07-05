@@ -22,6 +22,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.imagePullSecrets }}
+        {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
       {{- if .Values.server.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.server.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
