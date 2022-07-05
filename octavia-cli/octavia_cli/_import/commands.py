@@ -89,6 +89,7 @@ def import_connection(
     source_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
         project_path=".", definition_type="source", resource_name=source_name
     )
+
     destination_configuration_path = renderers.ConnectorSpecificationRenderer.get_output_path(
         project_path=".", definition_type="destination", resource_name=destination_name
     )
@@ -157,15 +158,12 @@ def connection(ctx: click.Context, resource: str):
 @click.pass_context
 def all(ctx: click.Context):
     api_client, workspace_id = ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"]
-
     for _, _, resource_id in UnmanagedSources(api_client, workspace_id).get_listing():
-        click.echo(import_source_or_destination(api_client, workspace_id, UnmanagedSource, resource_id))
-
+        import_source_or_destination(api_client, workspace_id, UnmanagedSource, resource_id)
     for _, _, resource_id in UnmanagedDestinations(api_client, workspace_id).get_listing():
-        click.echo(import_source_or_destination(api_client, workspace_id, UnmanagedDestination, resource_id))
-
+        import_source_or_destination(api_client, workspace_id, UnmanagedDestination, resource_id)
     for _, resource_id, _, _, _ in UnmanagedConnections(api_client, workspace_id).get_listing():
-        click.echo(import_connection(api_client, workspace_id, resource_id))
+        import_connection(api_client, workspace_id, resource_id)
 
 
 AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]
