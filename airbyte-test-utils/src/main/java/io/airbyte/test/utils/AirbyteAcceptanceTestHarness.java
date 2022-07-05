@@ -350,7 +350,6 @@ public class AirbyteAcceptanceTestHarness {
     assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
         String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
 
-
     for (final SchemaTableNamePair pair : sourceTables) {
       final List<JsonNode> sourceRecords = retrieveRawDestinationRecords(pair);
       assertTrue(sourceRecords.isEmpty());

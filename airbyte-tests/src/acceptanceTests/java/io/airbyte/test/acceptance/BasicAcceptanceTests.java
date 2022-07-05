@@ -847,9 +847,10 @@ public class BasicAcceptanceTests {
     final StreamDescriptor expecteStreamDescriptor = new StreamDescriptor()
         .name("id_and_name")
         .namespace("public");
-    final JsonNode expectedStreamState = Jsons.deserialize("""
-        {"cursor":"6","stream_name":"id_and_name","cursor_field":["id"],"stream_namespace":"public"}
-        """);
+    final JsonNode expectedStreamState =
+        Jsons.deserialize("""
+                          {"cursor":"6","stream_name":"id_and_name","cursor_field":["id"],"stream_namespace":"public"}
+                          """);
     final StreamState streamState = state.getStreamState().get(0);
     assertEquals(expecteStreamDescriptor, streamState.getStreamDescriptor());
     assertEquals(expectedStreamState, streamState.getStreamState());
