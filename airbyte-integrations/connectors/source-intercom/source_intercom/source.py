@@ -17,6 +17,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from requests.auth import AuthBase
 
 from .utils import EagerlyCachedStreamState as stream_state_cache
+from .utils import IntercomRateLimiter as limiter
 
 
 class IntercomStream(HttpStream, ABC):
@@ -68,6 +69,7 @@ class IntercomStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
 
+    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         data = response.json()
 
