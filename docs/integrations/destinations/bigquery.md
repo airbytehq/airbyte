@@ -133,6 +133,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
+| 1.1.11 | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
 | 1.1.10 | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
 | 1.1.9  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
 | 1.1.8   | 2022-06-07 | [13579](https://github.com/airbytehq/airbyte/pull/13579)   | Always check GCS bucket for GCS loading method to catch invalid HMAC keys. |
@@ -173,6 +174,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 1.1.12 | 2022-06-29 | [\#14079](https://github.com/airbytehq/airbyte/pull/14079) | Map "airbyte_type": "big_integer" to INT64 |
+| 1.1.11 | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
 | 1.1.10 | 2022-06-16 | [\#13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
 | 1.1.9  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
 | 1.1.8   | 2022-06-07 | [13579](https://github.com/airbytehq/airbyte/pull/13579)   | Always check GCS bucket for GCS loading method to catch invalid HMAC keys. |

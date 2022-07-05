@@ -20,6 +20,7 @@ Helm charts for Airbyte.
 | `serviceAccount.annotations` | Annotations for service account. Evaluated as a template. Only used if `create` is `true`.                          | `{}`            |
 | `serviceAccount.create`      | Specifies whether a ServiceAccount should be created                                                                | `true`          |
 | `serviceAccount.name`        | Name of the service account to use. If not set and create is true, a name is generated using the fullname template. | `airbyte-admin` |
+| `imagePullSecrets`           | Array of image pull secrets.                                                                                        | `[]`            |
 | `version`                    | Sets the AIRBYTE_VERSION environment variable. Defaults to Chart.AppVersion.                                        | `""`            |
 
 
@@ -30,7 +31,7 @@ Helm charts for Airbyte.
 | `webapp.replicaCount`                       | Number of webapp replicas                                        | `1`              |
 | `webapp.image.repository`                   | The repository to use for the airbyte webapp image.              | `airbyte/webapp` |
 | `webapp.image.pullPolicy`                   | the pull policy to use for the airbyte webapp image              | `IfNotPresent`   |
-| `webapp.image.tag`                          | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.39.23-alpha`  |
+| `webapp.image.tag`                          | The airbyte webapp image tag. Defaults to the chart's AppVersion | `0.39.32-alpha`  |
 | `webapp.podAnnotations`                     | Add extra annotations to the webapp pod(s)                       | `{}`             |
 | `webapp.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `webapp.livenessProbe.enabled`              | Enable livenessProbe on the webapp                               | `true`           |
@@ -103,7 +104,7 @@ Helm charts for Airbyte.
 | `server.replicaCount`                       | Number of server replicas                                        | `1`              |
 | `server.image.repository`                   | The repository to use for the airbyte server image.              | `airbyte/server` |
 | `server.image.pullPolicy`                   | the pull policy to use for the airbyte server image              | `IfNotPresent`   |
-| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.39.23-alpha`  |
+| `server.image.tag`                          | The airbyte server image tag. Defaults to the chart's AppVersion | `0.39.32-alpha`  |
 | `server.podAnnotations`                     | Add extra annotations to the server pod                          | `{}`             |
 | `server.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `server.livenessProbe.enabled`              | Enable livenessProbe on the server                               | `true`           |
@@ -138,7 +139,7 @@ Helm charts for Airbyte.
 | `worker.replicaCount`                       | Number of worker replicas                                        | `1`              |
 | `worker.image.repository`                   | The repository to use for the airbyte worker image.              | `airbyte/worker` |
 | `worker.image.pullPolicy`                   | the pull policy to use for the airbyte worker image              | `IfNotPresent`   |
-| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.39.23-alpha`  |
+| `worker.image.tag`                          | The airbyte worker image tag. Defaults to the chart's AppVersion | `0.39.32-alpha`  |
 | `worker.podAnnotations`                     | Add extra annotations to the worker pod(s)                       | `{}`             |
 | `worker.containerSecurityContext`           | Security context for the container                               | `{}`             |
 | `worker.livenessProbe.enabled`              | Enable livenessProbe on the worker                               | `true`           |
@@ -170,7 +171,7 @@ Helm charts for Airbyte.
 | ------------------------------- | -------------------------------------------------------------------- | -------------------- |
 | `bootloader.image.repository`   | The repository to use for the airbyte bootloader image.              | `airbyte/bootloader` |
 | `bootloader.image.pullPolicy`   | the pull policy to use for the airbyte bootloader image              | `IfNotPresent`       |
-| `bootloader.image.tag`          | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.39.23-alpha`      |
+| `bootloader.image.tag`          | The airbyte bootloader image tag. Defaults to the chart's AppVersion | `0.39.32-alpha`      |
 | `bootloader.podAnnotations`     | Add extra annotations to the bootloader pod                          | `{}`                 |
 | `bootloader.nodeSelector`       | Node labels for pod assignment                                       | `{}`                 |
 | `bootloader.tolerations`        | Tolerations for worker pod assignment.                               | `[]`                 |
@@ -216,23 +217,23 @@ Helm charts for Airbyte.
 
 ### Airbyte Database parameters
 
-| Name                                               | Description                                                                               | Value                     |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------- |
-| `postgresql.enabled`                               | Switch to enable or disable the PostgreSQL helm chart                                     | `true`                    |
-| `postgresql.postgresqlUsername`                    | Airbyte Postgresql username                                                               | `airbyte`                 |
-| `postgresql.postgresqlPassword`                    | Airbyte Postgresql password                                                               | `airbyte`                 |
-| `postgresql.postgresqlDatabase`                    | Airbyte Postgresql database                                                               | `db-airbyte`              |
-| `postgresql.existingSecret`                        | Name of an existing secret containing the PostgreSQL password ('postgresql-password' key) | `""`                      |
-| `postgresql.containerSecurityContext.runAsNonRoot` | Ensures the container will run with a non-root user                                       | `true`                    |
+| Name                                               | Description                                                                               | Value        |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------ |
+| `postgresql.enabled`                               | Switch to enable or disable the PostgreSQL helm chart                                     | `true`       |
+| `postgresql.postgresqlUsername`                    | Airbyte Postgresql username                                                               | `airbyte`    |
+| `postgresql.postgresqlPassword`                    | Airbyte Postgresql password                                                               | `airbyte`    |
+| `postgresql.postgresqlDatabase`                    | Airbyte Postgresql database                                                               | `db-airbyte` |
+| `postgresql.existingSecret`                        | Name of an existing secret containing the PostgreSQL password ('postgresql-password' key) | `""`         |
+| `postgresql.containerSecurityContext.runAsNonRoot` | Ensures the container will run with a non-root user                                       | `true`       |
 | `postgresql.commonAnnotations.helm.sh/hook`        | It will determine when the hook should be rendered                                        | `pre-install,pre-upgrade` |
-| `postgresql.commonAnnotations.helm.sh/hook-weight` | The order in which the hooks are executed. If weight is lower, it has higher priority     | `-1`                      |
-| `externalDatabase.host`                            | Database host                                                                             | `localhost`               |
-| `externalDatabase.user`                            | non-root Username for Airbyte Database                                                    | `airbyte`                 |
-| `externalDatabase.password`                        | Database password                                                                         | `""`                      |
-| `externalDatabase.existingSecret`                  | Name of an existing secret resource containing the DB password                            | `""`                      |
-| `externalDatabase.existingSecretPasswordKey`       | Name of an existing secret key containing the DB password                                 | `""`                      |
-| `externalDatabase.database`                        | Database name                                                                             | `db-airbyte`              |
-| `externalDatabase.port`                            | Database port number                                                                      | `5432`                    |
+| `postgresql.commonAnnotations.helm.sh/hook-weight` | The order in which the hooks are executed. If weight is lower, it has higher priority     | `-1`                      
+| `externalDatabase.host`                            | Database host                                                                             | `localhost`  |
+| `externalDatabase.user`                            | non-root Username for Airbyte Database                                                    | `airbyte`    |
+| `externalDatabase.password`                        | Database password                                                                         | `""`         |
+| `externalDatabase.existingSecret`                  | Name of an existing secret resource containing the DB password                            | `""`         |
+| `externalDatabase.existingSecretPasswordKey`       | Name of an existing secret key containing the DB password                                 | `""`         |
+| `externalDatabase.database`                        | Database name                                                                             | `db-airbyte` |
+| `externalDatabase.port`                            | Database port number                                                                      | `5432`       |
 
 
 ### Logs parameters
@@ -269,3 +270,5 @@ Helm charts for Airbyte.
 | `jobs.kube.nodeSelector`                     | key/value node selector applied to kube jobs | `{}`       |
 | `jobs.kube.tolerations`                      | Tolerations for jobs.kube pod assignment.    | `[]`       |
 | `jobs.kube.main_container_image_pull_secret` | image pull secret to use for job pod         | `""`       |
+
+

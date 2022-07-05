@@ -44,7 +44,6 @@ def test():
         path="v1/{{ stream_slice['id'] }}",
         http_method=http_method,
         request_options_provider=request_options_provider,
-        request_headers_provider=request_headers_provider,
         authenticator=authenticator,
         retrier=retrier,
         config=config,

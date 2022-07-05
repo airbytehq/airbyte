@@ -83,8 +83,7 @@ The Google Ads source connector supports the following[ sync modes](https://docs
 
 ## Supported Streams
 
-This source is capable of syncing the following tables and their data:
-
+This source is capable of syncing the tables described below and can sync custom queries using GAGL.
 ### Main Tables
 
 - [accounts](https://developers.google.com/google-ads/api/fields/v9/customer)
@@ -109,19 +108,29 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 - [shopping_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance)
 - [user_location_report](https://developers.google.com/google-ads/api/fields/v9/user_location_view)
 
-**Note**: Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
+    :::note
+    Due to constraints from the Google Ads API, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago
+    :::
 
-**Note**: Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v9/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account.
+    :::note
+    Due to constraints from the Google Ads API, [metrics](https://developers.google.com/google-ads/api/fields/v9/metrics) cannot be requested for a manager account. Therefore, report streams are only available when pulling data from a non-manager account.
+    :::
 
-**Note**: For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some reports cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+    :::note
+    For incremental streams data is synced up to the previous day using your Google Ads account time zone. The reason is that Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v9/ad_group_ad#segments.date) without time. Also, some reports cannot load data in real time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+    :::
 
-## Understanding Google Ads Query Language
+## Custom Query: understanding Google Ads Query Language
 
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview). You can add these as custom queries when configuring the Google Ads source.
 
-**Note**: Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
+    :::note
+    Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
+    :::
 
-**Note**: Please take into account Google's note on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords, and remove any row that is not associated with a keyword. This is often not obvious and undesired behaviour and can lead to missing data records. If you do need this field in the stream, please choose adding a new stream instead of editing existing ones.
+    :::warning
+    Please take into account Google's note on [Selectability between segments and metrics](https://developers.google.com/google-ads/api/docs/reporting/segmentation#selectability_between_segments_and_metrics) when editing custom queries or default stream schemas (which will also be turned into GAQL queries by the connector). Fields like `segments.keyword.info.text`, `segments.keyword.info.match_type`, `segments.keyword.ad_group_criterion` in the `SELECT` clause tell the query to only get the rows of data that have keywords, and remove any row that is not associated with a keyword. This is often not obvious and undesired behaviour and can lead to missing data records. If you do need this field in the stream, please choose adding a new stream instead of editing existing ones.
+    :::
 
 ## Performance considerations
 

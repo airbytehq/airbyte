@@ -15,6 +15,7 @@ tests:
     # Sometimes test could fail (on weekends) because transactions could temporary disappear from Paypal Sandbox account
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["transactions"]
     # Two-sequence read is failing because of "last_refresh_time" property inside of response,
     # It is enough to have basic_read test for all the records to check.
   # full_refresh:

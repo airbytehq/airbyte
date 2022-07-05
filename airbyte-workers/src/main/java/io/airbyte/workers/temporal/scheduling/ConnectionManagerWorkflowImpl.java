@@ -17,6 +17,7 @@ import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.ConnectionManagerUtils;
 import io.airbyte.workers.temporal.TemporalJobType;
@@ -50,6 +51,8 @@ import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpd
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInput;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.JobSuccessInputWithAttemptNumber;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity.ReportJobStartInput;
+import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
+import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity.DeleteStreamResetRecordsForJobInput;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
@@ -88,6 +91,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
   private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
 
+  private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
+  private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
+
   static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
   private WorkflowState workflowState = new WorkflowState(UUID.randomUUID(), new NoopStateListener());
@@ -106,6 +112,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.newActivityStub(AutoDisableConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
   private final CheckConnectionActivity checkActivity =
       Workflow.newActivityStub(CheckConnectionActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+  private final StreamResetActivity streamResetActivity =
+      Workflow.newActivityStub(StreamResetActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   private CancellationScope cancellableSyncWorkflow;
 
@@ -128,7 +136,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       if (workflowState.isDeleted()) {
         if (workflowState.isRunning()) {
           log.info("Cancelling the current running job because a connection deletion was requested");
-          reportCancelled(false);
+          reportCancelled();
         }
         log.info("Workflow deletion was requested. Calling deleteConnection activity before terminating the workflow.");
         deleteConnectionBeforeTerminatingTheWorkflow();
@@ -140,7 +148,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         reportCancelledAndContinueWith(true, connectionUpdaterInput);
       }
 
+      // "Cancel" button was pressed on a job
       if (workflowState.isCancelled()) {
+        deleteResetJobStreams();
         reportCancelledAndContinueWith(false, connectionUpdaterInput);
       }
 
@@ -160,14 +170,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         workflowState = connectionUpdaterInput.getWorkflowState();
       }
 
-      // when a reset is triggered, the previous attempt, cancels itself (unless it is already a reset, in
-      // which case it does nothing). the previous run that cancels itself then passes on the
-      // resetConnection flag to the next run so that that run can execute the actual reset
-      if (connectionUpdaterInput.isResetConnection()) {
-        workflowState.setResetConnection(true);
-      }
-      if (connectionUpdaterInput.isFromJobResetFailure()) {
-        workflowState.setResetWithScheduling(true);
+      if (connectionUpdaterInput.isSkipScheduling()) {
+        workflowState.setSkipScheduling(true);
       }
 
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
@@ -179,6 +183,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       Workflow.await(timeToWait,
           () -> skipScheduling() || connectionUpdaterInput.isFromFailure());
+
+      workflowState.setDoneWaiting(true);
 
       if (workflowState.isDeleted()) {
         log.info("Returning from workflow cancellation scope because workflow deletion was requested.");
@@ -263,6 +269,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           standardSyncOutput));
     }
 
+    deleteResetJobStreams();
+
     resetNewConnectionInput(connectionUpdaterInput);
   }
 
@@ -287,10 +295,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     final int maxAttempt = configFetchActivity.getMaxAttempt().getMaxAttempt();
     final int attemptNumber = connectionUpdaterInput.getAttemptNumber();
-
-    if (workflowState.isResetConnection()) {
-      workflowState.setContinueAsReset(true);
-    }
 
     final FailureType failureType =
         standardSyncOutput != null ? standardSyncOutput.getFailures().isEmpty() ? null : standardSyncOutput.getFailures().get(0).getFailureType()
@@ -318,9 +322,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
 
       resetNewConnectionInput(connectionUpdaterInput);
-      if (workflowState.isResetConnection()) {
-        connectionUpdaterInput.setFromJobResetFailure(true);
-      }
     }
   }
 
@@ -344,7 +345,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
     final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
 
-    if (workflowState.isResetConnection() || checkFailure.isFailed()) {
+    if (isResetJob(sourceLauncherConfig) || checkFailure.isFailed()) {
+      // reset jobs don't need to connect to any external source, so check connection is unnecessary
       log.info("SOURCE CHECK: Skipped");
     } else {
       log.info("SOURCE CHECK: Starting");
@@ -378,10 +380,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     return checkFailure;
   }
 
+  private boolean isResetJob(final IntegrationLauncherConfig sourceLauncherConfig) {
+    return WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage());
+  }
+
+  // reset the ConnectionUpdaterInput back to a default state
   private void resetNewConnectionInput(final ConnectionUpdaterInput connectionUpdaterInput) {
     connectionUpdaterInput.setJobId(null);
     connectionUpdaterInput.setAttemptNumber(1);
     connectionUpdaterInput.setFromFailure(false);
+    connectionUpdaterInput.setSkipScheduling(false);
   }
 
   @Override
@@ -417,11 +425,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void resetConnection() {
-    workflowState.setResetConnection(true);
-    workflowState.setResetWithScheduling(false);
-    if (workflowState.isRunning()) {
+    // Assumes that the streams_reset has already been populated with streams to reset for this
+    // connection
+
+    if (workflowState.isDoneWaiting()) {
       workflowState.setCancelledForReset(true);
       cancellableSyncWorkflow.cancel();
+    } else {
+      workflowState.setSkipScheduling(true);
     }
   }
 
@@ -462,13 +473,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * delete
    */
   private Boolean skipScheduling() {
-    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated() ||
-        (!workflowState.isResetWithScheduling() && workflowState.isResetConnection());
+    return workflowState.isSkipScheduling() || workflowState.isDeleted() || workflowState.isUpdated();
   }
 
   private void prepareForNextRunAndContinueAsNew(final ConnectionUpdaterInput connectionUpdaterInput) {
     // Continue the workflow as new
-    connectionUpdaterInput.setResetConnection(workflowState.isContinueAsReset());
     workflowInternalState.getFailures().clear();
     workflowInternalState.setPartialSuccess(null);
     final boolean isDeleted = workflowState.isDeleted();
@@ -515,12 +524,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
 
       final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
-      // this ensures that the new workflow will still perform a reset if an activity failed while
-      // attempting to reset the connection
-      if (workflowState.isResetConnection()) {
-        newWorkflowInput.setResetConnection(true);
-        newWorkflowInput.setFromJobResetFailure(true);
-      }
 
       Workflow.continueAsNew(newWorkflowInput);
 
@@ -588,8 +591,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     final JobCreationOutput jobCreationOutput =
         runMandatoryActivityWithOutput(
             jobCreationAndStatusUpdateActivity::createNewJob,
-            new JobCreationInput(
-                connectionUpdaterInput.getConnectionId(), workflowState.isResetConnection()));
+            new JobCreationInput(connectionUpdaterInput.getConnectionId()));
     connectionUpdaterInput.setJobId(jobCreationOutput.getJobId());
 
     return jobCreationOutput.getJobId();
@@ -637,8 +639,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (attemptCreationVersion < RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION) {
       final SyncInput getSyncInputActivitySyncInput = new SyncInput(
           attemptNumber,
-          jobId,
-          workflowState.isResetConnection());
+          jobId);
 
       final GeneratedJobInput syncWorkflowInputs = runMandatoryActivityWithOutput(
           getSyncInputActivity::getSyncWorkflowInput,
@@ -649,8 +650,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     final SyncInputWithAttemptNumber getSyncInputActivitySyncInput = new SyncInputWithAttemptNumber(
         attemptNumber,
-        jobId,
-        workflowState.isResetConnection());
+        jobId);
 
     final GeneratedJobInput syncWorkflowInputs = runMandatoryActivityWithOutput(
         getSyncInputActivity::getSyncWorkflowInputWithAttemptNumber,
@@ -736,14 +736,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   /**
    * Set a job as cancel and continue to the next job if and continue as a reset if needed
    */
-  private void reportCancelledAndContinueWith(final boolean isReset, final ConnectionUpdaterInput connectionUpdaterInput) {
-    reportCancelled(isReset);
+  private void reportCancelledAndContinueWith(final boolean skipSchedulingNextRun, final ConnectionUpdaterInput connectionUpdaterInput) {
+    if (workflowInternalState.getJobId() != null && workflowInternalState.getAttemptNumber() != null) {
+      reportCancelled();
+    }
     resetNewConnectionInput(connectionUpdaterInput);
+    connectionUpdaterInput.setSkipScheduling(skipSchedulingNextRun);
     prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
   }
 
-  private void reportCancelled(final boolean isReset) {
-    workflowState.setContinueAsReset(isReset);
+  private void reportCancelled() {
     final Long jobId = workflowInternalState.getJobId();
     final Integer attemptNumber = workflowInternalState.getAttemptNumber();
     final Set<FailureReason> failures = workflowInternalState.getFailures();
@@ -764,6 +766,18 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               attemptNumber,
               FailureHelper.failureSummaryForCancellation(jobId, attemptNumber, failures, partialSuccess)));
     }
+  }
+
+  private void deleteResetJobStreams() {
+    final int deleteResetJobStreamsVersion =
+        Workflow.getVersion(DELETE_RESET_JOB_STREAMS_TAG, Workflow.DEFAULT_VERSION, DELETE_RESET_JOB_STREAMS_CURRENT_VERSION);
+
+    if (deleteResetJobStreamsVersion < DELETE_RESET_JOB_STREAMS_CURRENT_VERSION) {
+      return;
+    }
+
+    runMandatoryActivity(streamResetActivity::deleteStreamResetRecordsForJob,
+        new DeleteStreamResetRecordsForJobInput(connectionId, workflowInternalState.getJobId()));
   }
 
 }

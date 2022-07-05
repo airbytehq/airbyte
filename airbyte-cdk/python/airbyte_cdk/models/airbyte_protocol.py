@@ -281,7 +281,7 @@ class AirbyteStateMessage(BaseModel):
     class Config:
         extra = Extra.allow
 
-    state_type: Optional[AirbyteStateType] = None
+    type: Optional[AirbyteStateType] = None
     stream: Optional[AirbyteStreamState] = None
     global_: Optional[AirbyteGlobalState] = Field(None, alias="global")
     data: Optional[Dict[str, Any]] = Field(None, description="(Deprecated) the state data")
