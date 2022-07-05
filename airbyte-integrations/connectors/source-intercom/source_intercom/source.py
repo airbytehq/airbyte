@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -10,6 +10,7 @@ from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -284,6 +285,7 @@ class Conversations(IncrementalIntercomStream):
     Endpoint: https://api.intercom.io/conversations
     """
 
+    use_cache = True
     data_fields = ["conversations"]
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -302,20 +304,49 @@ class Conversations(IncrementalIntercomStream):
         return "conversations"
 
 
-class ConversationParts(ChildStreamMixin, IncrementalIntercomStream):
+class ConversationParts(IncrementalIntercomStream):
     """Return list of all conversation parts.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#retrieve-a-conversation
     Endpoint: https://api.intercom.io/conversations/<id>
     """
 
     data_fields = ["conversation_parts", "conversation_parts"]
-    parent_stream_class = Conversations
+
+    def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
+        super().__init__(authenticator, start_date, **kwargs)
+        self.conversations_stream = Conversations(authenticator, start_date, **kwargs)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"/conversations/{stream_slice['id']}"
 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Returns the stream slices, which correspond to conversation IDs. Uses the `Conversations` stream
+        to get conversations by `sync_mode` and `state`. Unlike `ChildStreamMixin`, it gets slices based
+        on the `sync_mode`, so that it does not get all conversations at all times. Since we can't do
+        `filter_by_state` inside `parse_records`, we need to make sure we get the right conversations only.
+        Otherwise, this stream would always return all conversation_parts.
+        """
+        parent_stream_slices = self.conversations_stream.stream_slices(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            conversations = self.conversations_stream.read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for conversation in conversations:
+                yield {"id": conversation["id"]}
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        records = super().parse_response(response, stream_state, **kwargs)
+        """
+        Adds `conversation_id` to every `conversation_part` record before yielding it. Records are not
+        filtered by state here, because the aggregate list of `conversation_parts` is not sorted by
+        `updated_at`, because it gets `conversation_parts` for each `conversation`. Hence, using parent's
+        `filter_by_state` logic could potentially end up in data loss.
+        """
+        records = super().parse_response(response=response, stream_state={}, **kwargs)
         conversation_id = response.json().get("id")
         for conversation_part in records:
             conversation_part.setdefault("conversation_id", conversation_id)

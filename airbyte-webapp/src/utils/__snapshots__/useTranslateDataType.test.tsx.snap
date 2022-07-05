@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`useTranslateDataType should translate % 1`] = `"String"`;
+
+exports[`useTranslateDataType should translate % 2`] = `"Date"`;
+
+exports[`useTranslateDataType should translate % 3`] = `"Timestamp with Timezone"`;
+
+exports[`useTranslateDataType should translate % 4`] = `"Datetime"`;
+
+exports[`useTranslateDataType should translate % 5`] = `"Datetime"`;
+
+exports[`useTranslateDataType should translate % 6`] = `"Integer"`;
+
+exports[`useTranslateDataType should translate % 7`] = `"Big Integer"`;
+
+exports[`useTranslateDataType should translate % 8`] = `"Number"`;
+
+exports[`useTranslateDataType should translate % 9`] = `"Big Number"`;
+
+exports[`useTranslateDataType should translate % 10`] = `"Array"`;
+
+exports[`useTranslateDataType should translate % 11`] = `"Object"`;
+
+exports[`useTranslateDataType should translate % 12`] = `"Untyped"`;
+
+exports[`useTranslateDataType should translate % 13`] = `"Union"`;
+
+exports[`useTranslateDataType should translate % 14`] = `"Boolean"`;

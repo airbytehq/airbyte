@@ -1,51 +1,48 @@
 import React, { useCallback } from "react";
+import { useQueryClient } from "react-query";
 
 import { ConnectionTable } from "components/EntityTable";
-import useRouter from "hooks/useRouter";
-import { Connection } from "core/domain/connection";
 import useSyncActions from "components/EntityTable/hooks";
-import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
-import { RoutePaths } from "pages/routePaths";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { getConnectionTableData } from "components/EntityTable/utils";
 
-type IProps = {
-  connections: Connection[];
-};
+import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+
+import { WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
+
+interface IProps {
+  connections: WebBackendConnectionRead[];
+}
 
 const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
   const { push } = useRouter();
+  const queryClient = useQueryClient();
   const { changeStatus, syncManualConnection } = useSyncActions();
 
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const data = getConnectionTableData(
-    connections,
-    sourceDefinitions,
-    destinationDefinitions,
-    "destination"
-  );
+  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "destination");
 
   const onChangeStatus = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
 
       if (connection) {
         await changeStatus(connection);
+        await invalidateConnectionsList(queryClient);
       }
     },
-    [changeStatus, connections]
+    [changeStatus, connections, queryClient]
   );
 
   const onSync = useCallback(
     async (connectionId: string) => {
-      const connection = connections.find(
-        (item) => item.connectionId === connectionId
-      );
+      const connection = connections.find((item) => item.connectionId === connectionId);
       if (connection) {
         await syncManualConnection(connection);
       }
@@ -53,8 +50,7 @@ const DestinationConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) =>
-    push(`../../${RoutePaths.Connections}/${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => push(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
     <ConnectionTable

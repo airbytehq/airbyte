@@ -1,14 +1,14 @@
+import { Field, FieldProps, Formik, Form } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Formik, Form } from "formik";
 import * as yup from "yup";
 
 import { LoadingButton, Input } from "components";
 
-type CreateWorkspaceFormProps = {
+interface CreateWorkspaceFormProps {
   onSubmit: (values: { name: string }) => Promise<void>;
-};
+}
 
 const CreateWorkspaceFormValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
@@ -30,15 +30,12 @@ const ClearInput = styled(Input)`
     background: ${({ theme }) => theme.whiteColor};
     border: none;
     border-radius: 0;
-    border-bottom: ${({ error, theme }) =>
-      error ? `${theme.dangerColor} 1px solid` : "none"};
+    border-bottom: ${({ error, theme }) => (error ? `${theme.dangerColor} 1px solid` : "none")};
     padding: 0 0 2px;
   }
 `;
 
-const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
-  onSubmit,
-}) => {
+const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({ onSubmit }) => {
   return (
     <Formik
       initialValues={{
@@ -46,25 +43,16 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({
       }}
       validationSchema={CreateWorkspaceFormValidationSchema}
       onSubmit={onSubmit}
-      validateOnBlur={true}
+      validateOnBlur
     >
       {({ isSubmitting }) => (
         <CreationForm>
           <Field name="name">
             {({ field, meta }: FieldProps<string>) => (
-              <ClearInput
-                {...field}
-                autoFocus
-                type="text"
-                error={!!meta.error && meta.touched}
-              />
+              <ClearInput {...field} autoFocus type="text" error={!!meta.error && meta.touched} />
             )}
           </Field>
-          <LoadingButton
-            type="submit"
-            isLoading={isSubmitting}
-            data-testid="workspaces.create"
-          >
+          <LoadingButton type="submit" isLoading={isSubmitting} data-testid="workspaces.create">
             <FormattedMessage id="workspaces.create" />
           </LoadingButton>
         </CreationForm>

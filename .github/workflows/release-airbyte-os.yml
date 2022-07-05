@@ -60,17 +60,18 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.9"
       - name: Release Airbyte
         id: release_airbyte
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
@@ -79,7 +80,6 @@ jobs:
 
   # We are releasing octavia from a separate job because:
   # - The self hosted runner used in releaseAirbyte does not have the docker buildx command to build multi-arch images
-  # - Plaform build requires Python 3.7, Octavia Build requires 3.8
   releaseOctavia:
     runs-on: ubuntu-latest
     environment: more-secrets
@@ -92,18 +92,17 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
-      # octavia-cli build requires Python 3.8.
-      # We use 3.8 in this project because 3.7 is not supported on Apple M1.
+          node-version: "lts/gallium"
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
       - name: Release Octavia
         id: release_octavia
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           PART_TO_BUMP: ${{ github.event.inputs.partToBump }}
         run: ./tools/bin/release_version_octavia.sh
 
@@ -121,7 +120,7 @@ jobs:
       # necessary to install pip
       - uses: actions/setup-python@v2
         with:
-          python-version: "3.7"
+          python-version: "3.9"
       - name: Bump version
         id: bump_version
         env:

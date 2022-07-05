@@ -1,8 +1,8 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useToggle } from "react-use";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
 import { ContentCard } from "components";
 
@@ -24,12 +24,12 @@ const ArrowView = styled(FontAwesomeIcon)<{ $isOpen?: boolean }>`
   cursor: pointer;
 `;
 
-export type CollapsibleCardProps = {
+export interface CollapsibleCardProps {
   title: React.ReactNode;
   children: React.ReactNode;
   collapsible?: boolean;
   defaultCollapsedState?: boolean;
-};
+}
 
 export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
   title,
@@ -44,13 +44,7 @@ export const CollapsibleCard: React.FC<CollapsibleCardProps> = ({
       title={
         <CardHeader>
           {title}
-          {collapsible && (
-            <ArrowView
-              onClick={toggle}
-              $isOpen={!isCollapsed}
-              icon={faChevronRight}
-            />
-          )}
+          {collapsible && <ArrowView onClick={toggle} $isOpen={!isCollapsed} icon={faChevronRight} />}
         </CardHeader>
       }
     >

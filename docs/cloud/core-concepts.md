@@ -4,7 +4,6 @@ Airbyte enables you to build data pipelines and replicate data from a source to 
 
 This page describes the concepts you need to know to use Airbyte.
 
-
 ## Source 
 
 A source is an API, file, database, or data warehouse that you want to ingest data from. 
@@ -17,13 +16,11 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 
 An Airbyte component which pulls data from, or pushes data to, a source or destination.
 
-
 ## Connection
 
 A connection is an automated data pipeline that replicates data from a source to a destination. 
 
 Setting up a connection involves configuring the following parameters:
-
 
 <table>
   <tr>
@@ -63,8 +60,6 @@ Setting up a connection involves configuring the following parameters:
    </td>
   </tr>
 </table>
-
-
 
 ## Stream
 
@@ -154,20 +149,17 @@ After a sync is complete, Airbyte normalizes the data. When setting up a connect
 
 *Note: Custom normalization through dbt is not yet available for Airbyte Cloud.*
 
-
 ## Workspace
 
 A workspace is a grouping of sources, destinations, connections, and other configurations. It lets you collaborate with team members and share resources across your team under a shared billing account. 
 
 When you [sign up](http://cloud.airbyte.io/signup) for Airbyte Cloud, we automatically create your first workspace where you are the only user with access. You can set up your sources and destinations to start syncing data and invite other users to join your workspace.
 
-
 ## Credits
 
 An Airbyte credit is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
 What one credit stands for depends on the source type:
-
 
 <table>
   <tr>

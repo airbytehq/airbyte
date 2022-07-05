@@ -6,7 +6,9 @@ This page will help you manage your Airbyte Cloud workspaces and understand Airb
 
 An Airbyte Workspace allows you to collaborate with other users and manage connections under a shared billing account.
 
-*Note: Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.*
+:::info
+Airbyte [credits](https://airbyte.com/pricing) are assigned per workspace and cannot be transferred between workspaces.
+:::
 
 ### Add users to your workspace
 
@@ -16,7 +18,10 @@ To add a user to your workspace:
 2. In the Workspace Settings sidebar, click **Access Management**.
 3. In the top right-hand corner, click **+ New User**.
 4. On the Add new users window, enter the email address of the user you want to invite to your workspace. Click **Send invitation**.
-<br> *Note: The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.*
+
+    :::info
+    The user will have access to only the workspace you invited them to. Also note that they will be added as a workspace admin by default.
+    :::
 
 ### Switch between multiple workspaces
 
@@ -65,3 +70,41 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Size of a single record: 100MB
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
+
+## Buy Credits
+
+This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://docs.airbyte.com/cloud/core-concepts/#credits) is a unit of measure used to pay for Airbyte resources when you run a sync. See [Pricing](https://airbyte.com/pricing) for more information.
+
+ To buy credits:
+
+1. On the [Airbyte Cloud](http://cloud.airbyte.io) dashboard, click the **star icon**.
+    
+    The Credits page displays.
+
+2. If you are unsure of how many credits you need, click **Talk to sales** to find the right amount for your team.
+
+3. Click **Buy credits**. The Stripe payment page displays.
+
+4. If you want to change the amount of credits, click Qty **200**. **Update quantity** displays, and you can either type the amount or use minus (**-**) or plus (**+**) to change the quantity. Click **Update**. 
+
+    :::note 
+    Purchase limits:
+    * Minimum: 100 credits
+    * Maximum: 999 credits
+    :::
+
+    To buy more credits or a subscription plan, reach out to [Sales](https://airbyte.com/talk-to-sales).
+
+5. Fill out the payment information.
+
+6. Click **Pay**.
+    
+    Your payment is processed, and the Credits page displays the updated quantity of credits, total credit usage, and the credit usage per connection. 
+
+    A receipt for your purchase is sent to your email. [Email us](mailto:ar@airbyte.io) for an invoice.
+
+    :::note 
+    
+    Credits expire after one year if they are not used.
+    
+    :::

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import sys
@@ -36,44 +36,44 @@ class Client:
 
     def __init__(
         self,
-        developer_token: str,
-        customer_id: str,
-        client_secret: str,
-        client_id: str,
         tenant_id: str,
-        redirect_uri: str,
-        refresh_token: str,
         reports_start_date: str,
-        hourly_reports: bool,
-        daily_reports: bool,
-        weekly_reports: bool,
-        monthly_reports: bool,
+        developer_token: str = None,
+        client_id: str = None,
+        client_secret: str = None,
+        refresh_token: str = None,
         **kwargs: Mapping[str, Any],
     ) -> None:
         self.authorization_data: Mapping[str, AuthorizationData] = {}
-        self.authentication = OAuthWebAuthCodeGrant(
-            client_id,
-            client_secret,
-            redirect_uri,
-            tenant=tenant_id,
-        )
-
         self.refresh_token = refresh_token
-        self.customer_id = customer_id
         self.developer_token = developer_token
-        self.hourly_reports = hourly_reports
-        self.daily_reports = daily_reports
-        self.weekly_reports = weekly_reports
-        self.monthly_reports = monthly_reports
 
+        self.client_id = client_id
+        self.client_secret = client_secret
+
+        self.authentication = self._get_auth_client(client_id, tenant_id, client_secret)
         self.oauth: OAuthTokens = self._get_access_token()
         self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
 
+    def _get_auth_client(self, client_id: str, tenant_id: str, client_secret: str = None) -> OAuthWebAuthCodeGrant:
+        # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
+        auth_creds = {
+            "client_id": client_id,
+            "redirection_uri": "",  # should be empty string
+            "client_secret": None,
+            "tenant": tenant_id,
+        }
+        # the `client_secret` should be provided for `non-public clients` only
+        # https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13#request-accesstoken
+        if client_secret and client_secret != "":
+            auth_creds["client_secret"] = client_secret
+        return OAuthWebAuthCodeGrant(**auth_creds)
+
     @lru_cache(maxsize=None)
-    def _get_auth_data(self, account_id: Optional[str] = None) -> AuthorizationData:
+    def _get_auth_data(self, customer_id: str = None, account_id: Optional[str] = None) -> AuthorizationData:
         return AuthorizationData(
             account_id=account_id,
-            customer_id=self.customer_id,
+            customer_id=customer_id,
             developer_token=self.developer_token,
             authentication=self.authentication,
         )
@@ -124,6 +124,7 @@ class Client:
         self,
         service_name: Optional[str],
         operation_name: str,
+        customer_id: Optional[str],
         account_id: Optional[str],
         params: Mapping[str, Any],
         is_report_service: bool = False,
@@ -135,9 +136,9 @@ class Client:
             self.oauth = self._get_access_token()
 
         if is_report_service:
-            service = self._get_reporting_service(account_id=account_id)
+            service = self._get_reporting_service(customer_id=customer_id, account_id=account_id)
         else:
-            service = self.get_service(service_name=service_name, account_id=account_id)
+            service = self.get_service(service_name=service_name, customer_id=customer_id, account_id=account_id)
 
         return getattr(service, operation_name)(**params)
 
@@ -145,22 +146,24 @@ class Client:
     def get_service(
         self,
         service_name: str,
+        customer_id: str = None,
         account_id: Optional[str] = None,
     ) -> ServiceClient:
         return ServiceClient(
             service=service_name,
             version=self.api_version,
-            authorization_data=self._get_auth_data(account_id),
+            authorization_data=self._get_auth_data(customer_id, account_id),
             environment=self.environment,
         )
 
     @lru_cache(maxsize=None)
     def _get_reporting_service(
         self,
+        customer_id: Optional[str] = None,
         account_id: Optional[str] = None,
     ) -> ServiceClient:
         return ReportingServiceManager(
-            authorization_data=self._get_auth_data(account_id),
+            authorization_data=self._get_auth_data(customer_id, account_id),
             poll_interval_in_milliseconds=self.report_poll_interval,
             environment=self.environment,
         )

@@ -1,0 +1,18 @@
+name: Notify Cloud of OSS Push to Master
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+      
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.OCTAVIA_PAT }}
+          repository: airbytehq/airbyte-cloud
+          event-type: oss-push-to-master
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

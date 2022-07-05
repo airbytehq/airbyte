@@ -2,23 +2,24 @@ import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components";
+
 import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import CreateConnectorModal from "./CreateConnectorModal";
-import { RoutePaths } from "pages/routePaths";
-import { useCreateSourceDefinition } from "services/connector/SourceDefinitionService";
-import { useCreateDestinationDefinition } from "services/connector/DestinationDefinitionService";
 
-type IProps = {
+interface IProps {
   type: string;
-};
+}
 
-type ICreateProps = {
+interface ICreateProps {
   name: string;
   documentationUrl: string;
   dockerImageTag: string;
   dockerRepository: string;
-};
+}
 
 const CreateConnector: React.FC<IProps> = ({ type }) => {
   const { push } = useRouter();
@@ -29,13 +30,11 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
     setErrorMessage("");
   };
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   const { mutateAsync: createSourceDefinition } = useCreateSourceDefinition();
 
-  const {
-    mutateAsync: createDestinationDefinition,
-  } = useCreateDestinationDefinition();
+  const { mutateAsync: createDestinationDefinition } = useCreateDestinationDefinition();
 
   const onSubmitSource = async (sourceDefinition: ICreateProps) => {
     setErrorMessage("");
@@ -81,11 +80,7 @@ const CreateConnector: React.FC<IProps> = ({ type }) => {
       )}
 
       {isModalOpen && (
-        <CreateConnectorModal
-          onClose={onChangeModalState}
-          onSubmit={onSubmit}
-          errorMessage={errorMessage}
-        />
+        <CreateConnectorModal onClose={onChangeModalState} onSubmit={onSubmit} errorMessage={errorMessage} />
       )}
     </>
   );

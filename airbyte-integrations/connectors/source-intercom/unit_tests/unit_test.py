@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -179,7 +179,7 @@ def test_streams(config):
         (Teams, "/teams", {"teams": [{"type": "team", "id": "id"}]}, [{"id": "id", "type": "team"}]),
     ],
 )
-def test_read(stream, endpoint, response, expected, config, requests_mock):
+def test_read(stream, endpoint, response, expected, requests_mock):
     requests_mock.get("/conversations", json=response)
     requests_mock.get("/companies/scroll", json=response)
     requests_mock.get(endpoint, json=response)
@@ -194,12 +194,25 @@ def test_read(stream, endpoint, response, expected, config, requests_mock):
     assert records == expected
 
 
-def test_conversation_part_has_conversation_id(requests_mock):
-    """
-    Test shows that conversation_part records include the `conversation_id` field.
-    """
+def build_conversations_response_body(conversations, next_url=None):
+    return {"type": "conversation.list", "pages": {"next": next_url} if next_url else {}, "conversations": conversations}
 
-    response_body = {
+
+def build_conversation_response_body(conversation_id, conversation_parts):
+    return {
+        "type": "conversation",
+        "id": conversation_id,
+        "conversation_parts": {
+            "type": "conversation_part.list",
+            "conversation_parts": conversation_parts,
+            "total_count": len(conversation_parts),
+        },
+    }
+
+
+@pytest.fixture
+def single_conversation_response():
+    return {
         "type": "conversation",
         "id": "151272900024304",
         "created_at": 1647365706,
@@ -213,14 +226,83 @@ def test_conversation_part_has_conversation_id(requests_mock):
             "total_count": 2,
         },
     }
-    url = "https://api.intercom.io/conversations/151272900024304"
-    requests_mock.get(url, json=response_body)
 
-    stream1 = ConversationParts(authenticator=NoAuth())
+
+@pytest.fixture
+def conversation_parts_responses():
+    return [
+        (
+            "https://api.intercom.io/conversations",
+            build_conversations_response_body(
+                conversations=[{"id": "151272900026677", "updated_at": 1650988600}, {"id": "151272900026666", "updated_at": 1650988500}],
+                next_url="https://api.intercom.io/conversations?per_page=2&page=2",
+            ),
+        ),
+        (
+            "https://api.intercom.io/conversations?per_page=2&page=2",
+            build_conversations_response_body(
+                conversations=[
+                    {"id": "151272900026466", "updated_at": 1650988450},
+                    {"id": "151272900026680", "updated_at": 1650988100},  # Older than state, won't be processed
+                ]
+            ),
+        ),
+        (
+            "https://api.intercom.io/conversations/151272900026677",
+            build_conversation_response_body(
+                conversation_id="151272900026677",
+                conversation_parts=[{"id": "13740311961", "updated_at": 1650988300}, {"id": "13740311962", "updated_at": 1650988450}],
+            ),
+        ),
+        (
+            "https://api.intercom.io/conversations/151272900026666",
+            build_conversation_response_body(
+                conversation_id="151272900026666",
+                conversation_parts=[{"id": "13740311955", "updated_at": 1650988150}, {"id": "13740312056", "updated_at": 1650988500}],
+            ),
+        ),
+        (
+            "https://api.intercom.io/conversations/151272900026466",
+            build_conversation_response_body(
+                conversation_id="151272900026466", conversation_parts=[{"id": "13740311970", "updated_at": 1650988600}]
+            ),
+        ),
+    ]
+
+
+def test_conversation_part_has_conversation_id(requests_mock, single_conversation_response):
+    """
+    Test shows that conversation_part records include the `conversation_id` field.
+    """
+    conversation_id = single_conversation_response["id"]
+    url = f"https://api.intercom.io/conversations/{conversation_id}"
+    requests_mock.get(url, json=single_conversation_response)
+
+    conversation_parts = ConversationParts(authenticator=NoAuth())
 
     record_count = 0
-    for record in stream1.read_records(sync_mode=SyncMode.incremental, stream_slice={"id": "151272900024304"}):
+    for record in conversation_parts.read_records(sync_mode=SyncMode.incremental, stream_slice={"id": conversation_id}):
         assert record["conversation_id"] == "151272900024304"
         record_count += 1
 
     assert record_count == 2
+
+
+def test_conversation_part_filtering_based_on_conversation(requests_mock, conversation_parts_responses):
+    """
+    Test shows that conversation_parts filters conversations (from parent stream) correctly
+    """
+    updated_at = 1650988200
+    state = {"updated_at": updated_at}
+    expected_record_ids = set()
+    for response_tuple in conversation_parts_responses:
+        requests_mock.register_uri("GET", response_tuple[0], json=response_tuple[1])
+        if "conversation_parts" in response_tuple[1]:
+            expected_record_ids.update([cp["id"] for cp in response_tuple[1]["conversation_parts"]["conversation_parts"]])
+
+    records = []
+    conversation_parts = ConversationParts(authenticator=NoAuth())
+    for slice in conversation_parts.stream_slices(sync_mode=SyncMode.incremental, stream_state=state):
+        records.extend(list(conversation_parts.read_records(sync_mode=SyncMode.incremental, stream_slice=slice, stream_state=state)))
+
+    assert expected_record_ids == {r["id"] for r in records}

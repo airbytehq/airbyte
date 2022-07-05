@@ -1,40 +1,27 @@
+import { User as FbUser } from "firebase/auth";
 import React, { useCallback, useContext, useMemo, useRef } from "react";
 import { useQueryClient } from "react-query";
-import { User as FbUser } from "firebase/auth";
 import { useEffectOnce } from "react-use";
 
-import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import useTypesafeReducer from "hooks/useTypesafeReducer";
-import {
-  actions,
-  AuthServiceState,
-  authStateReducer,
-  initialState,
-} from "./reducer";
-import { User } from "packages/cloud/lib/domain/users";
 import { AuthProviders } from "packages/cloud/lib/auth/AuthProviders";
+import { GoogleAuthService } from "packages/cloud/lib/auth/GoogleAuthService";
+import { User } from "packages/cloud/lib/domain/users";
 import { useGetUserService } from "packages/cloud/services/users/UserService";
 import { useAuth } from "packages/firebaseReact";
-import { useAnalyticsService } from "hooks/services/Analytics";
-import { getUtmFromStorage } from "utils/utmStorage";
 import { useInitService } from "services/useInitService";
+import { getUtmFromStorage } from "utils/utmStorage";
 
-export type AuthUpdatePassword = (
-  email: string,
-  currentPassword: string,
-  newPassword: string
-) => Promise<void>;
+import { actions, AuthServiceState, authStateReducer, initialState } from "./reducer";
+import { EmailLinkErrorCodes } from "./types";
+
+export type AuthUpdatePassword = (email: string, currentPassword: string, newPassword: string) => Promise<void>;
 
 export type AuthRequirePasswordReset = (email: string) => Promise<void>;
-export type AuthConfirmPasswordReset = (
-  code: string,
-  newPassword: string
-) => Promise<void>;
+export type AuthConfirmPasswordReset = (code: string, newPassword: string) => Promise<void>;
 
-export type AuthLogin = (values: {
-  email: string;
-  password: string;
-}) => Promise<void>;
+export type AuthLogin = (values: { email: string; password: string }) => Promise<void>;
 
 export type AuthSignUp = (form: {
   email: string;
@@ -44,21 +31,20 @@ export type AuthSignUp = (form: {
   news: boolean;
 }) => Promise<void>;
 
-export type AuthChangeEmail = (
-  email: string,
-  password: string
-) => Promise<void>;
+export type AuthChangeEmail = (email: string, password: string) => Promise<void>;
 
 export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
-export type AuthLogout = () => void;
+export type AuthLogout = () => Promise<void>;
 
-type AuthContextApi = {
+interface AuthContextApi {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
+  loggedOut: boolean;
   login: AuthLogin;
+  signUpWithEmailLink: (form: { name: string; email: string; password: string; news: boolean }) => Promise<void>;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
   updateEmail: AuthChangeEmail;
@@ -67,98 +53,24 @@ type AuthContextApi = {
   sendEmailVerification: AuthSendEmailVerification;
   verifyEmail: AuthVerifyEmail;
   logout: AuthLogout;
-};
+}
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
-const getTempSignUpStorageKey = (currentUser: FbUser): string =>
-  `${currentUser.uid}/temp-signup-data`;
-
-const TempSignUpValuesProvider = {
-  get: (
-    currentUser: FbUser
-  ): {
-    companyName: string;
-    name: string;
-    news: boolean;
-  } => {
-    try {
-      const key = getTempSignUpStorageKey(currentUser);
-
-      const storedValue = localStorage.getItem(key);
-
-      if (storedValue) {
-        return JSON.parse(storedValue);
-      }
-    } catch (err) {
-      // passthrough and return default values
-    }
-
-    return {
-      companyName: "",
-      name: currentUser.email ?? "",
-      news: false,
-    };
-  },
-  save: (
-    currentUser: FbUser,
-    v: { companyName: string; name: string; news: boolean }
-  ) => {
-    localStorage.setItem(
-      getTempSignUpStorageKey(currentUser),
-      JSON.stringify(v)
-    );
-  },
-};
-
 export const AuthenticationProvider: React.FC = ({ children }) => {
-  const [
-    state,
-    { loggedIn, emailVerified, authInited, loggedOut },
-  ] = useTypesafeReducer<AuthServiceState, typeof actions>(
-    authStateReducer,
-    initialState,
-    actions
-  );
+  const [state, { loggedIn, emailVerified, authInited, loggedOut }] = useTypesafeReducer<
+    AuthServiceState,
+    typeof actions
+  >(authStateReducer, initialState, actions);
   const auth = useAuth();
   const userService = useGetUserService();
   const analytics = useAnalyticsService();
-  const authService = useInitService(() => new GoogleAuthService(() => auth), [
-    auth,
-  ]);
+  const authService = useInitService(() => new GoogleAuthService(() => auth), [auth]);
 
   const onAfterAuth = useCallback(
-    async (currentUser: FbUser) => {
-      let user: User | undefined;
-
-      try {
-        user = await userService.getByAuthId(
-          currentUser.uid,
-          AuthProviders.GoogleIdentityPlatform
-        );
-      } catch (err) {
-        if (currentUser.email) {
-          const encodedData = TempSignUpValuesProvider.get(currentUser);
-          user = await userService.create({
-            authProvider: AuthProviders.GoogleIdentityPlatform,
-            authUserId: currentUser.uid,
-            email: currentUser.email,
-            name: encodedData.name,
-            companyName: encodedData.companyName,
-            news: encodedData.news,
-          });
-          analytics.track("Airbyte.UI.User.Created", {
-            user_id: user.userId,
-            name: user.name,
-            email: user.email,
-            ...getUtmFromStorage(),
-          });
-        }
-      }
-
-      if (user) {
-        loggedIn({ user, emailVerified: currentUser.emailVerified });
-      }
+    async (currentUser: FbUser, user?: User) => {
+      user ??= await userService.getByAuthId(currentUser.uid, AuthProviders.GoogleIdentityPlatform);
+      loggedIn({ user, emailVerified: currentUser.emailVerified });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [userService]
@@ -187,6 +99,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       inited: state.inited,
       isLoading: state.loading,
       emailVerified: state.emailVerified,
+      loggedOut: state.loggedOut,
       async login(values: { email: string; password: string }): Promise<void> {
         await authService.login(values.email, values.password);
 
@@ -195,19 +108,16 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         }
       },
       async logout(): Promise<void> {
+        await userService.revokeUserSession();
         await authService.signOut();
+        queryClient.removeQueries();
         loggedOut();
-        await queryClient.invalidateQueries();
       },
       async updateEmail(email, password): Promise<void> {
         await userService.changeEmail(email);
         return authService.updateEmail(email, password);
       },
-      async updatePassword(
-        email: string,
-        currentPassword: string,
-        newPassword: string
-      ): Promise<void> {
+      async updatePassword(email: string, currentPassword: string, newPassword: string): Promise<void> {
         // re-authentication may be needed before updating password
         // https://firebase.google.com/docs/auth/web/manage-users#re-authenticate_a_user
         await authService.reauthenticate(email, currentPassword);
@@ -223,11 +133,28 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         await authService.confirmEmailVerify(code);
         emailVerified(true);
       },
-      async confirmPasswordReset(
-        code: string,
-        newPassword: string
-      ): Promise<void> {
+      async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
+      },
+      async signUpWithEmailLink({ name, email, password, news }): Promise<void> {
+        let firebaseUser: FbUser;
+
+        try {
+          ({ user: firebaseUser } = await authService.signInWithEmailLink(email));
+          await authService.updatePassword(password);
+        } catch (e) {
+          await authService.signOut();
+          if (e.message === EmailLinkErrorCodes.LINK_EXPIRED) {
+            await userService.resendWithSignInLink({ email });
+          }
+          throw e;
+        }
+
+        if (firebaseUser) {
+          const user = await userService.getByAuthId(firebaseUser.uid, AuthProviders.GoogleIdentityPlatform);
+          await userService.update({ userId: user.userId, authUserId: firebaseUser.uid, name, news });
+          await onAfterAuth(firebaseUser, { ...user, name });
+        }
       },
       async signUp(form: {
         email: string;
@@ -236,14 +163,28 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
         name: string;
         news: boolean;
       }): Promise<void> {
-        const creds = await authService.signUp(form.email, form.password);
-        TempSignUpValuesProvider.save(creds.user, {
-          companyName: form.companyName,
+        // Create a user account in firebase
+        const { user: fbUser } = await authService.signUp(form.email, form.password);
+
+        // Create the Airbyte user on our server
+        const user = await userService.create({
+          authProvider: AuthProviders.GoogleIdentityPlatform,
+          authUserId: fbUser.uid,
+          email: form.email,
           name: form.name,
+          companyName: form.companyName,
           news: form.news,
         });
 
+        // Send verification mail via firebase
         await authService.sendEmailVerifiedLink();
+
+        analytics.track("Airbyte.UI.User.Created", {
+          user_id: fbUser.uid,
+          name: user.name,
+          email: user.email,
+          ...getUtmFromStorage(),
+        });
 
         if (auth.currentUser) {
           await onAfterAuth(auth.currentUser);
@@ -261,9 +202,7 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
 export const useAuthService = (): AuthContextApi => {
   const authService = useContext(AuthContext);
   if (!authService) {
-    throw new Error(
-      "useAuthService must be used within a AuthenticationService."
-    );
+    throw new Error("useAuthService must be used within a AuthenticationService.");
   }
 
   return authService;

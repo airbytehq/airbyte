@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -24,10 +24,12 @@ import org.apache.commons.lang3.StringUtils;
 
 public class AvroSerializedBuffer extends BaseSerializedBuffer {
 
+  public static final String DEFAULT_SUFFIX = ".avro";
+
   private final CodecFactory codecFactory;
   private final Schema schema;
-  private final AvroRecordFactory avroRecordFactory;
-  private DataFileWriter<Record> dataFileWriter;
+  protected final AvroRecordFactory avroRecordFactory;
+  protected DataFileWriter<Record> dataFileWriter;
 
   public AvroSerializedBuffer(final BufferStorage bufferStorage, final CodecFactory codecFactory, final Schema schema) throws Exception {
     super(bufferStorage);

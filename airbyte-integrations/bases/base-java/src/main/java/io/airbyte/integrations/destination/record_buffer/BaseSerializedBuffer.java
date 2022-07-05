@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
@@ -147,7 +147,11 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
   @Override
   public void close() throws Exception {
     if (!isClosed) {
-      inputStream.close();
+      // inputStream can be null if the accept method encounters
+      // an error before inputStream is initialized
+      if (inputStream != null) {
+        inputStream.close();
+      }
       bufferStorage.deleteFile();
       isClosed = true;
     }

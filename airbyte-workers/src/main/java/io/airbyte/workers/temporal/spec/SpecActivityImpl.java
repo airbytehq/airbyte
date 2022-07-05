@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.spec;
@@ -12,14 +12,16 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.DefaultGetSpecWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.general.DefaultGetSpecWorker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
+import io.temporal.activity.Activity;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
@@ -52,6 +54,8 @@ public class SpecActivityImpl implements SpecActivity {
   public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
     final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
+    final ActivityExecutionContext context = Activity.getExecutionContext();
+
     final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
         workerEnvironment,
@@ -59,9 +63,10 @@ public class SpecActivityImpl implements SpecActivity {
         jobRunConfig,
         getWorkerFactory(launcherConfig),
         inputSupplier,
-        new CancellationHandler.TemporalCancellationHandler(),
+        new CancellationHandler.TemporalCancellationHandler(context),
         jobPersistence,
-        airbyteVersion);
+        airbyteVersion,
+        () -> context);
 
     return temporalAttemptExecution.get();
   }

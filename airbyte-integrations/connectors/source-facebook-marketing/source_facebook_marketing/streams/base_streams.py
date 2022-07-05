@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -16,7 +16,7 @@ from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adimage import AdImage
 from facebook_business.api import FacebookAdsApiBatch, FacebookRequest, FacebookResponse
 
-from .common import MAX_BATCH_SIZE, deep_merge
+from .common import deep_merge
 
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
@@ -30,8 +30,6 @@ class FBMarketingStream(Stream, ABC):
     primary_key = "id"
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
-    # number of records per page when response has pagination
-    page_size = 100
     # use batch API to retrieve details for each record in a stream
     use_batch = True
     # this flag will override `include_deleted` option for streams that does not support it
@@ -39,10 +37,12 @@ class FBMarketingStream(Stream, ABC):
     # entity prefix for `include_deleted` filter, it usually matches singular version of stream name
     entity_prefix = None
 
-    def __init__(self, api: "API", include_deleted: bool = False, **kwargs):
+    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
         super().__init__(**kwargs)
         self._api = api
+        self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
+        self.max_batch_size = max_batch_size if max_batch_size is not None else 50
 
     @cached_property
     def fields(self) -> List[str]:
@@ -69,7 +69,7 @@ class FBMarketingStream(Stream, ABC):
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
         for request in pending_requests:
             api_batch.add_request(request, success=success, failure=failure)
-            if len(api_batch) == MAX_BATCH_SIZE:
+            if len(api_batch) == self.max_batch_size:
                 self._execute_batch(api_batch)
                 yield from records
                 records = []

@@ -3,7 +3,7 @@
 connector_image: airbyte/source-google-sheets:dev
 tests:
   spec:
-    - spec_path: "google_sheets_source/spec.json"
+    - spec_path: "google_sheets_source/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"

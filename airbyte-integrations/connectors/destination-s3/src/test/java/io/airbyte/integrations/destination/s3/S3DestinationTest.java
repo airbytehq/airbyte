@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -43,14 +43,11 @@ public class S3DestinationTest {
     when(s3.uploadPart(any(UploadPartRequest.class))).thenReturn(uploadPartResult);
     when(s3.initiateMultipartUpload(any(InitiateMultipartUploadRequest.class))).thenReturn(uploadResult);
 
-    config = new S3DestinationConfig(
-        "fake-endpoint",
-        "fake-bucket",
-        "fake-bucketPath",
-        "fake-region",
-        "fake-accessKeyId",
-        "fake-secretAccessKey",
-        S3DestinationConfig.DEFAULT_PART_SIZE_MB, null, s3);
+    config = S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
+        .withEndpoint("fake-endpoint")
+        .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
+        .withS3Client(s3)
+        .get();
   }
 
   @Test
@@ -61,15 +58,11 @@ public class S3DestinationTest {
     final S3Destination destinationFail = new S3Destination(new S3DestinationConfigFactory() {
 
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
-        return new S3DestinationConfig(
-            "fake-endpoint",
-            "fake-bucket",
-            "fake-bucketPath",
-            "fake-region",
-            "fake-accessKeyId",
-            "fake-secretAccessKey",
-            S3DestinationConfig.DEFAULT_PART_SIZE_MB,
-            null, s3);
+        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
+            .withEndpoint("fake-endpoint")
+            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
+            .withS3Client(s3)
+            .get();
       }
 
     });
@@ -87,15 +80,11 @@ public class S3DestinationTest {
     final S3Destination destinationSuccess = new S3Destination(new S3DestinationConfigFactory() {
 
       public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
-        return new S3DestinationConfig(
-            "fake-endpoint",
-            "fake-bucket",
-            "fake-bucketPath",
-            "fake-region",
-            "fake-accessKeyId",
-            "fake-secretAccessKey",
-            S3DestinationConfig.DEFAULT_PART_SIZE_MB,
-            null, s3);
+        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
+            .withEndpoint("fake-endpoint")
+            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
+            .withS3Client(s3)
+            .get();
       }
 
     });

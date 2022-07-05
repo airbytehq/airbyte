@@ -1,12 +1,11 @@
 import { useRef } from "react";
 
-import { ServiceFormValues } from "views/Connector/ServiceForm";
-import { ConnectorHelper, Scheduler } from "core/domain/connector";
+import { ConnectorHelper } from "core/domain/connector";
 import { ConnectorT } from "core/domain/connector/types";
-import {
-  CheckConnectorParams,
-  useCheckConnector,
-} from "hooks/services/useConnector";
+import { CheckConnectorParams, useCheckConnector } from "hooks/services/useConnector";
+import { ServiceFormValues } from "views/Connector/ServiceForm";
+
+import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 
 export const useTestConnector = (
   props: {
@@ -21,12 +20,11 @@ export const useTestConnector = (
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
+  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
   error: Error | null;
+  reset: () => void;
 } => {
-  const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(
-    props.formType
-  );
+  const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(props.formType);
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -34,6 +32,7 @@ export const useTestConnector = (
     isTestConnectionInProgress: isLoading,
     isSuccess,
     error,
+    reset,
     onStopTesting: () => {
       abortControllerRef.current?.abort();
       reset();
@@ -61,21 +60,17 @@ export const useTestConnector = (
             signal: controller.signal,
           };
         }
-      } else {
+      } else if (values) {
         // creating new connection
-        if (values) {
-          payload = {
-            connectionConfiguration: values.connectionConfiguration,
-            signal: controller.signal,
-            selectedConnectorDefinitionId: values.serviceType,
-          };
-        }
+        payload = {
+          connectionConfiguration: values.connectionConfiguration,
+          signal: controller.signal,
+          selectedConnectorDefinitionId: values.serviceType,
+        };
       }
 
       if (!payload) {
-        console.error(
-          "Unexpected state met: no connectorId or connectorDefinitionId provided"
-        );
+        console.error("Unexpected state met: no connectorId or connectorDefinitionId provided");
 
         throw new Error("Unexpected state met");
       }

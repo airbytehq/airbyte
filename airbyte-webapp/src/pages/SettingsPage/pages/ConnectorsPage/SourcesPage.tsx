@@ -2,20 +2,18 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
+import { SourceDefinitionRead } from "core/request/AirbyteClient";
 import useConnector from "hooks/services/useConnector";
-import ConnectorsView from "./components/ConnectorsView";
 import { useSourceList } from "hooks/services/useSourceHook";
-import { SourceDefinition } from "core/domain/connector";
-import {
-  useSourceDefinitionList,
-  useUpdateSourceDefinition,
-} from "services/connector/SourceDefinitionService";
+import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
+
+import ConnectorsView from "./components/ConnectorsView";
 
 const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
@@ -32,8 +30,7 @@ const SourcesPage: React.FC = () => {
         });
         setFeedbackList({ ...feedbackList, [id]: "success" });
       } catch (e) {
-        const messageId =
-          e.status === 422 ? "form.imageCannotFound" : "form.someError";
+        const messageId = e.status === 422 ? "form.imageCannotFound" : "form.someError";
         setFeedbackList({
           ...feedbackList,
           [id]: formatMessage({ id: messageId }),
@@ -43,12 +40,11 @@ const SourcesPage: React.FC = () => {
     [feedbackList, formatMessage, updateSourceDefinition]
   );
 
-  const usedSourcesDefinitions: SourceDefinition[] = useMemo(() => {
-    const sourceDefinitionMap = new Map<string, SourceDefinition>();
+  const usedSourcesDefinitions: SourceDefinitionRead[] = useMemo(() => {
+    const sourceDefinitionMap = new Map<string, SourceDefinitionRead>();
     sources.forEach((source) => {
       const sourceDefinition = sourceDefinitions.find(
-        (sourceDefinition) =>
-          sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
+        (sourceDefinition) => sourceDefinition.sourceDefinitionId === source.sourceDefinitionId
       );
 
       if (sourceDefinition) {

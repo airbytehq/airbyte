@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { components, SingleValueProps, OptionTypeBase } from "react-select";
+import styled from "styled-components";
 
 import { IDataItem } from "./Option";
 import Text from "./Text";
@@ -26,9 +26,7 @@ const SingleValue: React.FC<IProps> = (props) => {
     <ItemView>
       {props.data.img ? <Icon>{props.data.img}</Icon> : null}
       <Text>
-        <components.SingleValue {...props}>
-          {props.children}
-        </components.SingleValue>
+        <components.SingleValue {...props}>{props.children}</components.SingleValue>
       </Text>
     </ItemView>
   );

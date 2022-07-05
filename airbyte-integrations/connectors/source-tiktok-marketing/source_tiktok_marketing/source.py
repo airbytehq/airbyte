@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, List, Mapping, Tuple
@@ -18,6 +18,7 @@ from .spec import (
     SourceTiktokMarketingSpec,
 )
 from .streams import (
+    DEFAULT_END_DATE,
     DEFAULT_START_DATE,
     AdGroupAudienceReports,
     AdGroups,
@@ -25,16 +26,27 @@ from .streams import (
     Ads,
     AdsAudienceReports,
     AdsReports,
+    AdvertiserIds,
     Advertisers,
     AdvertisersAudienceReports,
     AdvertisersReports,
+    BasicReports,
     Campaigns,
     CampaignsAudienceReportsByCountry,
     CampaignsReports,
+    Daily,
+    Hourly,
+    Lifetime,
     ReportGranularity,
 )
 
 DOCUMENTATION_URL = "https://docs.airbyte.io/integrations/sources/tiktok-marketing"
+
+
+def get_report_stream(report: BasicReports, granularity: ReportGranularity) -> BasicReports:
+    """Fabric method to generate final class with name like: AdsReports + Hourly"""
+    report_class_name = f"{report.__name__}{granularity.__name__}"
+    return type(report_class_name, (granularity, report), {})
 
 
 class TiktokTokenAuthenticator(TokenAuthenticator):
@@ -75,6 +87,7 @@ class SourceTiktokMarketing(AbstractSource):
     @staticmethod
     def _prepare_stream_args(config: Mapping[str, Any]) -> Mapping[str, Any]:
         """Converts an input configure to stream arguments"""
+
         credentials = config.get("credentials")
         if credentials:
             # used for new config format
@@ -91,9 +104,11 @@ class SourceTiktokMarketing(AbstractSource):
         return {
             "authenticator": TiktokTokenAuthenticator(access_token),
             "start_date": config.get("start_date") or DEFAULT_START_DATE,
+            "end_date": config.get("end_date") or DEFAULT_END_DATE,
             "advertiser_id": advertiser_id,
             "app_id": app_id,
             "secret": secret,
+            "access_token": access_token,
         }
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
@@ -108,21 +123,81 @@ class SourceTiktokMarketing(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         args = self._prepare_stream_args(config)
-        report_granularity = config.get("report_granularity") or ReportGranularity.default()
-        report_args = dict(report_granularity=report_granularity, **args)
-        advertisers_reports = AdvertisersReports(**report_args)
+
+        is_production = not (args["advertiser_id"])
+
+        report_granularity = config.get("report_granularity")
+
+        # 1. Basic streams:
         streams = [
-            Ads(**args),
-            AdsReports(**report_args),
             Advertisers(**args),
-            advertisers_reports if not advertisers_reports.is_sandbox else None,
+            Ads(**args),
             AdGroups(**args),
-            AdGroupsReports(**report_args),
             Campaigns(**args),
-            CampaignsReports(**report_args),
-            CampaignsAudienceReportsByCountry(**report_args),
-            AdGroupAudienceReports(**report_args),
-            AdsAudienceReports(**report_args),
-            AdvertisersAudienceReports(**report_args),
         ]
-        return [stream for stream in streams if stream]
+
+        if is_production:
+            streams.append(AdvertiserIds(**args))
+
+        # Report streams in different connector version:
+        # for < 0.1.13 - expose report streams initialized with 'report_granularity' argument, like:
+        #     AdsReports(report_granularity='DAILY')
+        #     AdsReports(report_granularity='LIFETIME')
+        # for >= 0.1.13 - expose report streams in format: <report_type>_<granularity>, like:
+        #     AdsReportsDaily(Daily, AdsReports)
+        #     AdsReportsLifetime(Lifetime, AdsReports)
+
+        if report_granularity:
+            # for version < 0.1.13 - compatibility with old config with 'report_granularity' option
+
+            # 2. Basic report streams:
+            report_args = dict(report_granularity=report_granularity, **args)
+            streams.extend(
+                [
+                    AdsReports(**report_args),
+                    AdGroupsReports(**report_args),
+                    CampaignsReports(**report_args),
+                ]
+            )
+
+            # 3. Audience report streams:
+            if not report_granularity == ReportGranularity.LIFETIME:
+                # https://ads.tiktok.com/marketing_api/docs?id=1707957217727489
+                # Audience report only supports lifetime metrics at the ADVERTISER level.
+                streams.extend(
+                    [
+                        AdsAudienceReports(**report_args),
+                        AdGroupAudienceReports(**report_args),
+                        CampaignsAudienceReportsByCountry(**report_args),
+                    ]
+                )
+
+            # 4. streams work only in prod env
+            if is_production:
+                streams.extend(
+                    [
+                        AdvertisersReports(**report_args),
+                        AdvertisersAudienceReports(**report_args),
+                    ]
+                )
+
+        else:
+            # for version >= 0.1.13:
+
+            # 2. Basic report streams:
+            reports = [AdsReports, AdGroupsReports, CampaignsReports]
+            if is_production:
+                # 2.1 streams work only in prod env
+                reports.extend([AdvertisersReports, AdvertisersAudienceReports])
+
+            for Report in reports:
+                for Granularity in [Hourly, Daily, Lifetime]:
+                    streams.append(get_report_stream(Report, Granularity)(**args))
+
+            # 3. Audience report streams:
+            # Audience report supports lifetime metrics only at the ADVERTISER level (see 2.1).
+            for Report in [AdsAudienceReports, AdGroupAudienceReports, CampaignsAudienceReportsByCountry]:
+                for Granularity in [Hourly, Daily]:
+                    streams.append(get_report_stream(Report, Granularity)(**args))
+
+        return streams

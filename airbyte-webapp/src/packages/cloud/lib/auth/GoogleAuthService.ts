@@ -4,6 +4,7 @@ import {
   UserCredential,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithEmailLink,
   sendPasswordResetEmail,
   confirmPasswordReset,
   updateProfile,
@@ -16,9 +17,9 @@ import {
   AuthErrorCodes,
 } from "firebase/auth";
 
-import { FieldError } from "packages/cloud/lib/errors/FieldError";
-import { ErrorCodes } from "packages/cloud/services/auth/types";
 import { Provider } from "config";
+import { FieldError } from "packages/cloud/lib/errors/FieldError";
+import { EmailLinkErrorCodes, ErrorCodes } from "packages/cloud/services/auth/types";
 
 interface AuthService {
   login(email: string, password: string): Promise<UserCredential>;
@@ -27,10 +28,7 @@ interface AuthService {
 
   signUp(email: string, password: string): Promise<UserCredential>;
 
-  reauthenticate(
-    email: string,
-    passwordPassword: string
-  ): Promise<UserCredential>;
+  reauthenticate(email: string, passwordPassword: string): Promise<UserCredential>;
 
   updatePassword(newPassword: string): Promise<void>;
 
@@ -41,6 +39,8 @@ interface AuthService {
   sendEmailVerifiedLink(): Promise<void>;
 
   updateEmail(email: string, password: string): Promise<void>;
+
+  signInWithEmailLink(email: string): Promise<UserCredential>;
 }
 
 export class GoogleAuthService implements AuthService {
@@ -55,40 +55,39 @@ export class GoogleAuthService implements AuthService {
   }
 
   async login(email: string, password: string): Promise<UserCredential> {
-    return signInWithEmailAndPassword(this.auth, email, password).catch(
-      (err) => {
-        switch (err.code) {
-          case AuthErrorCodes.INVALID_EMAIL:
-            throw new FieldError("email", ErrorCodes.Invalid);
-          case AuthErrorCodes.USER_CANCELLED:
-          case AuthErrorCodes.USER_DISABLED:
-            throw new FieldError("email", "disabled");
-          case AuthErrorCodes.USER_DELETED:
-            throw new FieldError("email", "notfound");
-          case AuthErrorCodes.INVALID_PASSWORD:
-            throw new FieldError("password", ErrorCodes.Invalid);
-        }
-
-        throw err;
+    return signInWithEmailAndPassword(this.auth, email, password).catch((err) => {
+      switch (err.code) {
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", ErrorCodes.Invalid);
+        case AuthErrorCodes.USER_CANCELLED:
+        case AuthErrorCodes.USER_DISABLED:
+          throw new FieldError("email", "disabled");
+        case AuthErrorCodes.USER_DELETED:
+          throw new FieldError("email", "notfound");
+        case AuthErrorCodes.INVALID_PASSWORD:
+          throw new FieldError("password", ErrorCodes.Invalid);
       }
-    );
+
+      throw err;
+    });
   }
 
   async signUp(email: string, password: string): Promise<UserCredential> {
-    return createUserWithEmailAndPassword(this.auth, email, password).catch(
-      (err) => {
-        switch (err.code) {
-          case AuthErrorCodes.EMAIL_EXISTS:
-            throw new FieldError("email", ErrorCodes.Duplicate);
-          case AuthErrorCodes.INVALID_EMAIL:
-            throw new FieldError("email", ErrorCodes.Invalid);
-          case AuthErrorCodes.WEAK_PASSWORD:
-            throw new FieldError("password", ErrorCodes.Validation);
-        }
-
-        throw err;
+    if (password.length < 12) {
+      throw new FieldError("password", "signup.password.minLength");
+    }
+    return createUserWithEmailAndPassword(this.auth, email, password).catch((err) => {
+      switch (err.code) {
+        case AuthErrorCodes.EMAIL_EXISTS:
+          throw new FieldError("email", ErrorCodes.Duplicate);
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", ErrorCodes.Invalid);
+        case AuthErrorCodes.WEAK_PASSWORD:
+          throw new FieldError("password", ErrorCodes.Validation);
       }
-    );
+
+      throw err;
+    });
   }
 
   async updateProfile(displayName: string): Promise<void> {
@@ -98,10 +97,7 @@ export class GoogleAuthService implements AuthService {
     return updateProfile(this.auth.currentUser, { displayName });
   }
 
-  async reauthenticate(
-    email: string,
-    password: string
-  ): Promise<UserCredential> {
+  async reauthenticate(email: string, password: string): Promise<UserCredential> {
     if (this.auth.currentUser === null) {
       throw new Error("You must log in first to reauthenticate!");
     }
@@ -158,6 +154,25 @@ export class GoogleAuthService implements AuthService {
 
   async confirmEmailVerify(code: string): Promise<void> {
     return applyActionCode(this.auth, code);
+  }
+
+  async signInWithEmailLink(email: string): Promise<UserCredential> {
+    try {
+      return await signInWithEmailLink(this.auth, email);
+    } catch (e) {
+      switch (e?.code) {
+        case AuthErrorCodes.INVALID_EMAIL:
+          throw new FieldError("email", EmailLinkErrorCodes.EMAIL_MISMATCH);
+        case AuthErrorCodes.INVALID_OOB_CODE:
+          // The link was already used
+          throw new Error(EmailLinkErrorCodes.LINK_INVALID);
+        case AuthErrorCodes.EXPIRED_OOB_CODE:
+          // The link expired
+          throw new Error(EmailLinkErrorCodes.LINK_EXPIRED);
+      }
+
+      throw e;
+    }
   }
 
   signOut(): Promise<void> {

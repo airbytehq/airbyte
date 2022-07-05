@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { StatusIcon } from "components";
 
@@ -41,13 +41,8 @@ const ErrorSection: React.FC<{
   </ErrorBlock>
 );
 
-const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({
-  errorMessage,
-}) => (
-  <ErrorSection
-    errorTitle={<FormattedMessage id="form.failedTests" />}
-    errorMessage={errorMessage}
-  />
+const TestingConnectionError: React.FC<{ errorMessage: React.ReactNode }> = ({ errorMessage }) => (
+  <ErrorSection errorTitle={<FormattedMessage id="form.failedTests" />} errorMessage={errorMessage} />
 );
 
 const FetchingConnectorError: React.FC = () => (

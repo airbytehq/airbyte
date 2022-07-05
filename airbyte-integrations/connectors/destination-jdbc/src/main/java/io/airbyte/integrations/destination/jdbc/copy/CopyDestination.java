@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.Destination;
@@ -12,6 +13,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,9 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
 
   public abstract ExtendedNameTransformer getNameTransformer();
 
-  public abstract JdbcDatabase getDatabase(JsonNode config) throws Exception;
+  public abstract DataSource getDataSource(JsonNode config);
+
+  public abstract JdbcDatabase getDatabase(DataSource dataSource);
 
   public abstract SqlOperations getSqlOperations();
 
@@ -54,7 +58,10 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
           .withMessage("Could not connect to the staging persistence with the provided configuration. \n" + e.getMessage());
     }
 
-    try (final JdbcDatabase database = getDatabase(config)) {
+    final DataSource dataSource = getDataSource(config);
+
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
       final var nameTransformer = getNameTransformer();
       final var outputSchema = nameTransformer.convertStreamName(config.get(schemaFieldName).asText());
       AbstractJdbcDestination.attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, getSqlOperations());
@@ -65,6 +72,12 @@ public abstract class CopyDestination extends BaseConnector implements Destinati
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Could not connect to the warehouse with the provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
+      }
     }
   }
 

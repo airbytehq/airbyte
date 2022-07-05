@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
@@ -19,9 +19,9 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from pendulum import DateTime
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
-from source_amazon_ads.spec import AmazonAdsConfig
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 
 logger = AirbyteLogger()
@@ -97,17 +97,17 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     LOOK_BACK_WINDOW = 3
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
-    REPORT_DATE_FORMAT = "%Y%m%d"
+    REPORT_DATE_FORMAT = "YYYYMMDD"
     cursor_field = "reportDate"
 
-    def __init__(self, config: AmazonAdsConfig, profiles: List[Profile], authenticator: Oauth2Authenticator):
+    def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = timedelta(minutes=config.report_wait_timeout).total_seconds
-        self.report_generation_maximum_retries = config.report_generation_max_retries
+        self.report_wait_timeout = timedelta(minutes=config.get("report_wait_timeout", 30)).total_seconds
+        self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         # Set start date from config file, should be in UTC timezone.
-        self._start_date = pendulum.parse(config.start_date).set(tz="UTC") if config.start_date else None
+        self._start_date = pendulum.parse(config.get("start_date")).set(tz="UTC") if config.get("start_date") else None
         super().__init__(config, profiles)
 
     @property
@@ -264,7 +264,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return response
 
     @staticmethod
-    def get_report_date_ranges(start_report_date: Optional[datetime]) -> Iterable[str]:
+    def get_report_date_ranges(start_report_date: Optional[DateTime]) -> Iterable[str]:
         """
         Generates dates in YYYYMMDD format for each day started from
         start_report_date until current date (current date included)
@@ -273,7 +273,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :return List of days from start_report_date up until today in format
         specified by REPORT_DATE_FORMAT variable.
         """
-        now = datetime.utcnow()
+        now = pendulum.now(tz="UTC")
         if not start_report_date:
             start_report_date = now
 
@@ -283,7 +283,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
         for days in range(0, (now - start_report_date).days + 1):
             next_date = start_report_date + timedelta(days=days)
-            next_date = next_date.strftime(ReportStream.REPORT_DATE_FORMAT)
+            next_date = next_date.format(ReportStream.REPORT_DATE_FORMAT)
             yield next_date
 
     def stream_slices(
@@ -376,10 +376,10 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         :param report_date requested date that stored in stream state.
         :return date parameter for Amazon Ads generate report.
         """
-        report_date = datetime.strptime(report_date, ReportStream.REPORT_DATE_FORMAT)
+        report_date = pendulum.from_format(report_date, ReportStream.REPORT_DATE_FORMAT)
         profile_tz = pytz.timezone(profile.timezone)
         profile_time = report_date.astimezone(profile_tz)
-        return profile_time.strftime(ReportStream.REPORT_DATE_FORMAT)
+        return profile_time.format(ReportStream.REPORT_DATE_FORMAT)
 
     @backoff.on_exception(
         backoff.expo,

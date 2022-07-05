@@ -1,17 +1,18 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from pytest import fixture
 
 
 @fixture
-def test_config():
+def config():
     return {
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
         "scope": "test_scope",
         "refresh_token": "test_refresh",
+        "region": "NA",
     }
 
 

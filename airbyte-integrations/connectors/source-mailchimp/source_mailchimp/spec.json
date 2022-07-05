@@ -9,7 +9,7 @@
     "properties": {
       "credentials": {
         "type": "object",
-        "title": "Authentication Method",
+        "title": "Authentication *",
         "oneOf": [
           {
             "title": "OAuth2.0",
@@ -19,8 +19,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "oauth2.0",
-                "enum": ["oauth2.0"],
-                "default": "oauth2.0",
                 "order": 0
               },
               "client_id": {
@@ -51,8 +49,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "apikey",
-                "enum": ["apikey"],
-                "default": "apikey",
                 "order": 1
               },
               "apikey": {

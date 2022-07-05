@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -30,8 +30,6 @@ import org.junit.jupiter.api.Test;
 
 class SnowflakeS3StreamCopierTest {
 
-  private static final int PART_SIZE = 5;
-
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
   private static final Timestamp UPLOAD_TIME = Timestamp.from(Instant.ofEpochMilli(1639077474000L));
 
@@ -46,23 +44,21 @@ class SnowflakeS3StreamCopierTest {
     db = mock(JdbcDatabase.class);
     sqlOperations = mock(SqlOperations.class);
 
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(
+        "fake-bucket",
+        "fake-bucketPath",
+        "fake-region")
+        .withEndpoint("fake-endpoint")
+        .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
+        .get();
+
     copier = (SnowflakeS3StreamCopier) new SnowflakeS3StreamCopierFactory().create(
         // In reality, this is normally a UUID - see CopyConsumerFactory#createWriteConfigs
         "fake-staging-folder",
         "fake-schema",
         s3Client,
         db,
-        new S3CopyConfig(
-            true,
-            new S3DestinationConfig(
-                "fake-endpoint",
-                "fake-bucket",
-                "fake-bucketPath",
-                "fake-region",
-                "fake-access-key-id",
-                "fake-secret-access-key",
-                PART_SIZE,
-                null)),
+        new S3CopyConfig(true, s3Config),
         new ExtendedNameTransformer(),
         sqlOperations,
         new ConfiguredAirbyteStream()
@@ -80,7 +76,7 @@ class SnowflakeS3StreamCopierTest {
     }
 
     copier.copyStagingFileToTemporaryTable();
-    Set<String> stagingFiles = copier.getStagingFiles();
+    final Set<String> stagingFiles = copier.getStagingFiles();
     // check the use of all files for staging
     Assertions.assertTrue(stagingFiles.size() > 1);
 

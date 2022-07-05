@@ -1,17 +1,17 @@
-import React from "react";
 import { Form, useFormikContext } from "formik";
+import React from "react";
 import styled from "styled-components";
 
 import { Spinner } from "components";
 
 import { FormBlock } from "core/form/types";
-import { ServiceFormValues } from "./types";
-import { useServiceForm } from "./serviceFormContext";
 
+import CreateControls from "./components/CreateControls";
+import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
-import EditControls from "./components/EditControls";
-import CreateControls from "./components/CreateControls";
+import { useServiceForm } from "./serviceFormContext";
+import { ServiceFormValues } from "./types";
 
 const FormContainer = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -26,7 +26,7 @@ const LoadingMessage = styled.div`
   margin-top: 10px;
 `;
 
-type FormRootProps = {
+interface FormRootProps {
   formFields: FormBlock;
   hasSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
@@ -35,7 +35,7 @@ type FormRootProps = {
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
-};
+}
 
 const FormRoot: React.FC<FormRootProps> = ({
   isTestConnectionInProgress = false,
@@ -47,24 +47,13 @@ const FormRoot: React.FC<FormRootProps> = ({
   hasSuccess,
   onStopTestingConnector,
 }) => {
-  const {
-    resetForm,
-    dirty,
-    isSubmitting,
-    isValid,
-  } = useFormikContext<ServiceFormValues>();
+  const { resetForm, dirty, isSubmitting, isValid } = useFormikContext<ServiceFormValues>();
 
-  const {
-    resetUiFormProgress,
-    isLoadingSchema,
-    selectedService,
-    isEditMode,
-    formType,
-  } = useServiceForm();
+  const { resetUiFormProgress, isLoadingSchema, selectedService, isEditMode, formType } = useServiceForm();
 
   return (
     <FormContainer>
-      <FormSection blocks={formFields} />
+      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
       {isLoadingSchema && (
         <LoaderContainer>
           <Spinner />
@@ -100,6 +89,7 @@ const FormRoot: React.FC<FormRootProps> = ({
           isLoadSchema={isLoadingSchema}
           fetchingConnectorError={fetchingConnectorError}
           hasSuccess={hasSuccess}
+          isValid={isValid}
         />
       )}
     </FormContainer>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -18,6 +18,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -73,10 +75,10 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("s3_bucket_path") == null) {
-      return null;
+    if (config.has("s3_bucket_path")) {
+      return config.get("s3_bucket_path").asText();
     }
-    return config.get("s3_bucket_path").asText();
+    return null;
   }
 
   @Override
@@ -99,7 +101,8 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
         namespaceStr,
         streamNameStr,
         DateTime.now(DateTimeZone.UTC),
-        S3DestinationConstants.DEFAULT_PATH_FORMAT);
+        config.getPathFormat());
+    // the child folder contains a non-deterministic epoch timestamp, so use the parent folder
     final String parentFolder = outputPrefix.substring(0, outputPrefix.lastIndexOf("/") + 1);
     final List<S3ObjectSummary> objectSummaries = s3Client
         .listObjects(config.getBucketName(), parentFolder)
@@ -162,6 +165,26 @@ public abstract class S3DestinationAcceptanceTest extends DestinationAcceptanceT
           .deleteObjects(new DeleteObjectsRequest(config.getBucketName()).withKeys(keysToDelete));
       LOGGER.info("Deleted {} file(s).", result.getDeletedObjects().size());
     }
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
 }

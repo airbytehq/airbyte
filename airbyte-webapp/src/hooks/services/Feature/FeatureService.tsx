@@ -1,13 +1,13 @@
 import React, { useContext, useMemo, useState } from "react";
-import { Feature, FeatureItem, FeatureServiceApi } from "./types";
-import { useConfig } from "config";
 import { useDeepCompareEffect } from "react-use";
 
-const featureServiceContext = React.createContext<FeatureServiceApi | null>(
-  null
-);
+import { useConfig } from "config";
 
-export function FeatureService({ children }: { children: React.ReactNode }) {
+import { Feature, FeatureItem, FeatureServiceApi } from "./types";
+
+const featureServiceContext = React.createContext<FeatureServiceApi | null>(null);
+
+export const FeatureService = ({ children }: { children: React.ReactNode }) => {
   const [additionFeatures, setAdditionFeatures] = useState<Feature[]>([]);
   const { features: instanceWideFeatures } = useConfig();
 
@@ -17,9 +17,7 @@ export function FeatureService({ children }: { children: React.ReactNode }) {
         setAdditionFeatures((oldFeatures) => [...oldFeatures, ...newFeatures]),
       unregisterFeature: (unregisteredFeatures: FeatureItem[]): void => {
         setAdditionFeatures((oldFeatures) =>
-          oldFeatures.filter(
-            (feature) => !unregisteredFeatures.includes(feature.id)
-          )
+          oldFeatures.filter((feature) => !unregisteredFeatures.includes(feature.id))
         );
       },
     };
@@ -33,19 +31,14 @@ export function FeatureService({ children }: { children: React.ReactNode }) {
   const featureService = useMemo(
     () => ({
       features,
-      hasFeature: (featureId: FeatureItem): boolean =>
-        !!features.find((feature) => feature.id === featureId),
+      hasFeature: (featureId: FeatureItem): boolean => !!features.find((feature) => feature.id === featureId),
       ...featureMethods,
     }),
     [features, featureMethods]
   );
 
-  return (
-    <featureServiceContext.Provider value={featureService}>
-      {children}
-    </featureServiceContext.Provider>
-  );
-}
+  return <featureServiceContext.Provider value={featureService}>{children}</featureServiceContext.Provider>;
+};
 
 export const useFeatureService: () => FeatureServiceApi = () => {
   const featureService = useContext(featureServiceContext);
@@ -55,10 +48,7 @@ export const useFeatureService: () => FeatureServiceApi = () => {
   return featureService;
 };
 
-export const WithFeature: React.FC<{ featureId: FeatureItem }> = ({
-  featureId,
-  children,
-}) => {
+export const WithFeature: React.FC<{ featureId: FeatureItem }> = ({ featureId, children }) => {
   const { hasFeature } = useFeatureService();
   return hasFeature(featureId) ? <>{children}</> : null;
 };
@@ -67,14 +57,14 @@ export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
   const { registerFeature, unregisterFeature } = useFeatureService();
 
   useDeepCompareEffect(() => {
-    if (props) {
-      registerFeature(props);
-
-      return () =>
-        unregisterFeature(props.map((feature: Feature) => feature.id));
+    if (!props) {
+      return;
     }
 
-    return;
+    registerFeature(props);
+
+    return () => unregisterFeature(props.map((feature: Feature) => feature.id));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };
