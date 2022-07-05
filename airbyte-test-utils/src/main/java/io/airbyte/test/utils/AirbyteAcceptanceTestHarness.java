@@ -27,6 +27,7 @@ import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -648,6 +649,11 @@ public class AirbyteAcceptanceTestHarness {
   public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
     apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
         .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
+  }
+
+  public void updateDestinationDefinitionVersion(final UUID destDefinitionId, final String dockerImageTag) throws ApiException {
+    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(new DestinationDefinitionUpdate()
+        .destinationDefinitionId(destDefinitionId).dockerImageTag(dockerImageTag));
   }
 
   private void clearSourceDbData() throws SQLException {
