@@ -64,6 +64,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.assertj.core.util.Sets;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -249,7 +250,7 @@ class BigQueryDenormalizedDestinationTest {
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
     var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     var actualValue =
         LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
     assertEquals(expectedValue, actualValue);
@@ -349,9 +350,10 @@ class BigQueryDenormalizedDestinationTest {
 
     // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
     // returns "yyyy-MM-dd'T'HH:mm:ss" format
-    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")), extractJsonValues(resultJson, "updated_at"));
+    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ss")),
+        extractJsonValues(resultJson, "updated_at"));
     // check nested datetime
-    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").toString("yyyy-MM-dd'T'HH:mm:ss")),
+    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ss")),
         extractJsonValues(resultJson.get("items"), "nested_datetime"));
   }
 

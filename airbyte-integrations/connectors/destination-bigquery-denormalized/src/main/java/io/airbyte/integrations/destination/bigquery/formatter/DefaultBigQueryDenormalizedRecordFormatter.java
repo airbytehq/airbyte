@@ -157,25 +157,27 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
     data.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, formattedEmittedAt);
   }
 
-  protected JsonNode formatData(final FieldList fields, final JsonNode root) {
-    var newData = formatJsonNode(fields, root);
-    formatDateTimeFields(fields, newData);
-    return newData;
-  }
+  /*
+   * protected JsonNode formatData(final FieldList fields, final JsonNode root) { var newData =
+   * formatJsonNode(fields, root); formatDateTimeFields(fields, newData); return newData; }
+   */
 
-  private JsonNode formatJsonNode(final FieldList fields, final JsonNode root) {
+  private JsonNode formatData(final FieldList fields, final JsonNode root) {
     // handles empty objects and arrays
     if (fields == null) {
       return root;
     }
-
+    JsonNode formattedData;
     if (root.isObject()) {
-      return getObjectNode(fields, root);
+      formattedData = getObjectNode(fields, root);
     } else if (root.isArray()) {
-      return getArrayNode(fields, root);
+      formattedData = getArrayNode(fields, root);
     } else {
-      return root;
+      formattedData = root;
     }
+    formatDateTimeFields(fields, formattedData);
+
+    return formattedData;
   }
 
   protected void formatDateTimeFields(final FieldList fields, final JsonNode root) {
@@ -200,7 +202,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
       subFields = arrayField.getSubFields();
     }
     return Jsons.jsonNode(MoreIterators.toList(root.elements()).stream()
-        .map(p -> formatJsonNode(subFields, p))
+        .map(p -> formatData(subFields, p))
         .map(p -> (p.isArray() ? Jsons.jsonNode(ImmutableMap.of(NESTED_ARRAY_FIELD, p)) : p))
         .collect(Collectors.toList()));
   }
@@ -217,7 +219,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
           return validKey;
         })
         .collect(Collectors.toMap(namingResolver::getIdentifier,
-            key -> formatJsonNode(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
+            key -> formatData(fields.get(namingResolver.getIdentifier(key)).getSubFields(), root.get(key)))));
   }
 
   @Override

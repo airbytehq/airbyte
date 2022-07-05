@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,7 +253,8 @@ public class BigQueryUtils {
 
   private static String getFormattedBigQueryDateTime(final String dateTimeValue) {
     return (dateTimeValue != null ? QueryParameterValue
-        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).toString(BIG_QUERY_DATETIME_FORMAT)).getValue() : null);
+        .dateTime(new DateTime(convertDateToInstantFormat(dateTimeValue)).withZone(DateTimeZone.UTC).toString(BIG_QUERY_DATETIME_FORMAT)).getValue()
+        : null);
   }
 
   /**
