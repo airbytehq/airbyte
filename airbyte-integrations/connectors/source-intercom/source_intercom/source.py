@@ -25,6 +25,8 @@ class IntercomStream(HttpStream, ABC):
 
     primary_key = "id"
     data_fields = ["data"]
+    # https://developers.intercom.com/intercom-api-reference/reference/pagination-cursor
+    page_size = 150  # max available
 
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         self.start_date = start_date
@@ -52,7 +54,7 @@ class IntercomStream(HttpStream, ABC):
             return dict(parse_qsl(urlparse(next_page).query))
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {}
+        params = {"per_page": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -159,12 +161,14 @@ class IncrementalIntercomSearchStream(IncrementalIntercomStream):
                 ],
             },
             "sort": {"field": self.cursor_field, "order": self.sort_order},
+            "pagination": {"per_page": self.page_size},
         }
         if next_page_token:
             payload.update({"pagination": {"starting_after": next_page_token}})
         return payload
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # print(response.json())
         next_page = response.json().get("pages", {}).get("next", {}).get("starting_after")
         return next_page if next_page else None
 
@@ -245,6 +249,8 @@ class Companies(IncrementalIntercomStream):
        if a "stroll" is busy by another script
     3) Switch to using of the "standard" endpoint.
     """
+
+    page_size = 50  # default is 15
 
     class EndpointType(Enum):
         scroll = "companies/scroll"
@@ -481,7 +487,7 @@ class VersionApiAuthenticator(TokenAuthenticator):
     Docs: https://developers.intercom.com/building-apps/docs/update-your-api-version#section-selecting-the-version-via-the-developer-hub
     """
 
-    relevant_supported_version = "2.2"
+    relevant_supported_version = "2.5"
 
     def get_auth_header(self) -> Mapping[str, Any]:
         headers = super().get_auth_header()
