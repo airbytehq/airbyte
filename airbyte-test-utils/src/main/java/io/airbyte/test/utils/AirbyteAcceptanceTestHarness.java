@@ -341,6 +341,22 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  public void assertDestinationDbEmpty(final boolean withScdTable) throws Exception {
+    final Database source = getSourceDatabase();
+    final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
+    final Database destination = getDestinationDatabase();
+    final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
+    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+
+
+    for (final SchemaTableNamePair pair : sourceTables) {
+      final List<JsonNode> sourceRecords = retrieveRawDestinationRecords(pair);
+      assertTrue(sourceRecords.isEmpty());
+    }
+  }
+
   public Database getSourceDatabase() {
     if (isKube && isGke) {
       return GKEPostgresConfig.getSourceDatabase();

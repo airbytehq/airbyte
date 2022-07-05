@@ -46,6 +46,7 @@ dependencies {
     acceptanceTestsImplementation project(':airbyte-config:config-models')
     acceptanceTestsImplementation project(':airbyte-config:config-persistence')
     acceptanceTestsImplementation project(':airbyte-db:db-lib')
+    acceptanceTestsImplementation project(':airbyte-protocol:protocol-models')
     acceptanceTestsImplementation project(':airbyte-tests')
     acceptanceTestsImplementation project(':airbyte-test-utils')
     acceptanceTestsImplementation project(':airbyte-workers')
@@ -59,6 +60,7 @@ dependencies {
 
     automaticMigrationAcceptanceTestImplementation project(':airbyte-api')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-commons')
+    automaticMigrationAcceptanceTestImplementation project(':airbyte-protocol')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-tests')
     automaticMigrationAcceptanceTestImplementation project(':airbyte-test-utils')
 
