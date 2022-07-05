@@ -46,7 +46,8 @@ class LimitPaginator:
         config: Config,
         url_base: str = None,
     ):
-        # Assert limit is not set in the URL!
+        if limit._option_type == RequestOptionType.path:
+            raise ValueError("Limit parameter cannot be a path")
         self._config = config
         self._limit = limit
         self._page_token = page_token
@@ -79,8 +80,8 @@ class LimitPaginator:
             return {"next_page_token": self._token}
 
     def path(self):
-        if self._token and self._path:
-            return self._token["next_page_token"].replace(self._url_base, "")
+        if self._token and self._page_token._option_type == RequestOptionType.path:
+            return self._token.replace(self._url_base, "")
         else:
             return None
 
