@@ -4,10 +4,12 @@
 
 from typing import Mapping, Type
 
+from airbyte_cdk.sources.declarative.requesters.paginators.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
+from airbyte_cdk.sources.declarative.requesters.paginators.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
 from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
@@ -30,4 +32,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "ChainRetrier": ChainRetrier,
     "DefaultRetrier": DefaultRetrier,
     "LimitPaginator": LimitPaginator,
+    "OffsetIncrement": OffsetIncrement,
+    "CursorPagination": CursorPaginationStrategy,
 }

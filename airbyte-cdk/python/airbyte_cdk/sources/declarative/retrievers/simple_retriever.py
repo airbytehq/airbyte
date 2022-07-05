@@ -183,7 +183,7 @@ class SimpleRetriever(Retriever, HttpStream):
             print(f"next_page_token: {next_page_token}")
             # exit()
         static_request_params = self._requester.request_params(self.state, stream_slice, next_page_token)
-        paginator_request_params = self._paginator.request_params(self.state, stream_slice, next_page_token)
+        paginator_request_params = self._paginator.request_params()
         print(f"paginator_request_params: {paginator_request_params}")
         return {**static_request_params, **paginator_request_params}
 
