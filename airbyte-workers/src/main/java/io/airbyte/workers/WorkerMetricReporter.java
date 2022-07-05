@@ -6,7 +6,6 @@ package io.airbyte.workers;
 
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
-import io.airbyte.workers.general.DefaultReplicationWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
