@@ -1,10 +1,12 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from unittest.mock import MagicMock
+from unittest import mock
+from unittest.mock import MagicMock, call
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.transformations.transformer import RecordTransformation
 
 
 def test():
@@ -22,12 +24,13 @@ def test():
     checkpoint_interval = 1000
 
     retriever = MagicMock()
-    retriever.get_state.return_value = state
+    retriever.state = state
     retriever.read_records.return_value = records
     retriever.stream_slices.return_value = stream_slices
     retriever.state_checkpoint_interval = checkpoint_interval
 
-    no_op_transform = MagicMock(side_effect=lambda x: x)
+    no_op_transform = mock.create_autospec(spec=RecordTransformation)
+    no_op_transform.transform = MagicMock(side_effect=lambda x: x)
     transformations = [no_op_transform]
 
     stream = DeclarativeStream(
@@ -46,6 +49,7 @@ def test():
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
-    for record in records:
-        for transformation in transformations:
-            transformation.assert_called_once_with(record)
+    for transformation in transformations:
+        assert len(transformation.transform.call_args_list) == len(records)
+        expected_calls = [call(record) for record in records]
+        transformation.transform.assert_has_calls(expected_calls, any_order=False)
