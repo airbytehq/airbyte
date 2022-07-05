@@ -570,7 +570,7 @@ where 1 = 1
                 sql_type = f"'{sql_type}'"
                 return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
             if self.destination_type == DestinationType.MYSQL:
-                return f"nullif(cast({column_name} as {sql_type}), \"\") as {column_name}"
+                return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
@@ -604,7 +604,7 @@ where 1 = 1
 
     @staticmethod
     def generate_mysql_datetime_format_statement(column_name: str) -> Any:
-        regexp = r'\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*'
+        regexp = r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*"
         template = Template(
             """
         case when {{column_name}} regexp '{{regexp}}' THEN STR_TO_DATE(SUBSTR({{column_name}}, 1, 19), '%Y-%m-%dT%H:%i:%S')

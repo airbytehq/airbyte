@@ -130,7 +130,7 @@
     timestamp
 {% endmacro %}
 
-{#-- MySQL doesnt allow cast operation with nullif to work with DATETIME so we have to use char --#}
+{#-- MySQL doesnt allow cast operation with nullif to work with DATETIME and doesn't support storing of timezone so we have to use char --#}
 {#-- https://bugs.mysql.com/bug.php?id=77805 --#}
 {%- macro mysql__type_timestamp_with_timezone() -%}
     char(1024)
@@ -141,7 +141,7 @@
 {% endmacro %}
 
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
-    datetime2
+    datetimeoffset
 {%- endmacro -%}
 
 {% macro redshift__type_timestamp_with_timezone() %}
@@ -158,12 +158,6 @@
 {% macro default__type_timestamp_without_timezone() %}
     timestamp
 {% endmacro %}
-
-{#-- MySQL doesnt allow cast operation with nullif to work with DATETIME so we have to use char --#}
-{#-- https://bugs.mysql.com/bug.php?id=77805 --#}
-{%- macro mysql__type_timestamp_without_timezone() -%}
-    char(1024)
-{%- endmacro -%}
 
 {%- macro sqlserver__type_timestamp_without_timezone() -%}
     {#-- in TSQL timestamp is really datetime or datetime2 --#}
