@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 from unittest.mock import MagicMock
 
 from airbyte_cdk.models import SyncMode
@@ -23,10 +22,13 @@ def test():
     checkpoint_interval = 1000
 
     retriever = MagicMock()
-    retriever.state = state
+    retriever.get_state.return_value = state
     retriever.read_records.return_value = records
     retriever.stream_slices.return_value = stream_slices
     retriever.state_checkpoint_interval = checkpoint_interval
+
+    no_op_transform = MagicMock(side_effect=lambda x: x)
+    transformations = [no_op_transform]
 
     stream = DeclarativeStream(
         name=name,
@@ -34,12 +36,16 @@ def test():
         cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
+        transformations=transformations,
     )
 
     assert stream.name == name
     assert stream.get_json_schema() == json_schema
     assert stream.state == state
-    assert stream.read_records(SyncMode.full_refresh, cursor_field, None, None) == records
+    assert list(stream.read_records(SyncMode.full_refresh, cursor_field, None, None)) == records
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
+    for record in records:
+        for transformation in transformations:
+            transformation.assert_called_once_with(record)
