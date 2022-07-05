@@ -494,8 +494,6 @@ $ octavia get connection "Poke To PG"
 
 Import all existing resources (sources, destinations, connections) on your Airbyte instance to manage them with octavia-cli.
 
-
-
 **Examples**:
 
 ```bash
