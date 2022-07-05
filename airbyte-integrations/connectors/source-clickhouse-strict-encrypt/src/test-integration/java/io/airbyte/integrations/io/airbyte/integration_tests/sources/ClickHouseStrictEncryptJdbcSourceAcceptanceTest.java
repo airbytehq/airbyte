@@ -106,7 +106,6 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
 
   @AfterAll
   public static void cleanUp() throws Exception {
-    db.close();
     container.close();
   }
 

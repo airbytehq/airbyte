@@ -13,6 +13,7 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
+import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,9 +35,12 @@ class AirbyteMessageTrackerTest {
   @Mock
   private StateDeltaTracker mStateDeltaTracker;
 
+  @Mock
+  private StateAggregator mStateAggregator;
+
   @BeforeEach
   public void setup() {
-    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker);
+    this.messageTracker = new AirbyteMessageTracker(mStateDeltaTracker, mStateAggregator);
   }
 
   @Test
@@ -65,6 +69,9 @@ class AirbyteMessageTrackerTest {
     final AirbyteMessage s2 = AirbyteMessageUtils.createStateMessage(s2Value);
     final AirbyteMessage s3 = AirbyteMessageUtils.createStateMessage(s3Value);
 
+    final State expectedState = new State().withState(Jsons.jsonNode(s2Value));
+    Mockito.when(mStateAggregator.getAggregated()).thenReturn(expectedState);
+
     messageTracker.acceptFromSource(s1);
     messageTracker.acceptFromSource(s2);
     messageTracker.acceptFromSource(s3);
@@ -75,7 +82,7 @@ class AirbyteMessageTrackerTest {
     assertEquals(new State().withState(Jsons.jsonNode(s3Value)), messageTracker.getSourceOutputState().get());
 
     assertTrue(messageTracker.getDestinationOutputState().isPresent());
-    assertEquals(new State().withState(Jsons.jsonNode(s2Value)), messageTracker.getDestinationOutputState().get());
+    assertEquals(expectedState, messageTracker.getDestinationOutputState().get());
   }
 
   @Test

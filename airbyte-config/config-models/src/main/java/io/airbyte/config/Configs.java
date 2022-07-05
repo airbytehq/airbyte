@@ -103,10 +103,27 @@ public interface Configs {
 
   /**
    * Defines the Secret Persistence type. None by default. Set to GOOGLE_SECRET_MANAGER to use Google
-   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support.
-   * Undefined behavior will result if this is turned on and then off.
+   * Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use
+   * Hashicorp Vault. Alpha support. Undefined behavior will result if this is turned on and then off.
    */
   SecretPersistenceType getSecretPersistenceType();
+
+  /**
+   * Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+   */
+  String getVaultAddress();
+
+  /**
+   * Define the vault path prefix to read/write Airbyte Configuration to Hashicorp Vault. Empty by
+   * default. Alpha Support.
+   */
+  String getVaultPrefix();
+
+  /**
+   * Define the vault token to read/write Airbyte Configuration to Hashicorp Vault. Empty by default.
+   * Alpha Support.
+   */
+  String getVaultToken();
 
   // Database
   /**
@@ -171,7 +188,36 @@ public interface Configs {
    */
   boolean runDatabaseMigrationOnStartup();
 
+  // Temporal Cloud - Internal-Use Only
+
+  /**
+   * Define if Temporal Cloud should be used. Internal-use only.
+   */
+  boolean temporalCloudEnabled();
+
+  /**
+   * Temporal Cloud target endpoint, usually with form ${namespace}.tmprl.cloud:7233. Internal-use
+   * only.
+   */
+  String getTemporalCloudHost();
+
+  /**
+   * Temporal Cloud namespace. Internal-use only.
+   */
+  String getTemporalCloudNamespace();
+
+  /**
+   * Temporal Cloud client cert for SSL. Internal-use only.
+   */
+  String getTemporalCloudClientCert();
+
+  /**
+   * Temporal Cloud client key for SSL. Internal-use only.
+   */
+  String getTemporalCloudClientKey();
+
   // Airbyte Services
+
   /**
    * Define the url where Temporal is hosted at. Please include the port. Airbyte services use this
    * information.
@@ -420,6 +466,17 @@ public interface Configs {
    */
   TrackingStrategy getTrackingStrategy();
 
+  /**
+   * Define whether to send job failure events to Sentry or log-only. Airbyte internal use.
+   */
+  JobErrorReportingStrategy getJobErrorReportingStrategy();
+
+  /**
+   * Determines the Sentry DSN that should be used when reporting connector job failures to Sentry.
+   * Used with SENTRY error reporting strategy. Airbyte internal use.
+   */
+  String getJobErrorReportingSentryDSN();
+
   // APPLICATIONS
   // Worker
   /**
@@ -508,9 +565,19 @@ public interface Configs {
   int getMaxActivityTimeoutSecond();
 
   /**
-   * Get the duration in second between 2 activity attempts
+   * Get initial delay in seconds between two activity attempts
    */
-  int getDelayBetweenActivityAttempts();
+  int getInitialDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get maximum delay in seconds between two activity attempts
+   */
+  int getMaxDelayBetweenActivityAttemptsSeconds();
+
+  /**
+   * Get the delay in seconds between an activity failing and the workflow being restarted
+   */
+  int getWorkflowFailureRestartDelaySeconds();
 
   /**
    * Get number of attempts of the non long running activities
@@ -519,6 +586,11 @@ public interface Configs {
 
   enum TrackingStrategy {
     SEGMENT,
+    LOGGING
+  }
+
+  enum JobErrorReportingStrategy {
+    SENTRY,
     LOGGING
   }
 
@@ -535,7 +607,8 @@ public interface Configs {
   enum SecretPersistenceType {
     NONE,
     TESTING_CONFIG_DB_TABLE,
-    GOOGLE_SECRET_MANAGER
+    GOOGLE_SECRET_MANAGER,
+    VAULT
   }
 
 }

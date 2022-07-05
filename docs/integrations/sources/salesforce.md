@@ -58,7 +58,7 @@ To set up Salesforce as a source in Airbyte Open Source:
     2. When running a curl command, run it with the `-L` option to follow any redirects.
     3. If you [created a read-only user](https://docs.google.com/document/d/1wZR8pz4MRdc2zUculc9IqoF8JxN87U40IqVnTtcqdrI/edit#heading=h.w5v6h7b2a9y4), use the user credentials when logging in to generate OAuth tokens.
 
-2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](link to previous section).
+2. Navigate to the Airbute Open Source dashboard and follow the same steps as [setting up Salesforce as a source in Airbyte Cloud](#for-airbyte-cloud).
 
 ## Supported sync modes
 
