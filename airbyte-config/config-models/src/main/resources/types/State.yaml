@@ -10,5 +10,5 @@ additionalProperties: false
 properties:
   state:
     description: Integration specific blob. Must be a valid JSON string.
-    type: object
+    type: [object, array]
     existingJavaType: com.fasterxml.jackson.databind.JsonNode

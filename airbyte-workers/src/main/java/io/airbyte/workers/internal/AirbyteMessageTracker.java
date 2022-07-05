@@ -18,6 +18,8 @@ import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
+import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +46,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final StateDeltaTracker stateDeltaTracker;
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
+  private final StateAggregator stateAggregator;
 
   private short nextStreamIndex;
 
@@ -59,11 +62,11 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   public AirbyteMessageTracker() {
-    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES));
+    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES), new DefaultStateAggregator());
   }
 
   @VisibleForTesting
-  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker) {
+  protected AirbyteMessageTracker(final StateDeltaTracker stateDeltaTracker, final StateAggregator stateAggregator) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.totalEmittedStateMessages = new AtomicLong(0L);
@@ -77,6 +80,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.unreliableCommittedCounts = false;
     this.destinationErrorTraceMessages = new ArrayList<>();
     this.sourceErrorTraceMessages = new ArrayList<>();
+    this.stateAggregator = stateAggregator;
   }
 
   @Override
@@ -144,7 +148,8 @@ public class AirbyteMessageTracker implements MessageTracker {
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
-    destinationOutputState.set(new State().withState(stateMessage.getData()));
+    stateAggregator.ingest(stateMessage);
+    destinationOutputState.set(stateAggregator.getAggregated());
     try {
       if (!unreliableCommittedCounts) {
         stateDeltaTracker.commitStateHash(getStateHashCode(stateMessage));
