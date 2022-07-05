@@ -160,7 +160,12 @@ class SimpleRetriever(Retriever, HttpStream):
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
+        paginator_path = self._paginator.path()
+        print(f"updated_path: {paginator_path}")
+        if paginator_path:
+            return paginator_path
+        else:
+            return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
         self,
@@ -174,7 +179,13 @@ class SimpleRetriever(Retriever, HttpStream):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_params(self.state, stream_slice, next_page_token)
+        if next_page_token:
+            print(f"next_page_token: {next_page_token}")
+            # exit()
+        static_request_params = self._requester.request_params(self.state, stream_slice, next_page_token)
+        paginator_request_params = self._paginator.request_params(self.state, stream_slice, next_page_token)
+        print(f"paginator_request_params: {paginator_request_params}")
+        return {**static_request_params, **paginator_request_params}
 
     @property
     def cache_filename(self):

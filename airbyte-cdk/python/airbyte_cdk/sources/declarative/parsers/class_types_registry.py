@@ -5,6 +5,7 @@
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
@@ -28,4 +29,5 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
     "ChainRetrier": ChainRetrier,
     "DefaultRetrier": DefaultRetrier,
+    "LimitPaginator": LimitPaginator,
 }

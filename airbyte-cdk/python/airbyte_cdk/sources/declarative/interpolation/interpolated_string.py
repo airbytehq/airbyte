@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 class InterpolatedString:
     def __init__(self, string: str, default: Optional[str] = None):
-        self._string = string
+        self._string = str(string)
         self._default = default or string
         self._interpolation = JinjaInterpolation()
 

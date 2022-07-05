@@ -22,6 +22,7 @@ def test_simple_retriever():
 
     paginator = MagicMock()
     next_page_token = {"cursor": "cursor_value"}
+    paginator.path.return_value = None
     paginator.next_page_token.return_value = next_page_token
 
     record_selector = MagicMock()
