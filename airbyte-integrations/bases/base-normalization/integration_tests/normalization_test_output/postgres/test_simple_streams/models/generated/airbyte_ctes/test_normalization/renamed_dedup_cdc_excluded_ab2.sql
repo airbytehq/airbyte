@@ -15,5 +15,5 @@ select
 from {{ ref('renamed_dedup_cdc_excluded_ab1') }}
 -- renamed_dedup_cdc_excluded
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

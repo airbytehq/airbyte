@@ -10,33 +10,40 @@ import { SectionContainer } from "./common";
 import { ConditionSection } from "./ConditionSection";
 import { PropertySection } from "./PropertySection";
 
-const FormNode: React.FC<{
+interface FormNodeProps {
   sectionPath: string;
   formField: FormBlock;
-}> = ({ sectionPath, formField }) => {
+  disabled?: boolean;
+}
+
+const FormNode: React.FC<FormNodeProps> = ({ sectionPath, formField, disabled }) => {
   if (formField._type === "formGroup") {
-    return <FormSection path={sectionPath} blocks={formField.properties} hasOauth={formField.hasOauth} />;
+    return (
+      <FormSection path={sectionPath} blocks={formField.properties} hasOauth={formField.hasOauth} disabled={disabled} />
+    );
   } else if (formField._type === "formCondition") {
-    return <ConditionSection path={sectionPath} formField={formField} />;
+    return <ConditionSection path={sectionPath} formField={formField} disabled={disabled} />;
   } else if (formField._type === "objectArray") {
-    return <ArraySection path={sectionPath} formField={formField} />;
+    return <ArraySection path={sectionPath} formField={formField} disabled={disabled} />;
   } else if (formField.const !== undefined) {
     return null;
-  } else {
-    return (
-      <SectionContainer>
-        <PropertySection property={formField} path={sectionPath} />
-      </SectionContainer>
-    );
   }
+  return (
+    <SectionContainer>
+      <PropertySection property={formField} path={sectionPath} disabled={disabled} />
+    </SectionContainer>
+  );
 };
 
-const FormSection: React.FC<{
+interface FormSectionProps {
   blocks: FormBlock[] | FormBlock;
   path?: string;
   skipAppend?: boolean;
   hasOauth?: boolean;
-}> = ({ blocks = [], path, skipAppend, hasOauth }) => {
+  disabled?: boolean;
+}
+
+const FormSection: React.FC<FormSectionProps> = ({ blocks = [], path, skipAppend, hasOauth, disabled }) => {
   const sections = useMemo(() => {
     const flattenedBlocks = [blocks].flat();
 
@@ -70,7 +77,7 @@ const FormSection: React.FC<{
           return (
             <React.Fragment key={sectionPath}>
               {isAuthSection && <AuthSection />}
-              <FormNode formField={formField} sectionPath={sectionPath} />
+              <FormNode formField={formField} sectionPath={sectionPath} disabled={disabled} />
             </React.Fragment>
           );
         })}

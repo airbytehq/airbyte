@@ -1,61 +1,30 @@
 plugins {
     id 'application'
-    id 'maven-publish'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
-}
-
-// This is published as a shadow jar as the Airbyte Server jar is currently used
-// as a delivery mechanism for the common Airbyte libraries and clients. Proper
-// publishing is blocked on some gradle work.
-shadowJar {
-    // following properties need to be set here to have reproducible shadow archives, doesn't seem to inherit from AbstractArchiveTask
-    preserveFileTimestamps = false
-    reproducibleFileOrder = true
-
-    zip64 true
-    mergeServiceFiles()
-    exclude 'META-INF/*.RSA'
-    exclude 'META-INF/*.SF'
-    exclude 'META-INF/*.DSA'
-    // Not stubbing this out adds 'all' to the end of the jar's name.
-    classifier = ''
-}
-
-publishing {
-    publications {
-        shadow(MavenPublication) { publication ->
-            project.shadow.component(publication)
-        }
-    }
-    repositories {
-        publications {
-            // This block is present so Gradle knows to publish a Maven jar.
-            maven(MavenPublication) {
-                from components.java
-                // Gradle will by default use the subproject path as the group id and the subproject name as the artifact id.
-                // e.g. the subproject :airbyte-scheduler:models is imported at io.airbyte.airbyte-config:persistence:<version-number>.
-            }
-        }
-
-        maven {
-            credentials {
-                name 'cloudrepo'
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
-            }
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-        }
-
-        mavenLocal()
-    }
 }
 
 dependencies {
-    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-docker')
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-config:specs')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(":airbyte-json-validation")
+    implementation project(':airbyte-notification')
+    implementation project(':airbyte-oauth')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-scheduler:client')
+    implementation project(':airbyte-scheduler:scheduler-models')
+    implementation project(':airbyte-scheduler:scheduler-persistence')
+    implementation project(':airbyte-workers')
 
-    implementation 'org.apache.cxf:cxf-core:3.4.2'
-
+    implementation libs.flyway.core
+    implementation 'com.github.slugify:slugify:2.4'
     implementation 'commons-cli:commons-cli:1.4'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation 'org.apache.cxf:cxf-core:3.4.2'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
     implementation 'org.glassfish.jaxb:jaxb-runtime:3.0.2'
@@ -63,33 +32,12 @@ dependencies {
     implementation 'org.glassfish.jersey.inject:jersey-hk2'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
-    implementation "org.flywaydb:flyway-core:7.14.0"
 
-    implementation 'com.github.slugify:slugify:2.4'
 
-    implementation project(':airbyte-analytics')
-    implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-docker')
-    implementation project(':airbyte-config:init')
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-config:persistence')
-    implementation project(':airbyte-config:specs')
-    implementation project(':airbyte-db:lib')
-    implementation project(":airbyte-json-validation")
-    implementation project(':airbyte-notification')
-    implementation project(':airbyte-oauth')
-    implementation project(':airbyte-protocol:models')
-    implementation project(':airbyte-scheduler:app')
-    implementation project(':airbyte-scheduler:client')
-    implementation project(':airbyte-scheduler:models')
-    implementation project(':airbyte-scheduler:persistence')
-    implementation project(':airbyte-workers')
-
-    testImplementation "org.postgresql:postgresql:42.2.18"
-
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
-
-    testImplementation "org.testcontainers:postgresql:1.15.3"
 }
 
 // we want to be able to access the generated db files from config/init when we build the server docker image.
@@ -155,3 +103,5 @@ tasks.withType(AbstractArchiveTask) {
     preserveFileTimestamps = false
     reproducibleFileOrder = true
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

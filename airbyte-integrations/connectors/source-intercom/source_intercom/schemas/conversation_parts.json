@@ -12,10 +12,10 @@
             "properties": {
               "type": {
                 "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
               }
-            },
-            "id": {
-              "type": ["null", "string"]
             }
           }
         },

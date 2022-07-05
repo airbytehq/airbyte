@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import http.client
@@ -19,7 +19,6 @@ FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
 DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
-MAX_BATCH_SIZE = 50
 
 logger = logging.getLogger("airbyte")
 

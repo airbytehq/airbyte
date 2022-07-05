@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.oracle;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -33,7 +34,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSource.class);
 
-  public static final String DRIVER_CLASS = "oracle.jdbc.OracleDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
 
   private List<String> schemas;
 
@@ -92,6 +93,11 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         schemas.add(schema.asText());
       }
     }
+
+    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
+      additionalParameters.addAll(List.of(config.get("jdbc_url_params").asText().split("&")));
+    }
+
     if (!additionalParameters.isEmpty()) {
       final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
       configBuilder.put("connection_properties", connectionParams);

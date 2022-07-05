@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -76,6 +76,13 @@ class InsightConfig(BaseModel):
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
+    )
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Custom Insights Lookback Window",
+        description="The attribution window",
+        maximum=28,
+        mininum=1,
+        default=28,
     )
 
 
@@ -155,4 +162,20 @@ class ConnectorConfig(BaseConfig):
         description=(
             "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),
+    )
+
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Insights Lookback Window",
+        order=8,
+        description="The attribution window",
+        maximum=28,
+        mininum=1,
+        default=28,
+    )
+
+    max_batch_size: Optional[PositiveInt] = Field(
+        title="Maximum size of Batched Requests",
+        order=9,
+        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        default=50,
     )

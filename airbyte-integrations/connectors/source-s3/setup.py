@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -12,6 +12,8 @@ MAIN_REQUIREMENTS = [
     "wcmatch==8.2",
     "dill==0.3.4",
     "pytz",
+    "fastavro==1.4.11",
+    "python-snappy==0.6.1",
 ]
 
 TEST_REQUIREMENTS = [
@@ -22,6 +24,7 @@ TEST_REQUIREMENTS = [
     "pytest-order",
     "netifaces~=0.11.0",
     "docker",
+    "avro==1.11.0",
 ]
 
 setup(

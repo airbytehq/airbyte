@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -147,7 +147,7 @@ def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
 def get_metrics_dimensions_mapping():
     test_metrics_dimensions_map = {
         "metric": [("ga:users", "integer"), ("ga:newUsers", "integer")],
-        "dimension": [("ga:dimension", "string")],
+        "dimension": [("ga:dimension", "string"), ("ga:dateHourMinute", "integer")],
     }
     for field_type, attribute_expected_pairs in test_metrics_dimensions_map.items():
         for attribute_expected_pair in attribute_expected_pairs:

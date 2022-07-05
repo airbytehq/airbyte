@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -10,7 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
-import io.airbyte.api.model.*;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.*;
@@ -75,8 +75,8 @@ public class JobHistoryHandlerTest {
   private static JobRead toJobInfo(final Job job) {
     return new JobRead().id(job.getId())
         .configId(job.getScope())
-        .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
-        .configType(Enums.convertTo(job.getConfigType(), io.airbyte.api.model.JobConfigType.class))
+        .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.generated.JobStatus.class))
+        .configType(Enums.convertTo(job.getConfigType(), io.airbyte.api.model.generated.JobConfigType.class))
         .createdAt(job.getCreatedAtInSecond())
         .updatedAt(job.getUpdatedAtInSecond());
 
@@ -85,8 +85,8 @@ public class JobHistoryHandlerTest {
   private static JobDebugRead toDebugJobInfo(final Job job) {
     return new JobDebugRead().id(job.getId())
         .configId(job.getScope())
-        .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.JobStatus.class))
-        .configType(Enums.convertTo(job.getConfigType(), io.airbyte.api.model.JobConfigType.class))
+        .status(Enums.convertTo(job.getStatus(), io.airbyte.api.model.generated.JobStatus.class))
+        .configType(Enums.convertTo(job.getConfigType(), io.airbyte.api.model.generated.JobConfigType.class))
         .sourceDefinition(null)
         .destinationDefinition(null);
 
@@ -102,7 +102,7 @@ public class JobHistoryHandlerTest {
   private static AttemptRead toAttemptRead(final Attempt a) {
     return new AttemptRead()
         .id(a.getId())
-        .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.AttemptStatus.class))
+        .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.generated.AttemptStatus.class))
         .createdAt(a.getCreatedAtInSecond())
         .updatedAt(a.getUpdatedAtInSecond())
         .endedAt(a.getEndedAtInSecond().orElse(null));

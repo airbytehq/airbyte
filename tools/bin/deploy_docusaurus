@@ -73,7 +73,10 @@ pwd
 yarn install
 
 # generate static content
-yarn build
+if ! yarn build; then
+  echo -e  "$red_text""yarn build has failed.  Documentation probably has broken links""$default_text"
+  echo -e  "$red_text""please fix the links, commit, and try again""$default_text"
+fi
 
 # Check tty for local/remote deploys (we expect cloud to be non-interactive)
 # results like /dev/ttys000 || not a tty

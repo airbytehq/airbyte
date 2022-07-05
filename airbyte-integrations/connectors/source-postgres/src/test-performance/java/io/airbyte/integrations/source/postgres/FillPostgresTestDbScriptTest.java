@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -8,16 +8,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestData {
 
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected JsonNode getConfig() {
@@ -25,7 +28,9 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @Override
   protected String getImageName() {
@@ -47,15 +52,16 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         .put("replication_method", replicationMethod)
         .build());
 
-    final Database database = Databases.createDatabase(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
-            dbName),
-        "org.postgresql.Driver",
+            config.get("port").asInt(),
+            config.get("database").asText()),
         SQLDialect.POSTGRES);
+    final Database database = new Database(dslContext);
 
     return database;
   }

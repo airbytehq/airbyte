@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -89,9 +89,8 @@ def test_generate_connection(mocker, context_object, tmp_source_path, tmp_destin
     mocker.patch.object(commands, "ConnectionRenderer", mocker.Mock())
     mock_renderer = commands.ConnectionRenderer.return_value
     mock_renderer.write_yaml.return_value = "expected_output_path"
-    result = runner.invoke(
-        commands.connection, ["my_new_connection", "--source", tmp_source_path, "--destination", tmp_destination_path], obj=context_object
-    )
+    cli_input = ["my_new_connection", "--source", tmp_source_path, "--destination", tmp_destination_path]
+    result = runner.invoke(commands.connection, cli_input, obj=context_object)
     if source_created and destination_created:
         assert result.exit_code == 0
         assert result.output == "✅ - Created the connection template for my_new_connection in expected_output_path.\n"

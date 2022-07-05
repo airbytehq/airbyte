@@ -10,12 +10,11 @@ application {
 }
 
 def cassandraDriver = '4.13.0'
-def testContainersVersion = '1.16.0'
 def assertVersion = '3.21.0'
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
@@ -26,7 +25,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
-    testImplementation "org.testcontainers:cassandra:${testContainersVersion}"
+    testImplementation libs.connectors.testcontainers.cassandra
 
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')

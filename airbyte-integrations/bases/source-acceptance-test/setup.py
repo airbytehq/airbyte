@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import setuptools
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1.25",
+    "airbyte-cdk~=0.1.56",
     "docker~=5.0.3",
     "PyYAML~=5.4",
     "icdiff~=1.9",

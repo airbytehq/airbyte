@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.staging;
@@ -204,7 +204,6 @@ public class StagingConsumerFactory {
             throw new RuntimeException("Failed to upload data from stage " + stagingPath, e);
           }
           writeConfig.clearStagedFiles();
-
           stagingOperations.createTableIfNotExists(database, schemaName, dstTableName);
           switch (writeConfig.getSyncMode()) {
             case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schemaName, dstTableName));
@@ -213,7 +212,7 @@ public class StagingConsumerFactory {
           }
           queryList.add(stagingOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
         }
-
+        stagingOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Executing finalization of tables.");
         stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
