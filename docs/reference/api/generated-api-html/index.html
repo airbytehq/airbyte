@@ -2267,7 +2267,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">DestinationIdRequestBody <a href="#DestinationIdRequestBody">DestinationIdRequestBody</a> (required)</div>
+      <div class="param">DestinationCloneRequestBody <a href="#DestinationCloneRequestBody">DestinationCloneRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -6136,7 +6136,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">SourceIdRequestBody <a href="#SourceIdRequestBody">SourceIdRequestBody</a> (required)</div>
+      <div class="param">SourceCloneRequestBody <a href="#SourceCloneRequestBody">SourceCloneRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -10315,6 +10315,8 @@ font-style: italic;
     <li><a href="#DbMigrationReadList"><code>DbMigrationReadList</code> - </a></li>
     <li><a href="#DbMigrationRequestBody"><code>DbMigrationRequestBody</code> - </a></li>
     <li><a href="#DbMigrationState"><code>DbMigrationState</code> - </a></li>
+    <li><a href="#DestinationCloneConfiguration"><code>DestinationCloneConfiguration</code> - </a></li>
+    <li><a href="#DestinationCloneRequestBody"><code>DestinationCloneRequestBody</code> - </a></li>
     <li><a href="#DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a></li>
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
@@ -10386,6 +10388,8 @@ font-style: italic;
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
+    <li><a href="#SourceCloneConfiguration"><code>SourceCloneConfiguration</code> - </a></li>
+    <li><a href="#SourceCloneRequestBody"><code>SourceCloneRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
     <li><a href="#SourceDefinitionCreate"><code>SourceDefinitionCreate</code> - </a></li>
@@ -10825,6 +10829,22 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationCloneConfiguration"><code>DestinationCloneConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationCloneRequestBody"><code>DestinationCloneRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.</div>
+    <div class="field-items">
+      <div class="param">destinationCloneId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationCloneConfiguration">DestinationCloneConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -11435,6 +11455,22 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class='model-description'></div>
     <div class="field-items">
       <div class="param">slug </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceCloneConfiguration"><code>SourceCloneConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceCloneRequestBody"><code>SourceCloneRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.</div>
+    <div class="field-items">
+      <div class="param">sourceCloneId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceCloneConfiguration">SourceCloneConfiguration</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
