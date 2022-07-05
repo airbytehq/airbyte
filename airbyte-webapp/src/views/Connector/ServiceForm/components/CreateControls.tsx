@@ -55,7 +55,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <SubmitButton type="submit" disabled={isLoadSchema || !isValid}>
+      <SubmitButton type="submit" disabled={isLoadSchema}>
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
       </SubmitButton>
     </ButtonContainer>
