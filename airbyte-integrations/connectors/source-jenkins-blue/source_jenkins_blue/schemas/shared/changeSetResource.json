@@ -40,7 +40,7 @@
       "format": "date-time"
     },
     "url": {
-      "type": ["string"]
+      "type": ["null", "string"]
     }
   }
 }

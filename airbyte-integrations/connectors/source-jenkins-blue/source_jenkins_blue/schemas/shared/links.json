@@ -1,20 +1,20 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": "array",
   "title": "Link Collection",
   "description": "A collection of links.",
   "$comment": "https://javadoc.jenkins.io/plugin/blueocean-rest/io/jenkins/blueocean/rest/hal/Links.html",
-  "additionalProperties": {
-    "type": ["array"],
-    "items": {
-      "type": ["object"],
-      "properties": {
-        "_class": {
-          "type": ["string"]
-        },
-        "href": {
-          "type": ["string"]
-        }
+  "items": {
+    "type": ["object"],
+    "properties": {
+      "name": {
+        "type": ["string"]
+      },
+      "_class": {
+        "type": ["string"]
+      },
+      "href": {
+        "type": ["string"]
       }
     }
   }

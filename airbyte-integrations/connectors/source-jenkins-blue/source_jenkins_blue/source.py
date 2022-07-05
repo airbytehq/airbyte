@@ -25,17 +25,10 @@ from requests.adapters import HTTPAdapter
 from requests.auth import HTTPBasicAuth, AuthBase
 
 """
-TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
+Airbyte source connector for the Jenkins Blue Ocean API.
 
-This file provides a stubbed example of how to use the Airbyte CDK to develop both a source connector which supports full refresh or and an
-incremental syncs from an HTTP API.
-
-The various TODOs are both implementation hints and steps - fulfilling all the TODOs should be sufficient to implement one basic and one incremental
-stream from a source. This pattern is the same one used by Airbyte internally to implement connectors.
-
-The approach here is not authoritative, and devs are free to use their own judgement.
-
-There are additional required TODOs in the files within the integration_tests folder and the spec.json file.
+Plugin: https://plugins.jenkins.io/blueocean-rest/
+Documentation: https://github.com/jenkinsci/blueocean-plugin/tree/master/blueocean-rest
 """
 
 logger = logging.getLogger("airbyte")
@@ -48,8 +41,11 @@ BASE_FOLDER_CLASS = "com.cloudbees.hudson.plugins.folder.AbstractFolder"
 
 MULTIBRANCH_CLASS = {"jenkins.branch.MultiBranchProject", "io.jenkins.blueocean.rest.model.BlueBranch"}
 
-# TODO: Should this be "org.jenkinsci.plugins.workflow.job.WorkflowJob" instead?
+# It might make sense to use "org.jenkinsci.plugins.workflow.job.WorkflowJob" here. Doing that would likely
+# exclude jobs managed by Jenkins plugins that don't directly interact with the Blue Ocean structure.
 JOB_CLASS = "hudson.model.Job"
+
+DEFAULT_START_DATE = "1970-01-01T00:00:00Z"
 
 HTTP_ADAPTER = HTTPAdapter(pool_connections=1, pool_maxsize=1, max_retries=3)
 
@@ -121,6 +117,9 @@ class JenkinsStream(HttpStream, ABC):
 
     @lru_cache()
     def resolve_classes(self, class_name: str) -> List[str]:
+        """
+        Returns the base classes and interfaces for a given class.
+        """
         class_url = f"{self.url_base}/classes/{class_name}/"
         response = self._session.get(class_url)
         response.raise_for_status()
@@ -163,9 +162,25 @@ class JenkinsStream(HttpStream, ABC):
         return params
 
 
+def convert_links(links: Optional[Dict[str, Any]]) -> Optional[List[Dict[str, Any]]]:
+    """
+    Convert the dictionary style "_links" element into a list. This moves the dictionary key into a new field called "named".
+
+    The default normalization code doesn't seem to handle a well-typed "additionalProperties" schema, so this is necessary to prevent
+    all the "_class" and "href" elements from being null.
+    """
+    if links is None:
+        return None
+    results = []
+    for name, link in links.items():
+        link["name"] = name
+        results.append(link)
+    return results
+
+
 class Organizations(JenkinsStream):
     """
-    The Jenkins Blue Ocean internals supports multiple organizations, but in practice only uses one, "jenkins".
+    The Jenkins Blue Ocean internals support multiple organizations, but in practice only uses one, "jenkins".
     """
     primary_key = "name"
 
@@ -177,6 +192,12 @@ class Organizations(JenkinsStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> str:
         return f"organizations/"
+
+    def read_records(self, sync_mode: SyncMode, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(sync_mode, *args, **kwargs):
+            if "_links" in record:
+                record["_links"] = convert_links(record["_links"])
+            yield record
 
 
 class ParentStreamMixin(IncrementalMixin):
@@ -215,7 +236,6 @@ class ParentStreamMixin(IncrementalMixin):
         if not self.cache_records:
             return self._read_records_from_initial_state(sync_mode)
         if self.cache_records and sync_mode not in self._cache_by_sync_mode:
-            # TODO: move CachingIterable to a decorator
             self._cache_by_sync_mode[sync_mode] = CachingIterable(self._read_records_from_initial_state(sync_mode))
         return self._cache_by_sync_mode[sync_mode]
 
@@ -284,6 +304,36 @@ class Pipelines(ParentStreamMixin, JenkinsStream):
             if self._exclude_multibranch and any(c in MULTIBRANCH_CLASS for c in self.resolve_classes(pipeline_class)):
                 continue
             if any(p.match(full_name) for p in self._pipelines):
+
+                # TODO: Make this handling of the "_links" structure easier for normalization. The real schema for the "_links" attribute
+                #       is below, with the key varying depending on the real type.
+                #
+                #   "additionalProperties": {
+                #     "type": "object",
+                #     "properties": {
+                #       "_class": {
+                #         "type": ["string"]
+                #       },
+                #       "href": {
+                #         "type": ["string"]
+                #       }
+                #     }
+                #   }
+                if "_links" in record:
+                    record["_links"] = convert_links(record["_links"])
+                if "latestRun" in record:
+                    latest_run = record["latestRun"]
+                    if "_links" in latest_run:
+                        latest_run["_links"] = convert_links(latest_run["_links"])
+                    if "changeSet" in latest_run:
+                        change_set = latest_run["changeSet"]
+                        if "_links" in change_set:
+                            change_set["_links"] = convert_links(change_set["_links"])
+                        if "author" in change_set:
+                            author = change_set["author"]
+                            if "_links" in author:
+                                author["_links"] = convert_links(author["_links"])
+
                 yield record
 
 
@@ -322,9 +372,9 @@ def normalize_date_string(value: str) -> str:
 
 class Runs(ParentStreamMixin, CachingSubStream):
     """
-    Stream for pulling Runs.
+    Stream for pulling "Runs" from the Blue Ocean API. A "Run" corresponds to a single build in Jenkins.
 
-    This needs to hit the /runs/ endpoint for every pipeline that's being exported. The Stages and Steps streams also need
+    This needs to hit the /runs/ endpoint for every pipeline that's being exported. The Nodes and Steps streams also need
     this information to know what should be exported.
 
     There is a search endpoint in Jenkins, but it didn't seem to support returning runs across pipelines very reliably.
@@ -332,7 +382,8 @@ class Runs(ParentStreamMixin, CachingSubStream):
     """
     primary_key = ["pipelineFullName", "id"]
 
-    # TODO: change to endTime?
+    # TODO: This should probably change to endTime, so that jobs that are executing during a sync are ignored and can be
+    #       synced on the next execution.
     cursor_field = "startTime"
 
     sync_mode = SyncMode.full_refresh
@@ -342,7 +393,7 @@ class Runs(ParentStreamMixin, CachingSubStream):
 
     def __init__(self, parent: Pipelines, start_date: str, sync_mode: SyncMode, **kwargs) -> None:
         super().__init__(parent=parent, **kwargs)
-        self._start_date = normalize_date_string(start_date or "1970-01-01T00:00:00Z")
+        self._start_date = normalize_date_string(start_date or DEFAULT_START_DATE)
         self.sync_mode = sync_mode
 
     def path(
@@ -402,6 +453,19 @@ class Runs(ParentStreamMixin, CachingSubStream):
             run_start_time = normalize_date_string(record.get(self.cursor_field) or self._start_date)
             if run_start_time > start_date:
                 record = cast(Dict[str, Any], record)
+
+                # TODO: Handle "_links" more generically in transforms. See comment in Pipelines source.
+                if "_links" in record:
+                    record["_links"] = convert_links(record["_links"])
+                if "changeSet" in record:
+                    for change_set in record["changeSet"]:
+                        if "_links" in change_set:
+                            change_set["_links"] = convert_links(change_set["_links"])
+                        if "author" in change_set:
+                            author = change_set["author"]
+                            if "_links" in author:
+                                author["_links"] = convert_links(author["_links"])
+
                 record["pipelineFullName"] = stream_slice["parent"]["fullName"]
                 yield record
 
@@ -414,6 +478,14 @@ class Runs(ParentStreamMixin, CachingSubStream):
 
 
 class Nodes(ParentStreamMixin, CachingSubStream):
+    """
+    Stream for pulling "Nodes" from the Blue Ocean API. A "Node" corresponds to a "stage" in terms of a Jenkins pipeline file.
+
+    This stream is reliant on the Runs parent stream because the URL path is comprised of the organization, project, and runId.
+
+    NOTE: The "id" values are shared with the "Steps" stream and are only unique in terms of a single run.
+    """
+
     primary_key = ["pipelineFullName", "runId", "id"]
     sync_mode = SyncMode.full_refresh
 
@@ -427,7 +499,7 @@ class Nodes(ParentStreamMixin, CachingSubStream):
     def __init__(self, parent: Runs, start_date: str, sync_mode: SyncMode, **kwargs) -> None:
         super().__init__(parent=parent, **kwargs)
         self.sync_mode = sync_mode
-        self._start_date = normalize_date_string(start_date or "1970-01-01T00:00:00Z")
+        self._start_date = normalize_date_string(start_date or DEFAULT_START_DATE)
 
     def path(
         self,
@@ -458,6 +530,8 @@ class Nodes(ParentStreamMixin, CachingSubStream):
             if start_time > start_date:
                 # Set the pipelineFullName as an FK to the pipelines relation.
                 record = cast(Dict[str, Any], record)
+                if "_links" in record:
+                    record["_links"] = convert_links(record["_links"])
                 record["organization"] = stream_slice["parent"]["organization"]
                 record["pipelineFullName"] = stream_slice["parent"]["pipelineFullName"]
                 record["runId"] = stream_slice["parent"]["id"]
@@ -471,12 +545,20 @@ class Nodes(ParentStreamMixin, CachingSubStream):
     def _state_key(stream_slice: Mapping[str, Any]) -> str:
         if stream_slice is None:
             raise ValueError("Invalid slice")
-        # TODO: Add organization?
+        organization = stream_slice["parent"]["organization"]
         pipeline = stream_slice["parent"]["pipelineFullName"]
-        return pipeline
+        return f"{organization}/{pipeline}"
 
 
 class Steps(IncrementalMixin, CachingSubStream):
+    """
+    Stream for pulling "Steps" from the Blue Ocean API. In terms of a Jenkins pipeline file, a "Step" corresponds to an action performed
+    within a "stage". For example, `sh("ls -la")` would result in a single node.
+
+    NOTE: The "id" values are shared with the "Nodes" stream and are only unique in terms of a single run.
+
+    This stream is reliant on the Runs parent stream because the URL path is comprised of the organization, project, and runId.
+    """
     # Step ids are unique within a run, not only for within a node.
     primary_key = ["pipelineFullName", "runId", "id"]
 
@@ -491,7 +573,7 @@ class Steps(IncrementalMixin, CachingSubStream):
     def __init__(self, parent: Nodes, start_date: str, sync_mode: SyncMode, **kwargs) -> None:
         super().__init__(parent=parent, **kwargs)
         self.sync_mode = sync_mode
-        self._start_date = normalize_date_string(start_date or "1970-01-01T00:00:00Z")
+        self._start_date = normalize_date_string(start_date or DEFAULT_START_DATE)
 
     def path(
         self,
@@ -523,6 +605,13 @@ class Steps(IncrementalMixin, CachingSubStream):
             if start_time > start_date:
                 # Set the pipelineFullName as an FK to the pipelines relation.
                 record = cast(Dict[str, Any], record)
+                if "_links" in record:
+                    record["_links"] = convert_links(record["_links"])
+                if "actions" in record:
+                    actions = record["actions"]
+                    for action in actions:
+                        if "_links" in action:
+                            action["_links"] = convert_links(action["_links"])
                 record["organization"] = stream_slice["parent"]["organization"]
                 record["pipelineFullName"] = stream_slice["parent"]["pipelineFullName"]
                 record["runId"] = stream_slice["parent"]["runId"]
@@ -537,13 +626,15 @@ class Steps(IncrementalMixin, CachingSubStream):
     def _state_key(stream_slice: Mapping[str, Any]) -> str:
         if stream_slice is None:
             raise ValueError("Invalid slice")
-        # TODO: Add organization?
+        organization = stream_slice["parent"]["organization"]
         pipeline = stream_slice["parent"]["pipelineFullName"]
-        return pipeline
+        return f"{organization}/{pipeline}"
 
 
-# Source
 class SourceJenkinsBlue(AbstractSource):
+    """
+    A source for the Jenkins Blue Ocean API.
+    """
     stream_order = ["organizations", "pipelines", "runs", "nodes", "steps"]
 
     def __init__(self, *args, **kwargs):
@@ -558,10 +649,8 @@ class SourceJenkinsBlue(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
+        Verify we can read at least one organization from the Jenkins Blue Ocean API. As of 2022-07-05, there's only one expected
+        organization named "jenkins".
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
@@ -619,7 +708,7 @@ class SourceJenkinsBlue(AbstractSource):
         url_base = config.get("base_url", "")
         username = config.get("username")
         api_token = config.get("api_token")
-        start_date = config.get("start_date").replace("Z", ".000+0000")  # Match the Jenkins date format.
+        start_date = config.get("start_date", DEFAULT_START_DATE).replace("Z", ".000+0000")  # Match the Jenkins date format.
         pipelines = (config.get("pipelines") or "*").split()
         exclude_multibranch = config.get("exclude_multibranch", True)
         authenticator = HTTPBasicAuth(username=username, password=api_token)
@@ -661,6 +750,7 @@ class SourceJenkinsBlue(AbstractSource):
             )
         ]
 
-        # Emit the streams in our desired order, even though the server ignores that.
+        # Emit the streams in our desired order. This affects the order in which streams are processed,
+        # but not the order of streams in the Airbyte UI.
         streams = sorted(streams, key=lambda s: self.stream_order.index(s.name))
         return streams

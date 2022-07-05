@@ -35,7 +35,7 @@
     },
     "latestRun": {
       "type": ["null", "object"],
-      "$comment": "TODO: io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl$PipelineRunSummary",
+      "$comment": "io.jenkins.blueocean.rest.impl.pipeline.PipelineImpl$PipelineRunSummary",
       "properties": {
         "_class": {"type": "string"},
         "_links": {"$ref": "links.json"},
