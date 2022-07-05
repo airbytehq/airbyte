@@ -764,11 +764,11 @@ Other progress on connectors:
 
 ## 11/04/2020
 
-**New sources:** [Facebook Ads](connectors.md), [Google Ads](../../02-integrations/01-sources/google-ads.md), [Marketo](../../02-integrations/01-sources/marketo.md) **New destination:** [Snowflake](../../02-integrations/02-destinations/snowflake.md)
+**New sources:** [Facebook Ads](03-connectors.md), [Google Ads](../../02-integrations/01-sources/google-ads.md), [Marketo](../../02-integrations/01-sources/marketo.md) **New destination:** [Snowflake](../../02-integrations/02-destinations/snowflake.md)
 
 ## 10/30/2020
 
-**New sources:** [Salesforce](../../02-integrations/01-sources/salesforce.md), Google Analytics, [HubSpot](../../02-integrations/01-sources/hubspot.md), [GitHub](../../02-integrations/01-sources/github.md), [Google Sheets](../../02-integrations/01-sources/google-sheets.md), [Rest APIs](connectors.md), and [MySQL](../../02-integrations/01-sources/mysql.md)
+**New sources:** [Salesforce](../../02-integrations/01-sources/salesforce.md), Google Analytics, [HubSpot](../../02-integrations/01-sources/hubspot.md), [GitHub](../../02-integrations/01-sources/github.md), [Google Sheets](../../02-integrations/01-sources/google-sheets.md), [Rest APIs](03-connectors.md), and [MySQL](../../02-integrations/01-sources/mysql.md)
 
 ## 10/21/2020
 

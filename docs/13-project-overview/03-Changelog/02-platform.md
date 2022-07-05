@@ -4,7 +4,7 @@ description: Be sure to not miss out on new features and improvements!
 
 # Platform
 
-This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
+This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](03-connectors.md) page.
 
 ## [20-12-2021 - 0.32.5](https://github.com/airbytehq/airbyte/releases/tag/v0.32.5-alpha)
 * Add an endpoint that specify that the feedback have been given after the first sync.

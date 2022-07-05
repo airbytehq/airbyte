@@ -464,7 +464,7 @@ For this week's update, we got... a few new connectors this week in 0.29.0. We f
 * 🐛 Shopify source: Fixed the products schema to be in accordance with the API
 * 🐛 BigQuery source: No longer fails with nested array data types.
 
-View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release highlights here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 And as always, thank you to our wonderful contributors: Madison Swain-Bowden, Brian Krausz, Apostol Tegko, Matej Hamas, Vladimir Remar, Oren Haliva, satishblotout, jacqueskpoty, wallies
 
@@ -482,7 +482,7 @@ What's going on? We just released 0.28.0 and here's the main highlights.
 * 🐛 Square source: The send\_request method is no longer broken due to CDK changes
 * 🐛 MySQL destination: Does not fail on columns with JSON data now.
 
-View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release highlights here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 And as always, thank you to our wonderful contributors: Mario Molina, Daniel Mateus Pires \(Earnest Research\), gunu, Ankur Adhikari, Vladimir Remar, Madison Swain-Bowden, Maksym Pavlenok, Sam Crowder, mildbyte, avida, and gaart
 
@@ -499,7 +499,7 @@ As for our changes this week...
 * 🐛 GitHub source: Now uses the correct cursor field for the IssueEvents stream
 * 🐛 Square source: The send\_request method is no longer broken due to CDK changes
 
-View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release highlights here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 As usual, thank you to our awesome community contributors this week: Oliver Meyer, Varun, Brian Krausz, shadabshaukat, Serhii Lazebnyi, Juliano Benvenuto Piovezan, mildbyte, and Sam Crowder!
 
@@ -523,7 +523,7 @@ As usual, thank you to our awesome community contributors this week: Oliver Meye
 * 📚 New document on how the CDK handles schemas.
 * 🏗️ Python CDK: Now allows setting of network adapter args on outgoing HTTP requests.
 
-View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release highlights here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 As usual, thank you to our awesome community contributors this week: gunu, P.VAD, Rodrigo Parra, Mario Molina, Antonio Grass, sabifranjo, Jaime Farres, shadabshaukat, Rodrigo Menezes, dkelwa, Jonathan Duval, and Augustin Lafanechère.
 
@@ -544,10 +544,10 @@ _The risks and issues with upgrading Airbyte are now gone..._
 Starting from next week, our weekly office hours will now become demo days! Drop by to get sneak peeks and new feature demos.
 
 * We added the \#careers channel, so if you're hiring, post your job reqs there!
-* We added a \#understanding-airbyte channel to mirror [this](../../understanding-airbyte/) section on our docs site. Ask any questions about our architecture or protocol there.
+* We added a \#understanding-airbyte channel to mirror [this](../../10-understanding-airbyte/README.md) section on our docs site. Ask any questions about our architecture or protocol there.
 * We added a \#contributing-to-airbyte channel. A lot of people ask us about how to contribute to the project, so ask away there!
 
-View the full release highlights here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release highlights here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 As usual, thank you to our awesome community contributors this week: Harshith Mullapudi, Michael Irvine, and [sabifranjo](https://github.com/sabifranjo).
 
@@ -559,7 +559,7 @@ As usual, thank you to our awesome community contributors this week: Harshith Mu
 * ✨ Looker source now supports self-hosted instances.
 * ✨ Facebook Marketing source is now migrated to the CDK, massively improving async job performance and error handling.
 
-View the full connector release notes [here](connectors.md).
+View the full connector release notes [here](03-connectors.md).
 
 As usual, thank you to some of our awesome community contributors this week: Harshith Mullapudi, Tyler DeLange, Daniel Mateus Pires, EdBizarro, Tyler Schroeder, and Konrad Schlatte!
 
@@ -570,7 +570,7 @@ As usual, thank you to some of our awesome community contributors this week: Har
 * ✨ We now support configuring your destination namespace at the table level when setting up a connection!
 * ✨ The S3 destination now supports Minio S3 and Parquet output!
 
-View the full release notes here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release notes here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 As usual, thank you to some of our awesome community contributors this week: Tyler DeLange, Mario Molina, Rodrigo Parra, Prashanth Patali, Christopher Wu, Itai Admi, Fred Reimer, and Konrad Schlatte!
 
@@ -589,7 +589,7 @@ As usual, thank you to some of our awesome community contributors this week: Tyl
 * Added JDBC source connector bootstrap template.
 * Added Java destination generator.
 
-View the full release notes highlights here: [Platform](platform.md), [Connectors](connectors.md)
+View the full release notes highlights here: [Platform](02-platform.md), [Connectors](03-connectors.md)
 
 As usual, thank you to some of our awesome community contributors this week \(I've noticed that we've had more contributors to our docs, which we really appreciate\). Ping, Harshith Mullapudi, Michael Irvine, Matheus di Paula, jacqueskpoty and P.VAD.
 
@@ -597,8 +597,8 @@ As usual, thank you to some of our awesome community contributors this week \(I'
 
 Airbyte is comprised of 2 parts:
 
-* Platform \(The scheduler, workers, api, web app, and the Airbyte protocol\). Here is the [changelog for Platform](platform.md). 
-* Connectors that run in Docker containers. Here is the [changelog for the connectors](connectors.md). 
+* Platform \(The scheduler, workers, api, web app, and the Airbyte protocol\). Here is the [changelog for Platform](02-platform.md). 
+* Connectors that run in Docker containers. Here is the [changelog for the connectors](03-connectors.md). 
 
 ## Airbyte Platform Releases
 

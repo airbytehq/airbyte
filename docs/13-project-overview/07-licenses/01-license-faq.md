@@ -17,7 +17,7 @@ ELv2 is a simple, non-copyleft license, allowing for the right to “use, copy, 
 
 In case you want to work with Airbyte without these limitations, we offer alternative licenses. These licenses include maintenance, support, and customary commercial terms. If you need a different license, please get in touch with us at: contact@airbyte.io.
 
-[View License](elv2-license.md)
+[View License](02-elv2-license.md)
 
 ## FAQ
 ### What limitations does ELv2 impose on my use of Airbyte?
