@@ -277,8 +277,7 @@ public class WorkerApp {
         workerEnvironment,
         logConfigs,
         jobPersistence,
-        airbyteVersion,
-        featureFlags.useStreamCapableState());
+        airbyteVersion);
   }
 
   private NormalizationActivityImpl getNormalizationActivityImpl(final WorkerConfigs workerConfigs,

@@ -16,6 +16,4 @@ public interface FeatureFlags {
 
   boolean forceSecretMigration();
 
-  boolean useStreamCapableState();
-
 }

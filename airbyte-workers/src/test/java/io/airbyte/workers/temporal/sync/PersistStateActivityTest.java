@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -29,9 +28,6 @@ public class PersistStateActivityTest {
   @Mock
   StatePersistence statePersistence;
 
-  @Mock
-  FeatureFlags featureFlags;
-
   @InjectMocks
   PersistStateActivityImpl persistStateActivity;
 
@@ -44,8 +40,6 @@ public class PersistStateActivityTest {
 
   @Test
   public void testPersist() throws IOException {
-    Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
-
     final JsonNode jsonState = Jsons.jsonNode(Map.ofEntries(
         Map.entry("some", "state")));
 
