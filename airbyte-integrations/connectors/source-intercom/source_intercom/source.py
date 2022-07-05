@@ -483,11 +483,11 @@ class Teams(IntercomStream):
 class VersionApiAuthenticator(TokenAuthenticator):
     """Intercom API support its dynamic versions' switching.
     But this connector should support only one for any resource account and
-    it is realised by the additional request header 'Intercom-Version'
+    it is released by the additional request header 'Intercom-Version'
     Docs: https://developers.intercom.com/building-apps/docs/update-your-api-version#section-selecting-the-version-via-the-developer-hub
     """
 
-    relevant_supported_version = "2.5"
+    relevant_supported_version = "2.2"
 
     def get_auth_header(self) -> Mapping[str, Any]:
         headers = super().get_auth_header()
