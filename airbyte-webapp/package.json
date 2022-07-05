@@ -65,7 +65,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
-    "@craco/craco": "^6.4.4",
+    "@craco/craco": "^7.0.0-alpha.7",
     "@storybook/addon-essentials": "^6.5.7",
     "@storybook/builder-webpack5": "^6.5.7",
     "@storybook/manager-webpack5": "^6.5.7",
