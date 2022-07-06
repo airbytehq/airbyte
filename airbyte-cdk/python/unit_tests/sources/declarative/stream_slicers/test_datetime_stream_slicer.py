@@ -168,6 +168,21 @@ def mock_datetime_now(monkeypatch):
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
             ],
         ),
+        (
+            "test_start_end_min_max_inherits_datetime_format_from_stream_slicer",
+            {"date": "2021-01-05"},
+            MinMaxDatetime("{{ config['start_date'] }}"),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
+            "1d",
+            None,
+            [
+                {"start_date": "2021-01-01", "end_date": "2021-01-01"},
+                {"start_date": "2021-01-02", "end_date": "2021-01-02"},
+                {"start_date": "2021-01-03", "end_date": "2021-01-03"},
+                {"start_date": "2021-01-04", "end_date": "2021-01-04"},
+                {"start_date": "2021-01-05", "end_date": "2021-01-05"},
+            ],
+        ),
     ],
 )
 def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, cursor, step, expected_slices):
@@ -175,34 +190,6 @@ def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, c
     stream_slices = slicer.stream_slices(SyncMode.incremental, stream_state)
 
     assert expected_slices == stream_slices
-
-
-@pytest.mark.parametrize(
-    "test_name, date, expected_date",
-    [
-        ("test_string_eval_from_config", InterpolatedString("{{ config['start_date'] }}"), "2021-01-01"),
-        ("test_string_eval_from_stream_state", InterpolatedString("{{ stream_state['date'] }}"), "2021-01-05"),
-        (
-            "test_date_from_config_less_than_min_date",
-            MinMaxDatetime(
-                datetime="{{ config['start_date'] }}", datetime_format=datetime_format, min_datetime="{{ stream_state['date'] }}"
-            ),
-            "2021-01-05",
-        ),
-        (
-            "test_date_from_state_greater_than_max_date",
-            MinMaxDatetime(
-                datetime="{{ stream_state['date'] }}", datetime_format=datetime_format, max_datetime="{{ config['start_date'] }}"
-            ),
-            "2021-01-01",
-        ),
-    ],
-)
-def test_eval_date(test_name, date, expected_date):
-    slicer = DatetimeStreamSlicer(date, date, "1d", cursor_value, datetime_format, config)
-    actual_date = slicer._eval_date(date, **{"stream_state": {"date": "2021-01-05"}})
-
-    assert actual_date == datetime.datetime.strptime(expected_date, datetime_format).replace(tzinfo=datetime.timezone.utc)
 
 
 if __name__ == "__main__":

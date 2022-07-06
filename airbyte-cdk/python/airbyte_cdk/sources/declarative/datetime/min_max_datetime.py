@@ -17,7 +17,7 @@ class MinMaxDatetime:
     def __init__(
         self,
         datetime: str,
-        datetime_format: str = "%Y-%m-%dT%H:%M:%S.%f%z",
+        datetime_format: str = "",
         min_datetime: str = "",
         max_datetime: str = "",
     ):
@@ -28,18 +28,29 @@ class MinMaxDatetime:
         self._max_datetime_interpolator = InterpolatedString(max_datetime) if max_datetime else None
 
     def get_datetime(self, config, **kwargs) -> dt.datetime:
-        time = dt.datetime.strptime(self._datetime_interpolator.eval(config, **kwargs), self._datetime_format).replace(
-            tzinfo=self._timezone
-        )
+        # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
+        datetime_format = self._datetime_format
+        if not datetime_format:
+            datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
+
+        time = dt.datetime.strptime(self._datetime_interpolator.eval(config, **kwargs), datetime_format).replace(tzinfo=self._timezone)
 
         if self._min_datetime_interpolator:
-            min_time = dt.datetime.strptime(self._min_datetime_interpolator.eval(config, **kwargs), self._datetime_format).replace(
+            min_time = dt.datetime.strptime(self._min_datetime_interpolator.eval(config, **kwargs), datetime_format).replace(
                 tzinfo=self._timezone
             )
             time = max(time, min_time)
         if self._max_datetime_interpolator:
-            max_time = dt.datetime.strptime(self._max_datetime_interpolator.eval(config, **kwargs), self._datetime_format).replace(
+            max_time = dt.datetime.strptime(self._max_datetime_interpolator.eval(config, **kwargs), datetime_format).replace(
                 tzinfo=self._timezone
             )
             time = min(time, max_time)
         return time
+
+    @property
+    def datetime_format(self):
+        return self._datetime_format
+
+    @datetime_format.setter
+    def datetime_format(self, value):
+        self._datetime_format = value

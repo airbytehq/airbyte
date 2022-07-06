@@ -47,12 +47,18 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._config = config
         self._cursor_value = cursor_value
 
+        # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
+        if not self._start_datetime.datetime_format:
+            self._start_datetime.datetime_format = self._datetime_format
+        if not self._end_datetime.datetime_format:
+            self._end_datetime.datetime_format = self._datetime_format
+
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         # Evaluate and compare start_date, end_date, and cursor_value based on configs and runtime state
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
-        end_datetime = min(self._eval_date(self._end_datetime, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
-        start_datetime = min(self._eval_date(self._start_datetime, **kwargs), end_datetime)
+        end_datetime = min(self._end_datetime.get_datetime(self._config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
+        start_datetime = min(self._start_datetime.get_datetime(self._config, **kwargs), end_datetime)
         if self._cursor_value and self._cursor_value.eval(self._config, **kwargs):
             cursor_datetime = self.parse_date(self._cursor_value.eval(self._config, **kwargs))
         else:
@@ -70,11 +76,6 @@ class DatetimeStreamSlicer(StreamSlicer):
             dates.append({"start_date": start.strftime(self._datetime_format), "end_date": end_date.strftime(self._datetime_format)})
             start += step
         return dates
-
-    def _eval_date(self, date: Union[InterpolatedString, MinMaxDatetime], **kwargs) -> datetime.datetime:
-        if isinstance(date, MinMaxDatetime):
-            return date.get_datetime(self._config, **kwargs)
-        return self.parse_date(date.eval(self._config, **kwargs))
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
         cursor_date = self.parse_date(cursor_value or default_date)
