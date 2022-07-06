@@ -4,5 +4,23 @@
   @extend .sectionSubHeader;
   & th {
     font-size: 10px;
+    width: 228px;
+    padding-left: 15px;
   }
+}
+
+.table {
+  width: 100%;
+}
+
+tbody > tr:first-of-type > td:nth-of-type(2) {
+  border-radius: 6px 6px 0px 0px;
+}
+
+tbody > tr:last-of-type > td:nth-of-type(2) {
+  border-radius: 0px 0px 6px 6px;
+}
+
+tbody > tr:only-of-type > td:nth-of-type(2) {
+  border-radius: 6px;
 }

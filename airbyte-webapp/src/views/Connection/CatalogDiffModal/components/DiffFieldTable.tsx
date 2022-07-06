@@ -11,7 +11,7 @@ interface DiffFieldTableProps {
 
 export const DiffFieldTable: React.FC<DiffFieldTableProps> = ({ fieldTransforms, diffVerb }) => {
   return (
-    <table>
+    <table className={styles.table}>
       <thead>
         <tr className={styles.accordionSubHeader}>
           <th>

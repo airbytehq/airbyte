@@ -1,6 +1,6 @@
 import { faAngleDown, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Disclosure as Accordion } from "@headlessui/react";
+import { Disclosure, Transition } from "@headlessui/react";
 import classnames from "classnames";
 
 import { ImageBlock } from "components";
@@ -17,14 +17,6 @@ interface CatalogDiffAccordionProps {
 }
 
 export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data }) => {
-  //do we already have a reusable accordion that accepts children? if so use that...
-  //todo: this is basically the same set of filters as what happens at the root level with the streams... should that logic be exported/combined?
-
-  // /* TODO:    1. Timebox trying out a Headless UI accordion here, otherwise can implement our own
-  //             2. Accordion will have a header with the caret, the name, and the number of added/removed/udpated fields...
-  //             3. maybe a cimpler way to pass those props?
-  //   */
-
   const fieldTransforms = data.updateStream || [];
   const addedFields = fieldTransforms.filter((item) => item.transformType === "add_field");
   const removedFields = fieldTransforms.filter((item) => item.transformType === "remove_field");
@@ -35,10 +27,10 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
 
   return (
     <div className={styles.accordionContainer}>
-      <Accordion>
+      <Disclosure>
         {({ open }) => (
           <>
-            <Accordion.Button className={styles.accordionButton}>
+            <Disclosure.Button className={styles.accordionButton}>
               <ModificationIcon />
               <div className={nameCellStyle}>
                 {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
@@ -53,28 +45,37 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
                 {addedFields.length > 0 && <ImageBlock num={addedFields.length} color="green" light />}
                 {updatedFields.length > 0 && <ImageBlock num={updatedFields.length} color="blue" light />}
               </div>
-            </Accordion.Button>
-            <Accordion.Panel>
-              {removedFields.length > 0 && (
-                <div>
-                  {/* <DiffHeader diffCount={removedFields.length} diffVerb="removed" diffType="field" /> */}
-                  <DiffFieldTable fieldTransforms={removedFields} diffVerb="removed" />
-                </div>
-              )}
-              {addedFields.length > 0 && (
-                <div>
-                  <DiffFieldTable fieldTransforms={addedFields} diffVerb="new" />
-                </div>
-              )}
-              {updatedFields.length > 0 && (
-                <div>
-                  <DiffFieldTable fieldTransforms={updatedFields} diffVerb="changed" />
-                </div>
-              )}
-            </Accordion.Panel>
+            </Disclosure.Button>
+            <Transition
+              show={open}
+              enter="transition duration-100 ease-out"
+              enterFrom="transform scale-95 opacity-0"
+              enterTo="transform scale-100 opacity-100"
+              leave="transition duration-75 ease-out"
+              leaveFrom="transform scale-100 opacity-100"
+              leaveTo="transform scale-95 opacity-0"
+            >
+              <Disclosure.Panel static>
+                {removedFields.length > 0 && (
+                  <div>
+                    <DiffFieldTable fieldTransforms={removedFields} diffVerb="removed" />
+                  </div>
+                )}
+                {addedFields.length > 0 && (
+                  <div>
+                    <DiffFieldTable fieldTransforms={addedFields} diffVerb="new" />
+                  </div>
+                )}
+                {updatedFields.length > 0 && (
+                  <div>
+                    <DiffFieldTable fieldTransforms={updatedFields} diffVerb="changed" />
+                  </div>
+                )}
+              </Disclosure.Panel>
+            </Transition>
           </>
         )}
-      </Accordion>
+      </Disclosure>
     </div>
   );
 };

@@ -12,19 +12,16 @@ interface FieldRowProps {
 }
 
 export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
-  // const transformType = transform.transformType;
   const fieldName = transform.fieldName[transform.fieldName.length - 1];
   const diffType = transform.transformType.includes("add")
     ? "add"
     : transform.transformType.includes("remove")
     ? "remove"
     : "update";
+
   const fieldType = transform.updateFieldSchema?.newSchema.type;
 
-  const contentStyle = classnames(styles.rowContent, {
-    [styles.add]: diffType === "add",
-    [styles.remove]: diffType === "remove",
-  });
+  const rowStyle = classnames(styles.row, {});
 
   const iconStyle = classnames(styles.icon, {
     [styles.plus]: diffType === "add",
@@ -32,19 +29,37 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
     [styles.mod]: diffType === "update",
   });
 
+  const contentStyle = classnames(styles.content, {
+    [styles.add]: diffType === "add",
+    [styles.remove]: diffType === "remove",
+    [styles.update]: diffType === "update",
+  });
+
+  const updateCellStyle = classnames(styles.cell, styles.update);
+
   return (
-    <tr className={styles.row}>
-      <td>
+    <tr className={rowStyle}>
+      <td className={styles.iconCell}>
         {diffType === "add" ? (
           <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />
         ) : diffType === "remove" ? (
           <FontAwesomeIcon icon={faMinus} size="1x" className={iconStyle} />
         ) : (
-          <ModificationIcon />
+          <span className="mod">
+            <ModificationIcon />
+          </span>
         )}
       </td>
-      <td className={contentStyle}>{fieldName}</td>
-      <td className={contentStyle}>{fieldType}</td>
+      <td className={contentStyle}>
+        <td className={styles.cell}>
+          <span>{fieldName}</span>
+        </td>
+        {fieldType && (
+          <td className={updateCellStyle}>
+            <span>{fieldType}</span>
+          </td>
+        )}
+      </td>
     </tr>
   );
 };
