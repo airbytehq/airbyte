@@ -27,11 +27,6 @@ const SkipButton = styled.div`
   }
 `;
 
-// const TryArrow = styled(FontAwesomeIcon)`
-//   margin: 0 10px -1px 0;
-//   font-size: 14px;
-// `;
-
 interface CreateConnectionContentProps {
   additionBottomControls?: React.ReactNode;
   source: SourceRead;
