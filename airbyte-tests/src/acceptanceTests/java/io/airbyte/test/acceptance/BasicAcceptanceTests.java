@@ -864,10 +864,9 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  @Order(-5)
   public void testResetAllWhenSchemaIsModified() throws Exception {
-    final String sourceTable1 = "test_table42";
-    final String sourceTable2 = "test_table51";
+    final String sourceTable1 = "test_table1";
+    final String sourceTable2 = "test_table2";
     final Database sourceDb = testHarness.getSourceDatabase();
     final Database destDb = testHarness.getDestinationDatabase();
     sourceDb.query(ctx -> {
@@ -886,11 +885,11 @@ public class BasicAcceptanceTests {
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final UUID destinationId = testHarness.createDestination().getDestinationId();
-    final UUID operationId = testHarness.createOperation().getOperationId();
+    final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
     final ConnectionRead connection =
-        testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, null);
+        testHarness.createConnection(name, sourceId, destinationId, List.of(operation.getOperationId()), catalog, null);
 
     // Run initial sync
     final JobInfoRead syncRead =
@@ -923,15 +922,23 @@ public class BasicAcceptanceTests {
 
     // Update with refreshed catalog
     final WebBackendConnectionUpdate update = new WebBackendConnectionUpdate()
-        .connectionId(connection.getConnectionId())
         .name(connection.getName())
-        .operationIds(connection.getOperationIds())
+        .connectionId(connection.getConnectionId())
         .namespaceDefinition(connection.getNamespaceDefinition())
         .namespaceFormat(connection.getNamespaceFormat())
+        .prefix(connection.getPrefix())
+        .operations(List.of(
+            new WebBackendOperationCreateOrUpdate()
+                .name(operation.getName())
+                .operationId(operation.getOperationId())
+                .workspaceId(operation.getWorkspaceId())
+                .operatorConfiguration(operation.getOperatorConfiguration())
+        ))
         .syncCatalog(connection.getSyncCatalog())
         .schedule(connection.getSchedule())
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
+        .resourceRequirements(connection.getResourceRequirements())
         .withRefreshedCatalog(true);
     final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
 
