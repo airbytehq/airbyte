@@ -34,7 +34,6 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
-import org.elasticsearch.client.ml.job.config.Job;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.*;
@@ -937,8 +936,7 @@ public class BasicAcceptanceTests {
                 .name(operation.getName())
                 .operationId(operation.getOperationId())
                 .workspaceId(operation.getWorkspaceId())
-                .operatorConfiguration(operation.getOperatorConfiguration())
-        ))
+                .operatorConfiguration(operation.getOperatorConfiguration())))
         .syncCatalog(connection.getSyncCatalog())
         .schedule(connection.getSchedule())
         .sourceCatalogId(connection.getSourceCatalogId())
