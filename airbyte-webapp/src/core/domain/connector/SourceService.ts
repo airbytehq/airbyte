@@ -8,6 +8,7 @@ import {
   checkConnectionToSource,
   checkConnectionToSourceForUpdate,
   createSource,
+  cloneSource,
   deleteSource,
   discoverSchemaForSource,
   executeSourceCheckConnection,
@@ -15,6 +16,7 @@ import {
   listSourcesForWorkspace,
   SourceCoreConfig,
   SourceCreate,
+  SourceCloneRequestBody,
   SourceUpdate,
   updateSource,
 } from "../../request/AirbyteClient";
@@ -68,6 +70,10 @@ export class SourceService extends AirbyteRequestService {
 
   public create(body: SourceCreate) {
     return createSource(body, this.requestOptions);
+  }
+
+  public clone(body: SourceCloneRequestBody) {
+    return cloneSource(body, this.requestOptions);
   }
 
   public update(body: SourceUpdate) {

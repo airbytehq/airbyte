@@ -2,6 +2,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   full?: boolean;
   danger?: boolean;
   secondary?: boolean;
+  light?: boolean;
   isLoading?: boolean;
   iconOnly?: boolean;
   wasActive?: boolean;

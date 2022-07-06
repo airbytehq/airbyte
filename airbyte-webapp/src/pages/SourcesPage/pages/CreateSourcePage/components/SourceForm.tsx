@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
@@ -21,6 +22,7 @@ interface SourceFormProps {
   afterSelectConnector?: () => void;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
+  sourceCloneId?: string;
   error?: { message?: string; status?: number } | null;
 }
 
@@ -37,6 +39,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   sourceDefinitions,
   error,
   hasSuccess,
+  sourceCloneId,
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
@@ -51,21 +54,29 @@ export const SourceForm: React.FC<SourceFormProps> = ({
     error: sourceDefinitionError,
     isLoading,
   } = useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
+  const source = useGetSource(sourceCloneId);
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
-    setSourceDefinitionId(sourceDefinitionId);
-
-    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    trackNewSourceAction("Select a connector", {
-      connector_source: connector?.name,
-      connector_source_definition_id: sourceDefinitionId,
-    });
+    chooseSource(sourceDefinitionId);
   };
+
+  const chooseSource = useCallback(
+    (sourceDefinitionId: string) => {
+      setSourceDefinitionId(sourceDefinitionId);
+
+      const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
+
+      if (afterSelectConnector) {
+        afterSelectConnector();
+      }
+
+      trackNewSourceAction("Select a connector", {
+        connector_source: connector?.name,
+        connector_source_definition_id: sourceDefinitionId,
+      });
+    },
+    [afterSelectConnector, sourceDefinitions, trackNewSourceAction]
+  );
 
   const onSubmitForm = async (values: ServiceFormValues) => {
     await onSubmit({
@@ -73,6 +84,24 @@ export const SourceForm: React.FC<SourceFormProps> = ({
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
   };
+
+  const getFormValues = () => {
+    if (source) {
+      return {
+        serviceType: source.sourceDefinitionId,
+        name: source.name,
+        connectionConfiguration: source.connectionConfiguration,
+      };
+    }
+
+    return sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined;
+  };
+
+  useEffect(() => {
+    if (source) {
+      chooseSource(source.sourceDefinitionId);
+    }
+  }, [source, chooseSource]);
 
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
@@ -82,12 +111,13 @@ export const SourceForm: React.FC<SourceFormProps> = ({
       onSubmit={onSubmitForm}
       formType="source"
       availableServices={sourceDefinitions}
+      checkConnectionBeforeSubmit={sourceCloneId ? false : true}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
       hasSuccess={hasSuccess}
       fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
+      formValues={getFormValues()}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

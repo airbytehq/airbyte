@@ -1,5 +1,24 @@
+@import "../../../../../scss/variables";
+
 .content {
   width: 80%;
   max-width: 813px;
   margin: 18px auto;
+}
+
+.cloneButton {
+  display: flex;
+}
+
+.cloneText {
+  margin-right: 10px;
+  border-bottom: 1px solid $grey-400;
+  padding-bottom: 1px;
+  color: $grey-400;
+  font-size: 10px;
+}
+
+.cloneIcon {
+  font-size: 14px;
+  color: $grey-400;
 }

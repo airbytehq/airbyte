@@ -3,7 +3,6 @@
   "notifications.error.health": "Cannot reach server",
   "notifications.error.somethingWentWrong": "Something went wrong",
   "notifications.error.noMessage": "No error message",
-
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
   "sidebar.admin": "Admin",
@@ -22,7 +21,6 @@
   "sidebar.support": "Support",
   "sidebar.supportTicket": "Submit a Ticket",
   "sidebar.recipes": "Tutorials - Use cases",
-
   "form.continue": "Continue",
   "form.yourEmail": "Your email",
   "form.email.placeholder": "you@company.com",
@@ -39,6 +37,8 @@
   "form.name": "Name *",
   "form.sourceName.message": "Pick a name to help you identify this source in Airbyte",
   "form.destinationName.message": "Pick a name to help you identify this destination in Airbyte",
+  "form.sourceSettings": "Source Settings",
+  "form.destinationSettings": "Destination Settings",
   "form.connectionName.message": "Pick a name to help you identify this connection",
   "form.sourceType": "Source type",
   "form.destinationType": "Destination type",
@@ -112,7 +112,6 @@
   "form.url.error": "field must be a valid URL",
   "form.setupGuide": "Setup Guide",
   "form.wait": "Please wait a little bit more…",
-
   "connectionForm.validation.error": "The form is invalid. Please make sure that all fields are correct.",
   "connectionForm.normalization.title": "Normalization",
   "connectionForm.operations.notSupported": "Transformation and Normalization operations are not supported for this connection",
@@ -145,13 +144,11 @@
   "connectionForm.defaultSyncMode.message": "Set how Airbyte reads from the source and writes to the destination, across all streams <b>when the option is available</b>.",
   "connectionForm.bulkEdit.cancel": "Cancel",
   "connectionForm.bulkEdit.apply": "Apply",
-
   "connectorForm.authenticate": "Authenticate your {connector} account",
   "connectorForm.signInWithGoogle": "Sign in with Google",
   "connectorForm.authenticate.succeeded": "Authentication succeeded!",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your connector",
-
   "form.rawData": "Raw data (JSON)",
   "form.basicNormalization": "Normalized tabular data",
   "form.basicNormalization.message": "Map the JSON object to the types and format native to the destination. <lnk>Learn more</lnk>",
@@ -168,7 +165,6 @@
   "form.gitBranch": "Git branch name (leave blank for default branch)",
   "form.selectType": "Select a type",
   "form.repositoryUrl.placeholder": "https://github.com/<organisation>/<git_repo>.git",
-
   "form.sourceNamespace": "Source namespace",
   "form.sourceStreamName": "Source stream name",
   "form.destinationNamespace": "Dest. namespace",
@@ -183,7 +179,6 @@
   "form.field.destinationName": "Destination name",
   "form.field.primaryKey": "Primary key",
   "form.field.cursorField": "Cursor field",
-
   "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",
   "preferences.anonymizeUsage": "Anonymize usage data collection",
@@ -194,7 +189,6 @@
   "preferences.featureUpdates": "Receive feature updates.",
   "preferences.unsubscribeAnyTime": " You can unsubscribe any time.",
   "preferences.securityUpdates": "Receive emails about security updates.",
-
   "onboarding.headTitle": "Get Started!",
   "onboarding.title": "Let’s set up your first connection.",
   "onboarding.subtitle": "Connections are automated data pipelines that sync data from a source to a destination.",
@@ -238,7 +232,6 @@
   "onboarding.firstSync": "Start your first sync",
   "onboarding.syncFailed": "Your sync is failed. Please try again",
   "onboarding.startAgain": "Your sync was cancelled. You can start it again",
-
   "sources.description": "<b>Sources</b> are where you want to <b>pull data</b> from.",
   "sources.searchIncremental": "Search cursor value for incremental",
   "sources.incrementalDefault": "{value} (default)",
@@ -247,6 +240,7 @@
   "sources.incremental": "Incremental - based on...",
   "sources.newSource": "+ New source",
   "sources.newSourceTitle": "New Source",
+  "sources.cloneSourceTitle": "Cloning source",
   "sources.selectSource": "Select a source",
   "sources.status": "Status",
   "sources.schema": "Schema",
@@ -286,6 +280,7 @@
   "sources.countMB": "{count} MB",
   "sources.countGB": "{count} GB",
   "sources.countTB": "{count} TB",
+  "sources.cloneText": "New source using this settings",
   "sources.downloadLogs": "Download logs",
   "sources.debugInfoDetails": "Debug Info details",
   "sources.reset_connection": "Reset",
@@ -298,7 +293,6 @@
   "sources.message": "Message",
   "sources.additionalFailureInfo": "Additional Failure Information",
   "sources.lastAttempt": "Last attempt:",
-
   "destination.destinationSettings": "Destination Settings",
   "destinations.newDestination": "+ New destination",
   "destinations.description": "<b>Destinations</b> are where you <b>send</b> or <b>push</b> your data to.",
@@ -307,16 +301,12 @@
   "destinations.addSourceReplicateData": "Add sources where to replicate data from.",
   "destinations.newDestinationTitle": "New destination",
   "destinations.destinationSetUp": "Set up the destination",
-
   "connection.stream.syncMode": "{syncMode} - {destinationSyncMode}",
-
   "destinationSyncMode.append": "Append",
   "destinationSyncMode.append_dedup": "Deduped + history",
   "destinationSyncMode.overwrite": "Overwrite",
-
   "syncMode.full_refresh": "Full refresh",
   "syncMode.incremental": "Incremental",
-
   "connection.warningUpdateSchema": "WARNING! Updating the schema will delete all the data for this connection in your destination and start syncing from scratch.",
   "connection.title": "Connection",
   "connection.description": "<b>Connections</b> link Sources to Destinations.",
@@ -347,16 +337,13 @@
   "connection.linkCopied": "Link copied!",
   "connection.copyLogLink": "Copy link to log",
   "connection.connectionDeletedView": "This connection has been deleted. You can’t make any changes or run syncs.",
-
   "form.frequency": "Replication frequency*",
   "form.frequency.placeholder": "Select a frequency",
   "form.frequency.message": "Set how often data should sync to the destination",
-
   "connection.replicationFrequency": "Replication frequency*",
   "connection.replicationFrequency.subtitle": "Set how often data should sync to the destination",
   "connection.normalization": "Normalization",
   "connection.customTransformations": "Custom Transformations",
-
   "tables.sourceIsValidating": "Validating the source",
   "tables.sourceIsValidatingBefore": "before you add a new destination",
   "tables.destinationIsValidating": "Validating the destination",
@@ -401,7 +388,6 @@
   "tables.connectionDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
   "tables.connectionState.title": "Connection State",
   "tables.connectionState.noConnectionState": "This connection doesn‘t have a state (yet).",
-
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",
   "admin.configuration": "Configuration",
@@ -442,7 +428,6 @@
   "admin.upgradeAll": "Upgrade all",
   "admin.upgraded": "Upgraded!",
   "admin.customImage": "custom",
-
   "settings.accountSettings": "Account Settings",
   "settings.changeSaved": "change saved!",
   "settings.webhook": "Connection status Webhook",
@@ -462,7 +447,6 @@
   "settings.newsletter": "Newsletter with feature updates.",
   "settings.account": "Account",
   "settings.accountSettings.updateEmailSuccess": "Email updated",
-
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",
   "connector.request": "Request",
@@ -487,7 +471,6 @@
   "connector.connectorsInDevelopment.docLink": "See our <lnk>documentation</lnk> for more details.",
   "connector.setupGuide": "Setup Guide",
   "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
-
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",
   "credits.buyCredits": "Buy credits",
@@ -495,10 +478,8 @@
   "credits.remainingCredits": "Remaining credits",
   "credits.creditUsage": "Credit Usage",
   "credits.totalUsage": "Total usage",
-
   "demo.message.title": "This Airbyte demo is read-only",
   "demo.message.body": "You cannot add or edit any connectors. You will see error messages on purpose if you try to do so.",
-
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.notFound": "Resource not found.",
   "errorView.notAuthorized": "You don’t have permission to access this page.",
@@ -506,18 +487,15 @@
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
-
   "frequency.manual": "Manual",
   "frequency.minutes": "{value} min",
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
-
   "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
   "ui.keyValuePairV2": "{key} ({value})",
   "ui.keyValuePairV3": "{key}, {value}",
-
   "airbyte.datatype.string": "String",
   "airbyte.datatype.date": "Date",
   "airbyte.datatype.timestamp_with_timezone": "Timestamp with Timezone",

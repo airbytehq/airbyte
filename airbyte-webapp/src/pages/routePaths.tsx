@@ -13,5 +13,6 @@ export enum RoutePaths {
   Connection = "connection",
   ConnectionNew = "new-connection",
   SourceNew = "new-source",
+  SourceClone = "clone-source",
   DestinationNew = "new-destination",
 }

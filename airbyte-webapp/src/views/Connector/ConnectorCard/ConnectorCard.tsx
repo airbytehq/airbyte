@@ -18,6 +18,7 @@ export interface ConnectorCardProvidedProps {
   isSuccess: boolean;
   onStopTesting: () => void;
   testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+  sourceCloneId?: string;
 }
 
 export const ConnectorCard: React.FC<
@@ -25,6 +26,7 @@ export const ConnectorCard: React.FC<
     title?: React.ReactNode;
     full?: boolean;
     jobInfo?: SynchronousJobReadWithStatus | null;
+    checkConnectionBeforeSubmit?: boolean;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -33,7 +35,7 @@ export const ConnectorCard: React.FC<
         }
       | { isEditMode?: false }
     )
-> = ({ title, full, jobInfo, onSubmit, ...props }) => {
+> = ({ title, full, jobInfo, onSubmit, checkConnectionBeforeSubmit, ...props }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
@@ -83,7 +85,9 @@ export const ConnectorCard: React.FC<
     };
 
     try {
-      await testConnectorWithTracking();
+      if (checkConnectionBeforeSubmit) {
+        await testConnectorWithTracking();
+      }
       await onSubmit(values);
       setSaved(true);
     } catch (e) {

@@ -31,6 +31,11 @@ interface ValuesProps {
   frequency?: string;
 }
 
+interface SourceCloneProps {
+  sourceCloneId: string;
+  sourceConfiguration: ValuesProps;
+}
+
 interface ConnectorProps {
   name: string;
   sourceDefinitionId: string;
@@ -78,6 +83,38 @@ const useCreateSource = () => {
           sourceDefinitionId: sourceConnector?.sourceDefinitionId,
           workspaceId: workspace.workspaceId,
           connectionConfiguration: values.connectionConfiguration,
+        });
+
+        return result;
+      } catch (e) {
+        throw e;
+      }
+    },
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(sourcesKeys.lists(), (lst: SourceList | undefined) => ({
+          sources: [data, ...(lst?.sources ?? [])],
+        }));
+      },
+    }
+  );
+};
+
+const useCloneSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    async (createSourcePayload: SourceCloneProps) => {
+      const { sourceConfiguration, sourceCloneId } = createSourcePayload;
+      try {
+        // Try to create source
+        const result = await service.clone({
+          sourceCloneId,
+          sourceConfiguration: {
+            name: sourceConfiguration.name,
+            connectionConfiguration: sourceConfiguration.connectionConfiguration,
+          },
         });
 
         return result;
@@ -195,4 +232,12 @@ const useDiscoverSchema = (
   return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };
 
-export { useSourceList, useGetSource, useCreateSource, useDeleteSource, useUpdateSource, useDiscoverSchema };
+export {
+  useSourceList,
+  useCloneSource,
+  useGetSource,
+  useCreateSource,
+  useDeleteSource,
+  useUpdateSource,
+  useDiscoverSchema,
+};

@@ -7,12 +7,14 @@ import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
 import AllSourcesPage from "./pages/AllSourcesPage";
+import CloneSourcePage from "./pages/CloneSourcePage/CloneSourcePage";
 import CreateSourcePage from "./pages/CreateSourcePage/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
 
 export const SourcesPage: React.FC = () => (
   <Routes>
     <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
+    <Route path={`${RoutePaths.SourceClone}/:sourceCloneId`} element={<CloneSourcePage />} />
     <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
     <Route
       path=":id/*"
