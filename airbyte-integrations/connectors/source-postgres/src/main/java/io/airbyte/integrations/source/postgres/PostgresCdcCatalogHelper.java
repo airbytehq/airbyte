@@ -71,6 +71,9 @@ public final class PostgresCdcCatalogHelper {
     return stream;
   }
 
+  /**
+   * @return tables included in the publication. When it is not CDC mode, returns an empty set.
+   */
   public static Set<AirbyteStreamNameNamespacePair> getPublicizedTables(final JdbcDatabase database) throws SQLException {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (sourceConfig == null || !PostgresUtils.isCdc(sourceConfig)) {

@@ -151,6 +151,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (publicizedTablesInCdc.isEmpty()) {
       return rawTables;
     }
+    // under cdc mode, only return tables that are in the publication
     return rawTables.stream()
         .filter(table -> publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(table.getName(), table.getNameSpace())))
         .collect(toList());
