@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -187,7 +188,7 @@ public class SecretMigrator {
    * Wrapper to help to mock static methods
    */
   @VisibleForTesting
-  List<String> getSecretPath(final JsonNode specs) {
+  Set<String> getSecretPath(final JsonNode specs) {
     return SecretsHelpers.getSortedSecretPaths(specs);
   }
 

@@ -18,8 +18,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 /**
@@ -170,7 +172,7 @@ public class SecretsHelpers {
    * This returns all the path to the airbyte secrets based on a schema spec. The path will be return
    * in an ascending alphabetical order.
    */
-  public static List<String> getSortedSecretPaths(final JsonNode spec) {
+  public static Set<String> getSortedSecretPaths(final JsonNode spec) {
     return JsonSchemas.collectPathsThatMeetCondition(
         spec,
         node -> MoreIterators.toList(node.fields())
@@ -179,7 +181,7 @@ public class SecretsHelpers {
         .stream()
         .map(JsonPaths::mapJsonSchemaPathToJsonPath)
         .sorted()
-        .toList();
+        .collect(Collectors.toSet());
   }
 
   private static Optional<String> getExistingCoordinateIfExists(final JsonNode json) {
@@ -232,7 +234,7 @@ public class SecretsHelpers {
     var fullConfigCopy = newFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    final List<String> paths = getSortedSecretPaths(spec);
+    final Set<String> paths = getSortedSecretPaths(spec);
 
     for (final String path : paths) {
       fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {

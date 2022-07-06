@@ -23,6 +23,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -218,7 +219,7 @@ public class SecretsHelpersTest {
   void testSecretPath(final SecretsTestCase testCase) throws IOException {
     final JsonNode spec = testCase.getSpec().getConnectionSpecification();
 
-    final List<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
+    final Set<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
 
     Assertions.assertThat(secretsPaths).containsExactlyElementsOf(testCase.getExpectedSecretsPaths());
   }
