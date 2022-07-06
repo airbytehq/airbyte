@@ -94,9 +94,8 @@ class TagGroupsList(DiscourseStream):
     #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
     primary_key = None
 
-    def __init__(self, id: int = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.id = id
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -107,13 +106,11 @@ class TagGroupsList(DiscourseStream):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs
     ) -> Iterable[Mapping]:
         response_json = response.json()
-        for tag_group in response_json["tag_groups"]:
-            yield tag_group
+        for item in response_json['tag_groups']:
+            yield item
 
 
 # Basic incremental stream
@@ -200,16 +197,12 @@ class SourceDiscourse(AbstractSource):
         return auth
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
-        auth = DiscourseAuthenticator(config["api_key"], config["api_username"])
-        url = f"https://discuss.airbyte.io/tag_groups.json"
+        auth = self.get_authenticator(config)
         try:
-            response = requests.get(url, auth=auth)
-            response.raise_for_status()
-            return True, None
-            # TODO: connect to stream
-            # tag_group_list = TagGroupsList(authenticator=auth)
-            # record = next(tag_group_list)
-            # logger.info(f"Successfully connected to the TagGroupsList stream. Pulled one record: {record}")
+            tags_stream = TagGroupsList(authenticator=auth)
+            tags_records = tags_stream.read_records(sync_mode="full_refresh")
+            record = next(tags_records)
+            logger.info(f"Successfully connected to the TagGroupsList stream. Pulled one record: {record}")
             return True, None
         except Exception as e:
             return False, e
