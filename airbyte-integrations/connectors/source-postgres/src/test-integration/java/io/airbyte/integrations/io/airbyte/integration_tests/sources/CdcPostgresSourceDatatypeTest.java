@@ -25,6 +25,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
+  private static final int INITIAL_WAITING_SECONDS = 10;
   private PostgreSQLContainer<?> container;
   private JsonNode config;
   private DSLContext dslContext;
@@ -47,6 +48,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         .put("method", "CDC")
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())

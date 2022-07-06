@@ -43,6 +43,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String PUBLICATION = "publication";
+  private static final int INITIAL_WAITING_SECONDS = 10;
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
@@ -63,6 +64,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("method", "CDC")
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
