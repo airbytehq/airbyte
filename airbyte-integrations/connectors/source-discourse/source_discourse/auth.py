@@ -2,10 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import Any, Mapping
 from requests.auth import AuthBase
-
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 class DiscourseAuthenticator(AuthBase):
 
