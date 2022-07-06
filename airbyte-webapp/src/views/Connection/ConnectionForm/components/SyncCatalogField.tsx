@@ -191,9 +191,10 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
     [streams, onChangeSchema]
   );
 
-  const sortedSchema = useMemo(() => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")), [
-    streams,
-  ]);
+  const sortedSchema = useMemo(
+    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
+    [streams]
+  );
 
   const filteredStreams = useMemo(() => {
     const filters: Array<(s: SyncSchemaStream) => boolean> = [

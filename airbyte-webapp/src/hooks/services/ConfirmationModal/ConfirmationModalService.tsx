@@ -9,9 +9,7 @@ import { ConfirmationModalOptions, ConfirmationModalServiceApi, ConfirmationModa
 
 const ConfirmationModalServiceContext = React.createContext<ConfirmationModalServiceApi | undefined>(undefined);
 
-export const useConfirmationModalService: (
-  confirmationModal?: ConfirmationModalOptions
-) => {
+export const useConfirmationModalService: (confirmationModal?: ConfirmationModalOptions) => {
   openConfirmationModal: (confirmationModal: ConfirmationModalOptions) => void;
   closeConfirmationModal: () => void;
 } = (confirmationModal) => {

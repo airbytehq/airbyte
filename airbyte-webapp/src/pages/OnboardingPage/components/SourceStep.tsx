@@ -33,9 +33,8 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
-  const { data: sourceDefinitionSpecification, isLoading } = useGetSourceDefinitionSpecificationAsync(
-    sourceDefinitionId
-  );
+  const { data: sourceDefinitionSpecification, isLoading } =
+    useGetSourceDefinitionSpecificationAsync(sourceDefinitionId);
 
   useEffect(() => {
     return () => {

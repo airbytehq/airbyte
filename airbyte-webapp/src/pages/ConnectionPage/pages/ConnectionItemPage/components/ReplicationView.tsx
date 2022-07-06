@@ -62,10 +62,10 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
 
-  const [
-    { value: connectionWithRefreshCatalog, loading: isRefreshingCatalog },
-    refreshCatalog,
-  ] = useAsyncFn(refreshConnectionCatalog, [connectionId]);
+  const [{ value: connectionWithRefreshCatalog, loading: isRefreshingCatalog }, refreshCatalog] = useAsyncFn(
+    refreshConnectionCatalog,
+    [connectionId]
+  );
 
   const connection = useMemo(() => {
     if (activeUpdatingSchemaMode && connectionWithRefreshCatalog) {
