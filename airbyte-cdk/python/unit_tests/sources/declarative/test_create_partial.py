@@ -42,7 +42,7 @@ def test_string_interpolation():
     s = "{{ next_page_token['next_page_url'] }}"
     partial = create(InterpolatedString, string=s)
     interpolated_string = partial()
-    assert interpolated_string._string == s
+    assert interpolated_string.string == s
 
 
 def test_string_interpolation_through_kwargs():
@@ -50,4 +50,4 @@ def test_string_interpolation_through_kwargs():
     options = {"name": "airbyte"}
     partial = create(InterpolatedString, string=s, options=options)
     interpolated_string = partial()
-    assert interpolated_string._string == "airbyte"
+    assert interpolated_string.string == "airbyte"

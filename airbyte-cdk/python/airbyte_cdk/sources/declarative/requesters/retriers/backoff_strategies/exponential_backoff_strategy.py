@@ -6,9 +6,10 @@ from typing import Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import BackoffStrategy
+from pydantic import BaseModel
 
 
-class ExponentialBackoffStrategy(BackoffStrategy):
+class ExponentialBackoffStrategy(BackoffStrategy, BaseModel):
     """
     Backoff strategy that uses exponential backoff.
     """

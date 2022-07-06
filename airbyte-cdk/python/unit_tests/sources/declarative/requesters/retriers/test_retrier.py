@@ -43,7 +43,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
             None,
             {},
             RetryResponseStatus(None),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY],
+            [],
         ),
         ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
         (
@@ -53,7 +53,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
             None,
             {},
             RetryResponseStatus(60),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY, ConstantBackoffStrategy(60)],
+            [ConstantBackoffStrategy(60)],
         ),
         ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.Ok, None),
         ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.Ok, None),
@@ -107,7 +107,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
         (
             "test_retry_403",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter({HTTPStatus.FORBIDDEN}),
+            HttpResponseFilter(http_codes=[HTTPStatus.FORBIDDEN]),
             None,
             {},
             RetryResponseStatus(None),

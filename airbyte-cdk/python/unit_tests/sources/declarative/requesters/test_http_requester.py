@@ -2,44 +2,42 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
-
 import requests
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
+)
+from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
+from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import RetryResponseStatus
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import MultipleTokenAuthenticator
 
 
-def test():
+def test_http_requester():
     http_method = "GET"
 
-    request_options_provider = MagicMock()
+    config = {"url": "https://airbyte.io"}
+
     request_params = {"param": "value"}
     request_body_data = "body_key_1=value_1&body_key_2=value2"
-    request_body_json = {"body_field": "body_value"}
-    request_options_provider.request_params.return_value = request_params
-    request_options_provider.request_body_data.return_value = request_body_data
-    request_options_provider.request_body_json.return_value = request_body_json
-
-    request_headers_provider = MagicMock()
     request_headers = {"header": "value"}
-    request_headers_provider.request_headers.return_value = request_headers
+    request_options_provider = InterpolatedRequestOptionsProvider(
+        request_parameters=request_params, request_body_data=request_body_data, request_headers=request_headers, config=config
+    )
 
-    authenticator = MagicMock()
+    authenticator = MultipleTokenAuthenticator(tokens=["token"])
 
-    retrier = MagicMock()
     max_retries = 10
-    should_retry = True
     backoff_time = 1000
-    retrier.max_retries = max_retries
-    retrier.should_retry.return_value = should_retry
-    retrier.backoff_time.return_value = backoff_time
+    retrier = DefaultRetrier()
 
-    config = {"url": "https://airbyte.io"}
     stream_slice = {"id": "1234"}
 
     name = "stream_name"
 
     requester = HttpRequester(
-        name=name,
+        stream_name=name,
         url_base="{{ config['url'] }}",
         path="v1/{{ stream_slice['id'] }}",
         http_method=http_method,
@@ -49,13 +47,19 @@ def test():
         config=config,
     )
 
+    print(HttpRequester.schema())
+    assert False
+
+    assert isinstance(requester.url_base, InterpolatedString)
+    assert isinstance(requester.path, InterpolatedString)
+
     assert requester.get_url_base() == "https://airbyte.io"
     assert requester.get_path(stream_state={}, stream_slice=stream_slice, next_page_token={}) == "v1/1234"
     assert requester.get_authenticator() == authenticator
     assert requester.get_method() == HttpMethod.GET
     assert requester.request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
     assert requester.request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
-    assert requester.request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.max_retries == max_retries
-    assert requester.should_retry(requests.Response()) == should_retry
-    assert requester.backoff_time(requests.Response()) == backoff_time
+    should_retry = requester.should_retry(requests.Response())
+    assert isinstance(should_retry, RetryResponseStatus)
+    assert should_retry.retry_in == backoff_time

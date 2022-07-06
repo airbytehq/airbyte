@@ -6,10 +6,11 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
+from pydantic import BaseModel
 
 
-class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
-    def __init__(self, *, config, request_parameters=None, request_headers=None, request_body_data=None, request_body_json=None):
+class InterpolatedRequestOptionsProvider(RequestOptionsProvider, BaseModel):
+    def init(self, *, config, request_parameters=None, request_headers=None, request_body_data=None, request_body_json=None):
         if request_parameters is None:
             request_parameters = {}
         if request_headers is None:

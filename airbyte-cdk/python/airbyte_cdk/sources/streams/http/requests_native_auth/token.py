@@ -3,24 +3,22 @@
 #
 
 import base64
-from itertools import cycle
 from typing import Any, List, Mapping
 
+from pydantic import BaseModel
 from requests.auth import AuthBase
 
 
-class MultipleTokenAuthenticator(AuthBase):
+class MultipleTokenAuthenticator(AuthBase, BaseModel):
     """
     Builds auth header, based on the list of tokens provided.
     Auth header is changed per each `get_auth_header` call, using each token in cycle.
     The token is attached to each request via the `auth_header` header.
     """
 
-    def __init__(self, tokens: List[str], auth_method: str = "Bearer", auth_header: str = "Authorization"):
-        self.auth_method = auth_method
-        self.auth_header = auth_header
-        self._tokens = tokens
-        self._tokens_iter = cycle(self._tokens)
+    auth_method: str = "Bearer"
+    auth_header: str = "Authorization"
+    tokens: List[str]
 
     def __call__(self, request):
         request.headers.update(self.get_auth_header())

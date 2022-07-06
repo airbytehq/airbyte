@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 class InterpolatedString(BaseModel):
     string: str = Field()
-    default: Optional[str]
+    default: Optional[str] = None
     interpolation = JinjaInterpolation()
 
     class Config:

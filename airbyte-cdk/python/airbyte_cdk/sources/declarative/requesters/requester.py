@@ -132,14 +132,12 @@ class Requester(ABC):
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
 
-    @property
     @abstractmethod
     def cache_filename(self) -> str:
         """
         Return the name of cache file
         """
 
-    @property
     @abstractmethod
     def use_cache(self) -> bool:
         """
