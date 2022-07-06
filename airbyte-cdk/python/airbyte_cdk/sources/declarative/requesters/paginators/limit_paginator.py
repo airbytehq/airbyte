@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping
 
 import requests
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import ConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
@@ -22,6 +23,7 @@ class LimitPaginator(ConditionalPaginator):
         page_token: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
+        decoder: Decoder = None,
         url_base: str = None,
     ):
         self._config = config
@@ -34,6 +36,7 @@ class LimitPaginator(ConditionalPaginator):
             pagination_strategy,
             config,
             url_base,
+            decoder,
         )
 
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:

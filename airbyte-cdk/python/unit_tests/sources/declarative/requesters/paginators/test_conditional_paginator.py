@@ -35,7 +35,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     config = {"response_override": "stop_if_you_see_me"}
 
     cursor_value = "{{ decoded_response.end }}"
-    strategy = CursorPaginationStrategy(cursor_value, decoder=JsonDecoder(), config=config)
+    strategy = CursorPaginationStrategy(cursor_value, decoder=decoder, config=config)
 
     request_options_provider = InterpolatedRequestOptionsProvider(config=config)
     page_token = RequestOption(option_type=RequestOptionType.body_json, field_name="from")
@@ -45,7 +45,9 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     response._content = json.dumps(response_body).encode("utf-8")
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
 
-    paginator = InterpolatedConditionalPaginator(stop_condition_template, decoder, request_options_provider, page_token, strategy, config)
+    paginator = InterpolatedConditionalPaginator(
+        stop_condition_template, request_options_provider, page_token, strategy, config, None, decoder
+    )
     next_page_token = paginator.next_page_token(response, last_records)
 
     assert next_page_token == expected_next_page_token
