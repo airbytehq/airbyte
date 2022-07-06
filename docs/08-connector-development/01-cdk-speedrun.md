@@ -238,3 +238,6 @@ docker build . -t airbyte/source-python-http-example:dev
 
 You're done. Stop the clock :\)
 
+## Further reading
+
+If you have enjoyed the above example, and would like to explore the Python CDK in even more detail, you may be interested looking at [how to build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api)

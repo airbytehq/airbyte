@@ -98,16 +98,11 @@ Airbyte supports exporting built-in metrics to Datadog or [OpenTelemetry](https:
   </tr>
 </table>
       
-        :::note
 
-        Metrics with `by_release_stage` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.  
-        
-        :::
+**Note:** Metrics with `by_release_stage` in their name are tagged by connector release stage (alpha, beta, or GA). These tags allow you to filter by release stage. Alpha and beta connectors are less stable and have a higher failure rate than GA connectors, so filtering by those release stages can help you find failed jobs.  
 
-:::code
 
-**Example**
-
+**Example**  
 If a job was created for an Alpha source to a Beta destination, and the outcome of the job is a success, the following metrics are displayed:
 
 `job_created_by_release_stage\[“alpha”\] = 1;`  
@@ -116,8 +111,6 @@ If a job was created for an Alpha source to a Beta destination, and the outcome 
 `job_succeeded_by_release_stage\[“beta”\] = 1;`  
 
 **Note:** Each job has a source and destination, so each metric is counted twice — once for source and once for destination.
-
-:::
 
 <table>
   <tr>
