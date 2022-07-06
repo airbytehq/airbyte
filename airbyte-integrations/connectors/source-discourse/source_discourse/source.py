@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from requests.auth import AuthBase
@@ -12,6 +13,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+
+from .auth import DiscourseAuthenticator
 
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
@@ -30,31 +33,6 @@ There are additional required TODOs in the files within the integration_tests fo
 
 # Basic full refresh stream
 class DiscourseStream(HttpStream, ABC):
-    """
-    TODO remove this comment
-
-    This class represents a stream output by the connector.
-    This is an abstract base class meant to contain all the common functionality at the API level e.g: the API base URL, pagination strategy,
-    parsing responses etc..
-
-    Each stream should extend this class (or another abstract subclass of it) to specify behavior unique to that stream.
-
-    Typically for REST APIs each stream corresponds to a resource in the API. For example if the API
-    contains the endpoints
-        - GET v1/customers
-        - GET v1/employees
-
-    then you should have three classes:
-    `class DiscourseStream(HttpStream, ABC)` which is the current class
-    `class Customers(DiscourseStream)` contains behavior to pull data for customers using v1/customers
-    `class Employees(DiscourseStream)` contains behavior to pull data for employees using v1/employees
-
-    If some streams implement incremental sync, it is typical to create another class
-    `class IncrementalDiscourseStream((DiscourseStream), ABC)` then have concrete stream implementations extend it. An example
-    is provided below.
-
-    See the reference docs for the full list of configurable options.
-    """
 
     url_base = "https://discuss.airbyte.io/"
 
@@ -111,14 +89,20 @@ class Posts(DiscourseStream):
         """
         return "posts"
 
-class Tags(DiscourseStream):
+class TagGroupsList(DiscourseStream):
 
-    primary_key = "id"
+    #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
+    primary_key = None
+
+    def __init__(self, id: int = None, **kwargs):
+        super().__init__(**kwargs)
+        self.id = id
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> str:
-        return "tag_groups.json"
+        path = "tag_groups.json"
+        return path
     
     def parse_response(
         self,
@@ -127,7 +111,9 @@ class Tags(DiscourseStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        return [response.json()]
+        response_json = response.json()
+        for tag_group in response_json["tag_groups"]:
+            yield tag_group
 
 
 # Basic incremental stream
@@ -199,31 +185,32 @@ class Employees(IncrementalDiscourseStream):
         """
         raise NotImplementedError("Implement stream slices or delete this method!")
 
-class DiscourseAuthenticator(AuthBase):
-
-    def __init__(self, api_key, username):
-        self.api_key = api_key
-        self.username = username
-
-    def __call__(self, request):
-        request.headers.update(self.get_auth_header())
-        return request
-
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Api-Key": self.api_key, "Api-Username": self.username}
-
 # Source
 class SourceDiscourse(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+
+    @staticmethod
+    def get_authenticator(config):
+        api_key = config.get("api_key", None)
+        api_username = config.get("api_username", None)
+        if not api_key:
+            raise Exception("Config validation error: 'api_key' is a required property")
+        elif not api_username:
+            raise Exception("Config validation error: 'api_username' is a required property")
+        auth = DiscourseAuthenticator(config["api_key"], config["api_username"])
+        return auth
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        auth = DiscourseAuthenticator(config["api_key"], config["api_username"])
+        url = f"https://discuss.airbyte.io/tag_groups.json"
         try:
-            auth = DiscourseAuthenticator(config["api_key"],config["api_username"])
-            resp = requests.get('http://discuss.airbyte.io/categories.json', headers=auth.get_auth_header())
-            status = resp.status_code
-            if status == 200:
-                return True, None
-            else:
-                message = resp.json()
-                return False, message
+            response = requests.get(url, auth=auth)
+            response.raise_for_status()
+            return True, None
+            # TODO: connect to stream
+            # tag_group_list = TagGroupsList(authenticator=auth)
+            # record = next(tag_group_list)
+            # logger.info(f"Successfully connected to the TagGroupsList stream. Pulled one record: {record}")
+            return True, None
         except Exception as e:
             return False, e
 
@@ -235,4 +222,4 @@ class SourceDiscourse(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = DiscourseAuthenticator(config["api_key"],config["api_username"])  # Oauth2Authenticator is also available if you need oauth support
-        return [Tags(authenticator=auth)]
+        return [TagGroupsList(authenticator=auth)]
