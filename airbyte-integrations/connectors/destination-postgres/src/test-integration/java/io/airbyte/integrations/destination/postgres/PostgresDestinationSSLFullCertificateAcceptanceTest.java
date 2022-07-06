@@ -43,8 +43,8 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("username", "postgres")
+        .put("password", "postgres")
         .put("schema", "public")
         .put("port", db.getFirstMappedPort())
         .put("database", db.getDatabaseName())
