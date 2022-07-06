@@ -892,15 +892,18 @@ public class BasicAcceptanceTests {
         testHarness.createConnection(name, sourceId, destinationId, List.of(operation.getOperationId()), catalog, null);
 
     // Run initial sync
+    LOGGER.info("Running initial sync");
     final JobInfoRead syncRead =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
 
+    LOGGER.info("Inspecting Source DB");
     sourceDb.query(ctx -> {
       System.out.println(ctx.selectFrom(sourceTable1).fetch());
       System.out.println(ctx.selectFrom(sourceTable2).fetch());
       return null;
     });
+    LOGGER.info("Inspecting Destination DB");
     destDb.query(ctx -> {
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
@@ -911,6 +914,7 @@ public class BasicAcceptanceTests {
     // Patch some data in the source
     // Adding a new rows to make sure we sync more data
     // Removing a couple rows to make sure that we trigger a full reset
+    LOGGER.info("Modifying source tables");
     sourceDb.query(ctx -> {
       ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("alice").execute();
       ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v3").execute();
@@ -921,6 +925,7 @@ public class BasicAcceptanceTests {
     });
 
     // Update with refreshed catalog
+    LOGGER.info("Submit the update request");
     final WebBackendConnectionUpdate update = new WebBackendConnectionUpdate()
         .name(connection.getName())
         .connectionId(connection.getConnectionId())
@@ -942,6 +947,7 @@ public class BasicAcceptanceTests {
         .withRefreshedCatalog(true);
     final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
 
+    LOGGER.info("Inspecting Destination DB after the update request");
     destDb.query(ctx -> {
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
@@ -953,11 +959,13 @@ public class BasicAcceptanceTests {
     System.out.println(syncFromTheUpdate.toString());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
+    LOGGER.info("Inspecting Source DB After the final sync");
     sourceDb.query(ctx -> {
       System.out.println(ctx.selectFrom(sourceTable1).fetch());
       System.out.println(ctx.selectFrom(sourceTable2).fetch());
       return null;
     });
+    LOGGER.info("Inspecting Destination DB After the final sync");
     destDb.query(ctx -> {
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
