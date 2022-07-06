@@ -391,32 +391,27 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("datetimeoffset")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
-            .addExpectedValues("0001-01-10 00:00:00 +01:00", "9999-01-10 00:00:00 +01:00", null)
+            .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
+                "9999-01-10 00:00:00.0000000 +01:00", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("binary")
-            .airbyteType(JsonSchemaType.STRING)
-            // .addInsertValues("CAST( 'A' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
+            .addInsertValues("CAST( 'A' AS BINARY(1))", "null")
+            .addExpectedValues("A", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
-    // TODO BUG Returns binary value instead of actual value
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varbinary")
-            .fullSourceDataType("varbinary(30)")
-            .airbyteType(JsonSchemaType.STRING)
-            // .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
-            // .addExpectedValues("A")
-            .addInsertValues("null")
-            .addNullExpectedValue()
+            .fullSourceDataType("varbinary(3)")
+            .airbyteType(JsonSchemaType.STRING_BASE_64)
+            .addInsertValues("CAST( 'ABC' AS VARBINARY)", "null")
+            .addExpectedValues("ABC", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -449,17 +444,14 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
-    // TODO BUG: Airbyte returns binary representation instead of text one.
     // Proper select query example: SELECT test_column.STAsText() from dbo_1_geometry;
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("geometry")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)")
-            // .addExpectedValues("LINESTRING (100 100, 20 180, 180 180)",
-            // "POLYGON ((0 0, 150 0, 150 150, 0 150, 0 0)", null)
+            .addInsertValues("geometry::STGeomFromText('LINESTRING (100 100, 20 180, 180 180)', 0)",
+                "null")
+            .addExpectedValues("LINESTRING(100 100, 20 180, 180 180)", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
@@ -472,17 +464,15 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
-    // TODO BUG: Airbyte returns binary representation instead of text one.
     // Proper select query example: SELECT test_column.STAsText() from dbo_1_geography;
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("geography")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null")
-            .addNullExpectedValue()
-            // .addInsertValues("geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )',
-            // 4326)")
-            // .addExpectedValues("LINESTRING(-122.360 47.656, -122.343 47.656 )", null)
+            .addInsertValues(
+                "geography::STGeomFromText('LINESTRING(-122.360 47.656, -122.343 47.656 )', 4326)",
+                "null")
+            .addExpectedValues("LINESTRING(-122.36 47.656, -122.343 47.656)", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 
