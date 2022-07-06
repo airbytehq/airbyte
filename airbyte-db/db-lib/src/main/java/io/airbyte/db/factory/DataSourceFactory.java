@@ -267,6 +267,11 @@ public class DataSourceFactory {
        * will preserve existing behavior that tests for the connection on first use, not on creation.
        */
       config.setInitializationFailTimeout(Integer.MIN_VALUE);
+      /*
+       * Default timeout is 30 sec, which is too short when you work with cloud data warehouses clusters
+       * that can take 4-5 min to start up. Set it to 30 min to be sure
+       */
+      config.setConnectionTimeout(30 * 60 * 1000);
 
       connectionProperties.forEach(config::addDataSourceProperty);
 

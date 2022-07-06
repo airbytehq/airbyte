@@ -6,6 +6,7 @@
     - Postgres: json_extract_path_text(<from_json>, 'path' [, 'path' [, ...}}) -> https://www.postgresql.org/docs/12/functions-json.html
     - MySQL: JSON_EXTRACT(json_doc, 'path' [, 'path'] ...) -> https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html
     - ClickHouse: JSONExtractString(json_doc, 'path' [, 'path'] ...) -> https://clickhouse.com/docs/en/sql-reference/functions/json-functions/
+    - Databricks: get_json_object(json_txt, 'path') -> https://spark.apache.org/docs/latest/api/sql/#get_json_object
 #}
 
 {# format_json_path --------------------------------------------------     #}
@@ -40,6 +41,15 @@
 {% macro mysql__format_json_path(json_path_list) -%}
     {# -- '$."x"."y"."z"' #}
     {{ "'$.\"" ~ json_path_list|join(".") ~ "\"'" }}
+{%- endmacro %}
+
+{% macro databricks__format_json_path(json_path_list) -%}
+    {# -- '$.x.y.z' #}
+    {%- set str_list = [] -%}
+    {%- for json_path in json_path_list -%}
+        {%- if str_list.append(json_path.replace("'", "\\'")) -%} {%- endif -%}
+    {%- endfor -%}
+    {{ "'$." ~ str_list|join(".") ~ "'" }}
 {%- endmacro %}
 
 {% macro redshift__format_json_path(json_path_list) -%}
@@ -84,6 +94,14 @@
 
 {% macro default__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
     json_extract({{ from_table}}.{{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro databricks__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    {%- if from_table|string() == '' %}
+        get_json_object({{ json_column }}, {{ format_json_path(json_path_list) }})
+    {% else %}
+        get_json_object({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }})
+    {% endif -%}
 {%- endmacro %}
 
 {% macro oracle__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -191,6 +209,10 @@
     JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
+{% macro databricks__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
+    get_json_object({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
 {# json_extract_array -------------------------------------------------     #}
 
 {% macro json_extract_array(json_column, json_path_list, normalized_json_path) -%}
@@ -235,6 +257,10 @@
 
 {% macro clickhouse__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
     JSONExtractArrayRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro databricks__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
+    get_json_object({{ json_column }}, {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_string_array -------------------------------------------------     #}

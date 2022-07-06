@@ -342,6 +342,8 @@ class DbtIntegrationTest(object):
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
+        elif destination_type.value == DestinationType.DATABRICKS.value:
+            profiles_config["database_schema"] = self.target_schema
         elif destination_type.value == DestinationType.REDSHIFT.value:
             profiles_config["schema"] = self.target_schema
             if random_schema:
@@ -394,6 +396,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-clickhouse:dev"
         elif DestinationType.SNOWFLAKE.value == destination_type.value:
             return "airbyte/normalization-snowflake:dev"
+        elif DestinationType.DATABRICKS.value == destination_type.value:
+            return "airbyte/normalization-databricks:dev"
         elif DestinationType.REDSHIFT.value == destination_type.value:
             return "airbyte/normalization-redshift:dev"
         else:

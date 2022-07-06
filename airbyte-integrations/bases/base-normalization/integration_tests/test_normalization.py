@@ -141,7 +141,7 @@ def run_schema_change_normalization(destination_type: DestinationType, test_reso
         pytest.skip(f"{destination_type} does not support schema change in incremental yet (requires dbt 0.21.0+)")
     if destination_type.value in [DestinationType.SNOWFLAKE.value, DestinationType.CLICKHOUSE.value]:
         pytest.skip(f"{destination_type} is disabled as it doesnt support schema change in incremental yet (column type changes)")
-    if destination_type.value in [DestinationType.MSSQL.value, DestinationType.SNOWFLAKE.value]:
+    if destination_type.value in [DestinationType.MSSQL.value, DestinationType.SNOWFLAKE.value, DestinationType.DATABRICKS.value]:
         # TODO: create/fix github issue in corresponding dbt-adapter repository to handle schema changes (outside airbyte's control)
         pytest.skip(f"{destination_type} is disabled as it doesnt fully support schema change in incremental yet")
 
@@ -204,6 +204,9 @@ def setup_test_dir(destination_type: DestinationType, test_resource_name: str) -
     elif destination_type.value == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-snowflake/dbt_project.yml"
+    elif destination_type.value == DestinationType.DATABRICKS.value:
+        copy_tree("../dbt-project-template-databricks", test_root_dir)
+        dbt_project_yaml = "../dbt-project-template-databricks/dbt_project.yml"
     elif destination_type.value == DestinationType.REDSHIFT.value:
         copy_tree("../dbt-project-template-redshift", test_root_dir)
         dbt_project_yaml = "../dbt-project-template-redshift/dbt_project.yml"

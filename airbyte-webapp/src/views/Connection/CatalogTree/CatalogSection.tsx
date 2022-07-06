@@ -52,10 +52,9 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [updateStream, streamNode]
   );
 
-  const onSelectSyncMode = useCallback(
-    (data: DropDownRow.IDataItem) => updateStreamWithConfig(data.value),
-    [updateStreamWithConfig]
-  );
+  const onSelectSyncMode = useCallback((data: DropDownRow.IDataItem) => updateStreamWithConfig(data.value), [
+    updateStreamWithConfig,
+  ]);
 
   const onSelectStream = useCallback(
     () =>
@@ -80,15 +79,13 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [config?.primaryKey, updateStreamWithConfig]
   );
 
-  const onCursorSelect = useCallback(
-    (cursorField: string[]) => updateStreamWithConfig({ cursorField }),
-    [updateStreamWithConfig]
-  );
+  const onCursorSelect = useCallback((cursorField: string[]) => updateStreamWithConfig({ cursorField }), [
+    updateStreamWithConfig,
+  ]);
 
-  const onPkUpdate = useCallback(
-    (newPrimaryKey: string[][]) => updateStreamWithConfig({ primaryKey: newPrimaryKey }),
-    [updateStreamWithConfig]
-  );
+  const onPkUpdate = useCallback((newPrimaryKey: string[][]) => updateStreamWithConfig({ primaryKey: newPrimaryKey }), [
+    updateStreamWithConfig,
+  ]);
 
   const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
   const cursorRequired = config?.syncMode === SyncMode.incremental;
@@ -120,10 +117,9 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 
   const flattenedFields = useMemo(() => flatten(fields), [fields]);
 
-  const primitiveFields = useMemo<SyncSchemaField[]>(
-    () => flattenedFields.filter(SyncSchemaFieldObject.isPrimitive),
-    [flattenedFields]
-  );
+  const primitiveFields = useMemo<SyncSchemaField[]>(() => flattenedFields.filter(SyncSchemaFieldObject.isPrimitive), [
+    flattenedFields,
+  ]);
 
   const configErrors = getIn(errors, `schema.streams[${streamNode.id}].config`);
   const hasError = configErrors && Object.keys(configErrors).length > 0;

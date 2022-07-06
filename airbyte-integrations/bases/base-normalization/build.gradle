@@ -75,6 +75,10 @@ task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('snowflake')
     dependsOn assemble
 }
+task airbyteDockerDatabricks(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('databricks')
+    dependsOn assemble
+}
 task airbyteDockerRedshift(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('redshift')
     dependsOn assemble
@@ -85,6 +89,7 @@ airbyteDocker.dependsOn(airbyteDockerMySql)
 airbyteDocker.dependsOn(airbyteDockerOracle)
 airbyteDocker.dependsOn(airbyteDockerClickhouse)
 airbyteDocker.dependsOn(airbyteDockerSnowflake)
+airbyteDocker.dependsOn(airbyteDockerDatabricks)
 airbyteDocker.dependsOn(airbyteDockerRedshift)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
@@ -100,6 +105,7 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-databricks:airbyteDocker'
 }
 
 // DATs have some additional tests that exercise normalization code paths,

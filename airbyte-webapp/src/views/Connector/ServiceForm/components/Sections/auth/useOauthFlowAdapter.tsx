@@ -11,7 +11,9 @@ import { useServiceForm } from "../../../serviceFormContext";
 import { ServiceFormValues } from "../../../types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "../../../utils";
 
-function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
+function useFormikOauthAdapter(
+  connector: ConnectorDefinitionSpecification
+): {
   loading: boolean;
   done?: boolean;
   run: () => Promise<void>;
@@ -47,11 +49,9 @@ function useFormikOauthAdapter(connector: ConnectorDefinitionSpecification): {
     done,
     run: async () => {
       const oauthInputProperties =
-        (
-          connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification as {
-            properties: Array<{ path_in_connector_config: string[] }>;
-          }
-        )?.properties ?? {};
+        (connector?.advancedAuth?.oauthConfigSpecification?.oauthUserInputFromConnectorConfigSpecification as {
+          properties: Array<{ path_in_connector_config: string[] }>;
+        })?.properties ?? {};
 
       if (!isEmpty(oauthInputProperties)) {
         const oauthInputFields =

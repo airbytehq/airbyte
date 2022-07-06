@@ -413,6 +413,28 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "default"
 
+    def test_transform_databricks(self):
+        input = {
+            "databricks_server_hostname": "airbyte.io",
+            "database_schema": "default",
+            "databricks_http_path": "/sql/1.0/endpoints/aeb42c",
+            "databricks_personal_access_token": "aebd43",
+        }
+        actual = TransformConfig().transform_databricks(input)
+        expected = {
+            "type": "databricks",
+            "host": "airbyte.io",
+            "http_path": "/sql/1.0/endpoints/aeb42c",
+            "token": "aebd43",
+            "threads": 8,
+            "connect_retries": 5,
+            "connect_timeout": 210,
+            "schema": "default",
+        }
+
+        assert expected == actual
+        assert extract_schema(actual) == "default"
+
     # test that the full config is produced. this overlaps slightly with the transform_postgres test.
     def test_transform(self):
         input = {

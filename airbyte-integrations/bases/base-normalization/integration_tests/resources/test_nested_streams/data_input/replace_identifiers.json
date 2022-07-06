@@ -79,5 +79,8 @@
     {
       "non_nested_stream_without_namespace_resulting_into_long_names": "non_nested_stream_wit__lting_into_long_names"
     }
+  ],
+  "databricks": [
+    { "HKD_special___characters": "HKD_special___characters_1", "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" }
   ]
 }

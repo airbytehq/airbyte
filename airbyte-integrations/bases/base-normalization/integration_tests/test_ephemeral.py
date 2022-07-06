@@ -148,6 +148,8 @@ def setup_test_dir(integration_type: str) -> str:
         copy_tree("../dbt-project-template-oracle", test_root_dir)
     elif integration_type == DestinationType.SNOWFLAKE.value:
         copy_tree("../dbt-project-template-snowflake", test_root_dir)
+    elif integration_type == DestinationType.DATABRICKS.value:
+        copy_tree("../dbt-project-template-databricks", test_root_dir)
     return test_root_dir
 
 

@@ -222,10 +222,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
     [analytics, formType, formatMessage]
   );
 
-  const selectedService = React.useMemo(
-    () => availableServices.find((s) => Connector.id(s) === field.value),
-    [field.value, availableServices]
-  );
+  const selectedService = React.useMemo(() => availableServices.find((s) => Connector.id(s) === field.value), [
+    field.value,
+    availableServices,
+  ]);
 
   const handleSelect = useCallback(
     (item: DropDownRow.IDataItem | null) => {

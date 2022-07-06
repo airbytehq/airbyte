@@ -8,6 +8,10 @@
     string
 {% endmacro %}
 
+{%- macro databricks__type_json() -%}
+    string
+{%- endmacro -%}
+
 {%- macro redshift__type_json() -%}
   {%- if redshift_super_type() -%}
     super
@@ -91,6 +95,10 @@
     INT
 {% endmacro %}
 
+{% macro databricks__type_int() %}
+    INT
+{% endmacro %}
+
 
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
@@ -105,6 +113,10 @@
     BIGINT
 {% endmacro %}
 
+{% macro databricks__type_bigint() %}
+    BIGINT
+{% endmacro %}
+
 
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
@@ -113,6 +125,10 @@
 
 {% macro clickhouse__type_numeric() %}
     Float64
+{% endmacro %}
+
+{% macro databricks__type_numeric() %}
+    FLOAT
 {% endmacro %}
 
 
@@ -143,6 +159,12 @@
 {% endmacro %}
 
 {% macro bigquery__type_timestamp_with_timezone() %}
+    timestamp
+{% endmacro %}
+
+{#-- Spark timestamps are already 'point in time', even if converted / stored without the original tz info, relative to session tz  --#}
+{#-- cf: https://docs.databricks.com/spark/latest/dataframes-datasets/dates-timestamps.html --#}
+{% macro databricks__type_timestamp_with_timezone() %}
     timestamp
 {% endmacro %}
 

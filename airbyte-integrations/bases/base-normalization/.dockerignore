@@ -10,4 +10,5 @@
 !dbt-project-template-oracle
 !dbt-project-template-clickhouse
 !dbt-project-template-snowflake
+!dbt-project-template-databricks
 !dbt-project-template-redshift

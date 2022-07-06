@@ -207,8 +207,8 @@ const getInitialNormalization = (
   operations?: Array<OperationRead | OperationCreate>,
   isEditMode?: boolean
 ): NormalizationType => {
-  const initialNormalization =
-    operations?.find(isNormalizationTransformation)?.operatorConfiguration?.normalization?.option;
+  const initialNormalization = operations?.find(isNormalizationTransformation)?.operatorConfiguration?.normalization
+    ?.option;
 
   return initialNormalization
     ? NormalizationType[initialNormalization]

@@ -456,8 +456,7 @@ export interface FieldTransform {
   updateFieldSchema?: FieldSchemaUpdate;
 }
 
-export type StreamTransformTransformType =
-  typeof StreamTransformTransformType[keyof typeof StreamTransformTransformType];
+export type StreamTransformTransformType = typeof StreamTransformTransformType[keyof typeof StreamTransformTransformType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const StreamTransformTransformType = {

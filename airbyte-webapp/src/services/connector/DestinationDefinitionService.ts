@@ -21,10 +21,10 @@ function useGetDestinationDefinitionService(): DestinationDefinitionService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new DestinationDefinitionService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new DestinationDefinitionService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export interface DestinationDefinitionReadWithLatestTag extends DestinationDefinitionRead {

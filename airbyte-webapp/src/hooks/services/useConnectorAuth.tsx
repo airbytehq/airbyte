@@ -51,14 +51,14 @@ export function useConnectorAuth(): {
   // TODO: move to separate initFacade and use refs instead
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  const sourceAuthService = useMemo(
-    () => new SourceAuthService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
-  const destinationAuthService = useMemo(
-    () => new DestinationAuthService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  const sourceAuthService = useMemo(() => new SourceAuthService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
+  const destinationAuthService = useMemo(() => new DestinationAuthService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 
   return {
     getConsentUrl: async (

@@ -57,6 +57,7 @@ class TransformConfig:
             DestinationType.ORACLE.value: self.transform_oracle,
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
+            DestinationType.DATABRICKS.value: self.transform_databricks,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -303,6 +304,22 @@ class TransformConfig:
             dbt_config["password"] = config["password"]
         if "tcp-port" in config:
             dbt_config["port"] = config["tcp-port"]
+        return dbt_config
+
+    @staticmethod
+    def transform_databricks(config: Dict[str, Any]):
+        print("transform_databricks")
+        # https://docs.getdbt.com/reference/warehouse-profiles/databricks-profile
+        dbt_config = {
+            "type": "databricks",
+            "host": config["databricks_server_hostname"],
+            "http_path": config["databricks_http_path"],
+            "token": config["databricks_personal_access_token"],
+            "threads": 8,
+            "connect_retries": 5,
+            "connect_timeout": 210,
+            "schema": config["database_schema"],
+        }
         return dbt_config
 
     @staticmethod
