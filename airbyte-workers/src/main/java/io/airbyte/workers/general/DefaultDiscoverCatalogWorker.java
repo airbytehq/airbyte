@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
+  private static final int FOUR_MB = 1024 * 1024 * 4;
 
   private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
@@ -69,6 +70,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       if (exitCode == 0) {
         if (catalog.isEmpty()) {
           throw new WorkerException("Integration failed to output a catalog struct.");
+        }
+
+        if (catalog.get().toString().length() > FOUR_MB) {
+          throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
         }
 
         return catalog.get();
