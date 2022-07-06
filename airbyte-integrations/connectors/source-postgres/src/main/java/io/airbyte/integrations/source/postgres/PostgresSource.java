@@ -133,7 +133,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
-    if (isCdc(config)) {
+    if (PostgresUtils.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
           .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
@@ -185,7 +185,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
         super.getCheckOperations(config));
 
-    if (isCdc(config)) {
+    if (PostgresUtils.isCdc(config)) {
       checkOperations.add(database -> {
         final List<JsonNode> matchingSlots = database.queryJsons(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
@@ -251,7 +251,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
@@ -291,15 +291,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
-  }
-
-  @VisibleForTesting
-  static boolean isCdc(final JsonNode config) {
-    final boolean isCdc = config.hasNonNull("replication_method")
-        && config.get("replication_method").hasNonNull("replication_slot")
-        && config.get("replication_method").hasNonNull("publication");
-    LOGGER.info("using CDC: {}", isCdc);
-    return isCdc;
   }
 
   @Override
@@ -373,7 +364,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+    return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   public static void main(final String[] args) throws Exception {

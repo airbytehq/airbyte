@@ -17,7 +17,7 @@ class PostgresUtilsTest {
   @Test
   void testIsCdc() {
     final ObjectNode config = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder().build());
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     config.set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
