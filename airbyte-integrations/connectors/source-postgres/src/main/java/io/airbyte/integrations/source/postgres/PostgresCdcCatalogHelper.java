@@ -86,7 +86,8 @@ public final class PostgresCdcCatalogHelper {
     final Set<AirbyteStreamNameNamespacePair> publicizedTables = tablesInPublication.stream()
         .map(table -> new AirbyteStreamNameNamespacePair(table.get("tablename").asText(), table.get("schemaname").asText()))
         .collect(Collectors.toSet());
-    LOGGER.info("For CDC, only tables in publication {} will be included in the sync: {}", publication, publicizedTables);
+    LOGGER.info("For CDC, only tables in publication {} will be included in the sync: {}", publication,
+        publicizedTables.stream().map(pair -> pair.getNamespace() + "." + pair.getName()).toList());
 
     return publicizedTables;
   }
