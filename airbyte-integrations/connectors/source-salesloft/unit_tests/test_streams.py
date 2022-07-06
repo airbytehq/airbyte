@@ -17,10 +17,16 @@ def patch_base_class(mocker):
     mocker.patch.object(SalesloftStream, "__abstractmethods__", set())
 
 
-def test_request_params(patch_base_class):
-    stream = SalesloftStream(authenticator=MagicMock())
+@pytest.mark.parametrize(
+    "start_date, expected_params",
+    [
+        (None, {"page": 1, "per_page": 100}),
+        ("2020-11-16T00:00:00Z", {"page": 1, "per_page": 100, "created_at[gte]": "2020-11-16T00:00:00Z"}),
+    ],
+)
+def test_request_params(patch_base_class, start_date, expected_params):
+    stream = SalesloftStream(authenticator=MagicMock(), start_date=start_date)
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    expected_params = {"page": 1, "per_page": 100}
     assert stream.request_params(**inputs) == expected_params
 
 

@@ -39,7 +39,9 @@ class SalesloftStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"per_page": 100, "page": 1, "created_at[gte]": self.start_date}
+        params = {"per_page": 100, "page": 1}
+        if self.start_date:
+            params["created_at[gte]"] = self.start_date
         if next_page_token and "page" in next_page_token:
             params["page"] = next_page_token["page"]
         return params
