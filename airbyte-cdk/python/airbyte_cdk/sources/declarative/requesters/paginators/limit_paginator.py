@@ -2,27 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from enum import Enum
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config
-
-
-class RequestOptionType(Enum):
-    request_parameter = "request_parameter"
-    header = "header"
-    path = "path"
-    body_data = "body_data"
-    body_json = "body_json"
-
-
-class RequestOption:
-    def __init__(self, option_type: Union[RequestOptionType, str] = None, field_name=None):
-        if isinstance(option_type, str):
-            option_type = RequestOptionType[option_type]
-        self._option_type = option_type
-        self._field_name = field_name
 
 
 class PaginationStrategy:
@@ -43,14 +27,12 @@ class LimitPaginator:
         config: Config,
         url_base: str = None,
     ):
-
         if limit_option._option_type == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
         self._config = config
         self._limit = limit_value
         self._limit_option = limit_option
         self._page_token = page_token
-        # FIXME also need to pass in those from the strategy...
         self._pagination_strategy = pagination_strategy
         self._token = None
         self._url_base = url_base
@@ -63,7 +45,7 @@ class LimitPaginator:
             return {"next_page_token": self._token}
 
     def path(self):
-        if self._token and self._page_token._option_type == RequestOptionType.path:
+        if self._token and self._page_token.option_type == RequestOptionType.path:
             return self._token.replace(self._url_base, "")
         else:
             return None
@@ -82,9 +64,9 @@ class LimitPaginator:
 
     def _get_request_options(self, option_type):
         options = {}
-        if self._page_token._option_type == option_type:
+        if self._page_token.option_type == option_type:
             if option_type != RequestOptionType.path:
                 options[self._page_token._field_name] = self._token
-        if self._limit_option._option_type == option_type:
-            options[self._limit_option._field_name] = self._limit
+        if self._limit_option.option_type == option_type:
+            options[self._limit_option.field_name] = self._limit
         return options

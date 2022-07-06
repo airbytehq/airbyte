@@ -14,4 +14,4 @@ class CursorPaginationStrategy:
         self._config = config
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        return InterpolatedString(self._cursor_value).eval(config=self._config, decoded_response=response.json())
+        return InterpolatedString(self._cursor_value).eval(config=self._config, last_records=last_records, decoded_response=response.json())
