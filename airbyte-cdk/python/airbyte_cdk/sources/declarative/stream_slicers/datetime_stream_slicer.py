@@ -4,12 +4,13 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Config
 
 
 class DatetimeStreamSlicer(StreamSlicer):
@@ -27,12 +28,12 @@ class DatetimeStreamSlicer(StreamSlicer):
     # FIXME: timezone should be declarative?
     def __init__(
         self,
-        start_time: InterpolatedString,
-        end_time: InterpolatedString,
-        step,
-        cursor_value: InterpolatedString,
-        datetime_format,
-        config,
+        start_time: Union[InterpolatedString, str],
+        end_time: Union[InterpolatedString, str],
+        step: str,
+        cursor_value: Union[InterpolatedString, str],
+        datetime_format: str,
+        config: Config,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
