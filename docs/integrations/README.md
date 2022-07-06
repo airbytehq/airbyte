@@ -120,7 +120,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Pivotal Tracker](sources/pivotal-tracker.md)                                               | Alpha                | No                  |
 | [Plaid](sources/plaid.md)                                                                   | Alpha                | No                  |
 | [PokéAPI](sources/pokeapi.md)                                                               | Alpha                | Yes                 |
-| [Postgres](sources/postgres.md)                                                             | Generally Available  | Yes                 |
+| [Postgres](sources/postgres.md)                                                             | Beta                 | Yes                 |
 | [PostHog](sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
