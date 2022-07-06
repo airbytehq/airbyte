@@ -50,7 +50,7 @@ def test_factory():
 def test_interpolate_config():
     content = """
     authenticator:
-      class_name: airbyte_cdk.sources.streams.http.requests_native_auth.declarative_oauth.DeclarativeOauth2Authenticator
+      class_name: airbyte_cdk.sources.declarative.auth.oauth.DeclarativeOauth2Authenticator
       client_id: "some_client_id"
       client_secret: "some_client_secret"
       token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"

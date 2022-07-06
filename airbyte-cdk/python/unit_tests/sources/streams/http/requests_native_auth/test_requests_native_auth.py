@@ -5,25 +5,13 @@
 import logging
 
 import pendulum
-import pytest
 import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator, Oauth2Authenticator, TokenAuthenticator
-from airbyte_cdk.sources.streams.http.requests_native_auth.declarative_oauth import DeclarativeOauth2Authenticator
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
 
 resp = Response()
-
-config = {
-    "refresh_endpoint": "refresh_end",
-    "client_id": "some_client_id",
-    "client_secret": "some_client_secret",
-    "refresh_token": "some_refresh_token",
-    "token_expiry_date": pendulum.now().subtract(days=2).to_rfc3339_string(),
-    "custom_field": "in_outbound_request",
-    "another_field": "exists_in_body",
-}
 
 
 def test_token_authenticator():
@@ -104,15 +92,20 @@ class TestOauth2Authenticator:
         header = oauth.get_auth_header()
         assert {"Authorization": "Bearer access_token_2"} == header
 
-    @pytest.mark.parametrize(
-        "test_name, use_declarative", [("test_using_concrete_values", False), ("test_using_interpolated_values", True)]
-    )
-    def test_refresh_request_body(self, test_name, use_declarative):
+    def test_refresh_request_body(self):
         """
         Request body should match given configuration.
         """
         scopes = ["scope1", "scope2"]
-        oauth = self.get_authenticator(use_declarative)
+        oauth = Oauth2Authenticator(
+            token_refresh_endpoint="refresh_end",
+            client_id="some_client_id",
+            client_secret="some_client_secret",
+            refresh_token="some_refresh_token",
+            scopes=["scope1", "scope2"],
+            token_expiry_date=pendulum.now().add(days=3),
+            refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
+        )
         body = oauth.get_refresh_request_body()
         expected = {
             "grant_type": "refresh_token",
@@ -125,11 +118,16 @@ class TestOauth2Authenticator:
         }
         assert body == expected
 
-    @pytest.mark.parametrize(
-        "test_name, use_declarative", [("test_using_concrete_values", False), ("test_using_interpolated_values", True)]
-    )
-    def test_refresh_access_token(self, mocker, test_name, use_declarative):
-        oauth = self.get_authenticator(use_declarative)
+    def test_refresh_access_token(self, mocker):
+        oauth = Oauth2Authenticator(
+            token_refresh_endpoint="refresh_end",
+            client_id="some_client_id",
+            client_secret="some_client_secret",
+            refresh_token="some_refresh_token",
+            scopes=["scope1", "scope2"],
+            token_expiry_date=pendulum.now().add(days=3),
+            refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
+        )
 
         resp.status_code = 200
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
@@ -152,33 +150,6 @@ class TestOauth2Authenticator:
         oauth(prepared_request)
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
-
-    @staticmethod
-    def get_authenticator(use_declarative: bool):
-        if use_declarative:
-            return DeclarativeOauth2Authenticator(
-                token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
-                client_id="{{ config['client_id'] }}",
-                client_secret="{{ config['client_secret'] }}",
-                refresh_token="{{ config['refresh_token'] }}",
-                config=config,
-                scopes=["scope1", "scope2"],
-                token_expiry_date="{{ config['token_expiry_date'] }}",
-                refresh_request_body={
-                    "custom_field": "{{ config['custom_field'] }}",
-                    "another_field": "{{ config['another_field'] }}",
-                    "scopes": ["no_override"],
-                },
-            )
-        return Oauth2Authenticator(
-            token_refresh_endpoint="refresh_end",
-            client_id="some_client_id",
-            client_secret="some_client_secret",
-            refresh_token="some_refresh_token",
-            scopes=["scope1", "scope2"],
-            token_expiry_date=pendulum.now().add(days=3),
-            refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
-        )
 
 
 def mock_request(method, url, data):
