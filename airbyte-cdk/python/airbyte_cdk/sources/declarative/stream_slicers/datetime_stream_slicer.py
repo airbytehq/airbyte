@@ -4,7 +4,7 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
@@ -29,10 +29,10 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     # FIXME: timezone should be declarative?
     def __init__(
         self,
-        start_time: InterpolatedString,
-        end_time: InterpolatedString,
+        start_time: Union[InterpolatedString, str],
+        end_time: Union[InterpolatedString, str],
         step: str,
-        cursor_value: InterpolatedString,
+        cursor_value: Union[InterpolatedString, str],
         datetime_format: str,
         config: Config,
     ):

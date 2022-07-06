@@ -181,6 +181,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
@@ -221,6 +223,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
@@ -243,6 +247,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
@@ -266,6 +272,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
@@ -290,6 +298,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
@@ -350,6 +360,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
@@ -383,6 +395,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   private void testReceiveNullStreamState(final StreamDescriptor streamDescriptor) {
