@@ -162,7 +162,7 @@ Please note that:
 
 The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 
-#### 5. Create replication slot
+#### 6. Create replication slot
 
 Next, you will need to create a replication slot. It's important to create the publication first (as in step 4) before creating the replication slot. Otherwise, you can run into exceptions if there is any update to the database between the creation of the two.
 
@@ -174,7 +174,7 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 
 If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
-#### 6. Start syncing
+#### 7. Start syncing
 
 When configuring the source, select CDC and provide the replication slot and publication you just created. You should be ready to sync data with CDC!
 
