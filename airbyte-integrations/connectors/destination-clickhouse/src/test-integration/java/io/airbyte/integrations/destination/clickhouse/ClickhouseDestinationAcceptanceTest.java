@@ -18,9 +18,11 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.ContainerState;
 
 public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -37,7 +39,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected boolean supportsNormalization() {
-    return false;
+    return true;
   }
 
   @Override
@@ -83,9 +85,15 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     // Note: ClickHouse official JDBC driver uses HTTP protocol, its default port is 8123
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
+    final Optional tcpPort = db.getExposedPorts().stream()
+        .map(exPort -> db.getMappedPort((Integer) exPort))
+        .filter(el -> !db.getFirstMappedPort().equals(el))
+        .findFirst();
+
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
+        .put("tcp-port", tcpPort.get())
         .put("database", DB_NAME)
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -167,6 +175,9 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   @Disabled
   public void testCustomDbtTransformationsFailure() throws Exception {}
 
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!TODO to check when normalization is fixed !!!!!!!!!!!!!!!!!!!!!!!!!
+
   /**
    * The normalization container needs native port, while destination container needs HTTP port, we
    * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
@@ -179,21 +190,21 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     super.testIncrementalDedupeSync();
   }
 
-  /**
-   * The normalization container needs native port, while destination container needs HTTP port, we
-   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-   * test, so we skip it.
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-    super.testSyncWithNormalization(messagesFilename, catalogFilename);
-  }
-
-  @Disabled
-  public void specNormalizationValueShouldBeCorrect() throws Exception {
-    super.specNormalizationValueShouldBeCorrect();
-  }
+//  /**
+//   * The normalization container needs native port, while destination container needs HTTP port, we
+//   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
+//   * test, so we skip it.
+//   *
+//   * @throws Exception
+//   */
+//  @Disabled
+//  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
+//    super.testSyncWithNormalization(messagesFilename, catalogFilename);
+//  }
+//
+//  @Disabled
+//  public void specNormalizationValueShouldBeCorrect() throws Exception {
+//    super.specNormalizationValueShouldBeCorrect();
+//  }
 
 }
