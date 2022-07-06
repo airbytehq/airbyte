@@ -181,7 +181,7 @@ The Postgres connector may need some time to start processing the data under the
 
 The connector will always wait for at least this amount of time to make sure there is no new data to sync. So don't set waiting time to be too long. On the other hand, if this parameter is too short, the connector may not have enough time to create the initial snapshot, or read through the change logs.
 
-The default initial waiting time for Postgres is 300 seconds. The connector will adjust this time automatically in the future. Usually you don't need to change it. However, if there are known changes in the database, but the connector is not able to read those changes, the root cause may be insufficient waiting time, and you can increase this waiting time (e.g. set to 600 seconds) to test if it is the root cause.
+The default initial waiting time for Postgres is 5 minutes (300 seconds). The connector will adjust this time automatically in the future. Usually you don't need to change it. However, if there are known changes in the database, but the connector is not able to read those changes, the root cause may be insufficient waiting time, and you can increase this waiting time (e.g. set to 600 seconds) to test if it is the root cause.
 
 #### 7. Start syncing
 
