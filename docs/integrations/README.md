@@ -61,10 +61,10 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshsales](sources/freshsales.md)                                                         | Alpha                | No                  |
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
 | [GitHub](sources/github.md)                                                                 | Generally Available  | Yes                 |
-| [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 
-| [Google Analytics Data API](sources/google-analytics-data-api.md)                           | Alpha                | No                  |
+| [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
-| [Google Analytics v4](sources/google-analytics-v4.md)                                       | Generally Available  | Yes                 |
+| [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Alpha                | No                  |
+| [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
 | [Google Directory](sources/google-directory.md)                                             | Alpha                | Yes                 |
 | [Google Search Console](sources/google-search-console.md)                                   | Beta                 | Yes                 |
 | [Google Sheets](sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
