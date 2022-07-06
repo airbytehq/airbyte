@@ -1,12 +1,14 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.39.28-alpha",
+  "version": "0.39.34-alpha",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
   },
   "scripts": {
+    "prestart": "npm run generate-client",
     "start": "react-scripts start",
+    "prebuild": "npm run generate-client",
     "build": "BUILD_PATH='./build/app' react-scripts build",
     "test": "react-scripts test",
     "test:coverage": "npm test -- --coverage --watchAll=false",
