@@ -24,7 +24,7 @@ class YamlParser(ConfigParser):
         input_mapping["class_name"] = "airbyte_cdk.sources.declarative.yaml_declarative_source.ConcreteDeclarativeSource"
 
         evaluated_config = {}
-        return self.preprocess_dict(input_mapping, evaluated_config, ""), evaluated_config
+        return self.preprocess_dict(input_mapping, evaluated_config, "")
 
     def preprocess_dict(self, input_mapping, evaluated_mapping, path):
         """

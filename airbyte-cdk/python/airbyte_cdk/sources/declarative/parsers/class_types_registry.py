@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
-from airbyte_cdk.sources.streams.http.auth.token import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "NoPaginator": NoPagination,

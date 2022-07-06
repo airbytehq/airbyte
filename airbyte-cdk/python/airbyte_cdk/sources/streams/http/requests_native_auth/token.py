@@ -6,10 +6,11 @@ import base64
 from itertools import cycle
 from typing import Any, List, Mapping
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from requests.auth import AuthBase
 
 
-class MultipleTokenAuthenticator(AuthBase):
+class MultipleTokenAuthenticator(AuthBase, JsonSchemaMixin):
     """
     Builds auth header, based on the list of tokens provided.
     Auth header is changed per each `get_auth_header` call, using each token in cycle.
@@ -30,7 +31,7 @@ class MultipleTokenAuthenticator(AuthBase):
         return {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
 
 
-class TokenAuthenticator(MultipleTokenAuthenticator):
+class TokenAuthenticator(MultipleTokenAuthenticator, JsonSchemaMixin):
     """
     Builds auth header, based on the token provided.
     The token is attached to each request via the `auth_header` header.
@@ -40,7 +41,7 @@ class TokenAuthenticator(MultipleTokenAuthenticator):
         super().__init__([token], auth_method, auth_header)
 
 
-class BasicHttpAuthenticator(TokenAuthenticator):
+class BasicHttpAuthenticator(TokenAuthenticator, JsonSchemaMixin):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme

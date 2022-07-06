@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import pprint
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
@@ -29,14 +30,16 @@ class YamlDeclarativeSource(DeclarativeSource):
         check = self._source_config["check"]
         if "class_name" not in check:
             check["class_name"] = "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"
-        return self._factory.create_component(check, dict())(source=self)
+        return self._factory.create_component(check, dict(), True())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         stream_configs = self._source_config["streams"]
         for s in stream_configs:
             if "class_name" not in s:
                 s["class_name"] = "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
-        return [self._factory.create_component(stream_config, config)() for stream_config in self._source_config["streams"]]
+        streams = [self._factory.create_component(stream_config, config, False)() for stream_config in self._source_config["streams"]]
+        pprint.pprint(streams)
+        return [self._factory.create_component(stream_config, config, True)() for stream_config in self._source_config["streams"]]
 
     def _read_and_parse_yaml_file(self, path_to_yaml_file):
         with open(path_to_yaml_file, "r") as f:

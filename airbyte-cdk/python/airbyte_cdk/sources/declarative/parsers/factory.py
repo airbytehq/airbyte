@@ -25,7 +25,7 @@ class DeclarativeComponentFactory:
         definition["class_name"] = class_name
         return definition
 
-    def create_component(self, component_definition: Mapping[str, Any], config: Config):
+    def create_component(self, component_definition: Mapping[str, Any], config: Config, instantiate):
         """
 
         :param component_definition: mapping defining the object to create. It should have at least one field: `class_name`
@@ -34,9 +34,9 @@ class DeclarativeComponentFactory:
         """
         kwargs = copy.deepcopy(component_definition)
         class_name = kwargs.pop("class_name")
-        return self.build(class_name, config, **kwargs)
+        return self.build(class_name, config, instantiate, **kwargs)
 
-    def build(self, class_or_class_name: Union[str, Type], config, **kwargs):
+    def build(self, class_or_class_name: Union[str, Type], config, instantiate, **kwargs):
         if isinstance(class_or_class_name, str):
             class_ = self._get_class_from_fully_qualified_class_name(class_or_class_name)
         else:
@@ -44,11 +44,22 @@ class DeclarativeComponentFactory:
 
         # create components in options before propagating them
         if "options" in kwargs:
-            kwargs["options"] = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs["options"].items()}
+            kwargs["options"] = {
+                k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs["options"].items()
+            }
 
-        updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs.items()}
-
-        return create(class_, config=config, **updated_kwargs)
+        updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs.items()}
+        if instantiate:
+            return create(class_, config=config, **updated_kwargs)
+        else:
+            schema = class_.json_schema()
+            print(f"validating for {class_or_class_name}")
+            print(f"schema: {schema}")
+            # full_definition = {**{"config": config}, **updated_kwargs}
+            full_definition = updated_kwargs
+            updated_kwargs["config"] = {}
+            # validate(full_definition, schema)
+            return lambda: full_definition
 
     @staticmethod
     def _get_class_from_fully_qualified_class_name(class_name: str):
@@ -72,7 +83,7 @@ class DeclarativeComponentFactory:
         else:
             return dict
 
-    def _create_subcomponent(self, key, definition, kwargs, config, parent_class):
+    def _create_subcomponent(self, key, definition, kwargs, config, parent_class, instantiate):
         """
         There are 5 ways to define a component.
         1. dict with "class_name" field -> create an object of type "class_name"
@@ -84,27 +95,38 @@ class DeclarativeComponentFactory:
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
-            return self.create_component(definition, config)()
+            return self.create_component(definition, config, instantiate)()
         elif self.is_object_definition_with_type(definition):
             # If type is set instead of class_name, get the class_name from the CLASS_TYPES_REGISTRY
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
             object_type = definition.pop("type")
             class_name = CLASS_TYPES_REGISTRY[object_type]
             definition["class_name"] = class_name
-            return self.create_component(definition, config)()
+            return self.create_component(definition, config, instantiate)()
         elif isinstance(definition, dict):
             # Try to infer object type
             expected_type = self.get_default_type(key, parent_class)
             if expected_type:
                 definition["class_name"] = expected_type
-                definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
-                return self.create_component(definition, config)()
+                definition["options"] = {
+                    k: v for k, v in self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict())).items() if k != key
+                }
+                if key == "retriever":
+                    print("sdfg")
+                    print(definition["options"])
+                    # exit()
+                return self.create_component(definition, config, instantiate)()
             else:
                 return definition
         elif isinstance(definition, list):
             return [
                 self._create_subcomponent(
-                    key, sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config, parent_class
+                    key,
+                    sub,
+                    self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)),
+                    config,
+                    parent_class,
+                    instantiate,
                 )
                 for sub in definition
             ]

@@ -2,7 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional
+
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 
 
 class RequestOptionType(Enum):
@@ -13,8 +15,8 @@ class RequestOptionType(Enum):
     body_json = "body_json"
 
 
-class RequestOption:
-    def __init__(self, option_type: Union[RequestOptionType, str], field_name: Optional[str] = None):
+class RequestOption(JsonSchemaMixin):
+    def __init__(self, option_type: str, field_name: Optional[str] = None):
         if isinstance(option_type, str):
             option_type = RequestOptionType[option_type]
         self._option_type = option_type
