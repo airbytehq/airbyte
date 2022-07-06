@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.postgres.PostgresUtils.CDC_LSN;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -36,7 +36,6 @@ import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -82,7 +81,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   protected abstract String getPluginName();
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown() {
     dslContext.close();
     container.close();
   }

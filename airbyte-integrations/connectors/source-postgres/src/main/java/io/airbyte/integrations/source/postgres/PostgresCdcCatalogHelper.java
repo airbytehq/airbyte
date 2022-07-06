@@ -54,7 +54,7 @@ public final class PostgresCdcCatalogHelper {
 
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set(PostgresUtils.CDC_LSN, numberType);
+    properties.set(DebeziumEventUtils.CDC_LSN, numberType);
     properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
     properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
 
