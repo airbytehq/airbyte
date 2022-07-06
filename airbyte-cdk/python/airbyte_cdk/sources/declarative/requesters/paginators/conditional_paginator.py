@@ -6,6 +6,7 @@ from typing import Any, Callable, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
@@ -38,7 +39,7 @@ class ConditionalPaginator(Paginator):
         self._pagination_strategy = pagination_strategy
         self._token = None
         self._url_base = url_base
-        self._decoder = decoder
+        self._decoder = decoder or JsonDecoder()
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         if self._stop_condition(response, last_records):
