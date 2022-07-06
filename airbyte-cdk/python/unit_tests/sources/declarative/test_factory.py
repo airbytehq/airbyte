@@ -96,7 +96,7 @@ def test_datetime_stream_slicer():
         options:
           datetime_format: "%Y-%m-%d"
         start_datetime:
-          class_name: airbyte_cdk.sources.declarative.datetime.min_max_datetime.MinMaxDatetime
+          type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime:
