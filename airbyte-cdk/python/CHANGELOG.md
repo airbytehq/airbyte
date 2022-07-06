@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.63
+- Define `namespace` property on the `Stream` class inside `core.py`.
+
+## 0.1.62
+Bugfix: Correctly obfuscate nested secrets and secrets specified inside oneOf blocks inside the connector's spec.
+ 
 ## 0.1.61
 - Remove legacy sentry code
 

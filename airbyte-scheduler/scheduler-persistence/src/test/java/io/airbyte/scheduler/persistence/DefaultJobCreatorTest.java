@@ -32,16 +32,17 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.State;
-import io.airbyte.config.StreamDescriptor;
-import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.helpers.StateMessageHelper;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,8 +52,13 @@ import org.junit.jupiter.api.Test;
 
 public class DefaultJobCreatorTest {
 
-  private static final String STREAM_NAME = "users";
+  private static final String STREAM1_NAME = "stream1";
+  private static final String STREAM2_NAME = "stream2";
+  private static final String STREAM3_NAME = "stream3";
+  private static final String NAMESPACE = "namespace";
   private static final String FIELD_NAME = "id";
+  private static final StreamDescriptor STREAM1_DESCRIPTOR = new StreamDescriptor().withName(STREAM1_NAME);
+  private static final StreamDescriptor STREAM2_DESCRIPTOR = new StreamDescriptor().withName(STREAM2_NAME).withNamespace(NAMESPACE);
 
   private static final String SOURCE_IMAGE_NAME = "daxtarity/sourceimagename";
   private static final String DESTINATION_IMAGE_NAME = "daxtarity/destinationimagename";
@@ -61,11 +67,9 @@ public class DefaultJobCreatorTest {
   private static final StandardSync STANDARD_SYNC;
   private static final StandardSyncOperation STANDARD_SYNC_OPERATION;
   private static final long JOB_ID = 12L;
-  private static final StreamDescriptor STREAM_DESCRIPTOR1 = new StreamDescriptor().withName("stream 1").withNamespace("namespace 1");
-  private static final StreamDescriptor STREAM_DESCRIPTOR2 = new StreamDescriptor().withName("stream 2").withNamespace("namespace 2");
 
   private JobPersistence jobPersistence;
-  private ConfigRepository configRepository;
+  private StatePersistence statePersistence;
   private JobCreator jobCreator;
   private ResourceRequirements workerResourceRequirements;
 
@@ -96,12 +100,16 @@ public class DefaultJobCreatorTest {
         .withConfiguration(implementationJson)
         .withTombstone(false);
 
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream()
-        .withStream(CatalogHelpers.createAirbyteStream(STREAM_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(stream));
-
     final UUID connectionId = UUID.randomUUID();
     final UUID operationId = UUID.randomUUID();
+
+    final ConfiguredAirbyteStream stream1 = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM1_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM2_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+    final ConfiguredAirbyteStream stream3 = new ConfiguredAirbyteStream()
+        .withStream(CatalogHelpers.createAirbyteStream(STREAM3_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)));
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream1, stream2, stream3));
 
     STANDARD_SYNC = new StandardSync()
         .withConnectionId(connectionId)
@@ -126,13 +134,13 @@ public class DefaultJobCreatorTest {
   @BeforeEach
   void setup() {
     jobPersistence = mock(JobPersistence.class);
-    configRepository = mock(ConfigRepository.class);
+    statePersistence = mock(StatePersistence.class);
     workerResourceRequirements = new ResourceRequirements()
         .withCpuLimit("0.2")
         .withCpuRequest("0.2")
         .withMemoryLimit("200Mi")
         .withMemoryRequest("200Mi");
-    jobCreator = new DefaultJobCreator(jobPersistence, configRepository, workerResourceRequirements);
+    jobCreator = new DefaultJobCreator(jobPersistence, workerResourceRequirements, statePersistence);
   }
 
   @Test
@@ -328,15 +336,25 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateResetConnectionJob() throws IOException {
-    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
-    expectedCatalog.getStreams()
-        .forEach(configuredAirbyteStream -> {
-          configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
-          configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-        });
+    final List<StreamDescriptor> streamsToReset = List.of(STREAM1_DESCRIPTOR, STREAM2_DESCRIPTOR);
+    final ConfiguredAirbyteCatalog expectedCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM1_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE),
+        new ConfiguredAirbyteStream()
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM2_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE),
+        // this stream is not being reset, so it should have APPEND destination sync mode
+        new ConfiguredAirbyteStream()
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM3_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
-    when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
+    when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
+        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
 
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -347,7 +365,7 @@ public class DefaultJobCreatorTest {
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)))
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
         .withState(connectionState);
 
     final JobConfig jobConfig = new JobConfig()
@@ -362,7 +380,7 @@ public class DefaultJobCreatorTest {
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
-        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2));
+        streamsToReset);
 
     verify(jobPersistence).enqueueJob(expectedScope, jobConfig);
     assertTrue(jobId.isPresent());
@@ -371,15 +389,25 @@ public class DefaultJobCreatorTest {
 
   @Test
   void testCreateResetConnectionJobEnsureNoQueuing() throws IOException {
-    final ConfiguredAirbyteCatalog expectedCatalog = STANDARD_SYNC.getCatalog();
-    expectedCatalog.getStreams()
-        .forEach(configuredAirbyteStream -> {
-          configuredAirbyteStream.setSyncMode(io.airbyte.protocol.models.SyncMode.FULL_REFRESH);
-          configuredAirbyteStream.setDestinationSyncMode(DestinationSyncMode.OVERWRITE);
-        });
+    final List<StreamDescriptor> streamsToReset = List.of(STREAM1_DESCRIPTOR, STREAM2_DESCRIPTOR);
+    final ConfiguredAirbyteCatalog expectedCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM1_NAME, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE),
+        new ConfiguredAirbyteStream()
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM2_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE),
+        // this stream is not being reset, so it should have APPEND destination sync mode
+        new ConfiguredAirbyteStream()
+            .withStream(CatalogHelpers.createAirbyteStream(STREAM3_NAME, NAMESPACE, Field.of(FIELD_NAME, JsonSchemaType.STRING)))
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)));
 
     final State connectionState = new State().withState(Jsons.jsonNode(Map.of("key", "val")));
-    when(configRepository.getConnectionState(STANDARD_SYNC.getConnectionId())).thenReturn(Optional.of(connectionState));
+    when(statePersistence.getCurrentState(STANDARD_SYNC.getConnectionId()))
+        .thenReturn(StateMessageHelper.getTypedState(connectionState.getState(), false));
 
     final JobResetConnectionConfig jobResetConnectionConfig = new JobResetConnectionConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -390,7 +418,7 @@ public class DefaultJobCreatorTest {
         .withConfiguredAirbyteCatalog(expectedCatalog)
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2)))
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
         .withState(connectionState);
 
     final JobConfig jobConfig = new JobConfig()
@@ -405,7 +433,7 @@ public class DefaultJobCreatorTest {
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
         List.of(STANDARD_SYNC_OPERATION),
-        List.of(STREAM_DESCRIPTOR1, STREAM_DESCRIPTOR2));
+        streamsToReset);
 
     verify(jobPersistence).enqueueJob(expectedScope, jobConfig);
     assertTrue(jobId.isEmpty());
