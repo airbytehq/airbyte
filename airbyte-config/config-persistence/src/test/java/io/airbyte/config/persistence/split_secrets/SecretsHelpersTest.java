@@ -219,7 +219,7 @@ public class SecretsHelpersTest {
   void testSecretPath(final SecretsTestCase testCase) throws IOException {
     final JsonNode spec = testCase.getSpec().getConnectionSpecification();
 
-    final Set<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
+    final List<String> secretsPaths = SecretsHelpers.getSortedSecretPaths(spec);
 
     Assertions.assertThat(secretsPaths).containsExactlyElementsOf(testCase.getExpectedSecretsPaths());
   }

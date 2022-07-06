@@ -188,7 +188,7 @@ public class SecretMigrator {
    * Wrapper to help to mock static methods
    */
   @VisibleForTesting
-  Set<String> getSecretPath(final JsonNode specs) {
+  List<String> getSecretPath(final JsonNode specs) {
     return SecretsHelpers.getSortedSecretPaths(specs);
   }
 
