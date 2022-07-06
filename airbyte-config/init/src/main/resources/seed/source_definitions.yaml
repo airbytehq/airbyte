@@ -1067,6 +1067,7 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
   icon: sentry.svg
+  sourceType: api
   releaseStage: alpha
 - name: Zoom
   sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
