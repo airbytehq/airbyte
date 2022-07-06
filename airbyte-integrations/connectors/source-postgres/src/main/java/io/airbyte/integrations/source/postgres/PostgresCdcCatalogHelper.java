@@ -4,13 +4,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class PostgresCdcCatalogHelper {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcCatalogHelper.class);
 
   private PostgresCdcCatalogHelper() {
   }
@@ -59,6 +69,23 @@ public final class PostgresCdcCatalogHelper {
     properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
 
     return stream;
+  }
+
+  public static Set<AirbyteStreamNameNamespacePair> getPublicizedTables(final JdbcDatabase database) throws SQLException {
+    final JsonNode sourceConfig = database.getSourceConfig();
+    if (sourceConfig == null || !PostgresUtils.isCdc(sourceConfig)) {
+      return Collections.emptySet();
+    }
+
+    final String publication = sourceConfig.get("replication_method").get("publication").asText();
+    final List<JsonNode> tablesInPublication = database.queryJsons(
+        "SELECT schemaname, tablename FROM pg_publication_tables WHERE pubname = ?", publication);
+    final Set<AirbyteStreamNameNamespacePair> publicizedTables = tablesInPublication.stream()
+        .map(table -> new AirbyteStreamNameNamespacePair(table.get("tablename").asText(), table.get("schemaname").asText()))
+        .collect(Collectors.toSet());
+    LOGGER.info("For CDC, only tables in publication {} will be included in the sync: {}", publication, publicizedTables);
+
+    return publicizedTables;
   }
 
 }

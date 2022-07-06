@@ -20,6 +20,7 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -144,6 +145,18 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<JDBCType>>> rawTables = discoverRawTables(database);
+    final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+
+    if (publicizedTablesInCdc.isEmpty()) {
+      return rawTables;
+    }
+    return rawTables.stream()
+        .filter(table -> publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(table.getName(), table.getNameSpace())))
+        .collect(toList());
+  }
+
+  public List<TableInfo<CommonField<JDBCType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
@@ -228,11 +241,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
-                                                                             final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
-                                                                             final StateManager stateManager,
-                                                                             final Instant emittedAt) {
+      final JdbcDatabase database,
+      final ConfiguredAirbyteCatalog catalog,
+      final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+      final StateManager stateManager,
+      final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
@@ -251,7 +264,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(), emittedAt);
-      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -279,15 +293,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator = connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           """
-                 SELECT nspname as table_schema,
-                        relname as table_name
-                 FROM   pg_class c
-                 JOIN   pg_namespace n on c.relnamespace = n.oid
-                 WHERE  has_table_privilege(c.oid, 'SELECT')
-                 -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
-                 AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
-                 and    ((? is null) OR nspname = ?)
-          """);
+                     SELECT nspname as table_schema,
+                            relname as table_name
+                     FROM   pg_class c
+                     JOIN   pg_namespace n on c.relnamespace = n.oid
+                     WHERE  has_table_privilege(c.oid, 'SELECT')
+                     -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
+                     AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
+                     and    ((? is null) OR nspname = ?)
+              """);
       ps.setString(1, schema);
       ps.setString(2, schema);
       return ps;
