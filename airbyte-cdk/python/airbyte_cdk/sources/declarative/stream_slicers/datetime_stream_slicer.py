@@ -7,12 +7,14 @@ import re
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Config
 
 
-class DatetimeStreamSlicer(StreamSlicer):
+class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     timedelta_regex = re.compile(
         r"((?P<weeks>[\.\d]+?)w)?"
         r"((?P<days>[\.\d]+?)d)?"
@@ -29,10 +31,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         self,
         start_time: InterpolatedString,
         end_time: InterpolatedString,
-        step,
+        step: str,
         cursor_value: InterpolatedString,
-        datetime_format,
-        config,
+        datetime_format: str,
+        config: Config,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()

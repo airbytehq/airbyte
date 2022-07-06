@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from unittest.mock import MagicMock
+
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
@@ -11,7 +13,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import RetryResponseStatus
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import MultipleTokenAuthenticator
 
 
 def test_http_requester():
@@ -26,7 +27,7 @@ def test_http_requester():
         request_parameters=request_params, request_body_data=request_body_data, request_headers=request_headers, config=config
     )
 
-    authenticator = MultipleTokenAuthenticator(tokens=["token"])
+    authenticator = MagicMock()  # MultipleTokenAuthenticator(tokens=["token"])
 
     max_retries = 10
     backoff_time = 1000

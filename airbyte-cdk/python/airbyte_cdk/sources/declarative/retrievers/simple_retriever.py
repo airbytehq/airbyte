@@ -6,6 +6,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
@@ -19,11 +20,11 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class SimpleRetriever(Retriever, HttpStream):
+class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     def __init__(
         self,
-        name,
-        primary_key,
+        name: str,
+        primary_key: str,
         requester: Requester,
         record_selector: HttpSelector,
         paginator: Optional[Paginator] = None,
