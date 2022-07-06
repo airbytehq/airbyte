@@ -358,7 +358,7 @@ public class AirbyteAcceptanceTestHarness {
     return getDatabase(sourcePsql);
   }
 
-  private Database getDestinationDatabase() {
+  public Database getDestinationDatabase() {
     if (isKube && isGke) {
       return GKEPostgresConfig.getDestinationDatabase();
     }
