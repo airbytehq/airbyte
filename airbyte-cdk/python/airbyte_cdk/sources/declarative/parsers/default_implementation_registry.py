@@ -47,6 +47,7 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Paginator: NoPagination,
     HttpResponseFilter: HttpResponseFilter,
     Stream: DeclarativeStream,
+    DeclarativeStream: DeclarativeStream,
     RequestOption: RequestOption,
     InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
 }

@@ -3,27 +3,22 @@
 #
 
 import json
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Union
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from pydantic import BaseModel, validator
+from airbyte_cdk.sources.declarative.types import Config
 
 
-class JsonSchema(SchemaLoader, BaseModel):
-    file_path: str
-    config: dict
-    kwargs: Optional[dict] = None
+class JsonSchema(SchemaLoader, JsonSchemaMixin):
+    def __init__(self, file_path: Union[str, InterpolatedString], config: Config, **kwargs: dict):
+        if type(file_path) == str:
+            file_path = InterpolatedString(file_path)
+        self._file_path = file_path
+        self._config = config
+        self._kwargs = kwargs
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        with open(self.file_path.eval(self.config, **self.kwargs), "r") as f:
+        with open(self._file_path.eval(self._config, **self._kwargs), "r") as f:
             return json.loads(f.read())
-
-    @validator("file_path")
-    def to_interpolated_string(cls, v):
-        if isinstance(v, str):
-            return InterpolatedString(string=v)
-        elif isinstance(v, InterpolatedString):
-            return v
-        else:
-            raise TypeError(f"Expected type str or InterpolatedString for {v}. Got : {type(v)}")

@@ -4,13 +4,22 @@
 
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from pydantic import BaseModel
+from airbyte_cdk.sources.declarative.types import Config
 
 
-class InterpolatedRequestOptionsProvider(RequestOptionsProvider, BaseModel):
-    def init(self, *, config, request_parameters=None, request_headers=None, request_body_data=None, request_body_json=None):
+class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin):
+    def __init__(
+        self,
+        *,
+        config: Config,
+        request_parameters: Mapping[str, Any] = None,
+        request_headers: Mapping[str, Any] = None,
+        request_body_data: Mapping[str, Any] = None,
+        request_body_json: Mapping[str, Any] = None,
+    ):
         if request_parameters is None:
             request_parameters = {}
         if request_headers is None:

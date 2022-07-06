@@ -69,6 +69,7 @@ def get_field_args(field_type: Any) -> tuple:
     field_args = (Any, Any)
     if hasattr(field_type, "__args__") and field_type.__args__ is not None:
         field_args = field_type.__args__
+    print(f"get_field_args for {field_type}: {field_args}")
     return field_args
 
 
@@ -350,7 +351,15 @@ class JsonSchemaMixin:
             elif field_type_name in SEQUENCE_TYPES or (field_type_name in TUPLE_TYPES and ... in field_type.__args__):
 
                 def encoder(ft, val, o):
+                    print(f"encoder.cls: {cls}")
+                    print(f"encoder.ft: {ft}")
+                    print(f"encoder.val: {val}")
+                    print(f"encoder.val: {val}")
                     field_args = get_field_args(ft)
+                    print(f"encoder.field_args: {field_args}")
+                    if "_empty" in str(val):
+                        return {}
+
                     return [cls._encode_field(field_args[0], v, o) for v in val]
 
             elif field_type_name in TUPLE_TYPES:
@@ -377,6 +386,7 @@ class JsonSchemaMixin:
                     return v
 
             cls.__encode_cache[field_type] = encoder  # type: ignore
+        print(f"value to encode: {value}")
         return encoder(field_type, value, omit_none)
 
     @classmethod
@@ -706,7 +716,8 @@ class JsonSchemaMixin:
         required = True
         field_meta = FieldMeta(schema_type=schema_type)
         default_value = MISSING
-        if field.default is not MISSING:
+        print(f"default: {field.default}")
+        if (field.default is not MISSING) and ("empty" not in str(field.default)):
             # In case of default value given
             default_value = field.default
         elif field.default_factory is not MISSING and field.default_factory is not None:  # type: ignore
@@ -822,6 +833,7 @@ class JsonSchemaMixin:
                 print(f"variants: {variants} for {field_type_name}")
                 print(f"field_type: {field_type}")
                 field_schema = {"anyOf": [cls._get_field_schema(variant, schema_options)[0] for variant in variants]}
+                print(f"field_schema: {field_schema}")
                 field_schema["anyOf"].sort(key=lambda item: item.get("type", ""))
 
         field_schema.update(field_meta.as_dict)

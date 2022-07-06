@@ -7,13 +7,14 @@ import base64
 from itertools import cycle
 from typing import Any, List, Mapping
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from deprecated import deprecated
 
 from .core import HttpAuthenticator
 
 
 @deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.TokenAuthenticator instead")
-class TokenAuthenticator(HttpAuthenticator):
+class TokenAuthenticator(HttpAuthenticator, JsonSchemaMixin):
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method
         self.auth_header = auth_header
@@ -24,7 +25,7 @@ class TokenAuthenticator(HttpAuthenticator):
 
 
 @deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.MultipleTokenAuthenticator instead")
-class MultipleTokenAuthenticator(HttpAuthenticator):
+class MultipleTokenAuthenticator(HttpAuthenticator, JsonSchemaMixin):
     def __init__(self, tokens: List[str], auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method
         self.auth_header = auth_header
@@ -35,7 +36,7 @@ class MultipleTokenAuthenticator(HttpAuthenticator):
         return {self.auth_header: f"{self.auth_method} {next(self._tokens_iter)}"}
 
 
-class BasicHttpAuthenticator(TokenAuthenticator):
+class BasicHttpAuthenticator(TokenAuthenticator, JsonSchemaMixin):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme

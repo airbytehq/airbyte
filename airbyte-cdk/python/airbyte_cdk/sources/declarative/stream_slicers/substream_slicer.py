@@ -5,6 +5,7 @@
 from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
@@ -12,7 +13,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 from airbyte_cdk.sources.streams.core import Stream
 
 
-class SubstreamSlicer(StreamSlicer):
+class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
     Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components

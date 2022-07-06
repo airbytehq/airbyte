@@ -1,3 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder  # noqa

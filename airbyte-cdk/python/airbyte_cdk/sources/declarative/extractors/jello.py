@@ -5,17 +5,18 @@
 from typing import List, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.types import Config, Record
 from jello import lib as jello_lib
 
 
-class JelloExtractor:
+class JelloExtractor(JsonSchemaMixin):
     default_transform = "."
 
-    def __init__(self, transform: str, decoder: Optional[Decoder] = None, config=None, kwargs=None):
+    def __init__(self, transform: str, decoder: Optional[Decoder] = None, config: Config = None, kwargs: dict = None):
         self._interpolator = JinjaInterpolation()
         self._transform = transform
         self._decoder = decoder or JsonDecoder()

@@ -5,13 +5,14 @@
 from typing import Any, List, Mapping
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.types import Record
 
 
-class RecordSelector(HttpSelector):
+class RecordSelector(HttpSelector, JsonSchemaMixin):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering
     records based on a heuristic.

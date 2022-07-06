@@ -4,10 +4,19 @@
 
 from typing import Any, List, Mapping
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.streams import Stream
+
+
+class ConcreteDeclarativeSource(JsonSchemaMixin):
+    def __init__(self, check: ConnectionChecker, streams: List[DeclarativeStream]):
+        self._check = check
+        self._streams = streams
 
 
 class YamlDeclarativeSource(DeclarativeSource):

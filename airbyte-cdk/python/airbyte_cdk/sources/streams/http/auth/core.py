@@ -6,6 +6,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Mapping
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from deprecated import deprecated
 
 
@@ -24,6 +25,6 @@ class HttpAuthenticator(ABC):
 
 
 @deprecated(version="0.1.20", reason="Set `authenticator=None` instead")
-class NoAuth(HttpAuthenticator):
+class NoAuth(HttpAuthenticator, JsonSchemaMixin):
     def get_auth_header(self) -> Mapping[str, Any]:
         return {}

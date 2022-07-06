@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
@@ -55,7 +56,7 @@ class IncrementalMixin(ABC):
         """State setter, accept state serialized by state getter."""
 
 
-class Stream(ABC):
+class Stream(ABC, JsonSchemaMixin):
     """
     Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.
     """

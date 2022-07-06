@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 
 
 class NonRetriableResponseStatus(Enum):
@@ -24,7 +25,7 @@ class RetryResponseStatus:
 ResponseStatus = Union[NonRetriableResponseStatus, RetryResponseStatus]
 
 
-class Retrier(ABC):
+class Retrier(ABC, JsonSchemaMixin):
     @property
     @abstractmethod
     def max_retries(self) -> Union[int, None]:

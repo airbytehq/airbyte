@@ -5,8 +5,10 @@
 from enum import Enum
 from typing import Mapping
 
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.state import State
+from airbyte_cdk.sources.declarative.types import Config
 
 
 def _get_max(*, name, val, other_state):
@@ -22,10 +24,10 @@ class StateType(Enum):
     INT = int
 
 
-class DictState(State):
+class DictState(State, JsonSchemaMixin):
     stream_state_field = "stream_state"
 
-    def __init__(self, initial_mapping: Mapping[str, str] = None, config=None):
+    def __init__(self, initial_mapping: Mapping[str, str] = None, config: Config = None):
         if initial_mapping is None:
             initial_mapping = dict()
         if config is None:

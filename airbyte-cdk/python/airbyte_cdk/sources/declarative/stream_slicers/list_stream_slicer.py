@@ -6,13 +6,14 @@ import ast
 from typing import Any, Iterable, List, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class ListStreamSlicer(StreamSlicer):
+class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
     """
     Stream slicer that iterates over the values of a list
     If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list

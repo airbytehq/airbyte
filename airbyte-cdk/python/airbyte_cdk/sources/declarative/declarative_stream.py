@@ -6,12 +6,13 @@
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.streams.core import Stream
 
 
-class DeclarativeStream(Stream):
+class DeclarativeStream(Stream, JsonSchemaMixin):
     """
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
@@ -19,7 +20,7 @@ class DeclarativeStream(Stream):
     def __init__(
         self,
         name: str,
-        primary_key,
+        primary_key: str,
         schema_loader: SchemaLoader,
         retriever: Retriever,
         cursor_field: Optional[List[str]] = None,
