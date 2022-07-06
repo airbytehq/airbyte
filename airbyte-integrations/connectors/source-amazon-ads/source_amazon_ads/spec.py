@@ -21,6 +21,13 @@ class AmazonAdsConfig(BaseModel):
 
     auth_type: str = Field(default="oauth2.0", const=True, order=0)
 
+    source_name: str = Field(
+        None,
+        title="Source Name",
+        description='Table Source Identification',
+        order=0,
+    )
+
     client_id: str = Field(
         title="Client ID",
         description='The client ID of your Amazon Ads developer application. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a> for more information.',

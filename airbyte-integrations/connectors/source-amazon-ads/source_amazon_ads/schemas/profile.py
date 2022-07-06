@@ -17,6 +17,7 @@ class AccountInfo(CatalogModel):
 
 
 class Profile(CatalogModel):
+    source_name: str
     profileId: int
     countryCode: str = None
     currencyCode: str = None
