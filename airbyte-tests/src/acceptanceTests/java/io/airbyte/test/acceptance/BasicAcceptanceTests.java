@@ -1049,7 +1049,6 @@ public class BasicAcceptanceTests {
     testHarness.assertSourceAndDestinationDbInSync(false);
   }
 
-
   @Test
   public void testPartialResetResetAllWhenSchemaIsModified() throws Exception {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_same_schema_another_tables.sql"), sourcePsql);
@@ -1094,8 +1093,7 @@ public class BasicAcceptanceTests {
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name("cool_employees").namespace("public"),
-        new StreamDescriptor().name("additional_table").namespace("public")
-    ));
+        new StreamDescriptor().name("additional_table").namespace("public")));
   }
 
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {
