@@ -9,6 +9,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
+import vcr
+import vcr.cassette as Cassette
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -42,15 +44,16 @@ class IntercomStream(HttpStream, ABC):
             return self._session.auth
         return super().authenticator
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         """
         Abstract method of HttpStream - should be overwritten.
         Returning None means there are no more pages to read in response.
         """
 
         next_page = response.json().get("pages", {}).get("next")
-
         if next_page:
+            if isinstance(next_page, dict):
+                return next_page
             return dict(parse_qsl(urlparse(next_page).query))
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -126,8 +129,17 @@ class IncrementalIntercomStream(IntercomStream, ABC):
 
 class IncrementalIntercomSearchStream(IncrementalIntercomStream):
     http_method = "POST"
-    use_cache = True
     sort_order = "ascending"
+    use_cache = True
+
+    def request_cache(self) -> Cassette:
+        """
+        Override the default `request_cache` method, due to `match_on` is different for POST requests.
+        We should check additional criteria like ['query', 'body'] instead of default ['uri', 'method']
+        """
+        match_on = ["uri", "query", "method", "body"]
+        cassette = vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml", match_on=match_on)
+        return cassette
 
     @stream_state_cache.cache_stream_state
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -141,8 +153,6 @@ class IncrementalIntercomSearchStream(IncrementalIntercomStream):
         """
         https://developers.intercom.com/intercom-api-reference/reference/pagination-search
         """
-        # Full-Refresh will use cache
-        self.use_cache = False if stream_state else self.use_cache
 
         payload = {
             "query": {
@@ -164,13 +174,9 @@ class IncrementalIntercomSearchStream(IncrementalIntercomStream):
             "pagination": {"per_page": self.page_size},
         }
         if next_page_token:
-            payload.update({"pagination": {"starting_after": next_page_token}})
+            next_page_token.update(**{"per_page": self.page_size})
+            payload.update({"pagination": next_page_token})
         return payload
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # print(response.json())
-        next_page = response.json().get("pages", {}).get("next", {}).get("starting_after")
-        return next_page if next_page else None
 
 
 class ChildStreamMixin(IncrementalIntercomStream):

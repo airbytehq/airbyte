@@ -46,7 +46,7 @@ test_data = [
                 "next": {"starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP" "\nIncfQLD3ouPkZlCwJ86F\n"}
             },
         },
-        "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n",
+        {"starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP\nIncfQLD3ouPkZlCwJ86F\n"},
     ),
 ]
 
@@ -257,13 +257,10 @@ def conversation_parts_responses():
             "POST",
             "https://api.intercom.io/conversations/search",
             build_conversations_response_body(
-                conversations=[{"id": "151272900026677", "updated_at": 1650988600}, {"id": "151272900026666", "updated_at": 1650988500}],
-                next_page={
-                    "next": {
-                        "page": 2,
-                        "starting_after": "1HaSB+xrOyyMXAkS/c1RteCL7BzOzTvYjmjakgTergIH31eoe2v4/sbLsJWP=",
-                    },
-                },
+                conversations=[
+                    {"id": "151272900026677", "updated_at": 1650988600},
+                    {"id": "151272900026666", "updated_at": 1650988500},
+                ],
             ),
         ),
         (
