@@ -4,9 +4,10 @@
 from typing import Any, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 
 
-class OffsetIncrement:
+class OffsetIncrement(PaginationStrategy):
     def __init__(self):
         self._offset = 0
 

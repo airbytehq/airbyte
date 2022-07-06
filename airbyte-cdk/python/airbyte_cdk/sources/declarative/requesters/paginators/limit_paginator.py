@@ -2,18 +2,16 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class PaginationStrategy:
-    pass
-
-
-class LimitPaginator:
+class LimitPaginator(Paginator):
     """
     A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
     """
@@ -27,7 +25,7 @@ class LimitPaginator:
         config: Config,
         url_base: str = None,
     ):
-        if limit_option._option_type == RequestOptionType.path:
+        if limit_option.option_type == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
         self._config = config
         self._limit = limit_value
@@ -50,7 +48,7 @@ class LimitPaginator:
         else:
             return None
 
-    def request_params(self) -> MutableMapping[str, Any]:
+    def request_params(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.request_parameter)
 
     def request_headers(self) -> Mapping[str, Any]:

@@ -5,10 +5,11 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class CursorPaginationStrategy:
+class CursorPaginationStrategy(PaginationStrategy):
     def __init__(self, cursor_value, config: Config):
         self._cursor_value = cursor_value
         self._config = config
