@@ -14,6 +14,7 @@ import pytest
 from airbyte_api_client.api import connection_api
 from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
 from click.testing import CliRunner
+from octavia_cli._import.commands import all as octavia_import_all
 from octavia_cli._import.commands import connection as octavia_import_connection
 from octavia_cli._import.commands import destination as octavia_import_destination
 from octavia_cli._import.commands import source as octavia_import_source
@@ -77,12 +78,12 @@ def initialized_project_directory(context_object):
 
 @pytest.fixture(scope="module")
 def expected_source(initialized_project_directory):
-    return initialized_project_directory[0]
+    yield initialized_project_directory[0]
 
 
 @pytest.fixture(scope="module")
 def expected_destination(initialized_project_directory):
-    return initialized_project_directory[1]
+    yield initialized_project_directory[1]
 
 
 @pytest.fixture(scope="module")
@@ -136,3 +137,23 @@ def test_import_connection(expected_connection, context_object):
     assert connection.was_created  # Check if the remote resource is considered as managed by octavia and exists remotely
     assert connection.get_diff_with_remote_resource() == ""
     assert connection.state.path in str(expected_state_path)
+
+
+def test_import_all(expected_source, expected_destination, expected_connection, context_object):
+    _, source_expected_configuration_path, source_expected_state_path = expected_source
+    _, destination_expected_configuration_path, destination_expected_state_path = expected_destination
+    _, connection_expected_configuration_path, connection_expected_state_path = expected_connection
+    paths_to_first_delete_and_then_check_existence = [
+        source_expected_configuration_path,
+        source_expected_state_path,
+        destination_expected_configuration_path,
+        destination_expected_state_path,
+        connection_expected_configuration_path,
+        connection_expected_state_path,
+    ]
+    for path in paths_to_first_delete_and_then_check_existence:
+        os.remove(path)
+    result = click_runner.invoke(octavia_import_all, obj=context_object)
+    assert result.exit_code == 0
+    for path in paths_to_first_delete_and_then_check_existence:
+        assert os.path.exists(path)

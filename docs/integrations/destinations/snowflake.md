@@ -9,6 +9,24 @@ This page describes the step-by-step process of setting up the Snowflake destina
 - A Snowflake account with the [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
 - (Optional) An AWS, Google Cloud Storage, or Azure account.
 
+### Network policies
+
+By default, Snowflake allows users to connect to the service from any computer or device IP address. A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network policy to allow or deny access to a single IP address or a list of addresses.
+
+If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses is on the allowed list
+
+To determine whether a network policy is set on your account or for a specific user, execute the _SHOW PARAMETERS_ command.
+
+**Account** 
+
+        SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+
+**User**
+
+        SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+
+To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+
 ## Step 1: Set up Airbyte-specific entities in Snowflake
 
 To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
