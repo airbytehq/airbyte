@@ -26,3 +26,6 @@ yarn-error.log*
 .npmrc
 .env.development
 .env.production
+
+# Ignore generated API client, since it's automatically generated
+/src/core/request/AirbyteClient.ts
