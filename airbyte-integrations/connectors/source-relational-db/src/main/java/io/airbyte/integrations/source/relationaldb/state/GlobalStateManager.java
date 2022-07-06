@@ -111,11 +111,11 @@ public class GlobalStateManager extends AbstractStateManager<AirbyteStateMessage
           }).collect(Collectors.toSet());
     } else {
       final DbState legacyState = Jsons.object(airbyteStateMessage.getData(), DbState.class);
-      return legacyState != null ? covertDbStreamStateToAirbyteStreamState(legacyState.getStreams()) : Collections.emptySet();
+      return legacyState != null ? extractNamespacePairsFromDbStreamState(legacyState.getStreams()) : Collections.emptySet();
     }
   }
 
-  private Set<AirbyteStreamNameNamespacePair> covertDbStreamStateToAirbyteStreamState(final List<DbStreamState> streams) {
+  private Set<AirbyteStreamNameNamespacePair> extractNamespacePairsFromDbStreamState(final List<DbStreamState> streams) {
     return streams.stream().map(stream -> {
       final DbStreamState cloned = Jsons.clone(stream);
       return new AirbyteStreamNameNamespacePair(cloned.getStreamName(), cloned.getStreamNamespace());
