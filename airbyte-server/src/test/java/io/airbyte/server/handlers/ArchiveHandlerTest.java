@@ -20,6 +20,7 @@ import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.Notification;
@@ -55,6 +56,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -234,12 +236,19 @@ public class ArchiveHandlerTest {
         .withDestinationDefinitionId(DESTINATION_S3.getDestinationDefinitionId())
         .withConfiguration(Jsons.deserialize("{}"))
         .withWorkspaceId(workspace.getWorkspaceId());
+
+    final ActorCatalog actorCatalog = new ActorCatalog()
+        .withId(UUID.randomUUID())
+        .withCatalog(Jsons.deserialize("{}"))
+        .withCatalogHash("");
+
     final StandardSync sync = new StandardSync()
         .withName("Connection")
         .withConnectionId(UUID.randomUUID())
         .withSourceId(source.getSourceId())
         .withDestinationId(destination.getDestinationId())
-        .withCatalog(new ConfiguredAirbyteCatalog())
+        .withCatalog(new ConfiguredAirbyteCatalog().withStreams(List.of()))
+        .withSourceCatalogId(actorCatalog.getId())
         .withManual(true);
 
     // Write source connection and an old source definition.
@@ -247,6 +256,7 @@ public class ArchiveHandlerTest {
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, sourceS3DefinitionId.toString(), sourceS3Definition);
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
 
+    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
     configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_S3.getDestinationDefinitionId().toString(),
         DESTINATION_S3);
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);

@@ -22,19 +22,12 @@ import static org.mockito.Mockito.verify;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.ReleaseStage;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.DatabaseConfigPersistence.ConnectorInfo;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -181,51 +174,6 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     assertRecordCount(2, ACTOR_DEFINITION);
     assertHasSource(SOURCE_GITHUB);
     assertHasSource(SOURCE_POSTGRES);
-  }
-
-  @Test
-  void testRoundTripConfig() throws Exception {
-    final StandardWorkspace workspace = new StandardWorkspace()
-        .withWorkspaceId(UUID.randomUUID())
-        .withName("workspace")
-        .withSlug("workspace")
-        .withInitialSetupComplete(true);
-    final ActorCatalog actorCatalog = new ActorCatalog()
-        .withId(UUID.randomUUID())
-        .withCatalogHash("");
-    final SourceConnection source = new SourceConnection()
-        .withName("Source")
-        .withSourceId(UUID.randomUUID())
-        .withSourceDefinitionId(SOURCE_GITHUB.getSourceDefinitionId())
-        .withWorkspaceId(workspace.getWorkspaceId());
-    final DestinationConnection destination = new DestinationConnection()
-        .withName("Destination")
-        .withDestinationId(UUID.randomUUID())
-        .withDestinationDefinitionId(DESTINATION_S3.getDestinationDefinitionId())
-        .withWorkspaceId(workspace.getWorkspaceId());
-    final StandardSync sync = new StandardSync()
-        .withName("Connection")
-        .withConnectionId(UUID.randomUUID())
-        .withSourceId(source.getSourceId())
-        .withDestinationId(destination.getDestinationId())
-        .withManual(true);
-
-    configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, SOURCE_GITHUB.getSourceDefinitionId().toString(), SOURCE_GITHUB);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_S3.getDestinationDefinitionId().toString(),
-        DESTINATION_S3);
-    configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
-    configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
-    configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, sync.getConnectionId().toString(), sync);
-
-    final Map<AirbyteConfig, Stream<?>> configsDump = configPersistence.dumpConfigs()
-        .entrySet()
-        .stream()
-        .collect(Collectors.toMap(entry -> Enums.toEnum(entry.getKey(), ConfigSchema.class).get(),
-            entry -> entry.getValue().map(v -> Jsons.object(v, Enums.toEnum(entry.getKey(), ConfigSchema.class).get().getClassName()))));
-
-    configPersistence.replaceAllConfigs(configsDump, false);
   }
 
   @Test

@@ -1441,7 +1441,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       } else {
         LOGGER.warn(ConfigSchema.ACTOR_CATALOG + NOT_FOUND);
       }
-
       if (configs.containsKey(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT)) {
         configs.get(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT).map(c -> (ActorCatalogFetchEvent) c)
             .forEach(c -> writeActorCatalogFetchEvent(Collections.singletonList(c), ctx));
@@ -1450,6 +1449,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
         LOGGER.warn(ConfigSchema.ACTOR_CATALOG_FETCH_EVENT + NOT_FOUND);
       }
 
+      // Syncs need to be imported after Actor Catalogs as they have a foreign key association with Actor
+      // Catalogs.
+      // e.g. They reference catalogs and thus catalogs need to exist before or the insert will fail.
       if (configs.containsKey(ConfigSchema.STANDARD_SYNC)) {
         configs.get(ConfigSchema.STANDARD_SYNC).map(c -> (StandardSync) c).forEach(c -> writeStandardSync(Collections.singletonList(c), ctx));
         originalConfigs.remove(ConfigSchema.STANDARD_SYNC);
