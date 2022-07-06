@@ -16,6 +16,9 @@ on:
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
+      uuid:
+        description: "UUID"
+        required: false
 
 jobs:
   find_valid_pat:
@@ -25,6 +28,7 @@ jobs:
     outputs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
+      - name: UUID ${{ github.event.inputs.uuid }}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Check PAT rate limits
