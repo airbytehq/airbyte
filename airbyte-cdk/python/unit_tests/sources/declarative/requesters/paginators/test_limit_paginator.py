@@ -5,6 +5,7 @@ import json
 
 import pytest
 import requests
+from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.requesters.paginators.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator, RequestOption, RequestOptionType
 
@@ -95,7 +96,7 @@ def test_limit_paginator(
     cursor_value = "{{ decoded_response.next }}"
     url_base = "https://airbyte.io"
     config = {}
-    strategy = CursorPaginationStrategy(cursor_value, config)
+    strategy = CursorPaginationStrategy(cursor_value, decoder=JsonDecoder(), config=config)
     paginator = LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
 
     response = requests.Response()
@@ -123,7 +124,7 @@ def test_limit_cannot_be_set_in_path():
     cursor_value = "{{ decoded_response.next }}"
     url_base = "https://airbyte.io"
     config = {}
-    strategy = CursorPaginationStrategy(cursor_value, config)
+    strategy = CursorPaginationStrategy(cursor_value, JsonDecoder(), config)
     try:
         LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
         assert False
