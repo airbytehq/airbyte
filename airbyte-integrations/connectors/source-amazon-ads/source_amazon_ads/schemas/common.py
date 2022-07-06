@@ -34,6 +34,7 @@ class CatalogModel(BaseModel):
 
 
 class MetricsReport(CatalogModel):
+    source_name: str
     profileId: int
     recordType: str
     reportDate: str
@@ -47,6 +48,7 @@ class MetricsReport(CatalogModel):
 
 
 class Targeting(CatalogModel):
+    source_name: str
     targetId: Decimal
     adGroupId: Decimal
     state: str
@@ -55,6 +57,7 @@ class Targeting(CatalogModel):
 
 
 class KeywordsBase(CatalogModel):
+    source_name: str
     keywordId: Decimal
     campaignId: Decimal
     adGroupId: Decimal
@@ -63,10 +66,12 @@ class KeywordsBase(CatalogModel):
 
 
 class Keywords(KeywordsBase):
+    source_name: str
     nativeLanguageKeyword: str
     matchType: str
     bid: Decimal
 
 
 class NegativeKeywords(KeywordsBase):
+    source_name: str
     matchType: str

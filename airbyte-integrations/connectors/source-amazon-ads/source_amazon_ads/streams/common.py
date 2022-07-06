@@ -77,6 +77,7 @@ class BasicAmazonAdsStream(Stream, ABC):
     def __init__(self, config: AmazonAdsConfig, profiles: List[Profile] = None):
         self._profiles = profiles or []
         self._client_id = config.client_id
+        self._source_name = config.source_name
         self._url = URL_MAPPING[config.region]
 
     @property
@@ -122,7 +123,10 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         :return an object representing single record in the response
         """
         if response.status_code == HTTPStatus.OK:
-            yield from response.json()
+            results = response.json()
+            for item in results:
+                item["source_name"] = self._source_name
+            yield from results
             return
 
         """

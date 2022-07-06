@@ -9,16 +9,19 @@ from .common import CatalogModel, Targeting
 
 
 class Adjustments(CatalogModel):
+    source_name: str
     predicate: str
     percentage: Decimal
 
 
 class Bidding(CatalogModel):
+    source_name: str
     strategy: str
     adjustments: List[Adjustments]
 
 
 class ProductCampaign(CatalogModel):
+    source_name: str
     portfolioId: Decimal
     campaignId: Decimal
     name: str
@@ -34,6 +37,7 @@ class ProductCampaign(CatalogModel):
 
 
 class ProductAdGroups(CatalogModel):
+    source_name: str
     adGroupId: Decimal
     name: str
     campaignId: Decimal
@@ -42,6 +46,7 @@ class ProductAdGroups(CatalogModel):
 
 
 class ProductAd(CatalogModel):
+    source_name: str
     adId: Decimal
     campaignId: Decimal
     adGroupId: Decimal
@@ -51,4 +56,5 @@ class ProductAd(CatalogModel):
 
 
 class ProductTargeting(Targeting):
+    source_name: str
     campaignId: Decimal
