@@ -430,7 +430,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.20
+  dockerImageTag: 0.1.21
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -1067,6 +1067,7 @@
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
   icon: sentry.svg
+  sourceType: api
   releaseStage: alpha
 - name: Zoom
   sourceDefinitionId: aea2fd0d-377d-465e-86c0-4fdc4f688e51
