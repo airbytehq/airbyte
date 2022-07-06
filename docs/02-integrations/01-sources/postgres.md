@@ -163,7 +163,7 @@ Please note that:
 - You must **add the replication identity before creating the publication**. Otherwise, `ALTER`/`UPDATE`/`DELETE` statements may fail if Postgres cannot determine how to uniquely identify rows.
 - The publication should **include all the tables and only the tables that need to be synced**. Otherwise, data from these tables may not be replicated correctly.
 
-The UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not replicate even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
+The UI will only show tables included in the publication. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 
 #### 5. Create replication slot
 
