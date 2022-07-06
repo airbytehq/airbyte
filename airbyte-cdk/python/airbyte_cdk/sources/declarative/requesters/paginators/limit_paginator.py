@@ -40,7 +40,10 @@ class LimitPaginator(Paginator):
             return None
         else:
             self._token = self._pagination_strategy.next_page_token(response, last_records)
-            return {"next_page_token": self._token}
+            if self._token:
+                return {"next_page_token": self._token}
+            else:
+                return None
 
     def path(self):
         if self._token and self._page_token.option_type == RequestOptionType.path:
@@ -63,7 +66,7 @@ class LimitPaginator(Paginator):
     def _get_request_options(self, option_type):
         options = {}
         if self._page_token.option_type == option_type:
-            if option_type != RequestOptionType.path:
+            if option_type != RequestOptionType.path and self._token:
                 options[self._page_token._field_name] = self._token
         if self._limit_option.option_type == option_type:
             options[self._limit_option.field_name] = self._limit

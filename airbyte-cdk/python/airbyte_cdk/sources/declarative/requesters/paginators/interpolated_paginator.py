@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -14,6 +14,21 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class InterpolatedPaginator(Paginator):
+    def path(self) -> Optional[str]:
+        pass
+
+    def request_params(self) -> Mapping[str, Any]:
+        pass
+
+    def request_headers(self) -> Mapping[str, Any]:
+        pass
+
+    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+        pass
+
+    def request_body_json(self) -> Optional[Mapping]:
+        pass
+
     def __init__(self, *, next_page_token_template: Mapping[str, str], config: Config, decoder: Optional[Decoder] = None):
         self._next_page_token_template = InterpolatedMapping(next_page_token_template, JinjaInterpolation())
         self._decoder = decoder or JsonDecoder()

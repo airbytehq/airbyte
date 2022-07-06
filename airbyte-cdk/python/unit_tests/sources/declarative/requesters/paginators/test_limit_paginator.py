@@ -10,9 +10,19 @@ from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator impor
 
 
 @pytest.mark.parametrize(
-    "test_name, page_token_request_option, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json",
+    "test_name, page_token_request_option, expected_updated_path, expected_request_params, expected_headers, expected_body_data, expected_body_json, last_records, expected_next_page_token",
     [
-        ("test_limit_paginator_cursor_param", RequestOption(option_type=RequestOptionType.path), "/next_url", {"limit": 2}, {}, {}, {}),
+        (
+            "test_limit_paginator_cursor_param",
+            RequestOption(option_type=RequestOptionType.path),
+            "/next_url",
+            {"limit": 2},
+            {},
+            {},
+            {},
+            [{"id": 0}, {"id": 1}],
+            {"next_page_token": "https://airbyte.io/next_url"},
+        ),
         (
             "test_limit_paginator_cursor_param",
             RequestOption(option_type=RequestOptionType.request_parameter, field_name="from"),
@@ -21,6 +31,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator impor
             {},
             {},
             {},
+            [{"id": 0}, {"id": 1}],
+            {"next_page_token": "https://airbyte.io/next_url"},
         ),
         (
             "test_limit_paginator_cursor_header",
@@ -30,6 +42,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator impor
             {"from": "https://airbyte.io/next_url"},
             {},
             {},
+            [{"id": 0}, {"id": 1}],
+            {"next_page_token": "https://airbyte.io/next_url"},
         ),
         (
             "test_limit_paginator_cursor_body_data",
@@ -39,6 +53,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator impor
             {},
             {"from": "https://airbyte.io/next_url"},
             {},
+            [{"id": 0}, {"id": 1}],
+            {"next_page_token": "https://airbyte.io/next_url"},
         ),
         (
             "test_limit_paginator_cursor_body_json",
@@ -48,10 +64,23 @@ from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator impor
             {},
             {},
             {"from": "https://airbyte.io/next_url"},
+            [{"id": 0}, {"id": 1}],
+            {"next_page_token": "https://airbyte.io/next_url"},
+        ),
+        (
+            "test_limit_paginator_fewer_records_than_limit",
+            RequestOption(option_type=RequestOptionType.header, field_name="from"),
+            None,
+            {"limit": 2},
+            {},
+            {},
+            {},
+            [{"id": 0}],
+            None,
         ),
     ],
 )
-def test_limit_paginator_update_path(
+def test_limit_paginator(
     test_name,
     page_token_request_option,
     expected_updated_path,
@@ -59,6 +88,8 @@ def test_limit_paginator_update_path(
     expected_headers,
     expected_body_data,
     expected_body_json,
+    last_records,
+    expected_next_page_token,
 ):
     limit_request_option = RequestOption(option_type=RequestOptionType.request_parameter, field_name="limit")
     cursor_value = "{{ decoded_response.next }}"
@@ -72,14 +103,13 @@ def test_limit_paginator_update_path(
     response_body = {"next": "https://airbyte.io/next_url"}
     response._content = json.dumps(response_body).encode("utf-8")
 
-    last_records = [{"id": 0}, {"id": 1}]
     actual_next_page_token = paginator.next_page_token(response, last_records)
     actual_next_path = paginator.path()
     actual_request_params = paginator.request_params()
     actual_headers = paginator.request_headers()
     actual_body_data = paginator.request_body_data()
     actual_body_json = paginator.request_body_json()
-    assert actual_next_page_token == {"next_page_token": "https://airbyte.io/next_url"}
+    assert actual_next_page_token == expected_next_page_token
     assert actual_next_path == expected_updated_path
     assert actual_request_params == expected_request_params
     assert actual_headers == expected_headers
@@ -87,13 +117,7 @@ def test_limit_paginator_update_path(
     assert actual_body_json == expected_body_json
 
 
-@pytest.mark.parametrize(
-    "test_name",
-    [
-        ("test_limit_options"),
-    ],
-)
-def test_limit_cannot_be_set_in_path(test_name):
+def test_limit_cannot_be_set_in_path():
     limit_request_option = RequestOption(option_type=RequestOptionType.path)
     page_token_request_option = RequestOption(option_type=RequestOptionType.request_parameter, field_name="offset")
     cursor_value = "{{ decoded_response.next }}"
