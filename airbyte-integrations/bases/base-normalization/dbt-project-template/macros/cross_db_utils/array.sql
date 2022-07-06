@@ -6,6 +6,7 @@
     - postgres: unnest() -> https://www.postgresqltutorial.com/postgresql-array/
     - MSSQL: openjson() –> https://docs.microsoft.com/en-us/sql/relational-databases/json/validate-query-and-change-json-data-with-built-in-functions-sql-server?view=sql-server-ver15
     - ClickHouse: ARRAY JOIN –> https://clickhouse.com/docs/zh/sql-reference/statements/select/array-join/
+    - Databricks: LATERAL VIEW -> https://docs.databricks.com/spark/latest/spark-sql/language-manual/sql-ref-syntax-qry-select-lateral-view.html
 #}
 
 {# cross_join_unnest -------------------------------------------------     #}
@@ -50,6 +51,10 @@
     cross join table(flatten({{ array_col }})) as {{ array_col }}
 {%- endmacro %}
 
+{% macro databricks__cross_join_unnest(stream_name, array_col) -%}
+    lateral view outer explode(from_json({{ array_col }}, 'array<string>')) as _airbyte_nested_data
+{%- endmacro %}
+
 {% macro sqlserver__cross_join_unnest(stream_name, array_col) -%}
 {# https://docs.microsoft.com/en-us/sql/relational-databases/json/convert-json-data-to-rows-and-columns-with-openjson-sql-server?view=sql-server-ver15#option-1---openjson-with-the-default-output #}
     CROSS APPLY (
@@ -84,6 +89,10 @@
 {%- endmacro %}
 
 {% macro mysql__unnested_column_value(column_col) -%}
+    _airbyte_nested_data
+{%- endmacro %}
+
+{% macro databricks__unnested_column_value(column_col) -%}
     _airbyte_nested_data
 {%- endmacro %}
 

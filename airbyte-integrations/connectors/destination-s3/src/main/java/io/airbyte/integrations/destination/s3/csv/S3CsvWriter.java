@@ -36,6 +36,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
   private final CSVPrinter csvPrinter;
   private final String objectKey;
   private final String gcsFileLocation;
+  private final String outputFilename;
 
   private S3CsvWriter(final S3DestinationConfig config,
                       final AmazonS3 s3Client,
@@ -52,7 +53,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
     this.csvSheetGenerator = csvSheetGenerator;
 
     final String fileSuffix = "_" + UUID.randomUUID();
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
+    this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
     this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
@@ -61,7 +62,6 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
 
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
-        .setPartSize(config.getFormatConfig().getPartSize())
         .get()
         .numUploadThreads(uploadThreads)
         .queueCapacity(queueCapacity);
@@ -71,6 +71,11 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
       csvSettings = csvSettings.withHeader(csvSheetGenerator.getHeaderRow().toArray(new String[0]));
     }
     this.csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvSettings);
+  }
+
+
+  public String getOutputFilename() {
+    return outputFilename;
   }
 
   public static class Builder {

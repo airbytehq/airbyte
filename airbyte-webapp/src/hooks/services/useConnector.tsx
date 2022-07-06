@@ -16,7 +16,7 @@ import { useInitService } from "services/useInitService";
 
 import { CheckConnectionRead } from "../../core/request/AirbyteClient";
 
-type ConnectorService = {
+interface ConnectorService {
   hasNewVersions: boolean;
   hasNewSourceVersion: boolean;
   hasNewDestinationVersion: boolean;
@@ -24,7 +24,7 @@ type ConnectorService = {
   countNewDestinationVersion: number;
   updateAllSourceVersions: () => Promise<void>;
   updateAllDestinationVersions: () => Promise<void>;
-};
+}
 
 const useConnector = (): ConnectorService => {
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -35,10 +35,9 @@ const useConnector = (): ConnectorService => {
 
   const newSourceDefinitions = useMemo(() => sourceDefinitions.filter(Connector.hasNewerVersion), [sourceDefinitions]);
 
-  const newDestinationDefinitions = useMemo(
-    () => destinationDefinitions.filter(Connector.hasNewerVersion),
-    [destinationDefinitions]
-  );
+  const newDestinationDefinitions = useMemo(() => destinationDefinitions.filter(Connector.hasNewerVersion), [
+    destinationDefinitions,
+  ]);
 
   const updateAllSourceVersions = async () => {
     await Promise.all(

@@ -18,8 +18,8 @@ export function getEntityTableData<
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
-    const entitySoDId = entityItem[`${type}Id` as keyof SoD] as unknown as string;
-    const entitySoDName = entityItem[`${type}Name` as keyof SoD] as unknown as string;
+    const entitySoDId = (entityItem[`${type}Id` as keyof SoD] as unknown) as string;
+    const entitySoDName = (entityItem[`${type}Name` as keyof SoD] as unknown) as string;
     const entityConnections = connections.filter(
       (connectionItem) => connectionItem[`${type}Id` as "sourceId" | "destinationId"] === entitySoDId
     );
@@ -46,7 +46,7 @@ export function getEntityTableData<
 
     const connectEntities = entityConnections.map((connection) => ({
       name: connection[connectType]?.name || "",
-      // @ts-ignore ts is not that clever to infer such types
+      // @ts-expect-error ts is not that clever to infer such types
       connector: connection[connectType]?.[`${connectType}Name`] || "",
       status: connection.status,
       lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
@@ -64,7 +64,7 @@ export function getEntityTableData<
       enabled: true,
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
-      connectEntities: connectEntities,
+      connectEntities,
       connectorIcon: definition?.icon,
     };
   });

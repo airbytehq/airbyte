@@ -37,6 +37,7 @@ def before_tests(request):
         ("Hello World", "Redshift", True),
         ("Hello World", "MySQL", True),
         ("Hello World", "MSSQL", True),
+        ("Hello World", "Databricks", True),
         # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", False),
         ("Groups", "BigQuery", True),
@@ -44,6 +45,7 @@ def before_tests(request):
         ("Groups", "Redshift", False),
         ("Groups", "MySQL", True),
         ("Groups", "MSSQL", False),
+        ("Groups", "Databricks", False),
         # Doesnt start with alpha or underscore
         ("100x200", "Postgres", True),
         ("100x200", "BigQuery", False),
@@ -51,6 +53,7 @@ def before_tests(request):
         ("100x200", "Redshift", True),
         ("100x200", "MySQL", True),
         ("100x200", "MSSQL", True),
+        ("100x200", "Databricks", True),
         # Contains non alpha numeric
         ("post.wall", "Postgres", True),
         ("post.wall", "BigQuery", False),
@@ -58,6 +61,7 @@ def before_tests(request):
         ("post.wall", "Redshift", True),
         ("post.wall", "MySQL", True),
         ("post.wall", "MSSQL", True),
+        ("post.wall", "Databricks", True),
     ],
 )
 def test_needs_quote(input_str: str, destination_type: str, expected: bool):
@@ -108,6 +112,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("Identifier Name", "Redshift", "{{ adapter.quote('identifier name') }}", "adapter.quote('identifier name')"),
         ("Identifier Name", "MySQL", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
         ("Identifier Name", "MSSQL", "{{ adapter.quote('Identifier Name') }}", "adapter.quote('Identifier Name')"),
+        ("Identifier Name", "Databricks", "Identifier_Name", "'Identifier_Name'"),
         # Reserved Word for BigQuery and MySQL only
         ("Groups", "Postgres", "groups", "'groups'"),
         ("Groups", "BigQuery", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
@@ -115,6 +120,7 @@ def test_transform_standard_naming(input_str: str, expected: str):
         ("Groups", "Redshift", "groups", "'groups'"),
         ("Groups", "MySQL", "{{ adapter.quote('Groups') }}", "adapter.quote('Groups')"),
         ("Groups", "MSSQL", "groups", "'groups'"),
+        ("Groups", "Databricks", "Groups", "'Groups'"),
     ],
 )
 def test_normalize_column_name(input_str: str, destination_type: str, expected: str, expected_in_jinja: str):

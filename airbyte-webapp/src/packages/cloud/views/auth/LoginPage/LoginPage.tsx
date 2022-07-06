@@ -19,7 +19,7 @@ const LoginPageValidationSchema = yup.object().shape({
 });
 
 const LoginPage: React.FC = () => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { login } = useAuthService();
   const { query, replace } = useRouter();
 

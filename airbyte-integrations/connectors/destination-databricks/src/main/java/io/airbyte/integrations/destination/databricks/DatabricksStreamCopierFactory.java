@@ -10,6 +10,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopierFactory;
+import io.airbyte.integrations.destination.jdbc.copy.s3.S3CopyConfig;
 import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
 import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -30,11 +31,12 @@ public class DatabricksStreamCopierFactory implements StreamCopierFactory<Databr
       final AirbyteStream stream = configuredStream.getStream();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
       final AmazonS3 s3Client = databricksConfig.getS3DestinationConfig().getS3Client();
+      final S3CopyConfig s3Config = new S3CopyConfig(databricksConfig.isPurgeStagingData(), databricksConfig.getS3DestinationConfig());
       final S3WriterFactory writerFactory = new ProductionWriterFactory();
       final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
 
       return new DatabricksStreamCopier(stagingFolder, schema, configuredStream, s3Client, database,
-          databricksConfig, nameTransformer, sqlOperations, writerFactory, uploadTimestamp);
+          databricksConfig, nameTransformer, sqlOperations, writerFactory, uploadTimestamp, s3Config);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }

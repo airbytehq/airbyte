@@ -68,6 +68,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
       ctx.execute("SET TIMEZONE TO 'MST'");
+      ctx.execute("CREATE EXTENSION hstore;");
       return null;
     });
 
@@ -448,8 +449,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
-              .addExpectedValues(null, "13:00:01", "13:00:02", "13:00:03", "13:00:04", "13:00:05", "13:00:06")
+              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
+              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
+                  "13:00:00.000000")
               .build());
     }
 
@@ -460,10 +462,11 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
+              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01-07:00", "13:00:02+08:00", "13:00:03-08:00", "13:00:04Z", "13:00:05-08:00", "13:00:06+08:00")
+              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
+                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
               .build());
     }
 
@@ -474,8 +477,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-              .addExpectedValues("2004-10-19T10:23:54", "2004-10-19T10:23:54.123456", null)
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
+              .addExpectedValues("2004-10-19T10:23:00.000000", "2004-10-19T10:23:54.123456", null)
               .build());
     }
 
@@ -486,9 +489,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timestamptz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
               // 2004-10-19T10:23:54Z-8 = 2004-10-19T17:23:54Z
-              .addExpectedValues("2004-10-19T17:23:54Z", "2004-10-19T17:23:54.123456Z", null)
+              .addExpectedValues("2004-10-19T17:23:00.000000Z", "2004-10-19T17:23:54.123456Z", null)
               .build());
     }
 
@@ -561,6 +564,21 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hstore")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("""
+                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                             "language"  => "English","ISBN-13" => "978-1449370000",
+                             "weight"    => "11.2 ounces"'
+                             """, null)
+            .addExpectedValues(
+                """
+                {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
+                null)
             .build());
   }
 

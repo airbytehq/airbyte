@@ -61,7 +61,6 @@ def test_resolve_names(destination_type: DestinationType, catalog_file: str):
     """
     integration_type = destination_type.value
     tables_registry = TableNameRegistry(destination_type)
-
     catalog = read_json(f"resources/{catalog_file}.json")
 
     # process top level

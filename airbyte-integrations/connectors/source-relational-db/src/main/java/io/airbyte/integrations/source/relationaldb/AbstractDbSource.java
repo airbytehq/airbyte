@@ -7,12 +7,16 @@ package io.airbyte.integrations.source.relationaldb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.type.Types;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.db.AbstractDatabase;
 import io.airbyte.db.IncrementalUtils;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -20,12 +24,16 @@ import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.CommonField;
@@ -60,6 +68,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     BaseConnector implements Source, AutoCloseable {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
+  // TODO: Remove when the flag is not use anymore
+  private final FeatureFlags featureFlags = new EnvVariableFeatureFlags();
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
@@ -103,9 +113,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                     final ConfiguredAirbyteCatalog catalog,
                                                     final JsonNode state)
       throws Exception {
-    final StateManager stateManager = new StateManager(
-        state == null ? StateManager.emptyState() : Jsons.object(state, DbState.class),
-        catalog);
+    final StateManager stateManager =
+        StateManagerFactory.createStateManager(getSupportedStateType(config), deserializeInitialState(state, config), catalog);
     final Instant emittedAt = Instant.now();
 
     final Database database = createDatabaseInternal(config);
@@ -507,6 +516,49 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     database.setSourceConfig(sourceConfig);
     database.setDatabaseConfig(toDatabaseConfig(sourceConfig));
     return database;
+  }
+
+  /**
+   * Deserializes the state represented as JSON into an object representation.
+   *
+   * @param initialStateJson The state as JSON.
+   * @param config The connector configuration.
+   * @return The deserialized object representation of the state.
+   */
+  protected List<AirbyteStateMessage> deserializeInitialState(final JsonNode initialStateJson, final JsonNode config) {
+    final Optional<StateWrapper> typedState = StateMessageHelper.getTypedState(initialStateJson, featureFlags.useStreamCapableState());
+    return typedState.map((state) -> {
+      switch (state.getStateType()) {
+        case GLOBAL:
+          return List.of(state.getGlobal());
+        case STREAM:
+          return state.getStateMessages();
+        case LEGACY:
+        default:
+          return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(state.getLegacyState()));
+      }
+    }).orElse(generateEmptyInitialState(config));
+  }
+
+  /**
+   * Generates an empty, initial state for use by the connector.
+   *
+   * @param config The connector configuration.
+   * @return The empty, initial state.
+   */
+  protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    // For backwards compatibility with existing connectors
+    return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY).withData(Jsons.jsonNode(new DbState())));
+  }
+
+  /**
+   * Returns the {@link AirbyteStateType} supported by this connector.
+   *
+   * @param config The connector configuration.
+   * @return A {@link AirbyteStateType} representing the state supported by this connector.
+   */
+  protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    return AirbyteStateType.LEGACY;
   }
 
 }

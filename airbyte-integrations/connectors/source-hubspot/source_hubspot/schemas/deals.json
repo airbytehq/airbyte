@@ -352,6 +352,12 @@
       "items": {
         "type": ["null", "string"]
       }
+    },
+    "line_items": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

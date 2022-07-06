@@ -75,6 +75,10 @@ task airbyteDockerSnowflake(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('snowflake')
     dependsOn assemble
 }
+task airbyteDockerDatabricks(type: Exec, dependsOn: checkSshScriptCopy) {
+    configure buildAirbyteDocker('databricks')
+    dependsOn assemble
+}
 task airbyteDockerRedshift(type: Exec, dependsOn: checkSshScriptCopy) {
     configure buildAirbyteDocker('redshift')
     dependsOn assemble
@@ -85,6 +89,7 @@ airbyteDocker.dependsOn(airbyteDockerMySql)
 airbyteDocker.dependsOn(airbyteDockerOracle)
 airbyteDocker.dependsOn(airbyteDockerClickhouse)
 airbyteDocker.dependsOn(airbyteDockerSnowflake)
+airbyteDocker.dependsOn(airbyteDockerDatabricks)
 airbyteDocker.dependsOn(airbyteDockerRedshift)
 
 task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs) {
@@ -100,7 +105,16 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
+    dependsOn ':airbyte-integrations:connectors:destination-databricks:airbyteDocker'
 }
+
+// DATs have some additional tests that exercise normalization code paths,
+// so we want to run these in addition to the base-normalization integration tests.
+// If you add more items here, make sure to also to have CI fetch their credentials.
+// See git history for an example.
+integrationTest.dependsOn(":airbyte-integrations:connectors:destination-bigquery:integrationTest")
+integrationTest.dependsOn(":airbyte-integrations:connectors:destination-postgres:integrationTest")
+integrationTest.dependsOn(":airbyte-integrations:connectors:destination-snowflake:integrationTest")
 
 integrationTest.dependsOn("customIntegrationTestPython")
 customIntegrationTests.dependsOn("customIntegrationTestPython")

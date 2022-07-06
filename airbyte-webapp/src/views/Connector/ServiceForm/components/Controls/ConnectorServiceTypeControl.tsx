@@ -196,9 +196,8 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
             return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
-          } else {
-            return naturalComparator(a.label, b.label);
           }
+          return naturalComparator(a.label, b.label);
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices, orderOverwrite]
@@ -223,10 +222,10 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
     [analytics, formType, formatMessage]
   );
 
-  const selectedService = React.useMemo(
-    () => availableServices.find((s) => Connector.id(s) === field.value),
-    [field.value, availableServices]
-  );
+  const selectedService = React.useMemo(() => availableServices.find((s) => Connector.id(s) === field.value), [
+    field.value,
+    availableServices,
+  ]);
 
   const handleSelect = useCallback(
     (item: DropDownRow.IDataItem | null) => {

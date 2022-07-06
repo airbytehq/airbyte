@@ -1,17 +1,18 @@
 import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeEvent, useState } from "react";
+import React, { ChangeEvent, useState } from "react";
 import styled from "styled-components";
 
 import { Input } from "components";
 
+import { buildConnectionUpdate } from "core/domain/connection";
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import addEnterEscFuncForInput from "utils/addEnterEscFuncForInput";
 
-type Props = {
+interface Props {
   connection: WebBackendConnectionRead;
-};
+}
 
 const MainContainer = styled.div`
   margin-top: 10px;
@@ -108,18 +109,20 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
   };
 
   const inputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.currentTarget.value;
+    const { value } = event.currentTarget;
     if (value) {
       setConnectionName(event.currentTarget.value);
     }
   };
 
-  const onEscape = () => {
+  const onEscape: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
+    event.stopPropagation();
     setEditingState(false);
     setConnectionName(name);
   };
 
-  const onEnter = async () => {
+  const onEnter: React.KeyboardEventHandler<HTMLInputElement> = async (event) => {
+    event.stopPropagation();
     await updateConnectionAsync();
   };
 
@@ -131,14 +134,11 @@ const ConnectionName: React.FC<Props> = ({ connection }) => {
     // Update only when the name is changed
     if (connection.name !== connectionName) {
       setLoading(true);
-      await updateConnection({
-        name: connectionName,
-        connectionId: connection.connectionId,
-        namespaceDefinition: connection.namespaceDefinition,
-        syncCatalog: connection.syncCatalog,
-        status: connection.status,
-        prefix: connection.prefix,
-      });
+      await updateConnection(
+        buildConnectionUpdate(connection, {
+          name: connectionName,
+        })
+      );
       setLoading(false);
     }
 

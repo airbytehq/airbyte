@@ -28,9 +28,9 @@ const UsageValue = styled.div`
   min-width: 53px;
 `;
 
-type UsagePerConnectionTableProps = {
+interface UsagePerConnectionTableProps {
   creditConsumption: CreditConsumptionByConnector[];
-};
+}
 
 type FullTableProps = CreditConsumptionByConnector & {
   creditsConsumedPercent: number;
@@ -73,7 +73,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         search: queryString.stringify(
           {
             sortBy: field,
-            order: order,
+            order,
           },
           { skipNull: true }
         ),
@@ -100,10 +100,10 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     [sortBy, sortOrder]
   );
 
-  const sortingData = React.useMemo(
-    () => creditConsumptionWithPercent.sort(sortData),
-    [sortData, creditConsumptionWithPercent]
-  );
+  const sortingData = React.useMemo(() => creditConsumptionWithPercent.sort(sortData), [
+    sortData,
+    creditConsumptionWithPercent,
+  ]);
 
   const columns = React.useMemo(
     () => [

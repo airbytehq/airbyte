@@ -1,6 +1,8 @@
 {
   "webapp.cannotReachServer": "Cannot reach server. The server may still be starting up.",
   "notifications.error.health": "Cannot reach server",
+  "notifications.error.somethingWentWrong": "Something went wrong",
+  "notifications.error.noMessage": "No error message",
 
   "sidebar.sources": "Sources",
   "sidebar.destinations": "Destinations",
@@ -50,6 +52,7 @@
   "form.dataSync.readonly": "Activated streams",
   "form.dataSync.message": "Don’t worry! You’ll be able to change this later on.",
   "form.cancel": "Cancel",
+  "form.canceling": "Canceling",
   "form.submit": "Submit",
   "form.delete": "Delete",
   "form.change": "Change",
@@ -60,7 +63,8 @@
   "form.destinationRetest": "Retest destination",
   "form.discardChanges": "Discard changes",
   "form.discardChangesConfirmation": "There are unsaved changes. Are you sure you want to discard your changes?",
-  "form.every": "Every {value}",
+  "form.every.minutes": "Every {value, plural, one {minute} other {# minutes}}",
+  "form.every.hours": "Every {value, plural, one {hour} other {# hours}}",
   "form.testingConnection": "Testing connection...",
   "form.successTests": "All connection tests passed!",
   "form.failedTests": "The connection tests failed.",
@@ -395,6 +399,8 @@
   "tables.sourceDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All connections with this source will be deleted, including their past logs and configurations.\n  - No existing data in the destination will be altered",
   "tables.destinationDeleteModalText": "This can not be un-done. Note that:\n  - All connections with this destination will be deleted, including their past logs and configurations.\n  - No existing data in the destination will be altered.",
   "tables.connectionDeleteModalText": "This can not be un-done without a full re-sync. Note that:\n  - All past logs and configurations will be deleted\n  - Updates of new data will stop\n  - No existing data in the destination will be altered",
+  "tables.connectionState.title": "Connection State",
+  "tables.connectionState.noConnectionState": "This connection doesn‘t have a state (yet).",
 
   "admin.destinations": "Destinations",
   "admin.sources": "Sources",
@@ -496,9 +502,14 @@
   "docs.notFoundError": "We were not able to receive docs. Please click the link above to open docs on our website",
   "errorView.notFound": "Resource not found.",
   "errorView.notAuthorized": "You don’t have permission to access this page.",
+  "errorView.title": "Oops! Something went wrong…",
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
+
+  "frequency.manual": "Manual",
+  "frequency.minutes": "{value} min",
+  "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
   "ui.goBack": "Go back",
   "ui.input.showPassword": "Show password",

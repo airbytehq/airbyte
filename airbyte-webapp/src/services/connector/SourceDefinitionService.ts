@@ -21,10 +21,10 @@ function useGetSourceDefinitionService(): SourceDefinitionService {
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
-  return useInitService(
-    () => new SourceDefinitionService(apiUrl, requestAuthMiddleware),
-    [apiUrl, requestAuthMiddleware]
-  );
+  return useInitService(() => new SourceDefinitionService(apiUrl, requestAuthMiddleware), [
+    apiUrl,
+    requestAuthMiddleware,
+  ]);
 }
 
 export interface SourceDefinitionReadWithLatestTag extends SourceDefinitionRead {

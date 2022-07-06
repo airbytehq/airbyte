@@ -64,6 +64,7 @@ public class BootloaderApp {
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
   private ConfigPersistence configPersistence;
+  private ConfigPersistence yamlSeedConfigPersistence;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -122,7 +123,7 @@ public class BootloaderApp {
 
     postLoadExecution = () -> {
       try {
-        configPersistence.loadData(YamlSeedConfigPersistence.getDefault());
+        configPersistence.loadData(yamlSeedConfigPersistence);
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
           if (this.secretMigrator != null) {
@@ -190,6 +191,10 @@ public class BootloaderApp {
     return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
   }
 
+  private static ConfigPersistence getYamlSeedConfigPersistence() throws IOException {
+    return new YamlSeedConfigPersistence(YamlSeedConfigPersistence.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+  }
+
   private static Database getJobDatabase(final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
   }
@@ -202,6 +207,7 @@ public class BootloaderApp {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
       configPersistence = getConfigPersistence(configDatabase);
+      yamlSeedConfigPersistence = getYamlSeedConfigPersistence();
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {

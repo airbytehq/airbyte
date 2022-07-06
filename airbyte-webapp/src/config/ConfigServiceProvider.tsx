@@ -6,9 +6,9 @@ import { LoadingPage } from "components";
 import { applyProviders } from "./configProviders";
 import { Config, ValueProvider } from "./types";
 
-export type ConfigContextData<T extends Config = Config> = {
+export interface ConfigContextData<T extends Config = Config> {
   config: T;
-};
+}
 
 export const ConfigContext = React.createContext<ConfigContextData | null>(null);
 
@@ -19,7 +19,7 @@ export function useConfig<T extends Config>(): T {
     throw new Error("useConfig must be used within a ConfigProvider");
   }
 
-  return useMemo(() => configService.config as unknown as T, [configService.config]);
+  return useMemo(() => (configService.config as unknown) as T, [configService.config]);
 }
 
 const ConfigServiceInner: React.FC<{

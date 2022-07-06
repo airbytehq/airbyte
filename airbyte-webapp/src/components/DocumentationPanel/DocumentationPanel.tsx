@@ -43,17 +43,16 @@ export const DocumentationPanel: React.FC = () => {
         if (element.tagName === "img") {
           // In images replace relative URLs with links to our bundled assets
           return url.path.replace("../../", `${config.integrationUrl}/`);
-        } else {
-          // In links replace with a link to the external documentation instead
-          // The external path is the markdown URL without the "../../" prefix and the .md extension
-          const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
-          return `${config.ui.docsLink}/${docPath}`;
         }
+        // In links replace with a link to the external documentation instead
+        // The external path is the markdown URL without the "../../" prefix and the .md extension
+        const docPath = url.path.replace(/^\.\.\/\.\.\/(.*?)(\.md)?$/, "$1");
+        return `${config.links.docsLink}/${docPath}`;
       }
       return url.href;
     };
     return [[urls, sanitizeLinks], [rehypeSlug]];
-  }, [config.integrationUrl, config.ui.docsLink]);
+  }, [config.integrationUrl, config.links.docsLink]);
 
   const location = useLocation();
 

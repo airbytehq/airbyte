@@ -42,15 +42,15 @@ const traverseJsonSchemaProperties = (
   ];
 };
 
-type NamespaceOptions = {
+interface NamespaceOptions {
   namespaceDefinition: typeof NamespaceDefinitionType.source | typeof NamespaceDefinitionType.destination;
   sourceNamespace?: string;
-};
-type NamespaceOptionsCustomFormat = {
+}
+interface NamespaceOptionsCustomFormat {
   namespaceDefinition: typeof NamespaceDefinitionType.customformat;
   namespaceFormat: string;
   sourceNamespace?: string;
-};
+}
 
 function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomFormat) {
   const destinationSetting = "<destination schema>";
@@ -60,7 +60,8 @@ function getDestinationNamespace(opt: NamespaceOptions | NamespaceOptionsCustomF
     case NamespaceDefinitionType.destination:
       return destinationSetting;
     case NamespaceDefinitionType.customformat:
-    default: // Default is never hit, but typescript prefers it declared
+    default:
+      // Default is never hit, but typescript prefers it declared
       if (!opt.sourceNamespace?.trim()) {
         return destinationSetting;
       }
