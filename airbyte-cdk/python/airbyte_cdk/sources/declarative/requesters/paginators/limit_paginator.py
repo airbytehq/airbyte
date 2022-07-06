@@ -6,9 +6,6 @@ from enum import Enum
 from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
 from airbyte_cdk.sources.declarative.types import Config
 
 
@@ -21,10 +18,9 @@ class RequestOptionType(Enum):
 
 
 class RequestOption:
-    def __init__(self, value=None, option_type: Union[RequestOptionType, str] = None, field_name=None):
+    def __init__(self, option_type: Union[RequestOptionType, str] = None, field_name=None):
         if isinstance(option_type, str):
             option_type = RequestOptionType[option_type]
-        self._value = value
         self._option_type = option_type
         self._field_name = field_name
 
@@ -40,40 +36,27 @@ class LimitPaginator:
 
     def __init__(
         self,
-        limit: RequestOption,
+        limit_value: int,
+        limit_option: RequestOption,
         page_token: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
         url_base: str = None,
     ):
-        if limit._option_type == RequestOptionType.path:
+
+        if limit_option._option_type == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
         self._config = config
-        self._limit = limit
+        self._limit = limit_value
+        self._limit_option = limit_option
         self._page_token = page_token
-        self._request_options_provider, self._path = self._createRequestOptionsProvider(
-            [self._limit, page_token]
-        )  # FIXME also need to pass in those from the strategy...
+        # FIXME also need to pass in those from the strategy...
         self._pagination_strategy = pagination_strategy
         self._token = None
         self._url_base = url_base
 
-    def _createRequestOptionsProvider(self, request_options: List[RequestOption]):
-        request_params = {}
-        # headers = {}
-        path = None
-        for option in request_options:
-            if option._option_type == "request_parameter":
-                request_params[option._field_name] = option._value
-            if option._option_type == "path":
-                if path:
-                    raise Exception()
-                else:
-                    path = True
-        return InterpolatedRequestOptionsProvider(request_parameters=request_params, config=self._config), path
-
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        if len(last_records) < self._limit._value:
+        if len(last_records) < self._limit:
             return None
         else:
             self._token = self._pagination_strategy.next_page_token(response, last_records)
@@ -102,6 +85,6 @@ class LimitPaginator:
         if self._page_token._option_type == option_type:
             if option_type != RequestOptionType.path:
                 options[self._page_token._field_name] = self._token
-        if self._limit._option_type == option_type:
-            options[self._limit._field_name] = self._limit._value
+        if self._limit_option._option_type == option_type:
+            options[self._limit_option._field_name] = self._limit
         return options
