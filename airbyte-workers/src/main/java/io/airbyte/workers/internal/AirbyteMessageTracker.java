@@ -148,6 +148,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    * committed in the {@link StateDeltaTracker}. Also record this state as the last committed state.
    */
   private void handleDestinationEmittedState(final AirbyteStateMessage stateMessage) {
+    log.error("_____________: Agg state -> " + stateMessage);
     stateAggregator.ingest(stateMessage);
     destinationOutputState.set(stateAggregator.getAggregated());
     try {

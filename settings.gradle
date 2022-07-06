@@ -75,8 +75,8 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-server'
     include ':airbyte-temporal'
     include ':airbyte-tests'
-    // include ':airbyte-webapp'
-    // include ':airbyte-webapp-e2e-tests'
+    include ':airbyte-webapp'
+    include ':airbyte-webapp-e2e-tests'
 }
 
 // connectors base

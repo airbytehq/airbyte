@@ -383,6 +383,9 @@ public class WebBackendConnectionsHandler {
         final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
         final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
         streamsToReset = apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+        log.error("Existing catalog: " + apiExistingCatalog);
+        log.error("newAirbyteCatalog: " + newAirbyteCatalog);
+        log.error("Diff: " + catalogDiff);
       }
 
       if (!streamsToReset.isEmpty()) {
@@ -392,6 +395,8 @@ public class WebBackendConnectionsHandler {
         verifyManualOperationResult(manualOperationResult);
         manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
         verifyManualOperationResult(manualOperationResult);
+      } else {
+        log.error("Empty!");
       }
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }

@@ -54,6 +54,7 @@ import io.airbyte.api.client.model.generated.JobListRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
 import io.airbyte.api.client.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.client.model.generated.OperationRead;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
@@ -65,6 +66,7 @@ import io.airbyte.api.client.model.generated.StreamState;
 import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.api.client.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
@@ -1053,10 +1055,23 @@ public class BasicAcceptanceTests {
   public void testPartialResetResetAllWhenSchemaIsModified() throws Exception {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_same_schema_another_tables.sql"), sourcePsql);
 
+    // Add Table
+    final String additionalTable = "additional_table";
+    final Database sourceDb = testHarness.getSourceDatabase();
+    sourceDb.query(ctx -> {
+      ctx.createTableIfNotExists(additionalTable)
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR)).execute();
+      ctx.truncate(additionalTable).execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(1, "1").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(2, "2").execute();
+      return null;
+    });
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(catalog, List.of(COLUMN_ID));
     final UUID destinationId = testHarness.createDestination().getDestinationId();
-    final UUID operationId = testHarness.createOperation().getOperationId();
+    final OperationRead operation = testHarness.createOperation();
+    final UUID operationId = operation.getOperationId();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
     final ConnectionRead connection =
@@ -1067,33 +1082,41 @@ public class BasicAcceptanceTests {
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
-
-    // Add Table
-    final String additionalTable = "additional_table";
-    final Database sourceDb = testHarness.getSourceDatabase();
-    sourceDb.query(ctx -> {
-      ctx.createTableIfNotExists(additionalTable).columns(DSL.field("field", SQLDataType.VARCHAR)).execute();
-      ctx.truncate(additionalTable).execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("field")).values("1").execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("field")).values("2").execute();
-      return null;
-    });
-
-    // Update with refreshed catalog
-    final WebBackendConnectionUpdate update = runUpdateWithReset(connection);
-    webBackendApi.webBackendUpdateConnection(update);
-
-    // Wait until the sync from the UpdateConnection is finished
-    final JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
-    System.out.println(syncFromTheUpdate.toString());
-    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
-
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name("cool_employees").namespace("public"),
         new StreamDescriptor().name("additional_table").namespace("public")));
+
+    sourceDb.query(ctx -> {
+      ctx.dropTableIfExists(additionalTable).execute();
+      return null;
+    });
+    // Update with refreshed catalog
+    final AirbyteCatalog refreshedCatalog = new AirbyteCatalog().streams(catalog.getStreams()
+        .stream().filter(stream -> !stream.getStream().getName().equals(additionalTable)).toList());
+    //// testHarness.discoverSourceSchema(refreshSourceId);
+    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
+    final WebBackendConnectionUpdate update = getUpdateInput(connection, refreshedCatalog, operation);
+    final WebBackendConnectionRead webBackendConnectionRead = webBackendApi.webBackendUpdateConnection(update);
+    // Wait until the sync from the UpdateConnection is finished
+    /*
+     * final Optional<JobWithAttemptsRead> runningJob = apiClient.getJobsApi().listJobsFor(new
+     * JobListRequestBody() .addConfigTypesItem(JobConfigType.SYNC)
+     * .configId(connection.getConnectionId().toString())) .getJobs() .stream().filter(job ->
+     * job.getJob().getStatus() != JobStatus.SUCCEEDED && job.getJob().getStatus() !=
+     * JobStatus.CANCELLED && job.getJob().getStatus() != JobStatus.FAILED) .findFirst();
+     *
+     * if (runningJob.isPresent()) { waitForSuccessfulJob(apiClient.getJobsApi(),
+     * runningJob.get().getJob()); }
+     */
+
+    Thread.sleep(30000);
+
+    // testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    assertStreamStateContainsStream(connection.getConnectionId(), List.of(
+        new StreamDescriptor().name("id_and_name").namespace("public"),
+        new StreamDescriptor().name("cool_employees").namespace("public")));
   }
 
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {
@@ -1103,17 +1126,23 @@ public class BasicAcceptanceTests {
     Assertions.assertTrue(streamDescriptors.containsAll(expectedStreamDescriptors) && expectedStreamDescriptors.containsAll(streamDescriptors));
   }
 
-  private WebBackendConnectionUpdate runUpdateWithReset(final ConnectionRead connection) {
+  private WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
     return new WebBackendConnectionUpdate()
         .connectionId(connection.getConnectionId())
         .name(connection.getName())
         .operationIds(connection.getOperationIds())
+        .operations(List.of(new WebBackendOperationCreateOrUpdate()
+            .name(operation.getName())
+            .operationId(operation.getOperationId())
+            .workspaceId(operation.getWorkspaceId())
+            .operatorConfiguration(operation.getOperatorConfiguration())))
         .namespaceDefinition(connection.getNamespaceDefinition())
         .namespaceFormat(connection.getNamespaceFormat())
-        .syncCatalog(connection.getSyncCatalog())
+        .syncCatalog(catalog)
         .schedule(connection.getSchedule())
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
+        .prefix(connection.getPrefix())
         .withRefreshedCatalog(true);
   }
 

@@ -29,6 +29,7 @@ import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
+import io.airbyte.api.client.model.generated.DestinationSyncMode;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
@@ -46,6 +47,7 @@ import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
@@ -321,14 +323,26 @@ public class AirbyteAcceptanceTestHarness {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
+  public void setIncrementalAppendDedupSyncModeWithPrimaryKey(final AirbyteCatalog airbyteCatalog, final List<String> cursorField) {
+    airbyteCatalog.getStreams().forEach(stream -> {
+      stream.getConfig().setSyncMode(SyncMode.INCREMENTAL);
+      stream.getConfig().setDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP);
+      stream.getConfig().setCursorField(cursorField);
+      stream.getConfig().setPrimaryKey(List.of(cursorField));
+    });
+  }
+
   public void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
-    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
-        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+    assertEquals(sourceTablesWithRawTablesAdded,
+        destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n",
+            sourceTables.stream().map(SchemaTableNamePair::getFullyQualifiedTableName).sorted().toList(),
+            destinationTables.stream().map(SchemaTableNamePair::getFullyQualifiedTableName).sorted().toList()));
 
     for (final SchemaTableNamePair pair : sourceTables) {
       final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
