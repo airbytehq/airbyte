@@ -29,6 +29,7 @@ jobs:
       pat: ${{ steps.variables.outputs.pat }}
     steps:
       - name: UUID ${{ github.event.inputs.uuid }}
+        run: echo UUID ${{ github.event.inputs.uuid }}
       - name: Checkout Airbyte
         uses: actions/checkout@v2
       - name: Check PAT rate limits
