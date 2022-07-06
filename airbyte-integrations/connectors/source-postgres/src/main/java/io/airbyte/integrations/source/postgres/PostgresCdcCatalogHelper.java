@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,8 +26,7 @@ public final class PostgresCdcCatalogHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcCatalogHelper.class);
 
-  private PostgresCdcCatalogHelper() {
-  }
+  private PostgresCdcCatalogHelper() {}
 
   /*
    * It isn't possible to recreate the state of the original database unless we include extra

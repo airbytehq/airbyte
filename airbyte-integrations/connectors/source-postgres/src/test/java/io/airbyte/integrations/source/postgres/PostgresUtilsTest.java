@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -12,7 +16,7 @@ class PostgresUtilsTest {
 
   @Test
   void testIsCdc() {
-    final ObjectNode config = (ObjectNode)Jsons.jsonNode(ImmutableMap.builder().build());
+    final ObjectNode config = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder().build());
     assertFalse(PostgresSource.isCdc(config));
 
     config.set("replication_method", Jsons.jsonNode(ImmutableMap.of(
