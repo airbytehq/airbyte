@@ -52,6 +52,8 @@ def create(func, /, *args, **keywords):
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
         try:
+            print(f"args: {args}")
+            print(f"fargs: {fargs}")
             ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
         except TypeError as e:
             raise Exception(f"failed to create object of type {func} because {e}")
@@ -66,6 +68,7 @@ def create(func, /, *args, **keywords):
 
 def _get_kwargs_to_pass_to_func(func, kwargs):
     argspec = inspect.getfullargspec(func)
+    print(f"argspect for {func}: {argspec}")
     kwargs_to_pass_down = set(argspec.kwonlyargs)
     args_to_pass_down = set(argspec.args)
     all_args = args_to_pass_down.union(kwargs_to_pass_down)

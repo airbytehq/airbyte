@@ -5,13 +5,16 @@
 from typing import Optional
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from pydantic import BaseModel, Field
 
 
-class InterpolatedString:
-    def __init__(self, string: str, default: Optional[str] = None):
-        self._string = str(string)
-        self._default = default or string
-        self._interpolation = JinjaInterpolation()
+class InterpolatedString(BaseModel):
+    string: str = Field()
+    default: Optional[str]
+    interpolation = JinjaInterpolation()
+
+    class Config:
+        arbitrary_types_allowed = True
 
     def eval(self, config, **kwargs):
-        return self._interpolation.eval(self._string, config, self._default, **kwargs)
+        return self.interpolation.eval(self.string, config, self.default, **kwargs)

@@ -20,7 +20,10 @@ class ListStreamSlicer(StreamSlicer):
 
     def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
         if isinstance(slice_values, str):
-            slice_values = ast.literal_eval(slice_values)
+            if slice_values.startswith("["):
+                slice_values = ast.literal_eval(slice_values)
+            else:
+                slice_values = [slice_values]
         assert isinstance(slice_values, list)
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
         self._slice_values = slice_values

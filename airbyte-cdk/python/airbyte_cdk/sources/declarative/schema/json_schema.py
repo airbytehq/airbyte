@@ -3,20 +3,18 @@
 #
 
 import json
-from typing import Any, Mapping, Union
+from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from pydantic import BaseModel
 
 
-class JsonSchema(SchemaLoader):
-    def __init__(self, file_path: Union[str, InterpolatedString], config, **kwargs):
-        if type(file_path) == str:
-            file_path = InterpolatedString(file_path)
-        self._file_path = file_path
-        self._config = config
-        self._kwargs = kwargs
+class JsonSchema(SchemaLoader, BaseModel):
+    file_path: InterpolatedString
+    config: dict
+    kwargs: dict
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        with open(self._file_path.eval(self._config, **self._kwargs), "r") as f:
+        with open(self.file_path.eval(self.config, **self.kwargs), "r") as f:
             return json.loads(f.read())

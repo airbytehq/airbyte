@@ -16,9 +16,10 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import ResponseStatus, Retrier
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from pydantic import BaseModel
 
 
-class HttpRequester(Requester):
+class HttpRequester(Requester, BaseModel):
     def __init__(
         self,
         *,
@@ -38,10 +39,10 @@ class HttpRequester(Requester):
         self._name = name
         self._authenticator = authenticator
         if type(url_base) == str:
-            url_base = InterpolatedString(url_base)
+            url_base = InterpolatedString(string=url_base)
         self._url_base = url_base
         if type(path) == str:
-            path = InterpolatedString(path)
+            path = InterpolatedString(string=path)
         self._path: InterpolatedString = path
         if type(http_method) == str:
             http_method = HttpMethod[http_method]

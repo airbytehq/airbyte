@@ -213,8 +213,8 @@ def test_create_requester():
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
     assert isinstance(component._retrier, DefaultRetrier)
-    assert component._path._string == "/v3/marketing/lists"
-    assert component._url_base._string == "https://api.sendgrid.com"
+    assert component._path.string == "/v3/marketing/lists"
+    assert component._url_base.string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, TokenAuthenticator)
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10

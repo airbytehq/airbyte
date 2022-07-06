@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import
 
 class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
-    Extract wait time from http header
+    Backoff strategy that extracts wait time from http header
     """
 
     def __init__(self, header: str):

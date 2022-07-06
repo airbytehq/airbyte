@@ -9,6 +9,11 @@ from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import
 
 
 class ExponentialBackoffStrategy(BackoffStrategy):
-    def backoff(self, response: requests.Response) -> Optional[float]:
-        # Returning None backoff time makes the HttpStream use exponential backoff
-        return None
+    """
+    Backoff strategy that uses exponential backoff.
+    """
+
+
+def backoff(self, response: requests.Response) -> Optional[float]:
+    # Returning None backoff time makes the HttpStream use exponential backoff
+    return None

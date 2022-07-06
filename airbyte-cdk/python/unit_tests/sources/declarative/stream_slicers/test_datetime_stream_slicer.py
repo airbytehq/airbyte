@@ -13,12 +13,12 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
 config = {"start_date": "2021-01-01"}
-start_date = InterpolatedString("{{ stream_state['date'] }}", "{{ config['start_date'] }}")
+start_date = InterpolatedString(string="{{ stream_state['date'] }}", default="{{ config['start_date'] }}")
 end_date_now = InterpolatedString(
-    "{{ today_utc() }}",
+    string="{{ today_utc() }}",
 )
-end_date = InterpolatedString("2021-01-10")
-cursor_value = InterpolatedString("{{ stream_state['date'] }}")
+end_date = InterpolatedString(string="2021-01-10")
+cursor_value = InterpolatedString(string="{{ stream_state['date'] }}")
 timezone = datetime.timezone.utc
 
 datetime_format = "%Y-%m-%d"
@@ -116,7 +116,7 @@ def test_init_from_config(mock_datetime_now):
 def test_end_date_past_now(mock_datetime_now):
     step = "1d"
     invalid_end_date = InterpolatedString(
-        f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}",
+        string=f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}",
     )
     slicer = DatetimeStreamSlicer(start_date, invalid_end_date, step, cursor_value, datetime_format, config)
 
@@ -126,7 +126,7 @@ def test_end_date_past_now(mock_datetime_now):
 
 def test_start_date_after_end_date():
     step = "1d"
-    invalid_start_date = InterpolatedString("2021-01-11")
+    invalid_start_date = InterpolatedString(string="2021-01-11")
     slicer = DatetimeStreamSlicer(invalid_start_date, end_date, step, cursor_value, datetime_format, config)
 
     assert slicer._start_time != invalid_start_date

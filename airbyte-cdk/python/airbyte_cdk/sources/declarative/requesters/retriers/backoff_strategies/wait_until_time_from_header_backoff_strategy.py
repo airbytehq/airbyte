@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import
 
 class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
     """
-    Extract time at which we can retry the request from response header
+    Backoff strategy that extracts time at which we can retry the request from response header
     and wait for the difference between now and that time
     """
 

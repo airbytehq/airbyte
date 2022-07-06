@@ -20,7 +20,7 @@ class InterpolatedRequestInputProvider:
         if request_inputs is None:
             request_inputs = {}
         if isinstance(request_inputs, str):
-            self._interpolator = InterpolatedString(request_inputs, "")
+            self._interpolator = InterpolatedString(string=request_inputs, default="")
         else:
             self._interpolator = InterpolatedMapping(request_inputs, JinjaInterpolation())
 

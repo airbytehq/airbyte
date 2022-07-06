@@ -38,7 +38,12 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
             [
                 ListStreamSlicer(["customer", "store", "subscription"], {"owner_resource": "{{ slice_value }}"}, None),
                 DatetimeStreamSlicer(
-                    InterpolatedString("2021-01-01"), InterpolatedString("2021-01-03"), "1d", InterpolatedString(""), "%Y-%m-%d", None
+                    InterpolatedString(string="2021-01-01"),
+                    InterpolatedString(string="2021-01-03"),
+                    "1d",
+                    InterpolatedString(string=""),
+                    "%Y-%m-%d",
+                    None,
                 ),
             ],
             [
