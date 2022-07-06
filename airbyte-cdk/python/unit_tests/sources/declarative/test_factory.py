@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -99,9 +99,16 @@ selector:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
-  class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
-  next_page_token_template:
-    "next_page_url": "{{ decoded_response['_metadata']['next'] }}"
+    type: "LimitPaginator"
+    limit_value: 10
+    limit_option:
+      option_type: request_parameter
+      field_name: page_size
+    page_token:
+      option_type: path
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ decoded_response._metadata.next }}"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
@@ -110,6 +117,7 @@ request_options_provider:
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
   name: "{{ options['name'] }}"
+  url_base: "https://api.sendgrid.com/v3/"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
@@ -245,9 +253,16 @@ def test_full_config_with_defaults():
           file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
         retriever:
           paginator:
-            type: "NextPageUrlPaginator"
-            next_page_token_template:
-                next_page_token: "{{ decoded_response.metadata.next}}"
+            type: "LimitPaginator"
+            limit_value: 10
+            limit_option:
+              option_type: request_parameter
+              field_name: page_size
+            page_token:
+              option_type: path
+            pagination_strategy:
+              type: "CursorPagination"
+              cursor_value: "{{ decoded_response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -274,8 +289,6 @@ def test_full_config_with_defaults():
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
-    assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
+    assert isinstance(stream._retriever._paginator, LimitPaginator)
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
-        "next_page_token": "{{ decoded_response.metadata.next}}"
-    }
+    assert stream._retriever._paginator._limit == 10
