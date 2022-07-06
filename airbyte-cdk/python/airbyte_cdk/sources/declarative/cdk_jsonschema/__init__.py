@@ -338,6 +338,13 @@ class JsonSchemaMixin:
 
                 def encoder(ft, val, o):
                     field_args = get_field_args(ft)
+                    print(f"val: {val}")
+                    print(f"ft: {ft}")
+                    print(f"field_type_name: {field_type_name}")
+                    print(f"cls: {cls}")
+                    print(f"V: {val} : {type(val)}")
+                    if "_empty" in str(val):
+                        return {}
                     return {cls._encode_field(field_args[0], k, o): cls._encode_field(field_args[1], v, o) for k, v in val.items()}
 
             elif field_type_name in SEQUENCE_TYPES or (field_type_name in TUPLE_TYPES and ... in field_type.__args__):
@@ -354,6 +361,9 @@ class JsonSchemaMixin:
             elif cls._is_json_schema_subclass(field_type):
                 # Only need to validate at the top level
                 def encoder(_, v, o):
+                    print(f"V: {v} : {type(v)}")
+                    if "_empty" in str(v):
+                        return {}
                     return v.to_dict(omit_none=o, validate=False)
 
             elif hasattr(field_type, "__supertype__"):  # NewType field
@@ -417,6 +427,9 @@ class JsonSchemaMixin:
             # print(f"actual fields:\n{fields(cls)}")
             for f in constructor_fields:
                 # Skip internal fields
+                print(f"constructor_field: {f}")
+                print(f"name: {f.name}")
+                print(f"type: {f.type}")
                 if f.name.startswith("__") or (not base_fields and (f.name, f.type) in base_fields_types):
                     continue
                 # Note fields() doesn't resolve forward refs
@@ -805,6 +818,11 @@ class JsonSchemaMixin:
                 field_schema, _ = cls._get_field_schema(field_type.__supertype__, schema_options)
             else:
                 warnings.warn(f"Unable to create schema for '{field_type_name}'")
+                variants = field_type.__subclasses__()
+                print(f"variants: {variants} for {field_type_name}")
+                print(f"field_type: {field_type}")
+                field_schema = {"anyOf": [cls._get_field_schema(variant, schema_options)[0] for variant in variants]}
+                field_schema["anyOf"].sort(key=lambda item: item.get("type", ""))
 
         field_schema.update(field_meta.as_dict)
 
@@ -812,6 +830,7 @@ class JsonSchemaMixin:
 
     @classmethod
     def _get_field_definitions(cls, field_type: Any, definitions: JsonDict, schema_options: SchemaOptions):
+        print(f"_get_field_definitions for {field_type}")
         field_type_name = cls._get_field_type_name(field_type)
         field_args = get_field_args(field_type)
 
@@ -833,6 +852,11 @@ class JsonSchemaMixin:
                         embeddable=True, schema_type=schema_options.schema_type, validate_enums=schema_options.validate_enums
                     )
                 )
+        elif "declarative" in str(field_type):
+            print(f"else branch for {str(field_type)}")
+            variants = field_type.__subclasses__()
+            for variant in variants:
+                cls._get_field_definitions(variant, definitions, schema_options)
 
     @classmethod
     def all_json_schemas(cls: Type[T], schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True) -> JsonDict:
@@ -927,6 +951,7 @@ class JsonSchemaMixin:
 
             cls.__schema[schema_options] = schema
 
+        print(f"definitions:\n{definitions}")
         if embeddable:
             return {**definitions, cls.__name__: schema}
         else:
