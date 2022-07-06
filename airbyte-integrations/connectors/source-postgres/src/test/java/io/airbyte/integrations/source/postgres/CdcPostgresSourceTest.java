@@ -72,7 +72,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 10;
+  protected static final int INITIAL_WAITING_SECONDS = 5;
   private PostgreSQLContainer<?> container;
 
   protected String dbName;

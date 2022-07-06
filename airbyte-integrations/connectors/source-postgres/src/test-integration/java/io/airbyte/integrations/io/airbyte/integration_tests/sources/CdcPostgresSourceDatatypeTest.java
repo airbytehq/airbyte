@@ -25,7 +25,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
   private static final String SCHEMA_NAME = "test";
   private static final String SLOT_NAME_BASE = "debezium_slot";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 10;
+  private static final int INITIAL_WAITING_SECONDS = 5;
   private PostgreSQLContainer<?> container;
   private JsonNode config;
   private DSLContext dslContext;

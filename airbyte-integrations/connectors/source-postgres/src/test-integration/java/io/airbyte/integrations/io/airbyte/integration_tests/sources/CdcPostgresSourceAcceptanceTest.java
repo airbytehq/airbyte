@@ -43,7 +43,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
   private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 10;
+  private static final int INITIAL_WAITING_SECONDS = 5;
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
