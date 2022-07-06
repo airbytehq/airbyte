@@ -58,4 +58,3 @@ def test():
     assert requester.request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.max_retries == max_retries
     assert requester.should_retry(requests.Response()) == should_retry
-    assert requester.backoff_time(requests.Response()) == backoff_time

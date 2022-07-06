@@ -77,9 +77,6 @@ class HttpRequester(Requester):
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
         return self._retrier.should_retry(response)
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self._retrier.backoff_time(response)
-
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
