@@ -365,8 +365,6 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
-    final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
 
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
@@ -380,6 +378,9 @@ public class WebBackendConnectionsHandler {
         apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
     if (!streamsToReset.isEmpty()) {
+      final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
+      final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+
       if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET || stateType == ConnectionStateType.GLOBAL) {
         streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
       }
