@@ -20,7 +20,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.bettercloud.vault.json.Json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.enums.Enums;
@@ -53,8 +52,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -215,7 +212,8 @@ class DatabaseConfigPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     configPersistence.writeConfig(ConfigSchema.STANDARD_WORKSPACE, workspace.getWorkspaceId().toString(), workspace);
     configPersistence.writeConfig(ConfigSchema.STANDARD_SOURCE_DEFINITION, SOURCE_GITHUB.getSourceDefinitionId().toString(), SOURCE_GITHUB);
-    configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_S3.getDestinationDefinitionId().toString(), DESTINATION_S3);
+    configPersistence.writeConfig(ConfigSchema.STANDARD_DESTINATION_DEFINITION, DESTINATION_S3.getDestinationDefinitionId().toString(),
+        DESTINATION_S3);
     configPersistence.writeConfig(ConfigSchema.SOURCE_CONNECTION, source.getSourceId().toString(), source);
     configPersistence.writeConfig(ConfigSchema.DESTINATION_CONNECTION, destination.getDestinationId().toString(), destination);
     configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
