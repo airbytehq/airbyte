@@ -72,6 +72,8 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           throw new WorkerException("Integration failed to output a catalog struct.");
         }
 
+        // This message is sent through temporal that utilizes GRPC as is set to limit messages to 4mb.
+        // We fail fast here so users will not have to wait the 10 minutes before a timeout error occurs.
         if (catalog.get().toString().length() > FOUR_MB) {
           throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
         }
