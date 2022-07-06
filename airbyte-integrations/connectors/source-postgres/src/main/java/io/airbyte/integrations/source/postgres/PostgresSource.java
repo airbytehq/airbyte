@@ -248,6 +248,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final Duration firstRecordWaitTime = sourceConfig.has("initial_waiting_seconds")
           ? Duration.ofSeconds(sourceConfig.get("initial_waiting_seconds").asInt())
           : PostgresUtils.DEFAULT_FIRST_RECORD_WAIT_TIME;
+      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
