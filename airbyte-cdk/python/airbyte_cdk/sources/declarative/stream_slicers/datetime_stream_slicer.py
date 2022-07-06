@@ -4,12 +4,13 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Config
 
 
 class DatetimeStreamSlicer(StreamSlicer):
@@ -27,15 +28,21 @@ class DatetimeStreamSlicer(StreamSlicer):
     # FIXME: timezone should be declarative?
     def __init__(
         self,
-        start_time: InterpolatedString,
-        end_time: InterpolatedString,
-        step,
-        cursor_value: InterpolatedString,
-        datetime_format,
-        config,
+        start_time: Union[InterpolatedString, str],
+        end_time: Union[InterpolatedString, str],
+        step: str,
+        cursor_value: Union[InterpolatedString, str],
+        datetime_format: str,
+        config: Config,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
+        if isinstance(start_time, str):
+            start_time = InterpolatedString(start_time)
+        if isinstance(end_time, str):
+            end_time = InterpolatedString(end_time)
+        if isinstance(cursor_value, str):
+            cursor_value = InterpolatedString(cursor_value)
         self._datetime_format = datetime_format
         self._start_time = self.parse_date(start_time.eval(config))
         self._end_time = self.parse_date(end_time.eval(config))
@@ -72,6 +79,8 @@ class DatetimeStreamSlicer(StreamSlicer):
                 return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
             else:
                 return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
+        elif isinstance(date, int):
+            return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
         return date
 
     def is_start_date_valid(self, start_date: datetime) -> bool:

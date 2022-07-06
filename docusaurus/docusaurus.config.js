@@ -33,6 +33,14 @@ const config = {
                           from: '/upgrading-airbyte',
                           to: '/operator-guides/upgrading-airbyte',
                         },
+                        {
+                            from: '/catalog',
+                            to: '/understanding-airbyte/airbyte-protocol',
+                        },
+                        {
+                            from: '/integrations/sources/google-analytics-data-api',
+                            to: '/integrations/sources/google-analytics-v4',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
