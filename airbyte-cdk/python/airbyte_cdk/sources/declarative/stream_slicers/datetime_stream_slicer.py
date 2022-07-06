@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Config
 
 
 class DatetimeStreamSlicer(StreamSlicer):
@@ -30,10 +31,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         self,
         start_datetime: MinMaxDatetime,
         end_datetime: MinMaxDatetime,
-        step,
-        cursor_value: InterpolatedString,
-        datetime_format,
-        config,
+        step: str,
+        cursor_value: Union[InterpolatedString, str],
+        datetime_format: str,
+        config: Config,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()

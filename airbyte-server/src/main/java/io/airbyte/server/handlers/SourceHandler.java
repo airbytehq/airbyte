@@ -7,6 +7,8 @@ package io.airbyte.server.handlers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.SourceCloneConfiguration;
+import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
@@ -130,28 +132,32 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
-  public SourceRead cloneSource(final SourceIdRequestBody sourceIdRequestBody)
+  public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read source configuration from db
-    final SourceRead sourceToClone = buildSourceReadWithSecrets(sourceIdRequestBody.getSourceId());
+    final SourceRead sourceToClone = buildSourceReadWithSecrets(sourceCloneRequestBody.getSourceCloneId());
+    final SourceCloneConfiguration sourceCloneConfiguration = sourceCloneRequestBody.getSourceConfiguration();
 
-    // persist
-    final UUID sourceId = uuidGenerator.get();
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceIdRequestBody.getSourceId());
-    final ConnectorSpecification spec = sourceDef.getSpec();
     final String copyText = " (Copy)";
     final String sourceName = sourceToClone.getName() + copyText;
-    persistSourceConnection(
-        sourceName,
-        sourceToClone.getSourceDefinitionId(),
-        sourceToClone.getWorkspaceId(),
-        sourceId,
-        false,
-        sourceToClone.getConnectionConfiguration(),
-        spec);
 
-    // read configuration from db
-    return buildSourceRead(sourceId, spec);
+    final SourceCreate sourceCreate = new SourceCreate()
+        .name(sourceName)
+        .sourceDefinitionId(sourceToClone.getSourceDefinitionId())
+        .connectionConfiguration(sourceToClone.getConnectionConfiguration())
+        .workspaceId(sourceToClone.getWorkspaceId());
+
+    if (sourceCloneConfiguration != null) {
+      if (sourceCloneConfiguration.getName() != null) {
+        sourceCreate.name(sourceCloneConfiguration.getName());
+      }
+
+      if (sourceCloneConfiguration.getConnectionConfiguration() != null) {
+        sourceCreate.connectionConfiguration(sourceCloneConfiguration.getConnectionConfiguration());
+      }
+    }
+
+    return createSource(sourceCreate);
   }
 
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)

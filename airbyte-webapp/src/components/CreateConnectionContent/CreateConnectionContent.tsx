@@ -1,10 +1,8 @@
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, ContentCard } from "components";
+import { ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
@@ -27,11 +25,6 @@ const SkipButton = styled.div`
     min-width: 239px;
     margin-left: 9px;
   }
-`;
-
-const TryArrow = styled(FontAwesomeIcon)`
-  margin: 0 10px -1px 0;
-  font-size: 14px;
 `;
 
 interface CreateConnectionContentProps {
@@ -128,12 +121,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
             connection={connection}
             additionBottomControls={additionBottomControls}
             onDropDownSelect={onSelectFrequency}
-            additionalSchemaControl={
-              <Button onClick={onDiscoverSchema} type="button">
-                <TryArrow icon={faRedoAlt} />
-                <FormattedMessage id="connection.refreshSchema" />
-              </Button>
-            }
             onSubmit={onSubmitConnectionStep}
             onChangeValues={setConnectionFormValues}
           />
