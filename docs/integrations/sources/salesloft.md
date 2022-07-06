@@ -65,7 +65,8 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ | :--------  | :-----       | :------ |
+| 0.1.4   | 2022-07-06 | [14344](https://github.com/airbytehq/airbyte/pull/14344) | Consider start_date parameters in API requests                    |
 | 0.1.3   | 2022-03-28 | [11460](https://github.com/airbytehq/airbyte/pull/11460) | Added multiple new streams (Accounts, Actions, Calls, Notes ... ) |
-| 0.1.2   | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream |
-| 0.1.1   | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617) | Update connector fields title/description |
-| 0.1.0   | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962) | Salesloft Connector |
+| 0.1.2   | 2022-03-17 | [11239](https://github.com/airbytehq/airbyte/pull/11239) | Added new Emails stream                                           |
+| 0.1.1   | 2022-01-25 | [8617](https://github.com/airbytehq/airbyte/pull/8617)   | Update connector fields title/description                         |
+| 0.1.0   | 2021-10-22 | [6962](https://github.com/airbytehq/airbyte/pull/6962)   | Salesloft Connector                                               |
