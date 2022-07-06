@@ -5,6 +5,7 @@
 from typing import Any, List, Mapping
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import ConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
@@ -15,14 +16,14 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class LimitPaginator(ConditionalPaginator):
+class LimitPaginator(ConditionalPaginator, JsonSchemaMixin):
     def __init__(
         self,
         limit_value: int,
         limit_option: RequestOption,
         page_token: RequestOption,
         pagination_strategy: PaginationStrategy,
-        config: Config,
+        config: Config = {},
         decoder: Decoder = None,
         url_base: str = None,
     ):

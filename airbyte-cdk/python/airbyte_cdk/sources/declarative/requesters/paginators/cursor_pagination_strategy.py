@@ -4,6 +4,7 @@
 from typing import Any, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -11,8 +12,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy i
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class CursorPaginationStrategy(PaginationStrategy):
-    def __init__(self, cursor_value, config: Config, decoder: Decoder = None):
+class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
+    def __init__(self, cursor_value: str, config: Config = {}, decoder: Decoder = None):
         self._cursor_value = cursor_value
         self._config = config
         self._decoder = decoder or JsonDecoder()

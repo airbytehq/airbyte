@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -18,6 +18,12 @@ from airbyte_cdk.sources.declarative.types import Config
 class DeclarativeComponentFactory:
     def __init__(self):
         self._interpolator = JinjaInterpolation()
+
+    def resolve(self, component_definition: Mapping[str, Any]):
+        definition = copy.deepcopy(component_definition)
+        class_name = self.get_class_name(component_definition)
+        definition["class_name"] = class_name
+        return definition
 
     def create_component(self, component_definition: Mapping[str, Any], config: Config):
         """
@@ -54,6 +60,17 @@ class DeclarativeComponentFactory:
     @staticmethod
     def _merge_dicts(d1, d2):
         return {**d1, **d2}
+
+    def get_class_name(self, definition) -> Optional[str]:
+        if self.is_object_definition_with_class_name(definition):
+            return definition["class_name"]
+        elif self.is_object_definition_with_type(definition):
+            object_type = definition.pop("type")
+            return CLASS_TYPES_REGISTRY[object_type]
+        elif isinstance(definition, dict):
+            return dict
+        else:
+            return dict
 
     def _create_subcomponent(self, key, definition, kwargs, config, parent_class):
         """

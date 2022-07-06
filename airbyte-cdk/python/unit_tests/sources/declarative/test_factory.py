@@ -302,3 +302,62 @@ def test_full_config_with_defaults():
     assert isinstance(stream._retriever._paginator, LimitPaginator)
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
     assert stream._retriever._paginator._limit == 10
+
+
+def test_factory_hello():
+    content = """
+    dict:
+      key: value
+    """
+    config = parser.parse(content)
+    resolved = factory.resolve(config)
+    assert isinstance(resolved["dict"], dict)
+
+
+def test_factory_hello_class_name():
+    content = """
+    object:
+      class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
+      string: value
+    """
+    config = parser.parse(content)
+    resolved = factory.resolve(config)
+    assert isinstance(resolved, dict)
+    assert resolved["object"]["class_name"] == "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
+
+
+def test_factory_hello_type():
+    content = """
+      type: "InterpolatedString"
+      string: value
+    """
+    config = parser.parse(content)
+    resolved = factory.resolve(config)
+    assert isinstance(resolved, dict)
+    print(f"resolved: {resolved}")
+    assert str(resolved["class_name"]) == "<class 'airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString'>"
+
+
+def test_factory_hello_ref():
+    content = """
+    limit: 50
+    offset_request_parameters:
+      offset: "{{ next_page_token['offset'] }}"
+      limit: "*ref(limit)"
+    request_options:
+      class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
+      request_parameters: "*ref(offset_request_parameters)"
+      request_body_json:
+        body_offset: "{{ next_page_token['offset'] }}"
+    """
+    config = parser.parse(content)
+    resolved = factory.resolve(config)
+    expected_resolved = {
+        "limit": 50,
+        "offset_request_parameters": {"offset": "{{ next_page_token['offset'] }}", "limit": 50},
+        "request_options": {
+            "class_name": "airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider",
+            "request_parameters": {"offset": "{{ next_page_token['offset'] }}", "limit": 50},
+        },
+    }
+    assert resolved == expected_resolved

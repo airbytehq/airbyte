@@ -392,6 +392,8 @@ class JsonSchemaMixin:
     @classmethod
     def _get_fields(cls, base_fields=True) -> List[JsonSchemaField]:
         print(f"cls: {cls}")
+        if "Auth" in str(cls):
+            print("AUTHENTICATION")
 
         def _get_fields_uncached():
             dataclass_bases = [klass for klass in cls.__bases__ if is_dataclass(klass) and issubclass(klass, JsonSchemaMixin)]
@@ -404,6 +406,8 @@ class JsonSchemaMixin:
             print(f"type_hints: {type_hints}")
             argspec = inspect.signature(cls)
             print(f"argspec: {argspec}")
+            print(f"here: {cls}")
+
             constructor_fields = []
             for i in argspec.parameters:
                 name = i
@@ -715,8 +719,18 @@ class JsonSchemaMixin:
     def _get_field_meta(cls, field: Field, schema_type: SchemaType) -> Tuple[FieldMeta, bool]:
         required = True
         field_meta = FieldMeta(schema_type=schema_type)
+
         default_value = MISSING
-        print(f"default: {field.default}")
+        print(f"field.nae: {field.name}")
+        if field.name == "kwargs":
+            print("kkkk")
+            print(field)
+            print(f"schema_type: {schema_type.name}")
+            print(field.default)
+        if field.name == "kwargs":
+            field.default = {}
+            required = False
+
         if (field.default is not MISSING) and ("empty" not in str(field.default)):
             # In case of default value given
             default_value = field.default
@@ -827,14 +841,21 @@ class JsonSchemaMixin:
                 field_schema.update(cls._field_encoders[field_type].json_schema)
             elif hasattr(field_type, "__supertype__"):  # NewType fields
                 field_schema, _ = cls._get_field_schema(field_type.__supertype__, schema_options)
-            else:
-                warnings.warn(f"Unable to create schema for '{field_type_name}'")
+            elif "cdk" in str(cls):
                 variants = field_type.__subclasses__()
                 print(f"variants: {variants} for {field_type_name}")
                 print(f"field_type: {field_type}")
                 field_schema = {"anyOf": [cls._get_field_schema(variant, schema_options)[0] for variant in variants]}
                 print(f"field_schema: {field_schema}")
-                field_schema["anyOf"].sort(key=lambda item: item.get("type", ""))
+                if len(field_schema["anyOf"]) == 0:
+                    field_schema = {"type": "object"}
+                    # print(f"invalid for field={field} for cls={cls}")
+                    # exit()
+                    # field_schema["anyOf"].append({"type": "object"})
+                else:
+                    field_schema["anyOf"].sort(key=lambda item: item.get("type", ""))
+            else:
+                warnings.warn(f"Unable to create schema for '{field_type_name}'")
 
         field_schema.update(field_meta.as_dict)
 
@@ -864,11 +885,14 @@ class JsonSchemaMixin:
                         embeddable=True, schema_type=schema_options.schema_type, validate_enums=schema_options.validate_enums
                     )
                 )
-        elif "declarative" in str(field_type):
+        else:
             print(f"else branch for {str(field_type)}")
-            variants = field_type.__subclasses__()
-            for variant in variants:
-                cls._get_field_definitions(variant, definitions, schema_options)
+            try:
+                variants = field_type.__subclasses__()
+                for variant in variants:
+                    cls._get_field_definitions(variant, definitions, schema_options)
+            except Exception:  # noqa
+                pass
 
     @classmethod
     def all_json_schemas(cls: Type[T], schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True) -> JsonDict:

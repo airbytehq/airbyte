@@ -6,10 +6,9 @@ from abc import ABC, abstractmethod
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 
 
-class Paginator(ABC, JsonSchemaMixin):
+class Paginator(ABC):
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         pass

@@ -14,12 +14,9 @@ from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.wait
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import (
-    DefaultRetrier,
-    HttpResponseFilter,
-    NonRetriableResponseStatus,
-    RetryResponseStatus,
-)
+from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.retriers.http_response_filter import HttpResponseFilter
+from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 
 
 @pytest.mark.parametrize(

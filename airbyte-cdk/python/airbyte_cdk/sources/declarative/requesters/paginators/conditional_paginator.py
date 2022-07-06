@@ -5,6 +5,7 @@
 from typing import Any, Callable, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -89,7 +90,7 @@ class ConditionalPaginator(Paginator):
         return options
 
 
-class InterpolatedConditionalPaginator(ConditionalPaginator):
+class InterpolatedConditionalPaginator(ConditionalPaginator, JsonSchemaMixin):
     def __init__(
         self,
         stop_condition: str,

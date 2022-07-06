@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Req
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AuthBase
 
 
 class HttpRequester(Requester, JsonSchemaMixin):
@@ -27,7 +27,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
         path: Union[str, InterpolatedString] = "",
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
-        authenticator: HttpAuthenticator,
+        authenticator: AuthBase,
         retrier: Optional[Retrier] = None,
         config: Config = {},
     ):

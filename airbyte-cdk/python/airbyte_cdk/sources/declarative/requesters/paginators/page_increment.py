@@ -4,10 +4,11 @@
 from typing import Any, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 
 
-class PageIncrement(PaginationStrategy):
+class PageIncrement(PaginationStrategy, JsonSchemaMixin):
     def __init__(self):
         self._offset = 0
 
