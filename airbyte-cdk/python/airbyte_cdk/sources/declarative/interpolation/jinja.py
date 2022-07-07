@@ -26,6 +26,9 @@ class JinjaInterpolation(Interpolation):
             else int(parser.parse(dt).replace(tzinfo=datetime.timezone.utc).timestamp())
         )
         self._environment.globals["max"] = lambda a, b: max(a, b)
+        self._environment.globals["day_delta"] = lambda x: (
+            datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=x)
+        ).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}
