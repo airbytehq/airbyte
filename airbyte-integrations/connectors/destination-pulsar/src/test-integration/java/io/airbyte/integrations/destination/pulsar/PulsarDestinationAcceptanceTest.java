@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -188,6 +189,7 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    PULSAR.stop();
     PULSAR.close();
   }
 
