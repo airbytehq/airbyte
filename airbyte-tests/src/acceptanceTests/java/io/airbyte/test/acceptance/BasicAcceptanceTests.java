@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.AfterAll;
@@ -1086,7 +1087,7 @@ public class BasicAcceptanceTests {
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name("cool_employees").namespace("public"),
-        new StreamDescriptor().name("additional_table").namespace("public")));
+        new StreamDescriptor().name(additionalTable).namespace("public")));
 
     sourceDb.query(ctx -> {
       ctx.dropTableIfExists(additionalTable).execute();
@@ -1094,29 +1095,51 @@ public class BasicAcceptanceTests {
     });
     // Update with refreshed catalog
     final AirbyteCatalog refreshedCatalog = new AirbyteCatalog().streams(catalog.getStreams()
-        .stream().filter(stream -> !stream.getStream().getName().equals(additionalTable)).toList());
+        // Use the collect method here in order to have a mutable list here.
+        .stream().filter(stream -> !stream.getStream().getName().equals(additionalTable)).collect(Collectors.toList()));
     //// testHarness.discoverSourceSchema(refreshSourceId);
     testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
-    final WebBackendConnectionUpdate update = getUpdateInput(connection, refreshedCatalog, operation);
-    final WebBackendConnectionRead webBackendConnectionRead = webBackendApi.webBackendUpdateConnection(update);
+    WebBackendConnectionUpdate update = getUpdateInput(connection, refreshedCatalog, operation);
+    webBackendApi.webBackendUpdateConnection(update);
+
     // Wait until the sync from the UpdateConnection is finished
-    /*
-     * final Optional<JobWithAttemptsRead> runningJob = apiClient.getJobsApi().listJobsFor(new
-     * JobListRequestBody() .addConfigTypesItem(JobConfigType.SYNC)
-     * .configId(connection.getConnectionId().toString())) .getJobs() .stream().filter(job ->
-     * job.getJob().getStatus() != JobStatus.SUCCEEDED && job.getJob().getStatus() !=
-     * JobStatus.CANCELLED && job.getJob().getStatus() != JobStatus.FAILED) .findFirst();
-     *
-     * if (runningJob.isPresent()) { waitForSuccessfulJob(apiClient.getJobsApi(),
-     * runningJob.get().getJob()); }
-     */
+    JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
-    Thread.sleep(30000);
-
-    // testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    // We do not check that the source and the dest are in sync here because removing a stream doesn't
+    // remove that
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name("cool_employees").namespace("public")));
+
+    // Add a stream -- the value of in the table are different than the initial import to ensure that it is properly reset.
+    sourceDb.query(ctx -> {
+      ctx.createTableIfNotExists(additionalTable)
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR)).execute();
+      ctx.truncate(additionalTable).execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(3, "3").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(4, "4").execute();
+      return null;
+    });
+
+    final AirbyteStreamAndConfiguration streamToAdd = catalog.getStreams()
+        .stream().filter(stream -> stream.getStream().getName().equals(additionalTable)).findFirst().get();
+
+    refreshedCatalog.addStreamsItem(streamToAdd);
+    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
+    update = getUpdateInput(connection, refreshedCatalog, operation);
+    webBackendApi.webBackendUpdateConnection(update);
+
+    syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
+
+    // We do not check that the source and the dest are in sync here because removing a stream doesn't
+    // remove that
+    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    assertStreamStateContainsStream(connection.getConnectionId(), List.of(
+        new StreamDescriptor().name("id_and_name").namespace("public"),
+        new StreamDescriptor().name("cool_employees").namespace("public"),
+        new StreamDescriptor().name(additionalTable).namespace("public")));
   }
 
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {
