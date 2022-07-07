@@ -165,7 +165,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   private static boolean isCdc(final JsonNode config) {
     return config.hasNonNull("replication_method")
-        && ReplicationMethod.valueOf(config.get("replication_method").asText())
+        && ReplicationMethod.valueOf(config.get("replication_method").get("method").asText())
             .equals(ReplicationMethod.CDC);
   }
 
