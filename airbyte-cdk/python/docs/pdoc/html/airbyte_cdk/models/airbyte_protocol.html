@@ -1,0 +1,2019 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>airbyte_cdk.models.airbyte_protocol API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>airbyte_cdk.models.airbyte_protocol</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+# generated by datamodel-codegen:
+#   filename:  airbyte_protocol.yaml
+
+from __future__ import annotations
+
+from enum import Enum
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import AnyUrl, BaseModel, Extra, Field
+
+
+class Type(Enum):
+    RECORD = &#34;RECORD&#34;
+    STATE = &#34;STATE&#34;
+    LOG = &#34;LOG&#34;
+    SPEC = &#34;SPEC&#34;
+    CONNECTION_STATUS = &#34;CONNECTION_STATUS&#34;
+    CATALOG = &#34;CATALOG&#34;
+    TRACE = &#34;TRACE&#34;
+
+
+class AirbyteRecordMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    namespace: Optional[str] = Field(None, description=&#34;namespace the data is associated with&#34;)
+    stream: str = Field(..., description=&#34;stream the data is associated with&#34;)
+    data: Dict[str, Any] = Field(..., description=&#34;record data&#34;)
+    emitted_at: int = Field(
+        ...,
+        description=&#34;when the data was emitted from the source. epoch in millisecond.&#34;,
+    )
+
+
+class AirbyteStateType(Enum):
+    GLOBAL = &#34;GLOBAL&#34;
+    STREAM = &#34;STREAM&#34;
+    LEGACY = &#34;LEGACY&#34;
+
+
+class StreamDescriptor(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str
+    namespace: Optional[str] = None
+
+
+class AirbyteStateBlob(BaseModel):
+    pass
+
+    class Config:
+        extra = Extra.allow
+
+
+class Level(Enum):
+    FATAL = &#34;FATAL&#34;
+    ERROR = &#34;ERROR&#34;
+    WARN = &#34;WARN&#34;
+    INFO = &#34;INFO&#34;
+    DEBUG = &#34;DEBUG&#34;
+    TRACE = &#34;TRACE&#34;
+
+
+class AirbyteLogMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    level: Level = Field(..., description=&#34;log level&#34;)
+    message: str = Field(..., description=&#34;log message&#34;)
+
+
+class TraceType(Enum):
+    ERROR = &#34;ERROR&#34;
+
+
+class FailureType(Enum):
+    system_error = &#34;system_error&#34;
+    config_error = &#34;config_error&#34;
+
+
+class AirbyteErrorTraceMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    message: str = Field(..., description=&#34;A user-friendly message that indicates the cause of the error&#34;)
+    internal_message: Optional[str] = Field(None, description=&#34;The internal error that caused the failure&#34;)
+    stack_trace: Optional[str] = Field(None, description=&#34;The full stack trace of the error&#34;)
+    failure_type: Optional[FailureType] = Field(None, description=&#34;The type of error&#34;)
+
+
+class Status(Enum):
+    SUCCEEDED = &#34;SUCCEEDED&#34;
+    FAILED = &#34;FAILED&#34;
+
+
+class AirbyteConnectionStatus(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    status: Status
+    message: Optional[str] = None
+
+
+class SyncMode(Enum):
+    full_refresh = &#34;full_refresh&#34;
+    incremental = &#34;incremental&#34;
+
+
+class DestinationSyncMode(Enum):
+    append = &#34;append&#34;
+    overwrite = &#34;overwrite&#34;
+    append_dedup = &#34;append_dedup&#34;
+
+
+class OAuth2Specification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    rootObject: Optional[List[Union[str, int]]] = Field(
+        None,
+        description=&#34;A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.\nExamples:\nif oauth parameters were contained inside the top level, rootObject=[] If they were nested inside another object {&#39;credentials&#39;: {&#39;app_id&#39; etc...}, rootObject=[&#39;credentials&#39;] If they were inside a oneOf {&#39;switch&#39;: {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=[&#39;switch&#39;, 0] &#34;,
+    )
+    oauthFlowInitParameters: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the rootObject of the referenced field. For example. Assume the rootObject contains params &#39;app_secret&#39;, &#39;app_id&#39; which are needed to get the initial refresh token. If they are not nested in the rootObject, then the array would look like this [[&#39;app_secret&#39;], [&#39;app_id&#39;]] If they are nested inside an object called &#39;auth_params&#39; then this array would be [[&#39;auth_params&#39;, &#39;app_secret&#39;], [&#39;auth_params&#39;, &#39;app_id&#39;]]&#34;,
+    )
+    oauthFlowOutputParameters: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters. This is typically a refresh/access token. Each inner array represents the path in the rootObject of the referenced field.&#34;,
+    )
+
+
+class AuthType(Enum):
+    oauth2_0 = &#34;oauth2.0&#34;
+
+
+class AuthSpecification(BaseModel):
+    auth_type: Optional[AuthType] = None
+    oauth2Specification: Optional[OAuth2Specification] = Field(
+        None,
+        description=&#34;If the connector supports OAuth, this field should be non-null.&#34;,
+    )
+
+
+class AuthFlowType(Enum):
+    oauth2_0 = &#34;oauth2.0&#34;
+    oauth1_0 = &#34;oauth1.0&#34;
+
+
+class OAuthConfigSpecification(BaseModel):
+    oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation &#39;path_in_connector_config&#39;.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\n\nExamples:\n\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as &#39;app_id&#39; inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: [&#39;app_id&#39;]\n    }\n  }\nif connector values such as &#39;info.app_id&#39; nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: [&#39;info&#39;, &#39;app_id&#39;]\n    }\n  }&#34;,
+    )
+    complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are\nreturned by the distant OAuth APIs.\nMust be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n    complete_oauth_output_specification={\n      refresh_token: {\n        type: string,\n        path_in_connector_config: [&#39;credentials&#39;, &#39;refresh_token&#39;]\n      }\n    }&#34;,
+    )
+    complete_oauth_server_input_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nserver when completing an OAuth flow (typically exchanging an auth code for refresh token).\n\nExamples:\n\n    complete_oauth_server_input_specification={\n      client_id: {\n        type: string\n      },\n      client_secret: {\n        type: string\n      }\n    }&#34;,
+    )
+    complete_oauth_server_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore\nthey would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n      complete_oauth_server_output_specification={\n        client_id: {\n          type: string,\n          path_in_connector_config: [&#39;credentials&#39;, &#39;client_id&#39;]\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: [&#39;credentials&#39;, &#39;client_secret&#39;]\n        }\n      }&#34;,
+    )
+
+
+class AirbyteStreamState(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    stream_descriptor: StreamDescriptor
+    stream_state: Optional[AirbyteStateBlob] = None
+
+
+class AirbyteGlobalState(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    shared_state: Optional[AirbyteStateBlob] = None
+    stream_states: List[AirbyteStreamState]
+
+
+class AirbyteTraceMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: TraceType = Field(..., description=&#34;the type of trace message&#34;, title=&#34;trace type&#34;)
+    emitted_at: float = Field(..., description=&#34;the time in ms that the message was emitted&#34;)
+    error: Optional[AirbyteErrorTraceMessage] = Field(None, description=&#34;error trace message: the error object&#34;)
+
+
+class AirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str = Field(..., description=&#34;Stream&#39;s name.&#34;)
+    json_schema: Dict[str, Any] = Field(..., description=&#34;Stream schema using Json Schema specs.&#34;)
+    supported_sync_modes: Optional[List[SyncMode]] = None
+    source_defined_cursor: Optional[bool] = Field(
+        None,
+        description=&#34;If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.&#34;,
+    )
+    default_cursor_field: Optional[List[str]] = Field(
+        None,
+        description=&#34;Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.&#34;,
+    )
+    source_defined_primary_key: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.&#34;,
+    )
+    namespace: Optional[str] = Field(
+        None,
+        description=&#34;Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.&#34;,
+    )
+
+
+class ConfiguredAirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    stream: AirbyteStream
+    sync_mode: SyncMode
+    cursor_field: Optional[List[str]] = Field(
+        None,
+        description=&#34;Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.&#34;,
+    )
+    destination_sync_mode: DestinationSyncMode
+    primary_key: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.&#34;,
+    )
+
+
+class AdvancedAuth(BaseModel):
+    auth_flow_type: Optional[AuthFlowType] = None
+    predicate_key: Optional[List[str]] = Field(
+        None,
+        description=&#34;Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.&#34;,
+    )
+    predicate_value: Optional[str] = Field(
+        None,
+        description=&#34;Value of the predicate_key fields for the advanced auth to be applicable.&#34;,
+    )
+    oauth_config_specification: Optional[OAuthConfigSpecification] = None
+
+
+class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    documentationUrl: Optional[AnyUrl] = None
+    changelogUrl: Optional[AnyUrl] = None
+    connectionSpecification: Dict[str, Any] = Field(
+        ...,
+        description=&#34;ConnectorDefinition specific blob. Must be a valid JSON string.&#34;,
+    )
+    supportsIncremental: Optional[bool] = Field(
+        None,
+        description=&#34;(deprecated) If the connector supports incremental mode or not.&#34;,
+    )
+    supportsNormalization: Optional[bool] = Field(False, description=&#34;If the connector supports normalization or not.&#34;)
+    supportsDBT: Optional[bool] = Field(False, description=&#34;If the connector supports DBT or not.&#34;)
+    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
+        None, description=&#34;List of destination sync modes supported by the connector&#34;
+    )
+    authSpecification: Optional[AuthSpecification] = Field(None, description=&#34;deprecated, switching to advanced_auth instead&#34;)
+    advanced_auth: Optional[AdvancedAuth] = Field(
+        None,
+        description=&#34;Additional and optional specification object to describe what an &#39;advanced&#39; Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a &#39;basic&#39; mode.\n  - The &#39;advanced&#39; mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.&#34;,
+    )
+
+
+class AirbyteStateMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Optional[AirbyteStateType] = None
+    stream: Optional[AirbyteStreamState] = None
+    global_: Optional[AirbyteGlobalState] = Field(None, alias=&#34;global&#34;)
+    data: Optional[Dict[str, Any]] = Field(None, description=&#34;(Deprecated) the state data&#34;)
+
+
+class AirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    streams: List[AirbyteStream]
+
+
+class ConfiguredAirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    streams: List[ConfiguredAirbyteStream]
+
+
+class AirbyteMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Type = Field(..., description=&#34;Message type&#34;)
+    log: Optional[AirbyteLogMessage] = Field(
+        None,
+        description=&#34;log message: any kind of logging you want the platform to know about.&#34;,
+    )
+    spec: Optional[ConnectorSpecification] = None
+    connectionStatus: Optional[AirbyteConnectionStatus] = None
+    catalog: Optional[AirbyteCatalog] = Field(None, description=&#34;catalog message: the catalog&#34;)
+    record: Optional[AirbyteRecordMessage] = Field(None, description=&#34;record message: the record&#34;)
+    state: Optional[AirbyteStateMessage] = Field(
+        None,
+        description=&#34;schema message: the state. Must be the last message produced. The platform uses this information&#34;,
+    )
+    trace: Optional[AirbyteTraceMessage] = Field(
+        None,
+        description=&#34;trace message: a message to communicate information about the status and performance of a connector&#34;,
+    )
+
+
+class AirbyteProtocol(BaseModel):
+    airbyte_message: Optional[AirbyteMessage] = None
+    configured_airbyte_catalog: Optional[ConfiguredAirbyteCatalog] = None</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AdvancedAuth"><code class="flex name class">
+<span>class <span class="ident">AdvancedAuth</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AdvancedAuth(BaseModel):
+    auth_flow_type: Optional[AuthFlowType] = None
+    predicate_key: Optional[List[str]] = Field(
+        None,
+        description=&#34;Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.&#34;,
+    )
+    predicate_value: Optional[str] = Field(
+        None,
+        description=&#34;Value of the predicate_key fields for the advanced auth to be applicable.&#34;,
+    )
+    oauth_config_specification: Optional[OAuthConfigSpecification] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.auth_flow_type"><code class="name">var <span class="ident">auth_flow_type</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AuthFlowType" href="#airbyte_cdk.models.airbyte_protocol.AuthFlowType">AuthFlowType</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.oauth_config_specification"><code class="name">var <span class="ident">oauth_config_specification</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification" href="#airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification">OAuthConfigSpecification</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.predicate_key"><code class="name">var <span class="ident">predicate_key</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.predicate_value"><code class="name">var <span class="ident">predicate_value</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog"><code class="flex name class">
+<span>class <span class="ident">AirbyteCatalog</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    streams: List[AirbyteStream]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog.streams"><code class="name">var <span class="ident">streams</span> : List[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream">AirbyteStream</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus"><code class="flex name class">
+<span>class <span class="ident">AirbyteConnectionStatus</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteConnectionStatus(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    status: Status
+    message: Optional[str] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.message"><code class="name">var <span class="ident">message</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.status"><code class="name">var <span class="ident">status</span> : <a title="airbyte_cdk.models.airbyte_protocol.Status" href="#airbyte_cdk.models.airbyte_protocol.Status">Status</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage"><code class="flex name class">
+<span>class <span class="ident">AirbyteErrorTraceMessage</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteErrorTraceMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    message: str = Field(..., description=&#34;A user-friendly message that indicates the cause of the error&#34;)
+    internal_message: Optional[str] = Field(None, description=&#34;The internal error that caused the failure&#34;)
+    stack_trace: Optional[str] = Field(None, description=&#34;The full stack trace of the error&#34;)
+    failure_type: Optional[FailureType] = Field(None, description=&#34;The type of error&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.failure_type"><code class="name">var <span class="ident">failure_type</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.FailureType" href="#airbyte_cdk.models.airbyte_protocol.FailureType">FailureType</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.internal_message"><code class="name">var <span class="ident">internal_message</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.message"><code class="name">var <span class="ident">message</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.stack_trace"><code class="name">var <span class="ident">stack_trace</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState"><code class="flex name class">
+<span>class <span class="ident">AirbyteGlobalState</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteGlobalState(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    shared_state: Optional[AirbyteStateBlob] = None
+    stream_states: List[AirbyteStreamState]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.shared_state"><code class="name">var <span class="ident">shared_state</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob">AirbyteStateBlob</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.stream_states"><code class="name">var <span class="ident">stream_states</span> : List[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStreamState">AirbyteStreamState</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage"><code class="flex name class">
+<span>class <span class="ident">AirbyteLogMessage</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteLogMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    level: Level = Field(..., description=&#34;log level&#34;)
+    message: str = Field(..., description=&#34;log message&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.level"><code class="name">var <span class="ident">level</span> : <a title="airbyte_cdk.models.airbyte_protocol.Level" href="#airbyte_cdk.models.airbyte_protocol.Level">Level</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.message"><code class="name">var <span class="ident">message</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage"><code class="flex name class">
+<span>class <span class="ident">AirbyteMessage</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Type = Field(..., description=&#34;Message type&#34;)
+    log: Optional[AirbyteLogMessage] = Field(
+        None,
+        description=&#34;log message: any kind of logging you want the platform to know about.&#34;,
+    )
+    spec: Optional[ConnectorSpecification] = None
+    connectionStatus: Optional[AirbyteConnectionStatus] = None
+    catalog: Optional[AirbyteCatalog] = Field(None, description=&#34;catalog message: the catalog&#34;)
+    record: Optional[AirbyteRecordMessage] = Field(None, description=&#34;record message: the record&#34;)
+    state: Optional[AirbyteStateMessage] = Field(
+        None,
+        description=&#34;schema message: the state. Must be the last message produced. The platform uses this information&#34;,
+    )
+    trace: Optional[AirbyteTraceMessage] = Field(
+        None,
+        description=&#34;trace message: a message to communicate information about the status and performance of a connector&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.catalog"><code class="name">var <span class="ident">catalog</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog" href="#airbyte_cdk.models.airbyte_protocol.AirbyteCatalog">AirbyteCatalog</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.connectionStatus"><code class="name">var <span class="ident">connectionStatus</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus" href="#airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus">AirbyteConnectionStatus</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.log"><code class="name">var <span class="ident">log</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage">AirbyteLogMessage</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.record"><code class="name">var <span class="ident">record</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage">AirbyteRecordMessage</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.spec"><code class="name">var <span class="ident">spec</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification">ConnectorSpecification</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.state"><code class="name">var <span class="ident">state</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage">AirbyteStateMessage</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.trace"><code class="name">var <span class="ident">trace</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage">AirbyteTraceMessage</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.type"><code class="name">var <span class="ident">type</span> : <a title="airbyte_cdk.models.airbyte_protocol.Type" href="#airbyte_cdk.models.airbyte_protocol.Type">Type</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteProtocol"><code class="flex name class">
+<span>class <span class="ident">AirbyteProtocol</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteProtocol(BaseModel):
+    airbyte_message: Optional[AirbyteMessage] = None
+    configured_airbyte_catalog: Optional[ConfiguredAirbyteCatalog] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteProtocol.airbyte_message"><code class="name">var <span class="ident">airbyte_message</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage">AirbyteMessage</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteProtocol.configured_airbyte_catalog"><code class="name">var <span class="ident">configured_airbyte_catalog</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog">ConfiguredAirbyteCatalog</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage"><code class="flex name class">
+<span>class <span class="ident">AirbyteRecordMessage</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteRecordMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    namespace: Optional[str] = Field(None, description=&#34;namespace the data is associated with&#34;)
+    stream: str = Field(..., description=&#34;stream the data is associated with&#34;)
+    data: Dict[str, Any] = Field(..., description=&#34;record data&#34;)
+    emitted_at: int = Field(
+        ...,
+        description=&#34;when the data was emitted from the source. epoch in millisecond.&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.data"><code class="name">var <span class="ident">data</span> : Dict[str, Any]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.emitted_at"><code class="name">var <span class="ident">emitted_at</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.namespace"><code class="name">var <span class="ident">namespace</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.stream"><code class="name">var <span class="ident">stream</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob"><code class="flex name class">
+<span>class <span class="ident">AirbyteStateBlob</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteStateBlob(BaseModel):
+    pass
+
+    class Config:
+        extra = Extra.allow</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage"><code class="flex name class">
+<span>class <span class="ident">AirbyteStateMessage</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteStateMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: Optional[AirbyteStateType] = None
+    stream: Optional[AirbyteStreamState] = None
+    global_: Optional[AirbyteGlobalState] = Field(None, alias=&#34;global&#34;)
+    data: Optional[Dict[str, Any]] = Field(None, description=&#34;(Deprecated) the state data&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.data"><code class="name">var <span class="ident">data</span> : Optional[Dict[str, Any]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.global_"><code class="name">var <span class="ident">global_</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState" href="#airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState">AirbyteGlobalState</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.stream"><code class="name">var <span class="ident">stream</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStreamState">AirbyteStreamState</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.type"><code class="name">var <span class="ident">type</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateType" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateType">AirbyteStateType</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateType"><code class="flex name class">
+<span>class <span class="ident">AirbyteStateType</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteStateType(Enum):
+    GLOBAL = &#34;GLOBAL&#34;
+    STREAM = &#34;STREAM&#34;
+    LEGACY = &#34;LEGACY&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateType.GLOBAL"><code class="name">var <span class="ident">GLOBAL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateType.LEGACY"><code class="name">var <span class="ident">LEGACY</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStateType.STREAM"><code class="name">var <span class="ident">STREAM</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream"><code class="flex name class">
+<span>class <span class="ident">AirbyteStream</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str = Field(..., description=&#34;Stream&#39;s name.&#34;)
+    json_schema: Dict[str, Any] = Field(..., description=&#34;Stream schema using Json Schema specs.&#34;)
+    supported_sync_modes: Optional[List[SyncMode]] = None
+    source_defined_cursor: Optional[bool] = Field(
+        None,
+        description=&#34;If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.&#34;,
+    )
+    default_cursor_field: Optional[List[str]] = Field(
+        None,
+        description=&#34;Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.&#34;,
+    )
+    source_defined_primary_key: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.&#34;,
+    )
+    namespace: Optional[str] = Field(
+        None,
+        description=&#34;Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.default_cursor_field"><code class="name">var <span class="ident">default_cursor_field</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.json_schema"><code class="name">var <span class="ident">json_schema</span> : Dict[str, Any]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.namespace"><code class="name">var <span class="ident">namespace</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.source_defined_cursor"><code class="name">var <span class="ident">source_defined_cursor</span> : Optional[bool]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.source_defined_primary_key"><code class="name">var <span class="ident">source_defined_primary_key</span> : Optional[List[List[str]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStream.supported_sync_modes"><code class="name">var <span class="ident">supported_sync_modes</span> : Optional[List[<a title="airbyte_cdk.models.airbyte_protocol.SyncMode" href="#airbyte_cdk.models.airbyte_protocol.SyncMode">SyncMode</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState"><code class="flex name class">
+<span>class <span class="ident">AirbyteStreamState</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteStreamState(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    stream_descriptor: StreamDescriptor
+    stream_state: Optional[AirbyteStateBlob] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.stream_descriptor"><code class="name">var <span class="ident">stream_descriptor</span> : <a title="airbyte_cdk.models.airbyte_protocol.StreamDescriptor" href="#airbyte_cdk.models.airbyte_protocol.StreamDescriptor">StreamDescriptor</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.stream_state"><code class="name">var <span class="ident">stream_state</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob">AirbyteStateBlob</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage"><code class="flex name class">
+<span>class <span class="ident">AirbyteTraceMessage</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AirbyteTraceMessage(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    type: TraceType = Field(..., description=&#34;the type of trace message&#34;, title=&#34;trace type&#34;)
+    emitted_at: float = Field(..., description=&#34;the time in ms that the message was emitted&#34;)
+    error: Optional[AirbyteErrorTraceMessage] = Field(None, description=&#34;error trace message: the error object&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.emitted_at"><code class="name">var <span class="ident">emitted_at</span> : float</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.error"><code class="name">var <span class="ident">error</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage">AirbyteErrorTraceMessage</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.type"><code class="name">var <span class="ident">type</span> : <a title="airbyte_cdk.models.airbyte_protocol.TraceType" href="#airbyte_cdk.models.airbyte_protocol.TraceType">TraceType</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthFlowType"><code class="flex name class">
+<span>class <span class="ident">AuthFlowType</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AuthFlowType(Enum):
+    oauth2_0 = &#34;oauth2.0&#34;
+    oauth1_0 = &#34;oauth1.0&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthFlowType.oauth1_0"><code class="name">var <span class="ident">oauth1_0</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthFlowType.oauth2_0"><code class="name">var <span class="ident">oauth2_0</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthSpecification"><code class="flex name class">
+<span>class <span class="ident">AuthSpecification</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AuthSpecification(BaseModel):
+    auth_type: Optional[AuthType] = None
+    oauth2Specification: Optional[OAuth2Specification] = Field(
+        None,
+        description=&#34;If the connector supports OAuth, this field should be non-null.&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthSpecification.auth_type"><code class="name">var <span class="ident">auth_type</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AuthType" href="#airbyte_cdk.models.airbyte_protocol.AuthType">AuthType</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthSpecification.oauth2Specification"><code class="name">var <span class="ident">oauth2Specification</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.OAuth2Specification" href="#airbyte_cdk.models.airbyte_protocol.OAuth2Specification">OAuth2Specification</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthType"><code class="flex name class">
+<span>class <span class="ident">AuthType</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AuthType(Enum):
+    oauth2_0 = &#34;oauth2.0&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.AuthType.oauth2_0"><code class="name">var <span class="ident">oauth2_0</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog"><code class="flex name class">
+<span>class <span class="ident">ConfiguredAirbyteCatalog</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ConfiguredAirbyteCatalog(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    streams: List[ConfiguredAirbyteStream]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog.streams"><code class="name">var <span class="ident">streams</span> : List[<a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream">ConfiguredAirbyteStream</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream"><code class="flex name class">
+<span>class <span class="ident">ConfiguredAirbyteStream</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ConfiguredAirbyteStream(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    stream: AirbyteStream
+    sync_mode: SyncMode
+    cursor_field: Optional[List[str]] = Field(
+        None,
+        description=&#34;Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.&#34;,
+    )
+    destination_sync_mode: DestinationSyncMode
+    primary_key: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.cursor_field"><code class="name">var <span class="ident">cursor_field</span> : Optional[List[str]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.destination_sync_mode"><code class="name">var <span class="ident">destination_sync_mode</span> : <a title="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode" href="#airbyte_cdk.models.airbyte_protocol.DestinationSyncMode">DestinationSyncMode</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.primary_key"><code class="name">var <span class="ident">primary_key</span> : Optional[List[List[str]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.stream"><code class="name">var <span class="ident">stream</span> : <a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream">AirbyteStream</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.sync_mode"><code class="name">var <span class="ident">sync_mode</span> : <a title="airbyte_cdk.models.airbyte_protocol.SyncMode" href="#airbyte_cdk.models.airbyte_protocol.SyncMode">SyncMode</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification"><code class="flex name class">
+<span>class <span class="ident">ConnectorSpecification</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ConnectorSpecification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    documentationUrl: Optional[AnyUrl] = None
+    changelogUrl: Optional[AnyUrl] = None
+    connectionSpecification: Dict[str, Any] = Field(
+        ...,
+        description=&#34;ConnectorDefinition specific blob. Must be a valid JSON string.&#34;,
+    )
+    supportsIncremental: Optional[bool] = Field(
+        None,
+        description=&#34;(deprecated) If the connector supports incremental mode or not.&#34;,
+    )
+    supportsNormalization: Optional[bool] = Field(False, description=&#34;If the connector supports normalization or not.&#34;)
+    supportsDBT: Optional[bool] = Field(False, description=&#34;If the connector supports DBT or not.&#34;)
+    supported_destination_sync_modes: Optional[List[DestinationSyncMode]] = Field(
+        None, description=&#34;List of destination sync modes supported by the connector&#34;
+    )
+    authSpecification: Optional[AuthSpecification] = Field(None, description=&#34;deprecated, switching to advanced_auth instead&#34;)
+    advanced_auth: Optional[AdvancedAuth] = Field(
+        None,
+        description=&#34;Additional and optional specification object to describe what an &#39;advanced&#39; Auth flow would need to function.\n  - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a &#39;basic&#39; mode.\n  - The &#39;advanced&#39; mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the\n  server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical\n  inputs anymore and the auth process is faster and easier to complete.&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.advanced_auth"><code class="name">var <span class="ident">advanced_auth</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AdvancedAuth" href="#airbyte_cdk.models.airbyte_protocol.AdvancedAuth">AdvancedAuth</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.authSpecification"><code class="name">var <span class="ident">authSpecification</span> : Optional[<a title="airbyte_cdk.models.airbyte_protocol.AuthSpecification" href="#airbyte_cdk.models.airbyte_protocol.AuthSpecification">AuthSpecification</a>]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.changelogUrl"><code class="name">var <span class="ident">changelogUrl</span> : Optional[pydantic.networks.AnyUrl]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.connectionSpecification"><code class="name">var <span class="ident">connectionSpecification</span> : Dict[str, Any]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.documentationUrl"><code class="name">var <span class="ident">documentationUrl</span> : Optional[pydantic.networks.AnyUrl]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supported_destination_sync_modes"><code class="name">var <span class="ident">supported_destination_sync_modes</span> : Optional[List[<a title="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode" href="#airbyte_cdk.models.airbyte_protocol.DestinationSyncMode">DestinationSyncMode</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsDBT"><code class="name">var <span class="ident">supportsDBT</span> : Optional[bool]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsIncremental"><code class="name">var <span class="ident">supportsIncremental</span> : Optional[bool]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsNormalization"><code class="name">var <span class="ident">supportsNormalization</span> : Optional[bool]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode"><code class="flex name class">
+<span>class <span class="ident">DestinationSyncMode</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class DestinationSyncMode(Enum):
+    append = &#34;append&#34;
+    overwrite = &#34;overwrite&#34;
+    append_dedup = &#34;append_dedup&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.append"><code class="name">var <span class="ident">append</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.append_dedup"><code class="name">var <span class="ident">append_dedup</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.overwrite"><code class="name">var <span class="ident">overwrite</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.FailureType"><code class="flex name class">
+<span>class <span class="ident">FailureType</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FailureType(Enum):
+    system_error = &#34;system_error&#34;
+    config_error = &#34;config_error&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.FailureType.config_error"><code class="name">var <span class="ident">config_error</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.FailureType.system_error"><code class="name">var <span class="ident">system_error</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level"><code class="flex name class">
+<span>class <span class="ident">Level</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Level(Enum):
+    FATAL = &#34;FATAL&#34;
+    ERROR = &#34;ERROR&#34;
+    WARN = &#34;WARN&#34;
+    INFO = &#34;INFO&#34;
+    DEBUG = &#34;DEBUG&#34;
+    TRACE = &#34;TRACE&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level.DEBUG"><code class="name">var <span class="ident">DEBUG</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level.ERROR"><code class="name">var <span class="ident">ERROR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level.FATAL"><code class="name">var <span class="ident">FATAL</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level.INFO"><code class="name">var <span class="ident">INFO</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level.TRACE"><code class="name">var <span class="ident">TRACE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Level.WARN"><code class="name">var <span class="ident">WARN</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuth2Specification"><code class="flex name class">
+<span>class <span class="ident">OAuth2Specification</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OAuth2Specification(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    rootObject: Optional[List[Union[str, int]]] = Field(
+        None,
+        description=&#34;A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.\nExamples:\nif oauth parameters were contained inside the top level, rootObject=[] If they were nested inside another object {&#39;credentials&#39;: {&#39;app_id&#39; etc...}, rootObject=[&#39;credentials&#39;] If they were inside a oneOf {&#39;switch&#39;: {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=[&#39;switch&#39;, 0] &#34;,
+    )
+    oauthFlowInitParameters: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow. Each inner array represents the path in the rootObject of the referenced field. For example. Assume the rootObject contains params &#39;app_secret&#39;, &#39;app_id&#39; which are needed to get the initial refresh token. If they are not nested in the rootObject, then the array would look like this [[&#39;app_secret&#39;], [&#39;app_id&#39;]] If they are nested inside an object called &#39;auth_params&#39; then this array would be [[&#39;auth_params&#39;, &#39;app_secret&#39;], [&#39;auth_params&#39;, &#39;app_id&#39;]]&#34;,
+    )
+    oauthFlowOutputParameters: Optional[List[List[str]]] = Field(
+        None,
+        description=&#34;Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters. This is typically a refresh/access token. Each inner array represents the path in the rootObject of the referenced field.&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.oauthFlowInitParameters"><code class="name">var <span class="ident">oauthFlowInitParameters</span> : Optional[List[List[str]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.oauthFlowOutputParameters"><code class="name">var <span class="ident">oauthFlowOutputParameters</span> : Optional[List[List[str]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.rootObject"><code class="name">var <span class="ident">rootObject</span> : Optional[List[Union[str, int]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification"><code class="flex name class">
+<span>class <span class="ident">OAuthConfigSpecification</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OAuthConfigSpecification(BaseModel):
+    oauth_user_input_from_connector_config_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.\nMust be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification\nusing special annotation &#39;path_in_connector_config&#39;.\nThese are input values the user is entering through the UI to authenticate to the connector, that might also shared\nas inputs for syncing data via the connector.\n\nExamples:\n\nif no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]\nif connector values such as &#39;app_id&#39; inside the top level are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: [&#39;app_id&#39;]\n    }\n  }\nif connector values such as &#39;info.app_id&#39; nested inside another object are used to generate the API url for the oauth flow,\n  oauth_user_input_from_connector_config_specification={\n    app_id: {\n      type: string\n      path_in_connector_config: [&#39;info&#39;, &#39;app_id&#39;]\n    }\n  }&#34;,
+    )
+    complete_oauth_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are\nreturned by the distant OAuth APIs.\nMust be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n    complete_oauth_output_specification={\n      refresh_token: {\n        type: string,\n        path_in_connector_config: [&#39;credentials&#39;, &#39;refresh_token&#39;]\n      }\n    }&#34;,
+    )
+    complete_oauth_server_input_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nserver when completing an OAuth flow (typically exchanging an auth code for refresh token).\n\nExamples:\n\n    complete_oauth_server_input_specification={\n      client_id: {\n        type: string\n      },\n      client_secret: {\n        type: string\n      }\n    }&#34;,
+    )
+    complete_oauth_server_output_specification: Optional[Dict[str, Any]] = Field(
+        None,
+        description=&#34;OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that\nalso need to be merged back into the connector configuration at runtime.\nThis is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that\nare necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore\nthey would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)\nMust be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the\nconnector when using OAuth flow APIs.\nThese fields are to be merged back to `ConnectorSpecification.connectionSpecification`.\nFor each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,\n\nExamples:\n\n      complete_oauth_server_output_specification={\n        client_id: {\n          type: string,\n          path_in_connector_config: [&#39;credentials&#39;, &#39;client_id&#39;]\n        },\n        client_secret: {\n          type: string,\n          path_in_connector_config: [&#39;credentials&#39;, &#39;client_secret&#39;]\n        }\n      }&#34;,
+    )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_output_specification"><code class="name">var <span class="ident">complete_oauth_output_specification</span> : Optional[Dict[str, Any]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_server_input_specification"><code class="name">var <span class="ident">complete_oauth_server_input_specification</span> : Optional[Dict[str, Any]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_server_output_specification"><code class="name">var <span class="ident">complete_oauth_server_output_specification</span> : Optional[Dict[str, Any]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.oauth_user_input_from_connector_config_specification"><code class="name">var <span class="ident">oauth_user_input_from_connector_config_specification</span> : Optional[Dict[str, Any]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Status"><code class="flex name class">
+<span>class <span class="ident">Status</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Status(Enum):
+    SUCCEEDED = &#34;SUCCEEDED&#34;
+    FAILED = &#34;FAILED&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.Status.FAILED"><code class="name">var <span class="ident">FAILED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Status.SUCCEEDED"><code class="name">var <span class="ident">SUCCEEDED</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.StreamDescriptor"><code class="flex name class">
+<span>class <span class="ident">StreamDescriptor</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class StreamDescriptor(BaseModel):
+    class Config:
+        extra = Extra.allow
+
+    name: str
+    namespace: Optional[str] = None</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.StreamDescriptor.Config"><code class="name">var <span class="ident">Config</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.StreamDescriptor.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.StreamDescriptor.namespace"><code class="name">var <span class="ident">namespace</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.SyncMode"><code class="flex name class">
+<span>class <span class="ident">SyncMode</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SyncMode(Enum):
+    full_refresh = &#34;full_refresh&#34;
+    incremental = &#34;incremental&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.SyncMode.full_refresh"><code class="name">var <span class="ident">full_refresh</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.SyncMode.incremental"><code class="name">var <span class="ident">incremental</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.TraceType"><code class="flex name class">
+<span>class <span class="ident">TraceType</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class TraceType(Enum):
+    ERROR = &#34;ERROR&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.TraceType.ERROR"><code class="name">var <span class="ident">ERROR</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type"><code class="flex name class">
+<span>class <span class="ident">Type</span></span>
+<span>(</span><span>value, names=None, *, module=None, qualname=None, type=None, start=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>An enumeration.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Type(Enum):
+    RECORD = &#34;RECORD&#34;
+    STATE = &#34;STATE&#34;
+    LOG = &#34;LOG&#34;
+    SPEC = &#34;SPEC&#34;
+    CONNECTION_STATUS = &#34;CONNECTION_STATUS&#34;
+    CATALOG = &#34;CATALOG&#34;
+    TRACE = &#34;TRACE&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>enum.Enum</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.CATALOG"><code class="name">var <span class="ident">CATALOG</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.CONNECTION_STATUS"><code class="name">var <span class="ident">CONNECTION_STATUS</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.LOG"><code class="name">var <span class="ident">LOG</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.RECORD"><code class="name">var <span class="ident">RECORD</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.SPEC"><code class="name">var <span class="ident">SPEC</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.STATE"><code class="name">var <span class="ident">STATE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.models.airbyte_protocol.Type.TRACE"><code class="name">var <span class="ident">TRACE</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="airbyte_cdk.models" href="index.html">airbyte_cdk.models</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AdvancedAuth" href="#airbyte_cdk.models.airbyte_protocol.AdvancedAuth">AdvancedAuth</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.auth_flow_type" href="#airbyte_cdk.models.airbyte_protocol.AdvancedAuth.auth_flow_type">auth_flow_type</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.oauth_config_specification" href="#airbyte_cdk.models.airbyte_protocol.AdvancedAuth.oauth_config_specification">oauth_config_specification</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.predicate_key" href="#airbyte_cdk.models.airbyte_protocol.AdvancedAuth.predicate_key">predicate_key</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AdvancedAuth.predicate_value" href="#airbyte_cdk.models.airbyte_protocol.AdvancedAuth.predicate_value">predicate_value</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog" href="#airbyte_cdk.models.airbyte_protocol.AirbyteCatalog">AirbyteCatalog</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteCatalog.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteCatalog.streams" href="#airbyte_cdk.models.airbyte_protocol.AirbyteCatalog.streams">streams</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus" href="#airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus">AirbyteConnectionStatus</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.message" href="#airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.message">message</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.status" href="#airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus.status">status</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage">AirbyteErrorTraceMessage</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.failure_type" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.failure_type">failure_type</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.internal_message" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.internal_message">internal_message</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.message" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.message">message</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.stack_trace" href="#airbyte_cdk.models.airbyte_protocol.AirbyteErrorTraceMessage.stack_trace">stack_trace</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState" href="#airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState">AirbyteGlobalState</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.shared_state" href="#airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.shared_state">shared_state</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.stream_states" href="#airbyte_cdk.models.airbyte_protocol.AirbyteGlobalState.stream_states">stream_states</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage">AirbyteLogMessage</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.level" href="#airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.level">level</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.message" href="#airbyte_cdk.models.airbyte_protocol.AirbyteLogMessage.message">message</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage">AirbyteMessage</a></code></h4>
+<ul class="two-column">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.catalog" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.catalog">catalog</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.connectionStatus" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.connectionStatus">connectionStatus</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.log" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.log">log</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.record" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.record">record</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.spec" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.spec">spec</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.state" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.state">state</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.trace" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.trace">trace</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteMessage.type" href="#airbyte_cdk.models.airbyte_protocol.AirbyteMessage.type">type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteProtocol" href="#airbyte_cdk.models.airbyte_protocol.AirbyteProtocol">AirbyteProtocol</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteProtocol.airbyte_message" href="#airbyte_cdk.models.airbyte_protocol.AirbyteProtocol.airbyte_message">airbyte_message</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteProtocol.configured_airbyte_catalog" href="#airbyte_cdk.models.airbyte_protocol.AirbyteProtocol.configured_airbyte_catalog">configured_airbyte_catalog</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage">AirbyteRecordMessage</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.data" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.data">data</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.emitted_at" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.emitted_at">emitted_at</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.namespace" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.namespace">namespace</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.stream" href="#airbyte_cdk.models.airbyte_protocol.AirbyteRecordMessage.stream">stream</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob">AirbyteStateBlob</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateBlob.Config">Config</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage">AirbyteStateMessage</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.data" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.data">data</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.global_" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.global_">global_</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.stream" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.stream">stream</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.type" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateMessage.type">type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateType" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateType">AirbyteStateType</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateType.GLOBAL" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateType.GLOBAL">GLOBAL</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateType.LEGACY" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateType.LEGACY">LEGACY</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStateType.STREAM" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStateType.STREAM">STREAM</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream">AirbyteStream</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.default_cursor_field" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.default_cursor_field">default_cursor_field</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.json_schema" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.json_schema">json_schema</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.name" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.name">name</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.namespace" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.namespace">namespace</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.source_defined_cursor" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.source_defined_cursor">source_defined_cursor</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.source_defined_primary_key" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.source_defined_primary_key">source_defined_primary_key</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream.supported_sync_modes" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStream.supported_sync_modes">supported_sync_modes</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStreamState">AirbyteStreamState</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.stream_descriptor" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.stream_descriptor">stream_descriptor</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.stream_state" href="#airbyte_cdk.models.airbyte_protocol.AirbyteStreamState.stream_state">stream_state</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage" href="#airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage">AirbyteTraceMessage</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.Config" href="#airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.emitted_at" href="#airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.emitted_at">emitted_at</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.error" href="#airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.error">error</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.type" href="#airbyte_cdk.models.airbyte_protocol.AirbyteTraceMessage.type">type</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AuthFlowType" href="#airbyte_cdk.models.airbyte_protocol.AuthFlowType">AuthFlowType</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AuthFlowType.oauth1_0" href="#airbyte_cdk.models.airbyte_protocol.AuthFlowType.oauth1_0">oauth1_0</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AuthFlowType.oauth2_0" href="#airbyte_cdk.models.airbyte_protocol.AuthFlowType.oauth2_0">oauth2_0</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AuthSpecification" href="#airbyte_cdk.models.airbyte_protocol.AuthSpecification">AuthSpecification</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AuthSpecification.auth_type" href="#airbyte_cdk.models.airbyte_protocol.AuthSpecification.auth_type">auth_type</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AuthSpecification.oauth2Specification" href="#airbyte_cdk.models.airbyte_protocol.AuthSpecification.oauth2Specification">oauth2Specification</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.AuthType" href="#airbyte_cdk.models.airbyte_protocol.AuthType">AuthType</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.AuthType.oauth2_0" href="#airbyte_cdk.models.airbyte_protocol.AuthType.oauth2_0">oauth2_0</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog">ConfiguredAirbyteCatalog</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog.Config" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog.streams" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteCatalog.streams">streams</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream">ConfiguredAirbyteStream</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.Config" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.cursor_field" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.cursor_field">cursor_field</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.destination_sync_mode" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.destination_sync_mode">destination_sync_mode</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.primary_key" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.primary_key">primary_key</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.stream" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.stream">stream</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.sync_mode" href="#airbyte_cdk.models.airbyte_protocol.ConfiguredAirbyteStream.sync_mode">sync_mode</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification">ConnectorSpecification</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.Config" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.advanced_auth" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.advanced_auth">advanced_auth</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.authSpecification" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.authSpecification">authSpecification</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.changelogUrl" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.changelogUrl">changelogUrl</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.connectionSpecification" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.connectionSpecification">connectionSpecification</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.documentationUrl" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.documentationUrl">documentationUrl</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supported_destination_sync_modes" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supported_destination_sync_modes">supported_destination_sync_modes</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsDBT" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsDBT">supportsDBT</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsIncremental" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsIncremental">supportsIncremental</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsNormalization" href="#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification.supportsNormalization">supportsNormalization</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode" href="#airbyte_cdk.models.airbyte_protocol.DestinationSyncMode">DestinationSyncMode</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.append" href="#airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.append">append</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.append_dedup" href="#airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.append_dedup">append_dedup</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.overwrite" href="#airbyte_cdk.models.airbyte_protocol.DestinationSyncMode.overwrite">overwrite</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.FailureType" href="#airbyte_cdk.models.airbyte_protocol.FailureType">FailureType</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.FailureType.config_error" href="#airbyte_cdk.models.airbyte_protocol.FailureType.config_error">config_error</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.FailureType.system_error" href="#airbyte_cdk.models.airbyte_protocol.FailureType.system_error">system_error</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.Level" href="#airbyte_cdk.models.airbyte_protocol.Level">Level</a></code></h4>
+<ul class="two-column">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Level.DEBUG" href="#airbyte_cdk.models.airbyte_protocol.Level.DEBUG">DEBUG</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Level.ERROR" href="#airbyte_cdk.models.airbyte_protocol.Level.ERROR">ERROR</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Level.FATAL" href="#airbyte_cdk.models.airbyte_protocol.Level.FATAL">FATAL</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Level.INFO" href="#airbyte_cdk.models.airbyte_protocol.Level.INFO">INFO</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Level.TRACE" href="#airbyte_cdk.models.airbyte_protocol.Level.TRACE">TRACE</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Level.WARN" href="#airbyte_cdk.models.airbyte_protocol.Level.WARN">WARN</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.OAuth2Specification" href="#airbyte_cdk.models.airbyte_protocol.OAuth2Specification">OAuth2Specification</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.Config" href="#airbyte_cdk.models.airbyte_protocol.OAuth2Specification.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.oauthFlowInitParameters" href="#airbyte_cdk.models.airbyte_protocol.OAuth2Specification.oauthFlowInitParameters">oauthFlowInitParameters</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.oauthFlowOutputParameters" href="#airbyte_cdk.models.airbyte_protocol.OAuth2Specification.oauthFlowOutputParameters">oauthFlowOutputParameters</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuth2Specification.rootObject" href="#airbyte_cdk.models.airbyte_protocol.OAuth2Specification.rootObject">rootObject</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification" href="#airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification">OAuthConfigSpecification</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_output_specification" href="#airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_output_specification">complete_oauth_output_specification</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_server_input_specification" href="#airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_server_input_specification">complete_oauth_server_input_specification</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_server_output_specification" href="#airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.complete_oauth_server_output_specification">complete_oauth_server_output_specification</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.oauth_user_input_from_connector_config_specification" href="#airbyte_cdk.models.airbyte_protocol.OAuthConfigSpecification.oauth_user_input_from_connector_config_specification">oauth_user_input_from_connector_config_specification</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.Status" href="#airbyte_cdk.models.airbyte_protocol.Status">Status</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Status.FAILED" href="#airbyte_cdk.models.airbyte_protocol.Status.FAILED">FAILED</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Status.SUCCEEDED" href="#airbyte_cdk.models.airbyte_protocol.Status.SUCCEEDED">SUCCEEDED</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.StreamDescriptor" href="#airbyte_cdk.models.airbyte_protocol.StreamDescriptor">StreamDescriptor</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.StreamDescriptor.Config" href="#airbyte_cdk.models.airbyte_protocol.StreamDescriptor.Config">Config</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.StreamDescriptor.name" href="#airbyte_cdk.models.airbyte_protocol.StreamDescriptor.name">name</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.StreamDescriptor.namespace" href="#airbyte_cdk.models.airbyte_protocol.StreamDescriptor.namespace">namespace</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.SyncMode" href="#airbyte_cdk.models.airbyte_protocol.SyncMode">SyncMode</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.SyncMode.full_refresh" href="#airbyte_cdk.models.airbyte_protocol.SyncMode.full_refresh">full_refresh</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.SyncMode.incremental" href="#airbyte_cdk.models.airbyte_protocol.SyncMode.incremental">incremental</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.TraceType" href="#airbyte_cdk.models.airbyte_protocol.TraceType">TraceType</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.TraceType.ERROR" href="#airbyte_cdk.models.airbyte_protocol.TraceType.ERROR">ERROR</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.models.airbyte_protocol.Type" href="#airbyte_cdk.models.airbyte_protocol.Type">Type</a></code></h4>
+<ul class="two-column">
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.CATALOG" href="#airbyte_cdk.models.airbyte_protocol.Type.CATALOG">CATALOG</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.CONNECTION_STATUS" href="#airbyte_cdk.models.airbyte_protocol.Type.CONNECTION_STATUS">CONNECTION_STATUS</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.LOG" href="#airbyte_cdk.models.airbyte_protocol.Type.LOG">LOG</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.RECORD" href="#airbyte_cdk.models.airbyte_protocol.Type.RECORD">RECORD</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.SPEC" href="#airbyte_cdk.models.airbyte_protocol.Type.SPEC">SPEC</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.STATE" href="#airbyte_cdk.models.airbyte_protocol.Type.STATE">STATE</a></code></li>
+<li><code><a title="airbyte_cdk.models.airbyte_protocol.Type.TRACE" href="#airbyte_cdk.models.airbyte_protocol.Type.TRACE">TRACE</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

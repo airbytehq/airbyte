@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>airbyte_cdk.sources.utils.schema_helpers API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>airbyte_cdk.sources.utils.schema_helpers</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+
+import importlib
+import json
+import os
+import pkgutil
+from typing import Any, ClassVar, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
+
+import jsonref
+from airbyte_cdk.models import ConnectorSpecification
+from jsonschema import RefResolver, validate
+from jsonschema.exceptions import ValidationError
+from pydantic import BaseModel, Field
+
+
+class JsonFileLoader:
+    &#34;&#34;&#34;
+    Custom json file loader to resolve references to resources located in &#34;shared&#34; directory.
+    We need this for compatability with existing schemas cause all of them have references
+    pointing to shared_schema.json file instead of shared/shared_schema.json
+    &#34;&#34;&#34;
+
+    def __init__(self, uri_base: str, shared: str):
+        self.shared = shared
+        self.uri_base = uri_base
+
+    def __call__(self, uri: str) -&gt; Dict[str, Any]:
+        uri = uri.replace(self.uri_base, f&#34;{self.uri_base}/{self.shared}/&#34;)
+        return json.load(open(uri))
+
+
+def resolve_ref_links(obj: Any) -&gt; Union[Dict[str, Any], List[Any]]:
+    &#34;&#34;&#34;
+    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+
+    :param obj - jsonschema object with ref field resolved.
+    :return JSON serializable object with references without external dependencies.
+    &#34;&#34;&#34;
+    if isinstance(obj, jsonref.JsonRef):
+        obj = resolve_ref_links(obj.__subject__)
+        # Omit existing definitions for external resource since
+        # we dont need it anymore.
+        obj.pop(&#34;definitions&#34;, None)
+        return obj
+    elif isinstance(obj, dict):
+        return {k: resolve_ref_links(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [resolve_ref_links(item) for item in obj]
+    else:
+        return obj
+
+
+def _expand_refs(schema: Any, ref_resolver: Optional[RefResolver] = None) -&gt; None:
+    &#34;&#34;&#34;Internal function to iterate over schema and replace all occurrences of $ref with their definitions. Recursive.
+
+    :param schema: schema that will be patched
+    :param ref_resolver: resolver to get definition from $ref, if None pass it will be instantiated
+    &#34;&#34;&#34;
+    ref_resolver = ref_resolver or RefResolver.from_schema(schema)
+
+    if isinstance(schema, MutableMapping):
+        if &#34;$ref&#34; in schema:
+            ref_url = schema.pop(&#34;$ref&#34;)
+            _, definition = ref_resolver.resolve(ref_url)
+            _expand_refs(definition, ref_resolver=ref_resolver)  # expand refs in definitions as well
+            schema.update(definition)
+        else:
+            for key, value in schema.items():
+                _expand_refs(value, ref_resolver=ref_resolver)
+    elif isinstance(schema, List):
+        for value in schema:
+            _expand_refs(value, ref_resolver=ref_resolver)
+
+
+def expand_refs(schema: Any) -&gt; None:
+    &#34;&#34;&#34;Iterate over schema and replace all occurrences of $ref with their definitions.
+
+    :param schema: schema that will be patched
+    &#34;&#34;&#34;
+    _expand_refs(schema)
+    schema.pop(&#34;definitions&#34;, None)  # remove definitions created by $ref
+
+
+def rename_key(schema: Any, old_key: str, new_key: str) -&gt; None:
+    &#34;&#34;&#34;Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive.&#34;
+
+    :param schema: schema that will be patched
+    :param old_key: name of the key to replace
+    :param new_key: new name of the key
+    &#34;&#34;&#34;
+    if not isinstance(schema, MutableMapping):
+        return
+
+    for key, value in schema.items():
+        rename_key(value, old_key, new_key)
+        if old_key in schema:
+            schema[new_key] = schema.pop(old_key)
+
+
+class ResourceSchemaLoader:
+    &#34;&#34;&#34;JSONSchema loader from package resources&#34;&#34;&#34;
+
+    def __init__(self, package_name: str):
+        self.package_name = package_name
+
+    def get_schema(self, name: str) -&gt; dict:
+        &#34;&#34;&#34;
+        This method retrieves a JSON schema from the schemas/ folder.
+
+
+        The expected file structure is to have all top-level schemas (corresponding to streams) in the &#34;schemas/&#34; folder, with any shared $refs
+        living inside the &#34;schemas/shared/&#34; folder. For example:
+
+        schemas/shared/&lt;shared_definition&gt;.json
+        schemas/&lt;name&gt;.json # contains a $ref to shared_definition
+        schemas/&lt;name2&gt;.json # contains a $ref to shared_definition
+        &#34;&#34;&#34;
+
+        schema_filename = f&#34;schemas/{name}.json&#34;
+        raw_file = pkgutil.get_data(self.package_name, schema_filename)
+        if not raw_file:
+            raise IOError(f&#34;Cannot find file {schema_filename}&#34;)
+        try:
+            raw_schema = json.loads(raw_file)
+        except ValueError as err:
+            raise RuntimeError(f&#34;Invalid JSON file format for file {schema_filename}&#34;) from err
+
+        return self.__resolve_schema_references(raw_schema)
+
+    def __resolve_schema_references(self, raw_schema: dict) -&gt; dict:
+        &#34;&#34;&#34;
+        Resolve links to external references and move it to local &#34;definitions&#34; map.
+
+        :param raw_schema jsonschema to lookup for external links.
+        :return JSON serializable object with references without external dependencies.
+        &#34;&#34;&#34;
+
+        package = importlib.import_module(self.package_name)
+        base = os.path.dirname(package.__file__) + &#34;/&#34;
+        resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, &#34;schemas/shared&#34;), base_uri=base)
+        resolved = resolve_ref_links(resolved)
+        return resolved
+
+
+def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification):
+    &#34;&#34;&#34;
+    Check config object against spec. In case of spec is invalid, throws
+    an exception with validation error description.
+
+    :param config - config loaded from file specified over command line
+    :param spec - spec object generated by connector
+    &#34;&#34;&#34;
+    spec_schema = spec.connectionSpecification
+    try:
+        validate(instance=config, schema=spec_schema)
+    except ValidationError as validation_error:
+        raise Exception(&#34;Config validation error: &#34; + validation_error.message) from None
+
+
+class InternalConfig(BaseModel):
+    KEYWORDS: ClassVar[set] = {&#34;_limit&#34;, &#34;_page_size&#34;}
+    limit: int = Field(None, alias=&#34;_limit&#34;)
+    page_size: int = Field(None, alias=&#34;_page_size&#34;)
+
+    def dict(self, *args, **kwargs):
+        kwargs[&#34;by_alias&#34;] = True
+        kwargs[&#34;exclude_unset&#34;] = True
+        return super().dict(*args, **kwargs)
+
+
+def split_config(config: Mapping[str, Any]) -&gt; Tuple[dict, InternalConfig]:
+    &#34;&#34;&#34;
+    Break config map object into 2 instances: first is a dict with user defined
+    configuration and second is internal config that contains private keys for
+    acceptance test configuration.
+
+    :param
+     config - Dict object that has been loaded from config file.
+
+    :return tuple of user defined config dict with filtered out internal
+    parameters and SAT internal config object.
+    &#34;&#34;&#34;
+    main_config = {}
+    internal_config = {}
+    for k, v in config.items():
+        if k in InternalConfig.KEYWORDS:
+            internal_config[k] = v
+        else:
+            main_config[k] = v
+    return main_config, InternalConfig.parse_obj(internal_config)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.check_config_against_spec_or_exit"><code class="name flex">
+<span>def <span class="ident">check_config_against_spec_or_exit</span></span>(<span>config: Mapping[str, Any], spec: <a title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification" href="../../models/airbyte_protocol.html#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification">ConnectorSpecification</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check config object against spec. In case of spec is invalid, throws
+an exception with validation error description.</p>
+<p>:param config - config loaded from file specified over command line
+:param spec - spec object generated by connector</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_config_against_spec_or_exit(config: Mapping[str, Any], spec: ConnectorSpecification):
+    &#34;&#34;&#34;
+    Check config object against spec. In case of spec is invalid, throws
+    an exception with validation error description.
+
+    :param config - config loaded from file specified over command line
+    :param spec - spec object generated by connector
+    &#34;&#34;&#34;
+    spec_schema = spec.connectionSpecification
+    try:
+        validate(instance=config, schema=spec_schema)
+    except ValidationError as validation_error:
+        raise Exception(&#34;Config validation error: &#34; + validation_error.message) from None</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.expand_refs"><code class="name flex">
+<span>def <span class="ident">expand_refs</span></span>(<span>schema: Any) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterate over schema and replace all occurrences of $ref with their definitions.</p>
+<p>:param schema: schema that will be patched</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def expand_refs(schema: Any) -&gt; None:
+    &#34;&#34;&#34;Iterate over schema and replace all occurrences of $ref with their definitions.
+
+    :param schema: schema that will be patched
+    &#34;&#34;&#34;
+    _expand_refs(schema)
+    schema.pop(&#34;definitions&#34;, None)  # remove definitions created by $ref</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.rename_key"><code class="name flex">
+<span>def <span class="ident">rename_key</span></span>(<span>schema: Any, old_key: str, new_key: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive."</p>
+<p>:param schema: schema that will be patched
+:param old_key: name of the key to replace
+:param new_key: new name of the key</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rename_key(schema: Any, old_key: str, new_key: str) -&gt; None:
+    &#34;&#34;&#34;Iterate over nested dictionary and replace one key with another. Used to replace anyOf with oneOf. Recursive.&#34;
+
+    :param schema: schema that will be patched
+    :param old_key: name of the key to replace
+    :param new_key: new name of the key
+    &#34;&#34;&#34;
+    if not isinstance(schema, MutableMapping):
+        return
+
+    for key, value in schema.items():
+        rename_key(value, old_key, new_key)
+        if old_key in schema:
+            schema[new_key] = schema.pop(old_key)</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.resolve_ref_links"><code class="name flex">
+<span>def <span class="ident">resolve_ref_links</span></span>(<span>obj: Any) ‑> Union[Dict[str, Any], List[Any]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.</p>
+<p>:param obj - jsonschema object with ref field resolved.
+:return JSON serializable object with references without external dependencies.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def resolve_ref_links(obj: Any) -&gt; Union[Dict[str, Any], List[Any]]:
+    &#34;&#34;&#34;
+    Scan resolved schema and convert jsonref.JsonRef object to JSON serializable dict.
+
+    :param obj - jsonschema object with ref field resolved.
+    :return JSON serializable object with references without external dependencies.
+    &#34;&#34;&#34;
+    if isinstance(obj, jsonref.JsonRef):
+        obj = resolve_ref_links(obj.__subject__)
+        # Omit existing definitions for external resource since
+        # we dont need it anymore.
+        obj.pop(&#34;definitions&#34;, None)
+        return obj
+    elif isinstance(obj, dict):
+        return {k: resolve_ref_links(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [resolve_ref_links(item) for item in obj]
+    else:
+        return obj</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.split_config"><code class="name flex">
+<span>def <span class="ident">split_config</span></span>(<span>config: Mapping[str, Any]) ‑> Tuple[dict, <a title="airbyte_cdk.sources.utils.schema_helpers.InternalConfig" href="#airbyte_cdk.sources.utils.schema_helpers.InternalConfig">InternalConfig</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Break config map object into 2 instances: first is a dict with user defined
+configuration and second is internal config that contains private keys for
+acceptance test configuration.</p>
+<p>:param
+config - Dict object that has been loaded from config file.</p>
+<p>:return tuple of user defined config dict with filtered out internal
+parameters and SAT internal config object.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def split_config(config: Mapping[str, Any]) -&gt; Tuple[dict, InternalConfig]:
+    &#34;&#34;&#34;
+    Break config map object into 2 instances: first is a dict with user defined
+    configuration and second is internal config that contains private keys for
+    acceptance test configuration.
+
+    :param
+     config - Dict object that has been loaded from config file.
+
+    :return tuple of user defined config dict with filtered out internal
+    parameters and SAT internal config object.
+    &#34;&#34;&#34;
+    main_config = {}
+    internal_config = {}
+    for k, v in config.items():
+        if k in InternalConfig.KEYWORDS:
+            internal_config[k] = v
+        else:
+            main_config[k] = v
+    return main_config, InternalConfig.parse_obj(internal_config)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.InternalConfig"><code class="flex name class">
+<span>class <span class="ident">InternalConfig</span></span>
+<span>(</span><span>**data: Any)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a new model by parsing and validating input data from keyword arguments.</p>
+<p>Raises ValidationError if the input data cannot be parsed to form a valid model.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InternalConfig(BaseModel):
+    KEYWORDS: ClassVar[set] = {&#34;_limit&#34;, &#34;_page_size&#34;}
+    limit: int = Field(None, alias=&#34;_limit&#34;)
+    page_size: int = Field(None, alias=&#34;_page_size&#34;)
+
+    def dict(self, *args, **kwargs):
+        kwargs[&#34;by_alias&#34;] = True
+        kwargs[&#34;exclude_unset&#34;] = True
+        return super().dict(*args, **kwargs)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pydantic.main.BaseModel</li>
+<li>pydantic.utils.Representation</li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.KEYWORDS"><code class="name">var <span class="ident">KEYWORDS</span> : ClassVar[set]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.limit"><code class="name">var <span class="ident">limit</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.page_size"><code class="name">var <span class="ident">page_size</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.dict"><code class="name flex">
+<span>def <span class="ident">dict</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate a dictionary representation of the model, optionally specifying which fields to include or exclude.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def dict(self, *args, **kwargs):
+    kwargs[&#34;by_alias&#34;] = True
+    kwargs[&#34;exclude_unset&#34;] = True
+    return super().dict(*args, **kwargs)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.JsonFileLoader"><code class="flex name class">
+<span>class <span class="ident">JsonFileLoader</span></span>
+<span>(</span><span>uri_base: str, shared: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Custom json file loader to resolve references to resources located in "shared" directory.
+We need this for compatability with existing schemas cause all of them have references
+pointing to shared_schema.json file instead of shared/shared_schema.json</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class JsonFileLoader:
+    &#34;&#34;&#34;
+    Custom json file loader to resolve references to resources located in &#34;shared&#34; directory.
+    We need this for compatability with existing schemas cause all of them have references
+    pointing to shared_schema.json file instead of shared/shared_schema.json
+    &#34;&#34;&#34;
+
+    def __init__(self, uri_base: str, shared: str):
+        self.shared = shared
+        self.uri_base = uri_base
+
+    def __call__(self, uri: str) -&gt; Dict[str, Any]:
+        uri = uri.replace(self.uri_base, f&#34;{self.uri_base}/{self.shared}/&#34;)
+        return json.load(open(uri))</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader"><code class="flex name class">
+<span>class <span class="ident">ResourceSchemaLoader</span></span>
+<span>(</span><span>package_name: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>JSONSchema loader from package resources</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ResourceSchemaLoader:
+    &#34;&#34;&#34;JSONSchema loader from package resources&#34;&#34;&#34;
+
+    def __init__(self, package_name: str):
+        self.package_name = package_name
+
+    def get_schema(self, name: str) -&gt; dict:
+        &#34;&#34;&#34;
+        This method retrieves a JSON schema from the schemas/ folder.
+
+
+        The expected file structure is to have all top-level schemas (corresponding to streams) in the &#34;schemas/&#34; folder, with any shared $refs
+        living inside the &#34;schemas/shared/&#34; folder. For example:
+
+        schemas/shared/&lt;shared_definition&gt;.json
+        schemas/&lt;name&gt;.json # contains a $ref to shared_definition
+        schemas/&lt;name2&gt;.json # contains a $ref to shared_definition
+        &#34;&#34;&#34;
+
+        schema_filename = f&#34;schemas/{name}.json&#34;
+        raw_file = pkgutil.get_data(self.package_name, schema_filename)
+        if not raw_file:
+            raise IOError(f&#34;Cannot find file {schema_filename}&#34;)
+        try:
+            raw_schema = json.loads(raw_file)
+        except ValueError as err:
+            raise RuntimeError(f&#34;Invalid JSON file format for file {schema_filename}&#34;) from err
+
+        return self.__resolve_schema_references(raw_schema)
+
+    def __resolve_schema_references(self, raw_schema: dict) -&gt; dict:
+        &#34;&#34;&#34;
+        Resolve links to external references and move it to local &#34;definitions&#34; map.
+
+        :param raw_schema jsonschema to lookup for external links.
+        :return JSON serializable object with references without external dependencies.
+        &#34;&#34;&#34;
+
+        package = importlib.import_module(self.package_name)
+        base = os.path.dirname(package.__file__) + &#34;/&#34;
+        resolved = jsonref.JsonRef.replace_refs(raw_schema, loader=JsonFileLoader(base, &#34;schemas/shared&#34;), base_uri=base)
+        resolved = resolve_ref_links(resolved)
+        return resolved</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader.get_schema"><code class="name flex">
+<span>def <span class="ident">get_schema</span></span>(<span>self, name: str) ‑> dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This method retrieves a JSON schema from the schemas/ folder.</p>
+<p>The expected file structure is to have all top-level schemas (corresponding to streams) in the "schemas/" folder, with any shared $refs
+living inside the "schemas/shared/" folder. For example:</p>
+<p>schemas/shared/<shared_definition>.json
+schemas/<name>.json # contains a $ref to shared_definition
+schemas/<name2>.json # contains a $ref to shared_definition</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_schema(self, name: str) -&gt; dict:
+    &#34;&#34;&#34;
+    This method retrieves a JSON schema from the schemas/ folder.
+
+
+    The expected file structure is to have all top-level schemas (corresponding to streams) in the &#34;schemas/&#34; folder, with any shared $refs
+    living inside the &#34;schemas/shared/&#34; folder. For example:
+
+    schemas/shared/&lt;shared_definition&gt;.json
+    schemas/&lt;name&gt;.json # contains a $ref to shared_definition
+    schemas/&lt;name2&gt;.json # contains a $ref to shared_definition
+    &#34;&#34;&#34;
+
+    schema_filename = f&#34;schemas/{name}.json&#34;
+    raw_file = pkgutil.get_data(self.package_name, schema_filename)
+    if not raw_file:
+        raise IOError(f&#34;Cannot find file {schema_filename}&#34;)
+    try:
+        raw_schema = json.loads(raw_file)
+    except ValueError as err:
+        raise RuntimeError(f&#34;Invalid JSON file format for file {schema_filename}&#34;) from err
+
+    return self.__resolve_schema_references(raw_schema)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="airbyte_cdk.sources.utils" href="index.html">airbyte_cdk.sources.utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.check_config_against_spec_or_exit" href="#airbyte_cdk.sources.utils.schema_helpers.check_config_against_spec_or_exit">check_config_against_spec_or_exit</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.expand_refs" href="#airbyte_cdk.sources.utils.schema_helpers.expand_refs">expand_refs</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.rename_key" href="#airbyte_cdk.sources.utils.schema_helpers.rename_key">rename_key</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.resolve_ref_links" href="#airbyte_cdk.sources.utils.schema_helpers.resolve_ref_links">resolve_ref_links</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.split_config" href="#airbyte_cdk.sources.utils.schema_helpers.split_config">split_config</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="airbyte_cdk.sources.utils.schema_helpers.InternalConfig" href="#airbyte_cdk.sources.utils.schema_helpers.InternalConfig">InternalConfig</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.KEYWORDS" href="#airbyte_cdk.sources.utils.schema_helpers.InternalConfig.KEYWORDS">KEYWORDS</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.dict" href="#airbyte_cdk.sources.utils.schema_helpers.InternalConfig.dict">dict</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.limit" href="#airbyte_cdk.sources.utils.schema_helpers.InternalConfig.limit">limit</a></code></li>
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.InternalConfig.page_size" href="#airbyte_cdk.sources.utils.schema_helpers.InternalConfig.page_size">page_size</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.sources.utils.schema_helpers.JsonFileLoader" href="#airbyte_cdk.sources.utils.schema_helpers.JsonFileLoader">JsonFileLoader</a></code></h4>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader" href="#airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader">ResourceSchemaLoader</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader.get_schema" href="#airbyte_cdk.sources.utils.schema_helpers.ResourceSchemaLoader.get_schema">get_schema</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

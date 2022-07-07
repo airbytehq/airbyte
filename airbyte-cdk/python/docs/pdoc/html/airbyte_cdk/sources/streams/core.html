@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>airbyte_cdk.sources.streams.core API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>airbyte_cdk.sources.streams.core</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+
+import inspect
+import logging
+from abc import ABC, abstractmethod
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+
+import airbyte_cdk.sources.utils.casing as casing
+from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from deprecated.classic import deprecated
+
+
+def package_name_from_class(cls: object) -&gt; str:
+    &#34;&#34;&#34;Find the package name given a class name&#34;&#34;&#34;
+    module: Any = inspect.getmodule(cls)
+    return module.__name__.split(&#34;.&#34;)[0]
+
+
+class IncrementalMixin(ABC):
+    &#34;&#34;&#34;Mixin to make stream incremental.
+
+    class IncrementalStream(Stream, IncrementalMixin):
+        @property
+        def state(self):
+            return self._state
+
+        @state.setter
+        def state(self, value):
+            self._state[self.cursor_field] = value[self.cursor_field]
+    &#34;&#34;&#34;
+
+    @property
+    @abstractmethod
+    def state(self) -&gt; MutableMapping[str, Any]:
+        &#34;&#34;&#34;State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: &#34;cursor_value&#34;
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        &#34;&#34;&#34;
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        &#34;&#34;&#34;State setter, accept state serialized by state getter.&#34;&#34;&#34;
+
+
+class Stream(ABC):
+    &#34;&#34;&#34;
+    Base abstract class for an Airbyte Stream. Makes no assumption of the Stream&#39;s underlying transport protocol.
+    &#34;&#34;&#34;
+
+    # Use self.logger in subclasses to log any messages
+    @property
+    def logger(self):
+        return logging.getLogger(f&#34;airbyte.streams.{self.name}&#34;)
+
+    # TypeTransformer object to perform output data transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
+
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        &#34;&#34;&#34;
+        return casing.camel_to_snake(self.__class__.__name__)
+
+    def get_error_display_message(self, exception: BaseException) -&gt; Optional[str]:
+        &#34;&#34;&#34;
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        &#34;&#34;&#34;
+        return None
+
+    @abstractmethod
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -&gt; Iterable[Mapping[str, Any]]:
+        &#34;&#34;&#34;
+        This method should be overridden by subclasses to read records based on the inputs
+        &#34;&#34;&#34;
+
+    def get_json_schema(self) -&gt; Mapping[str, Any]:
+        &#34;&#34;&#34;
+        :return: A dict of the JSON schema representing this stream.
+
+        The default implementation of this method looks for a JSONSchema file with the same name as this stream&#39;s &#34;name&#34; property.
+        Override as needed.
+        &#34;&#34;&#34;
+        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)
+
+    def as_airbyte_stream(self) -&gt; AirbyteStream:
+        stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+
+        if self.namespace:
+            stream.namespace = self.namespace
+
+        if self.supports_incremental:
+            stream.source_defined_cursor = self.source_defined_cursor
+            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
+            stream.default_cursor_field = self._wrapped_cursor_field()
+
+        keys = Stream._wrapped_primary_key(self.primary_key)
+        if keys and len(keys) &gt; 0:
+            stream.source_defined_primary_key = keys
+
+        return stream
+
+    @property
+    def supports_incremental(self) -&gt; bool:
+        &#34;&#34;&#34;
+        :return: True if this stream supports incrementally reading data
+        &#34;&#34;&#34;
+        return len(self._wrapped_cursor_field()) &gt; 0
+
+    def _wrapped_cursor_field(self) -&gt; List[str]:
+        return [self.cursor_field] if isinstance(self.cursor_field, str) else self.cursor_field
+
+    @property
+    def cursor_field(self) -&gt; Union[str, List[str]]:
+        &#34;&#34;&#34;
+        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        &#34;&#34;&#34;
+        return []
+
+    @property
+    def namespace(self) -&gt; Optional[str]:
+        &#34;&#34;&#34;
+        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+        :return: A string containing the name of the namespace.
+        &#34;&#34;&#34;
+        return None
+
+    @property
+    def source_defined_cursor(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Return False if the cursor can be configured by the user.
+        &#34;&#34;&#34;
+        return True
+
+    @property
+    @abstractmethod
+    def primary_key(self) -&gt; Optional[Union[str, List[str], List[List[str]]]]:
+        &#34;&#34;&#34;
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+          If the stream has no primary keys, return None.
+        &#34;&#34;&#34;
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -&gt; Iterable[Optional[Mapping[str, Any]]]:
+        &#34;&#34;&#34;
+        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
+
+        :param sync_mode:
+        :param cursor_field:
+        :param stream_state:
+        :return:
+        &#34;&#34;&#34;
+        return [None]
+
+    @property
+    def state_checkpoint_interval(self) -&gt; Optional[int]:
+        &#34;&#34;&#34;
+        Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+        100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
+
+        Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
+
+        return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+        ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+        created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
+        &#34;&#34;&#34;
+        return None
+
+    @deprecated(version=&#34;0.1.49&#34;, reason=&#34;You should use explicit state property instead, see IncrementalMixin docs.&#34;)
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        &#34;&#34;&#34;Override to extract state from the latest record. Needed to implement incremental sync.
+
+        Inspects the latest record extracted from the data source and the current state object and return an updated state object.
+
+        For example: if the state object is based on created_at timestamp, and the current state is {&#39;created_at&#39;: 10}, and the latest_record is
+        {&#39;name&#39;: &#39;octavia&#39;, &#39;created_at&#39;: 20 } then this method would return {&#39;created_at&#39;: 20} to indicate state should be updated to this object.
+
+        :param current_stream_state: The stream&#39;s current state object
+        :param latest_record: The latest record extracted from the stream
+        :return: An updated state object
+        &#34;&#34;&#34;
+        return {}
+
+    @staticmethod
+    def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -&gt; Optional[List[List[str]]]:
+        &#34;&#34;&#34;
+        :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
+        &#34;&#34;&#34;
+        if not keys:
+            return None
+
+        if isinstance(keys, str):
+            return [[keys]]
+        elif isinstance(keys, list):
+            wrapped_keys = []
+            for component in keys:
+                if isinstance(component, str):
+                    wrapped_keys.append([component])
+                elif isinstance(component, list):
+                    wrapped_keys.append(component)
+                else:
+                    raise ValueError(f&#34;Element must be either list or str. Got: {type(component)}&#34;)
+            return wrapped_keys
+        else:
+            raise ValueError(f&#34;Element must be either list or str. Got: {type(keys)}&#34;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="airbyte_cdk.sources.streams.core.package_name_from_class"><code class="name flex">
+<span>def <span class="ident">package_name_from_class</span></span>(<span>cls: object) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Find the package name given a class name</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def package_name_from_class(cls: object) -&gt; str:
+    &#34;&#34;&#34;Find the package name given a class name&#34;&#34;&#34;
+    module: Any = inspect.getmodule(cls)
+    return module.__name__.split(&#34;.&#34;)[0]</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="airbyte_cdk.sources.streams.core.IncrementalMixin"><code class="flex name class">
+<span>class <span class="ident">IncrementalMixin</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Mixin to make stream incremental.</p>
+<p>class IncrementalStream(Stream, IncrementalMixin):
+@property
+def state(self):
+return self._state</p>
+<pre><code>@state.setter
+def state(self, value):
+    self._state[self.cursor_field] = value[self.cursor_field]
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class IncrementalMixin(ABC):
+    &#34;&#34;&#34;Mixin to make stream incremental.
+
+    class IncrementalStream(Stream, IncrementalMixin):
+        @property
+        def state(self):
+            return self._state
+
+        @state.setter
+        def state(self, value):
+            self._state[self.cursor_field] = value[self.cursor_field]
+    &#34;&#34;&#34;
+
+    @property
+    @abstractmethod
+    def state(self) -&gt; MutableMapping[str, Any]:
+        &#34;&#34;&#34;State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: &#34;cursor_value&#34;
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
+        &#34;&#34;&#34;
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        &#34;&#34;&#34;State setter, accept state serialized by state getter.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="airbyte_cdk.sources.streams.core.IncrementalMixin.state"><code class="name">var <span class="ident">state</span> : MutableMapping[str, Any]</code></dt>
+<dd>
+<div class="desc"><p>State getter, should return state in form that can serialized to a string and send to the output
+as a STATE AirbyteMessage.</p>
+<p>A good example of a state is a cursor_value:
+{
+self.cursor_field: "cursor_value"
+}</p>
+<p>State should try to be as small as possible but at the same time descriptive enough to restore
+syncing process from the point where it stopped.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+@abstractmethod
+def state(self) -&gt; MutableMapping[str, Any]:
+    &#34;&#34;&#34;State getter, should return state in form that can serialized to a string and send to the output
+    as a STATE AirbyteMessage.
+
+    A good example of a state is a cursor_value:
+        {
+            self.cursor_field: &#34;cursor_value&#34;
+        }
+
+     State should try to be as small as possible but at the same time descriptive enough to restore
+     syncing process from the point where it stopped.
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream"><code class="flex name class">
+<span>class <span class="ident">Stream</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>Base abstract class for an Airbyte Stream. Makes no assumption of the Stream's underlying transport protocol.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Stream(ABC):
+    &#34;&#34;&#34;
+    Base abstract class for an Airbyte Stream. Makes no assumption of the Stream&#39;s underlying transport protocol.
+    &#34;&#34;&#34;
+
+    # Use self.logger in subclasses to log any messages
+    @property
+    def logger(self):
+        return logging.getLogger(f&#34;airbyte.streams.{self.name}&#34;)
+
+    # TypeTransformer object to perform output data transformation
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
+
+    @property
+    def name(self) -&gt; str:
+        &#34;&#34;&#34;
+        :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+        &#34;&#34;&#34;
+        return casing.camel_to_snake(self.__class__.__name__)
+
+    def get_error_display_message(self, exception: BaseException) -&gt; Optional[str]:
+        &#34;&#34;&#34;
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        &#34;&#34;&#34;
+        return None
+
+    @abstractmethod
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -&gt; Iterable[Mapping[str, Any]]:
+        &#34;&#34;&#34;
+        This method should be overridden by subclasses to read records based on the inputs
+        &#34;&#34;&#34;
+
+    def get_json_schema(self) -&gt; Mapping[str, Any]:
+        &#34;&#34;&#34;
+        :return: A dict of the JSON schema representing this stream.
+
+        The default implementation of this method looks for a JSONSchema file with the same name as this stream&#39;s &#34;name&#34; property.
+        Override as needed.
+        &#34;&#34;&#34;
+        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)
+
+    def as_airbyte_stream(self) -&gt; AirbyteStream:
+        stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+
+        if self.namespace:
+            stream.namespace = self.namespace
+
+        if self.supports_incremental:
+            stream.source_defined_cursor = self.source_defined_cursor
+            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
+            stream.default_cursor_field = self._wrapped_cursor_field()
+
+        keys = Stream._wrapped_primary_key(self.primary_key)
+        if keys and len(keys) &gt; 0:
+            stream.source_defined_primary_key = keys
+
+        return stream
+
+    @property
+    def supports_incremental(self) -&gt; bool:
+        &#34;&#34;&#34;
+        :return: True if this stream supports incrementally reading data
+        &#34;&#34;&#34;
+        return len(self._wrapped_cursor_field()) &gt; 0
+
+    def _wrapped_cursor_field(self) -&gt; List[str]:
+        return [self.cursor_field] if isinstance(self.cursor_field, str) else self.cursor_field
+
+    @property
+    def cursor_field(self) -&gt; Union[str, List[str]]:
+        &#34;&#34;&#34;
+        Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        &#34;&#34;&#34;
+        return []
+
+    @property
+    def namespace(self) -&gt; Optional[str]:
+        &#34;&#34;&#34;
+        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+        :return: A string containing the name of the namespace.
+        &#34;&#34;&#34;
+        return None
+
+    @property
+    def source_defined_cursor(self) -&gt; bool:
+        &#34;&#34;&#34;
+        Return False if the cursor can be configured by the user.
+        &#34;&#34;&#34;
+        return True
+
+    @property
+    @abstractmethod
+    def primary_key(self) -&gt; Optional[Union[str, List[str], List[List[str]]]]:
+        &#34;&#34;&#34;
+        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+          If the stream has no primary keys, return None.
+        &#34;&#34;&#34;
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -&gt; Iterable[Optional[Mapping[str, Any]]]:
+        &#34;&#34;&#34;
+        Override to define the slices for this stream. See the stream slicing section of the docs for more information.
+
+        :param sync_mode:
+        :param cursor_field:
+        :param stream_state:
+        :return:
+        &#34;&#34;&#34;
+        return [None]
+
+    @property
+    def state_checkpoint_interval(self) -&gt; Optional[int]:
+        &#34;&#34;&#34;
+        Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+        100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
+
+        Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
+
+        return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+        ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+        created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
+        &#34;&#34;&#34;
+        return None
+
+    @deprecated(version=&#34;0.1.49&#34;, reason=&#34;You should use explicit state property instead, see IncrementalMixin docs.&#34;)
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        &#34;&#34;&#34;Override to extract state from the latest record. Needed to implement incremental sync.
+
+        Inspects the latest record extracted from the data source and the current state object and return an updated state object.
+
+        For example: if the state object is based on created_at timestamp, and the current state is {&#39;created_at&#39;: 10}, and the latest_record is
+        {&#39;name&#39;: &#39;octavia&#39;, &#39;created_at&#39;: 20 } then this method would return {&#39;created_at&#39;: 20} to indicate state should be updated to this object.
+
+        :param current_stream_state: The stream&#39;s current state object
+        :param latest_record: The latest record extracted from the stream
+        :return: An updated state object
+        &#34;&#34;&#34;
+        return {}
+
+    @staticmethod
+    def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -&gt; Optional[List[List[str]]]:
+        &#34;&#34;&#34;
+        :return: wrap the primary_key property in a list of list of strings required by the Airbyte Stream object.
+        &#34;&#34;&#34;
+        if not keys:
+            return None
+
+        if isinstance(keys, str):
+            return [[keys]]
+        elif isinstance(keys, list):
+            wrapped_keys = []
+            for component in keys:
+                if isinstance(component, str):
+                    wrapped_keys.append([component])
+                elif isinstance(component, list):
+                    wrapped_keys.append(component)
+                else:
+                    raise ValueError(f&#34;Element must be either list or str. Got: {type(component)}&#34;)
+            return wrapped_keys
+        else:
+            raise ValueError(f&#34;Element must be either list or str. Got: {type(keys)}&#34;)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>abc.ABC</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream" href="../declarative/declarative_stream.html#airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream">DeclarativeStream</a></li>
+<li><a title="airbyte_cdk.sources.streams.http.http.HttpStream" href="http/http.html#airbyte_cdk.sources.streams.http.http.HttpStream">HttpStream</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="airbyte_cdk.sources.streams.core.Stream.transformer"><code class="name">var <span class="ident">transformer</span> : <a title="airbyte_cdk.sources.utils.transform.TypeTransformer" href="../utils/transform.html#airbyte_cdk.sources.utils.transform.TypeTransformer">TypeTransformer</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="airbyte_cdk.sources.streams.core.Stream.cursor_field"><code class="name">var <span class="ident">cursor_field</span> : Union[str, List[str]]</code></dt>
+<dd>
+<div class="desc"><p>Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+:return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def cursor_field(self) -&gt; Union[str, List[str]]:
+    &#34;&#34;&#34;
+    Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+    :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+    &#34;&#34;&#34;
+    return []</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.logger"><code class="name">var <span class="ident">logger</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def logger(self):
+    return logging.getLogger(f&#34;airbyte.streams.{self.name}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.name"><code class="name">var <span class="ident">name</span> : str</code></dt>
+<dd>
+<div class="desc"><p>:return: Stream name. By default this is the implementing class name, but it can be overridden as needed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def name(self) -&gt; str:
+    &#34;&#34;&#34;
+    :return: Stream name. By default this is the implementing class name, but it can be overridden as needed.
+    &#34;&#34;&#34;
+    return casing.camel_to_snake(self.__class__.__name__)</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.namespace"><code class="name">var <span class="ident">namespace</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"><p>Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+:return: A string containing the name of the namespace.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def namespace(self) -&gt; Optional[str]:
+    &#34;&#34;&#34;
+    Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+    :return: A string containing the name of the namespace.
+    &#34;&#34;&#34;
+    return None</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.primary_key"><code class="name">var <span class="ident">primary_key</span> : Union[str, List[str], List[List[str]], ForwardRef(None)]</code></dt>
+<dd>
+<div class="desc"><p>:return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+If the stream has no primary keys, return None.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+@abstractmethod
+def primary_key(self) -&gt; Optional[Union[str, List[str], List[List[str]]]]:
+    &#34;&#34;&#34;
+    :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+      If the stream has no primary keys, return None.
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.source_defined_cursor"><code class="name">var <span class="ident">source_defined_cursor</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>Return False if the cursor can be configured by the user.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def source_defined_cursor(self) -&gt; bool:
+    &#34;&#34;&#34;
+    Return False if the cursor can be configured by the user.
+    &#34;&#34;&#34;
+    return True</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.state_checkpoint_interval"><code class="name">var <span class="ident">state_checkpoint_interval</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"><p>Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.</p>
+<p>Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.</p>
+<p>return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def state_checkpoint_interval(self) -&gt; Optional[int]:
+    &#34;&#34;&#34;
+    Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+    100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.
+
+    Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.
+
+    return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+    ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+    created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.
+    &#34;&#34;&#34;
+    return None</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.supports_incremental"><code class="name">var <span class="ident">supports_incremental</span> : bool</code></dt>
+<dd>
+<div class="desc"><p>:return: True if this stream supports incrementally reading data</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def supports_incremental(self) -&gt; bool:
+    &#34;&#34;&#34;
+    :return: True if this stream supports incrementally reading data
+    &#34;&#34;&#34;
+    return len(self._wrapped_cursor_field()) &gt; 0</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="airbyte_cdk.sources.streams.core.Stream.as_airbyte_stream"><code class="name flex">
+<span>def <span class="ident">as_airbyte_stream</span></span>(<span>self) ‑> <a title="airbyte_cdk.models.airbyte_protocol.AirbyteStream" href="../../models/airbyte_protocol.html#airbyte_cdk.models.airbyte_protocol.AirbyteStream">AirbyteStream</a></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def as_airbyte_stream(self) -&gt; AirbyteStream:
+    stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+
+    if self.namespace:
+        stream.namespace = self.namespace
+
+    if self.supports_incremental:
+        stream.source_defined_cursor = self.source_defined_cursor
+        stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
+        stream.default_cursor_field = self._wrapped_cursor_field()
+
+    keys = Stream._wrapped_primary_key(self.primary_key)
+    if keys and len(keys) &gt; 0:
+        stream.source_defined_primary_key = keys
+
+    return stream</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.get_error_display_message"><code class="name flex">
+<span>def <span class="ident">get_error_display_message</span></span>(<span>self, exception: BaseException) ‑> Optional[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Retrieves the user-friendly display message that corresponds to an exception.
+This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.</p>
+<p>The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.</p>
+<p>:param exception: The exception that was raised
+:return: A user-friendly message that indicates the cause of the error</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_error_display_message(self, exception: BaseException) -&gt; Optional[str]:
+    &#34;&#34;&#34;
+    Retrieves the user-friendly display message that corresponds to an exception.
+    This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+    The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+    :param exception: The exception that was raised
+    :return: A user-friendly message that indicates the cause of the error
+    &#34;&#34;&#34;
+    return None</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.get_json_schema"><code class="name flex">
+<span>def <span class="ident">get_json_schema</span></span>(<span>self) ‑> Mapping[str, Any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>:return: A dict of the JSON schema representing this stream.</p>
+<p>The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
+Override as needed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_json_schema(self) -&gt; Mapping[str, Any]:
+    &#34;&#34;&#34;
+    :return: A dict of the JSON schema representing this stream.
+
+    The default implementation of this method looks for a JSONSchema file with the same name as this stream&#39;s &#34;name&#34; property.
+    Override as needed.
+    &#34;&#34;&#34;
+    # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
+    return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.name)</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.get_updated_state"><code class="name flex">
+<span>def <span class="ident">get_updated_state</span></span>(<span>self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override to extract state from the latest record. Needed to implement incremental sync.</p>
+<p>Inspects the latest record extracted from the data source and the current state object and return an updated state object.</p>
+<p>For example: if the state object is based on created_at timestamp, and the current state is {'created_at': 10}, and the latest_record is
+{'name': 'octavia', 'created_at': 20 } then this method would return {'created_at': 20} to indicate state should be updated to this object.</p>
+<p>:param current_stream_state: The stream's current state object
+:param latest_record: The latest record extracted from the stream
+:return: An updated state object</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@deprecated(version=&#34;0.1.49&#34;, reason=&#34;You should use explicit state property instead, see IncrementalMixin docs.&#34;)
+def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    &#34;&#34;&#34;Override to extract state from the latest record. Needed to implement incremental sync.
+
+    Inspects the latest record extracted from the data source and the current state object and return an updated state object.
+
+    For example: if the state object is based on created_at timestamp, and the current state is {&#39;created_at&#39;: 10}, and the latest_record is
+    {&#39;name&#39;: &#39;octavia&#39;, &#39;created_at&#39;: 20 } then this method would return {&#39;created_at&#39;: 20} to indicate state should be updated to this object.
+
+    :param current_stream_state: The stream&#39;s current state object
+    :param latest_record: The latest record extracted from the stream
+    :return: An updated state object
+    &#34;&#34;&#34;
+    return {}</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.read_records"><code class="name flex">
+<span>def <span class="ident">read_records</span></span>(<span>self, sync_mode: <a title="airbyte_cdk.models.airbyte_protocol.SyncMode" href="../../models/airbyte_protocol.html#airbyte_cdk.models.airbyte_protocol.SyncMode">SyncMode</a>, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) ‑> Iterable[Mapping[str, Any]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This method should be overridden by subclasses to read records based on the inputs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def read_records(
+    self,
+    sync_mode: SyncMode,
+    cursor_field: List[str] = None,
+    stream_slice: Mapping[str, Any] = None,
+    stream_state: Mapping[str, Any] = None,
+) -&gt; Iterable[Mapping[str, Any]]:
+    &#34;&#34;&#34;
+    This method should be overridden by subclasses to read records based on the inputs
+    &#34;&#34;&#34;</code></pre>
+</details>
+</dd>
+<dt id="airbyte_cdk.sources.streams.core.Stream.stream_slices"><code class="name flex">
+<span>def <span class="ident">stream_slices</span></span>(<span>self, *, sync_mode: <a title="airbyte_cdk.models.airbyte_protocol.SyncMode" href="../../models/airbyte_protocol.html#airbyte_cdk.models.airbyte_protocol.SyncMode">SyncMode</a>, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) ‑> Iterable[Optional[Mapping[str, Any]]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Override to define the slices for this stream. See the stream slicing section of the docs for more information.</p>
+<p>:param sync_mode:
+:param cursor_field:
+:param stream_state:
+:return:</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def stream_slices(
+    self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+) -&gt; Iterable[Optional[Mapping[str, Any]]]:
+    &#34;&#34;&#34;
+    Override to define the slices for this stream. See the stream slicing section of the docs for more information.
+
+    :param sync_mode:
+    :param cursor_field:
+    :param stream_state:
+    :return:
+    &#34;&#34;&#34;
+    return [None]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="airbyte_cdk.sources.streams" href="index.html">airbyte_cdk.sources.streams</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="airbyte_cdk.sources.streams.core.package_name_from_class" href="#airbyte_cdk.sources.streams.core.package_name_from_class">package_name_from_class</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="airbyte_cdk.sources.streams.core.IncrementalMixin" href="#airbyte_cdk.sources.streams.core.IncrementalMixin">IncrementalMixin</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.sources.streams.core.IncrementalMixin.state" href="#airbyte_cdk.sources.streams.core.IncrementalMixin.state">state</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="airbyte_cdk.sources.streams.core.Stream" href="#airbyte_cdk.sources.streams.core.Stream">Stream</a></code></h4>
+<ul class="">
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.as_airbyte_stream" href="#airbyte_cdk.sources.streams.core.Stream.as_airbyte_stream">as_airbyte_stream</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.cursor_field" href="#airbyte_cdk.sources.streams.core.Stream.cursor_field">cursor_field</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.get_error_display_message" href="#airbyte_cdk.sources.streams.core.Stream.get_error_display_message">get_error_display_message</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.get_json_schema" href="#airbyte_cdk.sources.streams.core.Stream.get_json_schema">get_json_schema</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.get_updated_state" href="#airbyte_cdk.sources.streams.core.Stream.get_updated_state">get_updated_state</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.logger" href="#airbyte_cdk.sources.streams.core.Stream.logger">logger</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.name" href="#airbyte_cdk.sources.streams.core.Stream.name">name</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.namespace" href="#airbyte_cdk.sources.streams.core.Stream.namespace">namespace</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.primary_key" href="#airbyte_cdk.sources.streams.core.Stream.primary_key">primary_key</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.read_records" href="#airbyte_cdk.sources.streams.core.Stream.read_records">read_records</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.source_defined_cursor" href="#airbyte_cdk.sources.streams.core.Stream.source_defined_cursor">source_defined_cursor</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.state_checkpoint_interval" href="#airbyte_cdk.sources.streams.core.Stream.state_checkpoint_interval">state_checkpoint_interval</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.stream_slices" href="#airbyte_cdk.sources.streams.core.Stream.stream_slices">stream_slices</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.supports_incremental" href="#airbyte_cdk.sources.streams.core.Stream.supports_incremental">supports_incremental</a></code></li>
+<li><code><a title="airbyte_cdk.sources.streams.core.Stream.transformer" href="#airbyte_cdk.sources.streams.core.Stream.transformer">transformer</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
