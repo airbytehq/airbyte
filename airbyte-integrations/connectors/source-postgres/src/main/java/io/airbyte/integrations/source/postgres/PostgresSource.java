@@ -82,13 +82,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    return toDatabaseConfigStatic(config);
-  }
-
-  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor. the
-  // current structure forces us to declarehave a bunch of pure function methods as instance members
-  // when they could be static.
-  public JsonNode toDatabaseConfigStatic(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
