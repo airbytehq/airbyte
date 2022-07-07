@@ -1,11 +1,17 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
 from typing import Any, Dict, Iterable, List, Mapping
 
 import pendulum as pdm
+
+# replace `pivot` with `_pivot`, to allow redshift normalization,
+# since `pivot` is a reserved keyword for Destination Redshift,
+# on behalf of https://github.com/airbytehq/airbyte/issues/13018,
+# expand this list, if required.
+DESTINATION_RESERVED_KEYWORDS: list = ["pivot"]
 
 
 def get_parent_stream_values(record: Dict, key_value_map: Dict) -> Dict:
@@ -122,11 +128,7 @@ def transform_date_range(
     return record
 
 
-def transform_targeting_criteria(
-    record: Dict,
-    dict_key: str = "targetingCriteria",
-) -> Mapping[str, Any]:
-
+def transform_targeting_criteria(record: Dict, dict_key: str = "targetingCriteria") -> Mapping[str, Any]:
     """
     :: EXAMPLE `targetingCriteria` input structure:
         {
@@ -258,11 +260,7 @@ def transform_targeting_criteria(
     return record
 
 
-def transform_variables(
-    record: Dict,
-    dict_key: str = "variables",
-) -> Mapping[str, Any]:
-
+def transform_variables(record: Dict, dict_key: str = "variables") -> Mapping[str, Any]:
     """
     :: EXAMPLE `variables` input:
     {
@@ -302,6 +300,20 @@ def transform_variables(
     return record
 
 
+def transform_col_names(record: Dict, dict_keys: list = []) -> Mapping[str, Any]:
+    """
+    Rename records keys (columns) indicated in `dict_keys` to avoid normalization issues for certain destinations.
+    Example:
+        The `pivot` or `PIVOT` is the reserved keyword for DESTINATION REDSHIFT, we should avoid using it in this case.
+        https://github.com/airbytehq/airbyte/issues/13018
+    """
+    for key in dict_keys:
+        if key in record:
+            record[f"_{key}"] = record[key]  # create new key from original
+            record.pop(key)  # remove the original key
+    return record
+
+
 def transform_data(records: List) -> Iterable[Mapping]:
     """
     We need to transform the nested complex data structures into simple key:value pair,
@@ -320,5 +332,7 @@ def transform_data(records: List) -> Iterable[Mapping]:
 
         if "variables" in record:
             record = transform_variables(record)
+
+        record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 
         yield record

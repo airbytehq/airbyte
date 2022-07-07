@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -330,6 +330,33 @@ class TestCsvParser(AbstractTestParser):
                 "inferred_schema": {},
                 "line_checks": {},
                 "fails": ["test_get_inferred_schema", "test_stream_records"],
+            },
+            "empty_advanced_options": {
+                "AbstractFileParser": CsvParser(
+                    format={"filetype": "csv", "advanced_options": ""},
+                    master_schema={
+                        "id": "integer",
+                        "name": "string",
+                        "valid": "boolean",
+                        "code": "integer",
+                        "degrees": "number",
+                        "birthday": "string",
+                        "last_seen": "string",
+                    },
+                ),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
+                "num_records": 8,
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {},
+                "fails": [],
             },
             "no_header_csv_file": {
                 # no header test

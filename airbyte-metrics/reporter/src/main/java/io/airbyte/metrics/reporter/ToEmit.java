@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.metrics.reporter;
 
 import io.airbyte.commons.lang.Exceptions.Procedure;
-import io.airbyte.db.instance.jobs.jooq.enums.JobStatus;
-import io.airbyte.metrics.lib.DogStatsDMetricSingleton;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricQueries;
 import io.airbyte.metrics.lib.MetricTags;
-import io.airbyte.metrics.lib.MetricsRegistry;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import java.util.concurrent.TimeUnit;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,31 +24,35 @@ public enum ToEmit {
 
   NUM_PENDING_JOBS(countMetricEmission(() -> {
     final var pendingJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfPendingJobs);
-    DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_PENDING_JOBS, pendingJobs);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_PENDING_JOBS, pendingJobs);
   })),
   NUM_RUNNING_JOBS(countMetricEmission(() -> {
     final var runningJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfRunningJobs);
-    DogStatsDMetricSingleton.gauge(MetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_RUNNING_JOBS, runningJobs);
+  })),
+  NUM_ORPHAN_RUNNING_JOB(countMetricEmission(() -> {
+    final var orphanRunningJobs = ReporterApp.configDatabase.query(MetricQueries::numberOfOrphanRunningJobs);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.NUM_ORPHAN_RUNNING_JOBS, orphanRunningJobs);
   })),
   OLDEST_RUNNING_JOB_AGE_SECS(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::oldestRunningJobAgeSecs);
-    DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.OLDEST_RUNNING_JOB_AGE_SECS, age);
   })),
   OLDEST_PENDING_JOB_AGE_SECS(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::oldestPendingJobAgeSecs);
-    DogStatsDMetricSingleton.gauge(MetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
+    MetricClientFactory.getMetricClient().gauge(OssMetricsRegistry.OLDEST_PENDING_JOB_AGE_SECS, age);
   })),
   NUM_ACTIVE_CONN_PER_WORKSPACE(countMetricEmission(() -> {
     final var age = ReporterApp.configDatabase.query(MetricQueries::numberOfActiveConnPerWorkspace);
     for (long count : age) {
-      DogStatsDMetricSingleton.percentile(MetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
+      MetricClientFactory.getMetricClient().distribution(OssMetricsRegistry.NUM_ACTIVE_CONN_PER_WORKSPACE, count);
     }
   })),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(countMetricEmission(() -> {
     final var times = ReporterApp.configDatabase.query(MetricQueries::overallJobRuntimeForTerminalJobsInLastHour);
     for (Pair<JobStatus, Double> pair : times) {
-      DogStatsDMetricSingleton.recordTimeGlobal(
-          MetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
+      MetricClientFactory.getMetricClient().distribution(
+          OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(), MetricTags.getJobStatus(pair.getLeft()));
     }
   }), 1, TimeUnit.HOURS);
 
@@ -57,7 +61,7 @@ public enum ToEmit {
   final public long period;
   final public TimeUnit timeUnit;
 
-  ToEmit(Runnable toEmit) {
+  ToEmit(final Runnable toEmit) {
     this(toEmit, 15, TimeUnit.SECONDS);
   }
 
@@ -68,12 +72,12 @@ public enum ToEmit {
    * @param metricQuery
    * @return
    */
-  private static Runnable countMetricEmission(Procedure metricQuery) {
+  private static Runnable countMetricEmission(final Procedure metricQuery) {
     return () -> {
       try {
         metricQuery.call();
-        DogStatsDMetricSingleton.count(MetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
-      } catch (Exception e) {
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
+      } catch (final Exception e) {
         log.error("Exception querying database for metric: ", e);
       }
     };

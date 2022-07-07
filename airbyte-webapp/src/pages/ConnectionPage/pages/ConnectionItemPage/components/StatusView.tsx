@@ -1,28 +1,27 @@
 import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
-import ResetDataModal from "components/ResetDataModal";
+import ToolTip from "components/ToolTip";
 
-import { Connection } from "core/domain/connection";
+import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import Status from "core/statuses";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
-import StatusMainInfo from "./StatusMainInfo";
 
-type IProps = {
-  connection: Connection;
-  frequencyText?: string;
-};
+interface StatusViewProps {
+  connection: WebBackendConnectionRead;
+  isStatusUpdating?: boolean;
+}
 
 const Content = styled.div`
   margin: 0 10px;
@@ -51,19 +50,19 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
   const { hasFeature } = useFeatureService();
   const allowSync = hasFeature(FeatureItem.AllowSync);
 
-  const sourceDefinition = useSourceDefinition(connection?.source.sourceDefinitionId);
-
-  const destinationDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
-
   const jobs = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
+  });
+  const isAtLeastOneJobRunningOrPending = jobs.some((jobWithAttempts) => {
+    const status = jobWithAttempts?.job?.status;
+    return status === Status.RUNNING || status === Status.PENDING;
   });
 
   const { mutateAsync: resetConnection } = useResetConnection();
@@ -72,53 +71,65 @@ const StatusView: React.FC<IProps> = ({ connection, frequencyText }) => {
   const onSync = () => syncConnection(connection);
   const onReset = () => resetConnection(connection.connectionId);
 
+  const onResetDataButtonClick = () => {
+    openConfirmationModal({
+      text: `form.resetDataText`,
+      title: `form.resetData`,
+      submitButtonText: "form.reset",
+      cancelButtonText: "form.noNeed",
+      onSubmit: async () => {
+        await onReset();
+        closeConfirmationModal();
+      },
+      submitButtonDataId: "reset",
+    });
+  };
+
+  const resetDataBtn = (
+    <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={onResetDataButtonClick}>
+      <FormattedMessage id="connection.resetData" />
+    </Button>
+  );
+
+  const syncNowBtn = (
+    <SyncButton
+      disabled={!allowSync || isAtLeastOneJobRunningOrPending || isStatusUpdating}
+      isLoading={isLoading}
+      wasActive={showFeedback}
+      onClick={() => startAction({ action: onSync })}
+    >
+      {showFeedback ? (
+        <FormattedMessage id="sources.syncingNow" />
+      ) : (
+        <>
+          <TryArrow icon={faRedoAlt} />
+          <FormattedMessage id="sources.syncNow" />
+        </>
+      )}
+    </SyncButton>
+  );
+
   return (
     <Content>
-      <StatusMainInfo
-        connection={connection}
-        frequencyText={frequencyText}
-        sourceDefinition={sourceDefinition}
-        destinationDefinition={destinationDefinition}
-        allowSync={allowSync}
-      />
       <StyledContentCard
         title={
           <Title>
-            <FormattedMessage id={"sources.syncHistory"} />
-            <div>
-              <Button onClick={() => setIsModalOpen(true)}>
-                <FormattedMessage id={"connection.resetData"} />
-              </Button>
-              <SyncButton
-                disabled={!allowSync}
-                isLoading={isLoading}
-                wasActive={showFeedback}
-                onClick={() => startAction({ action: onSync })}
-              >
-                {showFeedback ? (
-                  <FormattedMessage id={"sources.syncingNow"} />
-                ) : (
-                  <>
-                    <TryArrow icon={faRedoAlt} />
-                    <FormattedMessage id={"sources.syncNow"} />
-                  </>
-                )}
-              </SyncButton>
-            </div>
+            <FormattedMessage id="sources.syncHistory" />
+            {connection.status === ConnectionStatus.active && (
+              <div>
+                <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                  <FormattedMessage id="connection.pendingSync" />
+                </ToolTip>
+                <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                  <FormattedMessage id="connection.pendingSync" />
+                </ToolTip>
+              </div>
+            )}
           </Title>
         }
       >
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </StyledContentCard>
-      {isModalOpen && (
-        <ResetDataModal
-          onClose={() => setIsModalOpen(false)}
-          onSubmit={async () => {
-            await onReset();
-            setIsModalOpen(false);
-          }}
-        />
-      )}
     </Content>
   );
 };

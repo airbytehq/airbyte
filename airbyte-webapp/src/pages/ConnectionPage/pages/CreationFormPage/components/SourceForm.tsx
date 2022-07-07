@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-// TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import SourceForm from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
+import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-type IProps = {
+interface ConnectionCreateSourceFormProps {
   afterSubmit: () => void;
-};
+}
 
-const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
+export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -22,8 +22,12 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     serviceType: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
-    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
-    const result = await createSource({ values, sourceConnector: connector });
+    const sourceConnector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
+    if (!sourceConnector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
+    const result = await createSource({ values, sourceConnector });
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
@@ -40,7 +44,13 @@ const SourceFormComponent: React.FC<IProps> = ({ afterSubmit }) => {
     }, 2000);
   };
 
+  const { setDocumentationPanelOpen } = useDocumentationPanelContext();
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
+
   return <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />;
 };
-
-export default SourceFormComponent;

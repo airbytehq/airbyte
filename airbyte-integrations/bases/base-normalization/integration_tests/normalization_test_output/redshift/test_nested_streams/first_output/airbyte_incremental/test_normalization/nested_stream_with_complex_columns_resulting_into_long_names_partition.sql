@@ -15,8 +15,8 @@ with __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_pa
 -- depends_on: "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_scd"
 select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
-    json_extract_path_text("partition", 'double_array_data', true) as double_array_data,
-    json_extract_path_text("partition", 'DATA', true) as data,
+    "partition"."double_array_data" as double_array_data,
+    "partition"."DATA" as data,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
@@ -45,7 +45,7 @@ where 1 = 1
 -- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2
 select
-    md5(cast(coalesce(cast(_airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid as varchar), '') || '-' || coalesce(cast(double_array_data as varchar), '') || '-' || coalesce(cast(data as varchar), '') as varchar)) as _airbyte_partition_hashid,
+    md5(cast(coalesce(cast(_airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid as text), '') || '-' || coalesce(cast(json_serialize(double_array_data) as text), '') || '-' || coalesce(cast(json_serialize(data) as text), '') as text)) as _airbyte_partition_hashid,
     tmp.*
 from __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab2 tmp
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition

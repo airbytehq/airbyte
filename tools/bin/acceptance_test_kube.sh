@@ -11,7 +11,6 @@ assert_root
 if [ -n "$CI" ]; then
   echo "Loading images into KIND..."
   kind load docker-image airbyte/server:dev --name chart-testing &
-  kind load docker-image airbyte/scheduler:dev --name chart-testing &
   kind load docker-image airbyte/webapp:dev --name chart-testing &
   kind load docker-image airbyte/worker:dev --name chart-testing &
   kind load docker-image airbyte/db:dev --name chart-testing &
@@ -25,9 +24,8 @@ echo "Starting app..."
 echo "Applying dev-integration-test manifests to kubernetes..."
 kubectl apply -k kube/overlays/dev-integration-test
 
-echo "Waiting for server and scheduler to be ready..."
+echo "Waiting for server to be ready..."
 kubectl wait --for=condition=Available deployment/airbyte-server --timeout=300s || (kubectl describe pods && exit 1)
-kubectl wait --for=condition=Available deployment/airbyte-scheduler --timeout=300s || (kubectl describe pods && exit 1)
 
 echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
@@ -36,9 +34,7 @@ kubectl describe pods | grep "Name\|Node"
 sleep 120s
 
 if [ -n "$CI" ]; then
-  bootloader_logs () { kubectl logs pod/airbyte-bootloader > /tmp/kubernetes_logs/bootloader.txt; }
   server_logs () { kubectl logs deployment.apps/airbyte-server > /tmp/kubernetes_logs/server.txt; }
-  scheduler_logs () { kubectl logs deployment.apps/airbyte-scheduler > /tmp/kubernetes_logs/scheduler.txt; }
   pod_sweeper_logs () { kubectl logs deployment.apps/airbyte-pod-sweeper > /tmp/kubernetes_logs/pod_sweeper.txt; }
   worker_logs () { kubectl logs deployment.apps/airbyte-worker > /tmp/kubernetes_logs/worker.txt; }
   db_logs () { kubectl logs deployment.apps/airbyte-db > /tmp/kubernetes_logs/db.txt; }
@@ -46,9 +42,7 @@ if [ -n "$CI" ]; then
   describe_pods () { kubectl describe pods > /tmp/kubernetes_logs/describe_pods.txt; }
   describe_nodes () { kubectl describe nodes > /tmp/kubernetes_logs/describe_nodes.txt; }
   write_all_logs () {
-    bootloader_logs;
     server_logs;
-    scheduler_logs;
     worker_logs;
     db_logs;
     temporal_logs;

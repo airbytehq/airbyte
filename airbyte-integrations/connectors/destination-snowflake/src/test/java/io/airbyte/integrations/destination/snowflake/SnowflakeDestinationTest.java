@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -108,7 +108,8 @@ public class SnowflakeDestinationTest {
         new SnowflakeSQLNameTransformer(),
         CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(".csv")),
         config,
-        getCatalog());
+        getCatalog(),
+        true);
     doThrow(SQLException.class).when(sqlOperations).copyIntoTmpTableFromStage(any(), anyString(), anyString(), anyList(), anyString(), anyString());
 
     airbyteMessageConsumer.start();

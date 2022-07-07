@@ -26,15 +26,6 @@ tests:
       timeout_seconds: 600
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog_protobuf_msg.json"
-      # expect_records:
-      #   path: "integration_tests/expected_records_msg.txt"
-  # TODO incremental test is disabled because records output from the report streams can be up to 14 days older than the input state
-  #  incremental:
-  #    - config_path: "secrets/config.json"
-  #      configured_catalog_path: "integration_tests/configured_catalog.json"
-  #      future_state_path: "integration_tests/abnormal_state.json"
-  #      cursor_paths:
-  #        ad_group_ad_report: ["segments.date"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

@@ -29,17 +29,17 @@ type PathPopoutProps = {
   placeholder?: React.ReactNode;
 } & (PathMultiProps | PathProps);
 
-type PathMultiProps = {
+interface PathMultiProps {
   path?: Path[];
   onPathChange: (pkPath: Path[]) => void;
   isMulti: true;
-};
+}
 
-type PathProps = {
+interface PathProps {
   path?: Path;
   onPathChange: (pkPath: Path) => void;
   isMulti?: false;
-};
+}
 
 export const PathPopout: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
@@ -73,7 +73,7 @@ export const PathPopout: React.FC<PathPopoutProps> = (props) => {
       // @ts-expect-error need to solve issue with typings
       isMulti={props.isMulti}
       isSearchable
-      onChange={(options: PathPopoutProps["isMulti"] extends true ? { value: Path }[] : { value: Path }) => {
+      onChange={(options: PathPopoutProps["isMulti"] extends true ? Array<{ value: Path }> : { value: Path }) => {
         const finalValues = Array.isArray(options) ? options.map((op) => op.value) : options.value;
 
         props.onPathChange(finalValues);

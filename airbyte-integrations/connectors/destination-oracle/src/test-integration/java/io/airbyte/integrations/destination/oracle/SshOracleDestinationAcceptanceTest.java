@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -10,20 +10,20 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import org.jooq.DSLContext;
 import org.testcontainers.containers.Network;
 
 public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -33,6 +33,8 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   private final String schemaName = "TEST_ORCL";
 
   private final SshBastionContainer sshBastionContainer = new SshBastionContainer();
+
+  private static final Network network = Network.newNetwork();
 
   private OracleContainer db;
 
@@ -53,7 +55,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) sshBastionContainer.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -143,7 +145,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   }
 
   private void startTestContainers() {
-    sshBastionContainer.initAndStartBastion();
+    sshBastionContainer.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
@@ -152,20 +154,19 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         .withUsername("test")
         .withPassword("oracle")
         .usingSid()
-        .withNetwork(sshBastionContainer.getNetWork());
+        .withNetwork(network);
     db.start();
   }
 
   private Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+    final DSLContext dslContext = DSLContextFactory.create(
+        config.get("username").asText(), config.get("password").asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
+            config.get("port").asInt(),
             config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
         null);
+    return new Database(dslContext);
   }
 
   @Override

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -179,6 +179,7 @@ class SourceGithub(AbstractSource):
         page_size = config.get("page_size_for_large_streams", DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
 
         organization_args = {"authenticator": authenticator, "organizations": organizations}
+        organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
         repository_args = {"authenticator": authenticator, "repositories": repositories, "page_size_for_large_streams": page_size}
         repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
 
@@ -211,18 +212,18 @@ class SourceGithub(AbstractSource):
             projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestCommits(parent=pull_requests_stream, **repository_args),
-            PullRequestStats(parent=pull_requests_stream, **repository_args_with_start_date),
+            PullRequestStats(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            Repositories(**organization_args),
+            Repositories(**organization_args_with_start_date),
             ReviewComments(**repository_args_with_start_date),
-            Reviews(parent=pull_requests_stream, **repository_args_with_start_date),
+            Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
             Tags(**repository_args),
             teams_stream,
             team_members_stream,
             Users(**organization_args),
-            Workflows(**repository_args),
-            WorkflowRuns(**repository_args),
+            Workflows(**repository_args_with_start_date),
+            WorkflowRuns(**repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]

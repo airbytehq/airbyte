@@ -22,6 +22,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.imagePullSecrets }}
+        {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
       {{- if .Values.server.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.server.nodeSelector "context" $) | nindent 8 }}
       {{- end }}
@@ -210,12 +213,6 @@ spec:
         securityContext: {{- toYaml .Values.server.containerSecurityContext | nindent 10 }}
         {{- end }}
         volumeMounts:
-        - name: airbyte-data
-          mountPath: /configs
-          subPath: configs
-        - name: airbyte-data
-          mountPath: /workspace
-          subPath: workspace
         - name: gcs-log-creds-volume
           mountPath: /secrets/gcs-log-creds
           readOnly: true
@@ -223,9 +220,6 @@ spec:
   {{ toYaml .Values.server.extraVolumeMounts | nindent 8 }}
         {{- end }}
       volumes:
-      - name: airbyte-data
-        persistentVolumeClaim:
-          claimName: {{ include "common.names.fullname" . }}-data
       - name: gcs-log-creds-volume
         secret:
           secretName: {{ include "common.names.fullname" . }}-gcs-log-creds

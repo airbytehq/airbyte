@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ public interface SqlOperations {
   /**
    * Create a schema with provided name if it does not already exist.
    *
-   * @param database   Database that the connector is syncing
+   * @param database Database that the connector is syncing
    * @param schemaName Name of schema.
    * @throws Exception exception
    */
@@ -30,7 +29,7 @@ public interface SqlOperations {
   /**
    * Denotes whether the schema exists in destination database
    *
-   * @param database   Database that the connector is syncing
+   * @param database Database that the connector is syncing
    * @param schemaName Name of schema.
    * @return true if the schema exists in destination database, false if it doesn't
    */
@@ -41,9 +40,9 @@ public interface SqlOperations {
   /**
    * Create a table with provided name in provided schema if it does not already exist.
    *
-   * @param database   Database that the connector is syncing
+   * @param database Database that the connector is syncing
    * @param schemaName Name of schema
-   * @param tableName  Name of table
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void createTableIfNotExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -51,9 +50,9 @@ public interface SqlOperations {
   /**
    * Query to create a table with provided name in provided schema if it does not already exist.
    *
-   * @param database   Database that the connector is syncing
+   * @param database Database that the connector is syncing
    * @param schemaName Name of schema
-   * @param tableName  Name of table
+   * @param tableName Name of table
    * @return query
    */
   String createTableQuery(JdbcDatabase database, String schemaName, String tableName);
@@ -62,7 +61,7 @@ public interface SqlOperations {
    * Drop the table if it exists.
    *
    * @param schemaName Name of schema
-   * @param tableName  Name of table
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void dropTableIfExists(JdbcDatabase database, String schemaName, String tableName) throws Exception;
@@ -70,9 +69,9 @@ public interface SqlOperations {
   /**
    * Query to remove all records from a table. Assumes the table exists.
    *
-   * @param database   Database that the connector is syncing
+   * @param database Database that the connector is syncing
    * @param schemaName Name of schema
-   * @param tableName  Name of table
+   * @param tableName Name of table
    * @return Query
    */
   String truncateTableQuery(JdbcDatabase database, String schemaName, String tableName);
@@ -80,20 +79,21 @@ public interface SqlOperations {
   /**
    * Insert records into table. Assumes the table exists.
    *
-   * @param database   Database that the connector is syncing
-   * @param records    Records to insert.
+   * @param database Database that the connector is syncing
+   * @param records Records to insert.
    * @param schemaName Name of schema
-   * @param tableName  Name of table
+   * @param tableName Name of table
    * @throws Exception exception
    */
   void insertRecords(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception;
 
   /**
-   * Query to copy all records from source table to destination table. Both tables must be in the specified schema. Assumes both table exist.
+   * Query to copy all records from source table to destination table. Both tables must be in the
+   * specified schema. Assumes both table exist.
    *
-   * @param database             Database that the connector is syncing
-   * @param schemaName           Name of schema
-   * @param sourceTableName      Name of source table
+   * @param database Database that the connector is syncing
+   * @param schemaName Name of schema
+   * @param sourceTableName Name of source table
    * @param destinationTableName Name of destination table
    * @return Query
    */
@@ -103,7 +103,7 @@ public interface SqlOperations {
    * Given an arbitrary number of queries, execute a transaction.
    *
    * @param database Database that the connector is syncing
-   * @param queries  Queries to execute
+   * @param queries Queries to execute
    * @throws Exception exception
    */
   void executeTransaction(JdbcDatabase database, List<String> queries) throws Exception;
@@ -120,19 +120,21 @@ public interface SqlOperations {
    */
   boolean isSchemaRequired();
 
-
   /**
-   * The method is responsible for executing some specific DB Engine logic in onClose method. We can override this method to execute specific logic
-   * e.g. to handle any necessary migrations in the destination, etc.
+   * The method is responsible for executing some specific DB Engine logic in onClose method. We can
+   * override this method to execute specific logic e.g. to handle any necessary migrations in the
+   * destination, etc.
    * <p>
-   * In next example you can see how migration from VARCHAR to SUPER column is handled for the Redshift destination:
+   * In next example you can see how migration from VARCHAR to SUPER column is handled for the
+   * Redshift destination:
    *
    * @param database - Database that the connector is interacting with
-   * @param schemaNames   - schemas will be discovered
+   * @param writeConfigs - schemas and tables (streams) will be discovered
    * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationCloseOperations
    */
-  default void onDestinationCloseOperations(JdbcDatabase database, Set<String> schemaNames) {
+  default void onDestinationCloseOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigs) {
     // do nothing
     LOGGER.info("No onDestinationCloseOperations required for this destination.");
   }
+
 }

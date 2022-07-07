@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -43,14 +43,12 @@ public class S3StreamCopierTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopierTest.class);
 
-  private static final int PART_SIZE = 5;
   private static final S3DestinationConfig S3_CONFIG = S3DestinationConfig.create(
       "fake-bucket",
       "fake-bucketPath",
       "fake-region")
       .withEndpoint("fake-endpoint")
       .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
-      .withPartSize(PART_SIZE)
       .get();
   private static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
@@ -178,7 +176,7 @@ public class S3StreamCopierTest {
 
   private void checkCsvWriterArgs(final S3CsvWriterArguments args) {
     final S3DestinationConfig s3Config = S3DestinationConfig.create(S3_CONFIG)
-        .withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE, CompressionType.NO_COMPRESSION))
+        .withFormatConfig(new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION))
         .get();
     assertEquals(s3Config, args.config);
     assertEquals(CONFIGURED_STREAM, args.stream);

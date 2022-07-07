@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -11,7 +11,7 @@ import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +28,7 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
 
   @Override
   public boolean equals(final Object obj) {
-    if (obj instanceof MySqlCdcTargetPosition) {
-      final MySqlCdcTargetPosition cdcTargetPosition = (MySqlCdcTargetPosition) obj;
+    if (obj instanceof final MySqlCdcTargetPosition cdcTargetPosition) {
       return fileName.equals(cdcTargetPosition.fileName) && cdcTargetPosition.position.equals(position);
     }
     return false;
@@ -46,20 +45,19 @@ public class MySqlCdcTargetPosition implements CdcTargetPosition {
   }
 
   public static MySqlCdcTargetPosition targetPosition(final JdbcDatabase database) {
-    try {
-      final List<MySqlCdcTargetPosition> masterStatus = database.unsafeResultSetQuery(
-          connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
-          resultSet -> {
-            final String file = resultSet.getString("File");
-            final int position = resultSet.getInt("Position");
-            if (file == null || position == 0) {
-              return new MySqlCdcTargetPosition(null, null);
-            }
-            return new MySqlCdcTargetPosition(file, position);
-          }).collect(Collectors.toList());
+    try (final Stream<MySqlCdcTargetPosition> stream = database.unsafeResultSetQuery(
+        connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+        resultSet -> {
+          final String file = resultSet.getString("File");
+          final int position = resultSet.getInt("Position");
+          if (file == null || position == 0) {
+            return new MySqlCdcTargetPosition(null, null);
+          }
+          return new MySqlCdcTargetPosition(file, position);
+        })) {
+      final List<MySqlCdcTargetPosition> masterStatus = stream.toList();
       final MySqlCdcTargetPosition targetPosition = masterStatus.get(0);
       LOGGER.info("Target File position : " + targetPosition);
-
       return targetPosition;
     } catch (final SQLException e) {
       throw new RuntimeException(e);

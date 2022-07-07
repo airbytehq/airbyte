@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { useConfig } from "config";
-import { Connection, ConnectionConfiguration } from "core/domain/connection";
-import { Destination } from "core/domain/connector";
+import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useConfig } from "../../config";
+import { DestinationRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
 import { connectionsKeys, ListConnection } from "./useConnectionHook";
 import { useCurrentWorkspace } from "./useWorkspace";
 
@@ -20,27 +20,27 @@ export const destinationsKeys = {
   list: (filters: string) => [...destinationsKeys.lists(), { filters }] as const,
   detail: (destinationId: string) => [...destinationsKeys.all, "details", destinationId] as const,
 };
-//
-type ValuesProps = {
+
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
-};
-//
-type ConnectorProps = { name: string; destinationDefinitionId: string };
-
-function useDestinationService(): DestinationService {
-  const config = useConfig();
-  const middlewares = useDefaultRequestMiddlewares();
-
-  return useInitService(
-    () => new DestinationService(config.apiUrl, middlewares),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [config]
-  );
 }
 
-type DestinationList = { destinations: Destination[] };
+interface ConnectorProps {
+  name: string;
+  destinationDefinitionId: string;
+}
+
+function useDestinationService() {
+  const { apiUrl } = useConfig();
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+  return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
+}
+
+interface DestinationList {
+  destinations: DestinationRead[];
+}
 
 const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
@@ -51,7 +51,7 @@ const useDestinationList = (): DestinationList => {
 
 const useGetDestination = <T extends string | undefined | null>(
   destinationId: T
-): T extends string ? Destination : Destination | undefined => {
+): T extends string ? DestinationRead : DestinationRead | undefined => {
   const service = useDestinationService();
 
   return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () => service.get(destinationId ?? ""), {
@@ -64,11 +64,13 @@ const useCreateDestination = () => {
   const queryClient = useQueryClient();
   const workspace = useCurrentWorkspace();
 
-  const analyticsService = useAnalyticsService();
-
   return useMutation(
     async (createDestinationPayload: { values: ValuesProps; destinationConnector?: ConnectorProps }) => {
       const { values, destinationConnector } = createDestinationPayload;
+
+      if (!destinationConnector?.destinationDefinitionId) {
+        throw new Error("No Destination Definition Provided");
+      }
 
       return service.create({
         name: values.name,
@@ -78,22 +80,10 @@ const useCreateDestination = () => {
       });
     },
     {
-      onSuccess: (data, ctx) => {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - success",
-          connector_destination: ctx.destinationConnector?.name,
-          connector_destination_definition_id: ctx.destinationConnector?.destinationDefinitionId,
-        });
+      onSuccess: (data) => {
         queryClient.setQueryData(destinationsKeys.lists(), (lst: DestinationList | undefined) => ({
           destinations: [data, ...(lst?.destinations ?? [])],
         }));
-      },
-      onError: (_, ctx) => {
-        analyticsService.track("New Destination - Action", {
-          action: "Tested connector - failure",
-          connector_destination: ctx.destinationConnector?.name,
-          connector_destination_definition_id: ctx.destinationConnector?.destinationDefinitionId,
-        });
       },
     }
   );
@@ -105,7 +95,7 @@ const useDeleteDestination = () => {
   const analyticsService = useAnalyticsService();
 
   return useMutation(
-    (payload: { destination: Destination; connectionsWithDestination: Connection[] }) =>
+    (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {

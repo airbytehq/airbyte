@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import base64
@@ -83,7 +83,7 @@ class SourceZendeskSupport(AbstractSource):
             return False, e
 
         active_features = [k for k, v in settings.get("active_features", {}).items() if v]
-        logger.info("available features: %s" % active_features)
+        # logger.info("available features: %s" % active_features)
         if "organization_access_enabled" not in active_features:
             return False, "Organization access is not enabled. Please check admin permission of the current account"
         return True, None
