@@ -83,12 +83,13 @@ class DefaultRetrier(Retrier):
         return self._max_retries
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
-        if response not in self._last_request_to_attempt_count:
-            self._last_request_to_attempt_count = {response: 1}
+        url = response.request.url
+        if url not in self._last_request_to_attempt_count:
+            self._last_request_to_attempt_count = {url: 1}
         else:
-            self._last_request_to_attempt_count[response] += 1
+            self._last_request_to_attempt_count[url] += 1
         if self._retry_response_filter.matches(response):
-            return RetryResponseStatus(self._backoff_time(response))
+            return RetryResponseStatus(self._backoff_time(response, self._last_request_to_attempt_count[url]))
         elif self._ignore_response_filter.matches(response):
             return NonRetriableResponseStatus.IGNORE
         elif response.ok:
@@ -96,10 +97,10 @@ class DefaultRetrier(Retrier):
         else:
             return NonRetriableResponseStatus.FAIL
 
-    def _backoff_time(self, response: requests.Response) -> Optional[float]:
+    def _backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         backoff = None
         for backoff_strategies in self._backoff_strategy:
-            backoff = backoff_strategies.backoff(response, self._last_request_to_attempt_count[response])
+            backoff = backoff_strategies.backoff(response, attempt_count)
             if backoff:
                 return backoff
         return backoff
