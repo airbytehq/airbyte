@@ -1229,6 +1229,7 @@
   dockerRepository: airbyte/source-sftp
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
+  icon: sftp.svg
   sourceType: file
   releaseStage: alpha
 - name: Firebolt
