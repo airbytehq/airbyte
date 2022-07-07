@@ -311,10 +311,7 @@ public class CdcAcceptanceTests {
     }
 
     for (DestinationCdcRecordMatcher recordMatcher : expectedDestRecordMatchers) {
-      LOGGER.info("On recordMatcher {}", recordMatcher);
       final List<JsonNode> matchingDestRecords = destRecords.stream().filter(destRecord -> {
-        LOGGER.info("Examining record {}", destRecord);
-
         Map<String, Object> sourceRecordMap = Jsons.object(recordMatcher.sourceRecord, Map.class);
         Map<String, Object> destRecordMap = Jsons.object(destRecord, Map.class);
 
