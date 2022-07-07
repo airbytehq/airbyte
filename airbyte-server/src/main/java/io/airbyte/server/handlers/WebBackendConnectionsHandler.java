@@ -18,6 +18,7 @@ import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSearch;
+import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
@@ -44,12 +45,14 @@ import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +71,7 @@ public class WebBackendConnectionsHandler {
   private static final Set<JobStatus> TERMINAL_STATUSES = Sets.newHashSet(JobStatus.FAILED, JobStatus.SUCCEEDED, JobStatus.CANCELLED);
 
   private final ConnectionsHandler connectionsHandler;
+  private final StateHandler stateHandler;
   private final SourceHandler sourceHandler;
   private final DestinationHandler destinationHandler;
   private final JobHistoryHandler jobHistoryHandler;
@@ -87,6 +91,10 @@ public class WebBackendConnectionsHandler {
         .hasConnections(connectionCount > 0)
         .hasDestinations(destinationCount > 0)
         .hasSources(sourceCount > 0);
+  }
+
+  public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+    return Enums.convertTo(stateHandler.getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
   }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -197,57 +205,108 @@ public class WebBackendConnectionsHandler {
     return new WebBackendConnectionReadList().connections(reads);
   }
 
+  // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
+  // tracking selected streams in any reasonable way. We should update that.
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
         .connectionId(webBackendConnectionRequestBody.getConnectionId());
 
     final ConnectionRead connection = connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId());
+    /*
+     * This variable contains all configuration but will be missing streams that were not selected.
+     */
+    final AirbyteCatalog configuredCatalog = connection.getSyncCatalog();
+    /*
+     * This catalog represents the full catalog that was used to create the configured catalog. It will
+     * have all streams that were present at the time. It will have no configuration set.
+     */
+    final Optional<AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+        .getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
 
-    final Optional<AirbyteCatalog> discovered;
+    /*
+     * This catalog represents the full catalog that exists now for the source. It will have no
+     * configuration set.
+     */
+    final Optional<SourceDiscoverSchemaRead> refreshedCatalog;
     if (MoreBooleans.isTruthy(webBackendConnectionRequestBody.getWithRefreshedCatalog())) {
-      final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody()
-          .sourceId(connection.getSourceId())
-          .disableCache(true);
-      final SourceDiscoverSchemaRead discoverSchema = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
-
-      discovered = Optional.of(discoverSchema.getCatalog());
-      connection.setSourceCatalogId(discoverSchema.getCatalogId());
+      refreshedCatalog = getRefreshedSchema(connection.getSourceId());
     } else {
-      discovered = connectionsHandler.getConnectionAirbyteCatalog(webBackendConnectionRequestBody.getConnectionId());
+      refreshedCatalog = Optional.empty();
     }
-    final AirbyteCatalog original = connection.getSyncCatalog();
+
     final CatalogDiff diff;
-    if (discovered.isPresent()) {
-      final AirbyteCatalog combined = updateSchemaWithDiscovery(original, discovered.get());
-      connection.setSyncCatalog(combined);
-      diff = ConnectionsHandler.getDiff(original, discovered.get());
+    final AirbyteCatalog syncCatalog;
+    if (refreshedCatalog.isPresent()) {
+      connection.setSourceCatalogId(refreshedCatalog.get().getCatalogId());
+      /*
+       * constructs a full picture of all existing configured + all new / updated streams in the newest
+       * catalog.
+       */
+      syncCatalog = updateSchemaWithDiscovery(configuredCatalog, refreshedCatalog.get().getCatalog());
+      /*
+       * Diffing the catalog used to make the configured catalog gives us the clearest diff between the
+       * schema when the configured catalog was made and now. In the case where we do not have the
+       * original catalog used to make the configured catalog, we make due, but using the configured
+       * catalog itself. The drawback is that any stream that was not selected in the configured catalog
+       * but was present at time of configuration will appear in the diff as an added stream which is
+       * confusing. We need to figure out why source_catalog_id is not always populated in the db.
+       */
+      diff = ConnectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog), refreshedCatalog.get().getCatalog());
+    } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
+      // reconstructs a full picture of the full schema at the time the catalog was configured.
+      syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
+      // diff not relevant if there was no refresh.
+      diff = null;
     } else {
-      connection.setSyncCatalog(original);
+      // fallback. over time this should be rarely used because source_catalog_id should always be set.
+      syncCatalog = configuredCatalog;
+      // diff not relevant if there was no refresh.
       diff = null;
     }
 
+    connection.setSyncCatalog(syncCatalog);
     return buildWebBackendConnectionRead(connection).catalogDiff(diff);
   }
 
+  private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final SourceDiscoverSchemaRequestBody discoverSchemaReadReq = new SourceDiscoverSchemaRequestBody()
+        .sourceId(sourceId)
+        .disableCache(true);
+    return Optional.ofNullable(schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq));
+  }
+
+  /**
+   * Applies existing configurations to a newly discovered catalog. For example, if the users stream
+   * is in the old and new catalog, any configuration that was previously set for users, we add to the
+   * new catalog.
+   *
+   * @param original fully configured, original catalog
+   * @param discovered newly discovered catalog, no configurations set
+   * @return merged catalog, most up-to-date schema with most up-to-date configurations from old
+   *         catalog
+   */
   @VisibleForTesting
   protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog original, final AirbyteCatalog discovered) {
-    // We can't directly use s.getStream() as the key, because it contains a bunch of other fields
-    // so instead we just define a quick-and-dirty record class.
-    final Map<Stream, AirbyteStreamAndConfiguration> originalStreamsByName = original.getStreams()
+    /*
+     * We can't directly use s.getStream() as the key, because it contains a bunch of other fields, so
+     * we just define a quick-and-dirty record class.
+     */
+    final Map<Stream, AirbyteStreamAndConfiguration> streamDescriptorToOriginalStream = original.getStreams()
         .stream()
         .collect(toMap(s -> new Stream(s.getStream().getName(), s.getStream().getNamespace()), s -> s));
 
     final List<AirbyteStreamAndConfiguration> streams = new ArrayList<>();
 
-    for (final AirbyteStreamAndConfiguration s : discovered.getStreams()) {
-      final AirbyteStream stream = s.getStream();
-      final AirbyteStreamAndConfiguration originalStream = originalStreamsByName.get(new Stream(stream.getName(), stream.getNamespace()));
+    for (final AirbyteStreamAndConfiguration discoveredStream : discovered.getStreams()) {
+      final AirbyteStream stream = discoveredStream.getStream();
+      final AirbyteStreamAndConfiguration originalStream = streamDescriptorToOriginalStream.get(new Stream(stream.getName(), stream.getNamespace()));
       final AirbyteStreamConfiguration outputStreamConfig;
 
       if (originalStream != null) {
         final AirbyteStreamConfiguration originalStreamConfig = originalStream.getConfig();
-        final AirbyteStreamConfiguration discoveredStreamConfig = s.getConfig();
+        final AirbyteStreamConfiguration discoveredStreamConfig = discoveredStream.getConfig();
         outputStreamConfig = new AirbyteStreamConfiguration();
 
         if (stream.getSupportedSyncModes().contains(originalStreamConfig.getSyncMode())) {
@@ -270,9 +329,9 @@ public class WebBackendConnectionsHandler {
         }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
-        outputStreamConfig.setSelected(true);
+        outputStreamConfig.setSelected(originalStream.getConfig().getSelected());
       } else {
-        outputStreamConfig = s.getConfig();
+        outputStreamConfig = discoveredStream.getConfig();
         outputStreamConfig.setSelected(false);
       }
       final AirbyteStreamAndConfiguration outputStream = new AirbyteStreamAndConfiguration()
@@ -302,12 +361,24 @@ public class WebBackendConnectionsHandler {
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (needReset) {
-      eventRunner.synchronousResetConnection(webBackendConnectionUpdate.getConnectionId());
-      eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+          webBackendConnectionUpdate.getConnectionId(),
+          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
+          // streams, instead of all
+          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
+      verifyManualOperationResult(manualOperationResult);
+      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      verifyManualOperationResult(manualOperationResult);
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
 
     return buildWebBackendConnectionRead(connectionRead);
+  }
+
+  private void verifyManualOperationResult(final ManualOperationResult manualOperationResult) throws IllegalStateException {
+    if (manualOperationResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+    }
   }
 
   private List<UUID> createOperations(final WebBackendConnectionCreate webBackendConnectionCreate)

@@ -16,12 +16,12 @@ class DeclarativeStream(Stream):
     DeclarativeStream is a Stream that delegates most of its logic to its schema_load and retriever
     """
 
-    def __init__(self, name, primary_key, cursor_field, schema_loader: SchemaLoader, retriever):
+    def __init__(self, name, primary_key, schema_loader: SchemaLoader, retriever: Retriever, cursor_field: Optional[List[str]] = None):
         self._name = name
         self._primary_key = primary_key
-        self._cursor_field = cursor_field
+        self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
-        self._retriever: Retriever = retriever
+        self._retriever = retriever
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -36,7 +36,15 @@ class DeclarativeStream(Stream):
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._retriever.get_state()
+        return self._retriever.state
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        self._retriever.state = value
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        return self.state
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
