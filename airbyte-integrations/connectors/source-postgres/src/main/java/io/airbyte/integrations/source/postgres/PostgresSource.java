@@ -14,13 +14,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -33,6 +37,7 @@ import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteGlobalState;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -40,6 +45,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -47,9 +53,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,7 +118,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -219,7 +229,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     // create it.
     final AirbyteConnectionStatus check = check(config);
 
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+    if (check.getStatus().equals(Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
     }
 
@@ -236,16 +246,44 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final JsonNode sourceConfig = database.getSourceConfig();
     if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database),
-          PostgresCdcProperties.getDebeziumProperties(sourceConfig), catalog, false);
-      return handler.getIncrementalIterators(
+          PostgresCdcTargetPosition.targetPosition(database), false);
+      final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
+      final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new PostgresCdcStateHandler(stateManager), new PostgresCdcConnectorMetadataInjector(),
+          postgresCdcStateHandler,
+          new PostgresCdcConnectorMetadataInjector(),
+          PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig),
           emittedAt);
+      if (streamsToSnapshot.isEmpty()) {
+        return Collections.singletonList(incrementalIteratorSupplier.get());
+      }
+
+      final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
+          new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
+          PostgresCdcProperties.getSnapshotProperties(), postgresCdcStateHandler, emittedAt);
+      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
     }
+  }
+
+  protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
+    final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams = stateManager.getCdcStateManager().getInitialStreamsSynced();
+    if (alreadySyncedStreams.isEmpty() && (stateManager.getCdcStateManager().getCdcState() == null
+        || stateManager.getCdcStateManager().getCdcState().getState() == null)) {
+      return Collections.emptyList();
+    }
+
+    final Set<AirbyteStreamNameNamespacePair> allStreams = AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog);
+
+    final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
+
+    return catalog.getStreams().stream()
+        .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream())))
+        .map(Jsons::clone)
+        .collect(Collectors.toList());
   }
 
   @VisibleForTesting
@@ -280,65 +318,17 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator = connection -> {
       final PreparedStatement ps = connection.prepareStatement(
           """
-                 SELECT DISTINCT table_catalog,
-                                 table_schema,
-                                 table_name,
-                                 privilege_type
-                 FROM            information_schema.table_privileges
-                 WHERE           grantee = ?
-                 AND             privilege_type = 'SELECT'
-                 UNION ALL
-                 SELECT r.rolname           AS table_catalog,
-                        n.nspname           AS table_schema,
-                        c.relname           AS table_name,
-                        -- the initial query is supposed to get a SELECT type. Since we use a UNION query
-                        -- to get Views that we can read (i.e. select) - then lets fill this columns with SELECT
-                        -- value to keep the backward-compatibility
-                        COALESCE ('SELECT') AS privilege_type
+                 SELECT nspname as table_schema,
+                        relname as table_name
                  FROM   pg_class c
-                 JOIN   pg_namespace n
-                 ON     n.oid = relnamespace
-                 JOIN   pg_roles r
-                 ON     r.oid = relowner,
-                 Unnest(COALESCE(relacl::text[], Format('{%s=arwdDxt/%s}', rolname, rolname)::text[])) acl,
-                        Regexp_split_to_array(acl, '=|/') s
-                 WHERE  r.rolname = ?
-                 AND    (
-                               nspname = 'public'
-                          OR   nspname = ?)
-                        -- 'm' means Materialized View
-                 AND    c.relkind = 'm'
-                 AND    (
-                               -- all grants
-                               c.relacl IS NULL
-                               -- read grant
-                        OR     s[2] = 'r')
-                 UNION
-                 SELECT DISTINCT table_catalog,
-                         table_schema,
-                         table_name,
-                         privilege_type
-                 FROM            information_schema.table_privileges p
-                 JOIN			 information_schema.applicable_roles r ON p.grantee = r.role_name
-                 WHERE   r.grantee in
-                (WITH RECURSIVE membership_tree(grpid, userid) AS (
-                    SELECT pg_roles.oid, pg_roles.oid
-                    FROM pg_roles WHERE oid = (select oid from pg_roles where  rolname=?)
-                  UNION ALL
-                    SELECT m_1.roleid, t_1.userid
-                    FROM pg_auth_members m_1, membership_tree t_1
-                    WHERE m_1.member = t_1.grpid
-                )
-                SELECT DISTINCT m.rolname AS grpname
-                FROM membership_tree t, pg_roles r, pg_roles m
-                WHERE t.grpid = m.oid AND t.userid = r.oid)
-                 AND             privilege_type = 'SELECT';
+                 JOIN   pg_namespace n on c.relnamespace = n.oid
+                 WHERE  has_table_privilege(c.oid, 'SELECT')
+                 -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
+                 AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
+                 and    ((? is null) OR nspname = ?)
           """);
-      final String username = getUsername(database.getDatabaseConfig());
-      ps.setString(1, username);
-      ps.setString(2, username);
-      ps.setString(3, username);
-      ps.setString(4, username);
+      ps.setString(1, schema);
+      ps.setString(2, schema);
       return ps;
     };
 

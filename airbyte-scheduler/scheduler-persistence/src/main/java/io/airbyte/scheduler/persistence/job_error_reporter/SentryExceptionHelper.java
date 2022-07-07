@@ -103,8 +103,8 @@ public class SentryExceptionHelper {
     final List<SentryException> sentryExceptions = new ArrayList<>();
 
     // separate chained exceptions
-    // e.g "\nCaused By: "
-    final String exceptionSeparator = "\n[\\w ]+: ";
+    // e.g "\nCaused by: "
+    final String exceptionSeparator = "\nCaused by: ";
     final String[] exceptions = stacktrace.split(exceptionSeparator);
 
     for (final String exceptionStr : exceptions) {

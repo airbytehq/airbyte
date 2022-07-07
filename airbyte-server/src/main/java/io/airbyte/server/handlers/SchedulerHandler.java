@@ -13,7 +13,6 @@ import io.airbyte.api.model.generated.AuthSpecification;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -43,7 +42,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -317,20 +315,9 @@ public class SchedulerHandler {
     return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
-  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
-  }
-
-  public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
-    LOGGER.info("currentState server: {}", currentState);
-
-    final ConnectionState connectionState = new ConnectionState()
-        .connectionId(connectionIdRequestBody.getConnectionId());
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-
-    return connectionState;
   }
 
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
@@ -384,8 +371,10 @@ public class SchedulerHandler {
     return readJobFromResult(manualSyncResult);
   }
 
-  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException {
-    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(connectionId);
+  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
+    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
+        connectionId,
+        configRepository.getAllStreamsForConnection(connectionId));
 
     return readJobFromResult(resetConnectionResult);
   }

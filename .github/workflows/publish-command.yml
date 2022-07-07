@@ -266,6 +266,12 @@ jobs:
         run: |
           source venv/bin/activate
           ci_credentials ${{ matrix.connector }}
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery
+            ci_credentials destination-postgres
+            ci_credentials destination-snowflake
+          fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Set Name and Version Environment Vars
@@ -297,7 +303,7 @@ jobs:
           sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
-          SENTRY_ORG: airbyte-5j
+          SENTRY_ORG: airbytehq
           SENTRY_PROJECT: connector-incident-management
       - name: Check if connector in definitions yaml
         if: github.event.inputs.auto-bump-version == 'true' && success()
