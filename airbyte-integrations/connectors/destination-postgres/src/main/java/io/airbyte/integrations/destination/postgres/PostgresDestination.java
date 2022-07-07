@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -28,7 +29,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final List<String> PORT_KEY = List.of("port");
   public static final String DATABASE_KEY = "database";
   public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
   public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
@@ -74,8 +74,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
       configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
     }
 
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY).asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

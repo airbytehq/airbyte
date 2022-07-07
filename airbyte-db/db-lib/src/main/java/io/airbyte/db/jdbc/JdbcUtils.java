@@ -12,6 +12,8 @@ import org.jooq.JSONFormat;
 
 public class JdbcUtils {
 
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
