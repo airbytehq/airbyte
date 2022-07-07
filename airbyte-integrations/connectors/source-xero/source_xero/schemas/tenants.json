@@ -1,0 +1,32 @@
+{
+    "type": "RECORD",
+    "record":
+    {
+        "stream": "tenants",
+        "data":
+        {
+            "id": "5c35b5dc508b6a1bd5d1d88f",
+            "name": "Dolead",
+            "xero_tenant_id": "ed4cac23-e9fe-4e05-89d6-b5c9fc6d2a32",
+            "xero_account_codes":
+            {
+                "PERF": "70600500",
+                "SAAS": "70600700",
+                "SAAS_PREMIUM": "70600700",
+                "CLASSICAL": "7060030",
+                "MANAGED_SERVICE": "70600700"
+            },
+            "xero_branding_ids":
+            {
+                "EN": "8a285f8e-3b16-4c7e-9c01-505d696ecd71",
+                "ES": "838942d1-f42e-4675-b770-2d411e7b967c",
+                "DE": "668a303d-4077-4219-99a8-972225a017f5",
+                "IT": "121c8d09-0d81-48b6-b6b5-811776c2a195",
+                "FR": "5c5e2153-46b8-4222-85ea-37f3bb0b4f07",
+                "CLASSICAL": "05448ffd-9f04-485c-abdb-3c5c541c4e47",
+                "PERF": "05448ffd-9f04-485c-abdb-3c5c541c4e47"
+            }
+        },
+        "emitted_at": 1646409183702
+    }
+}

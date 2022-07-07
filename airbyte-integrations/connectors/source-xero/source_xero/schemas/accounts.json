@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "AccountID": {
+      "type": "string"
+    },
+    "Code": {
+      "type": "string"
+    },
+    "Name": {
+      "type": "string"
+    },
+    "Status": {
+      "type": "string"
+    },
+    "Type": {
+      "type": "string"
+    },
+    "TaxType": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "string"
+    },
+    "Class": {
+      "type": "string"
+    },
+    "EnablePaymentsToAccount": {
+      "type": "boolean"
+    },
+    "ShowInExpenseClaims": {
+      "type": "boolean"
+    },
+    "BankAccountType": {
+      "type": "string"
+    },
+    "ReportingCode": {
+      "type": "string"
+    },
+    "ReportingCodeName": {
+      "type": "string"
+    },
+    "HasAttachments": {
+      "type": "boolean"
+    },
+    "UpdatedDateUTC": {
+      "type": "string"
+    },
+    "AddToWatchlist": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "AccountID",
+    "Code",
+    "Name",
+    "Status",
+    "Type",
+    "TaxType",
+    "Description",
+    "Class",
+    "EnablePaymentsToAccount",
+    "ShowInExpenseClaims",
+    "BankAccountType",
+    "ReportingCode",
+    "ReportingCodeName",
+    "HasAttachments",
+    "UpdatedDateUTC",
+    "AddToWatchlist"
+  ]
+}
