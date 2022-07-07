@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
 from airbyte_cdk.sources.declarative.types import Config
+from jsonschema import validate
 
 
 class DeclarativeComponentFactory:
@@ -54,11 +55,10 @@ class DeclarativeComponentFactory:
         else:
             schema = class_.json_schema()
             print(f"validating for {class_or_class_name}")
-            print(f"schema: {schema}")
             # full_definition = {**{"config": config}, **updated_kwargs}
-            full_definition = updated_kwargs
-            updated_kwargs["config"] = {}
-            # validate(full_definition, schema)
+            full_definition = {**updated_kwargs, **{k: v for k, v in updated_kwargs["options"].items() if k not in updated_kwargs}}
+            full_definition["config"] = {}
+            validate(full_definition, schema)
             return lambda: full_definition
 
     @staticmethod
