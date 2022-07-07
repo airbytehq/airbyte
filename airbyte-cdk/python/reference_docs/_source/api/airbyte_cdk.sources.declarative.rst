@@ -5,11 +5,17 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   airbyte_cdk.sources.declarative.checks
+   airbyte_cdk.sources.declarative.datetime
    airbyte_cdk.sources.declarative.decoders
+   airbyte_cdk.sources.declarative.extractors
    airbyte_cdk.sources.declarative.interpolation
    airbyte_cdk.sources.declarative.parsers
    airbyte_cdk.sources.declarative.requesters
+   airbyte_cdk.sources.declarative.retrievers
+   airbyte_cdk.sources.declarative.schema
    airbyte_cdk.sources.declarative.states
+   airbyte_cdk.sources.declarative.stream_slicers
 
 Submodules
 ----------
