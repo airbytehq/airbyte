@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows.google;
@@ -67,7 +67,7 @@ public abstract class GoogleOAuthFlow extends BaseOAuth2Flow {
   protected abstract String getScope();
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 

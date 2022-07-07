@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -9,5 +9,7 @@ public enum TemporalJobType {
   CHECK_CONNECTION,
   DISCOVER_SCHEMA,
   SYNC,
-  RESET_CONNECTION
+  RESET_CONNECTION,
+  CONNECTION_UPDATER,
+  REPLICATE
 }

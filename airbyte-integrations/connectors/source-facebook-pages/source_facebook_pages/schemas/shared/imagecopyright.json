@@ -1,0 +1,50 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "artist": {
+      "type": ["string", "null"]
+    },
+    "copyright_monitoring_status": {
+      "type": ["string", "null"]
+    },
+    "creation_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "creator": {
+      "type": ["string", "null"]
+    },
+    "custom_id": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "filename": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "matches_count": {
+      "type": ["integer", "null"]
+    },
+    "original_content_creation_date": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "title": {
+      "type": ["string", "null"]
+    },
+    "update_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    }
+  }
+}

@@ -9,7 +9,7 @@
     "properties": {
       "shop": {
         "type": "string",
-        "description": "The name of the store. For https://EXAMPLE.com, the shop name is 'EXAMPLE'."
+        "description": "The name of the store. For https://EXAMPLE.com, the shop name is 'EXAMPLE.com'."
       },
       "start_date": {
         "type": "string",
@@ -26,6 +26,16 @@
         "type": "string",
         "description": "The CUSTOMER SECRET for API in WooCommerce shop.",
         "airbyte_secret": true
+      },
+      "conversion_window_days": {
+        "title": "Conversion Window (Optional)",
+        "type": "integer",
+        "description": "A conversion window is the period of time after an ad interaction (such as an ad click or video view) during which a conversion, such as a purchase, is recorded in Google Ads.",
+        "minimum": 0,
+        "maximum": 1095,
+        "default": 0,
+        "examples": [14],
+        "order": 5
       }
     }
   }

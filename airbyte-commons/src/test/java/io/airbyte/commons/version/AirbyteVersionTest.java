@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.version;
@@ -87,9 +87,26 @@ public class AirbyteVersionTest {
   }
 
   @Test
+  public void testSerialize() {
+    final var devVersion = "dev";
+    assertEquals(devVersion, new AirbyteVersion(devVersion).serialize());
+
+    final var nonDevVersion = "0.1.2-alpha";
+    assertEquals(nonDevVersion, new AirbyteVersion(nonDevVersion).serialize());
+  }
+
+  @Test
   public void testCheckVersion() {
     AirbyteVersion.assertIsCompatible(new AirbyteVersion("3.2.1"), new AirbyteVersion("3.2.1"));
     assertThrows(IllegalStateException.class, () -> AirbyteVersion.assertIsCompatible(new AirbyteVersion("1.2.3"), new AirbyteVersion("3.2.1")));
+  }
+
+  @Test
+  public void testCheckOnlyPatchVersion() {
+    assertFalse(new AirbyteVersion("6.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.8")));
+    assertFalse(new AirbyteVersion("6.9.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.8.9")));
+    assertFalse(new AirbyteVersion("7.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.11")));
+    assertTrue(new AirbyteVersion("6.7.9").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.8")));
   }
 
 }

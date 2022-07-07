@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -76,7 +76,7 @@ public class QuickbooksOAuthFlow extends BaseOAuth2Flow {
    * Returns the URL where to retrieve the access token from.
    */
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return TOKEN_URL;
   }
 

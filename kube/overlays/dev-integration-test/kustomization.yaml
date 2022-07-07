@@ -9,7 +9,7 @@ bases:
 images:
   - name: airbyte/db
     newTag: dev
-  - name: airbyte/scheduler
+  - name: airbyte/bootloader
     newTag: dev
   - name: airbyte/server
     newTag: dev
@@ -29,5 +29,4 @@ secretGenerator:
     env: .secrets
 
 patchesStrategicMerge:
-  - pod-antiaffinity.yaml
   - parallelize-worker.yaml

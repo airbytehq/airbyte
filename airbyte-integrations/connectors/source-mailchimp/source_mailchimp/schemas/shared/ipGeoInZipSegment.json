@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "title": "US Zip Code Segment",
+  "description": "Segment by a specific US ZIP code.",
+  "required": ["field", "op", "value", "extra"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "IPGeoInZip",
+      "enum": ["IPGeoInZip"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ipgeo"],
+      "title": "Segment Field",
+      "description": "Segmenting subscribers who are within a specific location.",
+      "example": "ipgeo"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["ipgeoinzip"],
+      "title": "Segment Operator",
+      "description": "Segment members who are within a specific US zip code.",
+      "example": "ipgeoinzip"
+    },
+    "value": {
+      "type": "integer",
+      "title": "Segment Data",
+      "description": "The radius of the target location.",
+      "example": 25
+    },
+    "extra": {
+      "type": "integer",
+      "title": "Extra Data",
+      "description": "The zip code to segment against.",
+      "example": 30318
+    }
+  }
+}

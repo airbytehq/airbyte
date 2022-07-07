@@ -1,0 +1,8 @@
+{
+  "username": "charles",
+  "password": "**********",
+  "nested": {
+    "password": "**********",
+    "not_password": 13
+  }
+}

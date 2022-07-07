@@ -1,0 +1,56 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Yahoo Finance Spec",
+    "type": "object",
+    "required": ["tickers"],
+    "additionalProperties": false,
+    "properties": {
+      "tickers": {
+        "type": "string",
+        "order": 0,
+        "description": "Comma-separated identifiers for the stocks to be queried. Whitespaces are allowed.",
+        "examples": ["AAPL, GOOGL, GEO.MI"]
+      },
+      "interval": {
+        "title": "Interval",
+        "order": 1,
+        "description": "The interval of between prices queried.",
+        "type": "string",
+        "enum": [
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "90m",
+          "1h",
+          "1d",
+          "5d",
+          "1wk",
+          "1mo",
+          "3mo"
+        ]
+      },
+      "range": {
+        "title": "Range",
+        "order": 2,
+        "description": "The range of prices to be queried.",
+        "type": "string",
+        "enum": [
+          "1d",
+          "5d",
+          "7d",
+          "1mo",
+          "3mo",
+          "6mo",
+          "1y",
+          "2y",
+          "5y",
+          "ytd",
+          "max"
+        ]
+      }
+    }
+  }
+}

@@ -1,26 +1,33 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import logging
 import sys
 import time
+from typing import Optional
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from requests import codes, exceptions
 
 from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
-TRANSIENT_EXCEPTIONS = (DefaultBackoffException, exceptions.ConnectTimeout, exceptions.ReadTimeout, exceptions.ConnectionError)
+TRANSIENT_EXCEPTIONS = (
+    DefaultBackoffException,
+    exceptions.ConnectTimeout,
+    exceptions.ReadTimeout,
+    exceptions.ConnectionError,
+    exceptions.ChunkedEncodingError,
+)
 
-# TODO inject singleton logger?
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
-def default_backoff_handler(max_tries: int, factor: int, **kwargs):
+def default_backoff_handler(max_tries: Optional[int], factor: float, **kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
+        if exc.response:
+            logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
         logger.info(
             f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         )
@@ -44,10 +51,12 @@ def default_backoff_handler(max_tries: int, factor: int, **kwargs):
     )
 
 
-def user_defined_backoff_handler(max_tries: int, **kwargs):
+def user_defined_backoff_handler(max_tries: Optional[int], **kwargs):
     def sleep_on_ratelimit(details):
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
+            if exc.response:
+                logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
             retry_after = exc.backoff
             logger.info(f"Retrying. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second

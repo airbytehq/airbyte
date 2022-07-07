@@ -1,42 +1,32 @@
 import React, { Suspense } from "react";
+import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
-import { IntlProvider } from "react-intl";
-import { CacheProvider } from "rest-hooks";
-import { QueryClientProvider, QueryClient } from "react-query";
 
-import en from "./locales/en.json";
-import GlobalStyle from "./global-styles";
-import { theme } from "./theme";
-
-import { Routing } from "./pages/routes";
-import LoadingPage from "./components/LoadingPage";
-import ApiErrorBoundary from "./components/ApiErrorBoundary";
+import { ApiServices } from "core/ApiServices";
+import { I18nProvider } from "core/i18n";
+import { ServicesProvider } from "core/servicesProvider";
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
-import { usePickFirstWorkspace } from "hooks/services/useWorkspace";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
-import { ServicesProvider } from "core/servicesProvider";
-import { useApiServices } from "core/defaultServices";
-import { envConfigProvider, windowConfigProvider } from "./config";
+import { StoreProvider } from "views/common/StoreProvider";
+
+import ApiErrorBoundary from "./components/ApiErrorBoundary";
+import LoadingPage from "./components/LoadingPage";
 import {
   Config,
   ConfigServiceProvider,
   defaultConfig,
+  envConfigProvider,
   ValueProvider,
+  windowConfigProvider,
 } from "./config";
-
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowUploadCustomImage,
-  },
-  {
-    id: FeatureItem.AllowCustomDBT,
-  },
-  {
-    id: FeatureItem.AllowUpdateConnectors,
-  },
-];
+import GlobalStyle from "./global-styles";
+import en from "./locales/en.json";
+import { Routing } from "./pages/routes";
+import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
+import { theme } from "./theme";
 
 const StyleProvider: React.FC = ({ children }) => (
   <ThemeProvider theme={theme}>
@@ -45,68 +35,45 @@ const StyleProvider: React.FC = ({ children }) => (
   </ThemeProvider>
 );
 
-const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider locale="en" messages={en}>
-    {children}
-  </IntlProvider>
+const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
+
+const Services: React.FC = ({ children }) => (
+  <AnalyticsProvider>
+    <ApiErrorBoundary>
+      <WorkspaceServiceProvider>
+        <FeatureService>
+          <NotificationService>
+            <ConfirmationModalService>
+              <FormChangeTrackerService>
+                <ApiServices>{children}</ApiServices>
+              </FormChangeTrackerService>
+            </ConfirmationModalService>
+          </NotificationService>
+        </FeatureService>
+      </WorkspaceServiceProvider>
+    </ApiErrorBoundary>
+  </AnalyticsProvider>
 );
-
-const queryClient = new QueryClient();
-
-const StoreProvider: React.FC = ({ children }) => (
-  <CacheProvider>
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  </CacheProvider>
-);
-
-const configProviders: ValueProvider<Config> = [
-  envConfigProvider,
-  windowConfigProvider,
-];
-
-const services = {
-  currentWorkspaceProvider: usePickFirstWorkspace,
-};
-
-const AppServices: React.FC = ({ children }) => (
-  <ServicesProvider inject={services}>
-    <ServiceOverrides>{children}</ServiceOverrides>
-  </ServicesProvider>
-);
-
-const ServiceOverrides: React.FC = React.memo(({ children }) => {
-  useApiServices();
-  return <>{children}</>;
-});
 
 const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18NProvider>
+        <I18nProvider locale="en" messages={en}>
           <StoreProvider>
-            <Suspense fallback={<LoadingPage />}>
-              <ConfigServiceProvider
-                defaultConfig={defaultConfig}
-                providers={configProviders}
-              >
-                <AnalyticsProvider>
-                  <ApiErrorBoundary>
-                    <FeatureService features={Features}>
-                      <NotificationService>
-                        <AppServices>
-                          <OnboardingServiceProvider>
-                            <Routing />
-                          </OnboardingServiceProvider>
-                        </AppServices>
-                      </NotificationService>
-                    </FeatureService>
-                  </ApiErrorBoundary>
-                </AnalyticsProvider>
-              </ConfigServiceProvider>
-            </Suspense>
+            <ServicesProvider>
+              <Suspense fallback={<LoadingPage />}>
+                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
+                  <Router>
+                    <Services>
+                      <Routing />
+                    </Services>
+                  </Router>
+                </ConfigServiceProvider>
+              </Suspense>
+            </ServicesProvider>
           </StoreProvider>
-        </I18NProvider>
+        </I18nProvider>
       </StyleProvider>
     </React.StrictMode>
   );

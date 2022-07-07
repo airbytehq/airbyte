@@ -1,5 +1,5 @@
-# A test describe in the README is available to test a version update 
-FROM temporalio/auto-setup:1.13.0
+# A test describe in the README is available to test a version update
+FROM airbyte/temporal-auto-setup:1.13.0
 
 ENV TEMPORAL_HOME /etc/temporal
 

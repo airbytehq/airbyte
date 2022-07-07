@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.io;
@@ -75,7 +75,7 @@ class IOsTest {
         "line7",
         "line8");
 
-    final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), true));
+    final Writer writer = new BufferedWriter(new FileWriter(stdoutFile.toString(), StandardCharsets.UTF_8, true));
 
     for (final String line : Iterables.concat(head, expectedTail)) {
       writer.write(line + "\n");

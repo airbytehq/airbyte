@@ -1,15 +1,15 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import logging
 import tempfile
 from typing import Any, Mapping, MutableMapping
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
@@ -19,14 +19,14 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 class MockSource(Source):
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ):
         pass
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]):
+    def check(self, logger: logging.Logger, config: Mapping[str, Any]):
         pass
 
-    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]):
+    def discover(self, logger: logging.Logger, config: Mapping[str, Any]):
         pass
 
 

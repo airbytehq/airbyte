@@ -8,18 +8,18 @@ services:
       context: airbyte-config/init
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  bootloader:
+    image: airbyte/bootloader:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-bootloader
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
   db:
     image: airbyte/db:${VERSION}
     build:
       dockerfile: Dockerfile
-      context: airbyte-db/lib
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
-  scheduler:
-    image: airbyte/scheduler:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      context: airbyte-scheduler/app
+      context: airbyte-db/db-lib
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
   worker:
@@ -43,17 +43,24 @@ services:
       context: airbyte-webapp
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
-  migration:
-    image: airbyte/migration:${VERSION}
-    build:
-      dockerfile: Dockerfile
-      context: airbyte-migration
-      labels:
-        io.airbyte.git-revision: ${GIT_REVISION}
   temporal:
     image: airbyte/temporal:${VERSION}
     build:
       dockerfile: Dockerfile
       context: airbyte-temporal
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  container-orchestrator:
+    image: airbyte/container-orchestrator:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-container-orchestrator
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  metric-reporter:
+    image: airbyte/metrics-reporter:${VERSION}
+    build:
+      dockerfile: Dockerfile
+      context: airbyte-metrics/reporter
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}

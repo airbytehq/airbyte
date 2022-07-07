@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -58,7 +58,7 @@ def spec_object():
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
     with pytest_raises(Exception) as ex_info:
-        check_config_against_spec_or_exit(config, spec_object, logger)
+        check_config_against_spec_or_exit(config, spec_object)
         exc = ex_info.value
         traceback.print_exception(type(exc), exc, exc.__traceback__)
         out, err = capsys.readouterr()
@@ -67,7 +67,7 @@ def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_ob
 
 def test_should_not_fail_validation_for_valid_config(spec_object):
     config = {"api_token": "something"}
-    check_config_against_spec_or_exit(config, spec_object, logger)
+    check_config_against_spec_or_exit(config, spec_object)
     assert True, "should pass validation with valid config"
 
 
@@ -80,7 +80,10 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
@@ -96,16 +99,26 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
         partial_schema = {
             "type": ["null", "object"],
-            "properties": {"str": {"type": "string"}, "int": {"type": "integer"}, "obj": {"$ref": "shared_schema.json"}},
+            "properties": {
+                "str": {"type": "string"},
+                "int": {"type": "integer"},
+                "obj": {"$ref": "shared_schema.json"},
+            },
         }
 
-        referenced_schema = {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}
+        referenced_schema = {
+            "type": ["null", "object"],
+            "properties": {"k1": {"type": "string"}},
+        }
 
         create_schema("complex_schema", partial_schema)
         create_schema("shared/shared_schema", referenced_schema)
@@ -122,8 +135,19 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}]},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {
+                            "type": ["null", "object"],
+                            "properties": {"k1": {"type": "string"}},
+                        },
+                    ]
+                },
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
         partial_schema = {
@@ -131,7 +155,12 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "shared_schema.json#/definitions/type_one"}]},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"$ref": "shared_schema.json#/definitions/type_one"},
+                    ]
+                },
                 "obj": {"$ref": "shared_schema.json#/definitions/type_one"},
             },
         }
@@ -139,7 +168,10 @@ class TestResourceSchemaLoader:
         referenced_schema = {
             "definitions": {
                 "type_one": {"$ref": "shared_schema.json#/definitions/type_nested"},
-                "type_nested": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "type_nested": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             }
         }
 

@@ -1,3 +1,2 @@
-import ServiceForm from "./ServiceForm";
-
-export default ServiceForm;
+export * from "./types";
+export * from "./ServiceForm";

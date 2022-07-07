@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "_id": {
+      "type": "integer"
+    },
+    "ReadOnly": {
+      "description": "these fields are not updatable by the API client",
+      "$ref": "customer/models/customer_read_only.json"
+    },
+    "CompanyInfo": {
+      "description": "customer.contact1",
+      "$ref": "generic/models/contact_info.json"
+    },
+    "PrimaryContact": {
+      "description": "customer.customercontacts where contact type is primary",
+      "$ref": "generic/models/contact_info.json"
+    },
+    "OtherContacts": {
+      "description": "customer.customercontacts where contact type is other than primary",
+      "type": "array",
+      "items": {
+        "$ref": "generic/models/other_contact_info.json"
+      }
+    },
+    "WebSite": {
+      "description": "information only, in case you want to see more about the customer's business",
+      "type": "string"
+    },
+    "ExternalId": {
+      "description": "connection of this customer to the same customer on some other system",
+      "type": "string"
+    },
+    "Groups": {
+      "description": "list of groups this customer belongs to",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "Facilities": {
+      "description": "list of facilities this customer's items are stored in, the first is the primary facility",
+      "type": "array",
+      "items": {
+        "$ref": "generic/models/facility_identifier.json"
+      }
+    },
+    "PrimaryFacilityIdentifier": {
+      "description": "same as the first in Facilities; populated by GET, ignored by POST and PUT",
+      "$ref": "generic/models/facility_identifier.json"
+    },
+    "Options": {
+      "description": "assemblage of all manner of capabilities the system allows for this customer, scraped together from multiple database sources",
+      "$ref": "customer/models/options.json"
+    }
+  }
+}

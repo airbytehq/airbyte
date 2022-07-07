@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "styled-components";
 
-type StepItemProps = {
+interface StepItemProps {
   active?: boolean;
   current?: boolean;
   children?: React.ReactNode;
-};
+}
 
 const Content = styled.div<{ active?: boolean }>`
   display: flex;
@@ -26,13 +26,9 @@ const Item = styled.div<{ active?: boolean }>`
   width: 46px;
   border-radius: 50%;
   padding: 6px 5px;
-  border: 1px solid
-    ${({ theme, active }) =>
-      active ? theme.primaryColor : theme.lightTextColor};
-  background: ${({ theme, active }) =>
-    active ? theme.primaryColor : theme.transparentColor};
-  color: ${({ theme, active }) =>
-    active ? theme.whiteColor : theme.lightTextColor};
+  border: 1px solid ${({ theme, active }) => (active ? theme.primaryColor : theme.lightTextColor)};
+  background: ${({ theme, active }) => (active ? theme.primaryColor : theme.transparentColor)};
+  color: ${({ theme, active }) => (active ? theme.whiteColor : theme.lightTextColor)};
   font-weight: normal;
   font-size: 18px;
   line-height: 22px;

@@ -3,5 +3,9 @@
   "name": "Looker",
   "dockerRepository": "airbyte/source-looker",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-looker"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-looker",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/looker",
+    "connectionSpecification": {}
+  }
 }

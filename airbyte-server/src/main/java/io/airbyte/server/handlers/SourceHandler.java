@@ -1,28 +1,32 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.SourceCreate;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.SourceSearch;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.config.ConfigSchema;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.SourceCloneConfiguration;
+import io.airbyte.api.model.generated.SourceCloneRequestBody;
+import io.airbyte.api.model.generated.SourceCreate;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
-import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -34,22 +38,25 @@ public class SourceHandler {
 
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
+  private final SecretsRepositoryReader secretsRepositoryReader;
+  private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final JsonSchemaValidator validator;
-  private final SpecFetcher specFetcher;
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
 
   SourceHandler(final ConfigRepository configRepository,
+                final SecretsRepositoryReader secretsRepositoryReader,
+                final SecretsRepositoryWriter secretsRepositoryWriter,
                 final JsonSchemaValidator integrationSchemaValidation,
-                final SpecFetcher specFetcher,
                 final ConnectionsHandler connectionsHandler,
                 final Supplier<UUID> uuidGenerator,
                 final JsonSecretsProcessor secretsProcessor,
                 final ConfigurationUpdate configurationUpdate) {
     this.configRepository = configRepository;
+    this.secretsRepositoryReader = secretsRepositoryReader;
+    this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.validator = integrationSchemaValidation;
-    this.specFetcher = specFetcher;
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
@@ -57,17 +64,22 @@ public class SourceHandler {
   }
 
   public SourceHandler(final ConfigRepository configRepository,
+                       final SecretsRepositoryReader secretsRepositoryReader,
+                       final SecretsRepositoryWriter secretsRepositoryWriter,
                        final JsonSchemaValidator integrationSchemaValidation,
-                       final SpecFetcher specFetcher,
                        final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
         integrationSchemaValidation,
-        specFetcher,
         connectionsHandler,
         UUID::randomUUID,
-        new JsonSecretsProcessor(),
-        new ConfigurationUpdate(configRepository, specFetcher));
+        JsonSecretsProcessor.builder()
+            .maskSecrets(true)
+            .copySecrets(true)
+            .build(),
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
   public SourceRead createSource(final SourceCreate sourceCreate)
@@ -117,29 +129,65 @@ public class SourceHandler {
 
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    final UUID sourceId = sourceIdRequestBody.getSourceId();
-    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+    return buildSourceRead(sourceIdRequestBody.getSourceId());
+  }
 
-    if (sourceConnection.getTombstone()) {
-      throw new ConfigNotFoundException(ConfigSchema.SOURCE_CONNECTION, sourceId.toString());
+  public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    // read source configuration from db
+    final SourceRead sourceToClone = buildSourceReadWithSecrets(sourceCloneRequestBody.getSourceCloneId());
+    final SourceCloneConfiguration sourceCloneConfiguration = sourceCloneRequestBody.getSourceConfiguration();
+
+    final String copyText = " (Copy)";
+    final String sourceName = sourceToClone.getName() + copyText;
+
+    final SourceCreate sourceCreate = new SourceCreate()
+        .name(sourceName)
+        .sourceDefinitionId(sourceToClone.getSourceDefinitionId())
+        .connectionConfiguration(sourceToClone.getConnectionConfiguration())
+        .workspaceId(sourceToClone.getWorkspaceId());
+
+    if (sourceCloneConfiguration != null) {
+      if (sourceCloneConfiguration.getName() != null) {
+        sourceCreate.name(sourceCloneConfiguration.getName());
+      }
+
+      if (sourceCloneConfiguration.getConnectionConfiguration() != null) {
+        sourceCreate.connectionConfiguration(sourceCloneConfiguration.getConnectionConfiguration());
+      }
     }
 
-    return buildSourceRead(sourceId);
+    return createSource(sourceCreate);
   }
 
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
+
+    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
+        .stream()
+        .filter(sc -> sc.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId()) && !MoreBooleans.isTruthy(sc.getTombstone()))
+        .toList();
+
     final List<SourceRead> reads = Lists.newArrayList();
+    for (final SourceConnection sc : sourceConnections) {
+      reads.add(buildSourceRead(sc.getSourceId()));
+    }
 
-    for (final SourceConnection sci : configRepository.listSourceConnection()) {
-      if (!sci.getWorkspaceId().equals(workspaceIdRequestBody.getWorkspaceId())) {
-        continue;
-      }
-      if (sci.getTombstone()) {
-        continue;
-      }
+    return new SourceReadList().sources(reads);
+  }
 
-      reads.add(buildSourceRead(sci.getSourceId()));
+  public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+
+    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
+        .stream()
+        .filter(sc -> sc.getSourceDefinitionId().equals(sourceDefinitionIdRequestBody.getSourceDefinitionId())
+            && !MoreBooleans.isTruthy(sc.getTombstone()))
+        .toList();
+
+    final List<SourceRead> reads = Lists.newArrayList();
+    for (final SourceConnection sourceConnection : sourceConnections) {
+      reads.add(buildSourceRead(sourceConnection.getSourceId()));
     }
 
     return new SourceReadList().sources(reads);
@@ -171,7 +219,7 @@ public class SourceHandler {
   public void deleteSource(final SourceRead source)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.
-    // Delete connections first in case it it fails in the middle, source will still be visible
+    // Delete connections first in case it fails in the middle, source will still be visible
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody()
         .workspaceId(source.getWorkspaceId());
     for (final ConnectionRead connectionRead : connectionsHandler
@@ -180,14 +228,11 @@ public class SourceHandler {
         continue;
       }
 
-      connectionsHandler.deleteConnection(connectionRead);
+      connectionsHandler.deleteConnection(connectionRead.getConnectionId());
     }
 
     final ConnectorSpecification spec = getSpecFromSourceId(source.getSourceId());
-    validateSource(spec, source.getConnectionConfiguration());
-
-    final var fullConfig = configRepository.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
-    validateSource(spec, fullConfig);
+    final var fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();
 
     // persist
     persistSourceConnection(
@@ -203,9 +248,8 @@ public class SourceHandler {
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository
-        .getSourceDefinitionFromSource(sourceId);
-    final ConnectorSpecification spec = specFetcher.getSpec(sourceDef);
+    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
+    final ConnectorSpecification spec = sourceDef.getSpec();
     return buildSourceRead(sourceId, spec);
   }
 
@@ -215,9 +259,17 @@ public class SourceHandler {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
         .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final JsonNode sanitizedConfig = secretsProcessor.maskSecrets(
-        sourceConnection.getConfiguration(), spec.getConnectionSpecification());
+    final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(), spec.getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
+    return toSourceRead(sourceConnection, standardSourceDefinition);
+  }
+
+  private SourceRead buildSourceReadWithSecrets(final UUID sourceId)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    // read configuration from db
+    final SourceConnection sourceConnection = secretsRepositoryReader.getSourceConnectionWithSecrets(sourceId);
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
@@ -235,12 +287,7 @@ public class SourceHandler {
   private ConnectorSpecification getSpecFromSourceDefinitionId(final UUID sourceDefId)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
-    return getSpecFromSourceDefinitionId(specFetcher, sourceDef);
-  }
-
-  public static ConnectorSpecification getSpecFromSourceDefinitionId(final SpecFetcher specFetcher, final StandardSourceDefinition sourceDefinition)
-      throws IOException, ConfigNotFoundException {
-    return specFetcher.getSpec(sourceDefinition);
+    return sourceDef.getSpec();
   }
 
   private void persistSourceConnection(final String name,
@@ -259,7 +306,7 @@ public class SourceHandler {
         .withTombstone(tombstone)
         .withConfiguration(configurationJson);
 
-    configRepository.writeSourceConnection(sourceConnection, spec);
+    secretsRepositoryWriter.writeSourceConnection(sourceConnection, spec);
   }
 
   protected static SourceRead toSourceRead(final SourceConnection sourceConnection,

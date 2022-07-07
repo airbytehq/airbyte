@@ -3,5 +3,9 @@
   "name": "Redshift",
   "dockerRepository": "airbyte/source-redshift",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-redshift"
+  "documentationUrl": "https://hub.docker.com/repository/docker/airbyte/source-redshift",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/redshift",
+    "connectionSpecification": {}
+  }
 }

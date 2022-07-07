@@ -3,23 +3,24 @@ import styled from "styled-components";
 
 import MenuItem from "./components/MenuItem";
 
-export type SideMenuItem = {
+export interface SideMenuItem {
   path: string;
   name: string | React.ReactNode;
   indicatorCount?: number;
-  component: React.ComponentType<any>;
-};
+  component: React.ComponentType;
+  id?: string;
+}
 
-export type CategoryItem = {
+export interface CategoryItem {
   category?: string | React.ReactNode;
   routes: SideMenuItem[];
-};
+}
 
-type SideMenuProps = {
+interface SideMenuProps {
   data: CategoryItem[];
   activeItem?: string;
   onSelect: (id: string) => void;
-};
+}
 
 const Content = styled.nav`
   min-width: 147px;
@@ -43,14 +44,13 @@ const SideMenu: React.FC<SideMenuProps> = ({ data, onSelect, activeItem }) => {
     <Content>
       {data.map((categoryItem, index) => (
         <Category key={index}>
-          {categoryItem.category && (
-            <CategoryName>{categoryItem.category}</CategoryName>
-          )}
+          {categoryItem.category && <CategoryName>{categoryItem.category}</CategoryName>}
           {categoryItem.routes.map((route) => (
             <MenuItem
+              id={route.id}
               key={route.path}
               name={route.name}
-              isActive={route.path === activeItem}
+              isActive={activeItem?.endsWith(route.path)}
               count={route.indicatorCount}
               onClick={() => onSelect(route.path)}
             />

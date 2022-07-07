@@ -9,19 +9,19 @@
     "properties": {
       "credentials": {
         "title": "Google Credentials",
-        "description": "Google APIs use the OAuth 2.0 protocol for authentication and authorization. The Source supports <a href=\"https://developers.google.com/identity/protocols/oauth2#webserver\" target=\"_blank\">Web server application</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2#serviceaccount\" target=\"_blank\">Service accounts</a> scenarios",
+        "description": "Google APIs use the OAuth 2.0 protocol for authentication and authorization. The Source supports <a href=\"https://developers.google.com/identity/protocols/oauth2#webserver\" target=\"_blank\">Web server application</a> and <a href=\"https://developers.google.com/identity/protocols/oauth2#serviceaccount\" target=\"_blank\">Service accounts</a> scenarios.",
         "type": "object",
         "oneOf": [
           {
-            "title": "Sign in via Google (Oauth)",
-            "description": "For these scenario user only needs to give permission to read Google Directory data",
+            "title": "Sign in via Google (OAuth)",
+            "description": "For these scenario user only needs to give permission to read Google Directory data.",
             "type": "object",
             "required": ["client_id", "client_secret", "refresh_token"],
             "properties": {
               "credentials_title": {
                 "type": "string",
-                "title": "Credentials title",
-                "description": "Authentication scenario",
+                "title": "Credentials Title",
+                "description": "Authentication Scenario",
                 "const": "Web server app",
                 "enum": ["Web server app"],
                 "default": "Web server app",
@@ -30,33 +30,33 @@
               "client_id": {
                 "title": "Client ID",
                 "type": "string",
-                "description": "The client ID of developer application",
+                "description": "The Client ID of the developer application.",
                 "airbyte_secret": true
               },
               "client_secret": {
                 "title": "Client secret",
                 "type": "string",
-                "description": "The client secret of developer application",
+                "description": "The Client Secret of the developer application.",
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh Token",
                 "type": "string",
-                "description": "The token for obtaining new access token",
+                "description": "The Token for obtaining a new access token.",
                 "airbyte_secret": true
               }
             }
           },
           {
-            "title": "Service account Key",
-            "description": "For these scenario user should obtain service account's credentials from the Google API Console and provide delegated email",
+            "title": "Service Account Key",
+            "description": "For these scenario user should obtain service account's credentials from the Google API Console and provide delegated email.",
             "type": "object",
             "required": ["credentials_json", "email"],
             "properties": {
               "credentials_title": {
                 "type": "string",
-                "title": "Credentials title",
-                "description": "Authentication scenario",
+                "title": "Credentials Title",
+                "description": "Authentication Scenario",
                 "const": "Service accounts",
                 "enum": ["Service accounts"],
                 "default": "Service accounts",

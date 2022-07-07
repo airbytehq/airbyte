@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.resources;
@@ -8,7 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.google.common.collect.Sets;
+import io.airbyte.commons.io.IOs;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
@@ -33,6 +36,12 @@ class MoreResourcesTest {
     assertEquals("content2\n", MoreResources.readResource(MoreResourcesTest.class, "/subdir/resource_test_sub"));
 
     assertThrows(IllegalArgumentException.class, () -> MoreResources.readResource(MoreResourcesTest.class, "invalid"));
+  }
+
+  @Test
+  void testReadResourceAsFile() throws URISyntaxException {
+    final File file = MoreResources.readResourceAsFile("resource_test");
+    assertEquals("content1\n", IOs.readFile(file.toPath()));
   }
 
   @Test

@@ -10,7 +10,8 @@
       "host": {
         "title": "Host",
         "description": "Hostname of the database.",
-        "type": "string"
+        "type": "string",
+        "order": 1
       },
       "port": {
         "title": "Port",
@@ -18,38 +19,49 @@
         "type": "integer",
         "minimum": 0,
         "maximum": 65536,
-        "default": 1521
+        "default": 1521,
+        "order": 2
       },
       "sid": {
         "title": "SID (Oracle System Identifier)",
-        "type": "string"
+        "type": "string",
+        "order": 3
       },
       "username": {
         "title": "User",
-        "description": "Username to use to access the database.",
-        "type": "string"
+        "description": "The username which is used to access the database.",
+        "type": "string",
+        "order": 4
       },
       "password": {
         "title": "Password",
-        "description": "Password associated with the username.",
+        "description": "The password associated with the username.",
         "type": "string",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 5
       },
       "schemas": {
         "title": "Schemas",
-        "description": "List of schemas to sync from. Defaults to user. Case sensitive.",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
         "type": "array",
         "items": {
           "type": "string"
         },
         "minItems": 1,
-        "uniqueItems": true
+        "uniqueItems": true,
+        "order": 6
+      },
+      "jdbc_url_params": {
+        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "type": "string",
+        "order": 7
       },
       "encryption": {
         "title": "Encryption",
         "type": "object",
-        "description": "Encryption method to use when communicating with the database",
-        "order": 6,
+        "description": "The encryption method with is used when communicating with the database.",
+        "order": 8,
         "oneOf": [
           {
             "title": "Unencrypted",
@@ -66,9 +78,9 @@
             }
           },
           {
-            "title": "Native Network Ecryption (NNE)",
+            "title": "Native Network Encryption (NNE)",
             "additionalProperties": false,
-            "description": "Native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
+            "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
             "required": ["encryption_method"],
             "properties": {
               "encryption_method": {
@@ -79,7 +91,7 @@
               },
               "encryption_algorithm": {
                 "type": "string",
-                "description": "This parameter defines the encryption algorithm to be used",
+                "description": "This parameter defines what encryption algorithm is used.",
                 "title": "Encryption Algorithm",
                 "default": "AES256",
                 "enum": ["AES256", "RC4_56", "3DES168"]
@@ -89,7 +101,7 @@
           {
             "title": "TLS Encrypted (verify certificate)",
             "additionalProperties": false,
-            "description": "Verify and use the cert provided by the server.",
+            "description": "Verify and use the certificate provided by the server.",
             "required": ["encryption_method", "ssl_certificate"],
             "properties": {
               "encryption_method": {
@@ -99,8 +111,8 @@
                 "default": "encrypted_verify_certificate"
               },
               "ssl_certificate": {
-                "title": "SSL PEM file",
-                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations",
+                "title": "SSL PEM File",
+                "description": "Privacy Enhanced Mail (PEM) files are concatenated certificate containers frequently used in certificate installations.",
                 "type": "string",
                 "airbyte_secret": true,
                 "multiline": true,

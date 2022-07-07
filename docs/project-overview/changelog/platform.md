@@ -6,8 +6,25 @@ description: Be sure to not miss out on new features and improvements!
 
 This is the changelog for Airbyte Platform. For our connector changelog, please visit our [Connector Changelog](connectors.md) page.
 
-## [11-12-2021 - 0.32.1](https://github.com/airbytehq/airbyte/releases/tag/v0.32.0-alpha)
+## [20-12-2021 - 0.32.5](https://github.com/airbytehq/airbyte/releases/tag/v0.32.5-alpha)
+* Add an endpoint that specify that the feedback have been given after the first sync.
+
+## [18-12-2021 - 0.32.4](https://github.com/airbytehq/airbyte/releases/tag/v0.32.4-alpha)
 * No major changes to Airbyte Core.
+
+## [18-12-2021 - 0.32.3](https://github.com/airbytehq/airbyte/releases/tag/v0.32.3-alpha)
+* No major changes to Airbyte Core.
+
+## [18-12-2021 - 0.32.2](https://github.com/airbytehq/airbyte/releases/tag/v0.32.2-alpha)
+* Improve error handling when additional sources/destinations cannot be read.
+* Implement connector config dependency for OAuth consent URL.
+* Treat oauthFlowInitParameters just as hidden instead of getting rid of them.
+* Stop using gentle close with heartbeat.
+
+## [17-12-2021 - 0.32.1](https://github.com/airbytehq/airbyte/releases/tag/v0.32.1-alpha)
+* Add to the new connection flow form with an existing source and destination dropdown.
+* Implement protocol change for OAuth outputs.
+* Enhance API for use by cloud to provide per-connector billing info.
 
 ## [11-12-2021 - 0.32.0](https://github.com/airbytehq/airbyte/releases/tag/v0.32.0-alpha)
 * This is a **MAJOR** version update. You need to [update to this version](../../operator-guides/upgrading-airbyte.md#mandatory-intermediate-upgrade) before updating to any version newer than `0.32.0`
@@ -51,16 +68,20 @@ This is the changelog for Airbyte Platform. For our connector changelog, please 
 ## [10-21-2021 - 0.30.22](https://github.com/airbytehq/airbyte/releases/tag/v0.30.22-alpha)
 * We now support experimental deployment of Airbyte on Macbooks with M1 chips!
 
-{% hint style="info" %}
+:::info
+
 This interim patch period mostly contained stability changes for Airbyte Cloud, so we skipped from `0.30.16` to `0.30.22`.
-{% endhint %}
+
+:::
 
 ## [10-07-2021 - 0.30.16](https://github.com/airbytehq/airbyte/releases/tag/v0.30.16-alpha)
 * On Kubernetes deployments, you can now configure the Airbyte Worker Pod's image pull policy.
 
-{% hint style="info" %}
+:::info
+
 This interim patch period mostly contained stability changes for Airbyte Cloud, so we skipped from `0.30.2` to `0.30.16`.
-{% endhint %}
+
+:::
 
 ## [09-30-2021 - 0.30.2](https://github.com/airbytehq/airbyte/releases/tag/v0.30.2-alpha)
 * Fixed a bug that would fail Airbyte upgrades for deployments with sync notifications.

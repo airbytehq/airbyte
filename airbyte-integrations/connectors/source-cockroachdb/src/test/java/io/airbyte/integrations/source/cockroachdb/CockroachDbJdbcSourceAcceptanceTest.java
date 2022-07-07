@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.cockroachdb;
@@ -12,10 +12,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -33,9 +35,9 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import io.airbyte.test.utils.CockroachDBContainerHelper;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -46,7 +48,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.CockroachContainer;
-import org.testcontainers.utility.MountableFile;
 
 class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
@@ -80,11 +81,15 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("ssl", false)
         .build());
 
-    final String initScriptName = "init_" + dbName.concat(".sql");
-    final String tmpFilePath = IOs
-        .writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
-    CockroachDBContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
-
+    final JsonNode jdbcConfig = getToDatabaseConfigFunction().apply(config);
+    database = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            jdbcConfig.get("username").asText(),
+            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            getDriverClass(),
+            jdbcConfig.get("jdbc_url").asText(),
+            JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")));
+    database.execute(connection -> connection.createStatement().execute("CREATE DATABASE " + config.get("database") + ";"));
     super.setup();
   }
 
@@ -94,7 +99,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new CockroachDbSource();
   }
 
@@ -119,26 +124,26 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
+            Field.of(COL_ID, JsonSchemaType.NUMBER),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING),
+            Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaPrimitive.STRING))
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
@@ -183,7 +188,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
         .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(),
-            Field.of(COL_ID, JsonSchemaPrimitive.NUMBER));
+            Field.of(COL_ID, JsonSchemaType.NUMBER));
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 
@@ -329,8 +334,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
           getDefaultNamespace(),
-          Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-          Field.of(COL_NAME, JsonSchemaPrimitive.STRING)));
+          Field.of(COL_ID, JsonSchemaType.NUMBER),
+          Field.of(COL_NAME, JsonSchemaType.STRING)));
 
       final List<AirbyteMessage> secondStreamExpectedMessages = getTestMessages()
           .stream()
@@ -381,8 +386,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
         namespace,
-        Field.of(COL_ID, JsonSchemaPrimitive.NUMBER),
-        Field.of(COL_NAME, JsonSchemaPrimitive.STRING)));
+        Field.of(COL_ID, JsonSchemaType.NUMBER),
+        Field.of(COL_NAME, JsonSchemaType.STRING)));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(Lists.newArrayList(COL_ID));
@@ -485,9 +490,9 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expected.getStreams().add(CatalogHelpers
         .createAirbyteStream(TABLE_NAME,
             SCHEMA_NAME2,
-            Field.of(COL_ID, JsonSchemaPrimitive.STRING),
-            Field.of(COL_NAME, JsonSchemaPrimitive.STRING),
-            Field.of(COL_ROW_ID, JsonSchemaPrimitive.NUMBER))
+            Field.of(COL_ID, JsonSchemaType.STRING),
+            Field.of(COL_NAME, JsonSchemaType.STRING),
+            Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))));
 

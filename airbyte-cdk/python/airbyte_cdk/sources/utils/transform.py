@@ -1,15 +1,15 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from distutils.util import strtobool
 from enum import Flag, auto
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Mapping, Optional
 
-from airbyte_cdk.logger import AirbyteLogger
 from jsonschema import Draft7Validator, validators
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 class TransformConfig(Flag):
@@ -36,7 +36,7 @@ class TypeTransformer:
     Class for transforming object before output.
     """
 
-    _custom_normalizer: Callable[[Any, Dict[str, Any]], Any] = None
+    _custom_normalizer: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
 
     def __init__(self, config: TransformConfig):
         """
@@ -90,7 +90,7 @@ class TypeTransformer:
         :param subschema part of the jsonschema containing field type/format data.
         :return transformed field value.
         """
-        target_type = subschema.get("type")
+        target_type = subschema.get("type", [])
         if original_item is None and "null" in target_type:
             return None
         if isinstance(target_type, list):
@@ -114,7 +114,7 @@ class TypeTransformer:
                 if isinstance(original_item, str):
                     return strtobool(original_item) == 1
                 return bool(original_item)
-        except ValueError:
+        except (ValueError, TypeError):
             return original_item
         return original_item
 
@@ -160,11 +160,11 @@ class TypeTransformer:
 
         return normalizator
 
-    def transform(self, record: Dict[str, Any], schema: Dict[str, Any]):
+    def transform(self, record: Dict[str, Any], schema: Mapping[str, Any]):
         """
         Normalize and validate according to config.
-        :param record record instance for normalization/transformation. All modification are done by modifing existent object.
-        :schema object's jsonschema for normalization.
+        :param record: record instance for normalization/transformation. All modification are done by modifying existent object.
+        :param schema: object's jsonschema for normalization.
         """
         if TransformConfig.NoTransform in self._config:
             return
@@ -174,4 +174,4 @@ class TypeTransformer:
             just calling normalizer.validate() would throw an exception on
             first validation occurences and stop processing rest of schema.
             """
-            logger.warn(e.message)
+            logger.warning(e.message)

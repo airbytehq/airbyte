@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import io.airbyte.config.NormalizationInput;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
@@ -40,6 +41,7 @@ import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,10 +50,9 @@ import org.junit.jupiter.api.Test;
 class SyncWorkflowTest {
 
   // TEMPORAL
-  private static final String TASK_QUEUE = "a";
 
   private TestWorkflowEnvironment testEnv;
-  private Worker worker;
+  private Worker syncWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
@@ -81,12 +82,13 @@ class SyncWorkflowTest {
   private OperatorDbtInput operatorDbtInput;
 
   private StandardSyncOutput replicationSuccessOutput;
+  private NormalizationSummary normalizationSummary;
 
   @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    worker = testEnv.newWorker(TASK_QUEUE);
-    worker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
     client = testEnv.getWorkflowClient();
 
@@ -94,6 +96,7 @@ class SyncWorkflowTest {
     sync = syncPair.getKey();
     syncInput = syncPair.getValue();
     replicationSuccessOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog());
+    normalizationSummary = new NormalizationSummary();
 
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -109,11 +112,12 @@ class SyncWorkflowTest {
     persistStateActivity = mock(PersistStateActivityImpl.class);
   }
 
-  // bundle up all of the temporal worker setup / execution into one method.
+  // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
     testEnv.start();
-    final SyncWorkflow workflow = client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TASK_QUEUE).build());
+    final SyncWorkflow workflow =
+        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());
 
     return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }
@@ -126,13 +130,18 @@ class SyncWorkflowTest {
         DESTINATION_LAUNCHER_CONFIG,
         syncInput);
 
-    final StandardSyncOutput actualOutput = execute();
-    assertEquals(replicationSuccessOutput, actualOutput);
+    doReturn(normalizationSummary).when(normalizationActivity).normalize(
+        JOB_RUN_CONFIG,
+        DESTINATION_LAUNCHER_CONFIG,
+        normalizationInput);
 
-    verifyReplication(replicationActivity, syncInput);
-    verifyPersistState(persistStateActivity, sync, actualOutput);
+    final StandardSyncOutput actualOutput = execute();
+
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
+    assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
   }
 
   @Test
@@ -145,7 +154,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
     verifyNoInteractions(dbtTransformationActivity);
@@ -166,7 +175,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
@@ -185,7 +194,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
     verifyNoInteractions(dbtTransformationActivity);
@@ -209,7 +218,7 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyReplication(replicationActivity, syncInput);
+    verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
@@ -232,7 +241,7 @@ class SyncWorkflowTest {
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
   }
 
-  private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
+  private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput, final UUID connectionId) {
     verify(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,

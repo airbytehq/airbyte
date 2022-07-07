@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -43,7 +43,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
           "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
               + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
     }
-    final String credentialsJsonString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()

@@ -117,7 +117,7 @@
                   }
                 },
                 "rarity": {
-                  "type": ["null", "string"]
+                  "type": ["null", "integer"]
                 }
               }
             }

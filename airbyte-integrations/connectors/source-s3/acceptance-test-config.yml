@@ -11,6 +11,9 @@ tests:
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
       status: "succeed"
+    # # for Avro format
+    - config_path: "secrets/avro_config.json"
+      status: "succeed"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       status: "succeed"
@@ -21,21 +24,32 @@ tests:
     - config_path: "secrets/config.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
+    # # for Avro format
+    - config_path: "secrets/avro_config.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
   basic_read:
     # for CSV format
     - config_path: "secrets/config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       expect_records:
         path: "integration_tests/expected_records.txt"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
       expect_records:
         path: "integration_tests/parquet_expected_records.txt"
+      # for Avro format
+    - config_path: "secrets/avro_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      expect_records:
+        path: "integration_tests/expected_records_avro.txt"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       # expected records contains _ab_source_file_last_modified property which
       # is modified all the time s3 file changed and for custom server it is
@@ -46,18 +60,28 @@ tests:
   incremental:
     # for CSV format
     - config_path: "secrets/config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+      cursor_paths:
+        test: ["_ab_source_file_last_modified"]
+      future_state_path: "integration_tests/abnormal_state.json"
+    # for Avro format
+    - config_path: "secrets/avro_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
@@ -66,10 +90,17 @@ tests:
   full_refresh:
     # for CSV format
     - config_path: "secrets/config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+    # for Avro format
+    - config_path: "secrets/avro_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalog.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
+      timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalog.json"

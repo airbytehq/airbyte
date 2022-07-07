@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,7 +10,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from pydantic import Field
 from pydantic.main import BaseModel
-from source_klaviyo.streams import Campaigns, Events, GlobalExclusions, Lists, Metrics
+from source_klaviyo.streams import Campaigns, Events, Flows, GlobalExclusions, Lists, Metrics
 
 
 class ConnectorConfig(BaseModel):
@@ -29,12 +29,12 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceKlaviyo(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         ok = False
         error_msg = None
@@ -58,8 +58,10 @@ class SourceKlaviyo(AbstractSource):
         return [
             Campaigns(api_key=config.api_key),
             Events(api_key=config.api_key, start_date=config.start_date),
-            GlobalExclusions(api_key=config.api_key),
+            GlobalExclusions(api_key=config.api_key, start_date=config.start_date),
             Lists(api_key=config.api_key),
+            Metrics(api_key=config.api_key),
+            Flows(api_key=config.api_key, start_date=config.start_date),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:

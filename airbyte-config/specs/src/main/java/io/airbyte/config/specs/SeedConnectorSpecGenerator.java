@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.specs;
@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * could be slow and unwieldy. If there is a failure, check the bucket cache and figure out how to
  * get the correct spec in there.
  */
+@SuppressWarnings("PMD.SignatureDeclareThrowsException")
 public class SeedConnectorSpecGenerator {
 
   private static final String DOCKER_REPOSITORY_FIELD = "dockerRepository";

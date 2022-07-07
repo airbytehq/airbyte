@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "TypeIdentifier": {
+      "$ref": "../../generic/models/pallet_type_identifier.json"
+    },
+    "Tie": {
+      "type": ["null", "number"]
+    },
+    "High": {
+      "type": ["null", "number"]
+    },
+    "Qty": {
+      "type": ["null", "number"]
+    },
+    "Imperial": {
+      "$ref": "../../generic/models/dimension.json"
+    },
+    "Metric": {
+      "$ref": "../../generic/models/dimension.json"
+    },
+    "Upc": {
+      "type": "string"
+    }
+  }
+}

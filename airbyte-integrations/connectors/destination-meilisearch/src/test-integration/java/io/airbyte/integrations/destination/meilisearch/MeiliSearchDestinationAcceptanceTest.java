@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.meilisearch;
@@ -14,6 +14,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.MoreStreams;
 import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +41,7 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
     final Path meiliSearchDataDir = Files.createTempDirectory(Path.of("/tmp"), "meilisearch-integration-test");
     meiliSearchDataDir.toFile().deleteOnExit();
 
-    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:latest"))
+    genericContainer = new GenericContainer<>(DockerImageName.parse("getmeili/meilisearch:v0.24.0"))
         .withFileSystemBind(meiliSearchDataDir.toString(), "/data.ms");
     genericContainer.setPortBindings(ImmutableList.of(EXPOSED_PORT + ":" + DEFAULT_MEILI_SEARCH_PORT));
     genericContainer.start();
@@ -71,6 +73,26 @@ public class MeiliSearchDestinationAcceptanceTest extends DestinationAcceptanceT
     final JsonNode invalidConfig = Jsons.clone(getConfig());
     ((ObjectNode) invalidConfig).put("host", "localhost:7702");
     return invalidConfig;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   @Override

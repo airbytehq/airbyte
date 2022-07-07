@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -124,6 +124,7 @@ def config_mock(mocker, request):
         ({"username": "fake"}, {"type": "object", "properties": {"name": {"type": "string"}}, "additionalProperties": False}, False),
         ({"username": "fake"}, {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False}, True),
         ({"username": "fake"}, {"type": "object", "properties": {"user": {"type": "string"}}}, True),
+        ({"username": "fake"}, {"type": "object", "properties": {"user": {"type": "string", "airbyte_secret": True}}}, True),
         (
             {"username": "fake", "_limit": 22},
             {"type": "object", "properties": {"username": {"type": "string"}}, "additionalProperties": False},

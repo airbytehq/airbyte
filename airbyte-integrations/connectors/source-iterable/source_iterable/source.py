@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -32,6 +32,13 @@ from .api import (
 
 
 class SourceIterable(AbstractSource):
+    """
+    Note: there are some redundant endpoints
+    (e.g. [`export/userEvents`](https://api.iterable.com/api/docs#export_exportUserEvents)
+    and [`events/{email}`](https://api.iterable.com/api/docs#events_User_events)).
+    In this case it's better to use the one which takes params as a query param rather than as part of the url param.
+    """
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             list_gen = Lists(api_key=config["api_key"]).read_records(sync_mode=SyncMode.full_refresh)

@@ -27,7 +27,21 @@
       "type": ["null", "integer"]
     },
     "person_properties": {
-      "type": "object"
+      "type": ["object", "null"],
+      "properties": {
+        "Delighted Source": {
+          "type": ["null", "string"]
+        },
+        "Delighted Device Type": {
+          "type": ["null", "string"]
+        },
+        "Delighted Operating System": {
+          "type": ["null", "string"]
+        },
+        "Delighted Browser": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "notes": {
       "type": "array",
@@ -76,12 +90,10 @@
                     "text": {
                       "type": "string"
                     }
-                  },
-                  "required": ["id", "text"]
+                  }
                 }
               }
-            },
-            "required": ["free_response", "scale", "select_one", "select_many"]
+            }
           },
           "question": {
             "type": "object",
@@ -95,26 +107,10 @@
               "text": {
                 "type": "string"
               }
-            },
-            "required": ["id", "type", "text"]
+            }
           }
-        },
-        "required": ["id", "value", "question"]
+        }
       }
     }
-  },
-  "required": [
-    "id",
-    "person",
-    "survey_type",
-    "score",
-    "comment",
-    "permalink",
-    "created_at",
-    "updated_at",
-    "person_properties",
-    "notes",
-    "tags",
-    "additional_answers"
-  ]
+  }
 }

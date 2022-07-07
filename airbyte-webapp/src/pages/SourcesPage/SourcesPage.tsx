@@ -1,43 +1,28 @@
-import React, { Suspense } from "react";
-import { Redirect, Route, Switch } from "react-router-dom";
-import { NetworkErrorBoundary as ErrorBoundary } from "rest-hooks";
+import React from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 
-import { Routes } from "../routes";
-import LoadingPage from "components/LoadingPage";
-import ConnectionPage from "pages/ConnectionPage";
+import { CreationFormPage } from "pages/ConnectionPage/pages/CreationFormPage/CreationFormPage";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
+
+import { RoutePaths } from "../routePaths";
 import AllSourcesPage from "./pages/AllSourcesPage";
-import CreateSourcePage from "./pages/CreateSourcePage";
+import CreateSourcePage from "./pages/CreateSourcePage/CreateSourcePage";
 import SourceItemPage from "./pages/SourceItemPage";
 
-const FallbackRootRedirector = () => <Redirect to={Routes.Root} />;
-
-const SourcesPage: React.FC = () => {
-  return (
-    <Suspense fallback={<LoadingPage />}>
-      <Switch>
-        <Route path={`${Routes.Source}${Routes.SourceNew}`}>
-          <CreateSourcePage />
-        </Route>
-        <Route
-          path={[
-            `${Routes.Source}${Routes.ConnectionNew}`,
-            `${Routes.Source}${Routes.Connection}/:id`,
-          ]}
-        >
-          <ConnectionPage />
-        </Route>
-        <Route path={`${Routes.Source}/:id`}>
-          <ErrorBoundary fallbackComponent={FallbackRootRedirector}>
-            <SourceItemPage />
-          </ErrorBoundary>
-        </Route>
-        <Route path={Routes.Source} exact>
-          <AllSourcesPage />
-        </Route>
-        <Redirect to={Routes.Root} />
-      </Switch>
-    </Suspense>
-  );
-};
-
-export default SourcesPage;
+export const SourcesPage: React.FC = () => (
+  <Routes>
+    <Route path={RoutePaths.SourceNew} element={<CreateSourcePage />} />
+    <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+    <Route
+      path=":id/*"
+      element={
+        <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+          <SourceItemPage />
+        </ResourceNotFoundErrorBoundary>
+      }
+    />
+    <Route index element={<AllSourcesPage />} />
+    <Route element={<Navigate to="" />} />
+  </Routes>
+);

@@ -3,83 +3,83 @@
   "type": "object",
   "properties": {
     "title": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "nickname": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "language": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "folder_id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "category": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "question_count": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "page_count": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "response_count": {
-      "type": "integer"
+      "type": ["integer", "null"]
     },
     "date_created": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "date_modified": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "date-time"
     },
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "buttons_text": {
-      "type": "object",
+      "type": ["object", "null"],
       "properties": {
         "next_button": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "prev_button": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "done_button": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "exit_button": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
     "is_owner": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "footer": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "custom_variables": {
-      "type": "object"
+      "type": ["object", "null"]
     },
     "href": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "analyze_url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "edit_url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "collect_url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "summary_url": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "preview": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

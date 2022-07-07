@@ -1,0 +1,26 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "net_payment_amount": {
+      "type": ["string", "null"]
+    },
+    "payout_reference_id": {
+      "type": ["string", "null"]
+    },
+    "processing_fee": {
+      "type": ["string", "null"]
+    },
+    "tax_rate": {
+      "type": ["string", "null"]
+    },
+    "transaction_date": {
+      "type": ["string", "null"]
+    },
+    "transaction_type": {
+      "type": ["string", "null"]
+    },
+    "transfer_id": {
+      "type": ["string", "null"]
+    }
+  }
+}

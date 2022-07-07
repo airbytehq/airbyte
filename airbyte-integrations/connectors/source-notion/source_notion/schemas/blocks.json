@@ -57,6 +57,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "color": { "type": "string" },
         "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
         "icon": { "$ref": "icon.json" },
         "children": { "type": "array", "items": { "type": "object" } }
@@ -75,6 +76,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "color": { "type": "string" },
         "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
         "language": {
           "enum": [

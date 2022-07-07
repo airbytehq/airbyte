@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -12,7 +12,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
@@ -21,6 +22,7 @@ import io.airbyte.integrations.source.clickhouse.ClickHouseStrictEncryptSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import java.sql.JDBCType;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -78,13 +80,14 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
         .put("password", "")
         .build());
 
-    db = Databases.createJdbcDatabase(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
-        String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asText()),
-        ClickHouseSource.DRIVER_CLASS);
+    db = new DefaultJdbcDatabase(
+        DataSourceFactory.create(
+            configWithoutDbName.get("username").asText(),
+            configWithoutDbName.get("password").asText(),
+            ClickHouseSource.DRIVER_CLASS,
+            String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
+                configWithoutDbName.get("host").asText(),
+                configWithoutDbName.get("port").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
@@ -103,7 +106,6 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
 
   @AfterAll
   public static void cleanUp() throws Exception {
-    db.close();
     container.close();
   }
 
@@ -126,7 +128,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
   }
 

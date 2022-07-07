@@ -1,8 +1,8 @@
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 const Arrow = styled(FontAwesomeIcon)`
   font-size: 16px;
@@ -62,13 +62,9 @@ const SpecialBlock: React.FC = () => {
         <FormattedMessage
           id="login.activateAccess.subtitle"
           values={{
-            sum: (...sum: React.ReactNode[]) => <SumBlock>{sum}</SumBlock>,
-            special: (...special: React.ReactNode[]) => (
-              <HighlightBlock red>{special}</HighlightBlock>
-            ),
-            free: (...free: React.ReactNode[]) => (
-              <HighlightBlock>{free}</HighlightBlock>
-            ),
+            sum: (sum: React.ReactNode) => <SumBlock>{sum}</SumBlock>,
+            special: (special: React.ReactNode) => <HighlightBlock red>{special}</HighlightBlock>,
+            free: (free: React.ReactNode) => <HighlightBlock>{free}</HighlightBlock>,
           }}
         />
       </div>

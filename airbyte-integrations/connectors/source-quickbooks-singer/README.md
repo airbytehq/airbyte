@@ -1,6 +1,6 @@
-# Source Quickbooks Singer
+# Source QuickBooks Singer
 
-This is the repository for the Quickbooks source connector, based on a Singer tap.
+This is the repository for the QuickBooks source connector, based on a Singer tap.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/quickbooks).
 
 ## Local development
@@ -13,7 +13,7 @@ For information about how to use this connector within Airbyte, see [the User Do
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
 ```
-python -m venv .venv
+python3 -m venv .venv
 ```
 
 This will generate a virtualenv for this module in `.venv/`. Make sure this venv is active in your
@@ -46,10 +46,10 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector
 ```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
+python main.py spec
+python main.py check --config secrets/config.json
+python main.py discover --config secrets/config.json
+python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
 ### Unit Tests
@@ -58,18 +58,10 @@ To run unit tests locally, from the connector root run:
 pytest unit_tests
 ```
 
-### Locally running the connector
-```
-python main_dev.py spec
-python main_dev.py check --config secrets/config.json
-python main_dev.py discover --config secrets/config.json
-python main_dev.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
 ```
-python -m pytest unit_tests
+python3 -m pytest unit_tests
 ```
 
 ### Locally running the connector docker image
@@ -77,7 +69,7 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/quickbooks-singer:dev
+docker build . -t airbyte/source-quickbooks-singer:dev
 ```
 
 You can also build the connector image via Gradle:
@@ -93,7 +85,7 @@ Then run any of the connector commands as follows:
 docker run --rm airbyte/source-quickbooks-singer:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-quickbooks-singer:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-quickbooks-singer:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-quickbooks-singer:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-quickbooks-singer:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ### Integration Tests

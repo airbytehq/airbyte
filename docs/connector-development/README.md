@@ -1,6 +1,6 @@
 # Connector Development
 
-Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
+Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-protocol.md).
 
 To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
 
@@ -10,13 +10,17 @@ To build a new connector in Java or Python, we provide templates so you don't ne
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
 
+## C#/.NET Connector-Development Kit \(CDK\)
+
+You can build a connector very quickly in C# .NET with the [Airbyte Dotnet CDK](cdk-dotnet/), which generates 75% of the code required for you.
+
 ## TS/JS Connector-Development Kit \(Faros AI Airbyte CDK\)
 
 You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](https://github.com/airbytehq/airbyte/tree/01b905a38385ca514c2d9c07cc44a8f9a48ce762/docs/connector-development/cdk-faros-js/README.md), which generates and boostraps most of the code required for HTTP Airbyte sources.
 
 ## The Airbyte specification
 
-Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md).
 
 ## Adding a new connector
 
@@ -115,17 +119,29 @@ Once you've finished iterating on the changes to a connector as specified in its
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
 
-   # to run integration tests and publish the connector
+   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```
-4. Update the connector definition in the Airbyte connector index to use the new version:
-   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
    
-   Then run the commend `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
+4. OPTIONAL: Necessary if this is a new connector, or the automated connector version bump fails
+   * Update/Add the connector definition in the Airbyte connector index to use the new version:
+        * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
+        * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+   
+   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
    
 5. The new version of the connector is now available for everyone who uses it. Thank you!
+
+### The /publish command
+
+Publishing a connector can be done using the `/publish` command as outlined in the above section. The command runs a [github workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-command.yml), and has the following configurable parameters:
+* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`. This can also be a comma-separated list of many connectors, e.g. `connector=connectors/source-s3,connectors/destination-postgres,connectors/source-facebook-marketing`. See the parallel flag below if publishing multiple connectors.
+* **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
+* **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
+* **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
+* **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
+* **parallel** - Defaults to false. If set to true, a pool of runner agents will be spun up to allow publishing multiple connectors in parallel. Only switch this to true if publishing multiple connectors at once to avoid wasting $$$.
 
 ## Using credentials in CI
 
@@ -134,7 +150,8 @@ In order to run integration tests in CI, you'll often need to inject credentials
 2. **Add the GSM secret's labels**:
     * `connector` (required) -- unique connector's name or set of connectors' names with '_' as delimiter i.e.: `connector=source-s3`, `connector=destination-snowflake`
     * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
-3. That should be it.
+3. **Save a necessary JSON value** [Example](https://user-images.githubusercontent.com/11213273/146040653-4a76c371-a00e-41fe-8300-cbd411f10b2e.png).
+4. That should be it.
 
 #### Access CI secrets on GSM
 Access to GSM storage is limited to Airbyte employees. To give an employee permissions to the project:
@@ -144,9 +161,4 @@ Access to GSM storage is limited to Airbyte employees. To give an employee permi
 - select the role `Development_CI_Secrets`
 3. Save
 
-#### How to migrate to the new secrets' logic:
-1. Create all necessary secrets according to the instructions above
-2. Remove all lines with old connector's Github secrets from this file: tools/bin/ci_credentials.sh
-3. Remove all old secrets from Github repository secrets.
-4. That should be it.
 

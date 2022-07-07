@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": ["null", "integer"],
+      "format": "date"
+    },
+    "group1": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "group2": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "group3": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "group4": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "group5": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "group6": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    },
+    "group7": {
+      "type": ["null", "object"],
+      "properties": {
+        "keyword_count": {
+          "type": ["null", "integer"]
+        },
+        "keyword_per": {
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}

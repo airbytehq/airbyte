@@ -1,7 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
+from typing import Set
 
 from normalization import DestinationType
 
@@ -2533,6 +2535,10 @@ MSSQL = {
     "REGR_SYY",
 }
 
+# In ClickHouse, keywords are not reserved.
+# Ref: https://clickhouse.com/docs/en/sql-reference/syntax/#syntax-keywords
+CLICKHOUSE: Set[str] = set()
+
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,
     DestinationType.POSTGRES.value: POSTGRES,
@@ -2541,6 +2547,7 @@ RESERVED_KEYWORDS = {
     DestinationType.MYSQL.value: MYSQL,
     DestinationType.ORACLE.value: ORACLE,
     DestinationType.MSSQL.value: MSSQL,
+    DestinationType.CLICKHOUSE.value: CLICKHOUSE,
 }
 
 

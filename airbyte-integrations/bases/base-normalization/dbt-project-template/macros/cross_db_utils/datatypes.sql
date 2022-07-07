@@ -9,7 +9,11 @@
 {% endmacro %}
 
 {%- macro redshift__type_json() -%}
+  {%- if redshift_super_type() -%}
+    super
+  {%- else -%}
     varchar
+  {%- endif -%}
 {%- endmacro -%}
 
 {% macro postgres__type_json() %}
@@ -29,8 +33,12 @@
 {%- endmacro -%}
 
 {%- macro sqlserver__type_json() -%}
-    VARCHAR(max)
+    NVARCHAR(max)
 {%- endmacro -%}
+
+{% macro clickhouse__type_json() %}
+    String
+{% endmacro %}
 
 
 {# string ------------------------------------------------- #}
@@ -44,9 +52,17 @@
 {%- endmacro -%}
 
 {% macro sqlserver__type_string() %}
-    VARCHAR(max)
+    NVARCHAR(max)
 {%- endmacro -%}
 
+{%- macro clickhouse__type_string() -%}
+    String
+{%- endmacro -%}
+
+{#-- TODO: Remove this macro when dbt issue regarding unlimited varchars on postgres is resolved (https://github.com/dbt-labs/dbt-core/issues/5238) and we've upgraded to the latest version of dbt --#}
+{%- macro postgres__type_string() -%}
+    text
+{%- endmacro -%}
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
@@ -55,6 +71,10 @@
 
 {% macro oracle__type_float() %}
     float
+{% endmacro %}
+
+{% macro clickhouse__type_float() %}
+    Float64
 {% endmacro %}
 
 
@@ -67,6 +87,11 @@
     int
 {% endmacro %}
 
+{% macro clickhouse__type_int() %}
+    INT
+{% endmacro %}
+
+
 {# bigint ------------------------------------------------- #}
 {% macro mysql__type_bigint() %}
     signed
@@ -76,10 +101,18 @@
     numeric
 {% endmacro %}
 
+{% macro clickhouse__type_bigint() %}
+    BIGINT
+{% endmacro %}
+
 
 {# numeric ------------------------------------------------- --#}
 {% macro mysql__type_numeric() %}
     float
+{% endmacro %}
+
+{% macro clickhouse__type_numeric() %}
+    Float64
 {% endmacro %}
 
 
@@ -93,6 +126,10 @@
     {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
     datetime
 {%- endmacro -%}
+
+{% macro clickhouse__type_timestamp() %}
+    DateTime64
+{% endmacro %}
 
 
 {# timestamp with time zone  -------------------------------------------------     #}
@@ -121,8 +158,12 @@
 {%- macro sqlserver__type_timestamp_with_timezone() -%}
     {#-- in TSQL timestamp is really datetime or datetime2 --#}
     {#-- https://docs.microsoft.com/en-us/sql/t-sql/functions/date-and-time-data-types-and-functions-transact-sql?view=sql-server-ver15#DateandTimeDataTypes --#}
-    datetime
+    datetime2
 {%- endmacro -%}
+
+{% macro clickhouse__type_timestamp_with_timezone() %}
+    DateTime64
+{% endmacro %}
 
 
 {# date  -------------------------------------------------     #}
@@ -142,3 +183,7 @@
 {%- macro sqlserver__type_date() -%}
     date
 {%- endmacro -%}
+
+{% macro clickhouse__type_date() %}
+    Date
+{% endmacro %}

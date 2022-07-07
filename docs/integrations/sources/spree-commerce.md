@@ -9,9 +9,11 @@ Spree Commerce can run on the MySQL or Postgres databases. You can use Airbyte t
 * [MySQL](mysql.md)
 * [Postgres](postgres.md)
 
-{% hint style="info" %}
+:::info
+
 Reach out to your service representative or system admin to find the parameters required to connect to the underlying database
-{% endhint %}
+
+:::
 
 ### Output schema
 

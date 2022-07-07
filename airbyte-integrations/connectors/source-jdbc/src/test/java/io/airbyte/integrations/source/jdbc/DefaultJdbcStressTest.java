@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.jdbc;
@@ -9,11 +9,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.jdbc.PostgresJdbcStreamingQueryConfiguration;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import java.sql.JDBCType;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -70,7 +73,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   }
 
   @Override
-  public AbstractJdbcSource getSource() {
+  public AbstractJdbcSource<JDBCType> getSource() {
     return new PostgresTestSource();
   }
 
@@ -89,23 +92,23 @@ class DefaultJdbcStressTest extends JdbcStressTest {
     PSQL_DB.close();
   }
 
-  private static class PostgresTestSource extends AbstractJdbcSource implements Source {
+  private static class PostgresTestSource extends AbstractJdbcSource<JDBCType> implements Source {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgresTestSource.class);
 
-    static final String DRIVER_CLASS = "org.postgresql.Driver";
+    static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
 
     public PostgresTestSource() {
-      super(DRIVER_CLASS, new PostgresJdbcStreamingQueryConfiguration());
+      super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
     }
 
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+          .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get("host").asText(),
-              config.get("port").asText(),
+              config.get("port").asInt(),
               config.get("database").asText()));
 
       if (config.has("password")) {

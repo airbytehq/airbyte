@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "RequireScacForAsn": {
+      "description": "Prevents sending an ASN when SCAC is not specified",
+      "type": "boolean"
+    },
+    "RequireAttachedDocuments": {
+      "description": "Prevents sending an ASN when the order has no attached docs",
+      "type": "boolean"
+    },
+    "AsnPreCheckOptions": {
+      "description": "Prevents sending an ASN when any of the checks associated with the options in this bit flag fail",
+      "$ref": "asn_pre_check_options.json"
+    },
+    "OrderLevelFlexFields": {
+      "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order level",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "OrderItemLevelFlexFields": {
+      "description": "Prevents sending an ASN when the listed Flex Fields are not all specified at the order item level",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

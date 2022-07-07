@@ -1,0 +1,236 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "hs_all_assigned_business_unit_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_at_mentioned_owner_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_attachment_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_body_preview": {
+          "type": ["null", "string"]
+        },
+        "hs_body_preview_html": {
+          "type": ["null", "string"]
+        },
+        "hs_body_preview_is_truncated": {
+          "type": ["null", "boolean"]
+        },
+        "hs_calendar_event_id": {
+          "type": ["null", "string"]
+        },
+        "hs_created_by": {
+          "type": ["null", "number"]
+        },
+        "hs_created_by_user_id": {
+          "type": ["null", "number"]
+        },
+        "hs_createdate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_engagement_source": {
+          "type": ["null", "string"]
+        },
+        "hs_engagement_source_id": {
+          "type": ["null", "string"]
+        },
+        "hs_follow_up_action": {
+          "type": ["null", "string"]
+        },
+        "hs_gdpr_deleted": {
+          "type": ["null", "boolean"]
+        },
+        "hs_lastmodifieddate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_merged_object_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_modified_by": {
+          "type": ["null", "number"]
+        },
+        "hs_msteams_message_id": {
+          "type": ["null", "string"]
+        },
+        "hs_num_associated_companies": {
+          "type": ["null", "number"]
+        },
+        "hs_num_associated_contacts": {
+          "type": ["null", "number"]
+        },
+        "hs_num_associated_deals": {
+          "type": ["null", "number"]
+        },
+        "hs_num_associated_queue_objects": {
+          "type": ["null", "number"]
+        },
+        "hs_num_associated_tickets": {
+          "type": ["null", "number"]
+        },
+        "hs_object_id": {
+          "type": ["null", "number"]
+        },
+        "hs_product_name": {
+          "type": ["null", "string"]
+        },
+        "hs_queue_membership_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_scheduled_tasks": {
+          "type": ["null", "string"]
+        },
+        "hs_task_body": {
+          "type": ["null", "string"]
+        },
+        "hs_task_completion_date": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_task_contact_timezone": {
+          "type": ["null", "string"]
+        },
+        "hs_task_for_object_type": {
+          "type": ["null", "string"]
+        },
+        "hs_task_is_all_day": {
+          "type": ["null", "boolean"]
+        },
+        "hs_task_last_contact_outreach": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_task_last_sales_activity_timestamp": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_task_priority": {
+          "type": ["null", "string"]
+        },
+        "hs_task_probability_to_complete": {
+          "type": ["null", "number"]
+        },
+        "hs_task_relative_reminders": {
+          "type": ["null", "string"]
+        },
+        "hs_task_reminders": {
+          "type": ["null", "string"]
+        },
+        "hs_task_repeat_interval": {
+          "type": ["null", "string"]
+        },
+        "hs_task_send_default_reminder": {
+          "type": ["null", "boolean"]
+        },
+        "hs_task_sequence_enrollment_active": {
+          "type": ["null", "boolean"]
+        },
+        "hs_task_sequence_step_enrollment_id": {
+          "type": ["null", "string"]
+        },
+        "hs_task_sequence_step_order": {
+          "type": ["null", "number"]
+        },
+        "hs_task_status": {
+          "type": ["null", "string"]
+        },
+        "hs_task_subject": {
+          "type": ["null", "string"]
+        },
+        "hs_task_template_id": {
+          "type": ["null", "number"]
+        },
+        "hs_task_type": {
+          "type": ["null", "string"]
+        },
+        "hs_timestamp": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_unique_creation_key": {
+          "type": ["null", "string"]
+        },
+        "hs_unique_id": {
+          "type": ["null", "string"]
+        },
+        "hs_updated_by_user_id": {
+          "type": ["null", "number"]
+        },
+        "hs_user_ids_of_all_notification_followers": {
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_notification_unfollowers": {
+          "type": ["null", "string"]
+        },
+        "hs_user_ids_of_all_owners": {
+          "type": ["null", "string"]
+        },
+        "hubspot_owner_assigneddate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hubspot_owner_id": {
+          "type": ["null", "string"]
+        },
+        "hubspot_team_id": {
+          "type": ["null", "string"]
+        },
+        "hs_all_owner_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_all_team_ids": {
+          "type": ["null", "string"]
+        },
+        "hs_all_accessible_team_ids": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "createdAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "deals": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "tickets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

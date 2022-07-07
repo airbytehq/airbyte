@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth;
@@ -47,6 +47,14 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     String contentType;
     Function<Map<String, String>, String> converter;
 
+    public String getContentType() {
+      return contentType;
+    }
+
+    public Function<Map<String, String>, String> getConverter() {
+      return converter;
+    }
+
     TOKEN_REQUEST_CONTENT_TYPE(final String contentType, final Function<Map<String, String>, String> converter) {
       this.contentType = contentType;
       this.converter = converter;
@@ -55,7 +63,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   }
 
   protected final HttpClient httpClient;
-  private final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
+  protected final TOKEN_REQUEST_CONTENT_TYPE tokenReqContentType;
   private final Supplier<String> stateSupplier;
 
   public BaseOAuth2Flow(final ConfigRepository configRepository, final HttpClient httpClient) {
@@ -143,6 +151,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
             redirectUrl,
+            Jsons.emptyObject(),
             oAuthParamConfig),
         getDefaultOAuthOutputPath());
   }
@@ -162,6 +171,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
             redirectUrl,
+            Jsons.emptyObject(),
             oAuthParamConfig),
         getDefaultOAuthOutputPath());
   }
@@ -183,6 +193,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
             redirectUrl,
+            inputOAuthConfiguration,
             oAuthParamConfig),
         oAuthConfigSpecification);
   }
@@ -204,6 +215,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
             getClientSecretUnsafe(oAuthParamConfig),
             extractCodeParameter(queryParams),
             redirectUrl,
+            inputOAuthConfiguration,
             oAuthParamConfig),
         oAuthConfigSpecification);
   }
@@ -212,9 +224,10 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
                                                   final String clientSecret,
                                                   final String authCode,
                                                   final String redirectUrl,
+                                                  final JsonNode inputOAuthConfiguration,
                                                   final JsonNode oAuthParamConfig)
       throws IOException {
-    final var accessTokenUrl = getAccessTokenUrl();
+    final var accessTokenUrl = getAccessTokenUrl(inputOAuthConfiguration);
     final HttpRequest request = HttpRequest.newBuilder()
         .POST(HttpRequest.BodyPublishers
             .ofString(tokenReqContentType.converter.apply(getAccessTokenQueryParameters(clientId, clientSecret, authCode, redirectUrl))))
@@ -263,7 +276,7 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
   /**
    * Returns the URL where to retrieve the access token from.
    */
-  protected abstract String getAccessTokenUrl();
+  protected abstract String getAccessTokenUrl(final JsonNode inputOAuthConfiguration);
 
   /**
    * Extract all OAuth outputs from distant API response and store them in a flat map.
@@ -284,7 +297,8 @@ public abstract class BaseOAuth2Flow extends BaseOAuthFlow {
     return List.of("credentials");
   }
 
-  private static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification, final JsonNode inputOAuthConfiguration)
+  protected static void validateInputOAuthConfiguration(final OAuthConfigSpecification oauthConfigSpecification,
+                                                        final JsonNode inputOAuthConfiguration)
       throws JsonValidationException {
     if (oauthConfigSpecification != null && oauthConfigSpecification.getOauthUserInputFromConnectorConfigSpecification() != null) {
       final JsonSchemaValidator validator = new JsonSchemaValidator();

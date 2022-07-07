@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.helpers;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class SourceDefinitionHelpers {
 
-  public static StandardSourceDefinition generateSource() {
+  public static StandardSourceDefinition generateSourceDefinition() {
     return new StandardSourceDefinition()
         .withSourceDefinitionId(UUID.randomUUID())
         .withName("marketo")

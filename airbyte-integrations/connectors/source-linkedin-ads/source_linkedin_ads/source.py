@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -66,6 +66,18 @@ class LinkedinAdsStream(HttpStream, ABC):
         We need to get out the nested complex data structures for further normalisation, so the transform_data method is applied.
         """
         yield from transform_data(response.json().get("elements"))
+
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 429:
+            error_message = (
+                f"Stream {self.name}: LinkedIn API requests are rate limited. "
+                f"Rate limits specify the maximum number of API calls that can be made in a 24 hour period. "
+                f"These limits reset at midnight UTC every day. "
+                f"You can find more information here https://docs.airbyte.io/integrations/sources/linkedin-ads. "
+                f"Also quotas and usage are here: https://www.linkedin.com/developers/apps."
+            )
+            self.logger.error(error_message)
+        return super().should_retry(response)
 
 
 class Accounts(LinkedinAdsStream):
@@ -146,7 +158,9 @@ class LinkedInAdsStreamSlicing(IncrementalLinkedinAdsStream):
         params[self.search_param] = f"{self.search_param_value}{stream_slice.get(self.primary_slice_key)}"
         return params
 
-    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Mapping[str, Any] = None) -> Iterable:
+    def filter_records_newer_than_state(
+        self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping[str, Any]] = None
+    ) -> Iterable:
         """For the streams that provide the cursor_field `lastModified`, we filter out the old records."""
         if stream_state:
             for record in records_slice:
@@ -310,8 +324,8 @@ class SourceLinkedinAds(AbstractSource):
         Validate input parameters and generate a necessary Authentication object
         This connectors support 2 auth methods:
         1) direct access token with TTL = 2 months
-        2) refresh token (TTL = 1 year) which can be converted to access tokens
-           Every new refresh revokes all previous access tokens q
+        2) refresh token (TTL = 1 year) which can be converted to access tokens,
+           Every new refresh revokes all previous access tokens
         """
         auth_method = config.get("credentials", {}).get("auth_method")
         if not auth_method or auth_method == "access_token":

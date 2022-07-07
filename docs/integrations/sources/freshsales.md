@@ -49,4 +49,5 @@ Please read [How to find your API key](https://crmsupport.freshworks.com/support
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-24 | [9101](https://github.com/airbytehq/airbyte/pull/9101) | Update fields and descriptions |
 | 0.1.0 | 2021-11-03 | [6963](https://github.com/airbytehq/airbyte/pull/6963) | 🎉 New Source: Freshsales |

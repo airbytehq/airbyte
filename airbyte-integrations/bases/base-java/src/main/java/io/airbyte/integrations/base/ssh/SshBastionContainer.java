@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base.ssh;
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -21,11 +22,9 @@ public class SshBastionContainer {
 
   private static final String SSH_USER = "sshuser";
   private static final String SSH_PASSWORD = "secret";
-  private Network network;
   private GenericContainer bastion;
 
-  public void initAndStartBastion() {
-    network = Network.newNetwork();
+  public void initAndStartBastion(Network network) {
     bastion = new GenericContainer(
         new ImageFromDockerfile("bastion-test")
             .withFileFromClasspath("Dockerfile", "bastion/Dockerfile"))
@@ -42,8 +41,7 @@ public class SshBastionContainer {
             .put("tunnel_host",
                 Objects.requireNonNull(bastion.getContainerInfo().getNetworkSettings()
                     .getNetworks()
-                    .get(((Network.NetworkImpl) network).getName())
-                    .getIpAddress()))
+                    .entrySet().stream().findFirst().get().getValue().getIpAddress()))
             .put("tunnel_method", tunnelMethod)
             .put("tunnel_port", bastion.getExposedPorts().get(0))
             .put("tunnel_user", SSH_USER)
@@ -57,12 +55,15 @@ public class SshBastionContainer {
     return getBasicDbConfigBuider(db, db.getDatabaseName());
   }
 
+  public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db, final List<String> schemas) {
+    return getBasicDbConfigBuider(db, db.getDatabaseName()).put("schemas", schemas);
+  }
+
   public ImmutableMap.Builder<Object, Object> getBasicDbConfigBuider(final JdbcDatabaseContainer<?> db, final String schemaName) {
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) getNetWork()).getName())
-            .getIpAddress()))
+            .entrySet().stream().findFirst().get().getValue().getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("port", db.getExposedPorts().get(0))
@@ -70,16 +71,11 @@ public class SshBastionContainer {
         .put("ssl", false);
   }
 
-  public Network getNetWork() {
-    return this.network;
-  }
-
   public void stopAndCloseContainers(final JdbcDatabaseContainer<?> db) {
-    db.stop();
-    db.close();
     bastion.stop();
     bastion.close();
-    network.close();
+    db.stop();
+    db.close();
   }
 
 }

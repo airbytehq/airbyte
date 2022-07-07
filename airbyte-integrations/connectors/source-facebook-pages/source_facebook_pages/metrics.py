@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 PAGE_METRICS = [
@@ -245,9 +245,9 @@ PAGE_FIELDS = ",".join(
         "groups",
         "image_copyrights",
         "indexed_videos",
+        # "insights_exports",    Tried accessing nonexisting field (insights_exports) on node type (Page)
         "instagram_accounts",
         "likes",
-        "live_encoders",
         "live_videos",
         "locations",
         "nativeoffers",

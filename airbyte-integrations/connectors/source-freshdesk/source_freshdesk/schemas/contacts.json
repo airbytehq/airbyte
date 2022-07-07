@@ -57,7 +57,7 @@
       "type": ["integer", "null"]
     },
     "preferred_source": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "unique_external_id": {
       "type": ["string", "null"]

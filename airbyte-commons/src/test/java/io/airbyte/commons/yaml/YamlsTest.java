@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.yaml;
@@ -42,6 +42,25 @@ class YamlsTest {
             + "test: \"abc\"\n"
             + "test2: \"def\"\n",
         Yamls.serialize(
+            ImmutableMap.of(
+                "test", "abc",
+                "test2", "def")));
+  }
+
+  @Test
+  void testSerializeWithoutQuotes() {
+    assertEquals(
+        "---\n"
+            + "str: abc\n"
+            + "num: 999\n"
+            + "numLong: 888\n",
+        Yamls.serializeWithoutQuotes(new ToClass("abc", 999, 888L)));
+
+    assertEquals(
+        "---\n"
+            + "test: abc\n"
+            + "test2: def\n",
+        Yamls.serializeWithoutQuotes(
             ImmutableMap.of(
                 "test", "abc",
                 "test2", "def")));

@@ -8,6 +8,7 @@ As a community contributor, you will need access to AWS to run the integration t
 
 - Create an S3 bucket for testing.
 - Get your `access_key_id` and `secret_access_key` that can read and write to the above bucket.
+- if you leave `access_key_id` and `secret_access_key` in blank, the authentication will rely on the instance profile authentication
 - Paste the bucket and key information into the config files under [`./sample_secrets`](./sample_secrets).
 - Rename the directory from `sample_secrets` to `secrets`.
 - Feel free to modify the config files with different settings in the acceptance test file (e.g. `S3CsvDestinationAcceptanceTest.java`, method `getFormatConfig`), as long as they follow the schema defined in [spec.json](src/main/resources/spec.json).
@@ -22,5 +23,5 @@ As a community contributor, you will need access to AWS to run the integration t
 - Modify `spec.json` to specify the configuration of this new format.
 - Update `S3FormatConfigs` to be able to construct a config for this new format.
 - Create a new package under `io.airbyte.integrations.destination.s3`.
-- Implement a new `S3Writer`. The implementation can extend `BaseS3Writer`.
+- Implement a new `DestinationFileWriter`. The implementation can extend `BaseS3Writer`.
 - Write an acceptance test for the new output format. The test can extend `S3DestinationAcceptanceTest`.

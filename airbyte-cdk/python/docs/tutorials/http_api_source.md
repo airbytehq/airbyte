@@ -7,11 +7,11 @@ Exchangerates API as an example since it is both simple but demonstrates a lot o
 
 ## Requirements
 
-* Python >= 3.7 
+* Python >= 3.9 
 * Docker
 * NodeJS (only used to generate the connector). We'll remove the NodeJS dependency soon.
 
-All the commands below assume that `python` points to a version of python >=3.7.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
+All the commands below assume that `python` points to a version of python >=3.9. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
 
 ## Checklist
 * Step 1: Create the source using the template
@@ -119,7 +119,7 @@ Each connector declares the inputs it needs to read data from the underlying dat
 
 The simplest way to implement this is by creating a `.json` file in `source_<name>/spec.json` which describes your connector's inputs according to the [ConnectorSpecification](https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L211) schema. This is a good place to start when developing your source. Using JsonSchema, define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-freshdesk/source_freshdesk/spec.json) of what the `spec.json` looks like for the Freshdesk API source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](https://docs.airbyte.io/understanding-airbyte/airbyte-specification#the-airbyte-protocol).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](https://docs.airbyte.io/understanding-airbyte/airbyte-protocol#the-airbyte-protocol).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.json` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.json` you should be done with this step.
 
@@ -312,7 +312,8 @@ Backoff policy options:
 - `max_retries` Specifies maximum amount of retries for backoff policy (by default is 5)
 - `raise_on_http_errors` If set to False, allows opting-out of raising HTTP code exception (by default is True)
 
-There are many other customizable options - you can find them in the [`base_python.cdk.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/base-python/base_python/cdk/streams/http.py) class. 
+
+There are many other customizable options - you can find them in the [`airbyte_cdk.sources.streams.http.HttpStream`](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/streams/http/http.py) class. 
 
 So in order to read data from the exchange rates API, we'll fill out the necessary information for the stream to do its work. First, we'll implement a basic read that just reads the last day's exchange rates, then we'll implement incremental sync using stream slicing.
 
@@ -396,13 +397,15 @@ There we have it - a stream which reads data in just a few lines of code!
 We theoretically _could_ stop here and call it a connector. But let's give adding incremental sync a shot.
 
 #### Adding incremental sync
+
 To add incremental sync, we'll do a few things: 
-1. Pass the `start_date` param input by the user into the stream.
-2. Declare the stream's `cursor_field`.
-3. Implement the `get_updated_state` method.
-4. Implement the `stream_slices` method.
-5. Update the `path` method to specify the date to pull exchange rates for.
-6. Update the configured catalog to use `incremental` sync when we're testing the stream.
+1. Pass the `start_date` param input by the user into the stream. 
+2. Declare the stream's `cursor_field`. 
+3. Declare the stream's property `_cursor_value` to hold the state value
+4. Add `IncrementalMixin` to the list of the ancestors of the stream and implement setter and getter of the `state`.
+5. Implement the `stream_slices` method. 
+6. Update the `path` method to specify the date to pull exchange rates for. 
+7. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
 We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](https://docs.airbyte.io/architecture/connections/incremental-append). 
 
@@ -424,7 +427,7 @@ Let's also add this parameter to the constructor and declare the `cursor_field`:
 from datetime import datetime, timedelta
 
 
-class ExchangeRates(HttpStream):
+class ExchangeRates(HttpStream, IncrementalMixin):
     url_base = "https://api.exchangeratesapi.io/"
     cursor_field = "date"
 
@@ -432,25 +435,39 @@ class ExchangeRates(HttpStream):
         super().__init__()
         self.base = base
         self.start_date = start_date
+        self._cursor_value = None
 ```
 
 Declaring the `cursor_field` informs the framework that this stream now supports incremental sync. The next time you run `python main_dev.py discover --config sample_files/config.json` you'll find that the `supported_sync_modes` field now also contains `incremental`.
 
 But we're not quite done with supporting incremental, we have to actually emit state! We'll structure our state object very simply: it will be a `dict` whose single key is `'date'` and value is the date of the last day we synced data from. For example, `{'date': '2021-04-26'}` indicates the connector previously read data up until April 26th and therefore shouldn't re-read anything before April 26th.
 
-Let's do this by implementing the `get_updated_state` method inside the `ExchangeRates` class.
+Let's do this by implementing the getter and setter for the `state` inside the `ExchangeRates` class.
 
 ```python
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
-        # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
-        # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
-        if current_stream_state is not None and 'date' in current_stream_state:
-            current_parsed_date = datetime.strptime(current_stream_state['date'], '%Y-%m-%d')
-            latest_record_date = datetime.strptime(latest_record['date'], '%Y-%m-%d')
-            return {'date': max(current_parsed_date, latest_record_date).strftime('%Y-%m-%d')}
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value.strftime('%Y-%m-%d')}
         else:
-            return {'date': self.start_date.strftime('%Y-%m-%d')}
-```  
+            return {self.cursor_field: self.start_date.strftime('%Y-%m-%d')}
+    
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+       self._cursor_value = datetime.strptime(value[self.cursor_field], '%Y-%m-%d')
+```
+
+Update internal state `cursor_value` inside `read_records` method
+
+```python
+    def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for record in super().read_records(*args, **kwargs):
+            if self._cursor_value:
+                latest_record_date = datetime.strptime(latest_record[self.cursor_field], '%Y-%m-%d')
+                self._cursor_value = max(self._cursor_value, latest_record_date)
+            yield record
+
+```
 
 This implementation compares the date from the latest record with the date in the current state and takes the maximum as the "new" state object.
 

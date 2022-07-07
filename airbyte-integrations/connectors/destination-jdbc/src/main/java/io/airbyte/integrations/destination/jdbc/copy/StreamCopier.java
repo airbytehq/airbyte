@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy;
@@ -17,6 +17,13 @@ public interface StreamCopier {
    * Writes a value to a staging file for the stream.
    */
   void write(UUID id, AirbyteRecordMessage recordMessage, String fileName) throws Exception;
+
+  /**
+   * Closes the writer for the stream to the current staging file. The staging file must be of a
+   * certain size specified in GlobalDataSizeConstants + one more buffer. The writer for the stream
+   * will close with a note that no errors were found.
+   */
+  void closeNonCurrentStagingFileWriters() throws Exception;
 
   /**
    * Closes the writer for the stream to the staging persistence. This method should block until all
@@ -61,8 +68,14 @@ public interface StreamCopier {
   /**
    * Creates the staging file and all the necessary items to write data to this file.
    *
-   * @return the name of the staging file
+   * @return A string that unqiuely identifies the file. E.g. the filename, or a unique suffix that is
+   *         appended to a shared filename prefix
    */
   String prepareStagingFile();
+
+  /**
+   * @return current staging file name
+   */
+  String getCurrentFile();
 
 }

@@ -5,6 +5,7 @@
     - Redshift: json_extract_path_text('json_string', 'path_elem' [,'path_elem'[, ...] ] [, null_if_invalid ] ) -> https://docs.aws.amazon.com/redshift/latest/dg/JSON_EXTRACT_PATH_TEXT.html
     - Postgres: json_extract_path_text(<from_json>, 'path' [, 'path' [, ...}}) -> https://www.postgresql.org/docs/12/functions-json.html
     - MySQL: JSON_EXTRACT(json_doc, 'path' [, 'path'] ...) -> https://dev.mysql.com/doc/refman/8.0/en/json-search-functions.html
+    - ClickHouse: JSONExtractString(json_doc, 'path' [, 'path'] ...) -> https://clickhouse.com/docs/en/sql-reference/functions/json-functions/
 #}
 
 {# format_json_path --------------------------------------------------     #}
@@ -42,11 +43,12 @@
 {%- endmacro %}
 
 {% macro redshift__format_json_path(json_path_list) -%}
+    {%- set quote = '"' if redshift_super_type() else "'" -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
-        {%- if str_list.append(json_path.replace("'", "''")) -%} {%- endif -%}
+        {%- if str_list.append(json_path.replace(quote, quote + quote)) -%} {%- endif -%}
     {%- endfor -%}
-    {{ "'" ~ str_list|join("','") ~ "'" }}
+    {{ quote ~ str_list|join(quote + "," + quote) ~ quote }}
 {%- endmacro %}
 
 {% macro snowflake__format_json_path(json_path_list) -%}
@@ -64,6 +66,14 @@
         {%- if str_list.append(json_path.replace("'", "''").replace('"', '\\"')) -%} {%- endif -%}
     {%- endfor -%}
     {{ "'$.\"" ~ str_list|join(".") ~ "\"'" }}
+{%- endmacro %}
+
+{% macro clickhouse__format_json_path(json_path_list) -%}
+    {%- set str_list = [] -%}
+    {%- for json_path in json_path_list -%}
+        {%- if str_list.append(json_path.replace("'", "''").replace('"', '\\"')) -%} {%- endif -%}
+    {%- endfor -%}
+    {{ "'" ~ str_list|join("','") ~ "'" }}
 {%- endmacro %}
 
 {# json_extract -------------------------------------------------     #}
@@ -105,11 +115,14 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
-    {%- if from_table|string() == '' %}
+    {%- if from_table|string() != '' -%}
+    {%- set json_column = from_table|string() + "." + json_column|string() -%}
+    {%- endif -%}
+    {%- if redshift_super_type() -%}
+        case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
+    {%- else -%}
         case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
-    {% else %}
-        case when json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ from_table }}.{{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
-    {% endif -%}
+    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -122,6 +135,14 @@
 
 {% macro sqlserver__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
     json_query({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro clickhouse__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
+    {%- if from_table|string() == '' %}
+        JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
+    {% else %}
+        JSONExtractRaw(assumeNotNull({{ from_table }}.{{ json_column }}), {{ format_json_path(json_path_list) }})
+    {% endif -%}
 {%- endmacro %}
 
 {# json_extract_scalar -------------------------------------------------     #}
@@ -151,7 +172,11 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
+    {%- if redshift_super_type() -%}
+    case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
+    {%- else -%}
     case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
+    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
@@ -160,6 +185,10 @@
 
 {% macro sqlserver__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
     json_value({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro clickhouse__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
+    JSONExtractRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
 
 {# json_extract_array -------------------------------------------------     #}
@@ -189,7 +218,11 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
+    {%- if redshift_super_type() -%}
+    {{ json_column }}.{{ format_json_path(json_path_list) }}
+    {%- else -%}
     json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true)
+    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
@@ -198,4 +231,23 @@
 
 {% macro sqlserver__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
     json_query({{ json_column }}, {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{% macro clickhouse__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
+    JSONExtractArrayRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{# json_extract_string_array -------------------------------------------------     #}
+
+{% macro json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    {{ adapter.dispatch('json_extract_string_array')(json_column, json_path_list, normalized_json_path) }}
+{%- endmacro %}
+
+{% macro default__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    {{ json_extract_array(json_column, json_path_list, normalized_json_path) }}
+{%- endmacro %}
+
+# https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
+{% macro bigquery__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    json_extract_string_array({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
