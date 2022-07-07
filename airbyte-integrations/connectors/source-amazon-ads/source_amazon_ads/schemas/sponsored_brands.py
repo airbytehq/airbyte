@@ -27,6 +27,7 @@ class BrandsCampaign(CatalogModel):
 
 
 class BrandsAdGroup(CatalogModel):
+    source_name: str
     campaignId: Decimal
     adGroupId: Decimal
     name: str
