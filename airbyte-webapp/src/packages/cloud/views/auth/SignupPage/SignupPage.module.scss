@@ -5,7 +5,9 @@
   font-size: 32px;
   line-height: 39px;
   width: 250px;
-  background: linear-gradient(to bottom, colors.$dark-blue-900 50%, colors.$blue-400 50%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: colors.$dark-blue-900;
+}
+
+.highlight {
+  color: colors.$blue-400;
 }
