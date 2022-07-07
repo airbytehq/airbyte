@@ -51,6 +51,7 @@
   dockerRepository: airbyte/source-amazon-sqs
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-sqs
+  icon: amazonsqs.svg
   sourceType: api
   releaseStage: alpha
 - name: Amplitude
@@ -290,6 +291,7 @@
   dockerRepository: airbyte/source-faker
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  icon: faker.svg
   sourceType: api
   releaseStage: alpha
 - name: File
@@ -445,6 +447,7 @@
   dockerRepository: airbyte/source-hellobaton
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/hellobaton
+  icon: hellobaton.svg
   sourceType: api
   releaseStage: alpha
 - name: Hubplanner
@@ -538,6 +541,7 @@
   dockerRepository: airbyte/source-lemlist
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/lemlist
+  icon: lemlist.svg
   sourceType: api
   releaseStage: alpha
 - name: Lever Hiring
@@ -705,6 +709,7 @@
   dockerRepository: airbyte/source-openweather
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/openweather
+  icon: openweather.svg
   sourceType: api
   releaseStage: alpha
 - name: Oracle DB
@@ -731,8 +736,8 @@
   icon: orbit.svg
   sourceType: api
   releaseStage: alpha
-- sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
-  name: Outreach
+- name: Outreach
+  sourceDefinitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
   dockerRepository: airbyte/source-outreach
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/outreach
@@ -792,6 +797,7 @@
   dockerRepository: airbyte/source-pivotal-tracker
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/pivotal-tracker
+  icon: pivotaltracker.svg
   sourceType: api
   releaseStage: alpha
 - name: Plaid
@@ -855,7 +861,7 @@
   dockerRepository: airbyte/source-quickbooks-singer
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/quickbooks
-  icon: qb.svg
+  icon: quickbooks.svg
   sourceType: api
   releaseStage: alpha
 - name: Recharge
@@ -895,6 +901,7 @@
   dockerRepository: airbyte/source-rki-covid
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/rki-covid
+  icon: rki.svg
   sourceType: api
   releaseStage: alpha
 - name: S3
@@ -993,8 +1000,8 @@
   icon: square.svg
   sourceType: api
   releaseStage: alpha
-- sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
-  name: Strava
+- name: Strava
+  sourceDefinitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-strava
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/strava
@@ -1089,8 +1096,8 @@
   icon: uscensus.svg
   sourceType: api
   releaseStage: alpha
-- sourceDefinitionId: afa734e4-3571-11ec-991a-1e0031268139
-  name: YouTube Analytics
+- name: YouTube Analytics
+  sourceDefinitionId: afa734e4-3571-11ec-991a-1e0031268139
   dockerRepository: airbyte/source-youtube-analytics
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/youtube-analytics
@@ -1174,10 +1181,11 @@
   dockerRepository: airbyte/source-zenloop
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/zenloop
+  icon: zenloop.svg
   sourceType: api
   releaseStage: alpha
-- sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
-  name: Sentry
+- name: Sentry
+  sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   dockerRepository: airbyte/source-sentry
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/sources/sentry
@@ -1205,6 +1213,7 @@
   dockerRepository: airbyte/source-kustomer-singer
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/kustomer
+  icon: kustomer.svg
   sourceType: api
   releaseStage: alpha
 - name: ZohoCRM
@@ -1212,6 +1221,7 @@
   dockerRepository: airbyte/source-zoho-crm
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/zoho-crm
+  icon: zohocrm.svg
   sourceType: api
   releaseStage: alpha
 - name: SFTP
@@ -1226,6 +1236,7 @@
   dockerRepository: airbyte/source-firebolt
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/firebolt
+  icon: firebolt.svg
   sourceType: database
   releaseStage: alpha
 - name: Elasticsearch
