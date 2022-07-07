@@ -6,6 +6,7 @@ public final class S3Constants {
   public static final String S_3_PATH_FORMAT = "s3_path_format";
   public static final String S_3_ENDPOINT = "s3_endpoint";
   public static final String ACCESS_KEY_ID = "access_key_id";
+  public static final String S_3_ACCESS_KEY_ID = "s3_access_key_id";
   public static final String S_3_SECRET_ACCESS_KEY = "s3_secret_access_key";
   public static final String SECRET_ACCESS_KEY = "secret_access_key";
   public static final String S_3_BUCKET_NAME = "s3_bucket_name";

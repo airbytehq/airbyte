@@ -65,7 +65,7 @@ public class DatabricksDestinationConfig {
             dataSource.get(S3Constants.S_3_BUCKET_PATH).asText(),
             dataSource.get(S3Constants.S_3_BUCKET_REGION).asText())
         .withAccessKeyCredential(
-            dataSource.get(S3Constants.ACCESS_KEY_ID).asText(),
+            dataSource.get(S3Constants.S_3_ACCESS_KEY_ID).asText(),
             dataSource.get(S3Constants.S_3_SECRET_ACCESS_KEY).asText())
         .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()));
     if (dataSource.has(S3Constants.FILE_NAME_PATTERN)) {
