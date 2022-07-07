@@ -1,0 +1,17 @@
+@import "../../scss/variables";
+
+.contentCard {
+  margin-bottom: $spacing-l;
+  padding: $spacing-xl $spacing-xl $spacing-xl;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleContainer {
+  margin-left: 20px;
+  font-size: 11px;
+  line-height: 13px;
+  color: $grey-400;
+  white-space: pre-line;
+}
