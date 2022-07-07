@@ -8,16 +8,15 @@ import SpecialBlock from "./components/SpecialBlock";
 import styles from "./SignupPage.module.scss";
 
 interface SignupPageProps {
-  title?: string;
   titleStyle?: React.CSSProperties;
 }
 
-const SignupPage: React.FC<SignupPageProps> = ({ title, titleStyle }) => {
+const SignupPage: React.FC<SignupPageProps> = ({ titleStyle }) => {
   return (
     <div>
       <HeadTitle titles={[{ id: "login.signup" }]} />
       <h1 className={styles.title} style={titleStyle}>
-        {title ? title : <FormattedMessage id="login.activateAccess" />}
+        <FormattedMessage id="login.activateAccess" />
       </h1>
       <SpecialBlock />
       <SignupForm />

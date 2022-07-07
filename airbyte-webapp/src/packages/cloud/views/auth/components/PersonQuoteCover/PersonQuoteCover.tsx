@@ -9,9 +9,7 @@ export interface PersonQuoteCoverProps {
   quoteText?: string;
   quoteTextStyle?: React.CSSProperties;
   logoImageSrc?: string;
-  quoteAuthorFullName?: string;
   quoteAuthorFullNameStyle?: React.CSSProperties;
-  quoteAuthorJobTitle?: string;
   quoteAuthorJobTitleStyle?: React.CSSProperties;
 }
 export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
@@ -20,9 +18,7 @@ export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
   quoteText,
   quoteTextStyle,
   logoImageSrc,
-  quoteAuthorFullName,
   quoteAuthorFullNameStyle,
-  quoteAuthorJobTitle,
   quoteAuthorJobTitleStyle,
 }) => {
   return (
@@ -45,14 +41,14 @@ export const PersonQuoteCover: React.FC<PersonQuoteCoverProps> = ({
             style={quoteAuthorFullNameStyle}
             data-testid="quote-author-full-name"
           >
-            {quoteAuthorFullName ? quoteAuthorFullName : <FormattedMessage id="login.quoteAuthor" />}
+            <FormattedMessage id="login.quoteAuthor" />
           </h5>
           <h3
             className={styles.quoteAuthorJobTitle}
             style={quoteAuthorJobTitleStyle}
             data-testid="quote-author-job-title"
           >
-            {quoteAuthorJobTitle ? quoteAuthorJobTitle : <FormattedMessage id="login.quoteAuthorJobTitle" />}
+            <FormattedMessage id="login.quoteAuthorJobTitle" />
           </h3>
         </div>
       </div>

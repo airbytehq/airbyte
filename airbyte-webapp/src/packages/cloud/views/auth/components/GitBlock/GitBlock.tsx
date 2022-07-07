@@ -7,12 +7,10 @@ import { useConfig } from "../../../../../../config";
 import styles from "./GitBlock.module.scss";
 
 export interface GitBlockProps {
-  title?: string;
   titleStyle?: React.CSSProperties;
-  message?: string;
   messageStyle?: React.CSSProperties;
 }
-export const GitBlock: FC<GitBlockProps> = ({ title, titleStyle, message, messageStyle }) => {
+export const GitBlock: FC<GitBlockProps> = ({ titleStyle, messageStyle }) => {
   const config = useConfig();
   return (
     <div className={styles.container}>
@@ -21,10 +19,10 @@ export const GitBlock: FC<GitBlockProps> = ({ title, titleStyle, message, messag
           <FontAwesomeIcon icon={faGithub} className={styles.icon} />
           <div>
             <p className={styles.hostingText} style={titleStyle}>
-              {title ? title : <FormattedMessage id="login.selfhosting" />}
+              <FormattedMessage id="login.selfhosting" />
             </p>
             <p className={styles.deployText} style={messageStyle}>
-              {message ? message : <FormattedMessage id="login.deployInfrastructure" />}
+              <FormattedMessage id="login.deployInfrastructure" />
             </p>
           </div>
         </div>
