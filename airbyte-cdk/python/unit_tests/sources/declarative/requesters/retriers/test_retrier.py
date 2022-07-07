@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.exponential_backoff_strategy import ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
@@ -133,6 +134,27 @@ def test_default_retrier(
         assert actual_should_retry.retry_in == should_retry.retry_in
 
 
+def test_default_retrier_attempt_count_increases():
+    response_mock = MagicMock()
+    response_mock.status_code = 500
+    response_mock.ok = False
+    response_mock.request.return_value = MagicMock()
+    response_mock.request.url = "https://airbyte.io"
+    retrier = DefaultRetrier()
+    actual_should_retry = retrier.should_retry(response_mock)
+    assert actual_should_retry == RetryResponseStatus(10)
+    assert actual_should_retry.retry_in == 10
+
+    actual_should_retry = retrier.should_retry(response_mock)
+    assert actual_should_retry == RetryResponseStatus(20)
+    assert actual_should_retry.retry_in == 20
+
+    response_mock.request.url = "https://google.com"
+    actual_should_retry = retrier.should_retry(response_mock)
+    assert actual_should_retry == RetryResponseStatus(10)
+    assert actual_should_retry.retry_in == 10
+
+
 @pytest.mark.parametrize(
     "test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior",
     [
@@ -211,4 +233,19 @@ def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, mi
     response_mock.headers = {"wait_until": wait_until}
     backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(header, min_wait)
     backoff = backoff_stratery.backoff(response_mock, 1)
+    assert backoff == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    "test_name, attempt_count, expected_backoff_time",
+    [
+        ("test_exponential_backoff", 1, 10),
+        ("test_exponential_backoff", 2, 20),
+    ],
+)
+@patch("time.time", return_value=1600000000.0)
+def test_exponential_backoff(time_mock, test_name, attempt_count, expected_backoff_time):
+    response_mock = MagicMock()
+    backoff_stratery = ExponentialBackoffStrategy(factor=5)
+    backoff = backoff_stratery.backoff(response_mock, attempt_count)
     assert backoff == expected_backoff_time
