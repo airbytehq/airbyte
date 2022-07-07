@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/s3",
   "changelogUrl": "https://docs.airbyte.io/integrations/sources/s3",
   "connectionSpecification": {
-    "title": "Amazon S3 Source Spec",
+    "title": "S3 Source Spec",
     "type": "object",
     "properties": {
       "dataset": {
