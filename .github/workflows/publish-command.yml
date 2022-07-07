@@ -267,7 +267,7 @@ jobs:
           source venv/bin/activate
           ci_credentials ${{ matrix.connector }}
           # normalization also runs destination-specific tests, so fetch their creds also
-          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ]; then
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
             ci_credentials destination-bigquery
             ci_credentials destination-postgres
             ci_credentials destination-snowflake
