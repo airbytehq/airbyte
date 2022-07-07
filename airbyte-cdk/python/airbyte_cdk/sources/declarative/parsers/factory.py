@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping, Optional, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -54,7 +54,6 @@ class DeclarativeComponentFactory:
             return create(class_, config=config, **updated_kwargs)
         else:
             schema = class_.json_schema()
-            print(f"validating for {class_or_class_name}")
             # full_definition = {**{"config": config}, **updated_kwargs}
             full_definition = {**updated_kwargs, **{k: v for k, v in updated_kwargs["options"].items() if k not in updated_kwargs}}
             full_definition["config"] = {}
@@ -71,17 +70,6 @@ class DeclarativeComponentFactory:
     @staticmethod
     def _merge_dicts(d1, d2):
         return {**d1, **d2}
-
-    def get_class_name(self, definition) -> Optional[str]:
-        if self.is_object_definition_with_class_name(definition):
-            return definition["class_name"]
-        elif self.is_object_definition_with_type(definition):
-            object_type = definition.pop("type")
-            return CLASS_TYPES_REGISTRY[object_type]
-        elif isinstance(definition, dict):
-            return dict
-        else:
-            return dict
 
     def _create_subcomponent(self, key, definition, kwargs, config, parent_class, instantiate):
         """
@@ -111,10 +99,6 @@ class DeclarativeComponentFactory:
                 definition["options"] = {
                     k: v for k, v in self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict())).items() if k != key
                 }
-                if key == "retriever":
-                    print("sdfg")
-                    print(definition["options"])
-                    # exit()
                 return self.create_component(definition, config, instantiate)()
             else:
                 return definition
