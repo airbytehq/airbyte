@@ -364,7 +364,7 @@ public class WebBackendConnectionsHandler {
     ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
 
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+    // connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (needReset) {
       final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
@@ -388,6 +388,7 @@ public class WebBackendConnectionsHandler {
         log.error("Diff: " + catalogDiff);
       }
 
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
       if (!streamsToReset.isEmpty()) {
         ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
             webBackendConnectionUpdate.getConnectionId(),
@@ -399,6 +400,8 @@ public class WebBackendConnectionsHandler {
         log.error("Empty!");
       }
       connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
+    } else {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
     }
 
     return buildWebBackendConnectionRead(connectionRead);
