@@ -1089,12 +1089,15 @@ public class BasicAcceptanceTests {
         new StreamDescriptor().name("cool_employees").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
+    /**
+     * Remove
+     */
     sourceDb.query(ctx -> {
       ctx.dropTableIfExists(additionalTable).execute();
       return null;
     });
     // Update with refreshed catalog
-    final AirbyteCatalog refreshedCatalog = new AirbyteCatalog().streams(catalog.getStreams()
+    AirbyteCatalog refreshedCatalog = new AirbyteCatalog().streams(catalog.getStreams()
         // Use the collect method here in order to have a mutable list here.
         .stream().filter(stream -> !stream.getStream().getName().equals(additionalTable)).collect(Collectors.toList()));
     //// testHarness.discoverSourceSchema(refreshSourceId);
@@ -1112,7 +1115,9 @@ public class BasicAcceptanceTests {
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name("cool_employees").namespace("public")));
 
-    // Add a stream -- the value of in the table are different than the initial import to ensure that it is properly reset.
+    /**
+     * Add a stream -- the value of in the table are different than the initial import to ensure that it is properly reset.
+     */
     sourceDb.query(ctx -> {
       ctx.createTableIfNotExists(additionalTable)
           .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR)).execute();
@@ -1140,6 +1145,35 @@ public class BasicAcceptanceTests {
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name("cool_employees").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
+
+    // Update
+    sourceDb.query(ctx -> {
+      ctx.dropTableIfExists(additionalTable).execute();
+      ctx.createTableIfNotExists(additionalTable)
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR), DSL.field("another_field", SQLDataType.VARCHAR)).execute();
+      ctx.truncate(additionalTable).execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(3, "3", "three").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(4, "4", "four").execute();
+      return null;
+    });
+
+    final UUID newSourceId = testHarness.createPostgresSource().getSourceId();
+    refreshedCatalog = testHarness.discoverSourceSchema(newSourceId);
+    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
+    update = getUpdateInput(connection, refreshedCatalog, operation);
+    webBackendApi.webBackendUpdateConnection(update);
+
+    syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
+
+    // We do not check that the source and the dest are in sync here because removing a stream doesn't
+    // remove that
+    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    assertStreamStateContainsStream(connection.getConnectionId(), List.of(
+        new StreamDescriptor().name("id_and_name").namespace("public"),
+        new StreamDescriptor().name("cool_employees").namespace("public"),
+        new StreamDescriptor().name(additionalTable).namespace("public")));
+
   }
 
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {
