@@ -4,12 +4,6 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -18,6 +12,8 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,8 +32,13 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
+  public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
   public static final String SCHEMA_KEY = "schema";
+
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+          "ssl", "true",
+          "sslmode", "require");
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
@@ -49,20 +50,12 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    final Map<String, String> additionalParameters = new HashMap<>();
-    if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
-      if (config.has(PARAM_SSL_MODE)) {
-        if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
-          additionalParameters.put("sslmode", DISABLE);
-        } else {
-          additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
-        }
-      } else {
-        additionalParameters.put("ssl", "true");
-        additionalParameters.put("sslmode", "require");
-      }
+    if (useSsl(config)) {
+      return SSL_JDBC_PARAMETERS;
+    } else {
+      // No need for any parameters if the connection doesn't use SSL
+      return Collections.emptyMap();
     }
-    return additionalParameters;
   }
 
   @Override
@@ -88,6 +81,10 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     }
 
     return Jsons.jsonNode(configBuilder.build());
+  }
+
+  private boolean useSsl(final JsonNode config) {
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
   public static void main(final String[] args) throws Exception {

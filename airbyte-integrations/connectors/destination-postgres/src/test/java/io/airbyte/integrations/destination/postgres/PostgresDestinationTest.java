@@ -40,10 +40,6 @@ public class PostgresDestinationTest {
 
   private static final String SCHEMA_NAME = "public";
   private static final String STREAM_NAME = "id_and_name";
-
-  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
-      "sslmode", "require");
   private static final ConfiguredAirbyteCatalog CATALOG = new ConfiguredAirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createConfiguredAirbyteStream(
           STREAM_NAME,
@@ -60,9 +56,7 @@ public class PostgresDestinationTest {
         "host", "localhost",
         "port", 1337,
         "username", "user",
-        "database", "db",
-        "ssl", true,
-        "ssl_mode", ImmutableMap.of("mode", "require")));
+        "database", "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
@@ -129,7 +123,7 @@ public class PostgresDestinationTest {
   void testDefaultParamsWithSSL() {
     final Map<String, String> defaultProperties = new PostgresDestination().getDefaultConnectionProperties(
         buildConfigNoJdbcParameters());
-    assertEquals(SSL_JDBC_PARAMETERS, defaultProperties);
+    assertEquals(PostgresDestination.SSL_JDBC_PARAMETERS, defaultProperties);
   }
 
   // This test is a bit redundant with PostgresIntegrationTest. It makes it easy to run the
