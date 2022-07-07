@@ -128,13 +128,12 @@ def search_workflow_runs(owner, repo, workflow_id, run_uuids):
     now = datetime.datetime.utcnow()
     res = set()
     for workflow_run in iter_workflow_runs(owner, repo):
-
         if not run_uuids:
             break
 
         created_at = datetime.datetime.strptime(workflow_run["created_at"], "%Y-%m-%dT%H:%M:%SZ")
         period = now - created_at
-        if period.days >= 1:
+        if period.seconds > 10800:
             break
 
         if workflow_run["workflow_id"] != workflow_id:
