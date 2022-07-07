@@ -574,11 +574,7 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getConfiguredCatalogForConnection(expected.getConnectionId()))
         .thenReturn(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog());
 
-    final StreamDescriptor streamDescriptorAdd = new StreamDescriptor().name("addStream");
-    final StreamTransform streamTransformAdd =
-        new StreamTransform().streamDescriptor(streamDescriptorAdd).transformType(TransformTypeEnum.ADD_STREAM);
-
-    final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd));
+    final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
     when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(expected.getConnectionId());
     when(stateHandler.getState(connectionIdRequestBody)).thenReturn(new ConnectionState().stateType(ConnectionStateType.LEGACY));
@@ -602,6 +598,7 @@ class WebBackendConnectionsHandlerTest {
             .schedule(expected.getSchedule()));
     when(operationsHandler.updateOperation(operationUpdate)).thenReturn(new OperationRead().operationId(operationUpdate.getOperationId()));
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
+
     final WebBackendConnectionRead actualConnectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(connectionRead.getOperationIds(), actualConnectionRead.getOperationIds());
