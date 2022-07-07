@@ -9,6 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginat
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
 from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.exponential_backoff_strategy import ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
@@ -26,6 +27,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "ListStreamSlicer": ListStreamSlicer,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
+    "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "ChainRetrier": ChainRetrier,
     "DefaultRetrier": DefaultRetrier,
 }

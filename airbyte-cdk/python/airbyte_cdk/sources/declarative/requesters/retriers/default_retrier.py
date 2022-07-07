@@ -58,7 +58,7 @@ class DefaultRetrier(Retrier):
     `
     """
 
-    DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy()
+    DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
     def __init__(
         self,
@@ -75,7 +75,7 @@ class DefaultRetrier(Retrier):
 
         # Always add the default backoff strategy as backup
         if backoff_strategy:
-            self._backoff_strategy = backoff_strategy + [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY]
+            self._backoff_strategy = backoff_strategy + [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY(max_retries, retry_factor)]
         else:
             self._backoff_strategy = [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY]
 
