@@ -88,7 +88,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
 
           if (stateWrapper.isPresent() &&
               stateWrapper.get().getStateType() == StateType.LEGACY &&
-              !isResetAllStreamsInCatalog(workerSourceConfig)) {
+              !resettingAllCatalogStreams(workerSourceConfig)) {
             log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
             throw new IllegalStateException("Try to perform a partial reset on a legacy state");
           }
@@ -174,7 +174,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     }
   }
 
-  private boolean isResetAllStreamsInCatalog(final WorkerSourceConfig sourceConfig) {
+  private boolean resettingAllCatalogStreams(final WorkerSourceConfig sourceConfig) {
     final Set<StreamDescriptor> catalogStreamDescriptors = sourceConfig.getCatalog().getStreams().stream().map(
         configuredAirbyteStream -> new StreamDescriptor()
             .withName(configuredAirbyteStream.getStream().getName())
