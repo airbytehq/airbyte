@@ -97,7 +97,7 @@ def test_limit_paginator(
     url_base = "https://airbyte.io"
     config = {}
     strategy = CursorPaginationStrategy(cursor_value, decoder=JsonDecoder(), config=config)
-    paginator = LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
+    paginator = LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base=url_base)
 
     response = requests.Response()
     response.headers = {"A_HEADER": "HEADER_VALUE"}
@@ -126,7 +126,7 @@ def test_limit_cannot_be_set_in_path():
     config = {}
     strategy = CursorPaginationStrategy(cursor_value, JsonDecoder(), config)
     try:
-        LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
+        LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base=url_base)
         assert False
     except ValueError:
         pass

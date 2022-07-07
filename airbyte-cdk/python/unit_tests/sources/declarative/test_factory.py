@@ -40,7 +40,7 @@ def test_factory():
         body_offset: "{{ next_page_token['offset'] }}"
     """
     config = parser.parse(content)
-    request_options_provider = factory.create_component(config["request_options"], input_config)()
+    request_options_provider = factory.create_component(config["request_options"], input_config, True)()
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
     assert request_options_provider._parameter_interpolator._config == input_config
     assert request_options_provider._parameter_interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
@@ -61,7 +61,7 @@ def test_interpolate_config():
         interpolated_body_field: "{{ config['apikey'] }}"
     """
     config = parser.parse(content)
-    authenticator = factory.create_component(config["authenticator"], input_config)()
+    authenticator = factory.create_component(config["authenticator"], input_config, True)()
     assert authenticator._client_id._string == "some_client_id"
     assert authenticator._client_secret._string == "some_client_secret"
     assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
@@ -79,7 +79,7 @@ def test_list_based_stream_slicer_with_values_refd():
         repository: "{{ slice_value }}"
     """
     config = parser.parse(content)
-    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config, True)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
 
 
@@ -92,7 +92,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
         repository: "{{ slice_value }}"
     """
     config = parser.parse(content)
-    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config, True)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
 
 
@@ -180,7 +180,7 @@ check:
     stream_config = config["list_stream"]
     assert stream_config["class_name"] == "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
     assert stream_config["cursor_field"] == []
-    stream = factory.create_component(stream_config, input_config)()
+    stream = factory.create_component(stream_config, input_config, True)()
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
@@ -195,7 +195,7 @@ check:
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
 
-    checker = factory.create_component(config["check"], input_config)()
+    checker = factory.create_component(config["check"], input_config, True)()
     streams_to_check = checker._stream_names
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
@@ -220,11 +220,11 @@ def test_create_requester():
         header: header_value
     """
     config = parser.parse(content)
-    component = factory.create_component(config["requester"], input_config)()
+    component = factory.create_component(config["requester"], input_config, True)()
     assert isinstance(component, HttpRequester)
     assert isinstance(component._retrier, DefaultRetrier)
-    assert component._path.string == "/v3/marketing/lists"
-    assert component._url_base.string == "https://api.sendgrid.com"
+    assert component._path._string == "/v3/marketing/lists"
+    assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, TokenAuthenticator)
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
@@ -243,7 +243,7 @@ def test_create_chain_retrier():
                 http_codes: [ 403 ]
     """
     config = parser.parse(content)
-    component = factory.create_component(config["retrier"], input_config)()
+    component = factory.create_component(config["retrier"], input_config, True)()
     assert len(component._retriers) == 2
     assert isinstance(component._retriers[0], DefaultRetrier)
     assert component._retriers[0]._retry_response_filter._predicate._condition == "{{ 'code' in decoded_response }}"
@@ -289,7 +289,7 @@ def test_full_config_with_defaults():
     config = parser.parse(content)
 
     stream_config = config["lists_stream"]
-    stream = factory.create_component(stream_config, input_config)()
+    stream = factory.create_component(stream_config, input_config, True)()
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
@@ -302,62 +302,3 @@ def test_full_config_with_defaults():
     assert isinstance(stream._retriever._paginator, LimitPaginator)
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
     assert stream._retriever._paginator._limit == 10
-
-
-def test_factory_hello():
-    content = """
-    dict:
-      key: value
-    """
-    config = parser.parse(content)
-    resolved = factory.resolve(config)
-    assert isinstance(resolved["dict"], dict)
-
-
-def test_factory_hello_class_name():
-    content = """
-    object:
-      class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
-      string: value
-    """
-    config = parser.parse(content)
-    resolved = factory.resolve(config)
-    assert isinstance(resolved, dict)
-    assert resolved["object"]["class_name"] == "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
-
-
-def test_factory_hello_type():
-    content = """
-      type: "InterpolatedString"
-      string: value
-    """
-    config = parser.parse(content)
-    resolved = factory.resolve(config)
-    assert isinstance(resolved, dict)
-    print(f"resolved: {resolved}")
-    assert str(resolved["class_name"]) == "<class 'airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString'>"
-
-
-def test_factory_hello_ref():
-    content = """
-    limit: 50
-    offset_request_parameters:
-      offset: "{{ next_page_token['offset'] }}"
-      limit: "*ref(limit)"
-    request_options:
-      class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
-      request_parameters: "*ref(offset_request_parameters)"
-      request_body_json:
-        body_offset: "{{ next_page_token['offset'] }}"
-    """
-    config = parser.parse(content)
-    resolved = factory.resolve(config)
-    expected_resolved = {
-        "limit": 50,
-        "offset_request_parameters": {"offset": "{{ next_page_token['offset'] }}", "limit": 50},
-        "request_options": {
-            "class_name": "airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider",
-            "request_parameters": {"offset": "{{ next_page_token['offset'] }}", "limit": 50},
-        },
-    }
-    assert resolved == expected_resolved
