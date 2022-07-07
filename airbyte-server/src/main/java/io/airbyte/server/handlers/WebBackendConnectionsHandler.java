@@ -361,9 +361,6 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
 
-    ConnectionRead connectionRead;
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
 
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
@@ -376,6 +373,9 @@ public class WebBackendConnectionsHandler {
     final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
     List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
         apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+
+    ConnectionRead connectionRead;
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     if (!streamsToReset.isEmpty()) {
       final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
