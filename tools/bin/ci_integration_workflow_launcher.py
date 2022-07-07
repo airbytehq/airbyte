@@ -49,13 +49,13 @@ def get_workflow_id(owner, repo, path):
 
 
 def workflow_dispatch(owner, repo, workflow_id, connector):
-    run_id = str(uuid.uuid4())
+    run_uuid = str(uuid.uuid4())
     url = urljoin(API_URL, f"/repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches")
     response = requests.post(
-        url, headers={"Authorization": "Bearer " + GITHUB_TOKEN}, json={"ref": BRANCH, "inputs": {"connector": connector, "uuid": run_id}}
+        url, headers={"Authorization": "Bearer " + GITHUB_TOKEN}, json={"ref": BRANCH, "inputs": {"connector": connector, "uuid": run_uuid}}
     )
     response.raise_for_status()
-    return run_id
+    return run_uuid
 
 
 def get_connector_names():
@@ -90,7 +90,7 @@ def iter_workflow_runs(owner, repo, per_page=100):
         page = dict(parse_qsl(urlparse(response.links["next"]["url"]).query))["page"]
 
 
-def get_job_run_id(jobs):
+def get_job_run_uuid(jobs):
     if jobs and len(jobs[0]["steps"]) >= 2:
         return jobs[0]["steps"][1]["name"]
 
@@ -105,13 +105,13 @@ def get_job_start_aws(jobs):
         return True
 
 
-def search_workflow_runs(owner, repo, workflow_id, run_ids):
-    run_ids = set(run_ids)
+def search_workflow_runs(owner, repo, workflow_id, run_uuids):
+    run_uuids = set(run_uuids)
     now = datetime.datetime.utcnow()
     res = set()
     for workflow_run in iter_workflow_runs(owner, repo):
 
-        if not run_ids:
+        if not run_uuids:
             break
 
         created_at = datetime.datetime.strptime(workflow_run["created_at"], "%Y-%m-%dT%H:%M:%SZ")
@@ -125,22 +125,22 @@ def search_workflow_runs(owner, repo, workflow_id, run_ids):
             continue
 
         response_json = get_response_json(workflow_run["jobs_url"])
-        job_run_id_label = get_job_run_id(response_json["jobs"])
-        if not job_run_id_label:
+        job_run_uuid_label = get_job_run_uuid(response_json["jobs"])
+        if not job_run_uuid_label:
             continue
 
-        run_id = None
-        m = re.match(RUN_ID_REGEX, job_run_id_label)
+        run_uuid = None
+        m = re.match(RUN_ID_REGEX, job_run_uuid_label)
         if m:
-            run_id = m.groups()[0]
+            run_uuid = m.groups()[0]
 
-        if not run_id:
+        if not run_uuid:
             continue
 
-        if run_id in run_ids:
-            run_ids.remove(run_id)
+        if run_uuid in run_uuids:
+            run_uuids.remove(run_uuid)
             if get_job_start_aws(response_json["jobs"]):
-                res.add(run_id)
+                res.add(run_uuid)
     return res
 
 
@@ -151,17 +151,17 @@ def main():
         sys.exit(1)
 
     connector_names = get_connector_names()
-    run_id_to_name = {}
+    run_uuid_to_name = {}
     for connector_name in connector_names:
-        logging.info(f"Dispatch workflow for connector {connector_name}")
-        run_id = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
-        run_id_to_name[run_id] = connector_name
+        run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
+        logging.info(f"Dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
+        run_uuid_to_name[run_uuid] = connector_name
 
-    res = search_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_id_to_name.keys())
-    for run_id in res:
-        connector_name = run_id_to_name[run_id]
-        logging.info(f"Dispatch workflow for connector {connector_name}")
-        workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
+    res = search_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_uuid_to_name.keys())
+    for run_uuid in res:
+        connector_name = run_uuid_to_name[run_uuid]
+        run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
+        logging.info(f"Re-dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
 
 
 if __name__ == "__main__":
