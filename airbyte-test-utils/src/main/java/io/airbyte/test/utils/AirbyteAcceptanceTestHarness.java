@@ -646,6 +646,15 @@ public class AirbyteAcceptanceTestHarness {
         .getSourceDefinitionId();
   }
 
+  public UUID getPostgresDestinationDefinitionId() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+        .stream()
+        .filter(destRead -> destRead.getName().equalsIgnoreCase("postgres"))
+        .findFirst()
+        .orElseThrow()
+        .getDestinationDefinitionId();
+  }
+
   public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
     apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
         .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
