@@ -381,8 +381,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         TestDataHolder.builder()
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'00:00:00.0000000'", "'23:59:59.9999999'", "'00:00:00'", "'23:58'", "null")
-            .addExpectedValues("00:00:00", "23:59:59.9999999", "00:00:00", "23:58:00", null)
+            .addInsertValues("'00:00:00.000000'", "'23:59:59.999999'", "'00:00:00'", "'23:58'", "null")
+            .addExpectedValues("00:00:00.000000", "23:59:59.999999", "00:00:00.000000", "23:58:00.000000", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

@@ -225,7 +225,7 @@ public class MssqlSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("time")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'13:00:01'", "'13:00:04Z'", "'13:00:04.123456Z'")
-            .addExpectedValues(null, "13:00:01", "13:00:04", "13:00:04.123456")
+            .addExpectedValues(null, "13:00:01.000000", "13:00:04.000000", "13:00:04.123456")
             .build());
 
     addDataTypeTestData(

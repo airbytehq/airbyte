@@ -91,7 +91,7 @@ public class DataTypeUtils {
   }
 
   public static String toISOTimeString(final LocalDateTime dateTime) {
-    return DateTimeFormatter.ISO_TIME.format(dateTime.toLocalTime());
+    return TIME_FORMATTER.format(dateTime.toLocalTime());
   }
 
   public static String toISO8601String(final LocalDate date) {
