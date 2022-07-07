@@ -17,6 +17,7 @@ export interface FormBaseItem extends FormItem, AirbyteJSONSchema {
   type: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
+  default?: JSONSchema7Type;
 }
 
 export interface FormGroupItem extends FormItem {
@@ -25,7 +26,6 @@ export interface FormGroupItem extends FormItem {
   properties: FormBlock[];
   isLoading?: boolean;
   hasOauth?: boolean;
-  default?: JSONSchema7Type;
   examples?: JSONSchema7Type;
 }
 

@@ -92,7 +92,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
               {(item) => (
                 <VariableInputFieldForm
                   formField={formField}
-                  path={path}
+                  path={`${path}[${editIndex ?? 0}]`}
                   disabled={disabled}
                   item={item}
                   onDone={(updatedItem) => {

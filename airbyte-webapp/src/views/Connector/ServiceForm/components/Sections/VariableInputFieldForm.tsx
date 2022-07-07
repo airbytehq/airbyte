@@ -1,13 +1,14 @@
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
-import { useEffectOnce } from "react-use";
+import { useAsync, useEffectOnce } from "react-use";
+import * as yup from "yup";
 
 import { Button, ModalBody, ModalFooter } from "components";
 
-import { FormObjectArrayItem } from "core/form/types";
+import { FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
+import { useServiceForm } from "../../serviceFormContext";
 import { FormSection } from "./FormSection";
-
 interface VariableInputFormProps {
   formField: FormObjectArrayItem;
   path: string;
@@ -27,12 +28,26 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
 }) => {
   const hiddenPath = `__hidden_${path}`;
   const [field, , fieldHelper] = useField(hiddenPath);
+  const { validationSchema } = useServiceForm();
+
+  const { value: isValid } = useAsync(
+    async (): Promise<boolean> => yup.reach(validationSchema, path).isValid(field.value),
+    [field.value, path, validationSchema]
+  );
 
   useEffectOnce(() => {
-    // When editing an existing item update the hidden field
-    if (item) {
-      fieldHelper.setValue(item);
-    }
+    // Find initial values if not editing item
+    const initialValue = item
+      ? {}
+      : (formField.properties as FormGroupItem).properties.reduce((acc, item) => {
+          if (item._type === "formItem" && item.default) {
+            acc[item.fieldKey] = item.default;
+          }
+
+          return acc;
+        }, {} as Record<string, unknown>);
+
+    fieldHelper.setValue(item ?? initialValue);
   });
 
   return (
@@ -43,7 +58,6 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
       <ModalFooter>
         <Button
           data-testid="cancel-button"
-          disabled={disabled}
           secondary
           onClick={() => {
             onCancel();
@@ -54,7 +68,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
         </Button>
         <Button
           data-testid="done-button"
-          disabled={disabled || !field.value}
+          disabled={disabled || !isValid}
           onClick={() => {
             onDone(field.value);
             fieldHelper.setValue(undefined);

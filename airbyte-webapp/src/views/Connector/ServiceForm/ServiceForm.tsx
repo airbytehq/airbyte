@@ -245,6 +245,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           availableServices={props.availableServices}
           isEditMode={props.isEditMode}
           isLoadingSchema={props.isLoading}
+          validationSchema={validationSchema}
         >
           {!props.isEditMode && <SetDefaultName />}
           <FormikPatch />
