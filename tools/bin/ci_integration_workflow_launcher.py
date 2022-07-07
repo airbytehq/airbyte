@@ -14,6 +14,8 @@ from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
 
+ORGANIZATION = "airbytehq"
+REPOSITORY = "airbyte"
 LOGGING_FORMAT = "%(asctime)-15s %(levelname)s %(message)s"
 API_URL = "https://api.github.com"
 BRANCH = "grubberr/14450-connector-integration-tests"
@@ -143,7 +145,7 @@ def search_workflow_runs(owner, repo, workflow_id, run_ids):
 
 
 def main():
-    workflow_id = get_workflow_id("airbytehq", "airbyte", WORKFLOW_PATH)
+    workflow_id = get_workflow_id(ORGANIZATION, REPOSITORY, WORKFLOW_PATH)
     if not workflow_id:
         logging.error(f"Cannot find workflow path '{WORKFLOW_PATH}'")
         sys.exit(1)
@@ -152,14 +154,14 @@ def main():
     run_id_to_name = {}
     for connector_name in connector_names:
         logging.info(f"Dispatch workflow for connector {connector_name}")
-        run_id = workflow_dispatch("airbytehq", "airbyte", workflow_id, connector_name)
+        run_id = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
         run_id_to_name[run_id] = connector_name
 
-    res = search_workflow_runs("airbytehq", "airbyte", workflow_id, run_id_to_name.keys())
+    res = search_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_id_to_name.keys())
     for run_id in res:
         connector_name = run_id_to_name[run_id]
         logging.info(f"Dispatch workflow for connector {connector_name}")
-        workflow_dispatch("airbytehq", "airbyte", workflow_id, connector_name)
+        workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
 
 
 if __name__ == "__main__":
