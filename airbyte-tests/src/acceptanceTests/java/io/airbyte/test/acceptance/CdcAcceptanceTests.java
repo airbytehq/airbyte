@@ -281,21 +281,20 @@ public class CdcAcceptanceTests {
 
   private SourceRead createCdcSource() throws ApiException {
     final UUID postgresSourceDefinitionId = testHarness.getPostgresSourceDefinitionId();
-    JsonNode sourceDbConfig = testHarness.getSourceDbConfig();
+    final JsonNode sourceDbConfig = testHarness.getSourceDbConfig();
     final Map<Object, Object> sourceDbConfigMap = Jsons.object(sourceDbConfig, Map.class);
     sourceDbConfigMap.put("replication_method", ImmutableMap.builder()
         .put("method", CDC_METHOD)
         .put("replication_slot", REPLICATION_SLOT)
         .put("publication", PUBLICATION)
         .build());
-    sourceDbConfig = Jsons.jsonNode(sourceDbConfigMap);
-    LOGGER.info("final sourceDbConfig: {}", sourceDbConfigMap);
+    LOGGER.info("final sourceDbConfigMap: {}", sourceDbConfigMap);
 
     return testHarness.createSource(
         SOURCE_NAME,
         workspaceId,
         postgresSourceDefinitionId,
-        sourceDbConfig);
+        Jsons.jsonNode(sourceDbConfigMap));
   }
 
   private void assertDestinationMatches(List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
