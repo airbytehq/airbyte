@@ -144,6 +144,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         for report_info in report_infos:
             for metric_object in report_info.metric_objects:
                 yield self._model(
+                    source_name=self._source_name,
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
