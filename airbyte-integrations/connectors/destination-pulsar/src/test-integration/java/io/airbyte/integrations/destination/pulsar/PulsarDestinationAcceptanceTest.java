@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -181,6 +182,7 @@ public class PulsarDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
     PULSAR = new PulsarContainer(DockerImageName.parse("apachepulsar/pulsar:2.8.1"));
+    PULSAR.withStartupTimeout(Duration.ofSeconds(60));
     PULSAR.start();
   }
 

@@ -16,7 +16,7 @@ dependencies {
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'org.apache.pulsar:pulsar-client:2.10.1'
+    implementation 'org.apache.pulsar:pulsar-client:2.8.1'
 
     testImplementation libs.connectors.testcontainers.pulsar
 
