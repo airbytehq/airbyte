@@ -35,17 +35,17 @@ connectionSpecification:
             client_id:
               title: Client ID
               type: string
-              description: Enter your Google application's Client ID
+              description: "Enter your Google application's Client ID"
               airbyte_secret: true
             client_secret:
               title: Client Secret
               type: string
-              description: Enter your Google application's Client Secret
+              description: "Enter your Google application's Client Secret"
               airbyte_secret: true
             refresh_token:
               title: Refresh Token
               type: string
-              description: Enter your Google application's refresh token
+              description: "Enter your Google application's refresh token"
               airbyte_secret: true
         - title: Service Account Key Authentication
           type: object
@@ -59,9 +59,7 @@ connectionSpecification:
             service_account_info:
               type: string
               title: Service Account Information.
-              description: >-
-                Enter your Google Cloud <a
-        href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">service account key</a> in JSON format 
+              description: 'Enter your Google Cloud <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">service account key</a> in JSON format'
               airbyte_secret: true
               examples:
                 - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
