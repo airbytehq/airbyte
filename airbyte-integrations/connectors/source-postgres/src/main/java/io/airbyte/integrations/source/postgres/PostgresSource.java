@@ -38,8 +38,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -60,8 +60,8 @@ import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -82,8 +82,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -96,8 +94,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private final Set<JDBCType> allowedCursorTypes = Set.of(TIMESTAMP, TIMESTAMP_WITH_TIMEZONE, TIME, TIME_WITH_TIMEZONE,
-          DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL,
-          CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB);
+      DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL,
+      CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB);
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -161,11 +159,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   protected List<String> getCursorFields(List<CommonField<JDBCType>> fields) {
     return fields.stream()
-            .filter(field -> allowedCursorTypes.contains(JDBCType.valueOf(field.getType().toString())))
-            .map(field -> field.getName())
-            .collect(Collectors.toList());
+        .filter(field -> allowedCursorTypes.contains(JDBCType.valueOf(field.getType().toString())))
+        .map(field -> field.getName())
+        .collect(Collectors.toList());
   }
-
 
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
@@ -301,7 +298,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(), postgresCdcStateHandler, emittedAt);
-      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);

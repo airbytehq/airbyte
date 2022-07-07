@@ -412,8 +412,10 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   protected void createTableWithoutCursorFields() throws SQLException {
     database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
     });
   }
 

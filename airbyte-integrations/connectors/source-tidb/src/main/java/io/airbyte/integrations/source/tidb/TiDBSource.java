@@ -4,9 +4,10 @@
 
 package io.airbyte.integrations.source.tidb;
 
+import static com.mysql.cj.MysqlType.*;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
@@ -15,28 +16,21 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.protocol.models.CommonField;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CommonField;
-import io.airbyte.protocol.models.SyncMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.mysql.cj.MysqlType.*;
-
 
 public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TiDBSource.class);
   private final Set<MysqlType> allowedCursorTypes = Set.of(BIT, BOOLEAN, TINYINT, TINYINT_UNSIGNED, SMALLINT,
-          SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT,
-          FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP, TIME,
-          YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET, TINYBLOB, BLOB, MEDIUMBLOB,
-          LONGBLOB, BINARY, VARBINARY);
-
+      SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT,
+      FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP, TIME,
+      YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET, TINYBLOB, BLOB, MEDIUMBLOB,
+      LONGBLOB, BINARY, VARBINARY);
 
   static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
   public static final List<String> SSL_PARAMETERS = List.of(
@@ -99,9 +93,9 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   @Override
   protected List<String> getCursorFields(List<CommonField<MysqlType>> fields) {
     return fields.stream()
-            .filter(field -> allowedCursorTypes.contains(MysqlType.valueOf(field.getType().toString())))
-            .map(field -> field.getName())
-            .collect(Collectors.toList());
+        .filter(field -> allowedCursorTypes.contains(MysqlType.valueOf(field.getType().toString())))
+        .map(field -> field.getName())
+        .collect(Collectors.toList());
   }
 
 }

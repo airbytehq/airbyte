@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static com.mysql.cj.MysqlType.*;
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
@@ -36,7 +36,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -45,7 +44,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,10 +61,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "requireSSL=true",
       "verifyServerCertificate=false");
   private final Set<MysqlType> allowedCursorTypes = Set.of(BIT, BOOLEAN, TINYINT, TINYINT_UNSIGNED, SMALLINT,
-                    SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
-                    FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
-                    TIME, YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET,
-                    TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY);
+      SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
+      FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
+      TIME, YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET,
+      TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY);
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
@@ -141,11 +139,11 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   protected List<String> getCursorFields(List<CommonField<MysqlType>> fields) {
-       return fields.stream()
-                       .filter(field -> allowedCursorTypes.contains(MysqlType.valueOf(field.getType().toString())))
-                        .map(field -> field.getName())
-                        .collect(Collectors.toList());
-     }
+    return fields.stream()
+        .filter(field -> allowedCursorTypes.contains(MysqlType.valueOf(field.getType().toString())))
+        .map(field -> field.getName())
+        .collect(Collectors.toList());
+  }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {

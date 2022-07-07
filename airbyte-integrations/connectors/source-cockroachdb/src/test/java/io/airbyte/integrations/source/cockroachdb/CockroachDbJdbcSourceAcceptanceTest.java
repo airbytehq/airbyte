@@ -180,8 +180,10 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   protected void createTableWithoutCursorFields() throws SQLException {
     database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (posts JSONB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"color\": \"black\", \"capacity\": 4000}')", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s (posts JSONB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"color\": \"black\", \"capacity\": 4000}')",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
     });
   }
 

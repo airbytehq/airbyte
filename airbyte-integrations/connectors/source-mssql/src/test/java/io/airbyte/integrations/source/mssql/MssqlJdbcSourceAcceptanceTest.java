@@ -90,4 +90,5 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   public String getDriverClass() {
     return MssqlSource.DRIVER_CLASS;
   }
+
 }

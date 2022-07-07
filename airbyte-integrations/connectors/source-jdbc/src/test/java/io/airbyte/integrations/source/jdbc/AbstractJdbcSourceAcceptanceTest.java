@@ -24,7 +24,6 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
 import java.util.List;
-import java.sql.SQLException;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;

@@ -133,10 +133,11 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   @Override
   protected void createTableWithoutCursorFields() throws SQLException {
     database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (`arr` Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("CREATE TABLE %s (`arr` Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement()
+          .execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
     });
   }
-
 
 }
