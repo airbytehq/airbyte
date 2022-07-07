@@ -20,7 +20,7 @@ LOGGING_FORMAT = "%(asctime)-15s %(levelname)s %(message)s"
 API_URL = "https://api.github.com"
 BRANCH = "grubberr/14450-connector-integration-tests"
 WORKFLOW_PATH = ".github/workflows/test-command.yml"
-RUN_ID_REGEX = re.compile("^UUID ([0-9a-f-]+)$")
+RUN_UUID_REGEX = re.compile("^UUID ([0-9a-f-]+)$")
 
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -130,7 +130,7 @@ def search_workflow_runs(owner, repo, workflow_id, run_uuids):
             continue
 
         run_uuid = None
-        m = re.match(RUN_ID_REGEX, job_run_uuid_label)
+        m = re.match(RUN_UUID_REGEX, job_run_uuid_label)
         if m:
             run_uuid = m.groups()[0]
 
