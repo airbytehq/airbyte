@@ -96,11 +96,6 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return true;
   }
 
-  @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
-
-  }
-
   @AfterAll
   static void cleanUp() {
     PSQL_DB.close();
