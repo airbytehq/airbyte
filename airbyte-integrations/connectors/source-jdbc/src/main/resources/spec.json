@@ -18,9 +18,9 @@
         "type": "string",
         "airbyte_secret": true
       },
-      "connection_properties": {
+      "jdbc_url": {
         "title": "JDBC URL",
-        "description": "Custom jdbc parameters for Redshift source separated by delimeter &",
+        "description": "JDBC formatted URL. See the standard <a href=\"https://docs.oracle.com/cd/E17952_01/connector-j-8.0-en/connector-j-reference-jdbc-url-format.html\">here</a>.",
         "type": "string"
       }
     }
