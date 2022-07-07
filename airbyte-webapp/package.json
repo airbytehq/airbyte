@@ -10,6 +10,7 @@
     "start": "craco start",
     "prebuild": "npm run generate-client",
     "build": "BUILD_PATH='./build/app' craco build",
+    "pretest": "npm run generate-client",
     "test": "craco test",
     "test:coverage": "npm test -- --coverage --watchAll=false",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
