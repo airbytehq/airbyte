@@ -134,6 +134,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected void setup(final TestDestinationEnv testEnv) {
     db = new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
             .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
+    db.start();
   }
 
   @Override
