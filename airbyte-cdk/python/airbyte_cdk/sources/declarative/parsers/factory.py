@@ -20,12 +20,6 @@ class DeclarativeComponentFactory:
     def __init__(self):
         self._interpolator = JinjaInterpolation()
 
-    def resolve(self, component_definition: Mapping[str, Any]):
-        definition = copy.deepcopy(component_definition)
-        class_name = self.get_class_name(component_definition)
-        definition["class_name"] = class_name
-        return definition
-
     def create_component(self, component_definition: Mapping[str, Any], config: Config, instantiate):
         """
 
