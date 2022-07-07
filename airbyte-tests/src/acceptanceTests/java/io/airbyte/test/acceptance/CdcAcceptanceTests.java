@@ -45,11 +45,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public class CdcAcceptanceTests {
 
@@ -74,13 +74,13 @@ public class CdcAcceptanceTests {
   // old Airbyte protocol that does not contain any per-stream logic/fields
   private static final String POSTGRES_DESTINATION_LEGACY_CONNECTOR_VERSION = "0.3.19";
 
-  private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
-  private static PostgreSQLContainer sourcePsql;
 
-  @BeforeEach
-  public void init() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
+  private AirbyteAcceptanceTestHarness testHarness;
+
+  @BeforeAll
+  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -99,10 +99,11 @@ public class CdcAcceptanceTests {
             .destinationDefinitionId(UUID.fromString("25c5221d-dce2-4163-ade9-739ef790f503")));
     LOGGER.info("pg source definition: {}", sourceDef.getDockerImageTag());
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
+  }
 
+  @BeforeEach
+  public void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId, POSTGRES_INIT_SQL_FILE);
-    sourcePsql = testHarness.getSourcePsql();
-
     testHarness.setup();
   }
 
