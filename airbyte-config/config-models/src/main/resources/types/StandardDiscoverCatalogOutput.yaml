@@ -4,11 +4,11 @@
 title: StandardDiscoverCatalogOutput
 description: describes the standard output for any discovery run.
 type: object
-required:
-  - catalog
 additionalProperties: false
 properties:
   catalog:
     description: describes the available schemas.
     type: object
     existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+  failureReason:
+    "$ref": FailureReason.yaml

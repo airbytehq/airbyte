@@ -7,7 +7,7 @@ package io.airbyte.scheduler.client;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 
@@ -23,7 +23,7 @@ public interface SynchronousSchedulerClient {
   SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination, String dockerImage)
       throws IOException;
 
-  SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
+  SynchronousResponse<StandardDiscoverCatalogOutput> createDiscoverSchemaJob(SourceConnection source, String dockerImage) throws IOException;
 
   SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
 

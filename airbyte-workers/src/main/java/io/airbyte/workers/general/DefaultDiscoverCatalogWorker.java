@@ -7,7 +7,9 @@ package io.airbyte.workers.general;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -47,7 +49,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   }
 
   @Override
-  public AirbyteCatalog run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
+  public StandardDiscoverCatalogOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
     try {
       process = integrationLauncher.discover(
           jobRoot,
@@ -78,9 +80,13 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
         }
 
-        return catalog.get();
+        return new StandardDiscoverCatalogOutput().withCatalog(catalog.get());
       } else {
-        throw new WorkerException(String.format("Discover job subprocess finished with exit code %s", exitCode));
+        // TODO get the failureReason from stdout
+        final FailureReason failureReason = new FailureReason()
+            .withExternalMessage(String.format("Discover job subprocess finished with exit code %s", exitCode))
+            .withInternalMessage("TODO!");
+        return new StandardDiscoverCatalogOutput().withFailureReason(failureReason);
       }
     } catch (final WorkerException e) {
       throw e;

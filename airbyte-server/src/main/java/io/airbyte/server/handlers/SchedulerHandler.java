@@ -41,6 +41,7 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -215,10 +216,11 @@ public class SchedulerHandler {
         configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
-      final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
+      final SynchronousResponse<StandardDiscoverCatalogOutput> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
       if (response.isSuccess()) {
-        final UUID catalogId = configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
+        final UUID catalogId =
+            configRepository.writeActorCatalogFetchEvent(response.getOutput().getCatalog(), source.getSourceId(), connectorVersion, configHash);
         returnValue.catalogId(catalogId);
       }
       return returnValue;
@@ -251,16 +253,16 @@ public class SchedulerHandler {
     final SourceConnection source = new SourceConnection()
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(partialConfig);
-    final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
+    final SynchronousResponse<StandardDiscoverCatalogOutput> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
     return discoverJobToOutput(response);
   }
 
-  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<AirbyteCatalog> response) {
+  private SourceDiscoverSchemaRead discoverJobToOutput(final SynchronousResponse<StandardDiscoverCatalogOutput> response) {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
     if (response.isSuccess()) {
-      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput()));
+      sourceDiscoverSchemaRead.catalog(CatalogConverter.toApi(response.getOutput().getCatalog()));
     }
 
     return sourceDiscoverSchemaRead;

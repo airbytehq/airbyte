@@ -5,6 +5,7 @@
 package io.airbyte.scheduler.client;
 
 import io.airbyte.config.JobConfig.ConfigType;
+import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.util.Objects;
 import java.util.UUID;
@@ -13,13 +14,14 @@ public class SynchronousResponse<T> {
 
   private final T output;
   private final SynchronousJobMetadata metadata;
+  private JobStatus jobStatus;
 
   public static <T> SynchronousResponse<T> error(final SynchronousJobMetadata metadata) {
-    return new SynchronousResponse<>(null, metadata);
+    return new SynchronousResponse<>(null, metadata, JobStatus.FAILED);
   }
 
   public static <T> SynchronousResponse<T> success(final T output, final SynchronousJobMetadata metadata) {
-    return new SynchronousResponse<>(output, metadata);
+    return new SynchronousResponse<>(output, metadata, JobStatus.SUCCEEDED);
   }
 
   public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<T> temporalResponse,
@@ -36,20 +38,30 @@ public class SynchronousResponse<T> {
         configId,
         createdAt,
         endedAt);
-    return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata);
+    final JobStatus jobStatus = metadata.isSucceeded() ? JobStatus.SUCCEEDED : JobStatus.FAILED;
+    return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata, jobStatus);
   }
 
-  public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {
+  public SynchronousResponse(final T output, final SynchronousJobMetadata metadata, final JobStatus jobStatus) {
     this.output = output;
     this.metadata = metadata;
+    this.jobStatus = jobStatus;
   }
 
   public boolean isSuccess() {
-    return metadata.isSucceeded();
+    return jobStatus == JobStatus.SUCCEEDED;
   }
 
   public T getOutput() {
     return output;
+  }
+
+  public JobStatus getJobStatus() {
+    return jobStatus;
+  }
+
+  public void setJobStatus(final JobStatus jobStatus) {
+    this.jobStatus = jobStatus;
   }
 
   public SynchronousJobMetadata getMetadata() {

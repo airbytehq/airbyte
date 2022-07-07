@@ -15,10 +15,10 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.persistence.StreamResetPersistence;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
@@ -115,7 +115,9 @@ public class TemporalClient {
         () -> getWorkflowStub(CheckConnectionWorkflow.class, TemporalJobType.CHECK_CONNECTION).run(jobRunConfig, launcherConfig, input));
   }
 
-  public TemporalResponse<AirbyteCatalog> submitDiscoverSchema(final UUID jobId, final int attempt, final JobDiscoverCatalogConfig config) {
+  public TemporalResponse<StandardDiscoverCatalogOutput> submitDiscoverSchema(final UUID jobId,
+                                                                              final int attempt,
+                                                                              final JobDiscoverCatalogConfig config) {
     final JobRunConfig jobRunConfig = TemporalUtils.createJobRunConfig(jobId, attempt);
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
