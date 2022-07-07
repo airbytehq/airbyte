@@ -13,6 +13,7 @@ import org.jooq.JSONFormat;
 public class JdbcUtils {
 
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String SSL_KEY = "ssl";
 
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
@@ -62,6 +63,10 @@ public class JdbcUtils {
       }
     }
     return parameters;
+  }
+
+  public static boolean useSsl(final JsonNode config) {
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
 }

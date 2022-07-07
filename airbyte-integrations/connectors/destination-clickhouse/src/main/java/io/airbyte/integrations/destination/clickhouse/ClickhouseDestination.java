@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -65,9 +66,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private boolean useSsl(final JsonNode config) {
-    return !config.has("ssl") || config.get("ssl").asBoolean();
-  }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -94,7 +92,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (useSsl(config)) {
+    if (JdbcUtils.useSsl(config)) {
       return SSL_JDBC_PARAMETERS;
     } else {
       // No need for any parameters if the connection doesn't use SSL except socket_timeout

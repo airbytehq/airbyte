@@ -30,7 +30,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String DATABASE_KEY = "database";
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String PASSWORD_KEY = "password";
-  public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
   public static final String SCHEMA_KEY = "schema";
 
@@ -48,7 +47,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (useSsl(config)) {
+    if (JdbcUtils.useSsl(config)) {
       return SSL_JDBC_PARAMETERS;
     } else {
       // No need for any parameters if the connection doesn't use SSL
@@ -81,9 +80,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     return Jsons.jsonNode(configBuilder.build());
   }
 
-  private boolean useSsl(final JsonNode config) {
-    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
-  }
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = PostgresDestination.sshWrappedDestination();
