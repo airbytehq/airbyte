@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDiscoverCatalogWorker.class);
-  private static final int FOUR_MB = 1024 * 1024 * 4;
+  private static final int TEMPORAL_MESSAGE_LIMIT_MB = 1024 * 1024 * 4;
 
   private final WorkerConfigs workerConfigs;
   private final IntegrationLauncher integrationLauncher;
@@ -74,7 +74,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
         // This message is sent through temporal that utilizes GRPC as is set to limit messages to 4mb.
         // We fail fast here so users will not have to wait the 10 minutes before a timeout error occurs.
-        if (catalog.get().toString().length() > FOUR_MB) {
+        if (catalog.get().toString().length() > TEMPORAL_MESSAGE_LIMIT_MB) {
           throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
         }
 
