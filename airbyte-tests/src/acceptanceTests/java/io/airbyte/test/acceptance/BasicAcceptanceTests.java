@@ -84,7 +84,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.AfterAll;
@@ -1067,7 +1066,7 @@ public class BasicAcceptanceTests {
       ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field")).values(2, "2").execute();
       return null;
     });
-    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(catalog, List.of(COLUMN_ID));
     final UUID destinationId = testHarness.createDestination().getDestinationId();
@@ -1090,17 +1089,15 @@ public class BasicAcceptanceTests {
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
     /**
-     * Remove
+     * Remove stream
      */
     sourceDb.query(ctx -> {
       ctx.dropTableIfExists(additionalTable).execute();
       return null;
     });
     // Update with refreshed catalog
-    AirbyteCatalog refreshedCatalog = new AirbyteCatalog().streams(catalog.getStreams()
-        // Use the collect method here in order to have a mutable list here.
-        .stream().filter(stream -> !stream.getStream().getName().equals(additionalTable)).collect(Collectors.toList()));
-    //// testHarness.discoverSourceSchema(refreshSourceId);
+    sourceId = testHarness.createPostgresSource().getSourceId();
+    AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
     WebBackendConnectionUpdate update = getUpdateInput(connection, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
@@ -1116,7 +1113,8 @@ public class BasicAcceptanceTests {
         new StreamDescriptor().name("cool_employees").namespace("public")));
 
     /**
-     * Add a stream -- the value of in the table are different than the initial import to ensure that it is properly reset.
+     * Add a stream -- the value of in the table are different than the initial import to ensure that it
+     * is properly reset.
      */
     sourceDb.query(ctx -> {
       ctx.createTableIfNotExists(additionalTable)
@@ -1150,15 +1148,18 @@ public class BasicAcceptanceTests {
     sourceDb.query(ctx -> {
       ctx.dropTableIfExists(additionalTable).execute();
       ctx.createTableIfNotExists(additionalTable)
-          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR), DSL.field("another_field", SQLDataType.VARCHAR)).execute();
+          .columns(DSL.field("id", SQLDataType.INTEGER), DSL.field("field", SQLDataType.VARCHAR), DSL.field("another_field", SQLDataType.VARCHAR))
+          .execute();
       ctx.truncate(additionalTable).execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(3, "3", "three").execute();
-      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(4, "4", "four").execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(3, "3", "three")
+          .execute();
+      ctx.insertInto(DSL.table(additionalTable)).columns(DSL.field("id"), DSL.field("field"), DSL.field("another_field")).values(4, "4", "four")
+          .execute();
       return null;
     });
 
-    final UUID newSourceId = testHarness.createPostgresSource().getSourceId();
-    refreshedCatalog = testHarness.discoverSourceSchema(newSourceId);
+    sourceId = testHarness.createPostgresSource().getSourceId();
+    refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
     update = getUpdateInput(connection, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);

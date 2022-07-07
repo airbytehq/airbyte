@@ -364,8 +364,6 @@ public class WebBackendConnectionsHandler {
     final ConnectionRead connectionRead;
     final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
 
-    // connectionRead = connectionsHandler.updateConnection(connectionUpdate);
-
     if (needReset) {
       final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
       final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);

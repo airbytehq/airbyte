@@ -338,11 +338,8 @@ public class AirbyteAcceptanceTestHarness {
     final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
-    assertEquals(sourceTablesWithRawTablesAdded,
-        destinationTables,
-        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n",
-            sourceTables.stream().map(SchemaTableNamePair::getFullyQualifiedTableName).sorted().toList(),
-            destinationTables.stream().map(SchemaTableNamePair::getFullyQualifiedTableName).sorted().toList()));
+    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
 
     for (final SchemaTableNamePair pair : sourceTables) {
       final List<JsonNode> sourceRecords = retrieveSourceRecords(source, pair.getFullyQualifiedTableName());
