@@ -73,11 +73,10 @@ class DefaultRetrier(Retrier):
         self._retry_response_filter = retry_response_filter or HttpResponseFilter()
         self._ignore_response_filter = ignore_response_filter or HttpResponseFilter(set())
 
-        # Always add the default backoff strategy as backup
         if backoff_strategy:
-            self._backoff_strategy = backoff_strategy + [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY(max_retries, retry_factor)]
+            self._backoff_strategy = backoff_strategy
         else:
-            self._backoff_strategy = [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY]
+            self._backoff_strategy = [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY(max_retries, retry_factor)]
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -99,8 +98,8 @@ class DefaultRetrier(Retrier):
 
     def _backoff_time(self, response: requests.Response) -> Optional[float]:
         backoff = None
-        for backoff_strategy in self._backoff_strategy:
-            backoff = backoff_strategy.backoff(response)
+        for backoff_strategies in self._backoff_strategy:
+            backoff = backoff_strategies.backoff(response)
             if backoff:
                 return backoff
         return backoff

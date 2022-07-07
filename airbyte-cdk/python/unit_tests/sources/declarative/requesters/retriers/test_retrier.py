@@ -25,7 +25,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
 @pytest.mark.parametrize(
     "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy",
     [
-        ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
+        ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
         (
             "test_bad_gateway_constant_retry",
             HTTPStatus.BAD_GATEWAY,
@@ -35,25 +35,25 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
             RetryResponseStatus(60),
             [ConstantBackoffStrategy(60)],
         ),
-        ("test_exponential_backoff_returns_none_wait", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
+        ("test_exponential_backoff", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
         (
-            "test_bad_gateway_constant_retry",
+            "test_bad_gateway_exponential_backoff_explicit_parameter",
             HTTPStatus.BAD_GATEWAY,
             None,
             None,
             {},
-            RetryResponseStatus(None),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY],
+            RetryResponseStatus(10),
+            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY()],
         ),
-        ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(None), None),
+        ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
         (
-            "test_bad_gateway_constant_retry",
+            "test_bad_gateway_chain_backoff",
             HTTPStatus.BAD_GATEWAY,
             None,
             None,
             {},
-            RetryResponseStatus(60),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY, ConstantBackoffStrategy(60)],
+            RetryResponseStatus(10),
+            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY(), ConstantBackoffStrategy(60)],
         ),
         ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.Ok, None),
         ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.Ok, None),
@@ -76,7 +76,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
             NonRetriableResponseStatus.FAIL,
             None,
         ),
-        ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, RetryResponseStatus(None), None),
+        ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, RetryResponseStatus(10), None),
         (
             "test_ignore_403",
             HTTPStatus.FORBIDDEN,
@@ -92,7 +92,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
             HttpResponseFilter(predicate="{{ 'code' in decoded_response }}"),
             None,
             {},
-            RetryResponseStatus(None),
+            RetryResponseStatus(10),
             None,
         ),
         (
@@ -110,7 +110,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
             HttpResponseFilter({HTTPStatus.FORBIDDEN}),
             None,
             {},
-            RetryResponseStatus(None),
+            RetryResponseStatus(10),
             None,
         ),
     ],
@@ -127,9 +127,10 @@ def test_default_retrier(
     retrier = DefaultRetrier(
         retry_response_filter=retry_response_filter, ignore_response_filter=ignore_response_filter, backoff_strategy=backoff_strategy
     )
-    assert retrier.should_retry(response_mock) == should_retry
+    actual_should_retry = retrier.should_retry(response_mock)
+    assert actual_should_retry == should_retry
     if isinstance(should_retry, RetryResponseStatus):
-        assert retrier._backoff_time(response_mock) == should_retry.retry_in
+        assert actual_should_retry.retry_in == should_retry.retry_in
 
 
 @pytest.mark.parametrize(
