@@ -896,6 +896,9 @@ public class BasicAcceptanceTests {
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
 
+    final ConnectionState initSyncState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    LOGGER.info("InitialSync ConnectionState: " + initSyncState.toString());
+
     LOGGER.info("Inspecting Source DB");
     sourceDb.query(ctx -> {
       System.out.println(ctx.selectFrom(sourceTable1).fetch());
@@ -945,6 +948,9 @@ public class BasicAcceptanceTests {
         .withRefreshedCatalog(true);
     final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
 
+    final ConnectionState postResetState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    LOGGER.info("PostReset from Update ConnectionState: " + postResetState.toString());
+
     LOGGER.info("Inspecting Destination DB after the update request");
     destDb.query(ctx -> {
       System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
@@ -956,6 +962,9 @@ public class BasicAcceptanceTests {
     final JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
     System.out.println(syncFromTheUpdate.toString());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
+
+    final ConnectionState postUpdateState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    LOGGER.info("PostUpdate ConnectionState: " + postUpdateState.toString());
 
     LOGGER.info("Inspecting Source DB After the final sync");
     sourceDb.query(ctx -> {
