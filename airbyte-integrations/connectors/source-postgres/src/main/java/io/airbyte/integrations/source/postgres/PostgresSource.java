@@ -41,8 +41,8 @@ import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -112,10 +112,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           additionalParameters.add("sslmode=disable");
         } else {
           var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
-                  .entrySet()
-                  .stream()
-                  .map(e -> e.getKey() + "=" + e.getValue())
-                  .toList();
+              .entrySet()
+              .stream()
+              .map(e -> e.getKey() + "=" + e.getValue())
+              .toList();
           additionalParameters.addAll(parametersList);
         }
       } else {
@@ -281,7 +281,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(), postgresCdcStateHandler, emittedAt);
-      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);

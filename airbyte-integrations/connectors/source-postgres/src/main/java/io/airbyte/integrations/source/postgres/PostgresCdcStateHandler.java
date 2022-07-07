@@ -41,11 +41,13 @@ public class PostgresCdcStateHandler implements CdcStateHandler {
   }
 
   /**
-   * Here we just want to emit the state to update the list of streams in the database to mark the completion of snapshot of new added streams.
-   * The addition of new streams in the state is done here {@link io.airbyte.integrations.source.relationaldb.state.GlobalStateManager#toState(Optional)}
-   * which is called inside the {@link StateManager#emit(Optional)} method which is being triggered below.
-   * The toState method adds all the streams present in the catalog in the state.
-   * Since there is no change in the CDC state value, whatever was present in the database will again be stored.
+   * Here we just want to emit the state to update the list of streams in the database to mark the
+   * completion of snapshot of new added streams. The addition of new streams in the state is done
+   * here
+   * {@link io.airbyte.integrations.source.relationaldb.state.GlobalStateManager#toState(Optional)}
+   * which is called inside the {@link StateManager#emit(Optional)} method which is being triggered
+   * below. The toState method adds all the streams present in the catalog in the state. Since there
+   * is no change in the CDC state value, whatever was present in the database will again be stored.
    * This is done so that we can mark the completion of snapshot of new tables.
    */
   @Override
