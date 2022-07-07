@@ -427,7 +427,7 @@ public class TemporalClient {
       return resetResult;
     }
 
-    final long oldJobId = resetResult.getJobId().get();
+    final long resetJobId = resetResult.getJobId().get();
 
     do {
       try {
@@ -437,15 +437,13 @@ public class TemporalClient {
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == oldJobId);
+    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == resetJobId);
 
     log.info("End of reset");
 
-    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
-
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        Optional.of(resetJobId));
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
