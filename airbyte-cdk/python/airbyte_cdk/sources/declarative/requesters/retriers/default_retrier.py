@@ -70,7 +70,7 @@ class DefaultRetrier(Retrier):
     ):
         self._max_retries = max_retries
         self._retry_factor = retry_factor
-        self._retry_response_filter = retry_response_filter or HttpResponseFilter()
+        self._retry_response_filter = retry_response_filter or HttpResponseFilter(HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS)
         self._ignore_response_filter = ignore_response_filter or HttpResponseFilter(set())
 
         if backoff_strategy:
