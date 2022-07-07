@@ -41,9 +41,7 @@ describe("<PersonQuoteCover />", () => {
       quoteText: "This is test text",
       quoteTextStyle: { fontSize: "30px" },
       logoImageSrc: "/new-logo.svg",
-      quoteAuthorFullName: "John Doe",
       quoteAuthorFullNameStyle: { color: "black", fontSize: "40px" },
-      quoteAuthorJobTitle: "CEO",
       quoteAuthorJobTitleStyle: { color: "red", fontSize: "50px" },
     });
 

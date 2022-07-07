@@ -24,8 +24,6 @@ describe("<GitBlock />", () => {
 
   test("should render with overwritten props", () => {
     const { asFragment } = renderGitBlock({
-      title: "My own title",
-      message: "Message is fully mine",
       titleStyle: { fontSize: "30px" },
       messageStyle: { color: "blue" },
     });

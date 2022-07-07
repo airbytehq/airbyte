@@ -81,13 +81,13 @@ exports[`<GitBlock /> should render with overwritten props 1`] = `
             class="hostingText"
             style="font-size: 30px;"
           >
-            My own title
+            Interested in self-hosting?
           </p>
           <p
             class="deployText"
             style="color: blue;"
           >
-            Message is fully mine
+            Deploy the open-source version on your own infrastructure
           </p>
         </div>
       </div>
