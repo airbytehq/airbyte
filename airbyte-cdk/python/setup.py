@@ -70,8 +70,5 @@ setup(
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
         ],
-        "pdoc": [
-            "pdoc3=0.10.0",
-        ],
     },
 )
