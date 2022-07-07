@@ -52,7 +52,8 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    this.outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.PARQUET);
+    outputFilename = determineOutputFilename(config, S3Format.PARQUET, uploadTimestamp);
+
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);

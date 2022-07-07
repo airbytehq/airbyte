@@ -47,7 +47,8 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
+    final String outputFilename = determineOutputFilename(config, S3Format.AVRO, uploadTimestamp);
+
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);

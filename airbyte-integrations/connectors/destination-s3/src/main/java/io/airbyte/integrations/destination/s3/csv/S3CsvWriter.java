@@ -52,7 +52,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
     this.csvSheetGenerator = csvSheetGenerator;
 
     final String fileSuffix = "_" + UUID.randomUUID();
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
+    final String outputFilename = determineOutputFilename(config, S3Format.CSV, fileSuffix, uploadTimestamp);
     this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),

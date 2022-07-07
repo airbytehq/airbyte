@@ -12,6 +12,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -23,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +40,8 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseS3Writer implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Writer.class);
+
+  private static final  S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
   private static final String DEFAULT_SUFFIX = "_0";
 
   protected final S3DestinationConfig config;
@@ -130,6 +135,34 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
     // Do nothing by default
   }
 
+  protected String determineOutputFilename(final S3DestinationConfig config, final S3Format s3Format, final Timestamp uploadTimestamp) throws IOException {
+    final String outputFilename;
+    if (StringUtils.isNotBlank(config.getFileNamePattern())){
+      outputFilename = getOutputFilename(S3FilenameTemplateParameterObject
+          .builder()
+          .fileExtension(s3Format.getFileExtension())
+          .fileNamePattern(config.getFileNamePattern())
+          .build());
+    } else {
+      outputFilename = getOutputFilename(uploadTimestamp, s3Format);
+    }
+    return outputFilename;
+  }
+
+  protected String determineOutputFilename(final S3DestinationConfig config, final S3Format s3Format, final String suffix, final Timestamp uploadTimestamp) throws IOException {
+    final String outputFilename;
+    if (StringUtils.isNotBlank(config.getFileNamePattern())){
+      outputFilename = getOutputFilename(S3FilenameTemplateParameterObject
+          .builder()
+          .fileExtension(s3Format.getFileExtension())
+          .fileNamePattern(config.getFileNamePattern())
+          .build());
+    } else {
+      outputFilename = getOutputFilename(uploadTimestamp, suffix, s3Format);
+    }
+    return outputFilename;
+  }
+
   /**
    * @return A string in the format "{upload-date}_{upload-millis}_0.{format-extension}". For example,
    *         "2021_12_09_1639077474000_0.csv"
@@ -156,4 +189,7 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
         format.getFileExtension());
   }
 
+  public static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
+    return s3FilenameTemplateManager.adaptFilenameAccordingSpecificationPatternWithDefaultConfig(parameterObject);
+  }
 }
