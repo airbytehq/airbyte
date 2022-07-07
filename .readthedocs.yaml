@@ -5,6 +5,10 @@
 # Required
 version: 2
 
+build:
+  tools:
+    python: "3.9"
+
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
   builder: html
@@ -12,7 +16,6 @@ sphinx:
 
 # Set the version of Python and requirements required to build your docs
 python:
-  version: "3.9"
   install:
     - method: pip
       path: airbyte-cdk/python
