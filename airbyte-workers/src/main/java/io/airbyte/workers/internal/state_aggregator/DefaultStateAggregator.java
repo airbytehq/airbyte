@@ -14,7 +14,7 @@ public class DefaultStateAggregator implements StateAggregator {
   private AirbyteStateType stateType = null;
   private final StateAggregator streamStateAggregator = new StreamStateAggregator();
   private final StateAggregator singleStateAggregator = new SingleStateAggregator();
-  private boolean useStreamCapableState;
+  private final boolean useStreamCapableState;
 
   public DefaultStateAggregator(boolean useStreamCapableState) {
     this.useStreamCapableState = useStreamCapableState;
