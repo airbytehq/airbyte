@@ -180,9 +180,8 @@ public class EmptyAirbyteSource implements AirbyteSource {
             .withName(configuredAirbyteStream.getStream().getName())
             .withNamespace(configuredAirbyteStream.getStream().getNamespace()))
         .collect(Collectors.toSet());
-    final Set<StreamDescriptor> configStreamDescriptors = new HashSet<>(streamsToReset);
-
-    return catalogStreamDescriptors.equals(configStreamDescriptors);
+    final Set<StreamDescriptor> streamsToResetDescriptors = new HashSet<>(streamsToReset);
+    return streamsToResetDescriptors.containsAll(catalogStreamDescriptors);
   }
 
   private AirbyteMessage getNullStreamStateMessage(final StreamDescriptor streamsToReset) {
