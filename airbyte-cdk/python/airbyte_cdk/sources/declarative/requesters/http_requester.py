@@ -22,9 +22,9 @@ class HttpRequester(Requester, JsonSchemaMixin):
     def __init__(
         self,
         *,
-        name: str = "",
-        url_base: Union[str, InterpolatedString] = "",
-        path: Union[str, InterpolatedString] = "",
+        name: str,
+        url_base: Union[str, InterpolatedString],
+        path: Union[str, InterpolatedString],
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
         authenticator: AuthBase,
