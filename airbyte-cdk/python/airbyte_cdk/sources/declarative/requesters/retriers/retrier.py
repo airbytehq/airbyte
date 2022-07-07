@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Union
+from typing import Union
 
 import requests
 
@@ -18,7 +18,7 @@ class NonRetriableResponseStatus(Enum):
 
 @dataclass
 class RetryResponseStatus:
-    retry_in: Optional[float]
+    retry_in: float
 
 
 ResponseStatus = Union[NonRetriableResponseStatus, RetryResponseStatus]
@@ -30,14 +30,6 @@ class Retrier(ABC):
     def max_retries(self) -> Union[int, None]:
         """
         Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-        pass
-
-    @property
-    @abstractmethod
-    def retry_factor(self) -> float:
-        """
-        Override if needed. Specifies factor for exponential backoff policy. Not used for other backoff strategies.
         """
         pass
 

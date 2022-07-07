@@ -24,7 +24,7 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
         self._header = header
         self._min_wait = min_wait
 
-    def backoff(self, response: requests.Response) -> Optional[float]:
+    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         now = time.time()
         wait_until = response.headers.get(self._header, None)
         if wait_until is None:

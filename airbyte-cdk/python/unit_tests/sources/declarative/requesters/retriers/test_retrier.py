@@ -191,7 +191,7 @@ def test_wait_time_from_header(test_name, header, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.headers = {"wait_time": 60}
     backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header)
-    backoff = backoff_stratery.backoff(response_mock)
+    backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
 
 
@@ -210,5 +210,5 @@ def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, mi
     response_mock = MagicMock()
     response_mock.headers = {"wait_until": wait_until}
     backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(header, min_wait)
-    backoff = backoff_stratery.backoff(response_mock)
+    backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time

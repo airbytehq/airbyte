@@ -61,20 +61,6 @@ class SimpleRetriever(Retriever, HttpStream):
         # never raise on http_errors because this overrides the retrier logic...
         return False
 
-    @property
-    def max_retries(self) -> Union[int, None]:
-        """
-        Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-        return self._requester.max_retries
-
-    @property
-    def retry_factor(self) -> float:
-        """
-        Specifies factor to multiply the exponentiation by for backoff policy.
-        """
-        return self._requester.retry_factor
-
     def should_retry(self, response: requests.Response) -> bool:
         """
         Specifies conditions for backoff based on the response from the server.

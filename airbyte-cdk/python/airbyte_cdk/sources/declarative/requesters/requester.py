@@ -55,20 +55,6 @@ class Requester(ABC):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
 
-    @property
-    @abstractmethod
-    def max_retries(self) -> Union[int, None]:
-        """
-        Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-
-    @property
-    @abstractmethod
-    def retry_factor(self) -> float:
-        """
-        Specifies factor for backoff policy.
-        """
-
     @abstractmethod
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         """

@@ -39,10 +39,6 @@ class ChainRetrier(Retrier):
     def max_retries(self) -> Union[int, None]:
         return self._retriers[0].max_retries
 
-    @property
-    def retry_factor(self) -> float:
-        return self._retriers[0].retry_factor
-
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         retry = None
         ignore = False

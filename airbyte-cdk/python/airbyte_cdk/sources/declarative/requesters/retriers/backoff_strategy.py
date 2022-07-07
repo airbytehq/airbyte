@@ -10,5 +10,5 @@ import requests
 
 class BackoffStrategy:
     @abstractmethod
-    def backoff(self, response: requests.Response) -> Optional[float]:
+    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         pass

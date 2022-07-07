@@ -19,5 +19,5 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
         """
         self._header = header
 
-    def backoff(self, response: requests.Response) -> Optional[float]:
+    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         return response.headers.get(self._header, None)

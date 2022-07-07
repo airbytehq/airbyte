@@ -64,14 +64,6 @@ class HttpRequester(Requester):
     def get_method(self):
         return self._method
 
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return self._retrier.max_retries
-
-    @property
-    def retry_factor(self) -> float:
-        return self._retrier.retry_factor
-
     @lru_cache(maxsize=10)
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time

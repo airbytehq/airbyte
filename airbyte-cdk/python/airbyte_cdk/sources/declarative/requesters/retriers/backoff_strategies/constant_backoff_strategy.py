@@ -12,5 +12,5 @@ class ConstantBackoffStrategy(BackoffStrategy):
     def __init__(self, backoff_time_in_seconds: float):
         self._backoff_time_in_seconds = backoff_time_in_seconds
 
-    def backoff(self, response: requests.Response) -> Optional[float]:
+    def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         return self._backoff_time_in_seconds
