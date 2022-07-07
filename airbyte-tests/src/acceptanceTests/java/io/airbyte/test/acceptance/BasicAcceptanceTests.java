@@ -37,7 +37,6 @@ import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionSchedule;
 import io.airbyte.api.client.model.generated.ConnectionState;
-import io.airbyte.api.client.model.generated.ConnectionStateType;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.DataType;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
@@ -859,16 +858,14 @@ public class BasicAcceptanceTests {
     LOGGER.info("state after sync 3: {}", state);
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
-    assertEquals(ConnectionStateType.STREAM, state.getStateType());
-    final StreamDescriptor expecteStreamDescriptor = new StreamDescriptor()
-        .name("id_and_name")
-        .namespace("public");
+    assertStreamStateContainsStream(connectionId, List.of(
+        new StreamDescriptor().name("id_and_name").namespace("public")));
+
     final JsonNode expectedStreamState =
         Jsons.deserialize("""
                           {"cursor":"6","stream_name":"id_and_name","cursor_field":["id"],"stream_namespace":"public"}
                           """);
     final StreamState streamState = state.getStreamState().get(0);
-    assertEquals(expecteStreamDescriptor, streamState.getStreamDescriptor());
     assertEquals(expectedStreamState, streamState.getStreamState());
   }
 
@@ -1053,8 +1050,6 @@ public class BasicAcceptanceTests {
 
   @Test
   public void testPartialResetResetAllWhenSchemaIsModified() throws Exception {
-    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_same_schema_another_tables.sql"), sourcePsql);
-
     // Add Table
     final String additionalTable = "additional_table";
     final Database sourceDb = testHarness.getSourceDatabase();
@@ -1085,7 +1080,6 @@ public class BasicAcceptanceTests {
     testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name("cool_employees").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
     /**
@@ -1109,8 +1103,7 @@ public class BasicAcceptanceTests {
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
     // remove that
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
-        new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name("cool_employees").namespace("public")));
+        new StreamDescriptor().name("id_and_name").namespace("public")));
 
     /**
      * Add a stream -- the value of in the table are different than the initial import to ensure that it
@@ -1125,10 +1118,8 @@ public class BasicAcceptanceTests {
       return null;
     });
 
-    final AirbyteStreamAndConfiguration streamToAdd = catalog.getStreams()
-        .stream().filter(stream -> stream.getStream().getName().equals(additionalTable)).findFirst().get();
-
-    refreshedCatalog.addStreamsItem(streamToAdd);
+    sourceId = testHarness.createPostgresSource().getSourceId();
+    refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
     update = getUpdateInput(connection, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
@@ -1141,7 +1132,6 @@ public class BasicAcceptanceTests {
     testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name("cool_employees").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
     // Update
@@ -1172,7 +1162,6 @@ public class BasicAcceptanceTests {
     testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
-        new StreamDescriptor().name("cool_employees").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
   }

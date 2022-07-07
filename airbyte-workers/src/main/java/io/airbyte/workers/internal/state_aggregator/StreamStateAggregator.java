@@ -22,6 +22,7 @@ class StreamStateAggregator implements StateAggregator {
 
   @Override
   public State getAggregated() {
+
     return new State()
         .withState(
             Jsons.jsonNode(aggregatedState.values()));
