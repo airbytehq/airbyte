@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 import uuid
 from urllib.parse import parse_qsl, urljoin, urlparse
 
@@ -21,6 +22,7 @@ API_URL = "https://api.github.com"
 BRANCH = "grubberr/14450-connector-integration-tests"
 WORKFLOW_PATH = ".github/workflows/test-command.yml"
 RUN_UUID_REGEX = re.compile("^UUID ([0-9a-f-]+)$")
+SLEEP = 1200
 
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -165,8 +167,11 @@ def main():
         logging.info(f"Dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
         run_uuid_to_name[run_uuid] = connector_name
 
-    res = search_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_uuid_to_name.keys())
-    for run_uuid in res:
+    logging.info(f"Sleeping {SLEEP} seconds")
+    time.sleep(SLEEP)
+
+    run_uuids = search_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_uuid_to_name.keys())
+    for run_uuid in run_uuids:
         connector_name = run_uuid_to_name[run_uuid]
         run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
         logging.info(f"Re-dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
