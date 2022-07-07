@@ -17,7 +17,7 @@ on:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false
       uuid:
-        description: "Custom UUID of Workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
+        description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         required: false
 
 jobs:

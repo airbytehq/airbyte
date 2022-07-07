@@ -29,6 +29,37 @@ if not GITHUB_TOKEN:
     sys.exit(1)
 
 
+def check_start_aws_runner_failed(jobs):
+    """
+    !!! WARNING !!! WARNING !!! WARNING !!!
+    !!! WARNING !!! WARNING !!! WARNING !!!
+    !!! WARNING !!! WARNING !!! WARNING !!!
+
+    If workflow {WORKFLOW_PATH} structure will change in future
+    there is a chance that we would need to update this function too.
+    """
+    return (
+        len(jobs) >= 2
+        and len(jobs[1]["steps"]) >= 3
+        and jobs[1]["steps"][2]["name"] == "Start AWS Runner"
+        and jobs[1]["steps"][2]["conclusion"] == "failure"
+    )
+
+
+def get_run_uuid(jobs):
+    """
+    This function relies on assumption that the first step of the first job
+
+    - name: UUID ${{ github.event.inputs.uuid }}
+      run: true
+    """
+    if jobs and len(jobs[0]["steps"]) >= 2:
+        name = jobs[0]["steps"][1]["name"]
+        m = re.match(RUN_UUID_REGEX, name)
+        if m:
+            return m.groups()[0]
+
+
 def get_response(url_or_path, params=None):
     url = urljoin(API_URL, url_or_path)
     response = requests.get(url, params=params, headers={"Authorization": "Bearer " + GITHUB_TOKEN})
@@ -90,21 +121,6 @@ def iter_workflow_runs(owner, repo, per_page=100):
         page = dict(parse_qsl(urlparse(response.links["next"]["url"]).query))["page"]
 
 
-def get_job_run_uuid(jobs):
-    if jobs and len(jobs[0]["steps"]) >= 2:
-        return jobs[0]["steps"][1]["name"]
-
-
-def get_job_start_aws(jobs):
-    if (
-        len(jobs) >= 2
-        and len(jobs[1]["steps"]) >= 3
-        and jobs[1]["steps"][2]["name"] == "Start AWS Runner"
-        and jobs[1]["steps"][2]["conclusion"] == "failure"
-    ):
-        return True
-
-
 def search_workflow_runs(owner, repo, workflow_id, run_uuids):
     run_uuids = set(run_uuids)
     now = datetime.datetime.utcnow()
@@ -125,21 +141,13 @@ def search_workflow_runs(owner, repo, workflow_id, run_uuids):
             continue
 
         response_json = get_response_json(workflow_run["jobs_url"])
-        job_run_uuid_label = get_job_run_uuid(response_json["jobs"])
-        if not job_run_uuid_label:
-            continue
-
-        run_uuid = None
-        m = re.match(RUN_UUID_REGEX, job_run_uuid_label)
-        if m:
-            run_uuid = m.groups()[0]
-
+        run_uuid = get_run_uuid(response_json["jobs"])
         if not run_uuid:
             continue
 
         if run_uuid in run_uuids:
             run_uuids.remove(run_uuid)
-            if get_job_start_aws(response_json["jobs"]):
+            if check_start_aws_runner_failed(response_json["jobs"]):
                 res.add(run_uuid)
     return res
 
