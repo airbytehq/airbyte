@@ -20,7 +20,7 @@ class LimitPaginator(ConditionalPaginator):
         self,
         limit_value: int,
         limit_option: RequestOption,
-        page_token: RequestOption,
+        page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
         url_base: str,
@@ -32,7 +32,7 @@ class LimitPaginator(ConditionalPaginator):
         super().__init__(
             self.stop_condition,
             self._create_request_options_provider(limit_value, limit_option),
-            page_token,
+            page_token_option,
             pagination_strategy,
             config,
             url_base,

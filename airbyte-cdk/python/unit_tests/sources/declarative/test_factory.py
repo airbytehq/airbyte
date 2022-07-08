@@ -149,7 +149,7 @@ metadata_paginator:
     limit_option:
       option_type: request_parameter
       field_name: page_size
-    page_token:
+    page_token_option:
       option_type: path
     pagination_strategy:
       type: "CursorPagination"
@@ -305,7 +305,7 @@ def test_full_config_with_defaults():
             limit_option:
               option_type: request_parameter
               field_name: page_size
-            page_token:
+            page_token_option:
               option_type: path
             pagination_strategy:
               type: "CursorPagination"
