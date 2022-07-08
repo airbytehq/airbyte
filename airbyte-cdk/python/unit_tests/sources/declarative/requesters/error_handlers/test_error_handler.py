@@ -256,12 +256,17 @@ def test_chain_retrier(test_name, first_retrier_behavior, second_retrier_behavio
 
 
 @pytest.mark.parametrize(
-    "test_name, header, expected_backoff_time",
-    [("test_wait_time_from_header", "wait_time", SOME_BACKOFF_TIME), ("test_wait_time_from_header", "absent_header", None)],
+    "test_name, header, header_value, expected_backoff_time",
+    [
+        ("test_wait_time_from_header", "wait_time", SOME_BACKOFF_TIME, SOME_BACKOFF_TIME),
+        ("test_wait_time_from_header_string", "wait_time", "60", SOME_BACKOFF_TIME),
+        ("test_wait_time_from_header_not_a_number", "wait_time", "60,60", None),
+        ("test_wait_time_from_header", "absent_header", None, None),
+    ],
 )
-def test_wait_time_from_header(test_name, header, expected_backoff_time):
+def test_wait_time_from_header(test_name, header, header_value, expected_backoff_time):
     response_mock = MagicMock()
-    response_mock.headers = {"wait_time": SOME_BACKOFF_TIME}
+    response_mock.headers = {"wait_time": header_value}
     backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header)
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time

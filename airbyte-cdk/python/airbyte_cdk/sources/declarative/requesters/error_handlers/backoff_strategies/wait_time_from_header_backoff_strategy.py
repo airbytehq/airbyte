@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import numbers
 from typing import Optional
 
 import requests
@@ -20,4 +21,8 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
         self._header = header
 
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
-        return response.headers.get(self._header, None)
+        header_value = response.headers.get(self._header, None)
+        if header_value and ((isinstance(header_value, str) and header_value.isnumeric()) or isinstance(header_value, numbers.Number)):
+            return float(header_value)
+        else:
+            return None
