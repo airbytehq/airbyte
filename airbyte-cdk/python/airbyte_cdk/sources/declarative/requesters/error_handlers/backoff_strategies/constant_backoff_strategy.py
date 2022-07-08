@@ -5,7 +5,7 @@
 from typing import Optional
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import BackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
 
 
 class ConstantBackoffStrategy(BackoffStrategy):

@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
 primary_key = "pk"

@@ -6,16 +6,18 @@ from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.exponential_backoff_strategy import ExponentialBackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.wait_time_from_header_backoff_strategy import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
+    ExponentialBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import (
     DefaultRetrier,
     HttpResponseFilter,
     NonRetriableResponseStatus,

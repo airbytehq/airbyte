@@ -5,7 +5,7 @@
 from typing import List, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import (
     NonRetriableResponseStatus,
     ResponseStatus,
     Retrier,

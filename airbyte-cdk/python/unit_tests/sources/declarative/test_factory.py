@@ -11,14 +11,14 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
+from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
@@ -152,7 +152,7 @@ requester:
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
   retrier:
-    class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
+    type: DefaultRetrier
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
@@ -252,7 +252,7 @@ def test_create_requester():
 def test_create_chain_retrier():
     content = """
         retrier:
-          class_name: "airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier.ChainRetrier"
+          class_name: "airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier.ChainRetrier"
           retriers:
             - retry_response_filter:
                 predicate: "{{ 'code' in decoded_response }}"

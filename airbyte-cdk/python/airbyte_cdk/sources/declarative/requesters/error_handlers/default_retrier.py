@@ -5,10 +5,12 @@
 from typing import List, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.exponential_backoff_strategy import ExponentialBackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategy import BackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.retriers.http_response_filter import HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
+    ExponentialBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import (
     NonRetriableResponseStatus,
     ResponseStatus,
     Retrier,

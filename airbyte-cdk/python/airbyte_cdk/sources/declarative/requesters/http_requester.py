@@ -7,13 +7,13 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import ResponseStatus, Retrier
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import ResponseStatus, Retrier
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 

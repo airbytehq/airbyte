@@ -7,10 +7,10 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State

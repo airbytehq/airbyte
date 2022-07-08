@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import ResponseStatus
 from requests.auth import AuthBase
 
 
