@@ -33,7 +33,6 @@ import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.test.utils.SchemaTableNamePair;
 import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -102,8 +101,7 @@ public class BasicAcceptanceTests {
   }
 
   @BeforeEach
-  public void setup(TestInfo testInfo) throws SQLException, URISyntaxException, IOException {
-    LOGGER.info("________ Executing test {}", testInfo.getTestMethod().map(Method::getName));
+  public void setup() throws SQLException, URISyntaxException, IOException {
     testHarness.setup();
   }
 

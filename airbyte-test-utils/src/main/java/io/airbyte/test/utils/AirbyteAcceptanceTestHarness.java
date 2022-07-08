@@ -266,7 +266,6 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public void cleanup() {
-    LOGGER.info("Executing cleanup");
     try {
       clearSourceDbData();
       clearDestinationDbData();
@@ -333,10 +332,7 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public AirbyteCatalog discoverSourceSchema(final UUID sourceId) throws ApiException {
-    final AirbyteCatalog catalog = apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId))
-        .getCatalog();
-    LOGGER.info("________ discovered catalog for source {}: {}", sourceId, catalog);
-    return catalog;
+    return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
   public void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
@@ -378,7 +374,6 @@ public class AirbyteAcceptanceTestHarness {
           final Result<Record> fetch =
               context.fetch(
                   "SELECT tablename, schemaname FROM pg_catalog.pg_tables WHERE schemaname != 'pg_catalog' AND schemaname != 'information_schema'");
-          LOGGER.info("fetch result: {}", fetch);
           return fetch.stream()
               .map(record -> {
                 final var schemaName = (String) record.get("schemaname");
@@ -627,7 +622,6 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public SourceRead createPostgresSource() throws ApiException {
-    LOGGER.info("________ createPostgresSource() called");
     return createSource(
         "acceptanceTestDb-" + UUID.randomUUID(),
         defaultWorkspaceId,
@@ -643,7 +637,6 @@ public class AirbyteAcceptanceTestHarness {
         .workspaceId(workspaceId)
         .connectionConfiguration(sourceConfig));
     sourceIds.add(source.getSourceId());
-    LOGGER.info("________ created source with ID {}", source.getSourceId());
     return source;
   }
 
@@ -687,10 +680,8 @@ public class AirbyteAcceptanceTestHarness {
     final Database database = getDestinationDatabase();
     final Set<SchemaTableNamePair> pairs = listAllTables(database);
     for (final SchemaTableNamePair pair : pairs) {
-      LOGGER.info("dropping table {}", pair.getFullyQualifiedTableName());
       database.query(context -> context.execute(String.format("DROP TABLE %s.%s CASCADE", pair.schemaName, pair.tableName)));
     }
-    listAllTables(database);
   }
 
   private void disableConnection(final UUID connectionId) throws ApiException {
