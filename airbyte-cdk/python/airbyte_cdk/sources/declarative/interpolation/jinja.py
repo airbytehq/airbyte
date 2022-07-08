@@ -3,11 +3,9 @@
 #
 
 import ast
-import datetime
-import numbers
 
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
-from dateutil import parser
+from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 
@@ -15,17 +13,7 @@ from jinja2.exceptions import UndefinedError
 class JinjaInterpolation(Interpolation):
     def __init__(self):
         self._environment = Environment()
-        # Defines some utility methods that can be called from template strings
-        # eg "{{ today_utc() }}
-        self._environment.globals["now_local"] = datetime.datetime.now
-        self._environment.globals["now_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc)
-        self._environment.globals["today_utc"] = lambda: datetime.datetime.now(datetime.timezone.utc).date()
-        self._environment.globals["timestamp"] = (
-            lambda dt: int(dt)
-            if isinstance(dt, numbers.Number)
-            else int(parser.parse(dt).replace(tzinfo=datetime.timezone.utc).timestamp())
-        )
-        self._environment.globals["max"] = lambda a, b: max(a, b)
+        self._environment.globals.update(**macros)
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}

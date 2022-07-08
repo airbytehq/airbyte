@@ -130,6 +130,10 @@ public class AirbyteAcceptanceTestHarness {
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
   private static final String SOURCE_USERNAME = "sourceusername";
   public static final String SOURCE_PASSWORD = "hunter2";
+  public static final String PUBLIC_SCHEMA_NAME = "public";
+  public static final String STAGING_SCHEMA_NAME = "staging";
+  public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
+  public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
 
   private static boolean isKube;
   private static boolean isMinikube;
