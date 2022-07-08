@@ -38,10 +38,9 @@ class DefaultErrorHandler(ErrorHandler):
     `
     4. ignore HTTP 404
     `
-        retrier:
-          error_handler:
-            - http_codes: [ 404 ]
-              action: IGNORE
+      error_handler:
+        - http_codes: [ 404 ]
+          action: IGNORE
     `
     5. retry if error message contains `retrythisrequest!` substring
     `
@@ -56,6 +55,15 @@ class DefaultErrorHandler(ErrorHandler):
           response_filters:
             - predicate: "{{ 'code' in decoded_response }}"
               action: IGNORE
+    `
+
+    7. ignore 429 and retry on 404
+    `
+        error_handler:
+        - http_codes: [ 429 ]
+          action: IGNORE
+        - http_codes: [ 404 ]
+          action: RETRY
     `
     """
 
