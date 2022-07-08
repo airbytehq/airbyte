@@ -256,39 +256,43 @@ def test_chain_retrier(test_name, first_retrier_behavior, second_retrier_behavio
 
 
 @pytest.mark.parametrize(
-    "test_name, header, header_value, expected_backoff_time",
+    "test_name, header, header_value, regex, expected_backoff_time",
     [
-        ("test_wait_time_from_header", "wait_time", SOME_BACKOFF_TIME, SOME_BACKOFF_TIME),
-        ("test_wait_time_from_header_string", "wait_time", "60", SOME_BACKOFF_TIME),
-        ("test_wait_time_from_header_not_a_number", "wait_time", "60,60", None),
-        ("test_wait_time_from_header", "absent_header", None, None),
+        ("test_wait_time_from_header", "wait_time", SOME_BACKOFF_TIME, None, SOME_BACKOFF_TIME),
+        ("test_wait_time_from_header_string", "wait_time", "60", None, SOME_BACKOFF_TIME),
+        ("test_wait_time_from_header_not_a_number", "wait_time", "60,60", None, None),
+        ("test_wait_time_from_header_with_regex", "wait_time", "60,60", "[-+]?\d+", 60),  # noqa
+        ("test_wait_time_from_header_with_regex_no_match", "wait_time", "...", "[-+]?\d+", None),  # noqa
+        ("test_wait_time_from_header", "absent_header", None, None, None),
     ],
 )
-def test_wait_time_from_header(test_name, header, header_value, expected_backoff_time):
+def test_wait_time_from_header(test_name, header, header_value, regex, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.headers = {"wait_time": header_value}
-    backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header)
+    backoff_stratery = WaitTimeFromHeaderBackoffStrategy(header, regex)
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
 
 
 @pytest.mark.parametrize(
-    "test_name, header, wait_until, min_wait, expected_backoff_time",
+    "test_name, header, wait_until, min_wait, regex, expected_backoff_time",
     [
-        ("test_wait_until_time_from_header", "wait_until", 1600000060.0, None, 60),
-        ("test_wait_until_negative_time", "wait_until", 1500000000.0, None, None),
-        ("test_wait_until_time_less_than_min", "wait_until", 1600000060.0, 120, 120),
-        ("test_wait_until_no_header", "absent_header", 1600000000.0, None, None),
-        ("test_wait_until_time_from_header_not_numeric", "wait_until", "1600000000,1600000000", None, None),
-        ("test_wait_until_time_from_header_is_numeric", "wait_until", "1600000060", None, 60),
-        ("test_wait_until_no_header_with_min", "absent_header", "1600000000.0", SOME_BACKOFF_TIME, SOME_BACKOFF_TIME),
+        ("test_wait_until_time_from_header", "wait_until", 1600000060.0, None, None, 60),
+        ("test_wait_until_negative_time", "wait_until", 1500000000.0, None, None, None),
+        ("test_wait_until_time_less_than_min", "wait_until", 1600000060.0, 120, None, 120),
+        ("test_wait_until_no_header", "absent_header", 1600000000.0, None, None, None),
+        ("test_wait_until_time_from_header_not_numeric", "wait_until", "1600000000,1600000000", None, None, None),
+        ("test_wait_until_time_from_header_is_numeric", "wait_until", "1600000060", None, None, 60),
+        ("test_wait_until_time_from_header_with_regex", "wait_until", "1600000060,60", None, "[-+]?\d+", 60),  # noqa
+        ("test_wait_until_time_from_header_with_regex_no_match", "wait_time", "...", None, "[-+]?\d+", None),  # noqa
+        ("test_wait_until_no_header_with_min", "absent_header", "1600000000.0", SOME_BACKOFF_TIME, None, SOME_BACKOFF_TIME),
     ],
 )
 @patch("time.time", return_value=1600000000.0)
-def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, min_wait, expected_backoff_time):
+def test_wait_untiltime_from_header(time_mock, test_name, header, wait_until, min_wait, regex, expected_backoff_time):
     response_mock = MagicMock()
     response_mock.headers = {"wait_until": wait_until}
-    backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(header, min_wait)
+    backoff_stratery = WaitUntilTimeFromHeaderBackoffStrategy(header, min_wait, regex)
     backoff = backoff_stratery.backoff(response_mock, 1)
     assert backoff == expected_backoff_time
 
