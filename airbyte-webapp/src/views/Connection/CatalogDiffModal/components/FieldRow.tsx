@@ -21,8 +21,6 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
 
   const fieldType = transform.updateFieldSchema?.newSchema.type;
 
-  const rowStyle = classnames(styles.row, {});
-
   const iconStyle = classnames(styles.icon, {
     [styles.plus]: diffType === "add",
     [styles.minus]: diffType === "remove",
@@ -38,7 +36,7 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
   const updateCellStyle = classnames(styles.cell, styles.update);
 
   return (
-    <tr className={rowStyle}>
+    <tr className={styles.row}>
       <td className={styles.iconCell}>
         {diffType === "add" ? (
           <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />

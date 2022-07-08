@@ -7,17 +7,22 @@ import { ImageBlock } from "components";
 
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
-import styles from "./CatalogDiffAccordion.module.scss";
+import styles from "./DiffAccordion.module.scss";
 import { DiffFieldTable } from "./DiffFieldTable";
 import { ModificationIcon } from "./ModificationIcon";
 
-interface CatalogDiffAccordionProps {
+interface DiffAccordionProps {
   data: StreamTransform; // stream transforms with type 'update_stream'
   catalog: AirbyteCatalog;
 }
 
-export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data }) => {
-  const fieldTransforms = data.updateStream || [];
+export const DiffAccordion: React.FC<DiffAccordionProps> = ({ data }) => {
+  const fieldTransforms = data.updateStream;
+
+  if (!fieldTransforms) {
+    return null;
+  }
+
   const addedFields = fieldTransforms.filter((item) => item.transformType === "add_field");
   const removedFields = fieldTransforms.filter((item) => item.transformType === "remove_field");
   const updatedFields = fieldTransforms.filter((item) => item.transformType === "update_field_schema");
@@ -36,16 +41,14 @@ export const CatalogDiffAccordion: React.FC<CatalogDiffAccordionProps> = ({ data
                 {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
                 {data.streamDescriptor.namespace}
               </div>
-              <div className={nameCellStyle}>
-                {"        "}
-                {data.streamDescriptor.name}
-              </div>
+              <div className={nameCellStyle}>{data.streamDescriptor.name}</div>
               <div className={styles.iconBlock}>
                 {removedFields.length > 0 && <ImageBlock num={removedFields.length} color="red" light />}
                 {addedFields.length > 0 && <ImageBlock num={addedFields.length} color="green" light />}
                 {updatedFields.length > 0 && <ImageBlock num={updatedFields.length} color="blue" light />}
               </div>
             </Disclosure.Button>
+            {/* TODO: can't get transition to play nicely... */}
             <Transition
               show={open}
               enter="transition duration-100 ease-out"

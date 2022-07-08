@@ -12,30 +12,17 @@ interface StreamRowProps {
   catalog: AirbyteCatalog;
 }
 
-export const SyncModeBox: React.FC<{ syncModeString: string; mode: "remove" | "update" }> = ({
-  syncModeString,
-  mode,
-}) => {
-  const syncModeBoxStyle = classnames(styles.syncModeBox, {
-    [styles.remove]: mode === "remove",
-  });
-  return <div className={syncModeBoxStyle}> {syncModeString} </div>;
+export const SyncModeBox: React.FC<{ syncModeString: string }> = ({ syncModeString }) => {
+  return <div className={styles.syncModeBox}> {syncModeString} </div>;
 };
 
 export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
-  // if it's a stream, get the catalog data
-  // if it's a field, get the field type
-
-  // render the row!
-  // use the transformType to use classnames to apply condiitonal styling
-
-  // const itemType = item.transformType.includes("stream") ? "stream" : "field";
-
   const diffType = item.transformType.includes("add")
     ? "add"
     : item.transformType.includes("remove")
     ? "remove"
     : "update";
+
   const rowStyle = classnames(styles.row, {
     [styles.add]: diffType === "add",
     [styles.remove]: diffType === "remove",
@@ -47,22 +34,15 @@ export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
     [styles.mod]: diffType === "update",
   });
 
-  let syncModeString = null;
-  let streamConfig = null;
-  let namespace = null;
+  // These properties may or may not exist on any given stream
 
-  let itemName = "";
-
-  if ("streamDescriptor" in item) {
-    streamConfig = catalog.streams.find(
-      (stream) =>
-        stream.stream?.namespace === item.streamDescriptor.namespace &&
-        stream.stream?.name === item.streamDescriptor.name
-    )?.config;
-    syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`;
-    itemName = item.streamDescriptor.name;
-    namespace = item.streamDescriptor.namespace;
-  }
+  const streamConfig = catalog.streams.find(
+    (stream) =>
+      stream.stream?.namespace === item.streamDescriptor.namespace && stream.stream?.name === item.streamDescriptor.name
+  )?.config;
+  const syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`;
+  const itemName = item.streamDescriptor.name;
+  const namespace = item.streamDescriptor.namespace;
 
   return (
     <tr className={rowStyle}>
@@ -77,9 +57,9 @@ export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
       </td>
       {namespace && <td className={styles.nameCell}>{namespace}</td>}
       <td className={styles.nameCell}>{itemName}</td>
-      {syncModeString && streamConfig && streamConfig?.selected && (
+      {diffType === "remove" && streamConfig?.selected && syncModeString && (
         <td>
-          <SyncModeBox syncModeString={syncModeString} mode="remove" />
+          <SyncModeBox syncModeString={syncModeString} />
         </td>
       )}
     </tr>

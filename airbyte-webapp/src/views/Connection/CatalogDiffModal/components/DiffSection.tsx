@@ -2,9 +2,9 @@ import classnames from "classnames";
 
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
-import { CatalogDiffAccordion } from "./CatalogDiffAccordion";
-import styles from "./CatalogDiffSection.module.scss";
+import { DiffAccordion } from "./DiffAccordion";
 import { DiffHeader, DiffType, DiffVerb } from "./DiffHeader";
+import styles from "./DiffSection.module.scss";
 import { StreamRow } from "./StreamRow";
 
 interface StreamSectionProps {
@@ -13,7 +13,6 @@ interface StreamSectionProps {
 }
 
 export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog }) => {
-  //note: do we have to send the catalog along for a field?
   const diffVerb: DiffVerb = data[0].transformType.includes("add")
     ? "new"
     : data[0].transformType.includes("remove")
@@ -48,7 +47,7 @@ export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog
             return item.transformType === "update_stream" ? (
               <tr key={`${item.streamDescriptor.namespace}.${item.streamDescriptor.name}`}>
                 <td>
-                  <CatalogDiffAccordion data={item} catalog={catalog} />
+                  <DiffAccordion data={item} catalog={catalog} />
                 </td>
               </tr>
             ) : (

@@ -7,7 +7,7 @@ import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 
 import { Modal } from "../../../components/Modal";
 import styles from "./CatalogDiffModal.module.scss";
-import { CatalogDiffSection } from "./components/CatalogDiffSection";
+import { CatalogDiffSection } from "./components/DiffSection";
 
 interface CatalogDiffModalProps {
   catalogDiff: CatalogDiff;
@@ -15,61 +15,9 @@ interface CatalogDiffModalProps {
   setDiffAcknowledged: Dispatch<SetStateAction<boolean>>;
 }
 export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff, catalog, setDiffAcknowledged }) => {
-  let addedStreams = catalogDiff.transforms.filter((item) => item.transformType === "add_stream");
-  let removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
-  let updatedStreams = catalogDiff.transforms.filter((item) => item.transformType === "update_stream");
-
-  if (!addedStreams.length) {
-    addedStreams = [
-      {
-        transformType: "add_stream",
-        streamDescriptor: { namespace: "apple", name: "banana" },
-      },
-      {
-        transformType: "add_stream",
-        streamDescriptor: { namespace: "apple", name: "carrot" },
-      },
-    ];
-  }
-  if (!removedStreams.length) {
-    removedStreams = [
-      {
-        transformType: "remove_stream",
-        streamDescriptor: { namespace: "apple", name: "dragonfruit" },
-      },
-      {
-        transformType: "remove_stream",
-        streamDescriptor: { namespace: "apple", name: "eclair" },
-      },
-      {
-        transformType: "remove_stream",
-        streamDescriptor: { namespace: "apple", name: "fishcake" },
-      },
-      {
-        transformType: "remove_stream",
-        streamDescriptor: { namespace: "apple", name: "gelatin_mold" },
-      },
-    ];
-  }
-  if (!updatedStreams.length) {
-    updatedStreams = [
-      {
-        transformType: "update_stream",
-        streamDescriptor: { namespace: "apple", name: "harissa_paste" },
-        updateStream: [
-          { transformType: "add_field", fieldName: ["users", "phone"] },
-          { transformType: "add_field", fieldName: ["users", "email"] },
-          { transformType: "remove_field", fieldName: ["users", "lastName"] },
-
-          {
-            transformType: "update_field_schema",
-            fieldName: ["users", "address"],
-            updateFieldSchema: { oldSchema: { type: "number" }, newSchema: { type: "string" } },
-          },
-        ],
-      },
-    ];
-  }
+  const addedStreams = catalogDiff.transforms.filter((item) => item.transformType === "add_stream");
+  const removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
+  const updatedStreams = catalogDiff.transforms.filter((item) => item.transformType === "update_stream");
 
   return (
     <Modal title={<FormattedMessage id="connection.updateSchema.completed" />} onClose={() => null}>
