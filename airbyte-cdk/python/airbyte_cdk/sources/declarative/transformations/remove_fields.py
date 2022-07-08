@@ -5,7 +5,7 @@ from typing import Any, List, Mapping
 
 import dpath.exceptions
 import dpath.util
-from airbyte_cdk.sources.declarative.transformations.transformer import RecordTransformation
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import FieldPointer
 
 
@@ -13,6 +13,11 @@ class RemoveFields(RecordTransformation):
     """
     A transformation which removes fields from a record. The fields removed are designated using FieldPointers.
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
+
+    If an input field pointer references an item in a list (e.g: ["k", 0] in the object {"k": ["a", "b", "c"]}) then
+    the object at that index is set to None and is not entirely removed from the list.
+
+    It's possible to remove objects nested in lists e.g: removing [".", 0, "k"] from {".": [{"k": "V"}]} results in {".": [{}]}
     """
 
     def __init__(self, field_pointers: List[FieldPointer]):
@@ -27,6 +32,8 @@ class RemoveFields(RecordTransformation):
         :return: the input record with the requested fields removed
         """
         for pointer in self._field_pointers:
+            # the dpath library by default doesn't delete fields from arrays
+
             try:
                 dpath.util.delete(record, pointer)
             except dpath.exceptions.PathNotFound:

@@ -4,7 +4,7 @@
 from typing import Any, List, Mapping
 
 import pytest
-from airbyte_cdk.sources.declarative.transformations.remove_fields import RemoveFields
+from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.types import FieldPointer
 
 
@@ -24,6 +24,8 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
             {"k3": [None, 1], "k4": "v"},
             id="test all cases (flat)",
         ),
+        pytest.param({"k1": [0, 1]}, [[".", "k1", 10]], {"k1": [0, 1]}, id="remove array index that doesn't exist (flat)"),
+        pytest.param({".": {"k1": [0, 1]}}, [[".", "k1", 10]], {".": {"k1": [0, 1]}}, id="remove array index that doesn't exist (nested)"),
         pytest.param({".": {"k2": "v", "k1": "v"}}, [[".", "k1"]], {".": {"k2": "v"}}, id="remove nested field that exists"),
         pytest.param(
             {".": {"k2": "v", "k1": "v"}}, [[".", "k3"]], {".": {"k2": "v", "k1": "v"}}, id="remove field that doesn't exist (nested)"
