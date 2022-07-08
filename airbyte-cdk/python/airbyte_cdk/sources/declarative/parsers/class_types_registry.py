@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
@@ -32,6 +32,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "ListStreamSlicer": ListStreamSlicer,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
-    "ChainRetrier": ChainRetrier,
-    "DefaultRetrier": DefaultErrorHandler,
+    "CompositeErrorHandler": CompositeErrorHandler,
+    "DefaultErrorHandler": DefaultErrorHandler,
 }

@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
-from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
@@ -151,8 +151,8 @@ requester:
     class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
-  retrier:
-    type: DefaultRetrier
+  error_handler:
+    type: DefaultErrorHandler
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
@@ -251,21 +251,21 @@ def test_create_requester():
 
 def test_create_chain_retrier():
     content = """
-        retrier:
-          class_name: "airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier.ChainRetrier"
-          retriers:
+        error_handler:
+          class_name: "airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler.CompositeErrorHandler"
+          error_handlers:
             - retry_response_filter:
                 predicate: "{{ 'code' in decoded_response }}"
             - retry_response_filter:
                 http_codes: [ 403 ]
     """
     config = parser.parse(content)
-    component = factory.create_component(config["retrier"], input_config)()
-    assert len(component._retriers) == 2
-    assert isinstance(component._retriers[0], DefaultErrorHandler)
-    assert component._retriers[0]._retry_response_filter._predicate._condition == "{{ 'code' in decoded_response }}"
-    assert component._retriers[1]._retry_response_filter._http_codes == [403]
-    assert isinstance(component, ChainRetrier)
+    component = factory.create_component(config["error_handler"], input_config)()
+    assert len(component._error_handlers) == 2
+    assert isinstance(component._error_handlers[0], DefaultErrorHandler)
+    assert component._error_handlers[0]._retry_response_filter._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[1]._retry_response_filter._http_codes == [403]
+    assert isinstance(component, CompositeErrorHandler)
 
 
 def test_full_config_with_defaults():

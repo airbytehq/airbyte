@@ -13,11 +13,11 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 )
 
 
-class ChainRetrier(ErrorHandler):
+class CompositeErrorHandler(ErrorHandler):
     """
     Sample config chaining 2 different retriers:
         retrier:
-          type: "ChainRetrier"
+          type: "CompositeErrorHandler"
           retriers:
             - retry_response_filter:
                 predicate: "{{ 'codase' in decoded_response }}"
@@ -31,18 +31,18 @@ class ChainRetrier(ErrorHandler):
                   backoff_time_in_seconds: 10
     """
 
-    def __init__(self, retriers: List[ErrorHandler]):
-        self._retriers = retriers
-        assert self._retriers
+    def __init__(self, error_handlers: List[ErrorHandler]):
+        self._error_handlers = error_handlers
+        assert self._error_handlers
 
     @property
     def max_retries(self) -> Union[int, None]:
-        return self._retriers[0].max_retries
+        return self._error_handlers[0].max_retries
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         retry = None
         ignore = False
-        for retrier in self._retriers:
+        for retrier in self._error_handlers:
             should_retry = retrier.should_retry(response)
             if should_retry == NonRetriableResponseStatus.SUCCESS:
                 return NonRetriableResponseStatus.SUCCESS

@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_until_time_from_header_backoff_strategy import (
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
     DefaultErrorHandler,
     HttpResponseFilter,
@@ -250,7 +250,7 @@ def test_chain_retrier_first_retrier_ignores_second_fails(test_name, first_retri
     second_retrier.should_retry.return_value = second_retrier_behavior
     second_retrier.should_retry.return_value = second_retrier_behavior
     retriers = [first_retier, second_retrier]
-    retrier = ChainRetrier(retriers)
+    retrier = CompositeErrorHandler(retriers)
     response_mock = MagicMock()
     response_mock.ok = (
         first_retrier_behavior == NonRetriableResponseStatus.SUCCESS or second_retrier_behavior == NonRetriableResponseStatus.SUCCESS
