@@ -31,7 +31,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean useStreamCapableState() {
-    return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, false, Boolean::parseBoolean);
+    return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, true, Boolean::parseBoolean);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
