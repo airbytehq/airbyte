@@ -11,7 +11,7 @@ import requests
 
 
 class NonRetriableResponseStatus(Enum):
-    Ok = ("OK",)
+    OK = ("OK",)
     FAIL = ("FAIL",)
     IGNORE = ("IGNORE",)
 
