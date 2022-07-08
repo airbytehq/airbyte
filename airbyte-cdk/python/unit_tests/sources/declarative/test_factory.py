@@ -239,7 +239,7 @@ def test_create_requester():
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
-    assert isinstance(component._retrier, DefaultRetrier)
+    assert isinstance(component._error_handler, DefaultRetrier)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, TokenAuthenticator)

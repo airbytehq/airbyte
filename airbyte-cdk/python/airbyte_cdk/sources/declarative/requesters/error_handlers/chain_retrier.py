@@ -5,15 +5,15 @@
 from typing import List, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import (
+    ErrorHandler,
     NonRetriableResponseStatus,
     ResponseStatus,
-    Retrier,
     RetryResponseStatus,
 )
 
 
-class ChainRetrier(Retrier):
+class ChainRetrier(ErrorHandler):
     """
     Sample config chaining 2 different retriers:
         retrier:
@@ -31,7 +31,7 @@ class ChainRetrier(Retrier):
                   backoff_time_in_seconds: 10
     """
 
-    def __init__(self, retriers: List[Retrier]):
+    def __init__(self, retriers: List[ErrorHandler]):
         self._retriers = retriers
         assert self._retriers
 

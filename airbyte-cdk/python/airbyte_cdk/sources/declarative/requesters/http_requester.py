@@ -8,7 +8,7 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import ResponseStatus, Retrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler, ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -28,7 +28,7 @@ class HttpRequester(Requester):
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
         authenticator: HttpAuthenticator,
-        retrier: Optional[Retrier] = None,
+        error_handler: Optional[ErrorHandler] = None,
         config: Config,
     ):
         if request_options_provider is None:
@@ -47,7 +47,7 @@ class HttpRequester(Requester):
             http_method = HttpMethod[http_method]
         self._method = http_method
         self._request_options_provider = request_options_provider
-        self._retrier = retrier or DefaultRetrier()
+        self._error_handler = error_handler or DefaultRetrier()
         self._config = config
 
     def get_authenticator(self):
@@ -67,7 +67,7 @@ class HttpRequester(Requester):
     @lru_cache(maxsize=10)
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
-        return self._retrier.should_retry(response)
+        return self._error_handler.should_retry(response)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

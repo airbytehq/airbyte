@@ -45,7 +45,7 @@ def test():
         http_method=http_method,
         request_options_provider=request_options_provider,
         authenticator=authenticator,
-        retrier=retrier,
+        error_handler=retrier,
         config=config,
     )
 

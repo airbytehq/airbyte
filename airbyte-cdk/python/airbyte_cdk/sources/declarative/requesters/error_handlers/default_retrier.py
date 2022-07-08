@@ -9,16 +9,16 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import (
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import (
+    ErrorHandler,
     NonRetriableResponseStatus,
     ResponseStatus,
-    Retrier,
     RetryResponseStatus,
 )
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 
 
-class DefaultRetrier(Retrier):
+class DefaultRetrier(ErrorHandler):
     """
     Sample configs:
 

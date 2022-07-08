@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import NonRetriableResponseStatus, RetryResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester

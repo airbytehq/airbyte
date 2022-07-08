@@ -35,7 +35,7 @@ class RetryResponseStatus:
 ResponseStatus = Union[NonRetriableResponseStatus, RetryResponseStatus]
 
 
-class Retrier(ABC):
+class ErrorHandler(ABC):
     @property
     @abstractmethod
     def max_retries(self) -> Union[int, None]:

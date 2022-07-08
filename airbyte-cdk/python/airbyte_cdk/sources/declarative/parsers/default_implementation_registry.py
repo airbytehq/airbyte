@@ -13,8 +13,8 @@ from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelecto
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.retrier import Retrier
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
@@ -35,7 +35,7 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     SchemaLoader: JsonSchema,
     HttpSelector: RecordSelector,
     ConnectionChecker: CheckStream,
-    Retrier: DefaultRetrier,
+    ErrorHandler: DefaultRetrier,
     Decoder: JsonDecoder,
     JelloExtractor: JelloExtractor,
     State: DictState,
