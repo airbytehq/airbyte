@@ -259,6 +259,9 @@ public class AirbyteAcceptanceTestHarness {
       database.query(context -> context.execute(query.toString()));
     } else {
       PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(postgresSqlInitFile), sourcePsql);
+
+      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql.start();
     }
   }
 
