@@ -2,7 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Callable, List, Mapping, Optional, Union
+from abc import ABC, abstractmethod
+from typing import Any, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -17,14 +18,13 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class ConditionalPaginator(Paginator):
+class ConditionalPaginator(Paginator, ABC):
     """
     A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
     """
 
     def __init__(
         self,
-        stop_condition: Callable[[requests.Response, List[Mapping[str, Any]]], bool],
         request_options_provider: InterpolatedRequestOptionsProvider,
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
@@ -32,7 +32,6 @@ class ConditionalPaginator(Paginator):
         url_base: str = "",
         decoder: Decoder = None,
     ):
-        self._stop_condition = stop_condition
         self._request_options_provider = request_options_provider
         self._config = config
         self._page_token_option = page_token_option
@@ -42,7 +41,7 @@ class ConditionalPaginator(Paginator):
         self._decoder = decoder or JsonDecoder()
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        if self._stop_condition(response, last_records):
+        if self.stop_condition(response, last_records):
             return None
         else:
             self._token = self._pagination_strategy.next_page_token(response, last_records)
@@ -50,6 +49,15 @@ class ConditionalPaginator(Paginator):
                 return {"next_page_token": self._token}
             else:
                 return None
+
+    @abstractmethod
+    def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
+        """
+
+        :param response:
+        :param last_records:
+        :return:
+        """
 
     def path(self):
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
@@ -102,7 +110,7 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
     ):
         self._decoder = decoder
         self._stop_condition_interpolator = InterpolatedBoolean(stop_condition)
-        super().__init__(self.stop_condition, request_options_provider, page_token_option, pagination_strategy, config, url_base, decoder)
+        super().__init__(request_options_provider, page_token_option, pagination_strategy, config, url_base, decoder)
 
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
         decoded_response = self._decoder.decode(response)
