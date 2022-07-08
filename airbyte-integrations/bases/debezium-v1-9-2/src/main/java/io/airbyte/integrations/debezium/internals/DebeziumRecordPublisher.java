@@ -136,10 +136,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       // https://debezium.io/documentation/reference/1.9/operations/debezium-server.html#debezium-source-database-history-class
       // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
       // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
-      // changes. If we don't do this, we can't fetch records for the table
-      // We have implemented our own implementation to filter out the schema information from other
-      // databases that the connector is not syncing
-      props.setProperty("database.history", "io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory");
+      // changes. If we don't do this, we can't fetch records for the table.
+      props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory");
       props.setProperty("database.history.file.filename", schemaHistoryManager.get().getPath().toString());
     }
 
