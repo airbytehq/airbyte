@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ContentCard } from "components";
+import { SelectServiceType } from "components/SelectServiceType/SelectServiceType";
+import TitleBlock from "components/TitleBlock/TitleBlock";
+
 import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
@@ -9,6 +14,8 @@ import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
+
+import styles from "./DestinationForm.module.scss";
 
 interface DestinationFormProps {
   onSubmit: (values: {
@@ -66,29 +73,48 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     });
   };
 
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+  const onSubmitForm = async (values: { name: string }) => {
     await onSubmit({
       ...values,
+      serviceType: destinationDefinitionId as string,
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 
+  const selectedService = useMemo(
+    () => destinationDefinitions.find((s) => Connector.id(s) === destinationDefinitionId),
+    [destinationDefinitions, destinationDefinitionId]
+  );
+
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
-      onSubmit={onSubmitForm}
-      formType="destination"
-      availableServices={destinationDefinitions}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-      hasSuccess={hasSuccess}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
-      formValues={destinationDefinitionId ? { serviceType: destinationDefinitionId } : undefined}
-      title={<FormattedMessage id="onboarding.destinationSetUp" />}
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-    />
+    <div>
+      <ContentCard className={styles.contentCard}>
+        <TitleBlock title={<FormattedMessage id="onboarding.destinationSetUp" />} />
+        <div className={styles.serviceTypeContainer}>
+          <SelectServiceType
+            formType="destination"
+            value={destinationDefinitionId}
+            onChangeServiceType={onDropDownSelect}
+            availableServices={destinationDefinitions}
+          />
+        </div>
+      </ContentCard>
+      {selectedService && (
+        <ConnectorCard
+          fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
+          onSubmit={onSubmitForm}
+          formType="destination"
+          selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+          hasSuccess={hasSuccess}
+          errorMessage={errorMessage}
+          isLoading={isLoading}
+          selectedService={selectedService}
+          formValues={{ name: selectedService.name }}
+          jobInfo={LogsRequestError.extractJobInfo(error)}
+        />
+      )}
+    </div>
   );
 };

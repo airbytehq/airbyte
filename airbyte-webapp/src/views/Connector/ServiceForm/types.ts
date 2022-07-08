@@ -2,6 +2,5 @@
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type ServiceFormValues<T = unknown> = {
   name: string;
-  serviceType: string;
   connectionConfiguration: T;
 };

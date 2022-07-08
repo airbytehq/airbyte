@@ -1,0 +1,14 @@
+@import "../../scss/variables";
+
+.titleBlock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.titleContainer {
+  font-size: 11px;
+  line-height: 13px;
+  color: $grey-400;
+  white-space: pre-line;
+}

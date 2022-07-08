@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
+import { ContentCard } from "components";
+import { SelectServiceType } from "components/SelectServiceType/SelectServiceType";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
 import { JobInfo } from "core/domain/job";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
@@ -9,6 +13,8 @@ import { useGetDestinationDefinitionSpecificationAsync } from "services/connecto
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+
+import styles from "./StepsCommonStyling.module.scss";
 
 interface Props {
   onNextStep: () => void;
@@ -79,27 +85,44 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
     setError(null);
     setDestinationDefinitionId(destinationDefinitionId);
   };
-  const onSubmitForm = async (values: { name: string; serviceType: string }) => {
+  const onSubmitForm = async (values: { name: string }) => {
     await onSubmitDestinationStep({
       ...values,
+      serviceType: "asdfasdf",
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
 
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
+  const selectedService = useMemo(
+    () => destinationDefinitions.find((s) => Connector.id(s) === destinationDefinitionId),
+    [destinationDefinitions, destinationDefinitionId]
+  );
+
   return (
-    <ConnectorCard
-      full
-      formType="destination"
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
-      hasSuccess={successRequest}
-      availableServices={destinationDefinitions}
-      errorMessage={errorMessage}
-      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-      isLoading={isLoading}
-    />
+    <>
+      <ContentCard className={styles.contentCard}>
+        <SelectServiceType
+          formType="destination"
+          value={destinationDefinitionId}
+          onChangeServiceType={onDropDownSelect}
+          availableServices={destinationDefinitions}
+        />
+      </ContentCard>
+      {selectedService && (
+        <ConnectorCard
+          full
+          formType="destination"
+          onSubmit={onSubmitForm}
+          hasSuccess={successRequest}
+          errorMessage={errorMessage}
+          selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+          isLoading={isLoading}
+          selectedService={selectedService}
+        />
+      )}
+    </>
   );
 };
 

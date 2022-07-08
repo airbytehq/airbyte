@@ -26,7 +26,9 @@ const useStepsConfig = (
     return StepType.INSTRUCTION;
   };
 
-  const [currentStep, setCurrentStep] = useState<StepType>(getInitialStep);
+  console.log(getInitialStep());
+
+  const [currentStep, setCurrentStep] = useState<StepType>(StepType.INSTRUCTION);
   const updateStep = useCallback(
     (step: StepType) => {
       setCurrentStep(step);

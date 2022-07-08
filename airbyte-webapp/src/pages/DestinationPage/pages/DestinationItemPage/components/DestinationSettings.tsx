@@ -4,7 +4,6 @@ import { FormattedMessage } from "react-intl";
 import DeleteBlock from "components/DeleteBlock";
 
 import { ConnectionConfiguration } from "core/domain/connection";
-import { Connector } from "core/domain/connector";
 import { DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useDeleteDestination, useUpdateDestination } from "hooks/services/useDestinationHook";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -29,11 +28,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
   const { mutateAsync: updateDestination } = useUpdateDestination();
   const { mutateAsync: deleteDestination } = useDeleteDestination();
 
-  const onSubmitForm = async (values: {
-    name: string;
-    serviceType: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) => {
+  const onSubmitForm = async (values: { name: string; connectionConfiguration?: ConnectionConfiguration }) => {
     await updateDestination({
       values,
       destinationId: currentDestination.destinationId,
@@ -52,14 +47,11 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
         isEditMode
         onSubmit={onSubmitForm}
         formType="destination"
-        availableServices={[destinationDefinition]}
-        formValues={{
-          ...currentDestination,
-          serviceType: Connector.id(destinationDefinition),
-        }}
+        formValues={currentDestination}
         connector={currentDestination}
         selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
+        selectedService={destinationDefinition}
       />
       <DeleteBlock type="destination" onDelete={onDelete} />
     </div>

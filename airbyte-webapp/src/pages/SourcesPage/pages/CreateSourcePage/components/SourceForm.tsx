@@ -1,7 +1,12 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { ContentCard } from "components";
+import { SelectServiceType } from "components/SelectServiceType/SelectServiceType";
+import TitleBlock from "components/TitleBlock/TitleBlock";
+
 import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import useRouter from "hooks/useRouter";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
@@ -10,6 +15,8 @@ import { useGetSourceDefinitionSpecificationAsync } from "services/connector/Sou
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
+
+import styles from "./SourceForm.module.scss";
 
 interface SourceFormProps {
   onSubmit: (values: {
@@ -70,26 +77,45 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   const onSubmitForm = async (values: ServiceFormValues) => {
     await onSubmit({
       ...values,
+      serviceType: sourceDefinitionId as string,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
   };
 
+  const selectedService = useMemo(
+    () => sourceDefinitions.find((s) => Connector.id(s) === sourceDefinitionId),
+    [sourceDefinitions, sourceDefinitionId]
+  );
+
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
-      formType="source"
-      availableServices={sourceDefinitions}
-      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      hasSuccess={hasSuccess}
-      fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
-      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
-      title={<FormattedMessage id="onboarding.sourceSetUp" />}
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-    />
+    <>
+      <ContentCard className={styles.contentCard}>
+        <TitleBlock title={<FormattedMessage id="onboarding.sourceSetUp" />} />
+        <div className={styles.serviceTypeContainer}>
+          <SelectServiceType
+            formType="source"
+            value={sourceDefinitionId}
+            onChangeServiceType={onDropDownSelect}
+            availableServices={sourceDefinitions}
+          />
+        </div>
+      </ContentCard>
+      {selectedService && (
+        <ConnectorCard
+          onSubmit={onSubmitForm}
+          formType="source"
+          selectedService={selectedService}
+          selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+          hasSuccess={hasSuccess}
+          fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
+          errorMessage={errorMessage}
+          formValues={{ name: selectedService.name }}
+          isLoading={isLoading}
+          jobInfo={LogsRequestError.extractJobInfo(error)}
+        />
+      )}
+    </>
   );
 };

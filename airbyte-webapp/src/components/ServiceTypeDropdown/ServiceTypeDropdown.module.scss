@@ -1,0 +1,64 @@
+@import "../../scss/variables";
+
+.buttonElement {
+  background: $grey-30;
+  padding: 6px 16px 8px;
+  width: 100%;
+  min-height: 34px;
+  border-top: 1px solid $grey-200;
+}
+
+.block {
+  cursor: pointer;
+  color: $dark-blue;
+
+  &:hover {
+    color: $blue;
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.label {
+  margin-left: $spacing-l;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.stage {
+  padding: 2px 6px;
+  height: 14px;
+  background: $grey-100;
+  border-radius: 25px;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 8px;
+  line-height: 10px;
+  color: $dark-blue;
+}
+
+.singleValueView {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+}
+
+.singleValueContent {
+  width: 100%;
+  padding-right: 38px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.icon {
+  margin-right: 6px;
+  display: inline-block;
+}

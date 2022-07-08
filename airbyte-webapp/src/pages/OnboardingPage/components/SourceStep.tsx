@@ -1,6 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+
+import { ContentCard } from "components";
+import { SelectServiceType } from "components/SelectServiceType/SelectServiceType";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
 import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useCreateSource } from "hooks/services/useSourceHook";
@@ -10,6 +14,8 @@ import { useGetSourceDefinitionSpecificationAsync } from "services/connector/Sou
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+
+import styles from "./StepsCommonStyling.module.scss";
 
 interface SourcesStepProps {
   onSuccess: () => void;
@@ -83,26 +89,44 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setSourceDefinitionId(sourceId);
   };
 
-  const onSubmitForm = async (values: { name: string; serviceType: string }) =>
+  const onSubmitForm = async (values: { name: string }) =>
     onSubmitSourceStep({
       ...values,
+      serviceType: "asdfsadf",
     });
 
   const errorMessage = error ? createFormErrorMessage(error) : "";
 
+  const selectedService = useMemo(
+    () => sourceDefinitions.find((s) => Connector.id(s) === sourceDefinitionId),
+    [sourceDefinitions, sourceDefinitionId]
+  );
+
   return (
-    <ConnectorCard
-      full
-      jobInfo={LogsRequestError.extractJobInfo(error)}
-      onServiceSelect={onServiceSelect}
-      onSubmit={onSubmitForm}
-      formType="source"
-      availableServices={sourceDefinitions}
-      hasSuccess={successRequest}
-      errorMessage={errorMessage}
-      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      isLoading={isLoading}
-    />
+    <>
+      <ContentCard className={styles.contentCard}>
+        <SelectServiceType
+          formType="source"
+          value={sourceDefinitionId}
+          onChangeServiceType={onServiceSelect}
+          availableServices={sourceDefinitions}
+        />
+      </ContentCard>
+
+      {selectedService && (
+        <ConnectorCard
+          full
+          jobInfo={LogsRequestError.extractJobInfo(error)}
+          onSubmit={onSubmitForm}
+          formType="source"
+          hasSuccess={successRequest}
+          errorMessage={errorMessage}
+          selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+          isLoading={isLoading}
+          selectedService={selectedService}
+        />
+      )}
+    </>
   );
 };
 

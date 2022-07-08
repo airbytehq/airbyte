@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import React from "react";
 import selectEvent from "react-select-event";
 
+import { ConnectorDefinition } from "core/domain/connector";
 import { AirbyteJSONSchema } from "core/jsonSchema";
 import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
@@ -129,7 +130,16 @@ describe("Service Form", () => {
                 documentationUrl: "",
               } as DestinationDefinitionSpecificationRead
             }
-            availableServices={[]}
+            selectedService={
+              {
+                connectionSpecification: schema,
+                sourceDefinitionId: "1",
+                documentationUrl: "",
+                dockerImageTag: "0.1.0",
+                dockerRepository: "docker-repo",
+                name: "source-definitaion-name",
+              } as ConnectorDefinition
+            }
           />
         </ConnectorDocumentationWrapper>
       );
@@ -205,7 +215,7 @@ describe("Service Form", () => {
         <ConnectorDocumentationWrapper>
           <ServiceForm
             formType="source"
-            formValues={{ name: "test-name", serviceType: "test-service-type" }}
+            formValues={{ name: "test-name" }}
             onSubmit={(values) => (result = values)}
             selectedConnectorDefinitionSpecification={
               // @ts-expect-error Partial objects for testing
@@ -215,7 +225,16 @@ describe("Service Form", () => {
                 documentationUrl: "",
               } as DestinationDefinitionSpecificationRead
             }
-            availableServices={[]}
+            selectedService={
+              {
+                connectionSpecification: schema,
+                sourceDefinitionId: "1",
+                documentationUrl: "",
+                dockerImageTag: "0.1.0",
+                dockerRepository: "docker-repo",
+                name: "destination-definitaion-name",
+              } as ConnectorDefinition
+            }
           />
         </ConnectorDocumentationWrapper>
       );

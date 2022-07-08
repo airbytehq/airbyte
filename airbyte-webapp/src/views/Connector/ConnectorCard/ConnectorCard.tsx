@@ -4,7 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { ContentCard } from "components";
 import { JobItem } from "components/JobItem/JobItem";
 
-import { Connector, ConnectorT } from "core/domain/connector";
+import { Connector, ConnectorDefinition, ConnectorT } from "core/domain/connector";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
@@ -25,6 +25,7 @@ export const ConnectorCard: React.FC<
     title?: React.ReactNode;
     full?: boolean;
     jobInfo?: SynchronousJobReadWithStatus | null;
+    selectedService: ConnectorDefinition;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -51,7 +52,7 @@ export const ConnectorCard: React.FC<
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
 
-    const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
+    const connector = props.selectedService;
 
     const trackAction = (action: string) => {
       if (!connector) {
@@ -74,7 +75,7 @@ export const ConnectorCard: React.FC<
     const testConnectorWithTracking = async () => {
       trackAction("Test a connector");
       try {
-        await testConnector(values);
+        await testConnector({ ...values, serviceType: Connector.id(connector) });
         trackAction("Tested connector - success");
       } catch (e) {
         trackAction("Tested connector - failure");

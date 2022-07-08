@@ -34,11 +34,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
 
   const sourceDefinition = useSourceDefinition(currentSource.sourceDefinitionId);
 
-  const onSubmit = async (values: {
-    name: string;
-    serviceType: string;
-    connectionConfiguration?: ConnectionConfiguration;
-  }) =>
+  const onSubmit = async (values: { name: string; connectionConfiguration?: ConnectionConfiguration }) =>
     await updateSource({
       values,
       sourceId: currentSource.sourceId,
@@ -54,12 +50,9 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         onSubmit={onSubmit}
         formType="source"
         connector={currentSource}
-        availableServices={[sourceDefinition]}
-        formValues={{
-          ...currentSource,
-          serviceType: currentSource.sourceDefinitionId,
-        }}
+        formValues={currentSource}
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+        selectedService={sourceDefinition}
       />
       <DeleteBlock type="source" onDelete={onDelete} />
     </div>

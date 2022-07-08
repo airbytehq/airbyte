@@ -7,6 +7,8 @@ import { ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 
+export type TestConnectorProps = ServiceFormValues & { serviceType: string };
+
 export const useTestConnector = (
   props: {
     formType: "source" | "destination";
@@ -20,7 +22,7 @@ export const useTestConnector = (
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+  testConnector: (v?: TestConnectorProps) => Promise<CheckConnectionRead>;
   error: Error | null;
   reset: () => void;
 } => {

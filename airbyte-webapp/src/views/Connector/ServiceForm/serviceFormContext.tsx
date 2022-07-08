@@ -1,7 +1,7 @@
 import { getIn, useFormikContext } from "formik";
 import React, { useContext, useMemo } from "react";
 
-import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { WidgetConfigMap } from "core/form/types";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
@@ -41,11 +41,10 @@ const ServiceFormContextProvider: React.FC<{
   formType: "source" | "destination";
   isLoadingSchema?: boolean;
   isEditMode?: boolean;
-  availableServices: ConnectorDefinition[];
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   selectedConnector?: ConnectorDefinitionSpecification;
+  selectedService: ConnectorDefinition;
 }> = ({
-  availableServices,
   children,
   widgetsInfo,
   setUiWidgetsInfo,
@@ -54,15 +53,10 @@ const ServiceFormContextProvider: React.FC<{
   formType,
   isLoadingSchema,
   isEditMode,
+  selectedService,
 }) => {
   const { values } = useFormikContext<ServiceFormValues>();
   const { hasFeature } = useFeatureService();
-
-  const { serviceType } = values;
-  const selectedService = useMemo(
-    () => availableServices.find((s) => Connector.id(s) === serviceType),
-    [availableServices, serviceType]
-  );
 
   const isAuthFlowSelected = useMemo(
     () =>
