@@ -29,8 +29,8 @@ class DatetimeStreamSlicer(StreamSlicer):
     # FIXME: timezone should be declarative?
     def __init__(
         self,
-        start_datetime: MinMaxDatetime,
-        end_datetime: MinMaxDatetime,
+        start_datetime: Union[MinMaxDatetime, str],
+        end_datetime: Union[MinMaxDatetime, str],
         step: str,
         cursor_value: Union[InterpolatedString, str],
         datetime_format: str,
@@ -38,6 +38,10 @@ class DatetimeStreamSlicer(StreamSlicer):
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
+        if isinstance(start_datetime, str):
+            start_datetime = MinMaxDatetime(start_datetime)
+        if isinstance(end_datetime, str):
+            end_datetime = MinMaxDatetime(end_datetime)
         if isinstance(cursor_value, str):
             cursor_value = InterpolatedString(cursor_value)
         self._datetime_format = datetime_format
