@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -33,5 +33,5 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "ChainRetrier": ChainRetrier,
-    "DefaultRetrier": DefaultRetrier,
+    "DefaultRetrier": DefaultErrorHandler,
 }

@@ -17,8 +17,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import (
-    DefaultRetrier,
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
+    DefaultErrorHandler,
     HttpResponseFilter,
     NonRetriableResponseStatus,
     RetryResponseStatus,
@@ -48,7 +48,7 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             RetryResponseStatus(10),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY()],
+            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()],
         ),
         ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
         (
@@ -58,7 +58,7 @@ SOME_BACKOFF_TIME = 60
             None,
             {},
             RetryResponseStatus(10),
-            [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY(), ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
+            [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(), ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
         ),
         ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.SUCCESS, None),
         ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.SUCCESS, None),
@@ -125,7 +125,7 @@ def test_default_retrier(
 ):
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
-    retrier = DefaultRetrier(
+    retrier = DefaultErrorHandler(
         retry_response_filter=retry_response_filter, ignore_response_filter=ignore_response_filter, backoff_strategy=backoff_strategy
     )
     actual_should_retry = retrier.should_retry(response_mock)
@@ -137,7 +137,7 @@ def test_default_retrier(
 def test_default_retrier_attempt_count_increases():
     status_code = 500
     response_mock = create_response(status_code)
-    retrier = DefaultRetrier()
+    retrier = DefaultErrorHandler()
     actual_should_retry = retrier.should_retry(response_mock)
     assert actual_should_retry == RetryResponseStatus(10)
     assert actual_should_retry.retry_in == 10

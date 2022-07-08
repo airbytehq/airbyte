@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
@@ -35,7 +35,7 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     SchemaLoader: JsonSchema,
     HttpSelector: RecordSelector,
     ConnectionChecker: CheckStream,
-    ErrorHandler: DefaultRetrier,
+    ErrorHandler: DefaultErrorHandler,
     Decoder: JsonDecoder,
     JelloExtractor: JelloExtractor,
     State: DictState,

@@ -18,7 +18,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 
 
-class DefaultRetrier(ErrorHandler):
+class DefaultErrorHandler(ErrorHandler):
     """
     Sample configs:
 
@@ -76,7 +76,7 @@ class DefaultRetrier(ErrorHandler):
         if backoff_strategy:
             self._backoff_strategy = backoff_strategy
         else:
-            self._backoff_strategy = [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY()]
+            self._backoff_strategy = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()]
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 

@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.error_handlers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.error_handlers.default_retrier import DefaultRetrier
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -239,7 +239,7 @@ def test_create_requester():
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
-    assert isinstance(component._error_handler, DefaultRetrier)
+    assert isinstance(component._error_handler, DefaultErrorHandler)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, TokenAuthenticator)
@@ -262,7 +262,7 @@ def test_create_chain_retrier():
     config = parser.parse(content)
     component = factory.create_component(config["retrier"], input_config)()
     assert len(component._retriers) == 2
-    assert isinstance(component._retriers[0], DefaultRetrier)
+    assert isinstance(component._retriers[0], DefaultErrorHandler)
     assert component._retriers[0]._retry_response_filter._predicate._condition == "{{ 'code' in decoded_response }}"
     assert component._retriers[1]._retry_response_filter._http_codes == [403]
     assert isinstance(component, ChainRetrier)
