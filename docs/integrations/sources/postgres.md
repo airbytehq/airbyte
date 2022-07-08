@@ -276,7 +276,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `character varying`, `varchar`        | string         |                                                                                                                                                 |
 | `cidr`                                | string         |                                                                                                                                                 |
 | `circle`                              | string         |                                                                                                                                                 |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight                                                                                                         |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590)                                             |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
 | `hstore`                              | string         |                                                                                                                                                 |
 | `inet`                                | string         |                                                                                                                                                 |
@@ -300,9 +300,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `serial`, `serial4`                   | number         |                                                                                                                                                 |
 | `text`                                | string         |                                                                                                                                                 |
 | `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                    |
-| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                       |
+| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                         |
 | `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                               |
-| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                  |
+| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                    |
 | `tsquery`                             | string         |                                                                                                                                                 |
 | `tsvector`                            | string         |                                                                                                                                                 |
 | `uuid`                                | string         |                                                                                                                                                 |

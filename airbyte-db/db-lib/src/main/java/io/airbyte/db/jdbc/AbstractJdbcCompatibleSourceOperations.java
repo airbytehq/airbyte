@@ -253,17 +253,17 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return schemaName != null ? enquoteIdentifier(connection, schemaName) + "." + quotedTableName : quotedTableName;
   }
 
-  protected <DateTime> DateTime getDateTimeObject(ResultSet resultSet, int index, Class<DateTime> clazz) throws SQLException {
+  protected <ObjectType> ObjectType getObject(ResultSet resultSet, int index, Class<ObjectType> clazz) throws SQLException {
     return resultSet.getObject(index, clazz);
   }
 
   protected void putTimeWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    OffsetTime timetz = getDateTimeObject(resultSet, index, OffsetTime.class);
+    OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
     node.put(columnName, timetz.format(TIMETZ_FORMATTER));
   }
 
   protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    OffsetDateTime timestamptz = getDateTimeObject(resultSet, index, OffsetDateTime.class);
+    OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
     LocalDate localDate = timestamptz.toLocalDate();
     node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
   }
