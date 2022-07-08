@@ -126,7 +126,7 @@ def test_default_retrier(
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
     response_filters = [f for f in [retry_response_filter, ignore_response_filter] if f]
-    retrier = DefaultErrorHandler(response_filters=response_filters, backoff_strategy=backoff_strategy)
+    retrier = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy)
     actual_should_retry = retrier.should_retry(response_mock)
     assert actual_should_retry == should_retry
     if should_retry.action == ResponseAction.RETRY:

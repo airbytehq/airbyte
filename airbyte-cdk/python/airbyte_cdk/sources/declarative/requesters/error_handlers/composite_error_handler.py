@@ -11,17 +11,19 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler imp
 class CompositeErrorHandler(ErrorHandler):
     """
     Sample config chaining 2 different retriers:
-        retrier:
+        error_handler:
           type: "CompositeErrorHandler"
-          retriers:
-            - retry_response_filter:
-                predicate: "{{ 'codase' in decoded_response }}"
-              backoff_strategy:
+          error_handlers:
+            - response_filters:
+                - predicate: "{{ 'codase' in decoded_response }}"
+                  action: RETRY
+              backoff_strategies:
                 - type: "ConstantBackoffStrategy"
                   backoff_time_in_seconds: 5
-            - retry_response_filter:
-                http_codes: [ 403 ]
-              backoff_strategy:
+            - response_filters:
+                - http_codes: [ 403 ]
+                  action: RETRY
+              backoff_strategies:
                 - type: "ConstantBackoffStrategy"
                   backoff_time_in_seconds: 10
     """

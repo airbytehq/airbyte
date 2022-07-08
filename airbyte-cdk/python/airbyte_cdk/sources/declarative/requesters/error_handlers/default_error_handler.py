@@ -25,7 +25,7 @@ class DefaultErrorHandler(ErrorHandler):
     2. backoff for 5 seconds
     `
         error_handler:
-          backoff_strategy:
+          backoff_strategies:
             - type: "ConstantBackoffStrategy"
               backoff_time_in_seconds: 5
     `
@@ -65,7 +65,7 @@ class DefaultErrorHandler(ErrorHandler):
         self,
         response_filters: Optional[List[HttpResponseFilter]] = None,
         max_retries: Optional[int] = 5,
-        backoff_strategy: Optional[List[BackoffStrategy]] = None,
+        backoff_strategies: Optional[List[BackoffStrategy]] = None,
     ):
         self._max_retries = max_retries
         self._response_filters = response_filters or []
@@ -74,24 +74,12 @@ class DefaultErrorHandler(ErrorHandler):
             self._response_filters.append(HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS))
             self._response_filters.append(HttpResponseFilter(ResponseAction.IGNORE))
 
-        if backoff_strategy:
-            self._backoff_strategy = backoff_strategy
+        if backoff_strategies:
+            self._backoff_strategies = backoff_strategies
         else:
-            self._backoff_strategy = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()]
+            self._backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()]
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
-
-    def _has_retry_filter(self, response_filters: List[HttpResponseFilter]):
-        return self._has_filter_of_type(response_filters, ResponseAction)
-
-    def _has_ignore_filter(self, response_filters: List[HttpResponseFilter]):
-        return self._has_filter_of_type(response_filters, ResponseAction)
-
-    def _has_filter_of_type(self, response_filters: List[HttpResponseFilter], filter_type: ResponseAction):
-        if response_filters:
-            return any([r.action == filter_type for r in response_filters])
-        else:
-            return False
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -118,7 +106,7 @@ class DefaultErrorHandler(ErrorHandler):
 
     def _backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         backoff = None
-        for backoff_strategies in self._backoff_strategy:
+        for backoff_strategies in self._backoff_strategies:
             backoff = backoff_strategies.backoff(response, attempt_count)
             if backoff:
                 return backoff
