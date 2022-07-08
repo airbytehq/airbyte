@@ -6,6 +6,7 @@ import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem } from "core/form/types";
 
+import styles from "./ArraySection.module.scss";
 import { SectionContainer } from "./common";
 import { VariableInputFieldForm } from "./VariableInputFieldForm";
 
@@ -31,16 +32,18 @@ const getItemDescription = (item: Record<string, string>, properties: FormBlock[
       const value = item[key];
       return (
         <tr key={key}>
-          <td style={{ paddingRight: 10 }}>{name}:</td>
-          <td>{value}</td>
+          <td className={styles.name}>{name}:</td>
+          <td className={styles.value}>{value}</td>
         </tr>
       );
     });
 
   return (
-    <table>
-      <tbody>{rows}</tbody>
-    </table>
+    <div className={styles.description}>
+      <table>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
   );
 };
 
