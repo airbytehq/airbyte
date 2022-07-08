@@ -10,6 +10,7 @@ import io.airbyte.config.State;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.config.persistence.StatePersistence;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,11 +25,12 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {
     final State state = syncOutput.getState();
+    final ConfiguredAirbyteCatalog configuredCatalog = syncOutput.getOutputCatalog();
     if (state != null) {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
+          statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get(), configuredCatalog);
         }
       } catch (final IOException e) {
         throw new RuntimeException(e);

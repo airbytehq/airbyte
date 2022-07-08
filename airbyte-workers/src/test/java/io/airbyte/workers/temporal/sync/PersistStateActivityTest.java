@@ -11,6 +11,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.UUID;
 import org.elasticsearch.common.collect.Map;
@@ -54,7 +55,8 @@ public class PersistStateActivityTest {
     persistStateActivity.persist(CONNECTION_ID, new StandardSyncOutput().withState(state));
 
     // The ser/der of the state into a state wrapper is tested in StateMessageHelperTest
-    Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
+    Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class), Mockito.any(
+        ConfiguredAirbyteCatalog.class));
   }
 
 }
