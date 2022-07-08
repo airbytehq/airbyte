@@ -21,21 +21,27 @@ export interface ConnectorCardProvidedProps {
   sourceCloneId?: string;
 }
 
-export const ConnectorCard: React.FC<
-  {
-    title?: React.ReactNode;
-    full?: boolean;
-    jobInfo?: SynchronousJobReadWithStatus | null;
-    checkConnectionBeforeSubmit?: boolean;
-  } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
-    (
-      | {
-          isEditMode: true;
-          connector: ConnectorT;
-        }
-      | { isEditMode?: false }
-    )
-> = ({ title, full, jobInfo, onSubmit, checkConnectionBeforeSubmit, ...props }) => {
+type ConnectorCardProps = {
+  title?: React.ReactNode;
+  full?: boolean;
+  jobInfo?: SynchronousJobReadWithStatus | null;
+} & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
+  (
+    | {
+        isEditMode: true;
+        connector: ConnectorT;
+      }
+    | { isEditMode?: false }
+  ) &
+  (
+    | {
+        isClonningMode: true;
+        connector: ConnectorT;
+      }
+    | { isClonningMode?: false }
+  );
+
+export const ConnectorCard: React.FC<ConnectorCardProps> = ({ title, full, jobInfo, onSubmit, ...props }) => {
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
@@ -85,9 +91,7 @@ export const ConnectorCard: React.FC<
     };
 
     try {
-      if (checkConnectionBeforeSubmit) {
-        await testConnectorWithTracking();
-      }
+      await testConnectorWithTracking();
       await onSubmit(values);
       setSaved(true);
     } catch (e) {

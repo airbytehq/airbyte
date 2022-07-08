@@ -7,15 +7,23 @@ import { ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
 
-export const useTestConnector = (
-  props: {
-    formType: "source" | "destination";
-  } & (
-    | { isEditMode: true; connector: ConnectorT }
+type Props = {
+  formType: "source" | "destination";
+} & (
+  | { isEditMode: true; connector: ConnectorT }
+  | {
+      isEditMode?: false;
+    }
+) &
+  (
+    | { isClonningMode: true; connector: ConnectorT }
     | {
-        isEditMode?: false;
+        isClonningMode?: false;
       }
-  )
+  );
+
+export const useTestConnector = (
+  props: Props
 ): {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
@@ -44,8 +52,9 @@ export const useTestConnector = (
 
       let payload: CheckConnectorParams | null = null;
 
-      if (props.isEditMode) {
-        // When we are editing current connector
+      if (props.isEditMode || props.isClonningMode) {
+        // When we are editing current connector OR
+        // We are cloning existing connector with new values
         if (values) {
           payload = {
             connectionConfiguration: values.connectionConfiguration,

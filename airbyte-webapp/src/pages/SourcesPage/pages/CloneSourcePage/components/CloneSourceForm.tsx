@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import useRouter from "hooks/useRouter";
+import { useGetSource } from "hooks/services/useSourceHook";
 import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
@@ -11,7 +11,7 @@ import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
-interface SourceFormProps {
+interface CloneSourceFormProps {
   onSubmit: (values: {
     name: string;
     serviceType: string;
@@ -21,30 +21,22 @@ interface SourceFormProps {
   afterSelectConnector?: () => void;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
+  sourceCloneId: string;
   error?: { message?: string; status?: number } | null;
 }
 
-const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
-  return (
-    typeof state === "object" &&
-    state !== null &&
-    typeof (state as { sourceDefinitionId?: string }).sourceDefinitionId === "string"
-  );
-};
-
-export const SourceForm: React.FC<SourceFormProps> = ({
+export const CloneSourceForm: React.FC<CloneSourceFormProps> = ({
   onSubmit,
   sourceDefinitions,
   error,
   hasSuccess,
+  sourceCloneId,
   afterSelectConnector,
 }) => {
-  const { location } = useRouter();
   const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
+  const source = useGetSource(sourceCloneId);
 
-  const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
-    hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
-  );
+  const [sourceDefinitionId, setSourceDefinitionId] = useState<string>(source.sourceDefinitionId);
 
   const {
     data: sourceDefinitionSpecification,
@@ -78,6 +70,11 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   };
 
   const errorMessage = error ? createFormErrorMessage(error) : null;
+  const formValues = {
+    serviceType: source.sourceDefinitionId,
+    name: source.name,
+    connectionConfiguration: source.connectionConfiguration,
+  };
 
   return (
     <ConnectorCard
@@ -90,9 +87,11 @@ export const SourceForm: React.FC<SourceFormProps> = ({
       fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
       errorMessage={errorMessage}
       isLoading={isLoading}
-      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
+      formValues={formValues}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
       jobInfo={LogsRequestError.extractJobInfo(error)}
+      isClonningMode
+      connector={source}
     />
   );
 };

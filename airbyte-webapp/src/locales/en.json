@@ -38,7 +38,6 @@
   "form.sourceName.message": "Pick a name to help you identify this source in Airbyte",
   "form.destinationName.message": "Pick a name to help you identify this destination in Airbyte",
   "form.sourceSettings": "Source Settings",
-  "form.destinationSettings": "Destination Settings",
   "form.connectionName.message": "Pick a name to help you identify this connection",
   "form.sourceType": "Source type",
   "form.destinationType": "Destination type",

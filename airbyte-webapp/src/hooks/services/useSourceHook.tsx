@@ -105,28 +105,20 @@ const useCloneSource = () => {
   const queryClient = useQueryClient();
 
   return useMutation(
-    async (createSourcePayload: SourceCloneProps) => {
-      const { sourceConfiguration, sourceCloneId } = createSourcePayload;
-      try {
-        // Try to create source
-        const result = await service.clone({
-          sourceCloneId,
-          sourceConfiguration: {
-            name: sourceConfiguration.name,
-            connectionConfiguration: sourceConfiguration.connectionConfiguration,
-          },
-        });
+    async ({ sourceConfiguration, sourceCloneId }: SourceCloneProps) => {
+      const result = await service.clone({
+        sourceCloneId,
+        sourceConfiguration: {
+          name: sourceConfiguration.name,
+          connectionConfiguration: sourceConfiguration.connectionConfiguration,
+        },
+      });
 
-        return result;
-      } catch (e) {
-        throw e;
-      }
+      return result;
     },
     {
-      onSuccess: (data) => {
-        queryClient.setQueryData(sourcesKeys.lists(), (lst: SourceList | undefined) => ({
-          sources: [data, ...(lst?.sources ?? [])],
-        }));
+      onSuccess: () => {
+        queryClient.invalidateQueries(sourcesKeys.lists());
       },
     }
   );

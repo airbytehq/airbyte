@@ -1,19 +1,18 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Spinner } from "components";
 import { FormPageContent } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
 import { ConnectionConfiguration } from "core/domain/connection";
+import { SourceRead } from "core/request/AirbyteClient";
 import { useCloneSource, useGetSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import { RoutePaths } from "pages/routePaths";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
-import { SourceForm } from "../CreateSourcePage/components/SourceForm";
+import { CloneSourceForm } from "./components/CloneSourceForm";
 
 const CloneSourcePage: React.FC = () => {
   const { push, query } = useRouter();
@@ -22,17 +21,7 @@ const CloneSourcePage: React.FC = () => {
 
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: cloneSource } = useCloneSource();
-  const source = useGetSource(sourceCloneId);
-
-  // Redirect to new source if there is no sourceCloneId
-  if (!sourceCloneId) {
-    push(RoutePaths.SourceNew);
-    return null;
-  }
-
-  if (!source) {
-    return <Spinner />;
-  }
+  const source = useGetSource(sourceCloneId) as SourceRead;
 
   const onSubmitSourceStep = async (values: {
     name: string;
@@ -54,11 +43,11 @@ const CloneSourcePage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />{" "}
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectorDocumentationWrapper>
         <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.cloneSourceTitle" />} />
         <FormPageContent>
-          <SourceForm
+          <CloneSourceForm
             sourceCloneId={sourceCloneId}
             onSubmit={onSubmitSourceStep}
             sourceDefinitions={sourceDefinitions}
