@@ -23,8 +23,8 @@ class LimitPaginator(ConditionalPaginator):
         page_token: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
+        url_base: str,
         decoder: Decoder = None,
-        url_base: str = None,
     ):
         self._config = config
         self._limit = limit_value

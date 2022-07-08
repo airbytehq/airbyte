@@ -29,7 +29,7 @@ class ConditionalPaginator(Paginator):
         page_token: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
-        url_base: str = None,
+        url_base: str = "",
         decoder: Decoder = None,
     ):
         self._stop_condition = stop_condition

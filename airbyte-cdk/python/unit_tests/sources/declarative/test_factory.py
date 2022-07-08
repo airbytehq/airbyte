@@ -154,6 +154,7 @@ metadata_paginator:
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ decoded_response._metadata.next }}"
+    url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
@@ -162,7 +163,6 @@ request_options_provider:
 requester:
   class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
   name: "{{ options['name'] }}"
-  url_base: "https://api.sendgrid.com/v3/"
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
