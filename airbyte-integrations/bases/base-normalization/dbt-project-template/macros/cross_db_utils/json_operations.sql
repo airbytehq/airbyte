@@ -168,7 +168,7 @@
 {%- endmacro %}
 
 {% macro mysql__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }} RETURNING CHAR)
+    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}

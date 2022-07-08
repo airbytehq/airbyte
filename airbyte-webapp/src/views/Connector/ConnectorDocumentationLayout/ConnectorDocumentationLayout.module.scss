@@ -7,37 +7,34 @@
 }
 
 .darkOverlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
-  width: 100%;
+  bottom: 0;
+  right: 0;
   z-index: 10;
-  background-color: #1a194d;
   opacity: 0.9;
-  color: white;
+  background-color: colors.$dark-blue-900;
+  color: colors.$white;
   text-align: center;
-  vertical-align: middle;
-  padding: 400px 30px 30px 30px;
 }
 
-.container > *:last-child {
-  padding-bottom: variables.$spacing-page-bottom;
-}
-
-.noScroll {
-  overflow: hidden;
-  max-height: 100%;
-}
-
-.fullHeight {
+.container {
+  overflow-x: auto;
   height: 100%;
+
+  & > *:last-child {
+    padding-bottom: variables.$spacing-page-bottom;
+  }
 }
 
 .lightOverlay {
   height: 100%;
   width: 100%;
-  background-color: #ffffff;
+  background-color: colors.$white;
   text-align: center;
   vertical-align: middle;
   overflow: hidden;
