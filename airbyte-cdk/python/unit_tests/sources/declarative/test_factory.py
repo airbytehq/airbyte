@@ -105,7 +105,7 @@ def test_datetime_stream_slicer():
     stream_slicer:
         class_name: airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer
         options:
-          datetime_format: "%Y-%m-%d"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
@@ -114,7 +114,7 @@ def test_datetime_stream_slicer():
           class_name: airbyte_cdk.sources.declarative.datetime.min_max_datetime.MinMaxDatetime
           datetime: "{{ config['end_time'] }}"
         step: "10d"
-        cursor_value: "created"
+        cursor_field: "created"
     """
 
     config = parser.parse(content)
@@ -122,13 +122,13 @@ def test_datetime_stream_slicer():
     assert type(stream_slicer) == DatetimeStreamSlicer
     assert stream_slicer._timezone == datetime.timezone.utc
     assert type(stream_slicer._start_datetime) == MinMaxDatetime
-    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%d"
+    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
     assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
     assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer._cursor_value._string == "created"
+    assert stream_slicer._cursor_field == "created"
 
 
 def test_full_config():

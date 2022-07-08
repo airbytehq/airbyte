@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -17,6 +17,24 @@ class SubstreamSlicer(StreamSlicer):
     Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
     """
+
+    def request_params(self) -> Mapping[str, Any]:
+        pass
+
+    def request_headers(self) -> Mapping[str, Any]:
+        pass
+
+    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+        pass
+
+    def request_body_json(self) -> Optional[Mapping]:
+        pass
+
+    def set_state(self, stream_state: Mapping[str, Any]):
+        pass
+
+    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+        pass
 
     def __init__(self, parent_streams: List[Stream], state: DictState, slice_definition: Mapping[str, Any]):
         self._parent_streams = parent_streams
