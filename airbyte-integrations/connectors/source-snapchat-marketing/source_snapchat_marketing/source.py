@@ -15,7 +15,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
-from airbyte_cdk.sources.streams.core import package_name_from_class
+from airbyte_cdk.sources.streams.core import package_name_from_class, IncrementalMixin
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
@@ -107,6 +107,13 @@ METRICS_NOT_HOURLY = [
     'total_reach',
     'earned_reach',
 ]
+
+
+class GranularityType(Enum):
+    HOUR = 'HOUR'
+    DAY = 'DAY'
+    TOTAL = 'TOTAL'
+    LIFETIME = 'LIFETIME'
 
 # See the get_depend_on_ids function explanation
 # Long story short - used as cache for ids of higher level streams, that is used
@@ -254,8 +261,8 @@ class SnapchatMarketingStream(HttpStream, ABC):
         """
 
 
-        self.logger.info(f"============= GranularityType:{self.name} =================")
-        self.logger.info(response.json())
+        # self.logger.info(f"============= GranularityType:{self.name} =================")
+        # self.logger.info(response.json())
 
         json_response = response.json().get(self.response_root_name)
         for resp in json_response:
@@ -418,17 +425,180 @@ class Segments(IncrementalSnapchatMarketingStream):
     depends_on_stream = Adaccounts
 
 
-class GranularityType(Enum):
-    HOUR = 'HOUR'
-    DAY = 'DAY'
-    TOTAL = 'TOTAL'
-    LIFETIME = 'LIFETIME'
+class Stats(SnapchatMarketingStream, ABC):
+    """ stats requests can be made with TOTAL, DAY, or HOUR granularity.
+    Docs:  https://marketingapi.snapchat.com/docs/#measurement
+    Measurement endpoints provides stats data that is updated approximately every 15 minutes.
+    """
+    primary_key = ['id', 'granularity']
+    slice_key_name = 'id'
+    schema_name = 'basic_stats'
+    item_path: str = ''
+    depends_on_stream_name: str = ''
+
+    @property
+    @abstractmethod
+    def depends_on_stream(self) -> SnapchatMarketingStream:
+        """Stream Class to extract entity ids from"""
+
+    @property
+    def granularity(self) -> GranularityType:
+        """Required granularity"""
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Each stream slice represents each entity id from parent stream"""
+
+        stream = self.depends_on_stream(
+            authenticator=self.authenticator,
+            start_date=self.start_date,
+            end_date=self.end_date
+        )
+        self.depends_on_stream_name = stream.name
+        stream_slices = get_depend_on_ids(stream, self.slice_key_name)
+
+        if not stream_slices:
+            self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
+
+        self.logger.info(f"Stats: stream_slices:{stream_slices}")
+
+        return stream_slices
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"{self.depends_on_stream_name}/{stream_slice[self.slice_key_name]}/stats"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        params['granularity'] = self.granularity.value
+
+        if self.granularity in [GranularityType.HOUR, GranularityType.DAY] and stream_slice.get('start_date'):
+            # start/end date param should be set for Daily and Hourly streams
+            params['start_time'] = stream_slice['start_date']
+            params['end_time'] = stream_slice['end_date']
+
+        if self.metrics:
+            params['fields'] = ','.join(self.metrics)
+
+        return params
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        """Response json came like"""
+        items = super().parse_response(response=response, stream_slice=stream_slice, **kwargs)
+
+        if self.item_path:
+            for item in items:
+                item_identifiers = {
+                    'id': item['id'],
+                    'type': item['type'],
+                    'granularity': item['granularity'],
+                }
+                subitems = item.get(self.item_path)
+                for subitem in subitems:
+                    subitem.update(item_identifiers)
+                    yield subitem
+        else:
+            yield from items
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All reports have same schema"""
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.schema_name)
+
+
+class StatsIncremental(Stats, IncrementalMixin):
+    """Incremental Stats class for Daily and Hourly streams which requires start/end date param"""
+
+    primary_key = ['id', 'granularity', 'start_time']
+    cursor_field: str = 'start_date'
+    slice_period: int = 0  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
+    number_of_depends_on_stream_ids: int = 0
+    number_of_last_records: int = 0
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = {}
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state[self.cursor_field] = value
+
+    def date_slices(self, stream_state=None) -> Iterable[Optional[Mapping[str, Any]]]:
+        date_slices = []
+        end_date = pendulum.parse(self.end_date)
+        start_date_str = stream_state.get(self.cursor_field) if stream_state else self.start_date
+        slice_start_date = pendulum.parse(start_date_str)
+        while slice_start_date < end_date:
+            slice_end_date_next = slice_start_date + pendulum.duration(days=self.slice_period)
+            slice_end_date = min(slice_end_date_next, end_date)
+            date_slices.append({
+                'start_date': slice_start_date.to_date_string(),
+                'end_date': slice_end_date.to_date_string()
+            })
+            slice_start_date = slice_end_date
+
+        self.logger.info(f"{self.name} date_slices: {date_slices}.")
+
+        return date_slices
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Incremental stream slices is a combinations of date and parent entities slices"""
+
+        stream_slices = []
+
+        entity_slices = super().stream_slices(sync_mode=SyncMode.full_refresh)  # get all entities
+
+        # save a number of entities we need to get stats for
+        self.number_of_depends_on_stream_ids = len(entity_slices)
+
+        # within each date period extract data for all entities
+        # it allows incremental sync implementation with slice period granularity
+        for date_slice in self.date_slices(stream_state=stream_state):
+            for entity_slice in entity_slices:
+                stream_slices.append({**date_slice, **entity_slice})
+
+        self.logger.info(f"{self.name} stream_slices:{stream_slices}")
+
+        return stream_slices
+
+    def parse_response(self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None
+    ) -> Iterable[Mapping]:
+        """Customized by adding stream state setting"""
+
+        # Save start_date for each slice, it ensures that previous slices have been read and
+        # can be skipped in next incremental sync
+        self.state = stream_slice[self.cursor_field]
+
+        for record in super().parse_response(response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token):
+
+            yield record
+
+            # Update state if last record has been read
+            record_end_date = record.get('end_time', '').split('T')[0]  # "2022-07-06T00:00:00.000-07:00" --> "2022-07-06"
+            if record_end_date == self.end_date:
+                self.number_of_last_records += 1
+                # Update state if 'last' records for all dependant entities have been read
+                if self.number_of_depends_on_stream_ids == self.number_of_last_records:
+                    self.state = record_end_date
 
 
 class Granularity:
     granularity: GranularityType
     response_root_name: str
     metrics = METRICS + METRICS_NOT_HOURLY
+    slice_period: int = 0
 
 
 class Hourly(Granularity):
@@ -472,6 +642,7 @@ class Hourly(Granularity):
         }
     """
     granularity = GranularityType.HOUR
+    slice_period = 7  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
     response_root_name = 'timeseries_stats'
     metrics = METRICS
     item_path = 'timeseries'
@@ -574,8 +745,10 @@ class Daily(Granularity):
 
     """
     granularity = GranularityType.DAY
+    slice_period = 31  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
     response_root_name = 'timeseries_stats'
     item_path = 'timeseries'
+
 
 class Lifetime(Granularity):
     """
@@ -650,8 +823,6 @@ class Lifetime(Granularity):
       ]
     }
 
-
-
     """
     granularity = GranularityType.LIFETIME
     response_root_name = 'lifetime_stats'
@@ -662,99 +833,13 @@ class Total(Granularity):
     response_root_name = 'total_stats'
 
 
-class Stats(SnapchatMarketingStream, ABC):
-    """ stats requests can be made with TOTAL, DAY, or HOUR granularity.
-    Docs:  https://marketingapi.snapchat.com/docs/#measurement
-    Measurement endpoints provides stats data that is updated approximately every 15 minutes.
-    """
-    slice_key_name = 'id'
-    schema_name = 'basic_stats'
-    depends_on_stream_name = ''
-    item_path: str = ''
-
-    @property
-    def granularity(self) -> GranularityType:
-        """Required granularity"""
-
-    @property
-    def depends_on_stream(self) -> SnapchatMarketingStream:
-        """Required granularity"""
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-
-        stream_slices = default_stream_slices_return_value
-
-        if self.depends_on_stream:
-            stream = self.depends_on_stream(
-                authenticator=self.authenticator,
-                start_date=self.start_date,
-                end_date=self.end_date
-            )
-            self.depends_on_stream_name = stream.name
-            stream_slices = get_depend_on_ids(stream, self.slice_key_name)
-
-        if not stream_slices:
-            self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
-            yield from []
-
-        self.last_slice = stream_slices[-1]
-        self.logger.info(f"Stats: stream_slices:{stream_slices}")
-        yield from stream_slices
-
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        # return f"{self.depends_on_stream.name}/{stream_slice[self.slice_key_name]}/stats"
-        return f"{self.depends_on_stream_name}/{stream_slice[self.slice_key_name]}/stats"
-
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-        params['granularity'] = self.granularity.value
-
-        if not self.granularity == GranularityType.LIFETIME:
-            params['start_time'] = self.start_date
-            params['end_time'] = self.end_date
-
-        if self.metrics:
-            params['fields'] = ','.join(self.metrics)
-
-        return params
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        """Response json came like"""
-        items = super().parse_response(response = response, stream_slice=stream_slice, **kwargs)
-
-        if self.item_path:
-            for item in items:
-                item_identifiers = {
-                    'id': item['id'],
-                    'type': item['type'],
-                    'granularity': item['granularity'],
-                }
-                subitems = item.get(self.item_path)
-                for subitem in subitems:
-                    subitem.update(item_identifiers)
-                    yield subitem
-        else:
-            yield from items
-
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """All reports have same schema"""
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.schema_name)
-
-
-class AdaccountsStatsHourly(Hourly, Stats):
+class AdaccountsStatsHourly(Hourly, StatsIncremental):
     """Adaccounts stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
     depends_on_stream = Adaccounts
     metrics = ['spend']
 
 
-class AdaccountsStatsDaily(Daily, Stats):
+class AdaccountsStatsDaily(Daily, StatsIncremental):
     """Adaccounts stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
     depends_on_stream = Adaccounts
     metrics = ['spend']
@@ -767,12 +852,12 @@ class AdaccountsStatsLifetime(Lifetime, Stats):
     metrics = ['spend']
 
 
-class AdsStatsHourly(Hourly, Stats):
+class AdsStatsHourly(Hourly, StatsIncremental):
     """Ads stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-ad-stats"""
     depends_on_stream = Ads
 
 
-class AdsStatsDaily(Daily, Stats):
+class AdsStatsDaily(Daily, StatsIncremental):
     """Ads stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-ad-stats"""
     depends_on_stream = Ads
 
@@ -782,12 +867,12 @@ class AdsStatsLifetime(Lifetime, Stats):
     depends_on_stream = Ads
 
 
-class AdsquadsStatsHourly(Hourly, Stats):
+class AdsquadsStatsHourly(Hourly, StatsIncremental):
     """Adsquads stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-ad-squad-stats"""
     depends_on_stream = Adsquads
 
 
-class AdsquadsStatsDaily(Daily, Stats):
+class AdsquadsStatsDaily(Daily, StatsIncremental):
     """Adsquads stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-ad-squad-stats"""
     depends_on_stream = Adsquads
 
@@ -797,12 +882,12 @@ class AdsquadsStatsLifetime(Lifetime, Stats):
     depends_on_stream = Adsquads
 
 
-class CampaignsStatsHourly(Hourly, Stats):
+class CampaignsStatsHourly(Hourly, StatsIncremental):
     """Campaigns stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-campaign-stats"""
     depends_on_stream = Campaigns
 
 
-class CampaignsStatsDaily(Daily, Stats):
+class CampaignsStatsDaily(Daily, StatsIncremental):
     """Campaigns stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-campaign-stats"""
     depends_on_stream = Campaigns
 
