@@ -199,13 +199,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 
-  @Test
-  void testCheckWithKeyPairAuth_1() throws Exception {
-    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair_1.json")));
-    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
-    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
-  }
-
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
