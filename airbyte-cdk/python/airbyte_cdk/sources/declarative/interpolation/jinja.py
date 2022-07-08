@@ -13,7 +13,7 @@ from jinja2.exceptions import UndefinedError
 class JinjaInterpolation(Interpolation):
     def __init__(self):
         self._environment = Environment()
-        self._environment.globals.update(**{f.__name__: f for f in macros})
+        self._environment.globals.update(**macros)
 
     def eval(self, input_str: str, config, default=None, **kwargs):
         context = {"config": config, **kwargs}
