@@ -49,6 +49,14 @@ class ConditionalPaginator(Paginator, ABC):
         self._decoder = decoder or JsonDecoder()
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+        """
+        Returns a mapping {"next_page_token": <token>}
+        This is required to tell HttpStream there is another page to request.
+
+        :param response: to process
+        :param last_records: records extracted from the response
+        :return: mapping {"next_page_token": token}
+        """
         if self.stop_condition(response, last_records):
             return None
         else:
@@ -64,7 +72,7 @@ class ConditionalPaginator(Paginator, ABC):
         Predicate evaluating to True when there are no more pages to request
         :param response:
         :param last_records:
-        :return:
+        :return: boolean indicating whether we should stop paginating
         """
 
     def path(self):
