@@ -318,13 +318,17 @@ public class CdcAcceptanceTests {
         boolean sourceRecordValuesMatch = sourceRecordMap.keySet()
             .stream()
             .allMatch(column -> Objects.equals(sourceRecordMap.get(column), destRecordMap.get(column)));
-        boolean cdcUpdatedAtMatches = Instant.parse(String.valueOf(destRecordMap.get(CDC_UPDATED_AT_COLUMN))).isAfter(recordMatcher.minUpdatedAt);
+
+        final Object cdcUpdatedAtValue = destRecordMap.get(CDC_UPDATED_AT_COLUMN);
+        // use !isBefore instead of isAfter so that the match still succeeds if the timestamps are equal
+        boolean cdcUpdatedAtMatches = cdcUpdatedAtValue != null
+            && !Instant.parse(String.valueOf(cdcUpdatedAtValue)).isBefore(recordMatcher.minUpdatedAt);
 
         final Object cdcDeletedAtValue = destRecordMap.get(CDC_DELETED_AT_COLUMN);
         boolean cdcDeletedAtMatches;
         if (recordMatcher.minDeletedAt.isPresent()) {
-          cdcDeletedAtMatches = cdcDeletedAtValue != null &&
-              Instant.parse(String.valueOf(cdcDeletedAtValue)).isAfter(recordMatcher.minDeletedAt.get());
+          cdcDeletedAtMatches = cdcDeletedAtValue != null
+              && !Instant.parse(String.valueOf(cdcDeletedAtValue)).isBefore(recordMatcher.minDeletedAt.get());
         } else {
           cdcDeletedAtMatches = cdcDeletedAtValue == null;
         }
