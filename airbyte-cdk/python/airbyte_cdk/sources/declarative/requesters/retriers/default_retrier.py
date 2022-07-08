@@ -93,7 +93,7 @@ class DefaultRetrier(Retrier):
         elif self._ignore_response_filter.matches(response):
             return NonRetriableResponseStatus.IGNORE
         elif response.ok:
-            return NonRetriableResponseStatus.OK
+            return NonRetriableResponseStatus.SUCCESS
         else:
             return NonRetriableResponseStatus.FAIL
 

@@ -116,7 +116,7 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     "test_name, status_code, response_status, len_expected_records",
     [
         ("test_parse_response_fails_if_should_retry_is_fail", 404, NonRetriableResponseStatus.FAIL, None),
-        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, NonRetriableResponseStatus.OK, 1),
+        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, NonRetriableResponseStatus.SUCCESS, 1),
         ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, NonRetriableResponseStatus.IGNORE, 0),
     ],
 )

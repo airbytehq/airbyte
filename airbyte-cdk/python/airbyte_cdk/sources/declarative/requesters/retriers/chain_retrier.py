@@ -44,8 +44,8 @@ class ChainRetrier(Retrier):
         ignore = False
         for retrier in self._retriers:
             should_retry = retrier.should_retry(response)
-            if should_retry == NonRetriableResponseStatus.OK:
-                return NonRetriableResponseStatus.OK
+            if should_retry == NonRetriableResponseStatus.SUCCESS:
+                return NonRetriableResponseStatus.SUCCESS
             if should_retry == NonRetriableResponseStatus.IGNORE:
                 ignore = True
             elif not isinstance(retry, RetryResponseStatus):

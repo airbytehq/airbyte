@@ -15,7 +15,7 @@ class NonRetriableResponseStatus(Enum):
     Response statuses for non retriable responses
     """
 
-    OK = "OK"  # "Request was successful"
+    SUCCESS = "SUCCESS"  # "Request was successful"
     FAIL = "FAIL"  # "Request failed unexpectedly"
     IGNORE = "IGNORE"  # "Request failed but can be ignored"
 
