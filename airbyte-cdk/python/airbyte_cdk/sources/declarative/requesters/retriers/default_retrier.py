@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List, Optional, Union
+from typing import List, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.retriers.backoff_strategies.exponential_backoff_strategy import ExponentialBackoffStrategy
@@ -76,20 +76,20 @@ class DefaultRetrier(Retrier):
         else:
             self._backoff_strategy = [DefaultRetrier.DEFAULT_BACKOFF_STRATEGY()]
 
-        self._last_request_to_attempt_count = {}
+        self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 
     @property
     def max_retries(self) -> Union[int, None]:
         return self._max_retries
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
-        url = response.request.url
-        if url not in self._last_request_to_attempt_count:
-            self._last_request_to_attempt_count = {url: 1}
+        request = response.request
+        if request not in self._last_request_to_attempt_count:
+            self._last_request_to_attempt_count = {request: 1}
         else:
-            self._last_request_to_attempt_count[url] += 1
+            self._last_request_to_attempt_count[request] += 1
         if self._retry_response_filter.matches(response):
-            return RetryResponseStatus(self._backoff_time(response, self._last_request_to_attempt_count[url]))
+            return RetryResponseStatus(self._backoff_time(response, self._last_request_to_attempt_count[request]))
         elif self._ignore_response_filter.matches(response):
             return NonRetriableResponseStatus.IGNORE
         elif response.ok:
