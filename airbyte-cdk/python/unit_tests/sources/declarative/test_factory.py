@@ -2,22 +2,26 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
+from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier import ChainRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
@@ -50,13 +54,23 @@ def test_factory():
 
 def test_interpolate_config():
     content = """
-authenticator:
-  class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
-  token: "{{ config['apikey'] }}"
+    authenticator:
+      class_name: airbyte_cdk.sources.declarative.auth.oauth.DeclarativeOauth2Authenticator
+      client_id: "some_client_id"
+      client_secret: "some_client_secret"
+      token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"
+      refresh_token: "{{ config['apikey'] }}"
+      refresh_request_body:
+        body_field: "yoyoyo"
+        interpolated_body_field: "{{ config['apikey'] }}"
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._tokens == ["verysecrettoken"]
+    assert authenticator._client_id._string == "some_client_id"
+    assert authenticator._client_secret._string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token._string == "verysecrettoken"
+    assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
 def test_list_based_stream_slicer_with_values_refd():
@@ -84,6 +98,37 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
+def test_datetime_stream_slicer():
+    content = """
+    stream_slicer:
+        class_name: airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer
+        options:
+          datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_time'] }}"
+          min_datetime: "{{ config['start_time'] + day_delta(2) }}"
+        end_datetime:
+          class_name: airbyte_cdk.sources.declarative.datetime.min_max_datetime.MinMaxDatetime
+          datetime: "{{ config['end_time'] }}"
+        step: "10d"
+        cursor_value: "created"
+    """
+
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert type(stream_slicer) == DatetimeStreamSlicer
+    assert stream_slicer._timezone == datetime.timezone.utc
+    assert type(stream_slicer._start_datetime) == MinMaxDatetime
+    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%d"
+    assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
+    assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
+    assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
+    assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
+    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._cursor_value._string == "created"
 
 
 def test_full_config():
@@ -124,8 +169,8 @@ requester:
     class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
-  retrier:
-    class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
+  error_handler:
+    type: DefaultErrorHandler
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
@@ -212,7 +257,7 @@ def test_create_requester():
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
-    assert isinstance(component._retrier, DefaultRetrier)
+    assert isinstance(component._error_handler, DefaultErrorHandler)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, TokenAuthenticator)
@@ -222,23 +267,25 @@ def test_create_requester():
     assert component._name == "lists"
 
 
-def test_create_chain_retrier():
+def test_create_composite_error_handler():
     content = """
-        retrier:
-          class_name: "airbyte_cdk.sources.declarative.requesters.retriers.chain_retrier.ChainRetrier"
-          retriers:
-            - retry_response_filter:
-                predicate: "{{ 'code' in decoded_response }}"
-            - retry_response_filter:
-                http_codes: [ 403 ]
+        error_handler:
+          class_name: "airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler.CompositeErrorHandler"
+          error_handlers:
+            - response_filters:
+                - predicate: "{{ 'code' in decoded_response }}"
+                  action: RETRY
+            - response_filters:
+                - http_codes: [ 403 ]
+                  action: RETRY
     """
     config = parser.parse(content)
-    component = factory.create_component(config["retrier"], input_config)()
-    assert len(component._retriers) == 2
-    assert isinstance(component._retriers[0], DefaultRetrier)
-    assert component._retriers[0]._retry_response_filter._predicate._condition == "{{ 'code' in decoded_response }}"
-    assert component._retriers[1]._retry_response_filter._http_codes == [403]
-    assert isinstance(component, ChainRetrier)
+    component = factory.create_component(config["error_handler"], input_config)()
+    assert len(component._error_handlers) == 2
+    assert isinstance(component._error_handlers[0], DefaultErrorHandler)
+    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
+    assert isinstance(component, CompositeErrorHandler)
 
 
 def test_full_config_with_defaults():
