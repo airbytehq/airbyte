@@ -11,7 +11,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from deprecated import deprecated
 
-TRACE_LEVEL_NUM = 5
+TRACE_LEVEL_NUM = 15
 
 LOGGING_CONFIG = {
     "version": 1,
@@ -50,8 +50,8 @@ class AirbyteLogFormatter(logging.Formatter):
         logging.ERROR: "ERROR",
         logging.WARNING: "WARN",
         logging.INFO: "INFO",
-        logging.DEBUG: "DEBUG",
         TRACE_LEVEL_NUM: "TRACE",
+        logging.DEBUG: "DEBUG",
     }
 
     def format(self, record: logging.LogRecord) -> str:

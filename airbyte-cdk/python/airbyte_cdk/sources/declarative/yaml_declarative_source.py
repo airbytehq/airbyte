@@ -14,7 +14,7 @@ class YamlDeclarativeSource(DeclarativeSource):
     def __init__(self, path_to_yaml):
         self._factory = DeclarativeComponentFactory()
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
-        self.logger = logging.getLogger(f"airbyte.{self.name or ''}")
+        self.logger = logging.getLogger(f"airbyte.{self.name}")
 
     @property
     def connection_checker(self):

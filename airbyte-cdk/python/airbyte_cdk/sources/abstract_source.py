@@ -103,15 +103,6 @@ class AbstractSource(Source, ABC):
         self._stream_to_instance_map = stream_instances
         with create_timer(self.name) as timer:
             for configured_stream in catalog.streams:
-                logger.debug(
-                    f"Syncing stream: {configured_stream.stream.name}",
-                    extra={
-                        "stream_name": configured_stream.stream.name,
-                        "sync_mode": configured_stream.sync_mode.name,
-                        "primary_key": configured_stream.primary_key,
-                        "cursor_field": configured_stream.cursor_field,
-                    },
-                )
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 if not stream_instance:
                     raise KeyError(
@@ -154,6 +145,16 @@ class AbstractSource(Source, ABC):
         if internal_config.page_size and isinstance(stream_instance, HttpStream):
             logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
             stream_instance.page_size = internal_config.page_size
+
+        logger.debug(
+            f"Syncing stream: {configured_stream.stream.name}",
+            extra={
+                "stream_name": configured_stream.stream.name,
+                "sync_mode": configured_stream.sync_mode,
+                "primary_key": configured_stream.primary_key,
+                "cursor_field": configured_stream.cursor_field,
+            },
+        )
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
