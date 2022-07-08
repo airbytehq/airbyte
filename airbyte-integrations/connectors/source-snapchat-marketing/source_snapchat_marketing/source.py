@@ -140,10 +140,10 @@ class SnapchatMarketingException(Exception):
     """Just for formatting the exception as SnapchatMarketing"""
 
 
-def get_depend_on_ids(depends_on_stream, slice_key_name: str) -> List:
+def get_depend_on_ids(parent, slice_key_name: str) -> List:
     """This auxiliary function is to help retrieving the ids from another stream
 
-    :param depends_on_stream: instance of stream class from what we need to retrieve ids
+    :param parent: instance of stream class from what we need to retrieve ids
     :param slice_key_name: The key in result slices generator
     :param logger: Logger to log the messages
     :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
@@ -161,8 +161,9 @@ def get_depend_on_ids(depends_on_stream, slice_key_name: str) -> List:
     # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
     # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
     # return if the same ids are requested in the stream. This saves us a lot of time and requests
-    if depends_on_stream.__class__.__name__ in auxiliary_id_map:
-        return auxiliary_id_map[depends_on_stream.__class__.__name__]
+    parent_name = parent.__class__.__name__
+    if parent_name in auxiliary_id_map:
+        return auxiliary_id_map[parent_name]
 
     # Some damn logic a?
     # Relax, that has some meaning:
@@ -187,19 +188,19 @@ def get_depend_on_ids(depends_on_stream, slice_key_name: str) -> List:
     # After getting all the account_ids, they go as slices to Creatives (Media, Ad, AdSquad, etc...)
     # and are used in the path function as a path variables according to the API docs
 
-    depend_on_stream_ids = []
+    parent_ids = []
 
-    depend_on_stream_slices = depends_on_stream.stream_slices(sync_mode=SyncMode.full_refresh)
-    for depend_on_stream_slice in depend_on_stream_slices:
-        records = depends_on_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=depend_on_stream_slice)
+    parent_stream_slices = parent.stream_slices(sync_mode=SyncMode.full_refresh)
+    for parent_stream_slice in parent_stream_slices:
+        records = parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=parent_stream_slice)
         for record in records:
-            depend_on_stream_ids.append({slice_key_name: record["id"]})
+            parent_ids.append({slice_key_name: record["id"]})
 
-    if not depend_on_stream_ids:
+    if not parent_ids:
         return []
 
-    auxiliary_id_map[depends_on_stream.__class__.__name__] = depend_on_stream_ids
-    return depend_on_stream_ids
+    auxiliary_id_map[parent_name] = parent_ids
+    return parent_ids
 
 
 class SnapchatMarketingStream(HttpStream, ABC):
@@ -275,8 +276,8 @@ class SnapchatMarketingStream(HttpStream, ABC):
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     cursor_field = "updated_at"
-    depends_on_stream = None
-    depends_on_stream_name = ''
+    parent = None
+    parent_name = ''
     slice_key_name = "ad_account_id"
 
     last_slice = None
@@ -293,13 +294,13 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
         stream_slices = default_stream_slices_return_value
 
-        if self.depends_on_stream:
-            stream = self.depends_on_stream(
+        if self.parent:
+            stream = self.parent(
                 authenticator=self.authenticator,
                 start_date=self.start_date,
                 end_date=self.end_date
             )
-            self.depends_on_stream_name = stream.name
+            self.parent_name = stream.name
             stream_slices = get_depend_on_ids(stream, self.slice_key_name)
 
         if not stream_slices:
@@ -378,7 +379,7 @@ class Organizations(SnapchatMarketingStream):
 class Adaccounts(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts"""
 
-    depends_on_stream = Organizations
+    parent = Organizations
     slice_key_name = "organization_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -388,13 +389,13 @@ class Adaccounts(IncrementalSnapchatMarketingStream):
 class Creatives(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-creatives"""
 
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
 
 
 class Media(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-media"""
 
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
 
     @property
     def response_item_name(self):
@@ -404,25 +405,25 @@ class Media(IncrementalSnapchatMarketingStream):
 class Campaigns(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-campaigns"""
 
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
 
 
 class Ads(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-ads-under-an-ad-account"""
 
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
 
 
 class Adsquads(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-squads-under-an-ad-account"""
 
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
 
 
 class Segments(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-audience-segments"""
 
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
 
 
 class Stats(SnapchatMarketingStream, ABC):
@@ -434,11 +435,11 @@ class Stats(SnapchatMarketingStream, ABC):
     slice_key_name = 'id'
     schema_name = 'basic_stats'
     item_path: str = ''
-    depends_on_stream_name: str = ''
+    parent_name: str = ''
 
     @property
     @abstractmethod
-    def depends_on_stream(self) -> SnapchatMarketingStream:
+    def parent(self) -> SnapchatMarketingStream:
         """Stream Class to extract entity ids from"""
 
     @property
@@ -448,12 +449,12 @@ class Stats(SnapchatMarketingStream, ABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice represents each entity id from parent stream"""
 
-        stream = self.depends_on_stream(
+        stream = self.parent(
             authenticator=self.authenticator,
             start_date=self.start_date,
             end_date=self.end_date
         )
-        self.depends_on_stream_name = stream.name
+        self.parent_name = stream.name
         stream_slices = get_depend_on_ids(stream, self.slice_key_name)
 
         if not stream_slices:
@@ -464,7 +465,7 @@ class Stats(SnapchatMarketingStream, ABC):
         return stream_slices
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"{self.depends_on_stream_name}/{stream_slice[self.slice_key_name]}/stats"
+        return f"{self.parent_name}/{stream_slice[self.slice_key_name]}/stats"
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -513,7 +514,7 @@ class StatsIncremental(Stats, IncrementalMixin):
     primary_key = ['id', 'granularity', 'start_time']
     cursor_field: str = 'start_date'
     slice_period: int = 0  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
-    number_of_depends_on_stream_ids: int = 0
+    number_of_parent_ids: int = 0
     number_of_last_records: int = 0
 
     def __init__(self, **kwargs):
@@ -556,7 +557,7 @@ class StatsIncremental(Stats, IncrementalMixin):
         entity_slices = super().stream_slices(sync_mode=SyncMode.full_refresh)  # get all entities
 
         # save a number of entities we need to get stats for
-        self.number_of_depends_on_stream_ids = len(entity_slices)
+        self.number_of_parent_ids = len(entity_slices)
 
         # within each date period extract data for all entities
         # it allows incremental sync implementation with slice period granularity
@@ -590,7 +591,7 @@ class StatsIncremental(Stats, IncrementalMixin):
             if record_end_date == self.end_date:
                 self.number_of_last_records += 1
                 # Update state if 'last' records for all dependant entities have been read
-                if self.number_of_depends_on_stream_ids == self.number_of_last_records:
+                if self.number_of_parent_ids == self.number_of_last_records:
                     self.state = record_end_date
 
 
@@ -835,66 +836,66 @@ class Total(Granularity):
 
 class AdaccountsStatsHourly(Hourly, StatsIncremental):
     """Adaccounts stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
     metrics = ['spend']
 
 
 class AdaccountsStatsDaily(Daily, StatsIncremental):
     """Adaccounts stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
     metrics = ['spend']
 
 
 class AdaccountsStatsLifetime(Lifetime, Stats):
     """Adaccounts stats with Lifetime granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
-    depends_on_stream = Adaccounts
+    parent = Adaccounts
     # item_path = 'breakdown_stats'
     metrics = ['spend']
 
 
 class AdsStatsHourly(Hourly, StatsIncremental):
     """Ads stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-ad-stats"""
-    depends_on_stream = Ads
+    parent = Ads
 
 
 class AdsStatsDaily(Daily, StatsIncremental):
     """Ads stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-ad-stats"""
-    depends_on_stream = Ads
+    parent = Ads
 
 
 class AdsStatsLifetime(Lifetime, Stats):
     """Ads stats with Lifetime granularity: https://marketingapi.snapchat.com/docs/#get-ad-stats"""
-    depends_on_stream = Ads
+    parent = Ads
 
 
 class AdsquadsStatsHourly(Hourly, StatsIncremental):
     """Adsquads stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-ad-squad-stats"""
-    depends_on_stream = Adsquads
+    parent = Adsquads
 
 
 class AdsquadsStatsDaily(Daily, StatsIncremental):
     """Adsquads stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-ad-squad-stats"""
-    depends_on_stream = Adsquads
+    parent = Adsquads
 
 
 class AdsquadsStatsLifetime(Lifetime, Stats):
     """Adsquads stats with Lifetime granularity: https://marketingapi.snapchat.com/docs/#get-ad-squad-stats"""
-    depends_on_stream = Adsquads
+    parent = Adsquads
 
 
 class CampaignsStatsHourly(Hourly, StatsIncremental):
     """Campaigns stats with Hourly granularity: https://marketingapi.snapchat.com/docs/#get-campaign-stats"""
-    depends_on_stream = Campaigns
+    parent = Campaigns
 
 
 class CampaignsStatsDaily(Daily, StatsIncremental):
     """Campaigns stats with Daily granularity: https://marketingapi.snapchat.com/docs/#get-campaign-stats"""
-    depends_on_stream = Campaigns
+    parent = Campaigns
 
 
 class CampaignsStatsLifetime(Lifetime, Stats):
     """Campaigns stats with Lifetime granularity: https://marketingapi.snapchat.com/docs/#get-campaign-stats"""
-    depends_on_stream = Campaigns
+    parent = Campaigns
 
 
 class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
