@@ -248,9 +248,7 @@ class Client:
             builder.add_object(json.load(fp))
 
         result = builder.to_schema()
-        if "items" in result and "properties" in result["items"]:
-            result = result["items"]["properties"]
-        return result
+        return result["properties"]
 
     def load_nested_json(self, fp) -> list:
         if self._reader_format == "jsonl":
