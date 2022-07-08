@@ -6,7 +6,7 @@ import json
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_pagination_strategy import InterpolatedPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.cursor_pagination_strategy import CursorPaginationStrategy
 
 
 @pytest.mark.parametrize(
@@ -22,7 +22,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginati
 def test_interpolated_pagination_strategy(test_name, template_string, expected_token):
     decoder = JsonDecoder()
     config = {"config_key": "config_value"}
-    strategy = InterpolatedPaginationStrategy(template_string, decoder, config)
+    strategy = CursorPaginationStrategy(template_string, config, decoder)
 
     response = requests.Response()
     response.headers = {"has_more": True}
