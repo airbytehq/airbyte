@@ -146,8 +146,16 @@ class SimpleRetriever(Retriever, HttpStream):
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
+        """
+        Return the path the submit the next request to.
+        If the paginator points to a path, follow it, else return the requester's path
+        :param stream_state:
+        :param stream_slice:
+        :param next_page_token:
+        :return:
+        """
+        # Warning: use self.state instead of the stream_state passed as argument!
         paginator_path = self._paginator.path()
-        print(f"updated_path: {paginator_path}")
         if paginator_path:
             return paginator_path
         else:
@@ -165,12 +173,8 @@ class SimpleRetriever(Retriever, HttpStream):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        if next_page_token:
-            print(f"next_page_token: {next_page_token}")
-            # exit()
         static_request_params = self._requester.request_params(self.state, stream_slice, next_page_token)
         paginator_request_params = self._paginator.request_params()
-        print(f"paginator_request_params: {paginator_request_params}")
         return {**static_request_params, **paginator_request_params}
 
     @property
