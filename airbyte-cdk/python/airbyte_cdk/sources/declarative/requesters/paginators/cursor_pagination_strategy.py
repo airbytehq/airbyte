@@ -12,7 +12,17 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class CursorPaginationStrategy(PaginationStrategy):
+    """
+    Pagination strategy that evaluates an interpolated string to define the next page token
+    """
+
     def __init__(self, cursor_value: Union[InterpolatedString, str], config: Config, decoder: Decoder = None):
+        """
+
+        :param cursor_value: template string evaluating to the cursor value
+        :param config: connection config
+        :param decoder: decoder to decode the response
+        """
         if isinstance(cursor_value, str):
             cursor_value = InterpolatedString(cursor_value)
         self._cursor_value = cursor_value
