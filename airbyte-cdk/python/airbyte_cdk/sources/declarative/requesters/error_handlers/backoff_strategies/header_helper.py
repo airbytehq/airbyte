@@ -16,7 +16,7 @@ def get_numeric_value_from_header(response: requests.Response, header: str, rege
         if regex:
             match = regex.match(header_value)
             if match:
-                header_value = match[0]
+                header_value = match.group()
         if header_value.isnumeric():
             return float(header_value)
     elif isinstance(header_value, numbers.Number):
