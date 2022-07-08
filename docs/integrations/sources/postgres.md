@@ -19,6 +19,9 @@
 
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
+
+Note, Postgres source currently does not handle schemas larger than 4MB.
+
 ## Getting Started \(Airbyte Cloud\)
 
 On Airbyte Cloud, only TLS connections to your Postgres instance are supported. Other than that, you can proceed with the open-source instructions below.
