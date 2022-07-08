@@ -21,9 +21,15 @@ class ResponseAction(Enum):
 
 
 class ResponseStatus:
-    """ """
+    """
+    ResponseAction amended with backoff time if a action is RETRY
+    """
 
     def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None):
+        """
+        :param response_action: response action to execute
+        :param retry_in: backoff time (if action is RETRY)
+        """
         if isinstance(response_action, str):
             response_action = ResponseAction[response_action]
         if retry_in:

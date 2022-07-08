@@ -29,6 +29,10 @@ class CompositeErrorHandler(ErrorHandler):
     """
 
     def __init__(self, error_handlers: List[ErrorHandler]):
+        """
+
+        :param error_handlers: list of error handlers
+        """
         self._error_handlers = error_handlers
         assert self._error_handlers
 

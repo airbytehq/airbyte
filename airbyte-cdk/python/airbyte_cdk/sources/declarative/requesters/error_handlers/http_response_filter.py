@@ -17,6 +17,13 @@ class HttpResponseFilter:
     def __init__(
         self, action: Union[ResponseAction, str], *, http_codes: Set[int] = None, error_message_contain: str = None, predicate: str = ""
     ):
+        """
+
+        :param action: action to execute if a request matches
+        :param http_codes: http code of matching requests
+        :param error_message_contain: error substring of matching requests
+        :param predicate: predicate to apply to determine if a request is matching
+        """
         if isinstance(action, str):
             action = ResponseAction[action]
         self._http_codes = http_codes or set()
