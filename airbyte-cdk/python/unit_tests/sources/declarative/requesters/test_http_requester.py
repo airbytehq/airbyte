@@ -25,13 +25,13 @@ def test():
 
     authenticator = MagicMock()
 
-    retrier = MagicMock()
+    error_handler = MagicMock()
     max_retries = 10
     should_retry = True
     backoff_time = 1000
-    retrier.max_retries = max_retries
-    retrier.should_retry.return_value = should_retry
-    retrier.backoff_time.return_value = backoff_time
+    error_handler.max_retries = max_retries
+    error_handler.should_retry.return_value = should_retry
+    error_handler.backoff_time.return_value = backoff_time
 
     config = {"url": "https://airbyte.io"}
     stream_slice = {"id": "1234"}
@@ -45,7 +45,7 @@ def test():
         http_method=http_method,
         request_options_provider=request_options_provider,
         authenticator=authenticator,
-        error_handler=retrier,
+        error_handler=error_handler,
         config=config,
     )
 

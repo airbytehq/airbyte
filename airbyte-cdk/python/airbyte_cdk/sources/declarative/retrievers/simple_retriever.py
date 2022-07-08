@@ -58,7 +58,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def raise_on_http_errors(self) -> bool:
-        # never raise on http_errors because this overrides the retrier logic...
+        # never raise on http_errors because this overrides the error handler logic...
         return False
 
     def should_retry(self, response: requests.Response) -> bool:

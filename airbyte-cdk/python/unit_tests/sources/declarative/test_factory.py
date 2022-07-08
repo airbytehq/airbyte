@@ -249,7 +249,7 @@ def test_create_requester():
     assert component._name == "lists"
 
 
-def test_create_chain_retrier():
+def test_create_composite_error_handler():
     content = """
         error_handler:
           class_name: "airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler.CompositeErrorHandler"
