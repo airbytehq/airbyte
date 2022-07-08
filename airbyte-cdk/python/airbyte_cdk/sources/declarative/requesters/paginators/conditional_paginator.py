@@ -32,6 +32,14 @@ class ConditionalPaginator(Paginator, ABC):
         url_base: str = "",
         decoder: Decoder = None,
     ):
+        """
+        :param request_options_provider: additional request options to set
+        :param page_token_option: request option to set the the next_page_token
+        :param pagination_strategy: Strategy defining how to get the next page token
+        :param config: connection config
+        :param url_base: endpoint's base url
+        :param decoder: decoder to decode the response
+        """
         self._request_options_provider = request_options_provider
         self._config = config
         self._page_token_option = page_token_option
@@ -53,7 +61,7 @@ class ConditionalPaginator(Paginator, ABC):
     @abstractmethod
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
         """
-
+        Predicate evaluating to True when there are no more pages to request
         :param response:
         :param last_records:
         :return:
@@ -98,6 +106,27 @@ class ConditionalPaginator(Paginator, ABC):
 
 
 class InterpolatedConditionalPaginator(ConditionalPaginator):
+    """
+
+    example:
+    * stops paginating when "{{ decoded_response._metadata.self == decoded_response._metadata.next }}"
+    * sets "page_size" request param to 10
+    * updates the path with "{{ decoded_response._metadata.next }}"
+    `
+      paginator:
+        class_name: "airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator.InterpolatedConditionalPaginator"
+        stop_condition: "{{ decoded_response._metadata.self == decoded_response._metadata.next }}"
+        request_options_provider:
+          request_parameters:
+            page_size: 10
+        page_token_option:
+          option_type: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ decoded_response._metadata.next }}"
+    `
+    """
+
     def __init__(
         self,
         stop_condition: str,
@@ -108,6 +137,16 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
         url_base: str = None,
         decoder: Decoder = None,
     ):
+        """
+
+        :param stop_condition: Interpolated string to evaluate defining when to stop paginating
+        :param request_options_provider: additional request options to set
+        :param page_token_option: request option to set the the next_page_token
+        :param pagination_strategy: Strategy defining how to get the next page token
+        :param config: connection config
+        :param url_base: endpoint's base url
+        :param decoder: decoder to decode the response
+        """
         self._decoder = decoder
         self._stop_condition_interpolator = InterpolatedBoolean(stop_condition)
         super().__init__(request_options_provider, page_token_option, pagination_strategy, config, url_base, decoder)

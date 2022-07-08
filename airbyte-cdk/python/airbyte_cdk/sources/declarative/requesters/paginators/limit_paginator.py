@@ -16,6 +16,64 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class LimitPaginator(ConditionalPaginator):
+    """
+    Limit paginator.
+    Requests pages of results with a maximum number of records defined by limit_value.
+
+
+    Examples:
+        1.
+        * fetches up to 10 records at a time by setting the "limit" request param to 10
+        * updates the request path with  "{{ decoded_response._metadata.next }}"
+          paginator:
+            type: "LimitPaginator"
+            limit_value: 10
+            limit_option:
+              option_type: request_parameter
+              field_name: page_size
+            page_token_option:
+              option_type: path
+            pagination_strategy:
+              type: "CursorPagination"
+              cursor_value: "{{ decoded_response._metadata.next }}"
+        `
+
+        2.
+        * fetches up to 5 records at a time by setting the "page_size" header to 5
+        * increments a record counter and set the request parameter "offset" to the value of the counter
+        `
+          paginator:
+            type: "LimitPaginator"
+            limit_value: 5
+            limit_option:
+              option_type: header
+              field_name: page_size
+            pagination_strategy:
+              type: "OffsetIncrement"
+            page_token:
+              option_type: "request_parameter"
+              field_name: "offset"
+        `
+
+        3.
+        * fetches up to 5 records at a time by setting the "page_size" request param to 5
+        * increments a page counter and set the request parameter "page" to the value of the counter
+        `
+          paginator:
+            type: "LimitPaginator"
+            limit_value: 5
+            limit_option:
+              option_type: request_parameter
+              field_name: page_size
+            pagination_strategy:
+              type: "PageIncrement"
+            page_token:
+              option_type: "request_parameter"
+              field_name: "page"
+        `
+
+    """
+
     def __init__(
         self,
         limit_value: int,
@@ -26,6 +84,16 @@ class LimitPaginator(ConditionalPaginator):
         url_base: str,
         decoder: Decoder = None,
     ):
+        """
+
+        :param limit_value: the number of records to request
+        :param limit_option: the request option to set the limit
+        :param page_token_option: the request option to set the page token
+        :param pagination_strategy: Strategy defining how to get the next page token
+        :param config: connection config
+        :param url_base: endpoint's base url
+        :param decoder: decoder to decode the response
+        """
         self._config = config
         self._limit = limit_value
 
