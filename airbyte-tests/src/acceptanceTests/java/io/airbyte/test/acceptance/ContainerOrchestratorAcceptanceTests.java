@@ -46,12 +46,12 @@ import org.slf4j.MDC;
  * This class tests behavior that is specific to container-orchestrator deployments, such as scaling
  * down and back up workers while a sync is running to ensure it is not affected by a deployment.
  * <p>
- * This test class is only enabled if the CONTAINER_ORCHESTRATOR environment variable is true. At
- * the time of writing, this is only the case for kubernetes deployments, as container orchestrators
- * have not yet been ported over to docker.
+ * This test class is only enabled if the KUBE environment variable is true, because container
+ * orchestrators are currently only used by kuberenetes deployments, as container orchestrators have
+ * not yet been ported over to docker.
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
-@EnabledIfEnvironmentVariable(named = "CONTAINER_ORCHESTRATOR",
+@EnabledIfEnvironmentVariable(named = "KUBE",
                               matches = "true")
 public class ContainerOrchestratorAcceptanceTests {
 
