@@ -3,6 +3,7 @@
 #
 from typing import Any, List, Mapping
 
+import dpath.exceptions
 import dpath.util
 from airbyte_cdk.sources.declarative.transformations.transformer import RecordTransformation
 from airbyte_cdk.sources.declarative.types import FieldPointer
@@ -28,7 +29,8 @@ class RemoveFields(RecordTransformation):
         for pointer in self._field_pointers:
             try:
                 dpath.util.delete(record, pointer)
-            except KeyError:
+            except dpath.exceptions.PathNotFound:
+                # if the (potentially nested) property does not exist, silently skip
                 pass
 
         return record
