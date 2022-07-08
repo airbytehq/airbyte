@@ -15,6 +15,14 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 
 class DefaultErrorHandler(ErrorHandler):
     """
+    Default error handler.
+    By default, the handler will retry server errors (HTTP 5XX) with exponential backoff.
+
+    If the response is successful, then return SUCCESS
+    Otherwise, iterate over the response_filters.
+    If any of the filter match the response, then return the appropriate status.
+    If the match is RETRY, then iterate sequentially over the backoff_strategies to determine how long to backoff.
+
     Sample configs:
 
     1. retry 10 times
@@ -75,6 +83,11 @@ class DefaultErrorHandler(ErrorHandler):
         max_retries: Optional[int] = 5,
         backoff_strategies: Optional[List[BackoffStrategy]] = None,
     ):
+        """
+        :param response_filters: response filters to iterate on
+        :param max_retries: maximum retry attemps
+        :param backoff_strategies: list of backoff strategies to use to determine how long to wait before retrying
+        """
         self._max_retries = max_retries
         self._response_filters = response_filters or []
 

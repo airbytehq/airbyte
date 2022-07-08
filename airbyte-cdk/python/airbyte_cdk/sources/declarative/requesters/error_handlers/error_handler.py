@@ -21,6 +21,8 @@ class ResponseAction(Enum):
 
 
 class ResponseStatus:
+    """ """
+
     def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None):
         if isinstance(response_action, str):
             response_action = ResponseAction[response_action]
