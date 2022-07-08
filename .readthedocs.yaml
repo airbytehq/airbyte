@@ -12,7 +12,10 @@ sphinx:
 
 # Set the version of Python and requirements required to build your docs
 python:
-  version: "3.9"
+  # TODO: this is a hack, CDK supports 3.9 but readthedocs only supports up to 3.8
+  # we should upgrade this whenever readthedocs is fixed
+  # manually verified the docs successfully generate
+  version: "3.8"
   install:
     - method: pip
       path: airbyte-cdk/python
