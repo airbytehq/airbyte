@@ -3,14 +3,13 @@
 #
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
 
 import requests
 
 
-class NonRetriableResponseStatus(Enum):
+class ResponseAction(Enum):
     """
     Response statuses for non retriable responses
     """
@@ -18,21 +17,49 @@ class NonRetriableResponseStatus(Enum):
     SUCCESS = "SUCCESS"  # "Request was successful"
     FAIL = "FAIL"  # "Request failed unexpectedly"
     IGNORE = "IGNORE"  # "Request failed but can be ignored"
+    RETRY = "RETRY"  # Request failed and should be retried
 
 
-@dataclass
-class RetryResponseStatus:
-    """
-    Response status for request to be retried
+class ResponseStatus:
+    def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None):
+        if isinstance(response_action, str):
+            response_action = ResponseAction[response_action]
+        if retry_in:
+            assert response_action == ResponseAction.RETRY
+        self._retry_in = retry_in
+        self._action = response_action
 
-    Attributes:
-        retry_in: time to wait (in seconds) before retrying the request
-    """
+    @property
+    def action(self):
+        return self._action
 
-    retry_in: float
+    @property
+    def retry_in(self) -> Optional[float]:
+        return self._retry_in
 
+    @classmethod
+    def success(cls):
+        return ResponseStatus(ResponseAction.SUCCESS)
 
-ResponseStatus = Union[NonRetriableResponseStatus, RetryResponseStatus]
+    @classmethod
+    def fail(cls):
+        return ResponseStatus(ResponseAction.FAIL)
+
+    @classmethod
+    def ignore(cls):
+        return ResponseStatus(ResponseAction.IGNORE)
+
+    @classmethod
+    def retry(cls, retry_in: Optional[float]):
+        return ResponseStatus(ResponseAction.RETRY, retry_in)
+
+    def __eq__(self, other):
+        if not other:
+            return not self
+        return self.action == other.action and self.retry_in == other.retry_in
+
+    def __hash__(self):
+        return hash([self.action, self.retry_in])
 
 
 class ErrorHandler(ABC):

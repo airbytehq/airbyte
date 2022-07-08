@@ -9,12 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import (
-    ErrorHandler,
-    NonRetriableResponseStatus,
-    ResponseStatus,
-    RetryResponseStatus,
-)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler, ResponseAction, ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 
 
@@ -64,14 +59,17 @@ class DefaultErrorHandler(ErrorHandler):
 
     def __init__(
         self,
-        retry_response_filter: HttpResponseFilter = None,
-        ignore_response_filter: HttpResponseFilter = None,
+        response_filters: Optional[List[HttpResponseFilter]] = None,
         max_retries: Optional[int] = 5,
         backoff_strategy: Optional[List[BackoffStrategy]] = None,
     ):
         self._max_retries = max_retries
-        self._retry_response_filter = retry_response_filter or HttpResponseFilter(HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS)
-        self._ignore_response_filter = ignore_response_filter or HttpResponseFilter(set())
+        self._response_filters = response_filters or []
+
+        if not self._has_retry_filter(self._response_filters):
+            self._response_filters.append(HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS))
+        if not self._has_ignore_filter(self._response_filters):
+            self._response_filters.append(HttpResponseFilter(ResponseAction.IGNORE))
 
         if backoff_strategy:
             self._backoff_strategy = backoff_strategy
@@ -80,24 +78,40 @@ class DefaultErrorHandler(ErrorHandler):
 
         self._last_request_to_attempt_count: MutableMapping[requests.PreparedRequest, int] = {}
 
+    def _has_retry_filter(self, response_filters: List[HttpResponseFilter]):
+        return self._has_filter_of_type(response_filters, ResponseAction)
+
+    def _has_ignore_filter(self, response_filters: List[HttpResponseFilter]):
+        return self._has_filter_of_type(response_filters, ResponseAction)
+
+    def _has_filter_of_type(self, response_filters: List[HttpResponseFilter], filter_type: ResponseAction):
+        if response_filters:
+            return any([r.action == filter_type for r in response_filters])
+        else:
+            return False
+
     @property
     def max_retries(self) -> Union[int, None]:
         return self._max_retries
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         request = response.request
+        if response.ok:
+            return ResponseStatus.success()
         if request not in self._last_request_to_attempt_count:
             self._last_request_to_attempt_count = {request: 1}
         else:
             self._last_request_to_attempt_count[request] += 1
-        if self._retry_response_filter.matches(response):
-            return RetryResponseStatus(self._backoff_time(response, self._last_request_to_attempt_count[request]))
-        elif self._ignore_response_filter.matches(response):
-            return NonRetriableResponseStatus.IGNORE
-        elif response.ok:
-            return NonRetriableResponseStatus.SUCCESS
-        else:
-            return NonRetriableResponseStatus.FAIL
+
+        for response_filter in self._response_filters:
+            filter_action = response_filter.matches(response)
+            if filter_action is not None:
+                if filter_action == ResponseAction.RETRY:
+                    return ResponseStatus(ResponseAction.RETRY, self._backoff_time(response, self._last_request_to_attempt_count[request]))
+                else:
+                    return ResponseStatus(filter_action)
+        # Fail if the response matches no filters
+        return ResponseStatus.fail()
 
     def _backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         backoff = None

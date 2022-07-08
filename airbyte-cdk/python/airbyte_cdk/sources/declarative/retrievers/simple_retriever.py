@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import NonRetriableResponseStatus, RetryResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
@@ -71,7 +71,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return isinstance(self._requester.should_retry(response), RetryResponseStatus)
+        return self._requester.should_retry(response).action == ResponseAction.RETRY
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -84,7 +84,7 @@ class SimpleRetriever(Retriever, HttpStream):
          to the default backoff behavior (e.g using an exponential algorithm).
         """
         should_retry = self._requester.should_retry(response)
-        assert isinstance(should_retry, RetryResponseStatus)
+        assert should_retry.action == ResponseAction.RETRY
         return should_retry.retry_in
 
     def request_headers(
@@ -188,9 +188,9 @@ class SimpleRetriever(Retriever, HttpStream):
         # if ignore -> ignore response and return no records
         # else -> delegate to record selector
         response_status = self._requester.should_retry(response)
-        if response_status == NonRetriableResponseStatus.FAIL:
+        if response_status.action == ResponseAction.FAIL:
             response.raise_for_status()
-        elif response_status == NonRetriableResponseStatus.IGNORE:
+        elif response_status.action == ResponseAction.IGNORE:
             return []
 
         # Warning: use self.state instead of the stream_state passed as argument!

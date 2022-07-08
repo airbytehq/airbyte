@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import NonRetriableResponseStatus, RetryResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ResponseAction, ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
@@ -44,7 +44,7 @@ def test_simple_retriever():
     http_method = HttpMethod.GET
     requester.get_method.return_value = http_method
     backoff_time = 60
-    should_retry = RetryResponseStatus(backoff_time)
+    should_retry = ResponseStatus.retry(backoff_time)
     requester.should_retry.return_value = should_retry
     request_body_data = {"body": "data"}
     requester.request_body_data.return_value = request_body_data
@@ -98,9 +98,9 @@ def test_simple_retriever():
 @pytest.mark.parametrize(
     "test_name, requester_response, expected_should_retry, expected_backoff_time",
     [
-        ("test_should_retry_fail", NonRetriableResponseStatus.FAIL, False, None),
-        ("test_should_retry_none_backoff", RetryResponseStatus(None), True, None),
-        ("test_should_retry_custom_backoff", RetryResponseStatus(60), True, 60),
+        ("test_should_retry_fail", ResponseStatus.fail(), False, None),
+        ("test_should_retry_none_backoff", ResponseStatus.retry(None), True, None),
+        ("test_should_retry_custom_backoff", ResponseStatus.retry(60), True, 60),
     ],
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
@@ -108,16 +108,16 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=MagicMock())
     requester.should_retry.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
-    if isinstance(requester_response, RetryResponseStatus):
+    if requester_response.action == ResponseAction.RETRY:
         assert retriever.backoff_time(requests.Response()) == expected_backoff_time
 
 
 @pytest.mark.parametrize(
     "test_name, status_code, response_status, len_expected_records",
     [
-        ("test_parse_response_fails_if_should_retry_is_fail", 404, NonRetriableResponseStatus.FAIL, None),
-        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, NonRetriableResponseStatus.SUCCESS, 1),
-        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, NonRetriableResponseStatus.IGNORE, 0),
+        ("test_parse_response_fails_if_should_retry_is_fail", 404, ResponseStatus.fail(), None),
+        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, ResponseStatus.success(), 1),
+        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, ResponseStatus.ignore(), 0),
     ],
 )
 def test_parse_response(test_name, status_code, response_status, len_expected_records):

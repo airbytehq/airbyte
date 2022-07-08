@@ -20,9 +20,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_h
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
     DefaultErrorHandler,
     HttpResponseFilter,
-    NonRetriableResponseStatus,
-    RetryResponseStatus,
+    ResponseStatus,
 )
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ResponseAction
 
 SOME_BACKOFF_TIME = 60
 
@@ -30,92 +30,92 @@ SOME_BACKOFF_TIME = 60
 @pytest.mark.parametrize(
     "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy",
     [
-        ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
+        ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
             "test_bad_gateway_constant_retry",
             HTTPStatus.BAD_GATEWAY,
             None,
             None,
             {},
-            RetryResponseStatus(SOME_BACKOFF_TIME),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
             [ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
         ),
-        ("test_exponential_backoff", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
+        ("test_exponential_backoff", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
             "test_bad_gateway_exponential_backoff_explicit_parameter",
             HTTPStatus.BAD_GATEWAY,
             None,
             None,
             {},
-            RetryResponseStatus(10),
+            ResponseStatus.retry(10),
             [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()],
         ),
-        ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, RetryResponseStatus(10), None),
+        ("test_chain_backoff_strategy", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
         (
             "test_bad_gateway_chain_backoff",
             HTTPStatus.BAD_GATEWAY,
             None,
             None,
             {},
-            RetryResponseStatus(10),
+            ResponseStatus.retry(10),
             [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(), ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
         ),
-        ("test_200", HTTPStatus.OK, None, None, {}, NonRetriableResponseStatus.SUCCESS, None),
-        ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, NonRetriableResponseStatus.SUCCESS, None),
-        ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, NonRetriableResponseStatus.FAIL, None),
+        ("test_200", HTTPStatus.OK, None, None, {}, ResponseStatus.success(), None),
+        ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, ResponseStatus.success(), None),
+        ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, ResponseStatus.fail(), None),
         (
             "test_403_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(error_message_contain="found"),
+            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contain="found"),
             {},
-            NonRetriableResponseStatus.IGNORE,
+            ResponseStatus.ignore(),
             None,
         ),
         (
             "test_403_dont_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(error_message_contain="not_found"),
+            HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contain="not_found"),
             {},
-            NonRetriableResponseStatus.FAIL,
+            ResponseStatus.fail(),
             None,
         ),
-        ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, RetryResponseStatus(10), None),
+        ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, ResponseStatus.retry(10), None),
         (
             "test_ignore_403",
             HTTPStatus.FORBIDDEN,
             None,
-            HttpResponseFilter(http_codes={HTTPStatus.FORBIDDEN}),
+            HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={HTTPStatus.FORBIDDEN}),
             {},
-            NonRetriableResponseStatus.IGNORE,
+            ResponseStatus.ignore(),
             None,
         ),
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(predicate="{{ 'code' in decoded_response }}"),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in decoded_response }}"),
             None,
             {},
-            RetryResponseStatus(10),
+            ResponseStatus.retry(10),
             None,
         ),
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(predicate="{{ 'some_absent_field' in decoded_response }}"),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in decoded_response }}"),
             None,
             {},
-            NonRetriableResponseStatus.FAIL,
+            ResponseStatus.fail(),
             None,
         ),
         (
             "test_retry_403",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter({HTTPStatus.FORBIDDEN}),
+            HttpResponseFilter(action=ResponseAction.RETRY, http_codes={HTTPStatus.FORBIDDEN}),
             None,
             {},
-            RetryResponseStatus(10),
+            ResponseStatus.retry(10),
             None,
         ),
     ],
@@ -125,12 +125,11 @@ def test_default_retrier(
 ):
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
-    retrier = DefaultErrorHandler(
-        retry_response_filter=retry_response_filter, ignore_response_filter=ignore_response_filter, backoff_strategy=backoff_strategy
-    )
+    response_filters = [f for f in [retry_response_filter, ignore_response_filter] if f]
+    retrier = DefaultErrorHandler(response_filters=response_filters, backoff_strategy=backoff_strategy)
     actual_should_retry = retrier.should_retry(response_mock)
     assert actual_should_retry == should_retry
-    if isinstance(should_retry, RetryResponseStatus):
+    if should_retry.action == ResponseAction.RETRY:
         assert actual_should_retry.retry_in == should_retry.retry_in
 
 
@@ -139,18 +138,18 @@ def test_default_retrier_attempt_count_increases():
     response_mock = create_response(status_code)
     retrier = DefaultErrorHandler()
     actual_should_retry = retrier.should_retry(response_mock)
-    assert actual_should_retry == RetryResponseStatus(10)
+    assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10
 
     # This is the same request, so the count should increase
     actual_should_retry = retrier.should_retry(response_mock)
-    assert actual_should_retry == RetryResponseStatus(20)
+    assert actual_should_retry == ResponseStatus.retry(20)
     assert actual_should_retry.retry_in == 20
 
     # This is a different request, so the count should not increase
     another_identical_request = create_response(status_code)
     actual_should_retry = retrier.should_retry(another_identical_request)
-    assert actual_should_retry == RetryResponseStatus(10)
+    assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10
 
 
@@ -171,79 +170,79 @@ def create_response(status_code: int, headers=None, json_body=None):
     [
         (
             "test_chain_retrier_ok_ok",
-            NonRetriableResponseStatus.SUCCESS,
-            NonRetriableResponseStatus.SUCCESS,
-            NonRetriableResponseStatus.SUCCESS,
+            ResponseStatus.success(),
+            ResponseStatus.success(),
+            ResponseStatus.success(),
         ),
         (
             "test_chain_retrier_ignore_fail",
-            NonRetriableResponseStatus.IGNORE,
-            NonRetriableResponseStatus.FAIL,
-            NonRetriableResponseStatus.IGNORE,
+            ResponseStatus.ignore(),
+            ResponseStatus.fail(),
+            ResponseStatus.ignore(),
         ),
         (
             "test_chain_retrier_fail_ignore",
-            NonRetriableResponseStatus.FAIL,
-            NonRetriableResponseStatus.IGNORE,
-            NonRetriableResponseStatus.IGNORE,
+            ResponseStatus.fail(),
+            ResponseStatus.ignore(),
+            ResponseStatus.ignore(),
         ),
         (
             "test_chain_retrier_ignore_retry",
-            NonRetriableResponseStatus.IGNORE,
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            NonRetriableResponseStatus.IGNORE,
+            ResponseStatus.ignore(),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.ignore(),
         ),
         (
             "test_chain_retrier_retry_ignore",
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            NonRetriableResponseStatus.IGNORE,
-            NonRetriableResponseStatus.IGNORE,
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.ignore(),
+            ResponseStatus.ignore(),
         ),
         (
             "test_chain_retrier_retry_fail",
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            NonRetriableResponseStatus.FAIL,
-            RetryResponseStatus(SOME_BACKOFF_TIME),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.fail(),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
         (
             "test_chain_retrier_fail_retry",
-            NonRetriableResponseStatus.FAIL,
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            RetryResponseStatus(SOME_BACKOFF_TIME),
+            ResponseStatus.fail(),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
         (
             "test_chain_retrier_ignore_ok",
-            NonRetriableResponseStatus.IGNORE,
-            NonRetriableResponseStatus.SUCCESS,
-            NonRetriableResponseStatus.SUCCESS,
+            ResponseStatus.ignore(),
+            ResponseStatus.success(),
+            ResponseStatus.success(),
         ),
         (
             "test_chain_retrier_ok_ignore",
-            NonRetriableResponseStatus.SUCCESS,
-            NonRetriableResponseStatus.IGNORE,
-            NonRetriableResponseStatus.SUCCESS,
+            ResponseStatus.success(),
+            ResponseStatus.ignore(),
+            ResponseStatus.success(),
         ),
         (
             "test_chain_retrier_ok_retry",
-            NonRetriableResponseStatus.SUCCESS,
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            NonRetriableResponseStatus.SUCCESS,
+            ResponseStatus.success(),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.success(),
         ),
         (
             "test_chain_retrier_retry_ok",
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            NonRetriableResponseStatus.SUCCESS,
-            NonRetriableResponseStatus.SUCCESS,
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.success(),
+            ResponseStatus.success(),
         ),
         (
             "test_chain_retrier_return_first_retry",
-            RetryResponseStatus(SOME_BACKOFF_TIME),
-            RetryResponseStatus(2 * SOME_BACKOFF_TIME),
-            RetryResponseStatus(SOME_BACKOFF_TIME),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
+            ResponseStatus.retry(2 * SOME_BACKOFF_TIME),
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
     ],
 )
-def test_chain_retrier_first_retrier_ignores_second_fails(test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior):
+def test_chain_retrier(test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior):
     first_retier = MagicMock()
     first_retier.should_retry.return_value = first_retrier_behavior
     second_retrier = MagicMock()
@@ -252,9 +251,7 @@ def test_chain_retrier_first_retrier_ignores_second_fails(test_name, first_retri
     retriers = [first_retier, second_retrier]
     retrier = CompositeErrorHandler(retriers)
     response_mock = MagicMock()
-    response_mock.ok = (
-        first_retrier_behavior == NonRetriableResponseStatus.SUCCESS or second_retrier_behavior == NonRetriableResponseStatus.SUCCESS
-    )
+    response_mock.ok = first_retrier_behavior == ResponseStatus.success() or second_retrier_behavior == ResponseStatus.success()
     assert retrier.should_retry(response_mock) == expected_behavior
 
 

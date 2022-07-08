@@ -5,12 +5,7 @@
 from typing import List, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import (
-    ErrorHandler,
-    NonRetriableResponseStatus,
-    ResponseStatus,
-    RetryResponseStatus,
-)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler, ResponseAction, ResponseStatus
 
 
 class CompositeErrorHandler(ErrorHandler):
@@ -44,13 +39,13 @@ class CompositeErrorHandler(ErrorHandler):
         ignore = False
         for retrier in self._error_handlers:
             should_retry = retrier.should_retry(response)
-            if should_retry == NonRetriableResponseStatus.SUCCESS:
-                return NonRetriableResponseStatus.SUCCESS
-            if should_retry == NonRetriableResponseStatus.IGNORE:
+            if should_retry.action == ResponseAction.SUCCESS:
+                return ResponseStatus.success()
+            if should_retry == ResponseStatus.ignore():
                 ignore = True
-            elif not isinstance(retry, RetryResponseStatus):
+            elif retry is None or retry.action != ResponseAction.RETRY:
                 retry = should_retry
         if ignore:
-            return NonRetriableResponseStatus.IGNORE
+            return ResponseStatus.ignore()
         else:
             return retry
