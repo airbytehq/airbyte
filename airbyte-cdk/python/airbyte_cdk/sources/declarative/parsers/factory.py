@@ -110,8 +110,9 @@ class DeclarativeComponentFactory:
         while True:
             origin = get_origin(interface)
             if origin:
-                # Handling Optional, which are implement as a Union[T, None]
-                # the interface we're looking for being the first type argument
+                # Unnest types until we reach the raw type
+                # List[T] -> T
+                # Optional[List[T]] -> T
                 args = get_args(interface)
                 interface = args[0]
             else:
