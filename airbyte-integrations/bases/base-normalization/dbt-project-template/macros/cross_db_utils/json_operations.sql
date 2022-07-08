@@ -270,5 +270,8 @@
 
 # https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
 {% macro bigquery__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
-    json_query_array({{ json_column }}, {{ bigquery_new_format_json_path(normalized_json_path) }})
+    array(
+        select ifnull(x, "NULL")
+        from unnest(json_value_array({{ json_column }}, {{ bigquery_new_format_json_path(normalized_json_path) }})) as x
+    )
 {%- endmacro %}
