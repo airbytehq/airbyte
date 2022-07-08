@@ -6,6 +6,10 @@ from typing import Optional, Union
 
 
 class RequestOptionType(Enum):
+    """
+    Describes where to set a value on a request
+    """
+
     request_parameter = "request_parameter"
     header = "header"
     path = "path"
@@ -14,7 +18,16 @@ class RequestOptionType(Enum):
 
 
 class RequestOption:
+    """
+    Describes an option to set on a request
+    """
+
     def __init__(self, option_type: Union[RequestOptionType, str], field_name: Optional[str] = None):
+        """
+
+        :param option_type: where to set the value
+        :param field_name: field name to set. None if option_type == path. Required otherwise.
+        """
         if isinstance(option_type, str):
             option_type = RequestOptionType[option_type]
         self._option_type = option_type
