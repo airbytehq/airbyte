@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import numbers
 import re
 import time
@@ -22,6 +23,7 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
 
         :param header: header to read wait time from
         :param min_wait: minimum time to wait for safety
+        :param regex: optional regex to apply on the header to extract its value
         """
         self._header = header
         self._min_wait = min_wait

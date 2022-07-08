@@ -18,6 +18,7 @@ class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
     def __init__(self, header: str, regex: Optional[str] = None):
         """
         :param header: header to read wait time from
+        :param regex: optional regex to apply on the header to extract its value
         """
         self._header = header
         self._regex = re.compile(regex) if regex else None
