@@ -21,12 +21,33 @@
   {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
 {%- endmacro %}
 
+{#
+    BigQuery has different JSONPath syntax depending on which function you call.
+    Most of our macros use the "legacy" JSON functions, so this function uses
+    the legacy syntax.
+
+    These paths look like: "$['foo']['bar']"
+#}
 {% macro bigquery__format_json_path(json_path_list) -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
         {%- if str_list.append(json_path.replace('"', '\\"')) -%} {%- endif -%}
     {%- endfor -%}
     {{ '"$[\'' ~ str_list|join('\'][\'') ~ '\']"' }}
+{%- endmacro %}
+
+{#
+    For macros which use the newer JSON functions, define a new_format_json_path
+    macro which generates the correct path syntax.
+
+    These paths look like: '$."foo"."bar"'
+#}
+{% macro bigquery_new_format_json_path(json_path_list) -%}
+    {%- set str_list = [] -%}
+    {%- for json_path in json_path_list -%}
+        {%- if str_list.append(json_path.replace('\'', '\\\'')) -%} {%- endif -%}
+    {%- endfor -%}
+    {{ '\'$."' ~ str_list|join('"."') ~ '"\'' }}
 {%- endmacro %}
 
 {% macro postgres__format_json_path(json_path_list) -%}
@@ -249,5 +270,5 @@
 
 # https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
 {% macro bigquery__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
-    json_extract_string_array({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    json_query_array({{ json_column }}, {{ bigquery_new_format_json_path(normalized_json_path) }})
 {%- endmacro %}
