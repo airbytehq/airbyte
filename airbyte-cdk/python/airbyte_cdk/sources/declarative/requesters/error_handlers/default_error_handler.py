@@ -19,39 +19,43 @@ class DefaultErrorHandler(ErrorHandler):
 
     1. retry 10 times
     `
-        retrier:
+        error_handler:
           max_retries: 10
     `
     2. backoff for 5 seconds
     `
-        retrier:
+        error_handler:
           backoff_strategy:
             - type: "ConstantBackoffStrategy"
               backoff_time_in_seconds: 5
     `
     3. retry on HTTP 404
     `
-        retrier:
-          retry_response_filter:
-            http_codes: [ 404 ]
+        error_handler:
+          response_filters:
+            - http_codes: [ 404 ]
+              action: RETRY
     `
     4. ignore HTTP 404
     `
         retrier:
-          ignore_response_filter:
-            http_codes: [ 404 ]
+          error_handler:
+            - http_codes: [ 404 ]
+              action: IGNORE
     `
     5. retry if error message contains `retrythisrequest!` substring
     `
-        retrier:
-          retry_response_filter:
-            error_message_contain: "retrythisrequest!"
+        error_handler:
+          response_filters:
+            - error_message_contain: "retrythisrequest!"
+              action: IGNORE
     `
     6. retry if 'code' is a field present in the response body
     `
-        retrier:
-          retry_response_filter:
-            predicate: "{{ 'code' in decoded_response }}"
+        error_handler:
+          response_filters:
+            - predicate: "{{ 'code' in decoded_response }}"
+              action: IGNORE
     `
     """
 
@@ -66,9 +70,8 @@ class DefaultErrorHandler(ErrorHandler):
         self._max_retries = max_retries
         self._response_filters = response_filters or []
 
-        if not self._has_retry_filter(self._response_filters):
+        if not response_filters:
             self._response_filters.append(HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS))
-        if not self._has_ignore_filter(self._response_filters):
             self._response_filters.append(HttpResponseFilter(ResponseAction.IGNORE))
 
         if backoff_strategy:

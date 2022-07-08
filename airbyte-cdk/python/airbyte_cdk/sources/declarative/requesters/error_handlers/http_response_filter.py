@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, Set
+from typing import Optional, Set, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
@@ -14,7 +14,11 @@ class HttpResponseFilter:
     TOO_MANY_REQUESTS_ERRORS = {429}
     DEFAULT_RETRIABLE_ERRORS = set([x for x in range(500, 600)]).union(TOO_MANY_REQUESTS_ERRORS)
 
-    def __init__(self, action: ResponseAction, *, http_codes: Set[int] = None, error_message_contain: str = None, predicate: str = ""):
+    def __init__(
+        self, action: Union[ResponseAction, str], *, http_codes: Set[int] = None, error_message_contain: str = None, predicate: str = ""
+    ):
+        if isinstance(action, str):
+            action = ResponseAction[action]
         self._http_codes = http_codes or set()
         self._predicate = InterpolatedBoolean(predicate)
         self._error_message_contains = error_message_contain
