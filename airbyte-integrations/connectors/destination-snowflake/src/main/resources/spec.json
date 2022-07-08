@@ -104,7 +104,7 @@
             "title": "Key Pair Authentication",
             "type": "object",
             "order": 0,
-            "required": ["auth_type", "private_key"],
+            "required": ["private_key"],
             "properties": {
               "auth_type": {
                 "type": "string",
