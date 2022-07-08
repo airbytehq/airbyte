@@ -27,7 +27,7 @@ public class PostgresUtils {
   }
 
   @VisibleForTesting
-  public static Certificate getCertificate(PostgreSQLContainer<?> container) throws IOException, InterruptedException {
+  public static Certificate getCertificate(final PostgreSQLContainer<?> container) throws IOException, InterruptedException {
     container.execInContainer("su", "-c", "psql -U test -c \"CREATE USER postgres WITH PASSWORD 'postgres';\"");
     container.execInContainer("su", "-c", "psql -U test -c \"GRANT CONNECT ON DATABASE \"test\" TO postgres;\"");
     container.execInContainer("su", "-c", "psql -U test -c \"ALTER USER postgres WITH SUPERUSER;\"");
@@ -72,11 +72,11 @@ public class PostgresUtils {
 
   public static class Certificate {
 
-    private String caCertificate;
-    private String clientCertificate;
-    private String clientKey;
+    private final String caCertificate;
+    private final String clientCertificate;
+    private final String clientKey;
 
-    public Certificate(String caCertificate, String clientCertificate, String clientKey) {
+    public Certificate(final String caCertificate, final String clientCertificate, final String clientKey) {
       this.caCertificate = caCertificate;
       this.clientCertificate = clientCertificate;
       this.clientKey = clientKey;
@@ -93,6 +93,7 @@ public class PostgresUtils {
     public String getClientKey() {
       return clientKey;
     }
+
   }
 
 }
