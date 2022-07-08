@@ -68,5 +68,5 @@ kubectl port-forward svc/postgres-destination-svc 3000:5432 --namespace=$NAMESPA
 sleep 10s
 
 echo "Running e2e tests via gradle..."
-KUBE=true IS_GKE=true CONTAINER_ORCHESTRATOR=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan -i
+KUBE=true IS_GKE=true SUB_BUILD=PLATFORM USE_EXTERNAL_DEPLOYMENT=true ./gradlew :airbyte-tests:acceptanceTests --scan -i
 
