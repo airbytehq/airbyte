@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.*;
+import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.*;
@@ -866,6 +867,7 @@ public class BasicAcceptanceTests {
   public void testResetAllWhenSchemaIsModified() throws Exception {
     final String sourceTable1 = "test_table1";
     final String sourceTable2 = "test_table2";
+    final String outputPrefix = "output_namespace_public.output_table_";
     final Database sourceDb = testHarness.getSourceDatabase();
     final Database destDb = testHarness.getDestinationDatabase();
     sourceDb.query(ctx -> {
@@ -890,37 +892,30 @@ public class BasicAcceptanceTests {
     final ConnectionRead connection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operation.getOperationId()), catalog, null);
 
+    sourceDb.query(ctx -> { prettyPrintTables(ctx, sourceTable1, sourceTable2); return null; });
+
     // Run initial sync
     LOGGER.info("Running initial sync");
     final JobInfoRead syncRead =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
 
-    final ConnectionState initSyncState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
-    LOGGER.info("InitialSync ConnectionState: " + initSyncState.toString());
+    // Some inspection for debug
+    destDb.query(ctx -> { prettyPrintTables(ctx,outputPrefix + sourceTable1, outputPrefix + sourceTable2); return null; });
+    final ConnectionState initSyncState =
+        apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    LOGGER.info("ConnectionState after the initial sync: " + initSyncState.toString());
 
-    LOGGER.info("Inspecting Source DB");
-    sourceDb.query(ctx -> {
-      System.out.println(ctx.selectFrom(sourceTable1).fetch());
-      System.out.println(ctx.selectFrom(sourceTable2).fetch());
-      return null;
-    });
-    LOGGER.info("Inspecting Destination DB");
-    destDb.query(ctx -> {
-      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
-      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
-      return null;
-    });
     testHarness.assertSourceAndDestinationDbInSync(false);
 
     // Patch some data in the source
-    // Adding a new rows to make sure we sync more data
-    // Removing a couple rows to make sure that we trigger a full reset
     LOGGER.info("Modifying source tables");
     sourceDb.query(ctx -> {
+      // Adding a new rows to make sure we sync more data.
       ctx.insertInto(DSL.table(sourceTable1)).columns(DSL.field("name")).values("alice").execute();
       ctx.insertInto(DSL.table(sourceTable2)).columns(DSL.field("value")).values("v3").execute();
 
+      // The removed rows should no longer be in the destination since we expect a full reset
       ctx.deleteFrom(DSL.table(sourceTable1)).where(DSL.field("name").eq("john")).execute();
       ctx.deleteFrom(DSL.table(sourceTable2)).where(DSL.field("value").eq("v2")).execute();
       return null;
@@ -948,38 +943,35 @@ public class BasicAcceptanceTests {
         .withRefreshedCatalog(true);
     final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
 
+    LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
+    destDb.query(ctx -> { prettyPrintTables(ctx,outputPrefix + sourceTable1, outputPrefix + sourceTable2); return null; });
     final ConnectionState postResetState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
-    LOGGER.info("PostReset from Update ConnectionState: " + postResetState.toString());
-
-    LOGGER.info("Inspecting Destination DB after the update request");
-    destDb.query(ctx -> {
-      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
-      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
-      return null;
-    });
+    LOGGER.info("ConnectionState after the update request: {}", postResetState.toString());
 
     // Wait until the sync from the UpdateConnection is finished
     final JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
-    System.out.println(syncFromTheUpdate.toString());
+    LOGGER.info("Generated SyncJob config: {}", syncFromTheUpdate.toString());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
     final ConnectionState postUpdateState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
-    LOGGER.info("PostUpdate ConnectionState: " + postUpdateState.toString());
+    LOGGER.info("ConnectionState after the final sync: {}", postUpdateState.toString());
 
-    LOGGER.info("Inspecting Source DB After the final sync");
-    sourceDb.query(ctx -> {
-      System.out.println(ctx.selectFrom(sourceTable1).fetch());
-      System.out.println(ctx.selectFrom(sourceTable2).fetch());
-      return null;
-    });
-    LOGGER.info("Inspecting Destination DB After the final sync");
-    destDb.query(ctx -> {
-      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable1).fetch());
-      System.out.println(ctx.selectFrom("output_namespace_public.output_table_" + sourceTable2).fetch());
-      return null;
-    });
+    LOGGER.info("Inspecting DBs After the final sync");
+    sourceDb.query(ctx -> { prettyPrintTables(ctx, sourceTable1, sourceTable2); return null; });
+    destDb.query(ctx -> { prettyPrintTables(ctx,outputPrefix + sourceTable1, outputPrefix + sourceTable2); return null; });
 
     testHarness.assertSourceAndDestinationDbInSync(false);
+  }
+
+  private void prettyPrintTables(final DSLContext ctx, final String... tables) {
+    for (final String table : tables) {
+      LOGGER.info("select * from {}", table);
+      Arrays.stream(ctx.selectFrom(table)
+          .fetch()
+          .toString()
+          .split("\\n")
+          ).forEach(LOGGER::info);
+    }
   }
 
   private JobRead getMostRecentSyncJobId(UUID connectionId) throws Exception {
