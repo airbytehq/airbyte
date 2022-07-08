@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import numbers
 import time
 from typing import Optional
 
@@ -27,9 +27,12 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         now = time.time()
         wait_until = response.headers.get(self._header, None)
-        if wait_until is None:
+        if wait_until is None or not wait_until:
             return self._min_wait
-        wait_time = float(wait_until) - now
+        if (isinstance(wait_until, str) and wait_until.isnumeric()) or isinstance(wait_until, numbers.Number):
+            wait_time = float(wait_until) - now
+        else:
+            return self._min_wait
         if self._min_wait:
             return max(wait_time, self._min_wait)
         elif wait_time < 0:

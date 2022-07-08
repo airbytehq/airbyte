@@ -270,11 +270,13 @@ def test_wait_time_from_header(test_name, header, expected_backoff_time):
 @pytest.mark.parametrize(
     "test_name, header, wait_until, min_wait, expected_backoff_time",
     [
-        ("test_wait_until_time_from_header", "wait_until", 1600000060.0, None, SOME_BACKOFF_TIME),
+        ("test_wait_until_time_from_header", "wait_until", 1600000060.0, None, 60),
         ("test_wait_until_negative_time", "wait_until", 1500000000.0, None, None),
         ("test_wait_until_time_less_than_min", "wait_until", 1600000060.0, 120, 120),
         ("test_wait_until_no_header", "absent_header", 1600000000.0, None, None),
-        ("test_wait_until_no_header_with_min", "absent_header", 1600000000.0, SOME_BACKOFF_TIME, SOME_BACKOFF_TIME),
+        ("test_wait_until_time_from_header_not_numeric", "wait_until", "1600000000,1600000000", None, None),
+        ("test_wait_until_time_from_header_is_numeric", "wait_until", "1600000060", None, 60),
+        ("test_wait_until_no_header_with_min", "absent_header", "1600000000.0", SOME_BACKOFF_TIME, SOME_BACKOFF_TIME),
     ],
 )
 @patch("time.time", return_value=1600000000.0)
