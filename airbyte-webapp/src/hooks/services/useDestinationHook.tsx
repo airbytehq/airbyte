@@ -101,7 +101,7 @@ const useDeleteDestination = () => {
       onSuccess: (_data, ctx) => {
         trackDestinationAction("Delete destination", TrackActionType.DELETE, {
           connector_destination: ctx.destination.destinationName,
-          connector_destination_definition_id: ctx.destination.destinationDefinitionId, //another change to match the data we send
+          connector_destination_definition_id: ctx.destination.destinationDefinitionId,
         });
 
         queryClient.removeQueries(destinationsKeys.detail(ctx.destination.destinationId));
