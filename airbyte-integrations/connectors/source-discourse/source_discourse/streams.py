@@ -50,6 +50,9 @@ class DiscourseStream(HttpStream, ABC):
         yield {}
 
 class TagGroups(DiscourseStream):
+    """
+    API docs: https://docs.discourse.org/#tag/Tags/operation/listTagGroups
+    """
 
     #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
     primary_key = None
@@ -73,6 +76,9 @@ class TagGroups(DiscourseStream):
             yield item
 
 class LatestTopics(DiscourseStream):
+    """
+    API docs: https://docs.discourse.org/#tag/Topics/operation/listLatestTopics
+    """
 
     #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
     primary_key = None
@@ -96,10 +102,9 @@ class LatestTopics(DiscourseStream):
 
 class Posts(DiscourseStream):
     """
-    TODO: Change class name to match the table/data source this stream corresponds to.
+    API docs: https://docs.discourse.org/#tag/Posts/operation/listPosts
     """
 
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
     primary_key = None
 
     def path(
