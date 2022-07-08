@@ -11,13 +11,24 @@ import requests
 
 
 class NonRetriableResponseStatus(Enum):
-    OK = ("OK",)
-    FAIL = ("FAIL",)
-    IGNORE = ("IGNORE",)
+    """
+    Response statuses for non retriable responses
+    """
+
+    OK = "OK"  # "Request was successful"
+    FAIL = "FAIL"  # "Request failed unexpectedly"
+    IGNORE = "IGNORE"  # "Request failed but can be ignored"
 
 
 @dataclass
 class RetryResponseStatus:
+    """
+    Response status for request to be retried
+
+    Attributes:
+        retry_in: time to wait (in seconds) before retrying the request
+    """
+
     retry_in: float
 
 
