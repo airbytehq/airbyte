@@ -23,10 +23,9 @@ import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SidebarPopout, { Icon, Item } from "views/layout/SideBar/components/SidebarPopout";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
-import { useCalculateSidebarStyles } from "views/layout/SideBar/SideBar";
+import { useCalculateSidebarStyles, getPopoutStyles } from "views/layout/SideBar/SideBar";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
-import styles from "../../../../../views/layout/SideBar/SideBar.module.scss"; // eslint-disable-line
 
 const CreditsIcon = styled(FontAwesomeIcon)`
   font-size: 21px;
@@ -140,8 +139,8 @@ const SideBar: React.FC = () => {
         </li>
         <li>
           <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "status" }, { value: "recipes" }]}>
-            {({ onOpen }) => (
-              <div className={styles.menuItem} onClick={onOpen}>
+            {({ onOpen, isOpen }) => (
+              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
                 <DocsIcon />
                 <Text>
                   <FormattedMessage id="sidebar.resources" />
@@ -167,8 +166,8 @@ const SideBar: React.FC = () => {
               },
             ]}
           >
-            {({ onOpen }) => (
-              <div className={styles.menuItem} onClick={onOpen}>
+            {({ onOpen, isOpen }) => (
+              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
                 <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
                 <Text>
                   <FormattedMessage id="sidebar.support" />

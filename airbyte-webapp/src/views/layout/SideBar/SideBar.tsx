@@ -64,6 +64,10 @@ export const useCalculateSidebarStyles = () => {
   return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
 };
 
+export const getPopoutStyles = (isOpen?: boolean) => {
+  return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
+};
+
 const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
@@ -124,8 +128,8 @@ const SideBar: React.FC = () => {
         </li>
         <li>
           <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-            {({ onOpen }) => (
-              <div className={styles.menuItem} onClick={onOpen}>
+            {({ onOpen, isOpen }) => (
+              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
                 <DocsIcon />
                 <Text>
                   <FormattedMessage id="sidebar.resources" />

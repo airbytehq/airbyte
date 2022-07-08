@@ -47,4 +47,9 @@
       background: colors.$dark-blue-400;
     }
   }
+
+  &.popoutOpen {
+    background: colors.$dark-blue-600;
+    transition: variables.$transition-out;
+  }
 }
