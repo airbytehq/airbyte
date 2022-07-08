@@ -2,27 +2,11 @@ import { faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
 
 import { Button } from "components";
 import ToolTip from "components/ToolTip";
 
-const Content = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  color: ${({ theme }) => theme.darkBlue};
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 17px;
-  padding: 5px 12px 6px 14px;
-  border-bottom: 1px solid ${({ theme }) => theme.white};
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
+import styles from "./EditorRow.module.scss";
 
 interface EditorRowProps {
   name?: React.ReactNode;
@@ -37,9 +21,9 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
   const { formatMessage } = useIntl();
 
   const row = (
-    <Content>
-      <div>{name || id}</div>
-      <div>
+    <div className={styles.container}>
+      <div className={styles.name}>{name || id}</div>
+      <div className={styles.actions}>
         <Button
           type="button"
           iconOnly
@@ -59,7 +43,7 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
           <FontAwesomeIcon icon={faTimes} fixedWidth />
         </Button>
       </div>
-    </Content>
+    </div>
   );
 
   return description ? <ToolTip control={row}>{description}</ToolTip> : row;
