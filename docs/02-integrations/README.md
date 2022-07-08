@@ -31,7 +31,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Baton](01-sources/hellobaton.md)                                                              | Alpha                | No                  |
 | [BigCommerce](01-sources/bigcommerce.md)                                                       | Alpha                | Yes                 |
 | [BigQuery](01-sources/bigquery.md)                                                             | Alpha                | Yes                 |
-| [Bing Ads](01-sources/bing-ads.md)                                                             | Beta                 | Yes                 |
+| [Bing Ads](01-sources/bing-ads.md)                                                             | Generally Available  | Yes                 |
 | [Braintree](01-sources/braintree.md)                                                           | Alpha                | Yes                 |
 | [Cart.com](01-sources/cart.md)                                                                 | Alpha                | No                  |
 | [Chargebee](01-sources/chargebee.md)                                                           | Alpha                | Yes                 |
@@ -46,7 +46,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Db2](01-sources/db2.md)                                                                       | Alpha                | No                  |
 | [Delighted](01-sources/delighted.md)                                                           | Alpha                | Yes                 |
 | [Dixa](01-sources/dixa.md)                                                                     | Alpha                | Yes                 |
-| [Dockerhub](01-sources/dockerhub.md)                                                           | Alpha                | No                  |
+| [Dockerhub](01-sources/dockerhub.md)                                                           | Alpha                | Yes                 |
 | [Drift](01-sources/drift.md)                                                                   | Alpha                | No                  |
 | [Drupal](01-sources/drupal.md)                                                                 | Alpha                | No                  |
 | [End-to-End Testing](01-sources/e2e-test.md)                                                   | Alpha                | Yes                 |
@@ -60,11 +60,11 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshdesk](01-sources/freshdesk.md)                                                           | Alpha                | Yes                 |
 | [Freshsales](01-sources/freshsales.md)                                                         | Alpha                | No                  |
 | [Freshservice](01-sources/freshservice.md)                                                     | Alpha                | No                  |
-| [GitHub](01-sources/github.md)                                                                 | Beta                 | Yes                 |
-| [GitLab](01-sources/gitlab.md)                                                                 | Alpha                | Yes                 |                                                      | Beta                 | Yes                 |
-| [Google Analytics Data API](01-sources/google-analytics-data-api.md)                           | Alpha                | No                  |
+| [GitHub](01-sources/github.md)                                                                 | Generally Available  | Yes                 |
+| [GitLab](01-sources/gitlab.md)                                                                 | Alpha                | Yes                 |
 | [Google Ads](01-sources/google-ads.md)                                                         | Generally Available  | Yes                 |
-| [Google Analytics v4](01-sources/google-analytics-v4.md)                                       | Beta                 | Yes                 |
+| [Google Analytics (v4)](01-sources/google-analytics-v4.md)                                     | Alpha                | No                  |
+| [Google Analytics (Universal Analytics)](01-sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
 | [Google Directory](01-sources/google-directory.md)                                             | Alpha                | Yes                 |
 | [Google Search Console](01-sources/google-search-console.md)                                   | Beta                 | Yes                 |
 | [Google Sheets](01-sources/google-sheets.md)                                                   | Generally Available  | Yes                 |
@@ -74,7 +74,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Harvest](01-sources/harvest.md)                                                               | Alpha                | No                  |
 | [http-request](01-sources/http-request.md)                                                     | Alpha                | No                  |
 | [HubSpot](01-sources/hubspot.md)                                                               | Generally Available  | Yes                 |
-| [Instagram](01-sources/instagram.md)                                                           | Beta                 | Yes                 |
+| [Instagram](01-sources/instagram.md)                                                           | Generally Available  | Yes                 |
 | [Intercom](01-sources/intercom.md)                                                             | Generally Available  | Yes                 |
 | [Iterable](01-sources/iterable.md)                                                             | Alpha                | Yes                 |
 | [Jenkins](01-sources/jenkins.md)                                                               | Alpha                | No                  |
@@ -90,7 +90,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Magento](01-sources/magento.md)                                                               | Alpha                | No                  |
 | [Mailchimp](01-sources/mailchimp.md)                                                           | Generally Available  | Yes                 |
 | [Marketo](01-sources/marketo.md)                                                               | Alpha                | Yes                 |
-| [Metabase](01-sources/metabase.md)                                                             | Alpha                | No                  |
+| [Metabase](01-sources/metabase.md)                                                             | Alpha                | Yes                 |
 | [Microsoft Dynamics AX](01-sources/microsoft-dynamics-ax.md)                                   | Alpha                | No                  |
 | [Microsoft Dynamics Customer Engagement](01-sources/microsoft-dynamics-customer-engagement.md) | Alpha                | No                  |
 | [Microsoft Dynamics GP](01-sources/microsoft-dynamics-gp.md)                                   | Alpha                | No                  |
@@ -120,7 +120,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Pivotal Tracker](01-sources/pivotal-tracker.md)                                               | Alpha                | No                  |
 | [Plaid](01-sources/plaid.md)                                                                   | Alpha                | No                  |
 | [PokéAPI](01-sources/pokeapi.md)                                                               | Alpha                | Yes                 |
-| [Postgres](01-sources/postgres.md)                                                             | Alpha                | Yes                 |
+| [Postgres](01-sources/postgres.md)                                                             | Beta                 | Yes                 |
 | [PostHog](01-sources/posthog.md)                                                               | Alpha                | Yes                 |
 | [PrestaShop](01-sources/presta-shop.md)                                                        | Alpha                | Yes                 |
 | [Qualaroo](01-sources/qualaroo.md)                                                             | Alpha                | Yes                 |
@@ -136,7 +136,8 @@ For more information about the grading system, see [Product Release Stages](http
 | [SearchMetrics](./01-sources/search-metrics.md)                                                | Alpha                | No                  |
 | [Sendgrid](01-sources/sendgrid.md)                                                             | Alpha                | Yes                 |
 | [Sentry](01-sources/sentry.md)                                                                 | Alpha                | Yes                 |
-| [Shopify](01-sources/shopify.md)                                                               | Alpha                | No                 |
+| [SFTP](01-sources/sftp.md)                                                                     | Alpha                | Yes                 |
+| [Shopify](01-sources/shopify.md)                                                               | Alpha                | No                  |
 | [Short.io](01-sources/shortio.md)                                                              | Alpha                | Yes                 |
 | [Slack](01-sources/slack.md)                                                                   | Alpha                | No                  |
 | [Smartsheets](01-sources/smartsheets.md)                                                       | Beta                 | Yes                 |
@@ -150,12 +151,13 @@ For more information about the grading system, see [Product Release Stages](http
 | [SurveyMonkey](01-sources/surveymonkey.md)                                                     | Alpha                | No                  |
 | [Tempo](01-sources/tempo.md)                                                                   | Alpha                | Yes                 |
 | [TiDB](01-sources/tidb.md)                                                                     | Alpha                | No                  |
-| [TikTok Marketing](./01-sources/tiktok-marketing.md)                                           | Beta                 | Yes                 |
+| [TikTok Marketing](./01-sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
 | [Trello](01-sources/trello.md)                                                                 | Alpha                | No                  |
 | [Twilio](01-sources/twilio.md)                                                                 | Alpha                | Yes                 |
 | [Typeform](01-sources/typeform.md)                                                             | Alpha                | Yes                 |
 | [US Census](01-sources/us-census.md)                                                           | Alpha                | Yes                 |
 | [VictorOps](01-sources/victorops.md)                                                           | Alpha                | No                  |
+| [Webflow](01-sources/webflow.md        )                                                       | Alpha                | Yes                 |
 | [WooCommerce](01-sources/woocommerce.md)                                                       | Alpha                | No                  |
 | [Wordpress](01-sources/wordpress.md)                                                           | Alpha                | No                  |
 | [YouTube Analytics](01-sources/youtube-analytics.md)                                           | Alpha                | No                  |
@@ -168,7 +170,6 @@ For more information about the grading system, see [Product Release Stages](http
 | [Zoho CRM](01-sources/zoho-crm.md)                                                             | Alpha                | No                  |
 | [Zoom](01-sources/zoom.md)                                                                     | Alpha                | No                  |
 | [Zuora](01-sources/zuora.md)                                                                   | Alpha                | Yes                 |
-| [SFTP](01-sources/sftp.md)                                                                     | Alpha                | No                  |
 
 ## Destinations
 
@@ -185,7 +186,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [DynamoDB](02-destinations/dynamodb.md)                       | Alpha                | Yes                 |
 | [Elasticsearch](02-destinations/elasticsearch.md)             | Alpha                | Yes                 |
 | [End-to-End Testing](02-destinations/e2e-test.md)             | Alpha                | Yes                 |
-| [Firebolt](02-destinations/firebolt.md)             | Alpha                | No                 |
+| [Firebolt](02-destinations/firebolt.md)                       | Alpha                | Yes                 |
 | [Google Cloud Storage (GCS)](02-destinations/gcs.md)          | Beta                 | Yes                 |
 | [Google Pubsub](02-destinations/pubsub.md)                    | Alpha                | Yes                 |
 | [Google Sheets](02-destinations/google-sheets.md)             | Alpha                | Yes                 |
