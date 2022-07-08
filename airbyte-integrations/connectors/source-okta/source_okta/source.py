@@ -116,6 +116,7 @@ class GroupMembers(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
     min_user_id = "00u00000000000000000"
+    use_cache = True
 
     def stream_slices(self, **kwargs):
         group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
