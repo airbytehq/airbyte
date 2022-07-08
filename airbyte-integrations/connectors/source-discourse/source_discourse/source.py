@@ -6,32 +6,12 @@
 import logging
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from requests.auth import AuthBase
 
-import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
 from .auth import DiscourseAuthenticator
-from .streams import DiscourseStream, Tags
+from .streams import DiscourseStream, TagGroups, LatestTopics, Posts
 
-
-class Posts(DiscourseStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "posts"
 
 # Basic incremental stream
 class IncrementalDiscourseStream(DiscourseStream, ABC):
@@ -119,7 +99,7 @@ class SourceDiscourse(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         auth = self.get_authenticator(config)
         try:
-            tags_stream = Tags(authenticator=auth)
+            tags_stream = TagGroups(authenticator=auth)
             tags_records = tags_stream.read_records(sync_mode="full_refresh")
             record = next(tags_records)
             logger.info(f"Successfully connected to the Tags stream. Pulled one record: {record}")
@@ -135,4 +115,4 @@ class SourceDiscourse(AbstractSource):
         """
         # TODO remove the authenticator if not required.
         auth = self.get_authenticator(config)
-        return [Tags(authenticator=auth)]
+        return [TagGroups(authenticator=auth), LatestTopics(authenticator=auth), Posts(authenticator=auth)]

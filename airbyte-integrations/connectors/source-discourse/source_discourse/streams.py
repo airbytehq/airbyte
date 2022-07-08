@@ -49,7 +49,7 @@ class DiscourseStream(HttpStream, ABC):
         """
         yield {}
 
-class Tags(DiscourseStream):
+class TagGroups(DiscourseStream):
 
     #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
     primary_key = None
@@ -71,3 +71,51 @@ class Tags(DiscourseStream):
         response_json = response.json()
         for item in response_json['tag_groups']:
             yield item
+
+class LatestTopics(DiscourseStream):
+
+    #  primary_key is not used as we don't do incremental syncs - https://docs.airbyte.com/understanding-airbyte/connections/
+    primary_key = None
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> str:
+        path = "latest.json"
+        return path
+    
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs
+    ) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield response_json
+
+class Posts(DiscourseStream):
+    """
+    TODO: Change class name to match the table/data source this stream corresponds to.
+    """
+
+    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
+    primary_key = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        """
+        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
+        should return "customers". Required.
+        """
+        path = "posts.json"
+        return path
+    
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs
+    ) -> Iterable[Mapping]:
+        response_json = response.json()
+        yield response_json

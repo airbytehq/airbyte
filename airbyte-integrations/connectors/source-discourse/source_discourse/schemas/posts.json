@@ -1,67 +1,162 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "posts": [
-    {
+  "type": ["null", "object"],
+  "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
-    "username": "string",
-    "avatar_template": "string",
-    "created_at": "string",
-    "cooked": "string",
-    "post_number": 0,
-    "post_type": 0,
-    "updated_at": "string",
-    "reply_count": 0,
-    "reply_to_post_number": "string",
-    "quote_count": 0,
-    "incoming_link_count": 0,
-    "reads": 0,
-    "readers_count": 0,
-    "score": 0,
+    "username": {
+      "type": ["null", "string"]
+    },
+    "avatar_template": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "cooked": {
+      "type": ["null", "string"]
+    },
+    "post_number": {
+      "type": ["null", "integer"]
+    },
+    "post_type": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "reply_count": {
+      "type": ["null", "integer"]
+    },
+    "reply_to_post_number": {
+      "type": ["null", "string"]
+    },
+    "quote_count": {
+      "type": ["null", "integer"]
+    },
+    "incoming_link_count": {
+      "type": ["null", "integer"]
+    },
+    "reads": {
+      "type": ["null", "integer"]
+    },
+    "readers_count": {
+      "type": ["null", "integer"]
+    },
+    "score": {
+      "type": ["null", "integer"]
+    },
     "yours": true,
-    "topic_id": 0,
-    "topic_slug": "string",
-    "topic_title": "string",
-    "topic_html_title": "string",
-    "category_id": 0,
-    "display_username": "string",
-    "primary_group_name": "string",
-    "flair_name": "string",
-    "flair_url": "string",
-    "flair_bg_color": "string",
-    "flair_color": "string",
-    "version": 0,
-    "can_edit": true,
-    "can_delete": true,
-    "can_recover": true,
-    "can_wiki": true,
-    "user_title": "string",
-    "raw": "string",
-    "actions_summary": [
-    {
-    "id": 0,
-    "can_act": true
+    "topic_id": {
+      "type": ["null", "integer"]
+    },
+    "topic_slug": {
+      "type": ["null", "string"]
+    },
+    "topic_title": {
+      "type": ["null", "string"]
+    },
+    "topic_html_title": {
+      "type": ["null", "string"]
+    },
+    "category_id": {
+      "type": ["null", "integer"]
+    },
+    "display_username": {
+      "type": ["null", "string"]
+    },
+    "primary_group_name": {
+      "type": ["null", "string"]
+    },
+    "flair_name": {
+      "type": ["null", "string"]
+    },
+    "flair_url": {
+      "type": ["null", "string"]
+    },
+    "flair_bg_color": {
+      "type": ["null", "string"]
+    },
+    "flair_color": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "can_edit": {
+      "type": ["null", "boolean"]
+    },
+    "can_delete": {
+      "type": ["null", "boolean"]
+    },
+    "can_recover": {
+      "type": ["null", "boolean"]
+    },
+    "can_wiki": {
+      "type": ["null", "boolean"]
+    },
+    "user_title": {
+      "type": ["null", "string"]
+    },
+    "raw": {
+      "type": ["null", "string"]
+    },
+    "actions_summary": {
+      "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "can_act": {
+            "type": ["null", "boolean"]
+          }
+        }
+    },
+    "moderator": {
+      "type": ["null", "boolean"]
+    },
+    "admin": {
+      "type": ["null", "boolean"]
+    },
+    "staff": {
+      "type": ["null", "boolean"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "hidden": {
+      "type": ["null", "boolean"]
+    },
+    "trust_level": {
+      "type": ["null", "integer"]
+    },
+    "deleted_at": {
+      "type": ["null", "string"]
+    },
+    "user_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "edit_reason": {
+      "type": ["null", "string"]
+    },
+    "can_view_edit_history": {
+      "type": ["null", "boolean"]
+    },
+    "wiki": {
+      "type": ["null", "boolean"]
+    },
+    "reviewable_id": {
+      "type": ["null", "string"]
+    },
+    "reviewable_score_count": {
+      "type": ["null", "integer"]
+    },
+    "reviewable_score_pending_count": {
+      "type": ["null", "integer"]
     }
-    ],
-    "moderator": true,
-    "admin": true,
-    "staff": true,
-    "user_id": 0,
-    "hidden": true,
-    "trust_level": 0,
-    "deleted_at": "string",
-    "user_deleted": true,
-    "edit_reason": "string",
-    "can_view_edit_history": true,
-    "wiki": true,
-    "reviewable_id": "string",
-    "reviewable_score_count": 0,
-    "reviewable_score_pending_count": 0
-    }
-    ]
+  }
 }

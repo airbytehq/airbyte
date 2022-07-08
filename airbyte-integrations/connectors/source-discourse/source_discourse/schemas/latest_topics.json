@@ -1,0 +1,165 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": ["null", "object"],
+    "properties": {
+      "users": {
+        "type": ["null", "object"],
+        "properties": {
+            "id": {
+                "type": ["null", "integer"]
+            },
+            "username": {
+                "type": ["null", "string"]
+            },
+            "name": {
+                "type": ["null", "string"]
+            },
+            "avatar_template": {
+                "type": ["null", "string"]
+            }
+        }
+      },
+      "contentId": {
+        "type": ["null", "integer"]
+      },
+      "topic_list": {
+        "type": ["null", "object"],
+        "properties": {
+          "can_create_topic": {
+            "type": ["null", "boolean"]
+          },
+          "draft": {
+            "type": ["null", "string"]
+          },
+          "draft_key": {
+            "type": ["null", "string"]
+          },
+          "draft_sequence": {
+            "type": ["null", "integer"]
+          },
+          "per_page": {
+            "type": ["null", "integer"]
+          },
+          "topics": {
+            "type": ["null", "object"],
+            "properties": {
+                "id": {
+                    "type": ["null", "integer"]
+                },
+                "title": {
+                    "type": ["null", "string"]
+                },
+                "fancy_title": {
+                    "type": ["null", "string"]
+                },
+                "slug": {
+                    "type": ["null", "string"]
+                },
+                "posts_count": {
+                    "type": ["null", "integer"]
+                },
+                "reply_count": {
+                    "type": ["null", "integer"]
+                },
+                "highest_post_number": {
+                    "type": ["null", "integer"]
+                },
+                "image_url": {
+                    "type": ["null", "string"]
+                },
+                "created_at": {
+                    "type": ["null", "string"]
+                },
+                "last_posted_at": {
+                    "type": ["null", "string"]
+                },
+                "bumped": {
+                    "type": ["null", "boolean"]
+                },
+                "bumped_at": {
+                    "type": ["null", "string"]
+                },
+                "archetype": {
+                    "type": ["null", "string"]
+                },
+                "unseen": {
+                    "type": ["null", "boolean"]
+                },
+                "last_read_post_number": {
+                    "type": ["null", "integer"]
+                },
+                "unread_posts": {
+                    "type": ["null", "integer"]
+                },
+                "pinned": {
+                    "type": ["null", "boolean"]
+                },
+                "unpinned": {
+                    "type": ["null", "string"]
+                },
+                "visible": {
+                    "type": ["null", "boolean"]
+                },
+                "closed": {
+                    "type": ["null", "boolean"]
+                },
+                "archived": {
+                    "type": ["null", "boolean"]
+                },
+                "notification_level": {
+                    "type": ["null", "integer"]
+                },
+                "bookmarked": {
+                    "type": ["null", "boolean"]
+                },
+                "liked": {
+                    "type": ["null", "boolean"]
+                },
+                "views": {
+                    "type": ["null", "integer"]
+                },
+                "like_count": {
+                    "type": ["null", "integer"]
+                },
+                "has_summary": {
+                    "type": ["null", "boolean"]
+                },
+                "last_poster_username": {
+                    "type": ["null", "string"]
+                },
+                "category_id": {
+                    "type": ["null", "integer"]
+                },
+                "op_like_count": {
+                    "type": ["null", "integer"]
+                },
+                "pinned_globally": {
+                    "type": ["null", "boolean"]
+                },
+                "featured_link": {
+                    "type": ["null", "string"]
+                },
+                "posters": {
+                    "type": ["null", "object"],
+                    "properties": {
+                        "extras": {
+                            "type": ["null", "string"]
+                        },
+                        "description": {
+                            "type": ["null", "string"]
+                        },
+                        "user_id": {
+                            "type": ["null", "integer"]
+                        },
+                        "primary_group_id": {
+                            "type": ["null", "string"]
+                        }
+                    }
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+  
