@@ -4,6 +4,7 @@
 
 from typing import Mapping, Type
 
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -18,12 +19,13 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
-    "NextPageUrlPaginator": NextPageUrlPaginator,
+    "DatetimeStreamSlicer": DatetimeStreamSlicer,
     "InterpolatedPaginator": InterpolatedPaginator,
+    "MinMaxDatetime": MinMaxDatetime,
+    "NextPageUrlPaginator": NextPageUrlPaginator,
     "OffsetPaginator": OffsetPaginator,
     "NoPaginator": NoPagination,
     "TokenAuthenticator": TokenAuthenticator,
-    "DatetimeStreamSlicer": DatetimeStreamSlicer,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "ListStreamSlicer": ListStreamSlicer,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
