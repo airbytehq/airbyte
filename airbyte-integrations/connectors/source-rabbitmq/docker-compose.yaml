@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  rabbitmq:
+    image: rabbitmq:management-alpine
+    container_name: 'rabbitmq'
+    environment:
+      - RABBITMQ_DEFAULT_USER=airbyte
+      - RABBITMQ_DEFAULT_PASS=airbyte
+    ports:
+        - 5672:5672
+        - 15672:15672
+    healthcheck:
+      test: ["rabbitmq-diagnostics", "is_running"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  source:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_USER=airbyte
+      - RABBITMQ_PASSWORD=airbyte
+    
