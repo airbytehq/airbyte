@@ -1,3 +1,9 @@
 {
-  "fix-me": "TODO"
+  "host": "rabbitmq",
+  "port": 5672,
+  "virtual_host": "/",
+  "username": "airbyte",
+  "password": "airbyte",
+  "routing_key": "test_queue",
+  "exchange": "test_exchange"
 }
