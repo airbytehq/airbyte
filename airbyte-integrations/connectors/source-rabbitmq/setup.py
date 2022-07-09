@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1.56",
-    "kombu~=5.2.4"
+    "pika~=1.3.0"
 ]
 
 TEST_REQUIREMENTS = [

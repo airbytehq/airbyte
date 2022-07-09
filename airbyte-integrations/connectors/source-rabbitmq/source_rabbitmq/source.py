@@ -8,7 +8,7 @@ import traceback
 from turtle import st
 import uuid
 from amqp import Channel
-from kombu import Connection, Consumer, Message, Queue
+from pika import BlockingConnection, URLParameters, ConnectionParameters, PlainCredentials
 from datetime import datetime
 from typing import Dict, Generator, Mapping
 
@@ -24,11 +24,10 @@ from airbyte_cdk.models import (
     Type,
 )
 from airbyte_cdk.sources import Source
+from urllib3 import Retry
 
 
 class SourceRabbitmq(Source):
-    
-    self.client: Connection
     
     def _get_client(self, config: Mapping):
         """Construct client"""
@@ -37,8 +36,12 @@ class SourceRabbitmq(Source):
         hostname = config['hostname']
         port = config['port']
         virtual_host = config['virtual_host']
-        self.client = Connection(f'rabbitmq-stream://{username}:{password}@{hostname}:{port}/{virtual_host}')
-        return self.client
+        return BlockingConnection(ConnectionParameters(host=hostname,
+                                                       port=port,
+                                                       virtual_host=virtual_host,
+                                                       credentials=PlainCredentials(username=username, password=password),
+                                                       ))
+
     
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
@@ -53,12 +56,9 @@ class SourceRabbitmq(Source):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """     
         try:
+            logger.debug(f"Checking access to RabbitMQ with config: {config}")
             with self._get_client(config) as conn:
-                logger.debug(f"Checking access to RabbitMQ with config: {config}")
-                if(conn.connected):
-                    return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-                else:
-                    return AirbyteConnectionStatus(status=Status.FAILED, message=f"Failed to establish connection with RabbitMQ brocker")
+                return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
@@ -115,39 +115,35 @@ class SourceRabbitmq(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        
-        client = self.client
         stream_name = config['name']
         exchange = config['exchange']
         routing_key = config['routing_key']
         prefetch_count = int(config['prefetch_count'])
         
-        queue: Queue
         if 'queue' not in config:
-            queue_name = f'airbyte-{stream_name}-{uuid.uuid5()}'
+            queue_name = f'airbyte-{stream_name}-{uuid.uuid4()}'
         else:
             queue_name = config['queue']
-            
-        queue = Queue(name=queue_name, routing_key=routing_key, exchange=exchange, durable=True, auto_delete=False, exclusive=False, queue_arguments={
-            'x-queue-type': 'stream', 
-            'x-max-length-bytes': config['max_length_bytes'],
-            'x-stream-max-segment-size-bytes': config['max_segment_size_bytes']
-        })
         
         try:
-            with client as conn:
+            with self._get_client(config) as conn:
                 with conn.channel() as channel:
-                    channel: Channel                    
                     channel.basic_qos(prefetch_count=prefetch_count)
-                    queue.declare(channel=channel)
-                    def _on_message(body, message: Message):
+                    channel.queue_declare(queue=queue_name, durable=True, auto_delete=False, exclusive=False, arguments={
+                        'x-queue-type': 'stream', 
+                        'x-max-length-bytes': int(config['max_length_bytes']),
+                        'x-stream-max-segment-size-bytes': int(config['max_segment_size_bytes'])
+                    })
+                    channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
+                    def _on_message(channel, method, properties, body):
                         yield AirbyteMessage(
                             type=Type.RECORD,
                             record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
                         )
-                        message.ack()
-                    channel.basic_consume(queue=queue, callback=_on_message,arguments={'x-stream-offset':'next'})
+                        channel.basic_ack(method.delivery_tag)
+                    channel.basic_consume(queue=queue_name, on_message_callback=_on_message,arguments={'x-stream-offset':'next'})
+                    channel.start_consuming()
         except Exception as err:
-            reason = f"Failed to read data of {stream_name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to read data of {stream_name}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err            
