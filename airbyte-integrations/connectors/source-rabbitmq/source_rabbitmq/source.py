@@ -5,7 +5,9 @@
 
 import json
 import traceback
-from kombu import Connection, Consumer
+from turtle import st
+import uuid
+from kombu import Connection, Consumer, Message, Queue
 from datetime import datetime
 from typing import Dict, Generator, Mapping
 
@@ -112,20 +114,35 @@ class SourceRabbitmq(Source):
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
         stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
         
         client = self.client
         exchange = config['exchange']
-        queue = config['queue']
         routing_key = config['routing_key']
+        
+        queue: Queue
+        if 'queue' not in config:
+            queue_name = f'airbyte-{stream_name}-{uuid.uuid5()}'
+        else:
+            queue_name = config['queue']
+            
+        queue = Queue(name=queue_name, routing_key=routing_key, exchange=exchange, durable=True, auto_delete=False, exclusive=False, queue_arguments={
+            'x-queue-type': 'stream', 
+            'x-max-length-bytes': config['max_length_bytes'],
+            'x-stream-max-segment-size-bytes': config['max_segment_size_bytes']
+        })
+        
         try:
             with client as conn:
+                
                 with conn.channel() as channel:
-                    def _on_message(body, message):
+                    channel.basicQos(int(config['prefetch_count']))
+                    queue.declare(channel=channel)
+                    def _on_message(body, message: Message):
                         yield AirbyteMessage(
                             type=Type.RECORD,
                             record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
                         )
+                        message.ack()
                     consumer = Consumer(channel=channel, queue=queue, on_message=_on_message)
                     consumer.consume()
         except Exception as err:
