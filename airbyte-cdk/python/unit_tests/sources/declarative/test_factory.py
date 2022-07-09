@@ -53,13 +53,23 @@ def test_factory():
 
 def test_interpolate_config():
     content = """
-authenticator:
-  class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
-  token: "{{ config['apikey'] }}"
+    authenticator:
+      class_name: airbyte_cdk.sources.declarative.auth.oauth.DeclarativeOauth2Authenticator
+      client_id: "some_client_id"
+      client_secret: "some_client_secret"
+      token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"
+      refresh_token: "{{ config['apikey'] }}"
+      refresh_request_body:
+        body_field: "yoyoyo"
+        interpolated_body_field: "{{ config['apikey'] }}"
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._tokens == ["verysecrettoken"]
+    assert authenticator._client_id._string == "some_client_id"
+    assert authenticator._client_secret._string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token._string == "verysecrettoken"
+    assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
 def test_list_based_stream_slicer_with_values_refd():
