@@ -1,9 +1,14 @@
 {
-  "host": "rabbitmq",
+  "name": "test",
+  "hostname": "localhost",
   "port": 5672,
   "virtual_host": "/",
   "username": "airbyte",
   "password": "airbyte",
+  "queue": "test_queue",
   "routing_key": "test_queue",
-  "exchange": "test_exchange"
+  "exchange": "test_exchange",
+  "prefetch_count": 10,
+  "max_length_bytes": 100000000,
+  "max_segment_size_bytes": 100000
 }

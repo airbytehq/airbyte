@@ -6,6 +6,9 @@ connectionSpecification:
   required: ["hostname", "exchange", "routing_key"]
   additionalProperties: false
   properties:
+    name:
+      type: string  
+      description: The connection's name.
     hostname:
       type: string
       description: The RabbitMQ host name.
@@ -33,3 +36,9 @@ connectionSpecification:
     prefetch_count:
       type: integer
       description: The RabbitMQ consumer prefetch count.
+    max_length_bytes:
+      type: integer
+      description: The maximum size of the stream in bytes.
+    max_segment_size_bytes:
+      type: integer
+      description: "Unit: bytes. A stream is divided up into fixed size segment files on disk. This setting controls the size of these."
