@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_discourse.source import DiscourseStream
+from source_discourse.source import DiscourseStream, SourceDiscourse
 
 
 @pytest.fixture
@@ -19,29 +19,25 @@ def patch_base_class(mocker):
 
 def test_request_params(patch_base_class):
     stream = DiscourseStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = DiscourseStream()
-    # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = DiscourseStream()
-    # TODO: replace this with your input parameters
-    inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
-    expected_parsed_object = {}
-    assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    mock_record = {"item1_key": "item1_val"}
+    response_data = {"items": [mock_record]}
+    inputs = {"response": MagicMock(json=lambda: response_data)}
+    parsed_item = next(stream.parse_response(**inputs))
+    assert parsed_item == mock_record
 
 
 def test_request_headers(patch_base_class):
