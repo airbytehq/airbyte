@@ -69,6 +69,9 @@ public class CdcAcceptanceTests {
   private static final String SCHEMA_NAME = "public";
   private static final String CDC_UPDATED_AT_COLUMN = "_ab_cdc_updated_at";
   private static final String CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at";
+  private static final String ID_AND_NAME_TABLE = "id_and_name";
+  private static final String COLOR_PALETTE_TABLE = "color_palette";
+  private static final String COLUMN_COLOR = "color";
 
   // version of the postgres destination connector that was built with the
   // old Airbyte protocol that does not contain any per-stream logic/fields
@@ -126,12 +129,12 @@ public class CdcAcceptanceTests {
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final Database source = testHarness.getSourceDatabase();
-    List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    List<DestinationCdcRecordMatcher> expectedDestRecordMatchers = new ArrayList<>(sourceRecords
-        .stream()
-        .map(sourceRecord -> new DestinationCdcRecordMatcher(sourceRecord, Instant.EPOCH, Optional.empty()))
-        .toList());
-    assertDestinationMatches(expectedDestRecordMatchers);
+
+    List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
+
+    List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
+    assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
 
     final Instant beforeFirstUpdate = Instant.now();
 
@@ -143,14 +146,24 @@ public class CdcAcceptanceTests {
     // since this is a CDC connection, the destination should contain a record with this
     // new value and an updated_at time corresponding to this update query
     source.query(ctx -> ctx.execute("UPDATE id_and_name SET name='yennefer' WHERE id=2"));
-
-    expectedDestRecordMatchers.add(new DestinationCdcRecordMatcher(
+    expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
         beforeFirstUpdate,
         Optional.empty()));
-
-    expectedDestRecordMatchers.add(new DestinationCdcRecordMatcher(
+    expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_NAME, "yennefer").build()),
+        beforeFirstUpdate,
+        Optional.empty()));
+
+    // do the same for the other table
+    source.query(ctx -> ctx.execute("INSERT INTO color_palette(id, color) VALUES(4, 'yellow')"));
+    source.query(ctx -> ctx.execute("UPDATE color_palette SET color='purple' WHERE id=2"));
+    expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 4).put(COLUMN_COLOR, "yellow").build()),
+        beforeFirstUpdate,
+        Optional.empty()));
+    expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 2).put(COLUMN_COLOR, "purple").build()),
         beforeFirstUpdate,
         Optional.empty()));
 
@@ -160,7 +173,8 @@ public class CdcAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
     LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertDestinationMatches(expectedDestRecordMatchers);
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
+    assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
 
     // reset back to no data.
 
@@ -170,7 +184,8 @@ public class CdcAcceptanceTests {
 
     LOGGER.info("state after reset: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertDestinationMatches(Collections.emptyList());
+    assertDestinationMatches(ID_AND_NAME_TABLE, Collections.emptyList());
+    assertDestinationMatches(COLOR_PALETTE_TABLE, Collections.emptyList());
 
     // sync one more time. verify it is the equivalent of a full refresh.
     LOGGER.info("Starting incremental cdc sync 3");
@@ -179,13 +194,11 @@ public class CdcAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
     LOGGER.info("state after sync 3: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    sourceRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    expectedDestRecordMatchers = sourceRecords
-        .stream()
-        .map(sourceRecord -> new DestinationCdcRecordMatcher(sourceRecord, Instant.EPOCH, Optional.empty()))
-        .toList();
+    expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
 
-    assertDestinationMatches(expectedDestRecordMatchers);
+    expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
+    assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
   }
 
   // tests that incremental syncs still work properly even when using a destination connector that was
@@ -224,12 +237,8 @@ public class CdcAcceptanceTests {
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final Database source = testHarness.getSourceDatabase();
-    List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    List<DestinationCdcRecordMatcher> expectedDestRecordMatchers = new ArrayList<>(sourceRecords
-        .stream()
-        .map(sourceRecord -> new DestinationCdcRecordMatcher(sourceRecord, Instant.EPOCH, Optional.empty()))
-        .toList());
-    assertDestinationMatches(expectedDestRecordMatchers);
+    List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
 
     final Instant beforeDelete = Instant.now();
 
@@ -240,7 +249,7 @@ public class CdcAcceptanceTests {
     Map<String, Object> deletedRecordMap = new HashMap<>();
     deletedRecordMap.put(COLUMN_ID, 1);
     deletedRecordMap.put(COLUMN_NAME, null);
-    expectedDestRecordMatchers.add(new DestinationCdcRecordMatcher(
+    expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
         Jsons.jsonNode(deletedRecordMap),
         beforeDelete,
         Optional.of(beforeDelete)));
@@ -251,7 +260,15 @@ public class CdcAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
     LOGGER.info("state after sync 2: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
-    assertDestinationMatches(expectedDestRecordMatchers);
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
+  }
+
+  private List<DestinationCdcRecordMatcher> getCdcRecordMatchersFromSource(Database source, String tableName) throws SQLException {
+    List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, tableName);
+    return new ArrayList<>(sourceRecords
+        .stream()
+        .map(sourceRecord -> new DestinationCdcRecordMatcher(sourceRecord, Instant.EPOCH, Optional.empty()))
+        .toList());
   }
 
   private UUID createCdcConnection() throws ApiException {
@@ -298,8 +315,8 @@ public class CdcAcceptanceTests {
         Jsons.jsonNode(sourceDbConfigMap));
   }
 
-  private void assertDestinationMatches(List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
-    final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, STREAM_NAME));
+  private void assertDestinationMatches(String streamName, List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
+    final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, streamName));
     if (destRecords.size() != expectedDestRecordMatchers.size()) {
       final String errorMessage = String.format(
           "The number of destination records %d does not match the expected number %d",
