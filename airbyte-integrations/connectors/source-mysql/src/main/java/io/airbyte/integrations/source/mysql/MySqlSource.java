@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.mysql.helpers.CdcConfigurationHelper.checkBinlog;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,7 +33,6 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -183,7 +181,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
       final Optional<CdcState> cdcState = Optional.ofNullable(stateManager.getCdcStateManager().getCdcState());
       final MySqlCdcSavedInfoFetcher fetcher = new MySqlCdcSavedInfoFetcher(cdcState.orElse(null));
-      cdcState.ifPresent(cdc -> checkBinlog(cdc.getState(), database));
       return Collections.singletonList(handler.getIncrementalIterators(catalog,
           fetcher,
           new MySqlCdcStateHandler(stateManager),
