@@ -9,8 +9,10 @@ This source can sync data for the [Okta API](https://developer.okta.com/docs/ref
 This Source is capable of syncing the following core Streams:
 
 * [Users](https://developer.okta.com/docs/reference/api/users/#list-users)
+* [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user)
 * [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups)
 * [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members)
+* [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group)
 * [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
 * [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
 
@@ -63,6 +65,7 @@ Different Okta APIs require different admin privilege levels. API tokens inherit
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.6 | 2022-07-13 | [14556](https://github.com/airbytehq/airbyte/pull/14556) | add User_Role_Assignments and Group_Role_Assignments streams (full fetch only) |
 | 0.1.6 | 2022-07-11 | [14610](https://github.com/airbytehq/airbyte/pull/14610) | add custom roles stream |
 | 0.1.5 | 2022-07-04 | [14380](https://github.com/airbytehq/airbyte/pull/14380) | add Group_Members stream to okta source |
 | 0.1.4 | 2021-11-02 | [7584](https://github.com/airbytehq/airbyte/pull/7584) | Fix incremental params for log stream |
