@@ -7,6 +7,7 @@ import json
 import traceback
 from turtle import st
 import uuid
+from amqp import Channel
 from kombu import Connection, Consumer, Message, Queue
 from datetime import datetime
 from typing import Dict, Generator, Mapping
@@ -35,7 +36,8 @@ class SourceRabbitmq(Source):
         password = config['password']
         hostname = config['hostname']
         port = config['port']
-        self.client = Connection(hostname=hostname, port=port, userid=username, password=password)
+        virtual_host = config['virtual_host']
+        self.client = Connection(f'rabbitmq-stream://{username}:{password}@{hostname}:{port}/{virtual_host}')
         return self.client
     
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
@@ -113,11 +115,12 @@ class SourceRabbitmq(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
         
         client = self.client
+        stream_name = config['name']
         exchange = config['exchange']
         routing_key = config['routing_key']
+        prefetch_count = int(config['prefetch_count'])
         
         queue: Queue
         if 'queue' not in config:
@@ -133,9 +136,9 @@ class SourceRabbitmq(Source):
         
         try:
             with client as conn:
-                
                 with conn.channel() as channel:
-                    channel.basicQos(int(config['prefetch_count']))
+                    channel: Channel                    
+                    channel.basic_qos(prefetch_count=prefetch_count)
                     queue.declare(channel=channel)
                     def _on_message(body, message: Message):
                         yield AirbyteMessage(
@@ -143,9 +146,8 @@ class SourceRabbitmq(Source):
                             record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
                         )
                         message.ack()
-                    consumer = Consumer(channel=channel, queue=queue, on_message=_on_message)
-                    consumer.consume()
+                    channel.basic_consume(queue=queue, callback=_on_message,arguments={'x-stream-offset':'next'})
         except Exception as err:
-            reason = f"Failed to read data of {name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to read data of {stream_name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             raise err            
