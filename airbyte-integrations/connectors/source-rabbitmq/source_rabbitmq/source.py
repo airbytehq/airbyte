@@ -7,7 +7,6 @@ import json
 import traceback
 from turtle import st
 import uuid
-from amqp import Channel
 from pika import BlockingConnection, URLParameters, ConnectionParameters, PlainCredentials
 from datetime import datetime
 from typing import Dict, Generator, Mapping
@@ -136,10 +135,11 @@ class SourceRabbitmq(Source):
                     })
                     channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
                     def _on_message(channel, method, properties, body):
-                        yield AirbyteMessage(
-                            type=Type.RECORD,
-                            record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
-                        )
+                        logger.info(f"Got a new message! {method.delivery_tag}")
+                        # yield AirbyteMessage(
+                        #     type=Type.RECORD,
+                        #     record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        # )
                         channel.basic_ack(method.delivery_tag)
                     channel.basic_consume(queue=queue_name, on_message_callback=_on_message,arguments={'x-stream-offset':'next'})
                     channel.start_consuming()
