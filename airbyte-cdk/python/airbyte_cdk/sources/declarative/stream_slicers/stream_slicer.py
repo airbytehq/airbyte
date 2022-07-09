@@ -18,6 +18,10 @@ class StreamSlicer(ABC):
         pass
 
     @abstractmethod
+    def path(self) -> Optional[str]:
+        pass
+
+    @abstractmethod
     def request_params(self) -> Mapping[str, Any]:
         pass
 

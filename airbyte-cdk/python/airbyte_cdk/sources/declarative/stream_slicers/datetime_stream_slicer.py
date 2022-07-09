@@ -20,6 +20,9 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class DatetimeStreamSlicer(StreamSlicer):
+    def path(self) -> Optional[str]:
+        pass
+
     timedelta_regex = re.compile(
         r"((?P<weeks>[\.\d]+?)w)?"
         r"((?P<days>[\.\d]+?)d)?"
@@ -40,7 +43,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         config: Config,
         start_time_option: Optional[RequestOption] = None,
         end_time_option: Optional[RequestOption] = None,
-        stream_state_field: str = None,
+        stream_state_field: Optional[str] = None,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()

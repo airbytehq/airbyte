@@ -18,6 +18,9 @@ class ListStreamSlicer(StreamSlicer):
     If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list
     """
 
+    def path(self) -> Optional[str]:
+        pass
+
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
         pass
 

@@ -155,11 +155,19 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         paginator_path = self._paginator.path()
+        stream_slicer_path = self._iterator.path()
+        if paginator_path and stream_slicer_path:
+            raise ValueError(f"Cannot process both paginator path and stream slicer path. Got {paginator_path} and {stream_slicer_path}")
         if paginator_path:
             return paginator_path
+        elif stream_slicer_path:
+            return stream_slicer_path
         else:
-            print(f"path. state: {self.state}. stream_slice: {stream_slice}")
-            return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
+            static_path = self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
+            if not static_path:
+                raise ValueError("Found no path to fetch")
+            else:
+                return static_path
 
     def request_params(
         self,
