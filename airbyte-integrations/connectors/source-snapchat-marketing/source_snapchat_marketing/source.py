@@ -139,13 +139,12 @@ class SnapchatMarketingException(Exception):
     """Just for formatting the exception as SnapchatMarketing"""
 
 
-def get_parent_ids(parent, slice_key_name: str) -> List:
+def get_parent_ids(parent) -> List:
     """This auxiliary function is to help retrieving the ids from another stream
 
     :param parent: instance of stream class from what we need to retrieve ids
-    :param slice_key_name: The key in result slices generator
     :param logger: Logger to log the messages
-    :returns: empty list in case no ids of the stream was found or list with {slice_key_name: id}
+    :returns: empty list in case no ids of the stream was found or list with {'id': id}
     """
 
     # The trick with this code is that some streams are chained:
@@ -160,8 +159,8 @@ def get_parent_ids(parent, slice_key_name: str) -> List:
     # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
     # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
     # return if the same ids are requested in the stream. This saves us a lot of time and requests
-    # if parent.name in auxiliary_id_map:
-    #     return auxiliary_id_map[parent.name]
+    if parent.name in auxiliary_id_map:
+        return auxiliary_id_map[parent.name]
 
     # Some damn logic a?
     # Relax, that has some meaning:
@@ -192,7 +191,7 @@ def get_parent_ids(parent, slice_key_name: str) -> List:
     for parent_stream_slice in parent_stream_slices:
         records = parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=parent_stream_slice)
         for record in records:
-            parent_ids.append({slice_key_name: record["id"]})
+            parent_ids.append({'id': record["id"]})
 
     if not parent_ids:
         return []
@@ -259,7 +258,6 @@ class SnapchatMarketingStream(HttpStream, ABC):
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     cursor_field = "updated_at"
     parent: SnapchatMarketingStream = None
-    slice_key_name = "ad_account_id"
 
     last_slice = None
     current_slice = None
@@ -268,7 +266,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     max_state = None
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.response_root_name}"
+        return f"adaccounts/{stream_slice['id']}/{self.response_root_name}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
 
@@ -284,10 +282,10 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
                 start_date=self.start_date,
                 end_date=self.end_date
             )
-            stream_slices = get_parent_ids(parent_stream, self.slice_key_name)
+            stream_slices = get_parent_ids(parent_stream)
 
         if not stream_slices:
-            self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
+            self.logger.error(f"No {'id'}s found. {self.name} cannot be extracted without {'id'}.")
             yield from []
 
         self.last_slice = stream_slices[-1]
@@ -360,10 +358,9 @@ class Adaccounts(IncrementalSnapchatMarketingStream):
     """Docs: https://marketingapi.snapchat.com/docs/#get-all-ad-accounts"""
 
     parent = Organizations
-    slice_key_name = "organization_id"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"organizations/{stream_slice[self.slice_key_name]}/adaccounts"
+        return f"organizations/{stream_slice['id']}/adaccounts"
 
 
 class Creatives(IncrementalSnapchatMarketingStream):
@@ -411,7 +408,6 @@ class Stats(SnapchatMarketingStream, ABC):
     Docs:  https://marketingapi.snapchat.com/docs/#measurement
     """
     primary_key = ['id', 'granularity']
-    slice_key_name = 'id'
     schema_name = 'basic_stats'
     parent_name: str = ''  # name of parent class
     response_root_name = 'lifetime_stats'
@@ -431,17 +427,17 @@ class Stats(SnapchatMarketingStream, ABC):
             end_date=self.end_date
         )
         self.parent_name = parent_stream.name
-        stream_slices = get_parent_ids(parent_stream, self.slice_key_name)
+        stream_slices = get_parent_ids(parent_stream)
 
         if not stream_slices:
-            self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
+            self.logger.error(f"No {'id'}s found. {self.name} cannot be extracted without {'id'}.")
 
         self.logger.info(f"Stats: stream_slices:{stream_slices}")
 
         return stream_slices
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"{self.parent_name}/{stream_slice[self.slice_key_name]}/stats"
+        return f"{self.parent_name}/{stream_slice['id']}/stats"
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
