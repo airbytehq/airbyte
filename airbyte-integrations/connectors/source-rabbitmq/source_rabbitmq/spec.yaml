@@ -15,15 +15,19 @@ connectionSpecification:
     port:
       type: integer
       description: The RabbitMQ port.
+      default: 5672
     virtual_host:
       type: string
       description: The RabbitMQ virtual host name.
+      default: "/"
     username:
       type: string
       description: The RabbitMQ username to connect with.
+      default: guest
     password:
       type: string
       description: The RabbitMQ password to connect with.
+      default: guest
     exchange:
       type: string
       description: The exchange to connect to.
@@ -36,9 +40,12 @@ connectionSpecification:
     prefetch_count:
       type: integer
       description: The RabbitMQ consumer prefetch count.
+      default: 10
     max_length_bytes:
       type: integer
       description: The maximum size of the stream in bytes.
+      default: 1000000
     max_segment_size_bytes:
       type: integer
       description: "Unit: bytes. A stream is divided up into fixed size segment files on disk. This setting controls the size of these."
+      default: 1000
