@@ -112,10 +112,9 @@ METRICS_NOT_HOURLY = [
 class GranularityType(Enum):
     HOUR = 'HOUR'
     DAY = 'DAY'
-    TOTAL = 'TOTAL'
     LIFETIME = 'LIFETIME'
 
-# See the get_depend_on_ids function explanation
+# See the get_parent_ids function explanation
 # Long story short - used as cache for ids of higher level streams, that is used
 # as path variables in other streams. And to avoid requesting those ids for every stream
 # we put them to a dict and check if they exist on stream calling
@@ -140,7 +139,7 @@ class SnapchatMarketingException(Exception):
     """Just for formatting the exception as SnapchatMarketing"""
 
 
-def get_depend_on_ids(parent, slice_key_name: str) -> List:
+def get_parent_ids(parent, slice_key_name: str) -> List:
     """This auxiliary function is to help retrieving the ids from another stream
 
     :param parent: instance of stream class from what we need to retrieve ids
@@ -161,9 +160,8 @@ def get_depend_on_ids(parent, slice_key_name: str) -> List:
     # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
     # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
     # return if the same ids are requested in the stream. This saves us a lot of time and requests
-    parent_name = parent.__class__.__name__
-    if parent_name in auxiliary_id_map:
-        return auxiliary_id_map[parent_name]
+    # if parent.name in auxiliary_id_map:
+    #     return auxiliary_id_map[parent.name]
 
     # Some damn logic a?
     # Relax, that has some meaning:
@@ -199,34 +197,13 @@ def get_depend_on_ids(parent, slice_key_name: str) -> List:
     if not parent_ids:
         return []
 
-    auxiliary_id_map[parent_name] = parent_ids
+    auxiliary_id_map[parent.name] = parent_ids
     return parent_ids
 
 
 class SnapchatMarketingStream(HttpStream, ABC):
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
-
-    @property
-    def response_root_name(self):
-        """Using the class name in lower to set the root node for response parsing"""
-        return self.name
-
-    @property
-    def response_item_name(self):
-        """
-        Used as the second level node for response parsing. Usually it is the response_root_name without last char.
-        For example: response_root_name = organizations, so response_item_name = organization
-        The [:-1] removes the last char from response_root_name: organizations -> organization
-         {
-            "organizations": [
-                {
-                    "organization": {....}
-                }
-            ]
-        }
-        """
-        return self.response_root_name[:-1]
 
     def __init__(self, start_date, end_date, **kwargs):
         super().__init__(**kwargs)
@@ -243,12 +220,22 @@ class SnapchatMarketingStream(HttpStream, ABC):
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
+    @property
+    def response_root_name(self):
+        """Using the class name in lower to set the root node for response parsing"""
+        return self.name
+
+    @property
+    def response_item_name(self):
+        """Remove last 's' from response_root_name, see example in parse_response function"""
+        return self.response_root_name[:-1]
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Response json came like
         {
-            "organizations": [
+            "organizations": [                                  <-- response_root_name
                 {
-                    "organization": {
+                    "organization": {                           <-- response_item_name
                         "id": "some uuid",
                         "updated_at": "2020-12-15T22:35:17.819Z",
                         "created_at": "2020-12-15T11:13:03.910Z",
@@ -260,15 +247,10 @@ class SnapchatMarketingStream(HttpStream, ABC):
         So the response_root_name will be "organizations", and the response_item_name will be "organization"
         Also, the client side filtering for incremental sync is used
         """
-
-
-        # self.logger.info(f"============= GranularityType:{self.name} =================")
-        # self.logger.info(response.json())
-
         json_response = response.json().get(self.response_root_name)
         for resp in json_response:
             if self.response_item_name not in resp:
-                error_text = f"JSON field named '{self.response_item_name}' is absent in the response for {self.name} stream"
+                error_text = f"stream {self.name}: field named '{self.response_item_name}' is absent in the response: {resp}"
                 self.logger.error(error_text)
                 raise SnapchatMarketingException(error_text)
             yield resp.get(self.response_item_name)
@@ -276,8 +258,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
 
 class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     cursor_field = "updated_at"
-    parent = None
-    parent_name = ''
+    parent: SnapchatMarketingStream = None
     slice_key_name = "ad_account_id"
 
     last_slice = None
@@ -285,6 +266,9 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     first_run = True
     initial_state = None
     max_state = None
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.response_root_name}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
 
@@ -295,13 +279,12 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         stream_slices = default_stream_slices_return_value
 
         if self.parent:
-            stream = self.parent(
+            parent_stream = self.parent(
                 authenticator=self.authenticator,
                 start_date=self.start_date,
                 end_date=self.end_date
             )
-            self.parent_name = stream.name
-            stream_slices = get_depend_on_ids(stream, self.slice_key_name)
+            stream_slices = get_parent_ids(parent_stream, self.slice_key_name)
 
         if not stream_slices:
             self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
@@ -316,7 +299,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
         I see you have a lot of questions to this function. I will try to explain.
-        The problem that it solves is next: records from the streams that used nested ids logic (see the get_depend_on_ids function comments below)
+        The problem that it solves is next: records from the streams that used nested ids logic (see the get_parent_ids function comments below)
         can have different, non ordered timestamp in update_at cursor_field and because of they are extracted with slices
         it is a messy task to make the stream works as incremental. To understand it better the read of nested stream data can be next:
 
@@ -364,9 +347,6 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
                     yield record
         else:
             yield from records
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"adaccounts/{stream_slice[self.slice_key_name]}/{self.response_root_name}"
 
 
 class Organizations(SnapchatMarketingStream):
@@ -427,35 +407,31 @@ class Segments(IncrementalSnapchatMarketingStream):
 
 
 class Stats(SnapchatMarketingStream, ABC):
-    """ stats requests can be made with TOTAL, DAY, or HOUR granularity.
+    """Stats streams for LIFETIME granularity.
     Docs:  https://marketingapi.snapchat.com/docs/#measurement
-    Measurement endpoints provides stats data that is updated approximately every 15 minutes.
     """
     primary_key = ['id', 'granularity']
     slice_key_name = 'id'
     schema_name = 'basic_stats'
-    item_path: str = ''
-    parent_name: str = ''
+    parent_name: str = ''  # name of parent class
+    response_root_name = 'lifetime_stats'
+    granularity = GranularityType.LIFETIME
 
     @property
     @abstractmethod
     def parent(self) -> SnapchatMarketingStream:
         """Stream Class to extract entity ids from"""
 
-    @property
-    def granularity(self) -> GranularityType:
-        """Required granularity"""
-
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice represents each entity id from parent stream"""
 
-        stream = self.parent(
+        parent_stream = self.parent(
             authenticator=self.authenticator,
             start_date=self.start_date,
             end_date=self.end_date
         )
-        self.parent_name = stream.name
-        stream_slices = get_depend_on_ids(stream, self.slice_key_name)
+        self.parent_name = parent_stream.name
+        stream_slices = get_parent_ids(parent_stream, self.slice_key_name)
 
         if not stream_slices:
             self.logger.error(f"No {self.slice_key_name}s found. {self.name} cannot be extracted without {self.slice_key_name}.")
@@ -472,102 +448,11 @@ class Stats(SnapchatMarketingStream, ABC):
     ) -> MutableMapping[str, Any]:
 
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
         params['granularity'] = self.granularity.value
-
-        if self.granularity in [GranularityType.HOUR, GranularityType.DAY] and stream_slice.get('start_date'):
-            # start/end date param should be set for Daily and Hourly streams
-            params['start_time'] = stream_slice['start_date']
-            params['end_time'] = stream_slice['end_date']
-
         if self.metrics:
             params['fields'] = ','.join(self.metrics)
 
         return params
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        """Response json came like"""
-        items = super().parse_response(response=response, stream_slice=stream_slice, **kwargs)
-
-        if self.item_path:
-            for item in items:
-                item_identifiers = {
-                    'id': item['id'],
-                    'type': item['type'],
-                    'granularity': item['granularity'],
-                }
-                subitems = item.get(self.item_path)
-                for subitem in subitems:
-                    subitem.update(item_identifiers)
-                    yield subitem
-        else:
-            yield from items
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """All reports have same schema"""
-        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.schema_name)
-
-
-class StatsIncremental(Stats, IncrementalMixin):
-    """Incremental Stats class for Daily and Hourly streams which requires start/end date param"""
-
-    primary_key = ['id', 'granularity', 'start_time']
-    cursor_field: str = 'start_date'
-    slice_period: int = 0  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
-    number_of_parent_ids: int = 0
-    number_of_last_records: int = 0
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._state = {}
-
-    @property
-    def state(self):
-        return self._state
-
-    @state.setter
-    def state(self, value):
-        self._state[self.cursor_field] = value
-
-    def date_slices(self, stream_state=None) -> Iterable[Optional[Mapping[str, Any]]]:
-        date_slices = []
-        end_date = pendulum.parse(self.end_date)
-        start_date_str = stream_state.get(self.cursor_field) if stream_state else self.start_date
-        slice_start_date = pendulum.parse(start_date_str)
-        while slice_start_date < end_date:
-            slice_end_date_next = slice_start_date + pendulum.duration(days=self.slice_period)
-            slice_end_date = min(slice_end_date_next, end_date)
-            date_slices.append({
-                'start_date': slice_start_date.to_date_string(),
-                'end_date': slice_end_date.to_date_string()
-            })
-            slice_start_date = slice_end_date
-
-        self.logger.info(f"{self.name} date_slices: {date_slices}.")
-
-        return date_slices
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """Incremental stream slices is a combinations of date and parent entities slices"""
-
-        stream_slices = []
-
-        entity_slices = super().stream_slices(sync_mode=SyncMode.full_refresh)  # get all entities
-
-        # save a number of entities we need to get stats for
-        self.number_of_parent_ids = len(entity_slices)
-
-        # within each date period extract data for all entities
-        # it allows incremental sync implementation with slice period granularity
-        for date_slice in self.date_slices(stream_state=stream_state):
-            for entity_slice in entity_slices:
-                stream_slices.append({**date_slice, **entity_slice})
-
-        self.logger.info(f"{self.name} stream_slices:{stream_slices}")
-
-        return stream_slices
 
     def parse_response(self,
         response: requests.Response,
@@ -578,187 +463,147 @@ class StatsIncremental(Stats, IncrementalMixin):
     ) -> Iterable[Mapping]:
         """Customized by adding stream state setting"""
 
-        # Save start_date for each slice, it ensures that previous slices have been read and
-        # can be skipped in next incremental sync
+        for record in super().parse_response(response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token):
+            # move all 'stats' metrics to root level
+            record.update(record.pop('stats', {}))
+
+            yield record
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        """All stats streams have same schema"""
+        return ResourceSchemaLoader(package_name_from_class(self.__class__)).get_schema(self.schema_name)
+
+
+class StatsIncremental(Stats, IncrementalMixin):
+    """Incremental Stats class for Daily and Hourly streams which requires start/end date param"""
+
+    primary_key = ['id', 'granularity', 'start_time']
+    cursor_field: str = 'start_time'
+    slice_period: int = 7  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
+    number_of_parent_ids: int = 0
+    number_of_last_records: int = 0
+    response_root_name = 'timeseries_stats'
+    response_subitem_name = 'timeseries'
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._state = {}
+
+    def date_slices(self, stream_state=None) -> Iterable[Optional[Mapping[str, Any]]]:
+        date_slices = []
+        # use start_date from state or from config
+        start_date_str = stream_state.get(self.cursor_field) if stream_state else self.start_date
+        slice_start_date = pendulum.parse(start_date_str)
+        end_date = pendulum.parse(self.end_date)
+        while slice_start_date < end_date:
+            slice_end_date_next = slice_start_date + pendulum.duration(days=self.slice_period)
+            slice_end_date = min(slice_end_date_next, end_date)
+            date_slices.append({
+                'start_time': slice_start_date.to_date_string(),
+                'end_time': slice_end_date.to_date_string()
+            })
+            slice_start_date = slice_end_date
+
+        self.logger.info(f"{self.name} date_slices: {date_slices}.")
+
+        return date_slices
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Incremental stream slices is a combinations of date and parent id slices"""
+
+        stream_slices = []
+
+        parent_ids = super().stream_slices(sync_mode=SyncMode.full_refresh)
+
+        # save a number of parent ids we need to get stats for
+        self.number_of_parent_ids = len(parent_ids)
+
+        # within each date period extract data for all parent_ids
+        # it allows incremental sync implementation with slice period granularity
+        for date_slice in self.date_slices(stream_state=stream_state):
+            for parent_id in parent_ids:
+                stream_slices.append({**date_slice, **parent_id})
+
+        self.logger.info(f"{self.name} stream_slices:{stream_slices}")
+
+        return stream_slices
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        """start/end date param should be set for Daily and Hourly streams"""
+
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        params['start_time'] = stream_slice['start_time']
+        params['end_time'] = stream_slice['end_time']
+        return params
+
+    def update_state_after_last_record(self, record):
+        """Update state if last record has been read"""
+        record_end_date = record.get('end_time', '').split('T')[0]  # "2022-07-06T00:00:00.000-07:00" --> "2022-07-06"
+        if record_end_date == self.end_date:
+            self.number_of_last_records += 1
+            # Update state if 'last' records for all dependant entities have been read
+            if self.number_of_parent_ids == self.number_of_last_records:
+                self.state = record_end_date
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        self._state[self.cursor_field] = value
+
+    def parse_response(self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None
+    ) -> Iterable[Mapping]:
+        """Customized by adding stream state setting"""
+
+        # Update state for each date slice (start_date), it ensures that previous date slices have been read
+        # and can be skipped in next incremental sync
         self.state = stream_slice[self.cursor_field]
 
         for record in super().parse_response(response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token):
 
-            yield record
+            record_identifiers = {
+                'id': record['id'],
+                'type': record['type'],
+                'granularity': record['granularity'],
+            }
 
-            # Update state if last record has been read
-            record_end_date = record.get('end_time', '').split('T')[0]  # "2022-07-06T00:00:00.000-07:00" --> "2022-07-06"
-            if record_end_date == self.end_date:
-                self.number_of_last_records += 1
-                # Update state if 'last' records for all dependant entities have been read
-                if self.number_of_parent_ids == self.number_of_last_records:
-                    self.state = record_end_date
+            # Hourly/Daily stats contains nested structure (under self.response_subitem_name) with actual stats items
+            for stat_item in record.get(self.response_subitem_name, []):
+                # add common record identifiers
+                stat_item.update(record_identifiers)
+                # move all 'stats' metrics to root level
+                stat_item.update(stat_item.pop('stats', {}))
+
+                # Update state for last record in the stream
+                self.update_state_after_last_record(stat_item)
+
+                yield stat_item
 
 
 class Granularity:
     granularity: GranularityType
-    response_root_name: str
     metrics = METRICS + METRICS_NOT_HOURLY
-    slice_period: int = 0
-
-
-class Hourly(Granularity):
-    """
-        {
-          "request_status": "SUCCESS",
-          "request_id": "c106d757-7c07-4415-b62f-78108d9dc668",
-          "timeseries_stats": [{
-              "sub_request_status": "SUCCESS",
-              "timeseries_stat": {
-                "id": "417d0269-80fb-496a-b5f3-ec0bac665144",
-                "type": "AD",
-                "granularity": "HOUR",
-                "start_time": "2022-06-24T17:00:00.000-07:00",
-                "end_time": "2022-06-28T17:00:00.000-07:00",
-                "finalized_data_end_time": "2022-06-30T11:00:00.000-07:00",
-                "conversion_data_processed_end_time": "2022-06-30T00:00:00.000Z",
-                "timeseries": [{
-                    "start_time": "2022-06-24T17:00:00.000-07:00",
-                    "end_time": "2022-06-24T18:00:00.000-07:00",
-                    "stats": {
-                      "impressions": 0,
-                      "swipes": 0,
-                      "quartile_1": 0,
-                      "quartile_2": 0,
-                      "quartile_3": 0,
-                      "view_completion": 0,
-                    }
-                  }, {
-                    "start_time": "2022-06-24T18:00:00.000-07:00",
-                    "end_time": "2022-06-24T19:00:00.000-07:00",
-                    "stats": {
-                      "impressions": 0,
-                      "swipes": 0,
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-    """
-    granularity = GranularityType.HOUR
-    slice_period = 7  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
-    response_root_name = 'timeseries_stats'
-    metrics = METRICS
-    item_path = 'timeseries'
-
-
-class Daily(Granularity):
-    """
-        {
-          "request_status": "SUCCESS",
-          "request_id": "f2cba857-e246-43bf-b644-1a0a540e1f92",
-          "timeseries_stats": [{
-              "sub_request_status": "SUCCESS",
-              "timeseries_stat": {
-
-                "id": "417d0269-80fb-496a-b5f3-ec0bac665144",
-                "type": "AD",
-                "granularity": "DAY",
-                "start_time": "2022-06-25T00:00:00.000-07:00",
-                "end_time": "2022-06-29T00:00:00.000-07:00",
-                "finalized_data_end_time": "2022-06-30T00:00:00.000-07:00",
-                "conversion_data_processed_end_time": "2022-06-30T00:00:00.000Z",
-                "timeseries": [{
-                    "start_time": "2022-06-25T00:00:00.000-07:00",
-                    "end_time": "2022-06-26T00:00:00.000-07:00",
-                    "stats": {
-                      "impressions": 0,
-                      "swipes": 0,
-                      "quartile_1": 0,
-                      "quartile_2": 0,
-                      "quartile_3": 0,
-                    }
-                  }, {
-                    "start_time": "2022-06-26T00:00:00.000-07:00",
-                    "end_time": "2022-06-27T00:00:00.000-07:00",
-                    "stats": {
-                      "impressions": 0,
-                      "swipes": 0,
-                      "quartile_1": 0,
-                      "quartile_2": 0,
-                      "quartile_3": 0,
-                    },
-                  },
-
-                ]
-              }
-            }
-          ]
-        }
-
-
-        {
-          "request_status": "SUCCESS",
-          "request_id": "fd700e7f-5823-4f01-ac09-7083017c43a4",
-          "timeseries_stats": [{
-              "sub_request_status": "SUCCESS",
-              "timeseries_stat": {
-                "id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
-                "type": "AD_ACCOUNT",
-                "granularity": "DAY",
-                "start_time": "2022-06-25T00:00:00.000-07:00",
-                "end_time": "2022-06-30T00:00:00.000-07:00",
-                "finalized_data_end_time": "2022-07-01T00:00:00.000-07:00",
-                "timeseries": [{
-                    "start_time": "2022-06-25T00:00:00.000-07:00",
-                    "end_time": "2022-06-26T00:00:00.000-07:00",
-                    "stats": {
-                      "spend": 0
-                    }
-                  }, {
-                    "start_time": "2022-06-26T00:00:00.000-07:00",
-                    "end_time": "2022-06-27T00:00:00.000-07:00",
-                    "stats": {
-                      "spend": 0
-                    }
-                  }, {
-                    "start_time": "2022-06-27T00:00:00.000-07:00",
-                    "end_time": "2022-06-28T00:00:00.000-07:00",
-                    "stats": {
-                      "spend": 0
-                    }
-                  }, {
-                    "start_time": "2022-06-28T00:00:00.000-07:00",
-                    "end_time": "2022-06-29T00:00:00.000-07:00",
-                    "stats": {
-                      "spend": 0
-                    }
-                  }, {
-                    "start_time": "2022-06-29T00:00:00.000-07:00",
-                    "end_time": "2022-06-30T00:00:00.000-07:00",
-                    "stats": {
-                      "spend": 0
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-
-
-    """
-    granularity = GranularityType.DAY
-    slice_period = 31  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
-    response_root_name = 'timeseries_stats'
-    item_path = 'timeseries'
 
 
 class Lifetime(Granularity):
-    """
+    """Example of raw response:
     {
       "request_status": "SUCCESS",
       "request_id": "d0cb395f-c39d-480d-b62c-24878c7d0b76",
-      "lifetime_stats": [{
+      "lifetime_stats": [{                                              <-- response_root_name
           "sub_request_status": "SUCCESS",
-          "lifetime_stat": {
+          "lifetime_stat": {                                            <-- response_item_name
             "id": "96e5549f-4065-490e-93dd-ffb9f7973b77",
             "type": "AD",
             "granularity": "LIFETIME",
@@ -776,62 +621,101 @@ class Lifetime(Granularity):
         }
       ]
     }
+    """
+    granularity = GranularityType.LIFETIME
 
 
+class Hourly(Granularity):
+    """Example of raw response:
     {
       "request_status": "SUCCESS",
-      "request_id": "55d461a7-adea-455f-ad74-dd846212902e",
-      "lifetime_stats": [{
+      "request_id": "c106d757-7c07-4415-b62f-78108d9dc668",
+      "timeseries_stats": [{                                        <-- response_root_name
           "sub_request_status": "SUCCESS",
-          "lifetime_stat": {
-            "id": "d180d36e-1212-479b-84a5-8b0663ceaf82",
-            "type": "CAMPAIGN",
-            "granularity": "LIFETIME",
-            "stats": {
-              "impressions": 31,
-              "swipes": 6,
-              "quartile_1": 0,
-              "quartile_2": 0,
-              "custom_event_4": 0,
-              "custom_event_5": 0
-            },
-            "start_time": "2016-09-26T00:00:00.000-07:00",
-            "end_time": "2022-07-01T10:00:00.000-07:00",
-            "finalized_data_end_time": "2022-07-01T10:00:00.000-07:00",
-            "conversion_data_processed_end_time": "2022-07-01T00:00:00.000Z"
+              "timeseries_stat": {                                  <-- response_item_name
+            "id": "417d0269-80fb-496a-b5f3-ec0bac665144",
+            "type": "AD",
+            "granularity": "HOUR",
+            "start_time": "2022-06-24T17:00:00.000-07:00",
+            "end_time": "2022-06-28T17:00:00.000-07:00",
+            "finalized_data_end_time": "2022-06-30T11:00:00.000-07:00",
+            "conversion_data_processed_end_time": "2022-06-30T00:00:00.000Z",
+            "timeseries": [{                                        <-- response_subitem_name
+                "start_time": "2022-06-24T17:00:00.000-07:00",
+                "end_time": "2022-06-24T18:00:00.000-07:00",
+                "stats": {
+                  "impressions": 0,
+                  "swipes": 0,
+                  "quartile_1": 0,
+                  "quartile_2": 0,
+                  "quartile_3": 0,
+                  "view_completion": 0,
+                }
+              }, {
+                "start_time": "2022-06-24T18:00:00.000-07:00",
+                "end_time": "2022-06-24T19:00:00.000-07:00",
+                "stats": {
+                  "impressions": 0,
+                  "swipes": 0,
+                }
+              }
+            ]
           }
         }
       ]
     }
+    """
+    granularity = GranularityType.HOUR
+    metrics = METRICS
+    slice_period = 7  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
 
+
+class Daily(Granularity):
+    """Example of raw response:
     {
       "request_status": "SUCCESS",
-      "request_id": "dd239627-75d9-4465-8245-7bf781620ec0",
-      "lifetime_stats": [{
+      "request_id": "f2cba857-e246-43bf-b644-1a0a540e1f92",
+      "timeseries_stats": [{                                        <-- response_root_name
           "sub_request_status": "SUCCESS",
-          "lifetime_stat": {
-            "id": "e4cd371b-8de8-4011-a8d2-860fe77c09e1",
-            "type": "AD_ACCOUNT",
-            "granularity": "LIFETIME",
-            "stats": {
-              "spend": 168048
-            },
-            "start_time": "2016-09-26T00:00:00.000-07:00",
-            "end_time": "2022-07-01T10:00:00.000-07:00",
-            "finalized_data_end_time": "2022-07-01T10:00:00.000-07:00"
+          "timeseries_stat": {                                      <-- response_item_name
+            "id": "417d0269-80fb-496a-b5f3-ec0bac665144",
+            "type": "AD",
+            "granularity": "DAY",
+            "start_time": "2022-06-25T00:00:00.000-07:00",
+            "end_time": "2022-06-29T00:00:00.000-07:00",
+            "finalized_data_end_time": "2022-06-30T00:00:00.000-07:00",
+            "conversion_data_processed_end_time": "2022-06-30T00:00:00.000Z",
+            "timeseries": [{                                        <-- response_subitem_name
+                "start_time": "2022-06-25T00:00:00.000-07:00",
+                "end_time": "2022-06-26T00:00:00.000-07:00",
+                "stats": {
+                  "impressions": 0,
+                  "swipes": 0,
+                  "quartile_1": 0,
+                  "quartile_2": 0,
+                  "quartile_3": 0,
+                }
+              }, {
+                "start_time": "2022-06-26T00:00:00.000-07:00",
+                "end_time": "2022-06-27T00:00:00.000-07:00",
+                "stats": {
+                  "impressions": 0,
+                  "swipes": 0,
+                  "quartile_1": 0,
+                  "quartile_2": 0,
+                  "quartile_3": 0,
+                },
+              },
+
+            ]
           }
         }
       ]
     }
 
     """
-    granularity = GranularityType.LIFETIME
-    response_root_name = 'lifetime_stats'
-
-
-class Total(Granularity):
-    granularity = GranularityType.TOTAL
-    response_root_name = 'total_stats'
+    granularity = GranularityType.DAY
+    slice_period = 31  # days https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
 
 
 class AdaccountsStatsHourly(Hourly, StatsIncremental):
@@ -849,7 +733,6 @@ class AdaccountsStatsDaily(Daily, StatsIncremental):
 class AdaccountsStatsLifetime(Lifetime, Stats):
     """Adaccounts stats with Lifetime granularity: https://marketingapi.snapchat.com/docs/#get-ad-account-stats"""
     parent = Adaccounts
-    # item_path = 'breakdown_stats'
     metrics = ['spend']
 
 
@@ -952,22 +835,14 @@ class SourceSnapchatMarketing(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        # Start/End dates should better be in YYYY-MM-DD format,
-        # 1. otherwise we need to specify correct account timezone in order to avoid error like:
-        # Unsupported Stats Query: Timeseries queries with DAY granularity must have a start time that is the start of day (00:00:00)
-        # for the account's timezone.
-        # 2. Minutes are not supported as well.
-        # 3. Timeseries queries with DAY granularity cannot query time intervals of more than 32 days
-
-        # =============================
-        # =============================
-        # ============================= make slices with 30 days
-        # =============================
 
         # https://marketingapi.snapchat.com/docs/#core-metrics
         # IMPORTANT: Metrics are finalized 48 hours after the end of the day in the Ad Account’s timezone.
         DELAYED_DAYS = 2
 
+        # Start/End dates should better be in YYYY-MM-DD format:
+        # 1. minutes are not supported
+        # 2. when timezone is not specified, default account's timezone will be used automatically
         default_end_date = pendulum.now().subtract(days=DELAYED_DAYS).to_date_string()
         kwargs = {
             "authenticator": SnapchatAdsOauth2Authenticator(config),

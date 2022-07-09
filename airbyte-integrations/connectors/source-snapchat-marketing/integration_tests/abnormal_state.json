@@ -21,9 +21,9 @@
     "updated_at": "2221-01-01T00:00:00Z"
   },
   "ads_stats_daily": {
-    "start_date": "2022-07-05"
+    "start_time": "2022-07-05"
   },
   "adaccounts_stats_daily": {
-    "start_date": "2022-07-05"
+    "start_time": "2022-07-05"
   }
 }
