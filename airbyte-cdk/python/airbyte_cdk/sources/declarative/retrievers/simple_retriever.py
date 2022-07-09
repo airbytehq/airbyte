@@ -163,7 +163,9 @@ class SimpleRetriever(Retriever, HttpStream):
         elif stream_slicer_path:
             return stream_slicer_path
         else:
-            static_path = self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
+            static_path = self._requester.get_path(
+                stream_state=self.state, stream_slice=self._iterator.get_stream_state(), next_page_token=next_page_token
+            )
             if not static_path:
                 raise ValueError("Found no path to fetch")
             else:

@@ -18,7 +18,7 @@ class SubstreamSlicer(StreamSlicer):
     """
 
     def path(self) -> Optional[str]:
-        if self._cursor and self._parent_option.option_type == RequestOptionType.path:
+        if self._cursor and self._parent_option and self._parent_option.option_type == RequestOptionType.path:
             return (
                 InterpolatedString(self._parent_option.path)
                 .eval(self._cursor, **{self._stream_state_field: self._cursor})
