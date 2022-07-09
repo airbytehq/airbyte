@@ -3,70 +3,52 @@
   "additionalProperties": false,
   "properties": {
     "assigned_to": {
-      "anyOf": [
-        {
-          "type": ["null", "object"],
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": ["null", "string"]
-              },
-              "id": {
-                "type": ["null", "string"]
-              }
-            }
+      "type": ["null", "object", "string"],
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string", "integer"]
           }
-        },
-        {
-          "type": "null"
         }
-      ]
     },
     "attachments": {
-      "anyOf": [
-        {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "type": {
-                "type": ["null", "string"]
-              },
-              "name": {
-                "type": ["null", "string"]
-              },
-              "url": {
-                "type": ["null", "string"]
-              },
-              "content_type": {
-                "type": ["null", "string"]
-              },
-              "filesize": {
-                "type": ["null", "integer"]
-              },
-              "height": {
-                "type": ["null", "integer"]
-              },
-              "width": {
-                "type": ["null", "integer"]
-              }
-            }
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "url": {
+            "type": ["null", "string"]
+          },
+          "content_type": {
+            "type": ["null", "string"]
+          },
+          "filesize": {
+            "type": ["null", "integer"]
+          },
+          "height": {
+            "type": ["null", "integer"]
+          },
+          "width": {
+            "type": ["null", "integer"]
           }
-        },
-        {
-          "type": "null"
         }
-      ]
+      }
     },
     "author": {
       "type": ["null", "object"],
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string", "integer"]
         },
         "type": {
           "type": ["null", "string"]
@@ -83,7 +65,7 @@
       "type": ["null", "string"]
     },
     "conversation_id": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "conversation_created_at": {
       "type": ["null", "integer"]
@@ -101,7 +83,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "notified_at": {
       "type": ["null", "integer"]
