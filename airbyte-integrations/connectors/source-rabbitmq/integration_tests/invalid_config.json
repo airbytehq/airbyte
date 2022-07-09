@@ -1,5 +1,5 @@
 {
-  "host": "invalid.host.io",
+  "hostname": "invalid.host.io",
   "port": 5672,
   "virtual_host": "invalid_vh",
   "username": "invalid_username",

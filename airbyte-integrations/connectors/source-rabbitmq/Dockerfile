@@ -26,6 +26,7 @@ RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
 RUN apk --no-cache add bash
+RUN apk add tk
 
 # copy payload code only
 COPY main.py ./
