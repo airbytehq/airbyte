@@ -4,8 +4,10 @@
 
 
 import json
+import traceback
+from kombu import Connection, Consumer
 from datetime import datetime
-from typing import Dict, Generator
+from typing import Dict, Generator, Mapping
 
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
@@ -22,6 +24,18 @@ from airbyte_cdk.sources import Source
 
 
 class SourceRabbitmq(Source):
+    
+    self.client: Connection
+    
+    def _get_client(self, config: Mapping):
+        """Construct client"""
+        username = config['username']
+        password = config['password']
+        hostname = config['hostname']
+        port = config['port']
+        self.client = Connection(hostname=hostname, port=port, userid=username, password=password)
+        return self.client
+    
     def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -33,11 +47,14 @@ class SourceRabbitmq(Source):
         the properties of the spec.yaml file
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
-        """
+        """     
         try:
-            # Not Implemented
-
-            return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+            with self._get_client(config) as conn:
+                logger.debug(f"Checking access to RabbitMQ with config: {config}")
+                if(conn.connected):
+                    return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+                else:
+                    return AirbyteConnectionStatus(status=Status.FAILED, message=f"Failed to establish connection with RabbitMQ brocker")
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
@@ -96,10 +113,22 @@ class SourceRabbitmq(Source):
         """
         stream_name = "TableName"  # Example
         data = {"columnName": "Hello World"}  # Example
-
-        # Not Implemented
-
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(stream=stream_name, data=data, emitted_at=int(datetime.now().timestamp()) * 1000),
-        )
+        
+        client = self.client
+        exchange = config['exchange']
+        queue = config['queue']
+        routing_key = config['routing_key']
+        try:
+            with client as conn:
+                with conn.channel() as channel:
+                    def _on_message(body, message):
+                        yield AirbyteMessage(
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        )
+                    consumer = Consumer(channel=channel, queue=queue, on_message=_on_message)
+                    consumer.consume()
+        except Exception as err:
+            reason = f"Failed to read data of {name} at {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            logger.error(reason)
+            raise err            
