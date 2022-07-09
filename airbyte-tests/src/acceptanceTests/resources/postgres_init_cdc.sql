@@ -63,12 +63,14 @@ CREATE
 
 ALTER TABLE
     id_and_name REPLICA IDENTITY DEFAULT;
+
 ALTER TABLE
     color_palette REPLICA IDENTITY DEFAULT;
 
 CREATE
     PUBLICATION airbyte_publication FOR TABLE
-        id_and_name, color_palette;
+        id_and_name,
+        color_palette;
 
 SELECT
     pg_create_logical_replication_slot(
