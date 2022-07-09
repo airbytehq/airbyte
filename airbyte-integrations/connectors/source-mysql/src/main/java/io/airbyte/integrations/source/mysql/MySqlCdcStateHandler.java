@@ -53,7 +53,7 @@ public class MySqlCdcStateHandler implements CdcStateHandler {
 
   @Override
   public AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams() {
-    throw new RuntimeException("Snapshot of individual tables currently not supports in MySQL");
+    throw new RuntimeException("Snapshot of individual tables currently not supported in MySQL");
   }
 
 }
