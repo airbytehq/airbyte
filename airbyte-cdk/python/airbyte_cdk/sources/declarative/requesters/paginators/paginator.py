@@ -43,7 +43,7 @@ class Paginator(ABC):
         pass
 
     @abstractmethod
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Union[Mapping[str, Any], str]:
         """
 
         :return: the request body data to set to fetch the next page
@@ -51,7 +51,7 @@ class Paginator(ABC):
         pass
 
     @abstractmethod
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         """
 
         :return: the request body to set (as a json object) to fetch the next page

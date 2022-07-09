@@ -7,7 +7,6 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -18,28 +17,31 @@ class SubstreamSlicer(StreamSlicer):
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
     """
 
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+        print(f"update_cursor. stream_slice: {stream_slice}")
+
     def request_params(self) -> Mapping[str, Any]:
-        pass
+        return {}
 
     def request_headers(self) -> Mapping[str, Any]:
-        pass
+        return {}
 
     def request_body_data(self) -> Optional[Union[Mapping, str]]:
-        pass
+        return {}
 
     def request_body_json(self) -> Optional[Mapping]:
-        pass
+        return {}
 
     def set_state(self, stream_state: Mapping[str, Any]):
-        pass
+        return {}
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        pass
+        return {}
 
-    def __init__(self, parent_streams: List[Stream], state: DictState, slice_definition: Mapping[str, Any]):
+    def __init__(self, parent_streams: List[Stream], slice_definition: Mapping[str, Any]):
         self._parent_streams = parent_streams
-        self._state = state
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
+        print(self._parent_streams)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -60,8 +62,8 @@ class SubstreamSlicer(StreamSlicer):
         else:
             for parent_stream in self._parent_streams:
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
-                    self._state.update_state(parent_stream_slice=parent_stream_slice)
-                    self._state.update_state(parent_record=None)
+                    # self._state.update_state(parent_stream_slice=parent_stream_slice)
+                    # self._state.update_state(parent_record=None)
                     empty_parent_slice = True
 
                     for parent_record in parent_stream.read_records(
@@ -69,7 +71,7 @@ class SubstreamSlicer(StreamSlicer):
                     ):
                         empty_parent_slice = False
                         slice_definition = self._get_slice_definition(parent_stream_slice, parent_record, parent_stream.name)
-                        self._state.update_state(parent_record=parent_record)
+                        #   self._state.update_state(parent_record=parent_record)
                         yield slice_definition
                     # If the parent slice contains no records,
                     # yield a slice definition with parent_record==None

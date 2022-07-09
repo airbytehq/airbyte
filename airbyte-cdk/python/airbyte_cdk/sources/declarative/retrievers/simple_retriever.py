@@ -158,6 +158,7 @@ class SimpleRetriever(Retriever, HttpStream):
         if paginator_path:
             return paginator_path
         else:
+            print(f"path. state: {self.state}. stream_slice: {stream_slice}")
             return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
@@ -259,6 +260,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
+        print(f"stream_slicer: {type(self._iterator)}")
         return self._iterator.stream_slices(sync_mode, self.state)
 
     @property

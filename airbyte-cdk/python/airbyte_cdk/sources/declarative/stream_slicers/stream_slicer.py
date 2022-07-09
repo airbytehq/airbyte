@@ -10,6 +10,10 @@ from airbyte_cdk.models import SyncMode
 
 class StreamSlicer(ABC):
     @abstractmethod
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+        pass
+
+    @abstractmethod
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         pass
 
