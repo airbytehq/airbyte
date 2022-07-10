@@ -491,6 +491,7 @@ class StatsIncremental(Stats, IncrementalMixin):
         start_date_str = stream_state.get(self.cursor_field) if stream_state else self.start_date
         slice_start_date = pendulum.parse(start_date_str)
         end_date = pendulum.parse(self.end_date)
+
         while slice_start_date < end_date:
             slice_end_date_next = slice_start_date + pendulum.duration(days=self.slice_period)
             slice_end_date = min(slice_end_date_next, end_date)
