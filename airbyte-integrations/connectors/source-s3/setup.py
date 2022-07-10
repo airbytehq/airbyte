@@ -13,8 +13,7 @@ MAIN_REQUIREMENTS = [
     "dill==0.3.4",
     "pytz",
     "fastavro==1.4.11",
-    "python-snappy==0.6.1",
-    "pandas==1.3.1",
+    "python-snappy==0.6.1"
 ]
 
 TEST_REQUIREMENTS = [
