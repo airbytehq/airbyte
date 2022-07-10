@@ -1,5 +1,4 @@
 import { SegmentAnalytics } from "core/analytics/types";
-import { Feature } from "hooks/services/Feature";
 
 import { OutboundLinks } from "./links";
 
@@ -22,7 +21,6 @@ declare global {
 
 export interface Config {
   links: OutboundLinks;
-  features: Feature[];
   segment: { token: string; enabled: boolean };
   apiUrl: string;
   oauthRedirectUrl: string;

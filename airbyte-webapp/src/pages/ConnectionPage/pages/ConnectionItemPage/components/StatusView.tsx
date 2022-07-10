@@ -11,7 +11,7 @@ import ToolTip from "components/ToolTip";
 import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useListJobs } from "services/job/JobService";
@@ -53,8 +53,7 @@ const SyncButton = styled(LoadingButton)`
 const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
-  const { hasFeature } = useFeatureService();
-  const allowSync = hasFeature(FeatureItem.AllowSync);
+  const allowSync = useFeature(FeatureItem.AllowSync);
 
   const jobs = useListJobs({
     configId: connection.connectionId,

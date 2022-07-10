@@ -7,7 +7,7 @@ import styled from "styled-components";
 import { ContentCard, H4 } from "components";
 
 import { buildConnectionUpdate, NormalizationType } from "core/domain/connection";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
@@ -124,10 +124,9 @@ const TransformationView: React.FC<TransformationViewProps> = ({ connection }) =
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { mutateAsync: updateConnection } = useUpdateConnection();
   const workspace = useCurrentWorkspace();
-  const { hasFeature } = useFeatureService();
 
   const { supportsNormalization } = definition;
-  const supportsDbt = hasFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
+  const supportsDbt = useFeature(FeatureItem.AllowCustomDBT) && definition.supportsDbt;
 
   const mode = connection.status === ConnectionStatus.deprecated ? "readonly" : "edit";
 

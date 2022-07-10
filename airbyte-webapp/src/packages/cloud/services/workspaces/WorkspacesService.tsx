@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { QueryObserverResult, useMutation, useQuery, useQueryClient } from "react-query";
 
 import { CloudWorkspacesService } from "packages/cloud/lib/domain/cloudWorkspaces/CloudWorkspacesService";
-import type { CloudWorkspace, CloudWorkspaceUsage } from "packages/cloud/lib/domain/cloudWorkspaces/types";
+import { CloudWorkspace, CloudWorkspaceUsage, CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useCurrentUser } from "packages/cloud/services/auth/AuthService";
 import { useConfig } from "packages/cloud/services/config";
 import { SCOPE_USER } from "services/Scope";
@@ -108,7 +108,13 @@ export function useRemoveWorkspace() {
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  return useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () => service.get(workspaceId));
+  const workspace = useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
+    service.get(workspaceId)
+  );
+  if (workspace.name === "airbyte2") {
+    workspace.creditStatus = CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD;
+  }
+  return workspace;
 }
 
 export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<void> {
