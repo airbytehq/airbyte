@@ -13,6 +13,7 @@ MAIN_REQUIREMENTS = [
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "source-acceptance-test",
+    "testcontainers[rabbitmq]~=3.6.0"
 ]
 
 setup(
