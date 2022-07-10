@@ -3,7 +3,16 @@
 #
 
 
+import logging
+
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from normalization.transform_catalog.transform import main
 
 if __name__ == "__main__":
-    main()
+    init_uncaught_exception_handler(logging.getLogger("airbyte"))
+    try:
+        main()
+    except Exception as e:
+        msg = "Something went wrong while transforming the catalog in Normalization. See the logs for more details."
+        raise AirbyteTracedException(str(e), msg, exception=e)
