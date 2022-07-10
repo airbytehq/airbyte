@@ -127,6 +127,7 @@ class PostgresCdcGetPublicizedTablesTest {
       final Set<AirbyteStreamNameNamespacePair> expectedTables = Set.of(
           new AirbyteStreamNameNamespacePair("table_1", SCHEMA_NAME),
           new AirbyteStreamNameNamespacePair("table_2", SCHEMA_NAME));
+      // table_irrelevant is not included because it is not part of the publication
       assertEquals(expectedTables, PostgresCdcCatalogHelper.getPublicizedTables(database));
     } catch (final SQLException e) {
       throw new RuntimeException(e);
