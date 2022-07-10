@@ -68,7 +68,7 @@ class AirbyteEntrypoint(object):
         if not cmd:
             raise Exception("No command passed")
 
-        if parsed_args.debug:
+        if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
 

@@ -58,10 +58,18 @@ def test_trace(logger, caplog):
 
 
 def test_debug(logger, caplog):
-    logger.debug("Test debug 1")
+    # Test debug logger in isolation since the default logger is initialized to TRACE (15) instead of DEBUG (10).
+    debug_logger = logging.getLogger("airbyte.Debuglogger")
+    debug_logger.setLevel(logging.DEBUG)
+    debug_logger.debug("Test debug 1")
     record = caplog.records[0]
     assert record.levelname == "DEBUG"
     assert record.message == "Test debug 1"
+
+
+def test_default_debug_is_ignored(logger, caplog):
+    logger.debug("Test debug that is ignored since log level is TRACE")
+    assert len(caplog.records) == 0
 
 
 def test_info(logger, caplog):
