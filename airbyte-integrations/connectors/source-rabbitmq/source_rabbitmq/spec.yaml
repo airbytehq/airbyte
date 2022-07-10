@@ -11,34 +11,47 @@ connectionSpecification:
       description: The connection's name.
     hostname:
       type: string
+      title: Hostname
+      order: 0
       description: The RabbitMQ host name.
     port:
       type: integer
+      title: Port
+      order: 1
       description: The RabbitMQ port.
       default: 5672
     virtual_host:
       type: string
+      title: Virtual Host
+      order: 2
       description: The RabbitMQ virtual host name.
       default: "/"
     username:
       type: string
+      title: Username
+      order: 3
       description: The RabbitMQ username to connect with.
       default: guest
     password:
       type: string
+      title: Password
+      order: 4
       description: The RabbitMQ password to connect with.
       default: guest
     exchange:
       type: string
+      title: From Exchange
+      order: 5
       description: The exchange to connect to.
-    queue:
-      type: string
-      description: The queue to consumer from.
     routing_key:
       type: string
+      title: Routing Key
+      order: 6
       description: The routing key to accept.
     batch_size:
       type: int
+      title: Batch Size
+      order: 7
       description: The number of messages to get from the queue in a single read operation.
       default: 100
     # prefetch_count:

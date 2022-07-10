@@ -118,12 +118,7 @@ class SourceRabbitmq(Source):
         exchange = config['exchange']
         routing_key = config['routing_key']
         # prefetch_count = int(config['prefetch_count'])
-        
-        if 'queue' not in config:
-            queue_name = f'airbyte-{stream_name}-{uuid.uuid4()}'
-        else:
-            queue_name = config['queue']
-        messages = []
+        queue_name = f'airbyte-{stream_name}-{uuid.uuid4()}'
         
         batch_size = config['batch_size']
         try:
