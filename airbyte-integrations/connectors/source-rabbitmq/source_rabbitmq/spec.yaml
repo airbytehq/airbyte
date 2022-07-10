@@ -37,15 +37,19 @@ connectionSpecification:
     routing_key:
       type: string
       description: The routing key to accept.
-    prefetch_count:
-      type: integer
-      description: The RabbitMQ consumer prefetch count.
-      default: 10
-    max_length_bytes:
-      type: integer
-      description: The maximum size of the stream in bytes.
-      default: 1000000
-    max_segment_size_bytes:
-      type: integer
-      description: "Unit: bytes. A stream is divided up into fixed size segment files on disk. This setting controls the size of these."
-      default: 1000
+    batch_size:
+      type: int
+      description: The number of messages to get from the queue in a single read operation.
+      default: 100
+    # prefetch_count:
+    #   type: integer
+    #   description: The RabbitMQ consumer prefetch count.
+    #   default: 10
+    # max_length_bytes:
+    #   type: integer
+    #   description: The maximum size of the stream in bytes.
+    #   default: 1000000
+    # max_segment_size_bytes:
+    #   type: integer
+    #   description: "Unit: bytes. A stream is divided up into fixed size segment files on disk. This setting controls the size of these."
+    #   default: 1000
