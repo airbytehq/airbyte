@@ -10,6 +10,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
@@ -62,7 +63,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   public AirbyteMessageTracker() {
-    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES), new DefaultStateAggregator());
+    this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES),
+        new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()));
   }
 
   @VisibleForTesting

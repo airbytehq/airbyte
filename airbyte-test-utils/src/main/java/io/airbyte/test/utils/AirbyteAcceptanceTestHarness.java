@@ -27,6 +27,7 @@ import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -130,6 +131,12 @@ public class AirbyteAcceptanceTestHarness {
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
   private static final String SOURCE_USERNAME = "sourceusername";
   public static final String SOURCE_PASSWORD = "hunter2";
+  public static final String PUBLIC_SCHEMA_NAME = "public";
+  public static final String STAGING_SCHEMA_NAME = "staging";
+  public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
+  public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
+
+  private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
 
   private static boolean isKube;
   private static boolean isMinikube;
@@ -147,6 +154,7 @@ public class AirbyteAcceptanceTestHarness {
   private AirbyteTestContainer airbyteTestContainer;
   private AirbyteApiClient apiClient;
   private final UUID defaultWorkspaceId;
+  private final String postgresSqlInitFile;
 
   private KubernetesClient kubernetesClient = null;
 
@@ -171,12 +179,13 @@ public class AirbyteAcceptanceTestHarness {
     this.apiClient = apiClient;
   }
 
-  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId, final String postgresSqlInitFile)
       throws URISyntaxException, IOException, InterruptedException {
     // reads env vars to assign static variables
     assignEnvVars();
     this.apiClient = apiClient;
     this.defaultWorkspaceId = defaultWorkspaceId;
+    this.postgresSqlInitFile = postgresSqlInitFile;
 
     if (isGke && !isKube) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
@@ -215,6 +224,11 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+      throws URISyntaxException, IOException, InterruptedException {
+    this(apiClient, defaultWorkspaceId, DEFAULT_POSTGRES_INIT_SQL_FILE);
+  }
+
   public void stopDbAndContainers() {
     if (!isGke) {
       sourcePsql.stop();
@@ -235,7 +249,7 @@ public class AirbyteAcceptanceTestHarness {
     if (isGke) {
       // seed database.
       final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final Path path = Path.of(MoreResources.readResourceAsFile(postgresSqlInitFile).toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, StandardCharsets.UTF_8)) {
         if (line != null && !line.isEmpty()) {
@@ -244,7 +258,7 @@ public class AirbyteAcceptanceTestHarness {
       }
       database.query(context -> context.execute(query.toString()));
     } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(postgresSqlInitFile), sourcePsql);
 
       destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
       destinationPsql.start();
@@ -523,7 +537,7 @@ public class AirbyteAcceptanceTestHarness {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
+  public List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
@@ -635,9 +649,23 @@ public class AirbyteAcceptanceTestHarness {
         .getSourceDefinitionId();
   }
 
+  public UUID getPostgresDestinationDefinitionId() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+        .stream()
+        .filter(destRead -> destRead.getName().equalsIgnoreCase("postgres"))
+        .findFirst()
+        .orElseThrow()
+        .getDestinationDefinitionId();
+  }
+
   public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
     apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
         .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
+  }
+
+  public void updateDestinationDefinitionVersion(final UUID destDefinitionId, final String dockerImageTag) throws ApiException {
+    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(new DestinationDefinitionUpdate()
+        .destinationDefinitionId(destDefinitionId).dockerImageTag(dockerImageTag));
   }
 
   private void clearSourceDbData() throws SQLException {
