@@ -7,7 +7,7 @@ import json
 import traceback
 from turtle import st
 import uuid
-from pika import BlockingConnection, URLParameters, ConnectionParameters, PlainCredentials
+from pika import ConnectionParameters, PlainCredentials, BlockingConnection
 from datetime import datetime
 from typing import Dict, Generator, Mapping
 
@@ -123,26 +123,37 @@ class SourceRabbitmq(Source):
             queue_name = f'airbyte-{stream_name}-{uuid.uuid4()}'
         else:
             queue_name = config['queue']
-        
+        messages = []
+        count = 0
         try:
             with self._get_client(config) as conn:
                 with conn.channel() as channel:
                     channel.basic_qos(prefetch_count=prefetch_count)
-                    channel.queue_declare(queue=queue_name, durable=True, auto_delete=False, exclusive=False, arguments={
-                        'x-queue-type': 'stream', 
-                        'x-max-length-bytes': int(config['max_length_bytes']),
-                        'x-stream-max-segment-size-bytes': int(config['max_segment_size_bytes'])
-                    })
+                    channel.queue_declare(queue=queue_name, durable=True, auto_delete=False, exclusive=False,
+                    #                       arguments={
+                    #     'x-queue-type': 'stream', 
+                    #     'x-max-length-bytes': int(config['max_length_bytes']),
+                    #     'x-stream-max-segment-size-bytes': int(config['max_segment_size_bytes'])
+                    # }
+                                          )
                     channel.queue_bind(queue=queue_name, exchange=exchange, routing_key=routing_key)
+                    
                     def _on_message(channel, method, properties, body):
                         logger.info(f"Got a new message! {method.delivery_tag}")
-                        # yield AirbyteMessage(
-                        #     type=Type.RECORD,
-                        #     record=AirbyteRecordMessage(stream=stream_name, data=body, emitted_at=int(datetime.now().timestamp()) * 1000),
-                        # )
+                        count+=1
+                        if count == 10:
+                            channel.stop_consuming()
                         channel.basic_ack(method.delivery_tag)
-                    channel.basic_consume(queue=queue_name, on_message_callback=_on_message,arguments={'x-stream-offset':'next'})
-                    channel.start_consuming()
+                        
+                    # channel.basic_consume(queue=queue_name, on_message_callback=_on_message,arguments={'x-stream-offset':'next'})
+                    # channel.start_consuming()
+                    method, properties, body = channel.basic_get(queue=queue_name)
+                    if body is not None:
+                        yield AirbyteMessage(
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(stream=stream_name, data={"body": body}, emitted_at=int(datetime.now().timestamp()) * 1000),
+                        )
+                        channel.basic_ack(method.delivery_tag)
         except Exception as err:
             reason = f"Failed to read data of {stream_name}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
