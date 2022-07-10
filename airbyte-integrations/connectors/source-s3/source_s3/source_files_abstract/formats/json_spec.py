@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -18,27 +17,21 @@ class JsonFormat(BaseModel):
         const=True,
     )
 
-    orient: str = Field(
-        default="columns",
-        description='The expected JSON string format. Details can be found in the <a href="https://pandas.pydata.org/docs/reference/api/pandas.read_json.html">Pandas documentation</a>',
-        examples=["split", "records", "index", "columns", "values", "table"],
+    newlines_in_values: bool = Field(
+        title="Allow newlines in values",
+        default=False,
+        description="Whether newline characters are allowed in JSON values. Turning this on may affect performance. Leave blank to default to False.",
+        order=0,
     )
-    lines: bool = Field(default=True, description="Read the file as a json object per line.")
-
-    chunk_size: int = Field(
-        default=100,
-        description="If lines is True, returns a JsonReader iterator to read batches of `chunk_size` lines instead of the whole file at once.",
-    )
-
-    compression: str = Field(
+    unexpected_field_behavior: str = Field(
+        title="Unexpected Json Fields",
         default="infer",
-        description='For on-the-fly decompression of on-disk data. If "infer", then use gzip, bz2, zip or xz if path_or_buf is a string ending in ".gz", ".bz2", ".zip", or "xz", respectively, and no decompression otherwise. If using "zip", the ZIP file must contain only one data file to be read in. Set to None for no decompression.',
-        examples=[".gz", ".bz2", ".zip", "xz"],
+        description="How JSON fields outside of explicit_schema (if given) are treated.",
+        order=1,
     )
 
-    encoding: str = Field(default="utf8", description="The encoding to use to decode py3 bytes.")
-
-    nrows: Optional[int] = Field(
-        default=None,
-        description="The number of lines from the line-delimited jsonfile that has to be read. This can only be passed if lines=True. If this is None, all the rows will be returned.",
+    block_size: int = Field(
+        default=10000,
+        description="The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
+        order=2,
     )

@@ -171,41 +171,25 @@
                 "const": "json",
                 "type": "string"
               },
-              "orient": {
-                "title": "Orient",
-                "description": "The expected JSON string format. Details can be found in the <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.read_json.html\">Pandas documentation</a>",
-                "default": "columns",
-                "examples":["split", "records", "index", "columns", "values", "table"],
-                "type": "string"
-              },
-              "lines": {
-                "title": "Lines",
-                "description": "Read the file as a json object per line.",
-                "default": true,
+               "newlines_in_values": {
+                "title": "Allow newlines in values",
+                "description": "Whether newline characters are allowed in JSON values. Turning this on may affect performance. Leave blank to default to False.",
+                "default": false,
+                "order": 0,
                 "type": "boolean"
               },
-              "chunk_size": {
-                "title": "Chunk Size",
-                "description": "If lines is True, returns a JsonReader iterator to read batches of `chunk_size` lines instead of the whole file at once.",
-                "default": 100,
-                "type": "integer"
-              },
-              "compression": {
-                "title": "Compression",
-                "description": "For on-the-fly decompression of on-disk data. If \"infer\", then use gzip, bz2, zip or xz if path_or_buf is a string ending in \".gz\", \".bz2\", \".zip\", or \"xz\", respectively, and no decompression otherwise. If using \"zip\", the ZIP file must contain only one data file to be read in. Set to None for no decompression.",
+              "unexpected_field_behavior": {
+                "title": "Unexpected Json Fields",
+                "description": "How JSON fields outside of explicit_schema (if given) are treated.",
                 "default": "infer",
-                "examples":[".gz", ".bz2", ".zip", "xz"],
+                "order": 1,
                 "type": "string"
               },
-              "encoding": {
-                "title": "Encoding",
-                "description": "The encoding to use to decode py3 bytes.",
-                "default": "utf8",
-                "type": "string"
-              },
-              "nrows": {
-                "title": "Nrows",
-                "description": "The number of lines from the line-delimited jsonfile that has to be read. This can only be passed if lines=True. If this is None, all the rows will be returned.",
+              "block_size": {
+                "title": "Block Size",
+                "description": "The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
+                "default": 10000,
+                "order": 2,
                 "type": "integer"
               }
             }
