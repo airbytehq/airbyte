@@ -102,15 +102,15 @@ const Input: React.FC<InputProps> = (props) => {
   }, [inputRef, defaultFocus]);
 
   return (
-    <InputContainer {...props} className={focused ? "input-container--focused" : undefined}>
+    <InputContainer className={focused ? "input-container--focused" : undefined}>
       <InputComponent
+        data-testid="input"
         {...props}
         ref={inputRef}
         type={type}
         isPassword={isPassword}
         onFocus={onInputFocusChange}
         onBlur={onInputFocusChange}
-        data-testid="input"
       />
       {isVisibilityButtonVisible ? (
         <VisibilityButton
