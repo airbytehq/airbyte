@@ -5,6 +5,8 @@
 package io.airbyte.workers.general;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -18,7 +20,9 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -28,6 +32,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.internal.AirbyteMessageUtils;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
@@ -81,9 +86,9 @@ public class DefaultDiscoverCatalogWorkerTest {
   @Test
   public void testDiscoverSchema() throws Exception {
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
-    final AirbyteCatalog output = worker.run(INPUT, jobRoot);
+    final StandardDiscoverCatalogOutput output = worker.run(INPUT, jobRoot);
 
-    assertEquals(CATALOG, output);
+    assertEquals(CATALOG, output.getCatalog());
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -92,6 +97,40 @@ public class DefaultDiscoverCatalogWorkerTest {
     });
 
     verify(process).exitValue();
+  }
+
+  @SuppressWarnings("BusyWait")
+  @Test
+  public void testDiscoverSchemaTrace() throws Exception {
+    final IntegrationLauncher mIntegrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
+    final Process mProcess = mock(Process.class);
+
+    when(mIntegrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS))).thenReturn(mProcess);
+    final InputStream inputStream = mock(InputStream.class);
+    when(mProcess.getInputStream()).thenReturn(inputStream);
+    when(mProcess.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+
+    final AirbyteStreamFactory mStreamFactory = noop -> Lists.newArrayList(
+        AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
+
+    when(mProcess.exitValue()).thenReturn(1);
+
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, mIntegrationLauncher, mStreamFactory);
+    final StandardDiscoverCatalogOutput output = worker.run(INPUT, jobRoot);
+
+    assertNull(output.getCatalog());
+    assertNotNull(output.getFailureReason());
+
+    final FailureReason failureReason = output.getFailureReason();
+    assertEquals("some error from the connector", failureReason.getExternalMessage());
+
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (mProcess.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(mProcess).exitValue();
   }
 
   @SuppressWarnings("BusyWait")

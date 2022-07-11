@@ -11,7 +11,6 @@ import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -59,8 +58,8 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   }
 
   public StandardDiscoverCatalogOutput run(final JobRunConfig jobRunConfig,
-                            final IntegrationLauncherConfig launcherConfig,
-                            final StandardDiscoverCatalogInput config) {
+                                           final IntegrationLauncherConfig launcherConfig,
+                                           final StandardDiscoverCatalogInput config) {
 
     final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
@@ -69,17 +68,18 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    final TemporalAttemptExecution<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot,
-        workerEnvironment,
-        logConfigs,
-        jobRunConfig,
-        getWorkerFactory(launcherConfig),
-        () -> input,
-        new CancellationHandler.TemporalCancellationHandler(context),
-        jobPersistence,
-        airbyteVersion,
-        () -> context);
+    final TemporalAttemptExecution<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput> temporalAttemptExecution =
+        new TemporalAttemptExecution<>(
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            jobRunConfig,
+            getWorkerFactory(launcherConfig),
+            () -> input,
+            new CancellationHandler.TemporalCancellationHandler(context),
+            jobPersistence,
+            airbyteVersion,
+            () -> context);
 
     return temporalAttemptExecution.get();
   }

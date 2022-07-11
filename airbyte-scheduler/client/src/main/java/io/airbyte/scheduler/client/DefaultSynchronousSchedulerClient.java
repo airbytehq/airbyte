@@ -149,7 +149,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       reportJob(configType, outputAndStatus);
       final long endedAt = Instant.now().toEpochMilli();
 
-      if(outputState == JobState.FAILED) {
+      if (outputState == JobState.FAILED) {
         throw new RuntimeException("Job failed");
       }
 
@@ -172,7 +172,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   private <T> void reportJob(final ConfigType configType, final OutputAndStatus<T> outputAndStatus) {
-    if(outputAndStatus.getStatus() == JobStatus.FAILED) {
+    if (outputAndStatus.getStatus() == JobStatus.FAILED) {
       // TODO send this to the job error reporter
       // JobErrorReporter.reportJobFailure();
     }
