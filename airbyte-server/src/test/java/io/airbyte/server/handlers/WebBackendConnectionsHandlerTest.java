@@ -729,8 +729,8 @@ class WebBackendConnectionsHandlerTest {
     final InOrder orderVerifier = inOrder(eventRunner);
     orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(),
         List.of(new io.airbyte.protocol.models.StreamDescriptor().withName("addStream"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("updateStream")));
+            new io.airbyte.protocol.models.StreamDescriptor().withName("updateStream"),
+            new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream")));
     orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
 
