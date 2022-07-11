@@ -18,8 +18,8 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import java.io.IOException;
 import java.io.InputStream;
@@ -147,13 +147,13 @@ public class S3StorageOperations extends BlobStorageOperations {
       fullObjectKey = s3FilenameTemplateManager
           .adaptFilenameAccordingSpecificationPatternWithDefaultConfig(
               S3FilenameTemplateParameterObject
-              .builder()
-              .partId(partId)
-              .recordsData(recordsData)
-              .objectPath(objectPath)
-              .fileExtension(fileExtension)
-              .fileNamePattern(s3Config.getFileNamePattern())
-              .build());
+                  .builder()
+                  .partId(partId)
+                  .recordsData(recordsData)
+                  .objectPath(objectPath)
+                  .fileExtension(fileExtension)
+                  .fileNamePattern(s3Config.getFileNamePattern())
+                  .build());
     } else {
       fullObjectKey = objectPath + partId + fileExtension;
     }

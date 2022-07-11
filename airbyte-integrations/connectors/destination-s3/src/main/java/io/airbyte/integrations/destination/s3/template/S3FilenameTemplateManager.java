@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3.template;
 
 import static java.util.Optional.ofNullable;
@@ -18,9 +22,8 @@ import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookupFactory;
 
 /**
- * This class is responsible for building the filename template based on user input,
- * see file_name_pattern in the specification of connector
- * currently supported only S3 staging.
+ * This class is responsible for building the filename template based on user input, see
+ * file_name_pattern in the specification of connector currently supported only S3 staging.
  */
 public class S3FilenameTemplateManager {
 
@@ -31,22 +34,23 @@ public class S3FilenameTemplateManager {
     stringSubstitutor = new StringSubstitutor();
   }
 
-  public String adaptFilenameAccordingSpecificationPatternWithDefaultConfig(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
-    //sanitize fileFormat
+  public String adaptFilenameAccordingSpecificationPatternWithDefaultConfig(final S3FilenameTemplateParameterObject parameterObject)
+      throws IOException {
+    // sanitize fileFormat
     final String sanitizedFileFormat = parameterObject
         .getFileNamePattern()
         .trim()
         .replaceAll(" ", "_");
 
     stringSubstitutor.setVariableResolver(
-        StringLookupFactory.INSTANCE.mapStringLookup(fillTheMapWithDefaultPlaceHolders(sanitizedFileFormat, parameterObject))
-    );
+        StringLookupFactory.INSTANCE.mapStringLookup(fillTheMapWithDefaultPlaceHolders(sanitizedFileFormat, parameterObject)));
     stringSubstitutor.setVariablePrefix("{");
     stringSubstitutor.setVariableSuffix("}");
     return ofNullable(parameterObject.getObjectPath()).orElse(EMPTY) + stringSubstitutor.replace(sanitizedFileFormat);
   }
 
-  private Map<String, String> fillTheMapWithDefaultPlaceHolders(final String stringToReplaceWithPlaceholder, final S3FilenameTemplateParameterObject parameterObject) {
+  private Map<String, String> fillTheMapWithDefaultPlaceHolders(final String stringToReplaceWithPlaceholder,
+                                                                final S3FilenameTemplateParameterObject parameterObject) {
 
     final long currentTimeMillis = Instant.now().toEpochMilli();
 
@@ -66,9 +70,11 @@ public class S3FilenameTemplateManager {
   }
 
   /**
-   * By extended placeholders we assume next types: {date:yyyy_MM}, {timestamp:millis}, {timestamp:micro}, etc Limited combinations are supported by the method see the method body.
+   * By extended placeholders we assume next types: {date:yyyy_MM}, {timestamp:millis},
+   * {timestamp:micro}, etc Limited combinations are supported by the method see the method body.
    *
-   * @param stringToReplaceWithPlaceholder - string where the method will search for extended placeholders
+   * @param stringToReplaceWithPlaceholder - string where the method will search for extended
+   *        placeholders
    * @return map with prepared placeholders.
    */
   private Map<String, String> processExtendedPlaceholder(final long currentTimeMillis, final String stringToReplaceWithPlaceholder) {
@@ -76,7 +82,6 @@ public class S3FilenameTemplateManager {
 
     final Pattern pattern = Pattern.compile("\\{(date:.+?|timestamp:.+?)\\}");
     final Matcher matcher = pattern.matcher(stringToReplaceWithPlaceholder);
-
 
     while (matcher.find()) {
       final String[] splitByColon = matcher.group(1).split(":");
@@ -105,4 +110,5 @@ public class S3FilenameTemplateManager {
     // The time representation in microseconds is equal to the milliseconds multiplied by 1,000.
     return milliSeconds * 1000;
   }
+
 }

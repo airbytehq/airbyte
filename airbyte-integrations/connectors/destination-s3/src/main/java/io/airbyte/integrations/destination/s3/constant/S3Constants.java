@@ -1,6 +1,11 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3.constant;
 
 public final class S3Constants {
+
   public static final String S_3_BUCKET_PATH = "s3_bucket_path";
   public static final String FILE_NAME_PATTERN = "file_name_pattern";
   public static final String S_3_PATH_FORMAT = "s3_path_format";
@@ -12,7 +17,6 @@ public final class S3Constants {
   public static final String S_3_BUCKET_NAME = "s3_bucket_name";
   public static final String S_3_BUCKET_REGION = "s3_bucket_region";
 
+  private S3Constants() {}
 
-  private  S3Constants() {
-  }
 }

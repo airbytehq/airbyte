@@ -61,9 +61,9 @@ public class DatabricksDestinationConfig {
 
   public static S3DestinationConfig getDataSource(final JsonNode dataSource) {
     final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
-            dataSource.get(S3Constants.S_3_BUCKET_NAME).asText(),
-            dataSource.get(S3Constants.S_3_BUCKET_PATH).asText(),
-            dataSource.get(S3Constants.S_3_BUCKET_REGION).asText())
+        dataSource.get(S3Constants.S_3_BUCKET_NAME).asText(),
+        dataSource.get(S3Constants.S_3_BUCKET_PATH).asText(),
+        dataSource.get(S3Constants.S_3_BUCKET_REGION).asText())
         .withAccessKeyCredential(
             dataSource.get(S3Constants.S_3_ACCESS_KEY_ID).asText(),
             dataSource.get(S3Constants.S_3_SECRET_ACCESS_KEY).asText())

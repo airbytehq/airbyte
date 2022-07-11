@@ -43,7 +43,8 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
   public S3JsonlWriter(final S3DestinationConfig config,
                        final AmazonS3 s3Client,
                        final ConfiguredAirbyteStream configuredStream,
-                       final Timestamp uploadTimestamp) throws IOException {
+                       final Timestamp uploadTimestamp)
+      throws IOException {
     super(config, s3Client, configuredStream);
 
     final String outputFilename = determineOutputFilename(config, S3Format.JSONL, uploadTimestamp);

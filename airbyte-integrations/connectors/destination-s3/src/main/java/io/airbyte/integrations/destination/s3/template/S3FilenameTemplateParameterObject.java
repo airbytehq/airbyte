@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3.template;
 
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
@@ -6,6 +10,7 @@ import java.util.Objects;
 
 /**
  * This class is used as argument holder S3FilenameTemplateManager.class
+ *
  * @see S3FilenameTemplateManager#adaptFilenameAccordingSpecificationPatternWithDefaultConfig(S3FilenameTemplateParameterObject)
  */
 public class S3FilenameTemplateParameterObject {
@@ -17,7 +22,12 @@ public class S3FilenameTemplateParameterObject {
   private final String partId;
   private final S3Format s3Format;
 
-  S3FilenameTemplateParameterObject(final String objectPath, final SerializableBuffer recordsData, final String fileNamePattern, final String fileExtension, final String partId, final S3Format s3Format) {
+  S3FilenameTemplateParameterObject(final String objectPath,
+                                    final SerializableBuffer recordsData,
+                                    final String fileNamePattern,
+                                    final String fileExtension,
+                                    final String partId,
+                                    final S3Format s3Format) {
     this.objectPath = objectPath;
     this.recordsData = recordsData;
     this.fileNamePattern = fileNamePattern;
@@ -29,7 +39,6 @@ public class S3FilenameTemplateParameterObject {
   public static FilenameTemplateParameterObjectBuilder builder() {
     return new FilenameTemplateParameterObjectBuilder();
   }
-
 
   public String getObjectPath() {
     return objectPath;
@@ -64,8 +73,7 @@ public class S3FilenameTemplateParameterObject {
     private String partId;
     private S3Format s3Format;
 
-    FilenameTemplateParameterObjectBuilder() {
-    }
+    FilenameTemplateParameterObjectBuilder() {}
 
     public FilenameTemplateParameterObjectBuilder objectPath(final String objectPath) {
       this.objectPath = objectPath;
@@ -102,9 +110,11 @@ public class S3FilenameTemplateParameterObject {
     }
 
     public String toString() {
-      return "FilenameTemplateParameterObject.FilenameTemplateParameterObjectBuilder(objectPath=" + objectPath + ", recordsData=" + recordsData + ", fileNamePattern=" + fileNamePattern
+      return "FilenameTemplateParameterObject.FilenameTemplateParameterObjectBuilder(objectPath=" + objectPath + ", recordsData=" + recordsData
+          + ", fileNamePattern=" + fileNamePattern
           + ", fileExtension=" + fileExtension + ", partId=" + partId + ", s3Format=" + s3Format + ")";
     }
+
   }
 
   @Override
@@ -116,7 +126,8 @@ public class S3FilenameTemplateParameterObject {
       return false;
     }
     final S3FilenameTemplateParameterObject that = (S3FilenameTemplateParameterObject) o;
-    return Objects.equals(objectPath, that.objectPath) && Objects.equals(recordsData, that.recordsData) && Objects.equals(fileNamePattern, that.fileNamePattern)
+    return Objects.equals(objectPath, that.objectPath) && Objects.equals(recordsData, that.recordsData)
+        && Objects.equals(fileNamePattern, that.fileNamePattern)
         && Objects.equals(fileExtension, that.fileExtension) && Objects.equals(partId, that.partId) && s3Format == that.s3Format;
   }
 
@@ -124,4 +135,5 @@ public class S3FilenameTemplateParameterObject {
   public int hashCode() {
     return Objects.hash(objectPath, recordsData, fileNamePattern, fileExtension, partId, s3Format);
   }
+
 }

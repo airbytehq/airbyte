@@ -1,10 +1,14 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3.tamplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mockStatic;
 
-import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
@@ -21,7 +25,8 @@ class S3FilenameTemplateManagerTest {
 
   @Test
   @DisplayName("Should replace the date placeholder with the current date in the format YYYY-MM-DD")
-  void adaptFilenameAccordingSpecificationPatternWithDefaultConfigShouldReplaceDatePlaceholderWithCurrentDateInTheFormatYYYY_MM_DD() throws IOException {
+  void adaptFilenameAccordingSpecificationPatternWithDefaultConfigShouldReplaceDatePlaceholderWithCurrentDateInTheFormatYYYY_MM_DD()
+      throws IOException {
     final String fileNamePattern = "test-{date}";
     final String fileExtension = "csv";
     final String partId = "1";
@@ -40,7 +45,8 @@ class S3FilenameTemplateManagerTest {
 
   @Test
   @DisplayName("Should replace the timestamp placeholder with the current timestamp in milliseconds")
-  void adaptFilenameAccordingSpecificationPatternWithDefaultConfigShouldReplaceTimestampPlaceholderWithCurrentTimestampInMilliseconds() throws IOException {
+  void adaptFilenameAccordingSpecificationPatternWithDefaultConfigShouldReplaceTimestampPlaceholderWithCurrentTimestampInMilliseconds()
+      throws IOException {
     final String fileNamePattern = "test-{timestamp}.csv";
 
     final Clock clock = Clock.fixed(Instant.ofEpochMilli(1657110148000L), ZoneId.of("UTC"));
@@ -74,4 +80,5 @@ class S3FilenameTemplateManagerTest {
 
     assertEquals("te__st.csv", actual);
   }
+
 }

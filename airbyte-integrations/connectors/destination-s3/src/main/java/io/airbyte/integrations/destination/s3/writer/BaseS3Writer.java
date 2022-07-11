@@ -12,8 +12,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -41,7 +41,7 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BaseS3Writer.class);
 
-  private static final  S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
+  private static final S3FilenameTemplateManager s3FilenameTemplateManager = new S3FilenameTemplateManager();
   private static final String DEFAULT_SUFFIX = "_0";
 
   protected final S3DestinationConfig config;
@@ -135,9 +135,10 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
     // Do nothing by default
   }
 
-  protected String determineOutputFilename(final S3DestinationConfig config, final S3Format s3Format, final Timestamp uploadTimestamp) throws IOException {
+  protected String determineOutputFilename(final S3DestinationConfig config, final S3Format s3Format, final Timestamp uploadTimestamp)
+      throws IOException {
     final String outputFilename;
-    if (StringUtils.isNotBlank(config.getFileNamePattern())){
+    if (StringUtils.isNotBlank(config.getFileNamePattern())) {
       outputFilename = getOutputFilename(S3FilenameTemplateParameterObject
           .builder()
           .fileExtension(s3Format.getFileExtension())
@@ -149,9 +150,13 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
     return outputFilename;
   }
 
-  protected String determineOutputFilename(final S3DestinationConfig config, final S3Format s3Format, final String suffix, final Timestamp uploadTimestamp) throws IOException {
+  protected String determineOutputFilename(final S3DestinationConfig config,
+                                           final S3Format s3Format,
+                                           final String suffix,
+                                           final Timestamp uploadTimestamp)
+      throws IOException {
     final String outputFilename;
-    if (StringUtils.isNotBlank(config.getFileNamePattern())){
+    if (StringUtils.isNotBlank(config.getFileNamePattern())) {
       outputFilename = getOutputFilename(S3FilenameTemplateParameterObject
           .builder()
           .fileExtension(s3Format.getFileExtension())
@@ -192,4 +197,5 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
   public static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
     return s3FilenameTemplateManager.adaptFilenameAccordingSpecificationPatternWithDefaultConfig(parameterObject);
   }
+
 }

@@ -19,16 +19,17 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
 import io.airbyte.integrations.destination.s3.credential.S3CredentialType;
-import io.airbyte.integrations.destination.s3.credential.S3AWSDefaultProfileCredentialConfig;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more delicate data syncing to S3)
+ * An S3 configuration. Typical usage sets at most one of {@code bucketPath} (necessary for more
+ * delicate data syncing to S3)
  */
 public class S3DestinationConfig {
 
@@ -47,13 +48,13 @@ public class S3DestinationConfig {
   private AmazonS3 s3Client;
 
   public S3DestinationConfig(final String endpoint,
-      final String bucketName,
-      final String bucketPath,
-      final String bucketRegion,
-      final String pathFormat,
-      final S3CredentialConfig credentialConfig,
-      final S3FormatConfig formatConfig,
-      final AmazonS3 s3Client) {
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String pathFormat,
+                             final S3CredentialConfig credentialConfig,
+                             final S3FormatConfig formatConfig,
+                             final AmazonS3 s3Client) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
@@ -63,15 +64,16 @@ public class S3DestinationConfig {
     this.formatConfig = formatConfig;
     this.s3Client = s3Client;
   }
+
   public S3DestinationConfig(final String endpoint,
-      final String bucketName,
-      final String bucketPath,
-      final String bucketRegion,
-      final String pathFormat,
-      final S3CredentialConfig credentialConfig,
-      final S3FormatConfig formatConfig,
-      final AmazonS3 s3Client,
-      final String fileNamePattern) {
+                             final String bucketName,
+                             final String bucketPath,
+                             final String bucketRegion,
+                             final String pathFormat,
+                             final S3CredentialConfig credentialConfig,
+                             final S3FormatConfig formatConfig,
+                             final AmazonS3 s3Client,
+                             final String fileNamePattern) {
     this.endpoint = endpoint;
     this.bucketName = bucketName;
     this.bucketPath = bucketPath;
