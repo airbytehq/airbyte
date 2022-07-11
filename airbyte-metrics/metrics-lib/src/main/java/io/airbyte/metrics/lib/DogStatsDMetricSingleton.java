@@ -41,7 +41,7 @@ public class DogStatsDMetricSingleton {
     }
 
     String prefix = config.ddPrefix + app.getApplicationName();
-    
+
     log.info("Starting DogStatsD client..");
     instancePublish = config.publish;
     statsDClient = new NonBlockingStatsDClientBuilder()

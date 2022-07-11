@@ -9,7 +9,6 @@ import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import io.airbyte.config.Configs;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Light wrapper around the DogsStatsD client to make using the client slightly more ergonomic.
@@ -41,7 +40,6 @@ public class DogStatsDMetricClient implements MetricClient {
       // do nothing if we do not want to publish. All metrics methods also do nothing.
       return;
     }
-
 
     String prefix = config.ddPrefix + app.getApplicationName();
 
