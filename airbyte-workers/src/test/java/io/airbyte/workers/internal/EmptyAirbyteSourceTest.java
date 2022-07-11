@@ -302,8 +302,10 @@ public class EmptyAirbyteSourceTest {
     Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
+  // In the LEGACY state, if the list of streams passed in to be reset does not include every stream
+  // in the Catalog, then something has gone wrong and we should throw an error
   @Test
-  public void testLegacyWithNewConfigMissingStream() {
+  public void testLegacyWithMissingCatalogStream() {
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
@@ -327,13 +329,15 @@ public class EmptyAirbyteSourceTest {
 
   }
 
+  // If there are extra streams to reset that do not exist in the Catalog, the reset should work
+  // properly with all streams being reset
   @Test
-  public void testLegacyWithNewConfig() throws Exception {
-    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+  public void testLegacyWithResettingExtraStreamNotInCatalog() throws Exception {
+    final List<StreamDescriptor> streamToResetWithExtra = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c", "d"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
-        .withStreamsToReset(streamToReset);
-    final ConfiguredAirbyteCatalog airbyteCatalogWithExtraStream = new ConfiguredAirbyteCatalog()
+        .withStreamsToReset(streamToResetWithExtra);
+    final ConfiguredAirbyteCatalog airbyteCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(Lists.newArrayList(
             new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
             new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
@@ -343,7 +347,45 @@ public class EmptyAirbyteSourceTest {
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
         .withState(new State()
             .withState(Jsons.emptyObject()))
-        .withCatalog(airbyteCatalogWithExtraStream);
+        .withCatalog(airbyteCatalog);
+
+    emptyAirbyteSource.start(workerSourceConfig, null);
+
+    final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
+    Assertions.assertThat(maybeMessage)
+        .isNotEmpty();
+
+    final AirbyteMessage message = maybeMessage.get();
+    Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
+
+    final AirbyteStateMessage stateMessage = message.getState();
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.LEGACY);
+    Assertions.assertThat(stateMessage.getData()).isEqualTo(Jsons.emptyObject());
+
+    Assertions.assertThat(emptyAirbyteSource.attemptRead())
+        .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
+
+  }
+
+  @Test
+  public void testLegacyWithNewConfig() throws Exception {
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+
+    final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
+        .withStreamsToReset(streamToReset);
+    final ConfiguredAirbyteCatalog airbyteCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
+
+    final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
+        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
+        .withState(new State()
+            .withState(Jsons.emptyObject()))
+        .withCatalog(airbyteCatalog);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
 

@@ -26,7 +26,6 @@ def test():
     retriever.state = state
     retriever.read_records.return_value = records
     retriever.stream_slices.return_value = stream_slices
-    retriever.state_checkpoint_interval = checkpoint_interval
 
     stream = DeclarativeStream(
         name=name,
@@ -34,6 +33,7 @@ def test():
         cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
+        checkpoint_interval=checkpoint_interval,
     )
 
     assert stream.name == name
@@ -43,3 +43,4 @@ def test():
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
+    assert stream.state_checkpoint_interval == checkpoint_interval

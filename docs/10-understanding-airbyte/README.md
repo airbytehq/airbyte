@@ -1,0 +1,16 @@
+# Understand Airbyte
+
+- [A Beginner's Guide to the AirbyteCatalog](01-beginners-guide-to-catalog.md)
+- [Airbyte protocol](02-airbyte-protocol.md)
+- [Airbyte Protocol Docker Interface](03-airbyte-protocol-docker.md)
+- [Basic Normalization](04-basic-normalization.md)
+- [Connections and Sync Modes](05-connections/README.md)
+- [Operations](06-operations.md)
+- [Architecture overview](07-high-level-view.md)
+- [Workers & Jobs](08-jobs.md)
+- [Technical Stack](09-tech-stack.md)
+- [Change Data Capture (CDC)](10-cdc.md)
+- [Namespaces](11-namespaces.md)
+- [Data Types in Records](12-supported-data-types.md)
+- [Json to Avro Conversion for Blob Storage Destinations](13-json-avro-conversion.md)
+- [Glossary](14-glossary.md)
