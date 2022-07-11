@@ -116,7 +116,6 @@ class Reader:
             "type": "object",
             "properties": {
                 "data": {"type": "object"},
-                "additionalProperties": {"type": "boolean"},
             },
         }
 
@@ -141,7 +140,8 @@ if __name__ == "__main__":
     spec = Spec(
         **{
             "aws_access_key_id": "AKIA6BNKWOY4X6YTOPPS",
-            "aws_secret_access_key": "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",
+            "aws_secret_access_key": "HgkqkQkOlpJQyR2tOBcueubUw6NhM"
+            "yCf6tWfjgUi",
             "region_name": "us-east-1",
         }
     )

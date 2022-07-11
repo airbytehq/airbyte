@@ -107,7 +107,6 @@ class SourceDynamodb(Source):
                     logger.info(f"Reading data fror stream '{stream_name}'")
 
                     for row in rdr.read(table_name=stream_name):
-                        row["additionalProperties"] = True
                         yield AirbyteMessage(
                             log=None,
                             catalog=None,
@@ -119,10 +118,13 @@ class SourceDynamodb(Source):
                                 data=row,
                                 emitted_at=int(datetime.now().timestamp())
                                 * 1000,
-                                namespace=None,
+                                namespace=config_stream.stream.namespace,
                             ),
                         )
             except Exception as e:
-                msg = f"Failed to read data for stream '{stream_name}': {repr(e)}\n{traceback.format_exc()}"
+                msg = (
+                    f"Failed to read data for stream '{stream_name}': "
+                    f"{repr(e)}\n{traceback.format_exc()}"
+                )
                 logger.error(msg=msg)
                 raise e
