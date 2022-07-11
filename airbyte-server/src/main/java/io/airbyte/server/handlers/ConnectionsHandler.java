@@ -304,14 +304,14 @@ public class ConnectionsHandler {
   private boolean haveConfigChange(final AirbyteStreamConfiguration oldConfig, final AirbyteStreamConfiguration newConfig) {
     final List<String> oldCursors = oldConfig.getCursorField();
     final List<String> newCursors = newConfig.getCursorField();
-    final boolean hasCursorChanged = !(new HashSet<>(oldCursors).equals(new HashSet<>(newCursors)));
+    final boolean hasCursorChanged = !(oldCursors.equals(newCursors));
 
     final boolean hasSyncModeChanged = !oldConfig.getSyncMode().equals(newConfig.getSyncMode());
 
     final boolean hasDestinationSyncModeChanged = !oldConfig.getDestinationSyncMode().equals(newConfig.getDestinationSyncMode());
 
-    final Set<Set<String>> convertedOldPrimaryKey = new HashSet<>(oldConfig.getPrimaryKey().stream().map(pks -> new HashSet<>(pks)).toList());
-    final Set<Set<String>> convertedNewPrimaryKey = new HashSet<>(newConfig.getPrimaryKey().stream().map(pks -> new HashSet<>(pks)).toList());
+    final Set<List<String>> convertedOldPrimaryKey = new HashSet<>(oldConfig.getPrimaryKey());
+    final Set<List<String>> convertedNewPrimaryKey = new HashSet<>(newConfig.getPrimaryKey());
     final boolean hasPrimaryKeyChanged = !(convertedOldPrimaryKey.equals(convertedNewPrimaryKey));
 
     return hasCursorChanged || hasSyncModeChanged || hasDestinationSyncModeChanged || hasPrimaryKeyChanged;

@@ -699,7 +699,7 @@ class ConnectionsHandlerTest {
     }
 
     @Test
-    void testCursorOrderDoesntMatter() {
+    void testCursorOrderDoesMatter() {
       final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(
           List.of("cursor1", "anotherCursor"),
           List.of(List.of("pk1")),
@@ -733,7 +733,10 @@ class ConnectionsHandlerTest {
               )
           );
 
-      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      assertFalse(changedSd.isEmpty());
+      assertEquals(1, changedSd.size());
+      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     @Test
@@ -777,7 +780,10 @@ class ConnectionsHandlerTest {
               )
           );
 
-      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      assertFalse(changedSd.isEmpty());
+      assertEquals(1, changedSd.size());
+      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     @Test
