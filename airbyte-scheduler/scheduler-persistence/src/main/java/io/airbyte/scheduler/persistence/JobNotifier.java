@@ -39,21 +39,17 @@ public class JobNotifier {
   public static final String CONNECTION_DISABLED_WARNING_NOTIFICATION = "Connection Disabled Warning Notification";
   public static final String CONNECTION_DISABLED_NOTIFICATION = "Connection Disabled Notification";
 
-  private final String connectionPageUrl;
   private final ConfigRepository configRepository;
   private final TrackingClient trackingClient;
+  private final WebUrlHelper webUrlHelper;
   private final WorkspaceHelper workspaceHelper;
 
-  public JobNotifier(final String webappUrl,
+  public JobNotifier(final WebUrlHelper webUrlHelper,
                      final ConfigRepository configRepository,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient) {
+    this.webUrlHelper = webUrlHelper;
     this.workspaceHelper = workspaceHelper;
-    if (webappUrl.endsWith("/")) {
-      this.connectionPageUrl = String.format("%sconnections/", webappUrl);
-    } else {
-      this.connectionPageUrl = String.format("%s/connections/", webappUrl);
-    }
     this.configRepository = configRepository;
     this.trackingClient = trackingClient;
   }
@@ -82,7 +78,7 @@ public class JobNotifier {
       final String destinationConnector = destinationDefinition.getName();
       final String failReason = Strings.isNullOrEmpty(reason) ? "" : String.format(", as the %s", reason);
       final String jobDescription = getJobDescription(job, failReason);
-      final String logUrl = connectionPageUrl + connectionId;
+      final String logUrl = webUrlHelper.getConnectionUrl(workspaceId, connectionId);
       final ImmutableMap<String, Object> jobMetadata = TrackingMetadata.generateJobAttemptMetadata(job);
       final ImmutableMap<String, Object> sourceMetadata = TrackingMetadata.generateSourceDefinitionMetadata(sourceDefinition);
       final ImmutableMap<String, Object> destinationMetadata = TrackingMetadata.generateDestinationDefinitionMetadata(destinationDefinition);
