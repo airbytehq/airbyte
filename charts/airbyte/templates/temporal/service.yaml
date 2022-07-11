@@ -1,3 +1,4 @@
+{{- if .Values.temporal.enabled }}
 ---
 apiVersion: v1
 kind: Service
@@ -11,3 +12,4 @@ spec:
     targetPort: 7233
   selector:
     airbyte: temporal
+{{- end }}

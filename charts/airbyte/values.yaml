@@ -612,6 +612,7 @@ bootloader:
 ## TODO: Move to consuming temporal from a dedicated helm chart
 
 temporal:
+  enabled: true
   ## @param temporal.replicaCount The number of temporal replicas to deploy
   replicaCount: 1
 
@@ -796,6 +797,9 @@ externalDatabase:
   database: db-airbyte
   port: 5432
 
+externalTemporal:
+  host: ""
+  port: ""
 ## @section Logs parameters
 logs:
   ## @param logs.accessKey.password Logs Access Key
