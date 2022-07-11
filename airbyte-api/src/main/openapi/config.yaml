@@ -668,7 +668,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceIdRequestBody"
+              $ref: "#/components/schemas/SourceCloneRequestBody"
         required: true
       responses:
         "200":
@@ -1253,7 +1253,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationIdRequestBody"
+              $ref: "#/components/schemas/DestinationCloneRequestBody"
         required: true
       responses:
         "200":
@@ -1398,29 +1398,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConnectionState"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/state/type/get:
-    post:
-      tags:
-        - connection
-      summary: Fetch the current type for a connection.
-      operationId: getStateType
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ConnectionIdRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConnectionStateType"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2017,6 +1994,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WebBackendConnectionReadList"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/state/get_type:
+    post:
+      tags:
+        - connection
+      summary: Fetch the current state type for a connection.
+      operationId: getStateType
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionStateType"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/web_backend/workspace/state:
@@ -2715,6 +2715,23 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+    SourceCloneRequestBody:
+      description: The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.
+      type: object
+      required:
+        - sourceCloneId
+      properties:
+        sourceCloneId:
+          $ref: "#/components/schemas/SourceId"
+        sourceConfiguration:
+          $ref: "#/components/schemas/SourceCloneConfiguration"
+    SourceCloneConfiguration:
+      type: object
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
     SourceConfiguration:
       description: The values required to configure the source. The schema for this must match the schema return by source_definition_specifications/get for the source.
       example: { user: "charles" }
@@ -3039,6 +3056,23 @@ components:
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
+    DestinationCloneRequestBody:
+      description: The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.
+      type: object
+      required:
+        - destinationCloneId
+      properties:
+        destinationCloneId:
+          $ref: "#/components/schemas/DestinationId"
+        destinationConfiguration:
+          $ref: "#/components/schemas/DestinationCloneConfiguration"
+    DestinationCloneConfiguration:
+      type: object
+      properties:
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
@@ -3729,7 +3763,13 @@ components:
           format: int64
         status:
           $ref: "#/components/schemas/JobStatus"
-        streams:
+        resetConfig:
+          $ref: "#/components/schemas/ResetConfig"
+    ResetConfig:
+      type: object
+      description: contains information about how a reset was configured. only populated if the job was a reset.
+      properties:
+        streamsToReset:
           type: array
           items:
             $ref: "#/components/schemas/StreamDescriptor"
@@ -4076,6 +4116,7 @@ components:
       type: object
       required:
         - transformType
+        - streamDescriptor
       properties:
         transformType:
           type: string
@@ -4083,9 +4124,7 @@ components:
             - add_stream
             - remove_stream
             - update_stream
-        addStream:
-          $ref: "#/components/schemas/StreamDescriptor"
-        removeStream:
+        streamDescriptor:
           $ref: "#/components/schemas/StreamDescriptor"
         updateStream:
           type: array
@@ -4097,6 +4136,7 @@ components:
       description: "Describes the difference between two Streams."
       required:
         - transformType
+        - fieldName
       properties:
         transformType:
           type: string
@@ -4104,43 +4144,42 @@ components:
             - add_field
             - remove_field
             - update_field_schema
+        fieldName:
+          $ref: "#/components/schemas/FieldName"
         addField:
-          $ref: "#/components/schemas/FieldNameAndSchema"
+          $ref: "#/components/schemas/FieldAdd"
         removeField:
-          $ref: "#/components/schemas/FieldNameAndSchema"
+          $ref: "#/components/schemas/FieldRemove"
         updateFieldSchema:
           $ref: "#/components/schemas/FieldSchemaUpdate"
-    FieldNameAndSchema:
+    FieldAdd:
       type: object
-      required:
-        - fieldName
-        - fieldSchema
       properties:
-        fieldName:
-          type: array
-          items:
-            type: string
-        fieldSchema:
+        schema:
+          $ref: "#/components/schemas/FieldSchema"
+    FieldRemove:
+      type: object
+      properties:
+        schema:
           $ref: "#/components/schemas/FieldSchema"
     FieldSchemaUpdate:
       type: object
       required:
-        - fieldName
         - oldSchema
         - newSchema
       properties:
-        fieldName:
-          type: array
-          items:
-            type: string
         oldSchema:
           $ref: "#/components/schemas/FieldSchema"
         newSchema:
           $ref: "#/components/schemas/FieldSchema"
+    FieldName:
+      description: A field name is a list of strings that form the path to the field.
+      type: array
+      items:
+        type: string
     FieldSchema:
       description: JSONSchema representation of the field
       type: object
-      additionalProperties: true
     ActorDefinitionResourceRequirements:
       description: actor definition specific resource requirements. if default is set, these are the requirements that should be set for ALL jobs run for this actor definition. it is overriden by the job type specific configurations. if not set, the platform will use defaults. these values will be overriden by configuration at the connection level.
       type: object

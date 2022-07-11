@@ -137,7 +137,7 @@ public class JobHistoryHandler {
     final DestinationRead destination = getDestinationRead(connection);
     final SourceDefinitionRead sourceDefinitionRead = getSourceDefinitionRead(source);
     final DestinationDefinitionRead destinationDefinitionRead = getDestinationDefinitionRead(destination);
-    final JobDebugRead jobDebugRead = jobConverter.getDebugJobInfoRead(jobInfoRead, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion);
+    final JobDebugRead jobDebugRead = JobConverter.getDebugJobInfoRead(jobInfoRead, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion);
 
     return new JobDebugInfoRead()
         .attempts(jobInfoRead.getAttempts())
