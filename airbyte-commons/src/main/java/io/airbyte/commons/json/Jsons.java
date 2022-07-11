@@ -220,12 +220,9 @@ public class Jsons {
   }
 
   /**
-   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object. When
-   * applyFlattenToArray is true, each element in the array will be one entry in the returned map.
-   * This behavior is used in the Redshift SUPER type. When it is false, the whole array will be one
-   * entry. This is used in the JobTracker.
+   * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
    */
-  public static Map<String, Object> flatten(final JsonNode node, final boolean applyFlattenToArray) {
+  public static Map<String, Object> flatten(final JsonNode node) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();
       for (final Iterator<Entry<String, JsonNode>> it = node.fields(); it.hasNext();) {
