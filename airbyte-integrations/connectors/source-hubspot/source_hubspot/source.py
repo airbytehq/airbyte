@@ -47,8 +47,7 @@ from source_hubspot.streams import (
     Workflows,
 )
 
-OAUTH_CREDENTIALS = "OAuth Credentials"
-PRIVATE_APP_CREDENTIALS = "Private App Credentials"
+from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 
 
 class SourceHubspot(AbstractSource):
