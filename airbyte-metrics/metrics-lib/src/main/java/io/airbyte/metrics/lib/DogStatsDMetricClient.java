@@ -43,11 +43,7 @@ public class DogStatsDMetricClient implements MetricClient {
     }
 
 
-    String prefix = config.ddPrefix;
-    if (StringUtils.isNotEmpty(prefix) &&  !prefix.endsWith(".")){
-      prefix = prefix + ".";
-    }
-    prefix = prefix + app.getApplicationName();
+    String prefix = config.ddPrefix + app.getApplicationName();
 
     log.info("Starting DogStatsD client..");
     instancePublish = config.publish;

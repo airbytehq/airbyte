@@ -29,6 +29,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -798,7 +800,13 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getDDPrefix() { return getEnvOrDefault(DD_PREFIX, ""); }
+  public String getDDPrefix() {
+    String prefix = getEnvOrDefault(DD_PREFIX, "").strip();
+    if (StringUtils.isNotEmpty(prefix) &&  !prefix.endsWith(".")){
+      prefix = prefix + ".";
+    }
+    return prefix;
+  }
   @Override
   public TrackingStrategy getTrackingStrategy() {
     return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {
