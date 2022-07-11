@@ -3,20 +3,28 @@
   "additionalProperties": false,
   "properties": {
     "assigned_to": {
-      "type": ["null", "object", "string"],
-        "properties": {
-          "type": {
-            "type": ["null", "string"]
-          },
-          "id": {
-            "type": ["null", "string", "integer"]
+      "oneOf": [
+        {
+          "type": ["null", "object"],
+            "properties": {
+              "type": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string", "integer"]
+            }
           }
+        },
+        {
+          "type": ["null", "string"]
         }
+      ]
+      
     },
     "attachments": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
         "additionalProperties": false,
         "properties": {
           "type": {
