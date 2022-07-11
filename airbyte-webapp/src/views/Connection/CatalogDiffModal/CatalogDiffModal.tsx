@@ -23,7 +23,7 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
   // const removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
   // const updatedStreams = catalogDiff.transforms.filter((item) => item.transformType === "update_stream");
 
-  //todo: remove this for review... this is just to force the modal regardless of your source schema during dev
+  //todo: remove this and uncomment above for review... this is just to force the modal regardless of your source schema during dev
   let addedStreams = catalogDiff.transforms.filter((item) => item.transformType === "add_stream");
   let removedStreams = catalogDiff.transforms.filter((item) => item.transformType === "remove_stream");
   let updatedStreams = catalogDiff.transforms.filter((item) => item.transformType === "update_stream");
