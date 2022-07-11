@@ -16,12 +16,12 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_fil
 class DefaultErrorHandler(ErrorHandler):
     """
     Default error handler.
-    By default, the handler will retry server errors (HTTP 5XX) with exponential backoff.
+    By default, the handler will only retry server errors (HTTP 5XX) with exponential backoff.
 
     If the response is successful, then return SUCCESS
     Otherwise, iterate over the response_filters.
     If any of the filter match the response, then return the appropriate status.
-    If the match is RETRY, then iterate sequentially over the backoff_strategies to determine how long to backoff.
+    If the match is RETRY, then iterate sequentially over the backoff_strategies and return the first non-None backoff time.
 
     Sample configs:
 
