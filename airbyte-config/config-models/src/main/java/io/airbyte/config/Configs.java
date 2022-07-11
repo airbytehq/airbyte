@@ -462,6 +462,12 @@ public interface Configs {
   String getDDDogStatsDPort();
 
   /**
+   * Set the prefix to use when sending metrics to datadog. This is useful when you have multiple environments
+   * and want to hard-code a prefix per environment.
+   */
+  String getDDPrefix();
+
+  /**
    * Define whether to publish tracking events to Segment or log-only. Airbyte internal use.
    */
   TrackingStrategy getTrackingStrategy();

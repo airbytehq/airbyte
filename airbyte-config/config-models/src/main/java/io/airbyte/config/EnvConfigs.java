@@ -100,6 +100,8 @@ public class EnvConfigs implements Configs {
   private static final String DD_AGENT_HOST = "DD_AGENT_HOST";
   private static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
 
+  private static final String DD_PREFIX = "DD_PREFIX";
+
   public static final String STATE_STORAGE_S3_BUCKET_NAME = "STATE_STORAGE_S3_BUCKET_NAME";
   public static final String STATE_STORAGE_S3_REGION = "STATE_STORAGE_S3_REGION";
   public static final String STATE_STORAGE_S3_ACCESS_KEY = "STATE_STORAGE_S3_ACCESS_KEY";
@@ -795,6 +797,8 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(DD_DOGSTATSD_PORT, "");
   }
 
+  @Override
+  public String getDDPrefix() { return getEnvOrDefault(DD_PREFIX, ""); }
   @Override
   public TrackingStrategy getTrackingStrategy() {
     return getEnvOrDefault(TRACKING_STRATEGY, TrackingStrategy.LOGGING, s -> {

@@ -17,7 +17,7 @@ public class DogStatsDMetricClientTest {
   @BeforeEach
   void setUp() {
     dogStatsDMetricClient = new DogStatsDMetricClient();
-    dogStatsDMetricClient.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false));
+    dogStatsDMetricClient.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false, ""));
   }
 
   @AfterEach
