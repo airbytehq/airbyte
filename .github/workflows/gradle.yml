@@ -62,6 +62,7 @@ jobs:
             db:
               - 'airbyte-db/**'
             frontend:
+              - 'airbyte-api/src/main/openapi/config.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
   find_valid_pat:
