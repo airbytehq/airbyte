@@ -165,6 +165,8 @@ def main():
         run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
         logging.info(f"Dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
         run_uuid_to_name[run_uuid] = connector_name
+        # to avoid overloading system
+        time.sleep(1)
 
     logging.info(f"Sleeping {SLEEP} seconds")
     time.sleep(SLEEP)
