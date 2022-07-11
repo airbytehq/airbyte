@@ -32,8 +32,6 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.RecordMapper;
 import org.jooq.impl.DSL;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * State Persistence
@@ -44,8 +42,6 @@ import org.slf4j.LoggerFactory;
  * reset. (an exception will be thrown)
  */
 public class StatePersistence {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(StatePersistence.class);
 
   private final ExceptionWrappingDatabase database;
 
