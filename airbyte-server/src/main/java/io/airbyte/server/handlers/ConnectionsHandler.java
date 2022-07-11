@@ -276,6 +276,7 @@ public class ConnectionsHandler {
 
   /**
    * Returns the list of the streamDescriptor that have their config updated.
+   *
    * @param oldCatalog the old catalog
    * @param newCatalog the new catalog
    * @return the list of StreamDescriptor that have their configuration changed
