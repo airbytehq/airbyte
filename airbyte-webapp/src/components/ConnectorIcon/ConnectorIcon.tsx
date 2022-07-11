@@ -9,15 +9,14 @@ interface Props {
   small?: boolean;
 }
 
-export const Content = styled.div<{ $small?: boolean }>`
+export const Content = styled.div`
   height: 25px;
   width: 25px;
-  border-radius: ${({ $small }) => ($small ? 0 : 50)}%;
   overflow: hidden;
 `;
 
-export const ConnectorIcon: React.FC<Props> = ({ icon, className, small }) => (
-  <Content className={className} $small={small} aria-hidden="true">
+export const ConnectorIcon: React.FC<Props> = ({ icon, className }) => (
+  <Content className={className} aria-hidden="true">
     {getIcon(icon)}
   </Content>
 );
