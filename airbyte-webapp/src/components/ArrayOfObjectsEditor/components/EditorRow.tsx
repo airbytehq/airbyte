@@ -1,9 +1,9 @@
-import { faPencil, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
 
 import { Button } from "components";
+import { CrossIcon } from "components/icons/CrossIcon";
+import { PencilIcon } from "components/icons/PencilIcon";
 import ToolTip from "components/ToolTip";
 
 import styles from "./EditorRow.module.scss";
@@ -25,22 +25,24 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
       <div className={styles.name}>{name || id}</div>
       <div className={styles.actions}>
         <Button
+          className={styles.iconButton}
           type="button"
           iconOnly
           arial-label={formatMessage({ id: "form.edit" })}
           onClick={() => onEdit(id)}
           disabled={disabled}
         >
-          <FontAwesomeIcon icon={faPencil} fixedWidth />
+          <PencilIcon />
         </Button>
         <Button
+          className={styles.iconButton}
           type="button"
           iconOnly
           aria-label={formatMessage({ id: "form.delete" })}
           onClick={() => onRemove(id)}
           disabled={disabled}
         >
-          <FontAwesomeIcon icon={faTimes} fixedWidth />
+          <CrossIcon />
         </Button>
       </div>
     </div>

@@ -105,7 +105,7 @@
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",
   "form.addItems": "Add",
-  "form.items": "Items",
+  "form.items": "{count, plural, one {# Item} other {# Items}}",
   "form.toSaveSchema": "To save the new schema, click on Save changes.",
   "form.noteStartSync": "Note that it will delete all the data in your destination and start syncing from scratch. ",
   "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",

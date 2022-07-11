@@ -50,7 +50,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
     const item = typeof editableItemIndex === "number" ? items[editableItemIndex] : undefined;
 
     return (
-      <Modal title={<FormattedMessage id="form.add" />} size={editModalSize}>
+      <Modal title={<FormattedMessage id={item ? "form.edit" : "form.add"} />} size={editModalSize}>
         {children(item)}
       </Modal>
     );

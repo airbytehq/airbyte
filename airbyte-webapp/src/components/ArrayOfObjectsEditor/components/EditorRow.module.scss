@@ -1,4 +1,5 @@
 @use "../../../scss/colors";
+@use "../../../scss/variables";
 
 .container {
   display: flex;
@@ -7,9 +8,9 @@
   flex-direction: row;
   color: colors.$dark-blue;
   font-weight: 400;
-  font-size: 14px;
+  font-size: 12px;
   line-height: 17px;
-  padding: 5px 12px 6px 14px;
+  padding: variables.$spacing-md 8px;
   border-bottom: 1px solid colors.$white;
 
   &:last-child {
@@ -27,4 +28,15 @@
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+}
+
+.iconButton {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin-left: variables.$spacing-md;
+  
+  &:first-child { 
+    // margin-left: 0;
+  }
 }
