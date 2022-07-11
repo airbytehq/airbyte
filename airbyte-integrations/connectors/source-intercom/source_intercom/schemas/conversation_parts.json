@@ -5,7 +5,7 @@
     "assigned_to": {
       "oneOf": [
         {
-          "type": ["null", "object"],
+          "type": "object",
             "properties": {
               "type": {
                 "type": ["null", "string"]
@@ -16,7 +16,7 @@
           }
         },
         {
-          "type": ["null", "string"]
+          "type": "string"
         },
         {
           "type": "null"
