@@ -49,7 +49,7 @@ connectionSpecification:
       order: 6
       description: The routing key to accept.
     batch_size:
-      type: int
+      type: integer
       title: Batch Size
       order: 7
       description: The number of messages to get from the queue in a single read operation.
