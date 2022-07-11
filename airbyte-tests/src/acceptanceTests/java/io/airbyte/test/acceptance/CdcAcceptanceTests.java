@@ -20,6 +20,7 @@ import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.AirbyteCatalog;
 import io.airbyte.api.client.model.generated.AirbyteStream;
+import io.airbyte.api.client.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionState;
@@ -59,7 +60,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import org.jooq.Record;
+import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -297,11 +301,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testSchemaUpdateResultsInPartialReset() throws Exception {
+  public void testPartialResetFromSchemaUpdate() throws Exception {
     LOGGER.info("Starting partial reset cdc test");
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting partial reset cdc sync 1");
+    LOGGER.info("Starting sync 1");
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -337,6 +341,82 @@ public class CdcAcceptanceTests {
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
     // delete its data in the destination
     assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor));
+  }
+
+  @Test
+  public void testPartialResetFromStreamSelection() throws Exception {
+    LOGGER.info("Starting partial reset cdc test");
+
+    // TODO: remove this logic to set source to dev once postgres source has been released with the CDC
+    // changes
+    LOGGER.info("Setting source connector to dev to test out partial CDC resets...");
+    final UUID sourceDefinitionId = testHarness.getPostgresSourceDefinitionId();
+    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, "dev");
+
+    final UUID connectionId = createCdcConnection();
+    LOGGER.info("Starting sync 1");
+
+    final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead1.getJob());
+
+    final Database source = testHarness.getSourceDatabase();
+
+    List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
+
+    List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
+    assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
+
+    StreamDescriptor idAndNameStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(ID_AND_NAME_TABLE);
+    StreamDescriptor colorPaletteStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(COLOR_PALETTE_TABLE);
+    assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
+
+    LOGGER.info("Removing color palette stream from configured catalog");
+    final ConnectionRead connectionRead = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final UUID sourceId = connectionRead.getSourceId();
+    AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final List<AirbyteStreamAndConfiguration> streams = catalog.getStreams();
+    // filter out color_palette stream
+    final List<AirbyteStreamAndConfiguration> updatedStreams = streams
+        .stream()
+        .filter(stream -> !stream.getStream().getName().equals(COLOR_PALETTE_TABLE))
+        .toList();
+    catalog.setStreams(updatedStreams);
+    LOGGER.info("Updated catalog: {}", catalog);
+    WebBackendConnectionUpdate update = getUpdateInput(connectionRead, catalog, operationRead);
+    webBackendApi.webBackendUpdateConnection(update);
+
+    LOGGER.info("Waiting for sync job after update to start");
+    JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
+    LOGGER.info("Waiting for sync job after update to complete");
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
+
+    // We do not check that the source and the dest are in sync here because removing a stream doesn't
+    // delete its data in the destination
+    assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor));
+
+    LOGGER.info("Adding color palette stream back to configured catalog");
+    catalog = testHarness.discoverSourceSchema(sourceId);
+    LOGGER.info("Updated catalog: {}", catalog);
+    update = getUpdateInput(connectionRead, catalog, operationRead);
+    webBackendApi.webBackendUpdateConnection(update);
+
+    LOGGER.info("Waiting for sync job after update to start");
+    syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
+    LOGGER.info("Checking that id_and_name table is unaffected by the partial reset");
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
+    LOGGER.info("Checking that color_palette table was cleared in the destination due to the reset triggered by the update");
+    assertDestinationMatches(COLOR_PALETTE_TABLE, List.of());
+    LOGGER.info("Waiting for sync job after update to complete");
+    waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
+
+    // Verify that color palette table records exist in destination again after sync.
+    // If we see 0 records for this table in the destination, that means the CDC partial reset logic is
+    // not working properly, and it continued from the replication log cursor for this stream despite
+    // this stream's state being reset
+    assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
+    assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
   }
 
   private List<DestinationCdcRecordMatcher> getCdcRecordMatchersFromSource(Database source, String tableName) throws SQLException {
@@ -463,6 +543,13 @@ public class CdcAcceptanceTests {
   // https://github.com/airbytehq/airbyte/pull/14406
 
   private WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
+    final SyncMode syncMode = SyncMode.INCREMENTAL;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
+    catalog.getStreams().forEach(s -> s.getConfig()
+        .syncMode(syncMode)
+        .cursorField(List.of(COLUMN_ID))
+        .destinationSyncMode(destinationSyncMode));
+
     return new WebBackendConnectionUpdate()
         .connectionId(connection.getConnectionId())
         .name(connection.getName())
@@ -502,6 +589,25 @@ public class CdcAcceptanceTests {
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
     }
     return mostRecentSyncJob;
+  }
+
+  // can be helpful for debugging
+  private void printDbs() throws SQLException {
+    final Database sourceDb = testHarness.getSourceDatabase();
+    Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
+    LOGGER.info("Printing source tables");
+    for (final SchemaTableNamePair pair : pairs) {
+      final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
+      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+    }
+
+    final Database destDb = testHarness.getDestinationDatabase();
+    pairs = testHarness.listAllTables(destDb);
+    LOGGER.info("Printing destination tables");
+    for (final SchemaTableNamePair pair : pairs) {
+      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
+      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+    }
   }
 
 }
