@@ -2,11 +2,22 @@
   "streams": [
     {
       "stream": {
-        "name": "table_name",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "name": "ProductCatalog",
+        "json_schema": {
+          "properties": {
+            "data": {
+              "type": "object"
+            },
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
         "source_defined_cursor": false,
-        "default_cursor_field": ["column_name"]
+        "default_cursor_field": []
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

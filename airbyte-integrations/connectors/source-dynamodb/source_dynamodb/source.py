@@ -3,18 +3,19 @@
 #
 
 
+import logging
+import traceback
 from datetime import datetime
 from typing import Any, Dict, Generator
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteMessage,
     AirbyteRecordMessage,
-    AirbyteStream,
     ConfiguredAirbyteCatalog,
     Status,
+    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import Source
@@ -24,7 +25,7 @@ from source_dynamodb.typing import Spec
 
 class SourceDynamodb(Source):
     def check(
-        self, logger: AirbyteLogger, config: Spec
+        self, logger: logging.Logger, config: Spec
     ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
@@ -50,7 +51,7 @@ class SourceDynamodb(Source):
                 message=f"An exception occurred: {str(e)}",
             )
 
-    def discover(self, logger: AirbyteLogger, config: Spec) -> AirbyteCatalog:
+    def discover(self, logger: logging.Logger, config: Spec) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
         For example, given valid credentials to a Postgres database,
@@ -67,25 +68,14 @@ class SourceDynamodb(Source):
             - json_schema providing the specifications of expected schema for this stream (a list of columns described
             by their names and types)
         """
-        streams = []
 
-        stream_name = "TableName"  # Example
-        json_schema = {  # Example
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"columnName": {"type": "string"}},
-        }
-
-        # Not Implemented
-
-        streams.append(
-            AirbyteStream(name=stream_name, json_schema=json_schema)
-        )
+        rdr = dynamodb_reader.Reader(logger=logger, config=config)
+        streams = rdr.get_streams()
         return AirbyteCatalog(streams=streams)
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: logging.Logger,
         config: Spec,
         catalog: ConfiguredAirbyteCatalog,
         state: Dict[str, Any],
@@ -109,16 +99,30 @@ class SourceDynamodb(Source):
 
         :return: A generator that produces a stream of AirbyteRecordMessage contained in AirbyteMessage object.
         """
-        stream_name = "TableName"  # Example
-        data = {"columnName": "Hello World"}  # Example
+        for config_stream in catalog.streams:
+            stream_name = config_stream.stream.name
+            try:
+                if config_stream.sync_mode == SyncMode.full_refresh:
+                    rdr = dynamodb_reader.Reader(logger=logger, config=config)
+                    logger.info(f"Reading data fror stream '{stream_name}'")
 
-        # Not Implemented
-
-        yield AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(
-                stream=stream_name,
-                data=data,
-                emitted_at=int(datetime.now().timestamp()) * 1000,
-            ),
-        )
+                    for row in rdr.read(table_name=stream_name):
+                        row["additionalProperties"] = True
+                        yield AirbyteMessage(
+                            log=None,
+                            catalog=None,
+                            state=None,
+                            trace=None,
+                            type=Type.RECORD,
+                            record=AirbyteRecordMessage(
+                                stream=stream_name,
+                                data=row,
+                                emitted_at=int(datetime.now().timestamp())
+                                * 1000,
+                                namespace=None,
+                            ),
+                        )
+            except Exception as e:
+                msg = f"Failed to read data for stream '{stream_name}': {repr(e)}\n{traceback.format_exc()}"
+                logger.error(msg=msg)
+                raise e
