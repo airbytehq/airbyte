@@ -35,7 +35,7 @@ class HttpRequester(Requester):
         elif isinstance(request_options_provider, dict):
             request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
         self._name = name
-        self._authenticator = authenticator or NoAuth
+        self._authenticator = authenticator or NoAuth()
         if type(url_base) == str:
             url_base = InterpolatedString(url_base)
         self._url_base = url_base
