@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -14,6 +15,9 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStream;
+import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
@@ -22,6 +26,7 @@ import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationSearch;
+import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.NamespaceDefinitionType;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SourceSearch;
@@ -42,6 +47,7 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
@@ -53,6 +59,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -612,6 +619,321 @@ class ConnectionsHandlerTest {
       assertTrue(Enums.isCompatible(NamespaceDefinitionType.class, io.airbyte.config.JobSyncConfig.NamespaceDefinitionType.class));
     }
 
+    @Test
+    void testNoDiff() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+
+      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+    }
+
+    @Test
+    void testNoDiffIfStreamAdded() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+
+      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+    }
+
+    @Test
+    void testCursorOrderDoesntMatter() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1", "anotherCursor"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration1WithOtherCursorOrder = getStreamConfiguration(List.of("anotherCursor", "cursor1"),
+          List.of(List.of("pk1")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1WithOtherCursorOrder),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+
+      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+    }
+
+    @Test
+    void testPkOrderDoesntMatter() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1", "pk3")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration1WithOtherPkOrder = getStreamConfiguration(List.of("cursor1"),
+          List.of(List.of("pk3", "pk1")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2"), List.of("pk3")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+      final AirbyteStreamConfiguration streamConfiguration2WithOtherPkOrder = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk3"), List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1WithOtherPkOrder),
+                  getStreamAndConfig("stream2", streamConfiguration2WithOtherPkOrder)
+              )
+          );
+
+      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+    }
+
+    @Test
+    void testNoDiffIfStreamRemove() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1)
+              )
+          );
+
+      assertTrue(connectionsHandler.getConfigurationDiff(catalog1, catalog2).isEmpty());
+    }
+
+    @Test
+    void testDiffDifferentCursor() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration1CursorDiff = getStreamConfiguration(List.of("cursor1", "anotherCursor"),
+          List.of(List.of("pk1")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1CursorDiff),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+
+      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      assertFalse(changedSd.isEmpty());
+      assertEquals(1, changedSd.size());
+      assertEquals(List.of(new StreamDescriptor().withName("stream1")), changedSd);
+    }
+
+    @Test
+    void testDiffIfDifferentPrimaryKey() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration1WithPkDiff = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1", "pk3")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration2WithPkDiff = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1"), List.of("pk3")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1WithPkDiff),
+                  getStreamAndConfig("stream2", streamConfiguration2WithPkDiff)
+              )
+          );
+
+      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      assertFalse(changedSd.isEmpty());
+      assertEquals(2, changedSd.size());
+      Assertions.assertThat(changedSd)
+              .containsExactlyInAnyOrder(new StreamDescriptor().withName("stream1"), new StreamDescriptor().withName("stream2"));
+    }
+
+    @Test
+    void testDiffDifferentSyncMode() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration1CursorDiff = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.APPEND_DEDUP);
+
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1CursorDiff),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+
+      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      assertFalse(changedSd.isEmpty());
+      assertEquals(1, changedSd.size());
+      assertEquals(List.of(new StreamDescriptor().withName("stream1")), changedSd);
+    }
+
+    @Test
+    void testDiffDifferentDestinationSyncMode() {
+      final AirbyteStreamConfiguration streamConfiguration1 = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")), SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND_DEDUP);
+
+      final AirbyteStreamConfiguration streamConfiguration1CursorDiff = getStreamConfiguration(List.of("cursor1"), List.of(List.of("pk1")),
+          SyncMode.INCREMENTAL,
+          DestinationSyncMode.APPEND);
+
+
+      final AirbyteStreamConfiguration streamConfiguration2 = getStreamConfiguration(List.of("cursor2"), List.of(List.of("pk2")),
+          SyncMode.FULL_REFRESH,
+          DestinationSyncMode.OVERWRITE);
+
+
+      final AirbyteCatalog catalog1 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+      final AirbyteCatalog catalog2 = new AirbyteCatalog()
+          .streams(
+              List.of(
+                  getStreamAndConfig("stream1", streamConfiguration1CursorDiff),
+                  getStreamAndConfig("stream2", streamConfiguration2)
+              )
+          );
+
+      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      assertFalse(changedSd.isEmpty());
+      assertEquals(1, changedSd.size());
+      assertEquals(List.of(new StreamDescriptor().withName("stream1")), changedSd);
+    }
+
+    private AirbyteStreamAndConfiguration getStreamAndConfig(final String name, final AirbyteStreamConfiguration config) {
+      return new AirbyteStreamAndConfiguration()
+          .config(config)
+          .stream(new AirbyteStream().name(name));
+    }
+
+    private AirbyteStreamConfiguration getStreamConfiguration(final List<String> cursors, final List<List<String>> primaryKeys, final SyncMode syncMode,
+                                                              final DestinationSyncMode destinationSyncMode) {
+      return new AirbyteStreamConfiguration()
+          .cursorField(cursors)
+          .primaryKey(primaryKeys)
+          .syncMode(syncMode)
+          .destinationSyncMode(destinationSyncMode);
+
+    }
   }
 
 }
