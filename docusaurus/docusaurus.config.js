@@ -41,6 +41,10 @@ const config = {
                             from: '/integrations/sources/google-analytics-data-api',
                             to: '/integrations/sources/google-analytics-v4',
                         },
+                        {
+                            from: '/connector-development/tutorials/cdk-tutorial-python-http',
+                            to: '/connector-development/cdk-tutorial-python-http/',
+                        },
 //                        {
 //                         from: '/some-lame-path',
 //                         to: '/a-much-cooler-uri',
