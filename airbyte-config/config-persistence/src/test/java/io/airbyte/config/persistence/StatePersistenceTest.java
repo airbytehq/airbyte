@@ -29,11 +29,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
@@ -56,7 +52,6 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   private ConfigRepository configRepository;
   private StatePersistence statePersistence;
   private UUID connectionId;
-  private ConfiguredAirbyteCatalog configuredCatalog;
 
   @Test
   public void testReadingNonExistingState() throws IOException {
@@ -70,7 +65,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
 
     // Initial write/read loop, making sure we read what we wrote
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
     final Optional<StateWrapper> state1 = statePersistence.getCurrentState(connectionId);
 
     Assertions.assertTrue(state1.isPresent());
@@ -80,7 +75,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     // Updating a state
     final JsonNode newStateJson = Jsons.deserialize("{\"woot\": \"new state\"}");
     final StateWrapper state2 = clone(state1.get()).withLegacyState(newStateJson);
-    statePersistence.updateOrCreateState(connectionId, state2, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state2);
     final Optional<StateWrapper> state3 = statePersistence.getCurrentState(connectionId);
 
     Assertions.assertTrue(state3.isPresent());
@@ -89,7 +84,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     // Deleting a state
     final StateWrapper state4 = clone(state3.get()).withLegacyState(null);
-    statePersistence.updateOrCreateState(connectionId, state4, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state4);
     Assertions.assertTrue(statePersistence.getCurrentState(connectionId).isEmpty());
   }
 
@@ -99,7 +94,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
 
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
 
     final StateWrapper newGlobalState = new StateWrapper()
         .withStateType(StateType.GLOBAL)
@@ -114,7 +109,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(Jsons.deserialize("\"state2\""))))));
-    statePersistence.updateOrCreateState(connectionId, newGlobalState, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, newGlobalState);
     final StateWrapper storedGlobalState = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(newGlobalState, storedGlobalState);
   }
@@ -127,9 +122,8 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("s1").withNamespace("n1"));
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("s2"));
-    final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
 
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
 
     final StateWrapper newStreamState = new StateWrapper()
         .withStateType(StateType.STREAM)
@@ -144,7 +138,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
-    statePersistence.updateOrCreateState(connectionId, newStreamState, migrationConfiguredCatalog);
+    statePersistence.updateOrCreateState(connectionId, newStreamState);
     final StateWrapper storedStreamState = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(newStreamState, storedStreamState);
   }
@@ -166,7 +160,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamState(Jsons.deserialize("\"state2\""))))));
 
     // Initial write/read loop, making sure we read what we wrote
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
     final Optional<StateWrapper> state1 = statePersistence.getCurrentState(connectionId);
     Assertions.assertTrue(state1.isPresent());
     assertEquals(state0, state1.get());
@@ -176,7 +170,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     state2.getGlobal()
         .getGlobal().withSharedState(Jsons.deserialize("\"updated shared state\""))
         .getStreamStates().get(1).withStreamState(Jsons.deserialize("\"updated state2\""));
-    statePersistence.updateOrCreateState(connectionId, state2, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state2);
     final Optional<StateWrapper> state3 = statePersistence.getCurrentState(connectionId);
 
     Assertions.assertTrue(state3.isPresent());
@@ -186,7 +180,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper state4 = clone(state1.get());
     state4.getGlobal().getGlobal()
         .getStreamStates().get(0).withStreamState(Jsons.deserialize("\"updated state1\""));
-    statePersistence.updateOrCreateState(connectionId, state4, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state4);
     final Optional<StateWrapper> state5 = statePersistence.getCurrentState(connectionId);
 
     Assertions.assertTrue(state5.isPresent());
@@ -210,7 +204,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamState(Jsons.deserialize("\"state2\""))))));
 
     // Set the initial state
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
 
     // incomplete reset does not remove the state
     final StateWrapper incompletePartialReset = new StateWrapper()
@@ -223,7 +217,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(Jsons.deserialize("\"state2\""))))));
-    statePersistence.updateOrCreateState(connectionId, incompletePartialReset, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, incompletePartialReset);
     final StateWrapper incompletePartialResetResult = statePersistence.getCurrentState(connectionId).orElseThrow();
     Assertions.assertEquals(state0, incompletePartialResetResult);
 
@@ -241,7 +235,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(null)))));
-    statePersistence.updateOrCreateState(connectionId, partialReset, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, partialReset);
     final StateWrapper partialResetResult = statePersistence.getCurrentState(connectionId).orElseThrow();
 
     Assertions.assertEquals(partialReset.getGlobal().getGlobal().getSharedState(),
@@ -282,8 +276,8 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(null)))));;
 
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
-    statePersistence.updateOrCreateState(connectionId, fullReset, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
+    statePersistence.updateOrCreateState(connectionId, fullReset);
     final Optional<StateWrapper> fullResetResult = statePersistence.getCurrentState(connectionId);
     Assertions.assertTrue(fullResetResult.isEmpty());
   }
@@ -304,7 +298,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                         .withStreamDescriptor(new StreamDescriptor().withName("").withNamespace(""))
                         .withStreamState(Jsons.deserialize("\"empty name and namespace state\""))))));
 
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
     final StateWrapper state1 = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(state0, state1);
   }
@@ -326,21 +320,21 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
 
     // Initial write/read loop, making sure we read what we wrote
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
     final StateWrapper state1 = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(state0, state1);
 
     // Updating a state
     final StateWrapper state2 = clone(state1);
     state2.getStateMessages().get(1).getStream().withStreamState(Jsons.deserialize("\"updated state s2\""));
-    statePersistence.updateOrCreateState(connectionId, state2, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state2);
     final StateWrapper state3 = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(state2, state3);
 
     // Updating a state with name and namespace
     final StateWrapper state4 = clone(state1);
     state4.getStateMessages().get(0).getStream().withStreamState(Jsons.deserialize("\"updated state s1\""));
-    statePersistence.updateOrCreateState(connectionId, state4, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state4);
     final StateWrapper state5 = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(state4, state5);
   }
@@ -361,7 +355,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
 
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
 
     // Partial update
     final StateWrapper partialUpdate = new StateWrapper()
@@ -372,7 +366,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s1").withNamespace("n1"))
                     .withStreamState(Jsons.deserialize("\"updated\"")))));
-    statePersistence.updateOrCreateState(connectionId, partialUpdate, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, partialUpdate);
     final StateWrapper partialUpdateResult = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(
         new StateWrapper()
@@ -399,7 +393,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(null))));
-    statePersistence.updateOrCreateState(connectionId, partialReset, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, partialReset);
     final StateWrapper partialResetResult = statePersistence.getCurrentState(connectionId).orElseThrow();
     assertEquals(
         new StateWrapper()
@@ -429,7 +423,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
 
-    statePersistence.updateOrCreateState(connectionId, state0, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, state0);
 
     // Partial update
     final StateWrapper fullReset = new StateWrapper()
@@ -445,7 +439,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(null))));
-    statePersistence.updateOrCreateState(connectionId, fullReset, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, fullReset);
     final Optional<StateWrapper> fullResetResult = statePersistence.getCurrentState(connectionId);
     Assertions.assertTrue(fullResetResult.isEmpty());
   }
@@ -465,7 +459,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                 .withStream(new AirbyteStreamState()
                     .withStreamDescriptor(new StreamDescriptor().withName("s2"))
                     .withStreamState(Jsons.deserialize("\"state s2\"")))));
-    statePersistence.updateOrCreateState(connectionId, streamState, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, streamState);
 
     Assertions.assertThrows(IllegalStateException.class, () -> {
       final StateWrapper globalState = new StateWrapper()
@@ -481,7 +475,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
                       new AirbyteStreamState()
                           .withStreamDescriptor(new StreamDescriptor().withName("").withNamespace(""))
                           .withStreamState(Jsons.deserialize("\"empty name and namespace state\""))))));
-      statePersistence.updateOrCreateState(connectionId, globalState, configuredCatalog);
+      statePersistence.updateOrCreateState(connectionId, globalState);
     });
 
     // We should be guarded against those cases let's make sure we don't make things worse if we're in
@@ -490,13 +484,8 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
         .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field("state"))
         .values(UUID.randomUUID(), connectionId, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL, JSONB.valueOf("{}"))
         .execute();
-    Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState, configuredCatalog));
+    Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
     Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.getCurrentState(connectionId));
-  }
-
-  @Test
-  public void testMigrationInvalidState() {
-
   }
 
   @Test
@@ -523,7 +512,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   public void testStatePersistenceLegacyWriteConsistency() throws IOException {
     final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
     final StateWrapper stateWrapper = new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(jsonState);
-    statePersistence.updateOrCreateState(connectionId, stateWrapper, configuredCatalog);
+    statePersistence.updateOrCreateState(connectionId, stateWrapper);
 
     // Making sure we still follow the legacy format
     final List<State> readStates = dslContext
@@ -546,8 +535,6 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     setupTestData();
 
     statePersistence = new StatePersistence(database);
-    configuredCatalog = CatalogHelpers.createConfiguredAirbyteCatalog("stream_name", "stream_namespace", Field.of("id", JsonSchemaType.NUMBER),
-        Field.of("name", JsonSchemaType.STRING));
   }
 
   @AfterEach

@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -86,24 +85,17 @@ public class StatePersistence {
    * @param state
    * @throws IOException
    */
-  public void updateOrCreateState(final UUID connectionId, final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog)
+  public void updateOrCreateState(final UUID connectionId, final StateWrapper state)
       throws IOException {
     final Optional<StateWrapper> previousState = getCurrentState(connectionId);
     final StateType currentStateType = state.getStateType();
-    final boolean isMigration = previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
-        currentStateType != StateType.LEGACY;
+    final boolean isMigration = isMigration(connectionId, currentStateType);
 
-    LOGGER.info("is migration?");
-    LOGGER.info(String.valueOf(isMigration));
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
     if (!isMigration && previousState.isPresent() && previousState.get().getStateType() != currentStateType) {
       throw new IllegalStateException("Unexpected type migration from '" + previousState.get().getStateType() + "' to '" + currentStateType +
           "'. Migration of StateType need to go through an explicit reset.");
-    }
-
-    if (isMigration && currentStateType == StateType.STREAM) {
-      validateStreamStates(state, configuredCatalog);
     }
 
     this.database.transaction(ctx -> {
@@ -119,26 +111,10 @@ public class StatePersistence {
     });
   }
 
-  private static void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
-    final List<StreamDescriptor> stateStreamDescriptors =
-        state.getStateMessages().stream().map(stateMessage -> stateMessage.getStream().getStreamDescriptor()).toList();
-    LOGGER.info("stream descriptors are:");
-    stateStreamDescriptors.forEach(sd -> {
-      LOGGER.info("stream name and namespace");
-      LOGGER.info(sd.getName());
-      LOGGER.info(sd.getNamespace());
-    });
-    LOGGER.info("configured catalog streams");
-    configuredCatalog.getStreams().forEach(stream -> {
-      final StreamDescriptor streamDescriptor = new StreamDescriptor().withName(stream.getStream().getName()).withNamespace(stream.getStream().getNamespace());
-      LOGGER.info("configured stream name and namespace");
-      LOGGER.info(streamDescriptor.getName());
-      LOGGER.info(streamDescriptor.getNamespace());
-      if (!stateStreamDescriptors.contains(streamDescriptor)) {
-        throw new IllegalStateException(
-            "Job ran during migration from Legacy State to Per Stream State. This job must be retried in order to properly store state.");
-      }
-    });
+  public Boolean isMigration(final UUID connectionId, final StateType currentStateType) throws IOException {
+    final Optional<StateWrapper> previousState = getCurrentState(connectionId);
+    return previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
+        currentStateType != StateType.LEGACY;
   }
 
   private static void clearLegacyState(final DSLContext ctx, final UUID connectionId) {
