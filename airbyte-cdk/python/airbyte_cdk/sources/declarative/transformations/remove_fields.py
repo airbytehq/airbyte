@@ -15,9 +15,21 @@ class RemoveFields(RecordTransformation):
     During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
 
     If an input field pointer references an item in a list (e.g: ["k", 0] in the object {"k": ["a", "b", "c"]}) then
-    the object at that index is set to None and is not entirely removed from the list.
+    the object at that index is set to None rather than being not entirely removed from the list. TODO change this behavior.
 
     It's possible to remove objects nested in lists e.g: removing [".", 0, "k"] from {".": [{"k": "V"}]} results in {".": [{}]}
+
+    Usage syntax:
+
+    ```yaml
+        my_stream:
+            <other parameters..>
+            transformations:
+                - type: RemoveFields
+                  field_pointers:
+                    - ["path", "to", "field1"]
+                    - ["path2"]
+    ```
     """
 
     def __init__(self, field_pointers: List[FieldPointer]):

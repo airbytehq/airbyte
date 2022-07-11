@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, call
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
-from airbyte_cdk.sources.declarative.transformations.transformer import RecordTransformation
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 
 
 def test():

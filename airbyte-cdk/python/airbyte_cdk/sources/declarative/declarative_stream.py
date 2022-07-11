@@ -8,7 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.transformations.transformer import RecordTransformation
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.core import Stream
 
 

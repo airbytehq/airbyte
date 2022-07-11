@@ -16,3 +16,6 @@ class RecordTransformation(ABC):
         :param record: the input record to be transformed
         :return: the transformed record
         """
+
+    def __eq__(self, other):
+        return other.__dict__ == self.__dict__
