@@ -66,7 +66,14 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
-
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String DATABASE_KEY = "database";
+  public static final String HOST_KEY = "host";
+  public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String PASSWORD_KEY = "password";
+  public static final String PORT_KEY = "port";
+  public static final String SCHEMAS_KEY = "schemas";
+  public static final String USERNAME_KEY = "username";
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private List<String> schemas;
   private final FeatureFlags featureFlags;
@@ -86,23 +93,23 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(HOST_KEY).asText(),
+        config.get(PORT_KEY).asText(),
+        config.get(DATABASE_KEY).asText()));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append("&");
     }
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
 
-    if (config.has("schemas") && config.get("schemas").isArray()) {
+    if (config.has(SCHEMAS_KEY) && config.get(SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : config.get("schemas")) {
+      for (final JsonNode schema : config.get(SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
     }
@@ -113,12 +120,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
+        .put(JDBC_URL_KEY, jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(PASSWORD_KEY)) {
+      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -331,7 +338,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     // Azure Postgres server has this username pattern: <username>@<host>.
     // Inside Postgres, the true username is just <username>.
-    // The jdbc_url is constructed in the toDatabaseConfigStatic method.
+    // The jdbc_url is constructed in the toDatabaseConfig method.
     if (username.contains("@") && jdbcUrl.contains("azure.com:")) {
       final String[] tokens = username.split("@");
       final String postgresUsername = tokens[0];
