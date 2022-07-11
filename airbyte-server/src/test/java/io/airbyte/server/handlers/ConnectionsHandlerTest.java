@@ -30,6 +30,7 @@ import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.NamespaceDefinitionType;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
@@ -47,7 +48,6 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
@@ -803,7 +803,7 @@ class ConnectionsHandlerTest {
       final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
       assertFalse(changedSd.isEmpty());
       assertEquals(1, changedSd.size());
-      assertEquals(List.of(new StreamDescriptor().withName("stream1")), changedSd);
+      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     @Test
@@ -844,7 +844,7 @@ class ConnectionsHandlerTest {
       assertFalse(changedSd.isEmpty());
       assertEquals(2, changedSd.size());
       Assertions.assertThat(changedSd)
-              .containsExactlyInAnyOrder(new StreamDescriptor().withName("stream1"), new StreamDescriptor().withName("stream2"));
+              .containsExactlyInAnyOrder(new StreamDescriptor().name("stream1"), new StreamDescriptor().name("stream2"));
     }
 
     @Test
@@ -880,7 +880,7 @@ class ConnectionsHandlerTest {
       final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
       assertFalse(changedSd.isEmpty());
       assertEquals(1, changedSd.size());
-      assertEquals(List.of(new StreamDescriptor().withName("stream1")), changedSd);
+      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     @Test
@@ -916,7 +916,7 @@ class ConnectionsHandlerTest {
       final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
       assertFalse(changedSd.isEmpty());
       assertEquals(1, changedSd.size());
-      assertEquals(List.of(new StreamDescriptor().withName("stream1")), changedSd);
+      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     private AirbyteStreamAndConfiguration getStreamAndConfig(final String name, final AirbyteStreamConfiguration config) {

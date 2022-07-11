@@ -21,6 +21,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSearch;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -37,7 +38,6 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
@@ -319,8 +319,8 @@ public class ConnectionsHandler {
 
   private Map<StreamDescriptor, AirbyteStreamConfiguration> catalogToPerStreamConfiguration(final AirbyteCatalog catalog) {
     return catalog.getStreams().stream().collect(Collectors.toMap(stream -> new StreamDescriptor()
-        .withName(stream.getStream().getName())
-        .withNamespace(stream.getStream().getNamespace()),
+        .name(stream.getStream().getName())
+        .namespace(stream.getStream().getNamespace()),
         stream -> stream.getConfig()));
   }
 
