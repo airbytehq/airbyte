@@ -20,7 +20,7 @@
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your <hl>14-day free trial</hl>",
-  "login.activateAccess.subtitle": "Special <launch>launch offer</launch> of <sum>$1,000</sum> worth of free usage!",
+  "login.activateAccess.subtitle": "🎉 Special <launch>launch offer</launch> of <sum>$1,000</sum> worth of free usage!",
   "login.fullName": "Full name*",
   "login.fullName.placeholder": "Christopher Smith",
   "login.companyName": "Company name*",
