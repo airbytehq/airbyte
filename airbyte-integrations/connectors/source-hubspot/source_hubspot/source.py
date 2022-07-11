@@ -47,6 +47,9 @@ from source_hubspot.streams import (
     Workflows,
 )
 
+OAUTH_CREDENTIALS = "OAuth Credentials"
+PRIVATE_APP_CREDENTIALS = "Private App Credentials"
+
 
 class SourceHubspot(AbstractSource):
     logger = AirbyteLogger()
@@ -88,7 +91,7 @@ class SourceHubspot(AbstractSource):
         common_params = dict(api=api, start_date=start_date, credentials=credentials)
 
         credentials_title = credentials.get("credentials_title")
-        if credentials_title == "OAuth Credentials" or credentials_title == "Private App Credentials":
+        if credentials_title == OAUTH_CREDENTIALS or credentials_title == PRIVATE_APP_CREDENTIALS:
             common_params["authenticator"] = api.get_authenticator()
         return common_params
 
