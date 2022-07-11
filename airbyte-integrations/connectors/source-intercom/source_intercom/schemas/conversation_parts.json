@@ -17,6 +17,9 @@
         },
         {
           "type": ["null", "string"]
+        },
+        {
+          "type": "null"
         }
       ]
       
