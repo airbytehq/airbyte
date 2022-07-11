@@ -98,6 +98,7 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.10 | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | Use the destination lifecycle |
 | 0.1.9 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.7 | 2022-04-19 | [12134](https://github.com/airbytehq/airbyte/pull/12134) | Add PLAIN Auth |
 | 0.1.6 | 2022-02-15 | [10186](https://github.com/airbytehq/airbyte/pull/10186) | Add SCRAM-SHA-512 Auth |

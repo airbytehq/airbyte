@@ -107,4 +107,5 @@ The output SQS message would contain:
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| `0.1.1` | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | `Use the destination lifecycle` |
 | `0.1.0` | 2021-10-27 | [\#0000](https://github.com/airbytehq/airbyte/pull/0000) | `Initial version` |

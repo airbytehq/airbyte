@@ -82,4 +82,5 @@ _NOTE_: MQTT version 5 is not supported yet.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.2 | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | Use the destination lifecycle |
 | 0.1.1 | 2022-05-24 | [13099](https://github.com/airbytehq/airbyte/pull/13099) | Fixed build's tests |

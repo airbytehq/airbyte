@@ -127,4 +127,5 @@ You cannot create more than 200 worksheets within single spreadsheet.
 
 | Version | Date       | Pull Request                                               | Subject                                |
 |---------|------------|------------------------------------------------------------|----------------------------------------|
+| 0.1.1 | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | Use the destination lifecycle |
 | 0.1.0  | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135)   | Initial Release                         |

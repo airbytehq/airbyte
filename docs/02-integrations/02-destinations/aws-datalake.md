@@ -99,5 +99,6 @@ following information to configure the destination:
 
 
 ## Changelog
+| 0.1.2 | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | `Use the destination lifecycle` |
 | 0.1.1 | 2022-04-20 | [\#11811](https://github.com/airbytehq/airbyte/pull/11811) | Fix name of required param in specification |
 | 0.1.0 | 2022-03-29 | [\#10760](https://github.com/airbytehq/airbyte/pull/10760) | Initial release |

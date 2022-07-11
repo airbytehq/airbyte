@@ -92,6 +92,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date | Pull Request                                             | Subject                                                                                             |
 |:--------| :--- |:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.1.18 | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | Use the destination lifecycle |
 | 0.1.17  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.16  | 2022-04-06 | [11514](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
 | 0.1.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                            |
@@ -112,6 +113,7 @@ Airbite has the ability to connect to the Oracle source with 3 network connectiv
 
 | Version | Date       | Pull Request                                            | Subject                                                                                                                     |
 |:--------|:-----------|:--------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------|
+| 0.1.6 | 2022-07-11 | [\#14587](https://github.com/airbytehq/airbyte/pull/14587) | Use the destination lifecycle |
 | 0.1.5  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.1.4   | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling and remove DBT support                                                                    |
 | 0.1.3   | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                  |
