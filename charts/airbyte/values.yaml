@@ -752,7 +752,7 @@ temporal:
     ##    cpu: 200m
     ##    memory: 1Gi
     limits: {}
-=======
+
 ## External Temporal configuration
 ## All of these values are only used when temporal.enabled is set to false
 ## @param externalTemporal.host temporal API host
@@ -760,7 +760,6 @@ temporal:
 externalTemporal:
   host: ""
   port: ""
->>>>>>> edef452a78 (add eof lines and documentation on values yaml)
 
 ## @section Airbyte Database parameters
 

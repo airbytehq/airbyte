@@ -4,7 +4,7 @@ dependencies:
   version: 1.15.1
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
-  version: 10.13.9
+  version: 10.16.2
 - name: minio
   repository: https://charts.bitnami.com/bitnami
   version: 11.6.3
