@@ -417,6 +417,30 @@ public class CdcAcceptanceTests {
     // this stream's state being reset
     assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
     assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
+
+    // Verify that incremental still works properly after partial reset
+    LOGGER.info("Adding new records to tables");
+    final Instant beforeInsert = Instant.now();
+    source.query(ctx -> ctx.execute("INSERT INTO id_and_name(id, name) VALUES(6, 'geralt')"));
+    expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 6).put(COLUMN_NAME, "geralt").build()),
+        beforeInsert,
+        Optional.empty()));
+
+    source.query(ctx -> ctx.execute("INSERT INTO color_palette(id, color) VALUES(4, 'yellow')"));
+    expectedColorPaletteRecords.add(new DestinationCdcRecordMatcher(
+        Jsons.jsonNode(ImmutableMap.builder().put(COLUMN_ID, 4).put(COLUMN_COLOR, "yellow").build()),
+        beforeInsert,
+        Optional.empty()));
+
+    LOGGER.info("Starting sync after insert");
+    final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
+        .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
+
+    assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
+    assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
+    assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
   }
 
   private List<DestinationCdcRecordMatcher> getCdcRecordMatchersFromSource(Database source, String tableName) throws SQLException {
