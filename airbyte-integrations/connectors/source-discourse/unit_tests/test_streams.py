@@ -33,7 +33,7 @@ def test_next_page_token(patch_base_class):
 
 def test_parse_response(patch_base_class):
     stream = DiscourseStream()
-    mock_record = {"item1_key": "item1_val"}
+    mock_record = {}
     response_data = {"items": [mock_record]}
     inputs = {"response": MagicMock(json=lambda: response_data)}
     parsed_item = next(stream.parse_response(**inputs))

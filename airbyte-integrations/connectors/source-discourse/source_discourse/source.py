@@ -39,11 +39,5 @@ class SourceDiscourse(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
-        # TODO remove the authenticator if not required.
         auth = self.get_authenticator(config)
         return [TagGroups(authenticator=auth), LatestTopics(authenticator=auth), Posts(authenticator=auth)]
