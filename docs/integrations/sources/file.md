@@ -127,7 +127,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                           | Subject                                           |
 | ------- | ---------- | ------------------------------------------------------ | ------------------------------------------------- |
-| 0.2.10  | 2022-07-12 | [9974](https://github.com/airbytehq/airbyte/pull/14588)| Add support to YAML format                        |
+| 0.2.11  | 2022-07-12 | [9974](https://github.com/airbytehq/airbyte/pull/14588)| Add support to YAML format                        |
 | 0.2.9   | 2022-02-01 | [9974](https://github.com/airbytehq/airbyte/pull/9974) | Update airbyte-cdk 0.1.47                         |
 | 0.2.8   | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524) | Update connector fields title/description         |
 | 0.2.7   | 2021-10-28 | [7387](https://github.com/airbytehq/airbyte/pull/7387) | Migrate source to CDK structure, add SAT testing. |
