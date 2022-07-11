@@ -199,27 +199,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 
-  @ParameterizedTest
-  @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-    if (!normalizationFromSpec()) {
-      return;
-    }
-
-    final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
-    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
-
-    final JsonNode config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
-    runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
-
-    final String defaultSchema = getDefaultSchema(config);
-    final List<AirbyteRecordMessage> actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
-    assertSameMessages(messages, actualMessages, true);
-  }
-
-
   //normalization test
 
   /**
