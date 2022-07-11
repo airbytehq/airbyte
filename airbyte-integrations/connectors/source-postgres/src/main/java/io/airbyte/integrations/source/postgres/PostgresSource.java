@@ -75,6 +75,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String SCHEMAS_KEY = "schemas";
   public static final String USERNAME_KEY = "username";
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslmode", "require");
   private List<String> schemas;
   private final FeatureFlags featureFlags;
 
@@ -86,6 +89,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.featureFlags = new EnvVariableFeatureFlags();
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    if (JdbcUtils.useSsl(config)) {
+      return SSL_JDBC_PARAMETERS;
+    } else {
+      return Collections.emptyMap();
+    }
   }
 
   @Override
