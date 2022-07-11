@@ -265,7 +265,7 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
-  public static CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
     return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
