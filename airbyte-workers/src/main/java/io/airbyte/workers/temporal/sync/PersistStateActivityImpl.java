@@ -18,15 +18,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AllArgsConstructor
 public class PersistStateActivityImpl implements PersistStateActivity {
 
   private final StatePersistence statePersistence;
   private final FeatureFlags featureFlags;
-  private static final Logger LOGGER = LoggerFactory.getLogger(PersistStateActivityImpl.class);
 
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {

@@ -27,9 +27,7 @@ import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
@@ -119,9 +117,6 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     final StateWrapper state0 = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"woot\": \"legacy states is passthrough\"}"));
-
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("s1").withNamespace("n1"));
-    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("s2"));
 
     statePersistence.updateOrCreateState(connectionId, state0);
 
