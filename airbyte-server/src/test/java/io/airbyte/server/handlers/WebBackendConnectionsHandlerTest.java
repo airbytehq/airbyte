@@ -686,6 +686,7 @@ class WebBackendConnectionsHandlerTest {
     final StreamDescriptor streamDescriptorAdd = new StreamDescriptor().name("addStream");
     final StreamDescriptor streamDescriptorRemove = new StreamDescriptor().name("removeStream");
     final StreamDescriptor streamDescriptorUpdate = new StreamDescriptor().name("updateStream");
+    final StreamDescriptor streamDescriptorConfigUpdate = new StreamDescriptor().name("configUpdateStream");
 
     final StreamTransform streamTransformAdd =
         new StreamTransform().streamDescriptor(streamDescriptorAdd).transformType(TransformTypeEnum.ADD_STREAM);
@@ -696,6 +697,8 @@ class WebBackendConnectionsHandlerTest {
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd, streamTransformRemove, streamTransformUpdate));
     when(connectionsHandler.getDiff(any(), any())).thenReturn(catalogDiff);
+
+    when(connectionsHandler.getConfigurationDiff(any(), any())).thenReturn(Set.of(streamDescriptorConfigUpdate));
 
     when(operationsHandler.listOperationsForConnection(any())).thenReturn(operationReadList);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(
@@ -730,6 +733,7 @@ class WebBackendConnectionsHandlerTest {
     orderVerifier.verify(eventRunner, times(1)).synchronousResetConnection(connectionId.getConnectionId(),
         List.of(new io.airbyte.protocol.models.StreamDescriptor().withName("addStream"),
             new io.airbyte.protocol.models.StreamDescriptor().withName("updateStream"),
+            new io.airbyte.protocol.models.StreamDescriptor().withName("configUpdateStream"),
             new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream")));
     orderVerifier.verify(eventRunner, times(1)).startNewManualSync(connectionId.getConnectionId());
   }
