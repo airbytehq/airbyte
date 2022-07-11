@@ -123,7 +123,7 @@ def iter_workflow_runs(owner, repo, per_page=100):
         page = dict(parse_qsl(urlparse(response.links["next"]["url"]).query))["page"]
 
 
-def search_workflow_runs(owner, repo, workflow_id, run_uuids):
+def search_failed_workflow_runs(owner, repo, workflow_id, run_uuids):
     run_uuids = set(run_uuids)
     now = datetime.datetime.utcnow()
     res = set()
@@ -169,7 +169,7 @@ def main():
     logging.info(f"Sleeping {SLEEP} seconds")
     time.sleep(SLEEP)
 
-    run_uuids = search_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_uuid_to_name.keys())
+    run_uuids = search_failed_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_uuid_to_name.keys())
     for run_uuid in run_uuids:
         connector_name = run_uuid_to_name[run_uuid]
         run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
