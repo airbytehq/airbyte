@@ -79,7 +79,7 @@ const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
   return (
     <Content>
       {status ? <StatusIcon title={title} status={statusIconStatus} /> : <Space />}
-      {icon && <Image small icon={img} />}
+      {icon && <Image icon={img} />}
       <Name enabled={enabled}>{value}</Name>
     </Content>
   );
