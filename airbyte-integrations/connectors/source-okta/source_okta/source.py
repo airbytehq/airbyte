@@ -148,11 +148,17 @@ class Users(IncrementalOktaStream):
 
 
 class SourceOkta(AbstractSource):
-    def initialize_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
-        return TokenAuthenticator(config["token"], auth_method="SSWS")
+    @staticmethod
+    def initialize_authenticator(config: Mapping[str, Any]) -> TokenAuthenticator:
+        if "token" in config or config["credentials"]["auth_type"] == "api_token":
+            token = config.get("token") or config["credentials"]["token"]
+            return TokenAuthenticator(token, auth_method="SSWS")
+        return TokenAuthenticator(config["credentials"]["access_token"])
 
-    def get_url_base(self, config: Mapping[str, Any]) -> str:
-        return parse.urljoin(config["base_url"], "/api/v1/")
+    @staticmethod
+    def get_url_base(config: Mapping[str, Any]) -> str:
+        base_url = config.get("base_url") or f"https://{config['domain']}.okta.com"
+        return parse.urljoin(base_url, "/api/v1/")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
