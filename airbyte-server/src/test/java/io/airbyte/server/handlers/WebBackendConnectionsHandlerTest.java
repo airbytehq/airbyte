@@ -1001,7 +1001,7 @@ class WebBackendConnectionsHandlerTest {
     final StreamTransform streamTransformUpdate =
         new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM).streamDescriptor(new StreamDescriptor().name("updated_stream"));
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of(streamTransformAdd, streamTransformRemove, streamTransformUpdate));
-    final List<StreamDescriptor> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
+    final Set<StreamDescriptor> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
     assertTrue(
         resultList.stream().anyMatch(
             streamDescriptor -> streamDescriptor.getName() == "added_stream"));

@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -370,7 +371,9 @@ public class WebBackendConnectionsHandler {
     final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
     final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
 
-    final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+    final Set<StreamDescriptor> streamWithConfigChange = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
+    final Set<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+    apiStreamsToReset.addAll(streamWithConfigChange);
     List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
         apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
@@ -510,8 +513,8 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  static List<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
-    return catalogDiff.getTransforms().stream().map(StreamTransform::getStreamDescriptor).toList();
+  static Set<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
+    return catalogDiff.getTransforms().stream().map(StreamTransform::getStreamDescriptor).collect(Collectors.toSet());
   }
 
   /**

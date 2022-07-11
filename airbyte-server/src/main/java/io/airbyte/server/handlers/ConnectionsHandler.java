@@ -49,7 +49,6 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -276,15 +275,16 @@ public class ConnectionsHandler {
 
   /**
    * Returns the list of the streamDescriptor that have their config updated.
+   *
    * @param oldCatalog the old catalog
    * @param newCatalog the new catalog
    * @return the list of StreamDescriptor that have their configuration changed
    */
-  public List<StreamDescriptor> getConfigurationDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+  public Set<StreamDescriptor> getConfigurationDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
     final Map<StreamDescriptor, AirbyteStreamConfiguration> oldStreams = catalogToPerStreamConfiguration(oldCatalog);
     final Map<StreamDescriptor, AirbyteStreamConfiguration> newStreams = catalogToPerStreamConfiguration(newCatalog);
 
-    final List<StreamDescriptor> streamWithDifferentConf = new ArrayList<>();
+    final Set<StreamDescriptor> streamWithDifferentConf = new HashSet<>();
 
     newStreams.forEach(((streamDescriptor, airbyteStreamConfiguration) -> {
       final AirbyteStreamConfiguration oldConfig = oldStreams.get(streamDescriptor);
