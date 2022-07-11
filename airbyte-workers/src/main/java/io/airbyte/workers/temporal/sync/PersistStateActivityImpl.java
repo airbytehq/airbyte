@@ -36,7 +36,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
           final StateType currentStateType = maybeStateWrapper.get().getStateType();
-          if (statePersistence.isMigration(connectionId, currentStateType) && currentStateType == StateType.LEGACY) {
+          if (statePersistence.isMigration(connectionId, currentStateType)) {
             validateStreamStates(maybeStateWrapper.get(), syncOutput.getOutputCatalog());
           }
 
@@ -54,18 +54,9 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   private static void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
     final List<StreamDescriptor> stateStreamDescriptors =
         state.getStateMessages().stream().map(stateMessage -> stateMessage.getStream().getStreamDescriptor()).toList();
-    stateStreamDescriptors.forEach(sd -> {
-      LOGGER.info("stream name and namespace");
-      LOGGER.info(sd.getName());
-      LOGGER.info(sd.getNamespace());
-    });
-    LOGGER.info("configured catalog streams");
     configuredCatalog.getStreams().forEach(stream -> {
       final StreamDescriptor streamDescriptor = new StreamDescriptor().withName(stream.getStream().getName())
           .withNamespace(stream.getStream().getNamespace());
-      LOGGER.info("configured stream name and namespace");
-      LOGGER.info(streamDescriptor.getName());
-      LOGGER.info(streamDescriptor.getNamespace());
       if (!stateStreamDescriptors.contains(streamDescriptor)) {
         throw new IllegalStateException(
             "Job ran during migration from Legacy State to Per Stream State. This job must be retried in order to properly store state.");
