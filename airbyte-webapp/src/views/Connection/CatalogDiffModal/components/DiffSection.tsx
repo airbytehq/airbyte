@@ -1,28 +1,27 @@
 import classnames from "classnames";
 
-import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
+import { StreamTransform } from "core/request/AirbyteClient";
 
 import { DiffAccordion } from "./DiffAccordion";
 import { DiffHeader, DiffType, DiffVerb } from "./DiffHeader";
 import styles from "./DiffSection.module.scss";
 import { StreamRow } from "./StreamRow";
 
-interface StreamSectionProps {
-  data: StreamTransform[];
-  catalog: AirbyteCatalog;
+interface DiffSectionProps {
+  streams: StreamTransform[];
 }
 
-export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog }) => {
-  const diffVerb: DiffVerb = data[0].transformType.includes("add")
+export const DiffSection: React.FC<DiffSectionProps> = ({ streams }) => {
+  const diffVerb: DiffVerb = streams[0].transformType.includes("add")
     ? "new"
-    : data[0].transformType.includes("remove")
+    : streams[0].transformType.includes("remove")
     ? "removed"
     : "changed";
 
-  const diffType: DiffType = data[0].transformType.includes("stream") ? "stream" : "field";
+  const diffType: DiffType = streams[0].transformType.includes("stream") ? "stream" : "field";
 
   const subheaderStyles = classnames(styles.sectionSubHeader, {
-    [styles.padLeft]: data[0].transformType === "update_stream",
+    [styles.padLeft]: streams[0].transformType === "update_stream",
   });
 
   if (!diffVerb || !diffType) {
@@ -32,7 +31,7 @@ export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader}>
-        <DiffHeader diffCount={data.length} diffVerb={diffVerb} diffType={diffType} />
+        <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType={diffType} />
       </div>
       <table>
         <thead className={subheaderStyles}>
@@ -43,19 +42,14 @@ export const CatalogDiffSection: React.FC<StreamSectionProps> = ({ data, catalog
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => {
-            return item.transformType === "update_stream" ? (
-              <tr key={`${item.streamDescriptor.namespace}.${item.streamDescriptor.name}`}>
-                <td>
-                  <DiffAccordion data={item} catalog={catalog} />
-                </td>
-              </tr>
-            ) : (
-              <StreamRow
-                item={item}
-                catalog={catalog}
-                key={`${item.streamDescriptor.namespace}.${item.streamDescriptor.name}`}
+          {streams.map((stream) => {
+            return stream.transformType === "update_stream" ? (
+              <DiffAccordion
+                key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}
+                data={stream}
               />
+            ) : (
+              <StreamRow stream={stream} key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`} />
             );
           })}
         </tbody>

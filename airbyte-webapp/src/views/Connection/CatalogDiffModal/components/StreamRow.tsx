@@ -2,24 +2,26 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 
-import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
+import { StreamTransform } from "core/request/AirbyteClient";
 
+import { useCatalogContext } from "../CatalogContext";
 import { ModificationIcon } from "./ModificationIcon";
 import styles from "./StreamRow.module.scss";
 
 interface StreamRowProps {
-  item: StreamTransform;
-  catalog: AirbyteCatalog;
+  stream: StreamTransform;
 }
 
 export const SyncModeBox: React.FC<{ syncModeString: string }> = ({ syncModeString }) => {
   return <div className={styles.syncModeBox}> {syncModeString} </div>;
 };
 
-export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
-  const diffType = item.transformType.includes("add")
+export const StreamRow: React.FC<StreamRowProps> = ({ stream }) => {
+  const { catalog } = useCatalogContext();
+
+  const diffType = stream.transformType.includes("add")
     ? "add"
-    : item.transformType.includes("remove")
+    : stream.transformType.includes("remove")
     ? "remove"
     : "update";
 
@@ -34,15 +36,18 @@ export const StreamRow: React.FC<StreamRowProps> = ({ item, catalog }) => {
     [styles.mod]: diffType === "update",
   });
 
-  // These properties may or may not exist on any given stream
+  console.log(catalog.streams);
 
-  const streamConfig = catalog.streams.find(
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const streamConfig = catalog!.streams.find(
     (stream) =>
-      stream.stream?.namespace === item.streamDescriptor.namespace && stream.stream?.name === item.streamDescriptor.name
+      stream.stream?.namespace === stream.streamDescriptor.namespace &&
+      stream.stream?.name === stream.streamDescriptor.name
   )?.config;
+
   const syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`;
-  const itemName = item.streamDescriptor.name;
-  const namespace = item.streamDescriptor.namespace;
+  const itemName = stream.streamDescriptor.name;
+  const namespace = stream.streamDescriptor.namespace;
 
   return (
     <tr className={rowStyle}>
