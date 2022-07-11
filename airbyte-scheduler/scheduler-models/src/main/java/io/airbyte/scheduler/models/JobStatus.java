@@ -23,7 +23,7 @@ public enum JobStatus {
   public static final Map<JobStatus, Set<JobStatus>> VALID_STATUS_CHANGES = Map.of(
       PENDING, Set.of(RUNNING, FAILED, CANCELLED),
       RUNNING, Set.of(INCOMPLETE, SUCCEEDED, FAILED, CANCELLED),
-      INCOMPLETE, Set.of(PENDING, RUNNING, FAILED, CANCELLED),
+      INCOMPLETE, Set.of(PENDING, RUNNING, FAILED, CANCELLED, INCOMPLETE),
       SUCCEEDED, Set.of(),
       FAILED, Set.of(),
       CANCELLED, Set.of());
