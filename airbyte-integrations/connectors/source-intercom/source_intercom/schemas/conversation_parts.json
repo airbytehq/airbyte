@@ -11,7 +11,7 @@
                 "type": ["null", "string"]
               },
               "id": {
-                "type": ["null", "string", "integer"]
+                "type": ["null", "string"]
             }
           }
         },
@@ -56,7 +56,7 @@
       "additionalProperties": false,
       "properties": {
         "id": {
-          "type": ["null", "string", "integer"]
+          "type": ["null", "string"]
         },
         "type": {
           "type": ["null", "string"]
@@ -73,7 +73,7 @@
       "type": ["null", "string"]
     },
     "conversation_id": {
-      "type": ["null", "string", "integer"]
+      "type": ["null", "string"]
     },
     "conversation_created_at": {
       "type": ["null", "integer"]
@@ -91,7 +91,7 @@
       "type": ["null", "string"]
     },
     "id": {
-      "type": ["null", "string", "integer"]
+      "type": ["null", "string"]
     },
     "notified_at": {
       "type": ["null", "integer"]
