@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.StandardDiscoverCatalogInput;
+import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -57,7 +58,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public AirbyteCatalog run(final JobRunConfig jobRunConfig,
+  public StandardDiscoverCatalogOutput run(final JobRunConfig jobRunConfig,
                             final IntegrationLauncherConfig launcherConfig,
                             final StandardDiscoverCatalogInput config) {
 
@@ -68,7 +69,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
+    final TemporalAttemptExecution<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput> temporalAttemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
         workerEnvironment,
         logConfigs,
@@ -83,7 +84,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     return temporalAttemptExecution.get();
   }
 
-  private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
+  private CheckedSupplier<Worker<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
     return () -> {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),
