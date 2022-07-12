@@ -732,7 +732,6 @@ temporal:
   ##
   extraVolumes: []
 
-<<<<<<< HEAD
   ## Temporal resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ## We usually recommend not to specify default resources and to leave this as a conscious
@@ -808,20 +807,16 @@ externalDatabase:
 
 ## @section Logs parameters
 logs:
-  ## @param logs.accessKey.password Logs Access Key
   ## @param logs.accessKey.existingSecret
   ## @param logs.accessKey.existingSecretKey
   accessKey:
-    password: minio
-    existingSecret: ""
-    existingSecretKey: ""
-  ## @param logs.secretKey.password Logs Secret Key
+    existingSecret: "airbyte-minio"
+    existingSecretKey: "root-user"
   ## @param logs.secretKey.existingSecret
   ## @param logs.secretKey.existingSecretKey
   secretKey:
-    password: minio123
-    existingSecret: ""
-    existingSecretKey: ""
+    existingSecret: "airbyte-minio"
+    existingSecretKey: "root-password"
 
   ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
   minio:
@@ -856,13 +851,12 @@ logs:
     credentialsJson: ""
 
 ## @section Minio chart overwrites
-## @param minio.accessKey.password Minio Access Key
-## @param minio.secretKey.password Minio Secret Key
+## @param minio.rootUser Minio User
+## @param minio.rootPassword Minio Password
 minio:
-  accessKey:
-    password: minio
-  secretKey:
-    password: minio123
+  rootUser: airbyte-user
+  rootPassword: airbyte-password-123
+
 
 jobs:
   ## Jobs resource requests and limits
