@@ -21,6 +21,7 @@ from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import 
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
@@ -304,3 +305,52 @@ def test_full_config_with_defaults():
     assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
         "next_page_token": "{{ decoded_response.metadata.next}}"
     }
+
+
+class TestCreateTransformations:
+    # the tabbing matters
+    base_options = """
+                name: "lists"
+                primary_key: id
+                url_base: "https://api.sendgrid.com"
+                schema_loader:
+                  file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+                retriever:
+                  requester:
+                    path: "/v3/marketing/lists"
+                    request_parameters:
+                      page_size: 10
+                  record_selector:
+                    extractor:
+                      transform: ".result[]"
+    """
+
+    def test_no_transformations(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        assert [] == component._transformations
+
+    def test_remove_fields(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+                transformations:
+                    - type: RemoveFields
+                      field_pointers:
+                        - ["path", "to", "field1"]
+                        - ["path2"]
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]])]
+        assert expected == component._transformations
