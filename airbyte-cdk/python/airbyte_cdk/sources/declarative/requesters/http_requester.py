@@ -8,14 +8,15 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler, ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 
 
 class HttpRequester(Requester):
@@ -27,7 +28,7 @@ class HttpRequester(Requester):
         path: Optional[Union[str, InterpolatedString]] = None,
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
-        authenticator: HttpAuthenticator,
+        authenticator: HttpAuthenticator = None,
         error_handler: Optional[ErrorHandler] = None,
         config: Config,
     ):
@@ -36,7 +37,7 @@ class HttpRequester(Requester):
         elif isinstance(request_options_provider, dict):
             request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
         self._name = name
-        self._authenticator = authenticator
+        self._authenticator = authenticator or NoAuth()
         if type(url_base) == str:
             url_base = InterpolatedString(url_base)
         self._url_base = url_base
@@ -66,6 +67,8 @@ class HttpRequester(Requester):
     def get_method(self):
         return self._method
 
+    # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
+    # only care about the status of the last response received
     @lru_cache(maxsize=10)
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time

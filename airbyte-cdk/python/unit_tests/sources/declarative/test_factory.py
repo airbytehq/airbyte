@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponent
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -22,6 +23,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
@@ -283,6 +285,7 @@ def test_create_composite_error_handler():
     component = factory.create_component(config["error_handler"], input_config)()
     assert len(component._error_handlers) == 2
     assert isinstance(component._error_handlers[0], DefaultErrorHandler)
+    assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
     assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
     assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
@@ -339,3 +342,52 @@ def test_full_config_with_defaults():
     assert isinstance(stream._retriever._paginator, LimitPaginator)
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
     assert stream._retriever._paginator._limit == 10
+
+
+class TestCreateTransformations:
+    # the tabbing matters
+    base_options = """
+                name: "lists"
+                primary_key: id
+                url_base: "https://api.sendgrid.com"
+                schema_loader:
+                  file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+                retriever:
+                  requester:
+                    path: "/v3/marketing/lists"
+                    request_parameters:
+                      page_size: 10
+                  record_selector:
+                    extractor:
+                      transform: ".result[]"
+    """
+
+    def test_no_transformations(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        assert [] == component._transformations
+
+    def test_remove_fields(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+                transformations:
+                    - type: RemoveFields
+                      field_pointers:
+                        - ["path", "to", "field1"]
+                        - ["path2"]
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]])]
+        assert expected == component._transformations

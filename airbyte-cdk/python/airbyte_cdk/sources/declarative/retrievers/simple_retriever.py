@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
@@ -83,6 +83,8 @@ class SimpleRetriever(Retriever, HttpStream):
          to the default backoff behavior (e.g using an exponential algorithm).
         """
         should_retry = self._requester.should_retry(response)
+        if should_retry.action != ResponseAction.RETRY:
+            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
         assert should_retry.action == ResponseAction.RETRY
         return should_retry.retry_in
 
@@ -217,6 +219,7 @@ class SimpleRetriever(Retriever, HttpStream):
         if response_status.action == ResponseAction.FAIL:
             response.raise_for_status()
         elif response_status.action == ResponseAction.IGNORE:
+            self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
             return []
 
         # Warning: use self.state instead of the stream_state passed as argument!

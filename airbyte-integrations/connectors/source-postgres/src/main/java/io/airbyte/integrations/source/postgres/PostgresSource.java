@@ -5,13 +5,10 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -36,8 +33,8 @@ import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
@@ -46,7 +43,6 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
@@ -66,7 +62,6 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
-  public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private List<String> schemas;
@@ -138,11 +133,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public AirbyteCatalog discover(final JsonNode config) throws Exception {
     final AirbyteCatalog catalog = super.discover(config);
 
-    if (isCdc(config)) {
+    if (PostgresUtils.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresSource::removeIncrementalWithoutPk)
-          .map(PostgresSource::setIncrementalToSourceDefined)
-          .map(PostgresSource::addCdcMetadataColumns)
+          .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
+          .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
+          .map(PostgresCdcCatalogHelper::addCdcMetadataColumns)
           .collect(toList());
 
       catalog.setStreams(streams);
@@ -153,6 +148,19 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<JDBCType>>> rawTables = discoverRawTables(database);
+    final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
+
+    if (publicizedTablesInCdc.isEmpty()) {
+      return rawTables;
+    }
+    // under cdc mode, only return tables that are in the publication
+    return rawTables.stream()
+        .filter(table -> publicizedTablesInCdc.contains(new AirbyteStreamNameNamespacePair(table.getName(), table.getNameSpace())))
+        .collect(toList());
+  }
+
+  public List<TableInfo<CommonField<JDBCType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
       final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
@@ -177,7 +185,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final List<CheckedConsumer<JdbcDatabase, Exception>> checkOperations = new ArrayList<>(
         super.getCheckOperations(config));
 
-    if (isCdc(config)) {
+    if (PostgresUtils.isCdc(config)) {
       checkOperations.add(database -> {
         final List<JsonNode> matchingSlots = database.queryJsons(connection -> {
           final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
@@ -186,8 +194,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
           ps.setString(3, config.get("database").asText());
 
-          LOGGER.info(
-              "Attempting to find the named replication slot using the query: " + ps.toString());
+          LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
 
           return ps;
         }, sourceOperations::rowToJson);
@@ -244,7 +251,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
@@ -284,31 +291,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());
-  }
-
-  @VisibleForTesting
-  static boolean isCdc(final JsonNode config) {
-    final boolean isCdc = config.hasNonNull("replication_method")
-        && config.get("replication_method").hasNonNull("replication_slot")
-        && config.get("replication_method").hasNonNull("publication");
-    LOGGER.info("using CDC: {}", isCdc);
-    return isCdc;
-  }
-
-  /*
-   * It isn't possible to recreate the state of the original database unless we include extra
-   * information (like an oid) when using logical replication. By limiting to Full Refresh when we
-   * don't have a primary key we dodge the problem for now. As a work around a CDC and non-CDC source
-   * could be configured if there's a need to replicate a large non-PK table.
-   *
-   * Note: in place mutation.
-   */
-  private static AirbyteStream removeIncrementalWithoutPk(final AirbyteStream stream) {
-    if (stream.getSourceDefinedPrimaryKey().isEmpty()) {
-      stream.getSupportedSyncModes().remove(SyncMode.INCREMENTAL);
-    }
-
-    return stream;
   }
 
   @Override
@@ -364,34 +346,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return false;
   }
 
-  /*
-   * Set all streams that do have incremental to sourceDefined, so that the user cannot set or
-   * override a cursor field.
-   *
-   * Note: in place mutation.
-   */
-  private static AirbyteStream setIncrementalToSourceDefined(final AirbyteStream stream) {
-    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
-      stream.setSourceDefinedCursor(true);
-    }
-
-    return stream;
-  }
-
-  // Note: in place mutation.
-  private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
-    final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
-    final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
-
-    final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
-    final JsonNode numberType = Jsons.jsonNode(ImmutableMap.of("type", "number"));
-    properties.set(CDC_LSN, numberType);
-    properties.set(CDC_UPDATED_AT, stringType);
-    properties.set(CDC_DELETED_AT, stringType);
-
-    return stream;
-  }
-
   // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
   // state
   @Override
@@ -410,7 +364,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
-    return isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+    return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 
   public static void main(final String[] args) throws Exception {

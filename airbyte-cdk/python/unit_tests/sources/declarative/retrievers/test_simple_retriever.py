@@ -4,10 +4,12 @@
 
 from unittest.mock import MagicMock
 
+import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ResponseAction, ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
@@ -96,7 +98,7 @@ def test_simple_retriever():
 @pytest.mark.parametrize(
     "test_name, requester_response, expected_should_retry, expected_backoff_time",
     [
-        ("test_should_retry_fail", ResponseStatus.fail(), False, None),
+        ("test_should_retry_fail", response_status.FAIL, False, None),
         ("test_should_retry_none_backoff", ResponseStatus.retry(None), True, None),
         ("test_should_retry_custom_backoff", ResponseStatus.retry(60), True, 60),
     ],
@@ -113,9 +115,9 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
 @pytest.mark.parametrize(
     "test_name, status_code, response_status, len_expected_records",
     [
-        ("test_parse_response_fails_if_should_retry_is_fail", 404, ResponseStatus.fail(), None),
-        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, ResponseStatus.success(), 1),
-        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, ResponseStatus.ignore(), 0),
+        ("test_parse_response_fails_if_should_retry_is_fail", 404, response_status.FAIL, None),
+        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, response_status.SUCCESS, 1),
+        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, response_status.IGNORE, 0),
     ],
 )
 def test_parse_response(test_name, status_code, response_status, len_expected_records):
@@ -135,3 +137,30 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records
+
+
+@pytest.mark.parametrize(
+    "test_name, response_action, retry_in, expected_backoff_time",
+    [
+        ("test_backoff_retriable_request", ResponseAction.RETRY, 10, 10),
+        ("test_backoff_fail_request", ResponseAction.FAIL, 10, None),
+        ("test_backoff_ignore_request", ResponseAction.IGNORE, 10, None),
+        ("test_backoff_success_request", ResponseAction.IGNORE, 10, None),
+    ],
+)
+def test_backoff_time(test_name, response_action, retry_in, expected_backoff_time):
+    requester = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = [{"id": 100}]
+    response = requests.Response()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    if expected_backoff_time:
+        requester.should_retry.return_value = ResponseStatus(response_action, retry_in)
+        actual_backoff_time = retriever.backoff_time(response)
+        assert expected_backoff_time == actual_backoff_time
+    else:
+        try:
+            retriever.backoff_time(response)
+            assert False
+        except ValueError:
+            pass
