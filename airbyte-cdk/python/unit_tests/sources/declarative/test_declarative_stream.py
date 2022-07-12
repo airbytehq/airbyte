@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from unittest import mock
 from unittest.mock import MagicMock, call
 
