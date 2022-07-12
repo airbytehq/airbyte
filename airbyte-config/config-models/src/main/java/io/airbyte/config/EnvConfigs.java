@@ -802,9 +802,7 @@ public class EnvConfigs implements Configs {
   @Override
   public String getDDPrefix() {
     String prefix = getEnvOrDefault(DD_PREFIX, "").strip();
-    if (StringUtils.isNotEmpty(prefix) &&  !prefix.endsWith(".")){
-      prefix = prefix + ".";
-    }
+    prefix = StringUtils.appendIfMissing(prefix, ".");
     return prefix;
   }
   @Override
