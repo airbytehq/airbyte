@@ -101,12 +101,14 @@ class SourceDynamodb(Source):
         """
         for config_stream in catalog.streams:
             stream_name = config_stream.stream.name
+            # print(config_stream.stream.json_schema)
             try:
                 if config_stream.sync_mode == SyncMode.full_refresh:
                     rdr = dynamodb_reader.Reader(logger=logger, config=config)
                     logger.info(f"Reading data fror stream '{stream_name}'")
 
                     for row in rdr.read(table_name=stream_name):
+                        row["additionalProperties"] = True
                         yield AirbyteMessage(
                             log=None,
                             catalog=None,
