@@ -43,7 +43,6 @@ class OktaStream(HttpStream, ABC):
             if "self" in links:
                 if links["self"]["url"] == next_url:
                     return None
-
             return query_params
 
         return None
@@ -77,19 +76,22 @@ class OktaStream(HttpStream, ABC):
 
 
 class IncrementalOktaStream(OktaStream, ABC):
+    def __init__(self, url_base: str, *args, **kwargs):
+        super().__init__(url_base, *args, **kwargs)
+        self._state = {}
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
         pass
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        lowest_date = str(pendulum.datetime.min)
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, lowest_date),
-                current_stream_state.get(self.cursor_field, lowest_date),
-            )
-        }
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state[self.cursor_field] = value[self.cursor_field]
 
     def request_params(
         self,
@@ -116,7 +118,6 @@ class Groups(IncrementalOktaStream):
 class GroupMembers(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
-    min_user_id = "00u00000000000000000"
     use_cache = True
 
     def stream_slices(self, **kwargs):
@@ -139,14 +140,6 @@ class GroupMembers(IncrementalOktaStream):
         if latest_entry:
             params["after"] = latest_entry
         return params
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                latest_record.get(self.cursor_field, self.min_user_id),
-                current_stream_state.get(self.cursor_field, self.min_user_id),
-            )
-        }
 
 
 class GroupRoleAssignments(OktaStream):
@@ -219,6 +212,44 @@ class Users(IncrementalOktaStream):
             params["filter"] = f'{params["filter"]} and ({status_filters})'
         else:
             params["filter"] = status_filters
+        return params
+
+
+class ResourceSets(IncrementalOktaStream):
+    cursor_field = "id"
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "iam/resource-sets"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["resource-sets"]
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # We can't follow the default pagination that takes query from header.links
+        # Instead, the payload contains _links that offers the next link
+        body = response.json()
+        if "_links" in body and "next" in body["_links"] and "href" in body["_links"]["next"]:
+            next_url = body["_links"]["next"]["href"]
+            parsed_link = parse.urlparse(next_url)
+            return dict(parse.parse_qsl(parsed_link.query))
+
+        return None
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        latest_entry = stream_state.get(self.cursor_field)
+        if latest_entry:
+            params["after"] = latest_entry
         return params
 
 
@@ -366,4 +397,5 @@ class SourceOkta(AbstractSource):
             UserRoleAssignments(**initialization_params),
             GroupRoleAssignments(**initialization_params),
             Permissions(**initialization_params),
+            ResourceSets(**initialization_params),
         ]

@@ -16,6 +16,7 @@ This Source is capable of syncing the following core Streams:
 - [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
 - [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
 - [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions)
+- [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets)
 
 ### Data type mapping
 
@@ -62,6 +63,7 @@ Different Okta APIs require different admin privilege levels. API tokens inherit
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.12  | 2022-08-03 | [14700](https://github.com/airbytehq/airbyte/pull/14700) | add resource sets |
 | 0.1.11  | 2022-08-03 | [14739](https://github.com/airbytehq/airbyte/pull/14739) | add permissions for custom roles |
 | 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fixed broken schemas for all streams
 | 0.1.9   | 2022-07-25 | [15001](https://github.com/airbytehq/airbyte/pull/15001) | Return deprovisioned users                                                     |
