@@ -1,5 +1,6 @@
 {
     "read": {
+        "resourcesNumber": 1,
         "recordsPerResource": 1000,
         "throwError": true,
         "extractRate": 100

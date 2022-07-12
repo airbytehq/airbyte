@@ -76,7 +76,7 @@ class SourceTestConnector(Source):
             "type": "object",
             "properties": {"id": {"type": "string", "index": {"type": "number"}}},
         }
-        for i in range(config["resourcesNumber"]):
+        for i in range(config.get('read', {}).get('resourcesNumber', 0)):
             streams.append(AirbyteStream(
                 name="test_resource_" + str(i), json_schema=json_schema))
         return AirbyteCatalog(streams=streams)
