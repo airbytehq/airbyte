@@ -268,7 +268,11 @@
     {{ json_extract_array(json_column, json_path_list, normalized_json_path) }}
 {%- endmacro %}
 
-# https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
+{#
+See https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
+
+BigQuery does not allow NULL entries in REPEATED fields, so we replace those with literal "NULL" strings.
+#}
 {% macro bigquery__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
     array(
         select ifnull(x, "NULL")
