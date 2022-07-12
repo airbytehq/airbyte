@@ -15,6 +15,8 @@ import { useCancelJob } from "services/job/JobService";
 
 import { getJobId, getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
+import { ResetIcon } from "./ResetIcon";
+import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const MainView = styled(Row)<{
   isOpen?: boolean;
@@ -33,9 +35,9 @@ const Title = styled.div<{ isFailed?: boolean }>`
   color: ${({ theme, isFailed }) => (isFailed ? theme.dangerColor : theme.darkPrimaryColor)};
 `;
 
-const ErrorSign = styled(StatusIcon)`
+const StyledStatusIcon = styled(StatusIcon)`
   position: absolute;
-  left: -30px;
+  left: 8px;
 `;
 
 const AttemptCount = styled.div`
@@ -116,30 +118,43 @@ const MainInfo: React.FC<MainInfoProps> = ({
   };
 
   const jobStatus = getJobStatus(job);
+  const streamsToReset = (job as JobsWithJobs).job.resetConfig?.streamsToReset;
   const isNotCompleted =
     jobStatus === JobStatus.pending || jobStatus === JobStatus.running || jobStatus === JobStatus.incomplete;
 
-  const jobStatusLabel = isPartialSuccess ? (
-    <FormattedMessage id="sources.partialSuccess" />
-  ) : (
-    <FormattedMessage id={`sources.${getJobStatus(job)}`} />
-  );
+  const getLabel = () => {
+    if (streamsToReset) {
+      const formattedMessageId = streamsToReset.length % 10 === 1 ? "sources.streamReset" : "sources.streamsReset";
+      return (
+        <>
+          {streamsToReset.length} <FormattedMessage id={formattedMessageId} />
+        </>
+      );
+    }
+    if (isPartialSuccess) {
+      return <FormattedMessage id="sources.partialSuccess" />;
+    }
+    return <FormattedMessage id={`sources.${getJobStatus(job)}`} />;
+  };
 
   const getIcon = () => {
-    if (isPartialSuccess) {
-      return <ErrorSign status="warning" />;
-    } else if (isFailed && !shortInfo) {
-      return <ErrorSign />;
+    if (streamsToReset) {
+      return <ResetIcon />;
     }
-    return null;
+    if (isPartialSuccess) {
+      return <StyledStatusIcon status="warning" />;
+    } else if (isFailed && !shortInfo) {
+      return <StyledStatusIcon />;
+    }
+    return <StyledStatusIcon status="success" />;
   };
 
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
+      {getIcon()}
       <InfoCell>
         <Title isFailed={isFailed}>
-          {getIcon()}
-          {jobStatusLabel}
+          {getLabel()}
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
             <div>
@@ -148,7 +163,10 @@ const MainInfo: React.FC<MainInfoProps> = ({
                   <FormattedMessage id="sources.lastAttempt" />
                 </Text>
               )}
-              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+              {!streamsToReset && (
+                <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+              )}
+              {streamsToReset && <ResetStreamsDetails names={streamsToReset.map((stream) => stream.name)} />}
             </div>
           ) : null}
         </Title>
