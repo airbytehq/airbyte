@@ -27,6 +27,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
+
 REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
@@ -884,7 +885,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
         strict_start_date = pendulum.now("utc").subtract(days=90)
 
         create_date = max(pendulum.parse(self._replication_start_date), strict_start_date)
-        end_date = pendulum.parse(self._replication_end_date)
+        end_date = pendulum.parse(self._replication_end_date or pendulum.now("utc").date().to_date_string())
 
         if end_date < strict_start_date:
             end_date = pendulum.now("utc")
@@ -911,7 +912,7 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             response = report_response.json()
             data = response.get(self.data_field, list())
 
-            records = [e.get("reportId") for e in data if e and e not in unique_records]
+            records = [e.get("reportId") for e in data if e and e.get("reportId") not in unique_records]
             unique_records += records
             reports = [{"report_id": report_id} for report_id in records]
 
