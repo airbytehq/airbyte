@@ -133,5 +133,5 @@ class TestIntegrationCsvFiles:
         minio_credentials["path_pattern"] = "big_files/file.csv"
         minio_credentials["format"]["block_size"] = 5 * 1024**2
         source = SourceS3()
-        catalog = source.read_catalog(HERE / "configured_catalog.json")
+        catalog = source.read_catalog(HERE / "configured_catalogs/csv.json")
         assert self.read_source(minio_credentials, catalog) == expected_count

@@ -16,7 +16,7 @@ tests:
       status:
         "succeed"
         # for JSON format
-    - config_path: "secrets/json_config.json"
+    - config_path: "secrets/jsonl_config.json"
       status: "succeed"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
@@ -62,7 +62,7 @@ tests:
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/csv.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/csv.json"
       # expected records contains _ab_source_file_last_modified property which
       # is modified all the time s3 file changed and for custom server it is
       # file creating date and it always new. Uncomment this line when SAT
@@ -73,35 +73,35 @@ tests:
     # for CSV format
     - config_path: "secrets/config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/csv.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/parquet.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for Avro format
     - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/avro.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for JSON format
-    - config_path: "secrets/json_config.json"
+    - config_path: "secrets/jsonl_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/json_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/csv.json"
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
@@ -110,20 +110,20 @@ tests:
     # for CSV format
     - config_path: "secrets/config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/csv.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/parquet_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/parquet.json"
     # for Avro format
     - config_path: "secrets/avro_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/avro.json"
     # for JSON format
-    - config_path: "secrets/json_config.json"
+    - config_path: "secrets/jsonl_config.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/json_configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+      configured_catalog_path: "integration_tests/configured_catalogs/csv.json"
