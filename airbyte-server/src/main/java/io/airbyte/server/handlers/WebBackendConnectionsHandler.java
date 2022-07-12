@@ -393,8 +393,10 @@ public class WebBackendConnectionsHandler {
     final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
     final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
     final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
-
     final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+    /*final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
+    apiStreamsToReset.addAll(changedConfigStreamDescriptors);*/
+
     List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
         apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 

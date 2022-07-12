@@ -653,7 +653,7 @@ class WebBackendConnectionsHandlerTest {
     when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
     when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
 
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnectionNew(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
@@ -718,7 +718,7 @@ class WebBackendConnectionsHandlerTest {
     when(eventRunner.synchronousResetConnection(any(), any())).thenReturn(successfulResult);
     when(eventRunner.startNewManualSync(any())).thenReturn(successfulResult);
 
-    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnection(updateBody);
+    final WebBackendConnectionRead result = wbHandler.webBackendUpdateConnectionNew(updateBody);
 
     assertEquals(expectedWithNewSchema.getSyncCatalog(), result.getSyncCatalog());
 
