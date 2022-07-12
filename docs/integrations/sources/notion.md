@@ -61,6 +61,7 @@ In order for your connection to successfully sync the pages and blocks you expec
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.4 | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through |
 | 0.1.3 | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream |
 | 0.1.2 | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084) | Fix documentation URL |
 | 0.1.1 | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207) | Update connector fields title/description |
