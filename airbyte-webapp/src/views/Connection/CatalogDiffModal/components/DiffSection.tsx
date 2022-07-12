@@ -1,40 +1,24 @@
-import classnames from "classnames";
+import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
-import { StreamTransform } from "core/request/AirbyteClient";
-
-import { DiffAccordion } from "./DiffAccordion";
-import { DiffHeader, DiffType, DiffVerb } from "./DiffHeader";
+import { DiffVerb } from "../CatalogDiffModal";
+import { DiffHeader } from "./DiffHeader";
 import styles from "./DiffSection.module.scss";
 import { StreamRow } from "./StreamRow";
 
 interface DiffSectionProps {
   streams: StreamTransform[];
+  catalog?: AirbyteCatalog;
+  diffVerb: DiffVerb;
 }
 
-export const DiffSection: React.FC<DiffSectionProps> = ({ streams }) => {
-  const diffVerb: DiffVerb = streams[0].transformType.includes("add")
-    ? "new"
-    : streams[0].transformType.includes("remove")
-    ? "removed"
-    : "changed";
-
-  const diffType: DiffType = streams[0].transformType.includes("stream") ? "stream" : "field";
-
-  const subheaderStyles = classnames(styles.sectionSubHeader, {
-    [styles.padLeft]: streams[0].transformType === "update_stream",
-  });
-
-  if (!diffVerb || !diffType) {
-    return null;
-  }
-
+export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diffVerb }) => {
   return (
     <div className={styles.sectionContainer}>
       <div className={styles.sectionHeader}>
-        <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType={diffType} />
+        <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType="stream" />
       </div>
       <table>
-        <thead className={subheaderStyles}>
+        <thead className={styles.sectionSubHeader}>
           <tr>
             <th>Namespace</th>
             <th>Stream name</th>
@@ -43,13 +27,27 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams }) => {
         </thead>
         <tbody>
           {streams.map((stream) => {
-            return stream.transformType === "update_stream" ? (
-              <DiffAccordion
+            let syncModeString;
+
+            if (catalog) {
+              const streamConfig = catalog.streams.find(
+                (catalogStream) =>
+                  catalogStream.stream?.namespace === stream.streamDescriptor.namespace &&
+                  catalogStream.stream?.name === stream.streamDescriptor.name
+              )?.config;
+
+              streamConfig?.syncMode &&
+                streamConfig.destinationSyncMode &&
+                (syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`);
+            }
+
+            return (
+              <StreamRow
+                streamTransform={stream}
+                syncMode={syncModeString}
+                diffVerb={diffVerb}
                 key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}
-                data={stream}
               />
-            ) : (
-              <StreamRow stream={stream} key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`} />
             );
           })}
         </tbody>

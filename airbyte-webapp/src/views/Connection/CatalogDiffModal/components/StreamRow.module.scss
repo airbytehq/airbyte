@@ -9,6 +9,7 @@
   gap: 10px;
   border-bottom: 1px solid colors.$white;
   width: 100%;
+  font-size: 12px;
 
   &.add {
     background-color: colors.$green-50;
@@ -36,13 +37,13 @@
   line-height: 12px;
   border-radius: 5px;
   padding: 5px 9px 5px 9px;
-  width: 276px;
+  width: 226px;
   opacity: 50%;
   background: colors.$red-100;
 }
 
 .nameCell {
-  width: 150px;
+  width: 140px;
   text-align: left;
   & .row {
     display: flex;

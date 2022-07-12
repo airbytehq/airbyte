@@ -1,0 +1,26 @@
+@use "./DiffSection.module.scss";
+@use "../../../../scss/colors";
+
+ul,
+li {
+  list-style-type: none;
+  list-style-position: inside;
+  margin: 0px;
+  padding: 0px;
+  height: auto;
+  font-weight: 400;
+}
+
+.fieldSubHeader {
+  @extend .sectionSubHeader;
+
+  > div {
+    @extend.namecell;
+    text-align: left;
+    font-weight: 400;
+    font-size: 10px;
+    color: colors.$grey;
+    line-height: 12px;
+    padding-left: 10px;
+  }
+}

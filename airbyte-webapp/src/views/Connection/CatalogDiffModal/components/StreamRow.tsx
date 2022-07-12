@@ -4,57 +4,42 @@ import classnames from "classnames";
 
 import { StreamTransform } from "core/request/AirbyteClient";
 
-import { useCatalogContext } from "../CatalogContext";
+import { DiffVerb } from "../CatalogDiffModal";
 import { ModificationIcon } from "./ModificationIcon";
 import styles from "./StreamRow.module.scss";
 
 interface StreamRowProps {
-  stream: StreamTransform;
+  streamTransform: StreamTransform;
+  syncMode?: string;
+
+  diffVerb: DiffVerb;
 }
 
 export const SyncModeBox: React.FC<{ syncModeString: string }> = ({ syncModeString }) => {
   return <div className={styles.syncModeBox}> {syncModeString} </div>;
 };
 
-export const StreamRow: React.FC<StreamRowProps> = ({ stream }) => {
-  const { catalog } = useCatalogContext();
-
-  const diffType = stream.transformType.includes("add")
-    ? "add"
-    : stream.transformType.includes("remove")
-    ? "remove"
-    : "update";
-
+export const StreamRow: React.FC<StreamRowProps> = ({ streamTransform, syncMode, diffVerb }) => {
   const rowStyle = classnames(styles.row, {
-    [styles.add]: diffType === "add",
-    [styles.remove]: diffType === "remove",
+    [styles.add]: diffVerb === "new",
+    [styles.remove]: diffVerb === "removed",
   });
 
   const iconStyle = classnames(styles.icon, {
-    [styles.plus]: diffType === "add",
-    [styles.minus]: diffType === "remove",
-    [styles.mod]: diffType === "update",
+    [styles.plus]: diffVerb === "new",
+    [styles.minus]: diffVerb === "removed",
+    [styles.mod]: diffVerb === "changed",
   });
 
-  console.log(catalog.streams);
-
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const streamConfig = catalog!.streams.find(
-    (stream) =>
-      stream.stream?.namespace === stream.streamDescriptor.namespace &&
-      stream.stream?.name === stream.streamDescriptor.name
-  )?.config;
-
-  const syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`;
-  const itemName = stream.streamDescriptor.name;
-  const namespace = stream.streamDescriptor.namespace;
-
+  const itemName = streamTransform.streamDescriptor.name;
+  const namespace = streamTransform.streamDescriptor.namespace;
+  console.log(syncMode);
   return (
     <tr className={rowStyle}>
       <td>
-        {diffType === "add" ? (
+        {diffVerb === "new" ? (
           <FontAwesomeIcon icon={faPlus} size="1x" className={iconStyle} />
-        ) : diffType === "remove" ? (
+        ) : diffVerb === "removed" ? (
           <FontAwesomeIcon icon={faMinus} size="1x" className={iconStyle} />
         ) : (
           <ModificationIcon />
@@ -62,9 +47,9 @@ export const StreamRow: React.FC<StreamRowProps> = ({ stream }) => {
       </td>
       {namespace && <td className={styles.nameCell}>{namespace}</td>}
       <td className={styles.nameCell}>{itemName}</td>
-      {diffType === "remove" && streamConfig?.selected && syncModeString && (
+      {diffVerb === "removed" && syncMode && (
         <td>
-          <SyncModeBox syncModeString={syncModeString} />
+          <SyncModeBox syncModeString={syncMode} />
         </td>
       )}
     </tr>

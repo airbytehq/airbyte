@@ -337,6 +337,9 @@
   "connection.updateSchema.changed": "{item} with changes",
   "connection.updateSchema.stream": "{count, plural, one {table} other {tables}}",
   "connection.updateSchema.field": "{count, plural, one {field} other {fields}}",
+  "connection.updateSchema.streamName": "Stream name",
+  "connection.updateSchema.namespace": "Namespace",
+  "connection.updateSchema.dataType": "Data type",
 
   "connection.newConnection": "+ New connection",
   "connection.newConnectionTitle": "New connection",

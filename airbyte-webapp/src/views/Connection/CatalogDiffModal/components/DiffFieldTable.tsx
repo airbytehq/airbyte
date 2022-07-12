@@ -1,7 +1,8 @@
 import { FieldTransform } from "core/request/AirbyteClient";
 
+import { DiffVerb } from "../CatalogDiffModal";
 import styles from "./DiffFieldTable.module.scss";
-import { DiffHeader, DiffVerb } from "./DiffHeader";
+import { DiffHeader } from "./DiffHeader";
 import { FieldRow } from "./FieldRow";
 
 interface DiffFieldTableProps {

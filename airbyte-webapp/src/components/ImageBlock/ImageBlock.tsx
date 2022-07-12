@@ -11,9 +11,10 @@ interface ImageBlockProps {
   small?: boolean;
   color?: string;
   light?: boolean;
+  ariaLabel?: string;
 }
 
-export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small, color, light }) => {
+export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small, color, light, ariaLabel }) => {
   const imageCircleClassnames = classnames({
     [styles.circle]: num,
     [styles.iconContainer]: !num || num === undefined,
@@ -28,7 +29,7 @@ export const ImageBlock: React.FC<ImageBlockProps> = ({ img, num, small, color, 
   const numberStyles = classnames(styles.number, { [styles.light]: light });
 
   return (
-    <div className={imageCircleClassnames}>
+    <div className={imageCircleClassnames} aria-label={ariaLabel}>
       {num ? <div className={numberStyles}>{num}</div> : <div className={styles.icon}>{getIcon(img)}</div>}
     </div>
   );

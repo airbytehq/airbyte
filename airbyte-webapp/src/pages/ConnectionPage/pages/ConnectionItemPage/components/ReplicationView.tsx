@@ -190,13 +190,16 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   return (
     <Content>
       <Card>
-        {schemaUpdateModalOpen && !diffAcknowledged && connection.catalogDiff && (
-          <CatalogDiffModal
-            catalogDiff={connection.catalogDiff}
-            catalog={connection.syncCatalog}
-            setDiffAcknowledged={setDiffAcknowledged}
-          />
-        )}
+        {schemaUpdateModalOpen &&
+          !diffAcknowledged &&
+          connection.catalogDiff?.transforms &&
+          connection.catalogDiff.transforms.length > 0 && (
+            <CatalogDiffModal
+              catalogDiff={connection.catalogDiff}
+              catalog={connection.syncCatalog}
+              setDiffAcknowledged={setDiffAcknowledged}
+            />
+          )}
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
             mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}

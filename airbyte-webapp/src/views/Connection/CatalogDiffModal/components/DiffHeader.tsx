@@ -1,6 +1,6 @@
 import { FormattedMessage } from "react-intl";
 
-export type DiffVerb = "new" | "removed" | "changed";
+import { DiffVerb } from "../CatalogDiffModal";
 
 export type DiffType = "field" | "stream";
 

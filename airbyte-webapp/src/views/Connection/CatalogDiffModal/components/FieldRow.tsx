@@ -1,4 +1,4 @@
-import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 
@@ -19,7 +19,8 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
     ? "remove"
     : "update";
 
-  const fieldType = transform.updateFieldSchema?.newSchema.type;
+  const oldType = transform.updateFieldSchema?.oldSchema.type;
+  const newType = transform.updateFieldSchema?.newSchema.type;
 
   const iconStyle = classnames(styles.icon, {
     [styles.plus]: diffType === "add",
@@ -52,9 +53,11 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
         <td className={styles.cell}>
           <span>{fieldName}</span>
         </td>
-        {fieldType && (
+        {oldType && newType && (
           <td className={updateCellStyle}>
-            <span>{fieldType}</span>
+            <span>
+              {oldType} <FontAwesomeIcon icon={faArrowRight} /> {newType}
+            </span>
           </td>
         )}
       </td>

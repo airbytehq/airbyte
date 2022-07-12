@@ -15,7 +15,8 @@
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  padding: 5px 30px 5px 20px;
+  padding: 5px 30px 5px 0px;
+  font-weight: 400;
 }
 
 .iconBlock {
@@ -23,4 +24,8 @@
   flex-direction: row;
   gap: 1px;
   margin-left: auto;
+}
+
+.namespace {
+  padding-left: 0px;
 }
