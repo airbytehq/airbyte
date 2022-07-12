@@ -174,6 +174,21 @@ export const SecurityField: React.FC = () => {
   );
 };
 
+interface SignupButtonProps {
+  isLoading: boolean;
+  disabled: boolean;
+}
+
+export const SignupButton: React.FC<SignupButtonProps> = ({ isLoading, disabled }) => (
+  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+    <FormattedMessage id="login.signup" />
+  </LoadingButton>
+);
+
+export const SignupFormStatusMessage: React.FC = ({ children }) => (
+  <div className={styles.statusMessage}>{children}</div>
+);
+
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
 
@@ -200,7 +215,7 @@ export const SignupForm: React.FC = () => {
       validateOnBlur
       validateOnChange
     >
-      {({ isValid, isSubmitting, values }) => (
+      {({ isValid, isSubmitting, values, status }) => (
         <Form>
           <RowFieldItem>
             <NameField />
@@ -218,14 +233,8 @@ export const SignupForm: React.FC = () => {
             <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <LoadingButton
-              className={styles.signUpButton}
-              type="submit"
-              isLoading={isSubmitting}
-              disabled={!isValid || !values.security}
-            >
-              <FormattedMessage id="login.signup" />
-            </LoadingButton>
+            <SignupButton isLoading={isSubmitting} disabled={!isValid || !values.security} />
+            {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
           </BottomBlock>
         </Form>
       )}
