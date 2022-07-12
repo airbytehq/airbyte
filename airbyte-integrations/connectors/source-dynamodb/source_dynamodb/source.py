@@ -24,9 +24,7 @@ from source_dynamodb.typing import Spec
 
 
 class SourceDynamodb(Source):
-    def check(
-        self, logger: logging.Logger, config: Spec
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger: logging.Logger, config: Spec) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -118,15 +116,11 @@ class SourceDynamodb(Source):
                             record=AirbyteRecordMessage(
                                 stream=stream_name,
                                 data=row,
-                                emitted_at=int(datetime.now().timestamp())
-                                * 1000,
+                                emitted_at=int(datetime.now().timestamp()) * 1000,
                                 namespace=config_stream.stream.namespace,
                             ),
                         )
             except Exception as e:
-                msg = (
-                    f"Failed to read data for stream '{stream_name}': "
-                    f"{repr(e)}\n{traceback.format_exc()}"
-                )
+                msg = f"Failed to read data for stream '{stream_name}': " f"{repr(e)}\n{traceback.format_exc()}"
                 logger.error(msg=msg)
                 raise e

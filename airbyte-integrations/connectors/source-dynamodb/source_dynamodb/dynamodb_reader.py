@@ -87,9 +87,7 @@ class Reader:
 
                 for response in response_iterator:
                     tables.extend(response["TableNames"])
-                    last_evaluated_table = response.get(
-                        "LastEvaluatedTableName"
-                    )
+                    last_evaluated_table = response.get("LastEvaluatedTableName")
 
             streams: List[AirbyteStream] = []
             for table in tables:
@@ -127,9 +125,7 @@ class Reader:
             data = response["Items"]
 
             while "LastEvaluatedKey" in response.keys():
-                response = table.scan(
-                    ExclusiveStartKey=response["LastEvaluatedKey"]
-                )
+                response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
                 data.extend(response["Items"])
 
             return data
