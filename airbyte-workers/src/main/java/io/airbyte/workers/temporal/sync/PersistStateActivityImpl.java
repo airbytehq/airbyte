@@ -32,8 +32,9 @@ public class PersistStateActivityImpl implements PersistStateActivity {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final StateType currentStateType = maybeStateWrapper.get().getStateType();
-          if (statePersistence.isMigration(connectionId, currentStateType)) {
+          final Optional<StateWrapper> previousState = statePersistence.getCurrentState(connectionId);
+          final StateType newStateType = maybeStateWrapper.get().getStateType();
+          if (statePersistence.isMigration(connectionId, newStateType, previousState) && newStateType == StateType.STREAM) {
             validateStreamStates(maybeStateWrapper.get(), syncOutput.getOutputCatalog());
           }
 
@@ -56,7 +57,8 @@ public class PersistStateActivityImpl implements PersistStateActivity {
           .withNamespace(stream.getStream().getNamespace());
       if (!stateStreamDescriptors.contains(streamDescriptor)) {
         throw new IllegalStateException(
-            "Job ran during migration from Legacy State to Per Stream State. This job must be retried in order to properly store state.");
+            "Job ran during migration from Legacy State to Per Stream State. One of the streams that did not have state is: " + streamDescriptor
+                + ". Job must be retried in order to properly store state.");
       }
     });
   }

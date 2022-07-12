@@ -16,11 +16,12 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.elasticsearch.common.collect.Map;
 import org.junit.jupiter.api.Assertions;
@@ -67,46 +68,53 @@ public class PersistStateActivityTest {
     Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
   }
 
+  // For per-stream state, we expect there to be state for each stream within the configured catalog
+  // input into a job
+  // This test is to ensure that we correctly throw an error if not every stream in the configured
+  // catalog has a state message
   @Test
   public void testPersistWithInvalidStateDuringMigration() throws IOException {
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
+    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
+
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
-            new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a").withNamespace("a1"))
+            new AirbyteStreamState().withStreamDescriptor(CatalogHelpers.extractDescriptor(stream))
                 .withStreamState(Jsons.emptyObject()));
     final JsonNode jsonState = Jsons.jsonNode(List.of(stateMessage1));
     final State state = new State().withState(jsonState);
 
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
-    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
     final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
     final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state).withOutputCatalog(migrationConfiguredCatalog);
     Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
-    Mockito.when(statePersistence.isMigration(CONNECTION_ID, StateType.STREAM)).thenReturn(true);
+    Mockito.when(statePersistence.isMigration(Mockito.eq(CONNECTION_ID), Mockito.eq(StateType.STREAM), Mockito.any(Optional.class))).thenReturn(true);
     Assertions.assertThrows(IllegalStateException.class, () -> persistStateActivity.persist(CONNECTION_ID, syncOutput));
   }
 
   @Test
   public void testPersistWithValidStateDuringMigration() throws IOException {
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
+    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
+
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
-            new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("a").withNamespace("a1"))
+            new AirbyteStreamState().withStreamDescriptor(CatalogHelpers.extractDescriptor(stream))
                 .withStreamState(Jsons.emptyObject()));
     final AirbyteStateMessage stateMessage2 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
-            new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName("b")).withStreamState(Jsons.emptyObject()));
+            new AirbyteStreamState().withStreamDescriptor(CatalogHelpers.extractDescriptor(stream2)));
     final JsonNode jsonState = Jsons.jsonNode(List.of(stateMessage1, stateMessage2));
     final State state = new State().withState(jsonState);
 
-    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
-    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
     final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
     final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state).withOutputCatalog(migrationConfiguredCatalog);
     Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
-    Mockito.when(statePersistence.isMigration(CONNECTION_ID, StateType.STREAM)).thenReturn(true);
+    Mockito.when(statePersistence.isMigration(Mockito.eq(CONNECTION_ID), Mockito.eq(StateType.STREAM), Mockito.any(Optional.class))).thenReturn(true);
     persistStateActivity.persist(CONNECTION_ID, syncOutput);
+    Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
   }
 
 }

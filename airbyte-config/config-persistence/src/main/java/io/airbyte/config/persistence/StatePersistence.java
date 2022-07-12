@@ -85,7 +85,7 @@ public class StatePersistence {
       throws IOException {
     final Optional<StateWrapper> previousState = getCurrentState(connectionId);
     final StateType currentStateType = state.getStateType();
-    final boolean isMigration = isMigration(connectionId, currentStateType);
+    final boolean isMigration = isMigration(connectionId, currentStateType, previousState);
 
     // The only case where we allow a state migration is moving from LEGACY.
     // We expect any other migration to go through an explicit reset.
@@ -107,8 +107,8 @@ public class StatePersistence {
     });
   }
 
-  public Boolean isMigration(final UUID connectionId, final StateType currentStateType) throws IOException {
-    final Optional<StateWrapper> previousState = getCurrentState(connectionId);
+  public Boolean isMigration(final UUID connectionId, final StateType currentStateType, final Optional<StateWrapper> previousState)
+      throws IOException {
     return previousState.isPresent() && previousState.get().getStateType() == StateType.LEGACY &&
         currentStateType != StateType.LEGACY;
   }
