@@ -1262,7 +1262,7 @@ paths:
         - web_backend
   /v1/web_backend/connections/updateNew:
     post:
-      operationId: webBackendUpdateConnection
+      operationId: webBackendUpdateConnectionNew
       requestBody:
         content:
           application/json:
