@@ -871,6 +871,7 @@ public class BasicAcceptanceTests {
   public void testResetAllWhenSchemaIsModified() throws Exception {
     final String sourceTable1 = "test_table1";
     final String sourceTable2 = "test_table2";
+    final String sourceTable3 = "test_table3";
     final String outputPrefix = "output_namespace_public.output_table_";
     final Database sourceDb = testHarness.getSourceDatabase();
     final Database destDb = testHarness.getDestinationDatabase();
@@ -893,10 +894,16 @@ public class BasicAcceptanceTests {
     final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
+    LOGGER.info("Discovered catalog: {}", catalog);
+
     final ConnectionRead connection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operation.getOperationId()), catalog, null);
+    LOGGER.info("Created Connection: {}", connection);
 
-    sourceDb.query(ctx -> { prettyPrintTables(ctx, sourceTable1, sourceTable2); return null; });
+    sourceDb.query(ctx -> {
+      prettyPrintTables(ctx, sourceTable1, sourceTable2);
+      return null;
+    });
 
     // Run initial sync
     LOGGER.info("Running initial sync");
@@ -905,7 +912,10 @@ public class BasicAcceptanceTests {
     waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
 
     // Some inspection for debug
-    destDb.query(ctx -> { prettyPrintTables(ctx,outputPrefix + sourceTable1, outputPrefix + sourceTable2); return null; });
+    destDb.query(ctx -> {
+      prettyPrintTables(ctx, outputPrefix + sourceTable1, outputPrefix + sourceTable2);
+      return null;
+    });
     final ConnectionState initSyncState =
         apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     LOGGER.info("ConnectionState after the initial sync: " + initSyncState.toString());
@@ -922,8 +932,18 @@ public class BasicAcceptanceTests {
       // The removed rows should no longer be in the destination since we expect a full reset
       ctx.deleteFrom(DSL.table(sourceTable1)).where(DSL.field("name").eq("john")).execute();
       ctx.deleteFrom(DSL.table(sourceTable2)).where(DSL.field("value").eq("v2")).execute();
+
+      // Adding a new table to trigger reset from the update connection API
+      ctx.createTableIfNotExists(sourceTable3).columns(DSL.field("location", SQLDataType.VARCHAR)).execute();
+      ctx.truncate(sourceTable3).execute();
+      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field("location")).values("home").execute();
+      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field("location")).values("work").execute();
+      ctx.insertInto(DSL.table(sourceTable3)).columns(DSL.field("location")).values("space").execute();
       return null;
     });
+
+    final AirbyteCatalog updatedCatalog = testHarness.discoverSourceSchemaWithoutCache(sourceId);
+    LOGGER.info("Discovered updated catalog: {}", updatedCatalog);
 
     // Update with refreshed catalog
     LOGGER.info("Submit the update request");
@@ -939,7 +959,7 @@ public class BasicAcceptanceTests {
                 .operationId(operation.getOperationId())
                 .workspaceId(operation.getWorkspaceId())
                 .operatorConfiguration(operation.getOperatorConfiguration())))
-        .syncCatalog(connection.getSyncCatalog())
+        .syncCatalog(updatedCatalog)
         .schedule(connection.getSchedule())
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
@@ -948,8 +968,12 @@ public class BasicAcceptanceTests {
     final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
-    destDb.query(ctx -> { prettyPrintTables(ctx,outputPrefix + sourceTable1, outputPrefix + sourceTable2); return null; });
-    final ConnectionState postResetState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    destDb.query(ctx -> {
+      prettyPrintTables(ctx, outputPrefix + sourceTable1, outputPrefix + sourceTable2);
+      return null;
+    });
+    final ConnectionState postResetState =
+        apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     LOGGER.info("ConnectionState after the update request: {}", postResetState.toString());
 
     // Wait until the sync from the UpdateConnection is finished
@@ -957,12 +981,19 @@ public class BasicAcceptanceTests {
     LOGGER.info("Generated SyncJob config: {}", syncFromTheUpdate.toString());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
-    final ConnectionState postUpdateState = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
+    final ConnectionState postUpdateState =
+        apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     LOGGER.info("ConnectionState after the final sync: {}", postUpdateState.toString());
 
     LOGGER.info("Inspecting DBs After the final sync");
-    sourceDb.query(ctx -> { prettyPrintTables(ctx, sourceTable1, sourceTable2); return null; });
-    destDb.query(ctx -> { prettyPrintTables(ctx,outputPrefix + sourceTable1, outputPrefix + sourceTable2); return null; });
+    sourceDb.query(ctx -> {
+      prettyPrintTables(ctx, sourceTable1, sourceTable2, sourceTable3);
+      return null;
+    });
+    destDb.query(ctx -> {
+      prettyPrintTables(ctx, outputPrefix + sourceTable1, outputPrefix + sourceTable2, outputPrefix + sourceTable3);
+      return null;
+    });
 
     testHarness.assertSourceAndDestinationDbInSync(false);
   }
@@ -973,8 +1004,7 @@ public class BasicAcceptanceTests {
       Arrays.stream(ctx.selectFrom(table)
           .fetch()
           .toString()
-          .split("\\n")
-          ).forEach(LOGGER::info);
+          .split("\\n")).forEach(LOGGER::info);
     }
   }
 
@@ -999,7 +1029,7 @@ public class BasicAcceptanceTests {
     return mostRecentSyncJob;
   }
 
-  // This test is disabled because it takes a couple minutes to run, as it is testing timeouts.
+  @Test
   public void testIncrementalSyncMultipleStreams() throws Exception {
     LOGGER.info("Starting testIncrementalSyncMultipleStreams()");
 
@@ -1095,6 +1125,7 @@ public class BasicAcceptanceTests {
   // This test is disabled because it takes a couple of minutes to run, as it is testing timeouts.
   // It should be re-enabled when the @SlowIntegrationTest can be applied to it.
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
+  @Test
   @Disabled
   public void testFailureTimeout() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
