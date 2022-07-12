@@ -920,7 +920,7 @@ public class BasicAcceptanceTests {
         apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     LOGGER.info("ConnectionState after the initial sync: " + initSyncState.toString());
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
 
     // Patch some data in the source
     LOGGER.info("Modifying source tables");
@@ -995,7 +995,7 @@ public class BasicAcceptanceTests {
       return null;
     });
 
-    testHarness.assertSourceAndDestinationDbInSync(false);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
   }
 
   private void prettyPrintTables(final DSLContext ctx, final String... tables) {
