@@ -3049,7 +3049,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "blotout/destination-s3-parquet:0.1.7"
+- dockerImage: "blotout/destination-s3-parquet:0.1.8"
   spec:
     "documentationUrl": "https://docs.airbyte.io/integrations/destinations/s3"
     "supportsIncremental": true
