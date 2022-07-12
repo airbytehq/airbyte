@@ -1023,7 +1023,7 @@ public class BasicAcceptanceTests {
 
     JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
     while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
-      Thread.sleep(Duration.ofSeconds(10).toMillis());
+      Thread.sleep(Duration.ofSeconds(1).toMillis());
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
     }
     return mostRecentSyncJob;
