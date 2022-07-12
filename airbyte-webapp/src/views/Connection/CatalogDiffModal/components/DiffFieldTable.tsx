@@ -1,3 +1,5 @@
+import { FormattedMessage } from "react-intl";
+
 import { FieldTransform } from "core/request/AirbyteClient";
 
 import { DiffVerb } from "../CatalogDiffModal";
@@ -18,7 +20,11 @@ export const DiffFieldTable: React.FC<DiffFieldTableProps> = ({ fieldTransforms,
           <th>
             <DiffHeader diffCount={fieldTransforms.length} diffVerb={diffVerb} diffType="field" />
           </th>
-          {diffVerb === "changed" && <th>Data type</th>}
+          {diffVerb === "changed" && (
+            <th>
+              <FormattedMessage id="connection.updateSchema.dataType" />
+            </th>
+          )}
         </tr>
       </thead>
       <tbody>

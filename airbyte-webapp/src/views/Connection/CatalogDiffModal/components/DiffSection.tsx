@@ -1,3 +1,5 @@
+import { FormattedMessage } from "react-intl";
+
 import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
 
 import { DiffVerb } from "../CatalogDiffModal";
@@ -20,8 +22,12 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diff
       <table>
         <thead className={styles.sectionSubHeader}>
           <tr>
-            <th>Namespace</th>
-            <th>Stream name</th>
+            <th>
+              <FormattedMessage id="connection.updateSchema.namespace" />
+            </th>
+            <th>
+              <FormattedMessage id="connection.updateSchema.name" />
+            </th>
             <th />
           </tr>
         </thead>
