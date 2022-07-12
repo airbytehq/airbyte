@@ -3,71 +3,10 @@
 #
 
 from abc import ABC, abstractmethod
-from enum import Enum
-from typing import Optional, Union
+from typing import Union
 
 import requests
-
-
-class ResponseAction(Enum):
-    """
-    Response statuses for non retriable responses
-    """
-
-    SUCCESS = "SUCCESS"  # "Request was successful"
-    FAIL = "FAIL"  # "Request failed unexpectedly"
-    IGNORE = "IGNORE"  # "Request failed but can be ignored"
-    RETRY = "RETRY"  # Request failed and should be retried
-
-
-class ResponseStatus:
-    """
-    ResponseAction amended with backoff time if a action is RETRY
-    """
-
-    def __init__(self, response_action: Union[ResponseAction, str], retry_in: Optional[float] = None):
-        """
-        :param response_action: response action to execute
-        :param retry_in: backoff time (if action is RETRY)
-        """
-        if isinstance(response_action, str):
-            response_action = ResponseAction[response_action]
-        if retry_in:
-            assert response_action == ResponseAction.RETRY
-        self._retry_in = retry_in
-        self._action = response_action
-
-    @property
-    def action(self):
-        return self._action
-
-    @property
-    def retry_in(self) -> Optional[float]:
-        return self._retry_in
-
-    @classmethod
-    def success(cls):
-        return ResponseStatus(ResponseAction.SUCCESS)
-
-    @classmethod
-    def fail(cls):
-        return ResponseStatus(ResponseAction.FAIL)
-
-    @classmethod
-    def ignore(cls):
-        return ResponseStatus(ResponseAction.IGNORE)
-
-    @classmethod
-    def retry(cls, retry_in: Optional[float]):
-        return ResponseStatus(ResponseAction.RETRY, retry_in)
-
-    def __eq__(self, other):
-        if not other:
-            return not self
-        return self.action == other.action and self.retry_in == other.retry_in
-
-    def __hash__(self):
-        return hash([self.action, self.retry_in])
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 
 
 class ErrorHandler(ABC):

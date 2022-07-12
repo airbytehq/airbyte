@@ -32,7 +32,6 @@ class WaitUntilTimeFromHeaderBackoffStrategy(BackoffStrategy):
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         now = time.time()
         wait_until = get_numeric_value_from_header(response, self._header, self._regex)
-        print(f"wait_until: {wait_until}")
         if wait_until is None or not wait_until:
             return self._min_wait
         if (isinstance(wait_until, str) and wait_until.isnumeric()) or isinstance(wait_until, numbers.Number):
