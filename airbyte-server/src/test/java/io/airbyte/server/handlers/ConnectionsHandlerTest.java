@@ -721,10 +721,10 @@ class ConnectionsHandlerTest {
                   getStreamAndConfig("stream1", streamConfiguration1WithOtherCursorOrder),
                   getStreamAndConfig("stream2", streamConfiguration2)));
 
-      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      final Set<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
       assertFalse(changedSd.isEmpty());
       assertEquals(1, changedSd.size());
-      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
+      assertEquals(Set.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     @Test
@@ -764,10 +764,10 @@ class ConnectionsHandlerTest {
                   getStreamAndConfig("stream1", streamConfiguration1WithOtherPkOrder),
                   getStreamAndConfig("stream2", streamConfiguration2WithOtherPkOrder)));
 
-      final List<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
+      final Set<StreamDescriptor> changedSd = connectionsHandler.getConfigurationDiff(catalog1, catalog2);
       assertFalse(changedSd.isEmpty());
       assertEquals(1, changedSd.size());
-      assertEquals(List.of(new StreamDescriptor().name("stream1")), changedSd);
+      assertEquals(Set.of(new StreamDescriptor().name("stream1")), changedSd);
     }
 
     @Test
