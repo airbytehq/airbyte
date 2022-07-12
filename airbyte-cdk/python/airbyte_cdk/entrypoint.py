@@ -71,6 +71,8 @@ class AirbyteEntrypoint(object):
         if hasattr(parsed_args, "debug") and parsed_args.debug:
             self.logger.setLevel(logging.DEBUG)
             self.logger.debug("Debug logs enabled")
+        else:
+            self.logger.setLevel(logging.INFO)
 
         # todo: add try catch for exceptions with different exit codes
         source_spec: ConnectorSpecification = self.source.spec(self.logger)

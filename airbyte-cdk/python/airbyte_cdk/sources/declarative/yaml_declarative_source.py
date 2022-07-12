@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 from typing import Any, List, Mapping
 
@@ -13,9 +14,10 @@ from airbyte_cdk.sources.streams import Stream
 
 class YamlDeclarativeSource(DeclarativeSource):
     def __init__(self, path_to_yaml):
+        self.logger = logging.getLogger(f"airbyte.{self.name}")
+        self.logger.setLevel(logging.DEBUG)
         self._factory = DeclarativeComponentFactory()
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
-        self.logger = logging.getLogger(f"airbyte.{self.name}")
 
     @property
     def connection_checker(self):
@@ -37,6 +39,6 @@ class YamlDeclarativeSource(DeclarativeSource):
             parsed_config = YamlParser().parse(config_content)
             self.logger.debug(
                 "parsed YAML into declarative source",
-                extra={"path_to_yaml_file": path_to_yaml_file, "source_name": self.name, "parsed_config": parsed_config},
+                extra={"path_to_yaml_file": path_to_yaml_file, "source_name": self.name, "parsed_config": json.dumps(parsed_config)},
             )
             return parsed_config

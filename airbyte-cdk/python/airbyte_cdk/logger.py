@@ -12,8 +12,6 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 from deprecated import deprecated
 
-TRACE_LEVEL_NUM = 15
-
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -35,9 +33,8 @@ LOGGING_CONFIG = {
 
 def init_logger(name: str = None):
     """Initial set up of logger"""
-    logging.addLevelName(TRACE_LEVEL_NUM, "TRACE")
     logger = logging.getLogger(name)
-    logger.setLevel(TRACE_LEVEL_NUM)
+    logger.setLevel(logging.INFO)
     logging.config.dictConfig(LOGGING_CONFIG)
     return logger
 
@@ -51,13 +48,13 @@ class AirbyteLogFormatter(logging.Formatter):
         logging.ERROR: "ERROR",
         logging.WARNING: "WARN",
         logging.INFO: "INFO",
-        TRACE_LEVEL_NUM: "TRACE",
         logging.DEBUG: "DEBUG",
     }
 
     def format(self, record: logging.LogRecord) -> str:
         """Return a JSON representation of the log message"""
         airbyte_level = self.level_mapping.get(record.levelno, "INFO")
+        # airbyte_level = logging.getLevelName(record.levelno)
         if airbyte_level == "DEBUG":
             extras = self.extract_extra_args_from_record(record)
             debug_dict = {"type": "DEBUG", "message": record.getMessage(), "data": extras}
