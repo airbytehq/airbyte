@@ -542,7 +542,7 @@ public class BasicAcceptanceTests {
     testHarness.removeConnection(connectionId);
 
     LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(500);
+    Thread.sleep(5000);
 
     ConnectionStatus connectionStatus =
         apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
@@ -563,7 +563,7 @@ public class BasicAcceptanceTests {
     apiClient.getConnectionApi().deleteConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     LOGGER.info("Waiting for connection to be deleted...");
-    Thread.sleep(500);
+    Thread.sleep(5000);
 
     connectionStatus = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)).getStatus();
     assertEquals(ConnectionStatus.DEPRECATED, connectionStatus);
