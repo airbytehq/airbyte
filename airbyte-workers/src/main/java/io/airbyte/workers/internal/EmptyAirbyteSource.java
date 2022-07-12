@@ -83,16 +83,22 @@ public class EmptyAirbyteSource implements AirbyteSource {
          */
         isResetBasedForConfig = false;
       } else {
-        stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState(), useStreamCapableState);
+        if (workerSourceConfig.getState() != null) {
+          stateWrapper = StateMessageHelper.getTypedState(workerSourceConfig.getState().getState(), useStreamCapableState);
 
-        if (stateWrapper.isPresent() &&
-            stateWrapper.get().getStateType() == StateType.LEGACY &&
-            !isResetAllStreamsInCatalog(workerSourceConfig)) {
-          log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
-          throw new IllegalStateException("Try to perform a partial reset on a legacy state");
+          if (stateWrapper.isPresent() &&
+              stateWrapper.get().getStateType() == StateType.LEGACY &&
+              !resettingAllCatalogStreams(workerSourceConfig)) {
+            log.error("The state a legacy one but we are trying to do a partial update, this is not supported.");
+            throw new IllegalStateException("Try to perform a partial reset on a legacy state");
+          }
+
+          isResetBasedForConfig = true;
+        } else {
+          /// No state
+          isResetBasedForConfig = false;
         }
 
-        isResetBasedForConfig = true;
       }
     }
     isStarted = true;
@@ -144,6 +150,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
       final StreamDescriptor streamDescriptor = streamsToReset.poll();
       return Optional.of(getNullStreamStateMessage(streamDescriptor));
     } else {
+      hasEmittedState.compareAndSet(false, true);
       return Optional.empty();
     }
   }
@@ -167,15 +174,14 @@ public class EmptyAirbyteSource implements AirbyteSource {
     }
   }
 
-  private boolean isResetAllStreamsInCatalog(final WorkerSourceConfig sourceConfig) {
+  private boolean resettingAllCatalogStreams(final WorkerSourceConfig sourceConfig) {
     final Set<StreamDescriptor> catalogStreamDescriptors = sourceConfig.getCatalog().getStreams().stream().map(
         configuredAirbyteStream -> new StreamDescriptor()
             .withName(configuredAirbyteStream.getStream().getName())
             .withNamespace(configuredAirbyteStream.getStream().getNamespace()))
         .collect(Collectors.toSet());
-    final Set<StreamDescriptor> configStreamDescriptors = new HashSet<>(streamsToReset);
-
-    return catalogStreamDescriptors.equals(configStreamDescriptors);
+    final Set<StreamDescriptor> streamsToResetDescriptors = new HashSet<>(streamsToReset);
+    return streamsToResetDescriptors.containsAll(catalogStreamDescriptors);
   }
 
   private AirbyteMessage getNullStreamStateMessage(final StreamDescriptor streamsToReset) {

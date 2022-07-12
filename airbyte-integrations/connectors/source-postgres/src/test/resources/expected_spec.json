@@ -55,8 +55,8 @@
         "order": 5
       },
       "jdbc_url_params": {
-        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
-        "title": "JDBC URL Params",
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#jdbc-url-params\">additional JDBC URL parameters</a>.",
+        "title": "JDBC URL Parameters (Advanced)",
         "type": "string",
         "order": 6
       },
@@ -97,7 +97,7 @@
               "plugin": {
                 "type": "string",
                 "title": "Plugin",
-                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">Postgres Source</a> docs.",
+                "description": "A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.\nIf replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-plugin\">Select replication plugin</a>.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
                 "order": 1
@@ -105,13 +105,13 @@
               "replication_slot": {
                 "type": "string",
                 "title": "Replication Slot",
-                "description": "A plug-in logical replication slot.",
+                "description": "A plug-in logical replication slot. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#replication-slot\">replication slots</a>.",
                 "order": 2
               },
               "publication": {
                 "type": "string",
                 "title": "Publication",
-                "description": "A Postgres publication used for consuming changes.",
+                "description": "A Postgres publication used for consuming changes. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#publications-replication\">publications and replication identities</a>.",
                 "order": 3
               }
             }
@@ -121,3 +121,4 @@
     }
   }
 }
+

@@ -27,6 +27,7 @@ import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
@@ -42,6 +43,7 @@ import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.SourceCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionCreate;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
+import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
@@ -83,6 +85,7 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 /**
@@ -108,8 +111,15 @@ public class AirbyteAcceptanceTestHarness {
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
 
+  private static final DockerImageName DESTINATION_POSTGRES_IMAGE_NAME = DockerImageName.parse("postgres:13-alpine");
+
+  private static final DockerImageName SOURCE_POSTGRES_IMAGE_NAME = DockerImageName.parse("debezium/postgres:13-alpine")
+      .asCompatibleSubstituteFor("postgres");
+
   private static final String SOURCE_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
   private static final String DESTINATION_E2E_TEST_CONNECTOR_VERSION = "0.1.1";
+
+  public static final String POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION = "0.4.26";
 
   private static final String OUTPUT_NAMESPACE_PREFIX = "output_namespace_";
   private static final String OUTPUT_NAMESPACE = OUTPUT_NAMESPACE_PREFIX + "${SOURCE_NAMESPACE}";
@@ -121,6 +131,12 @@ public class AirbyteAcceptanceTestHarness {
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
   private static final String SOURCE_USERNAME = "sourceusername";
   public static final String SOURCE_PASSWORD = "hunter2";
+  public static final String PUBLIC_SCHEMA_NAME = "public";
+  public static final String STAGING_SCHEMA_NAME = "staging";
+  public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
+  public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
+
+  private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
 
   private static boolean isKube;
   private static boolean isMinikube;
@@ -138,6 +154,7 @@ public class AirbyteAcceptanceTestHarness {
   private AirbyteTestContainer airbyteTestContainer;
   private AirbyteApiClient apiClient;
   private final UUID defaultWorkspaceId;
+  private final String postgresSqlInitFile;
 
   private KubernetesClient kubernetesClient = null;
 
@@ -162,24 +179,24 @@ public class AirbyteAcceptanceTestHarness {
     this.apiClient = apiClient;
   }
 
-  @SuppressWarnings("UnstableApiUsage")
-  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
-      throws URISyntaxException, IOException, InterruptedException, ApiException {
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId, final String postgresSqlInitFile)
+      throws URISyntaxException, IOException, InterruptedException {
     // reads env vars to assign static variables
     assignEnvVars();
     this.apiClient = apiClient;
     this.defaultWorkspaceId = defaultWorkspaceId;
+    this.postgresSqlInitFile = postgresSqlInitFile;
 
     if (isGke && !isKube) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
     }
     if (!isGke) {
-      sourcePsql = new PostgreSQLContainer("postgres:13-alpine")
+      sourcePsql = new PostgreSQLContainer(SOURCE_POSTGRES_IMAGE_NAME)
           .withUsername(SOURCE_USERNAME)
           .withPassword(SOURCE_PASSWORD);
       sourcePsql.start();
 
-      destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
+      destinationPsql = new PostgreSQLContainer(DESTINATION_POSTGRES_IMAGE_NAME);
       destinationPsql.start();
     }
 
@@ -207,6 +224,11 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+      throws URISyntaxException, IOException, InterruptedException {
+    this(apiClient, defaultWorkspaceId, DEFAULT_POSTGRES_INIT_SQL_FILE);
+  }
+
   public void stopDbAndContainers() {
     if (!isGke) {
       sourcePsql.stop();
@@ -227,7 +249,7 @@ public class AirbyteAcceptanceTestHarness {
     if (isGke) {
       // seed database.
       final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final Path path = Path.of(MoreResources.readResourceAsFile(postgresSqlInitFile).toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, StandardCharsets.UTF_8)) {
         if (line != null && !line.isEmpty()) {
@@ -236,7 +258,7 @@ public class AirbyteAcceptanceTestHarness {
       }
       database.query(context -> context.execute(query.toString()));
     } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(postgresSqlInitFile), sourcePsql);
 
       destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
       destinationPsql.start();
@@ -274,7 +296,8 @@ public class AirbyteAcceptanceTestHarness {
     isGke = System.getenv().containsKey("IS_GKE");
     isMac = System.getProperty("os.name").startsWith("Mac");
     useExternalDeployment =
-        System.getenv("USE_EXTERNAL_DEPLOYMENT") != null && System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
+        System.getenv("USE_EXTERNAL_DEPLOYMENT") != null &&
+            System.getenv("USE_EXTERNAL_DEPLOYMENT").equalsIgnoreCase("true");
   }
 
   private WorkflowClient getWorkflowClient() {
@@ -514,7 +537,7 @@ public class AirbyteAcceptanceTestHarness {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
+  public List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
@@ -624,6 +647,25 @@ public class AirbyteAcceptanceTestHarness {
         .findFirst()
         .orElseThrow()
         .getSourceDefinitionId();
+  }
+
+  public UUID getPostgresDestinationDefinitionId() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+        .stream()
+        .filter(destRead -> destRead.getName().equalsIgnoreCase("postgres"))
+        .findFirst()
+        .orElseThrow()
+        .getDestinationDefinitionId();
+  }
+
+  public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
+    apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
+        .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
+  }
+
+  public void updateDestinationDefinitionVersion(final UUID destDefinitionId, final String dockerImageTag) throws ApiException {
+    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(new DestinationDefinitionUpdate()
+        .destinationDefinitionId(destDefinitionId).dockerImageTag(dockerImageTag));
   }
 
   private void clearSourceDbData() throws SQLException {
