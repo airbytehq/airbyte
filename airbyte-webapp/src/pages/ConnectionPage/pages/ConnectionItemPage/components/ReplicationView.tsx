@@ -10,7 +10,7 @@ import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { useModalService } from "hooks/services/Modal";
 import {
   useConnectionLoad,
   useConnectionService,
@@ -38,13 +38,12 @@ const TryArrow = styled(FontAwesomeIcon)`
 `;
 
 export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { openModal, closeModal } = useModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
   const connectionService = useConnectionService();
-
-  console.log("saved", saved);
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
@@ -114,33 +113,30 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       if (stateType === ConnectionStateType.legacy) {
         // The state type is legacy so the server will do a full reset after saving
         // TODO: Show confirm dialog with full reset option
-        openConfirmationModal({
-          title: "connection.updateSchema",
-          text: "connection.updateSchemaText",
-          submitButtonText: "connection.updateSchema",
-          submitButtonDataId: "refresh",
-          secondaryButtonText: "connection.updateSchemaWithoutReset",
-          onSubmit: async (type) => {
-            await saveConnection(values, type === "secondary");
-            closeConfirmationModal();
-          },
-        });
+        // TODO: This should render a nicer modal with a checkbox inside, once we have a proper modal service
+        const result = await openModal({ title: "test", content: () => <h2>props</h2> });
+        console.log("result", result);
+        if (result.type !== "canceled") {
+          // TODO: right skipRefresh
+          await saveConnection(values, false);
+        }
+        // openConfirmationModal({
+        //   title: "connection.updateSchema",
+        //   text: "connection.updateSchemaText",
+        //   submitButtonText: "connection.updateSchema",
+        //   submitButtonDataId: "refresh",
+        //   secondaryButtonText: "connection.updateSchemaWithoutReset",
+        //   onSubmit: async (type) => {
+        //     await saveConnection(values, type === "secondary");
+        //     closeConfirmationModal();
+        //   },
+        // });
       } else {
         // TODO: Show confirm dialog with partial reset option
-        openConfirmationModal({
-          title: "connection.updateSchema",
-          text: "connection.updateSchemaText",
-          submitButtonText: "connection.updateSchema",
-          submitButtonDataId: "refresh",
-          secondaryButtonText: "connection.updateSchemaWithoutReset",
-          onSubmit: async (type) => {
-            await saveConnection(values, type === "secondary");
-            closeConfirmationModal();
-          },
-        });
+        // TODO: This should render a nicer modal with a checkbox inside, once we have a proper modal service
+        const result = await openModal({ title: "test", content: () => <h2>props</h2> });
+        console.log("result", result);
       }
-      // const skipRefresh = true;
-      // await saveConnection(values, skipRefresh);
     } else {
       // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save
       // TODO: Clarify if we want to have `skipRefresh` true or false in this case with BE.

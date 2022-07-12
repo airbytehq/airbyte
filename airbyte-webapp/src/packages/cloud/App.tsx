@@ -10,6 +10,7 @@ import { I18nProvider } from "core/i18n";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationServiceProvider from "hooks/services/Notification";
 import en from "locales/en.json";
 import { Routing } from "packages/cloud/cloudRoutes";
@@ -37,15 +38,17 @@ const Services: React.FC = ({ children }) => (
     <ApiErrorBoundary>
       <NotificationServiceProvider>
         <ConfirmationModalService>
-          <FormChangeTrackerService>
-            <FeatureService>
-              <AppServicesProvider>
-                <AuthenticationProvider>
-                  <IntercomProvider>{children}</IntercomProvider>
-                </AuthenticationProvider>
-              </AppServicesProvider>
-            </FeatureService>
-          </FormChangeTrackerService>
+          <ModalServiceProvider>
+            <FormChangeTrackerService>
+              <FeatureService>
+                <AppServicesProvider>
+                  <AuthenticationProvider>
+                    <IntercomProvider>{children}</IntercomProvider>
+                  </AuthenticationProvider>
+                </AppServicesProvider>
+              </FeatureService>
+            </FormChangeTrackerService>
+          </ModalServiceProvider>
         </ConfirmationModalService>
       </NotificationServiceProvider>
     </ApiErrorBoundary>
