@@ -62,6 +62,7 @@ import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -394,11 +395,12 @@ public class WebBackendConnectionsHandler {
     final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
     final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
     final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
-    /*final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
-    apiStreamsToReset.addAll(changedConfigStreamDescriptors);*/
-
+    final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
+    final Set<StreamDescriptor> allStreamToReset = new HashSet<>();
+    allStreamToReset.addAll(apiStreamsToReset);
+    allStreamToReset.addAll(changedConfigStreamDescriptors);
     List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
-        apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+        allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
     ConnectionRead connectionRead;
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
