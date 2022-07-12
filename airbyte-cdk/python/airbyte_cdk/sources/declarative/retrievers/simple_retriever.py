@@ -191,6 +191,7 @@ class SimpleRetriever(Retriever, HttpStream):
         if response_status.action == ResponseAction.FAIL:
             response.raise_for_status()
         elif response_status.action == ResponseAction.IGNORE:
+            self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
             return []
 
         # Warning: use self.state instead of the stream_state passed as argument!
