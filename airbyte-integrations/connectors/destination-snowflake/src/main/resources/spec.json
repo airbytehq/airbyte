@@ -9,6 +9,7 @@
     "title": "Snowflake Destination Spec",
     "type": "object",
     "required": ["host", "role", "warehouse", "database", "schema", "username"],
+    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)",
