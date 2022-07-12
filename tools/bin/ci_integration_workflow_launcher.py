@@ -140,6 +140,8 @@ def search_failed_workflow_runs(owner, repo, workflow_id, run_uuids):
             continue
         if workflow_run["head_branch"] != BRANCH:
             continue
+        if workflow_run["conclusion"] != "failure":
+            continue
 
         response_json = get_response_json(workflow_run["jobs_url"])
         run_uuid = get_run_uuid(response_json["jobs"])
