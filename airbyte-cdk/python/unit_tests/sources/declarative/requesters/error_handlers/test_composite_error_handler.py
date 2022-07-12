@@ -100,3 +100,11 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
     response_mock = MagicMock()
     response_mock.ok = first_handler_behavior == response_status.SUCCESS or second_handler_behavior == response_status.SUCCESS
     assert retrier.should_retry(response_mock) == expected_behavior
+
+
+def test_composite_error_handler_no_handlers():
+    try:
+        CompositeErrorHandler([])
+        assert False
+    except ValueError:
+        pass

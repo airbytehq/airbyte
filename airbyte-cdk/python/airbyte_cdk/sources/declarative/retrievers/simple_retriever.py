@@ -84,6 +84,8 @@ class SimpleRetriever(Retriever, HttpStream):
          to the default backoff behavior (e.g using an exponential algorithm).
         """
         should_retry = self._requester.should_retry(response)
+        if should_retry.action != ResponseAction.RETRY:
+            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
         assert should_retry.action == ResponseAction.RETRY
         return should_retry.retry_in
 

@@ -19,8 +19,8 @@ class ResponseStatus:
         """
         if isinstance(response_action, str):
             response_action = ResponseAction[response_action]
-        if retry_in:
-            assert response_action == ResponseAction.RETRY
+        if retry_in and response_action != ResponseAction.RETRY:
+            raise ValueError(f"Unexpected backoff time ({retry_in} for non-retryable response action {response_action}")
         self._retry_in = retry_in
         self._action = response_action
 

@@ -139,3 +139,30 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records
+
+
+@pytest.mark.parametrize(
+    "test_name, response_action, retry_in, expected_backoff_time",
+    [
+        ("test_backoff_retriable_request", ResponseAction.RETRY, 10, 10),
+        ("test_backoff_fail_request", ResponseAction.FAIL, 10, None),
+        ("test_backoff_ignore_request", ResponseAction.IGNORE, 10, None),
+        ("test_backoff_success_request", ResponseAction.IGNORE, 10, None),
+    ],
+)
+def test_backoff_time(test_name, response_action, retry_in, expected_backoff_time):
+    requester = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = [{"id": 100}]
+    response = requests.Response()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    if expected_backoff_time:
+        requester.should_retry.return_value = ResponseStatus(response_action, retry_in)
+        actual_backoff_time = retriever.backoff_time(response)
+        assert expected_backoff_time == actual_backoff_time
+    else:
+        try:
+            retriever.backoff_time(response)
+            assert False
+        except ValueError:
+            pass

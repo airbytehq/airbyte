@@ -37,7 +37,8 @@ class CompositeErrorHandler(ErrorHandler):
         :param error_handlers: list of error handlers
         """
         self._error_handlers = error_handlers
-        assert self._error_handlers
+        if not self._error_handlers:
+            raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
     @property
     def max_retries(self) -> Union[int, None]:
