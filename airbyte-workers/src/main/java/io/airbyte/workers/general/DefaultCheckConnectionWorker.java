@@ -8,6 +8,8 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -51,7 +53,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
+  public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
     try {
       process = integrationLauncher.check(
@@ -79,14 +81,18 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
         LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
-        return output;
+        return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
       } else {
         final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
 
         LOGGER.error(message);
-        return new StandardCheckConnectionOutput()
+
+        // TODO process airbyte trace messages for this job type
+        // (pedro) i think this should be a FailureReason, not a custom StandardCheckConnectionOutput
+
+        return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(new StandardCheckConnectionOutput()
             .withStatus(Status.FAILED)
-            .withMessage(message);
+            .withMessage(message));
       }
 
     } catch (final Exception e) {

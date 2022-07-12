@@ -7,9 +7,10 @@ package io.airbyte.workers.general;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -55,7 +56,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
   }
 
   @Override
-  public StandardDiscoverCatalogOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
+  public ConnectorJobOutput run(final StandardDiscoverCatalogInput discoverSchemaInput, final Path jobRoot) throws WorkerException {
     try {
       process = integrationLauncher.discover(
           jobRoot,
@@ -90,7 +91,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           throw new WorkerException("Output a catalog struct bigger than 4mb. Larger than grpc max message limit.");
         }
 
-        return new StandardDiscoverCatalogOutput().withCatalog(catalog.get());
+        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withDiscoverCatalog(catalog.get());
       } else {
         final Optional<AirbyteTraceMessage> traceMessage =
             messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
@@ -99,7 +100,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
         if (traceMessage.isPresent()) {
           final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), -1L, -1);
-          return new StandardDiscoverCatalogOutput().withFailureReason(failureReason);
+          return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withFailureReason(failureReason);
         }
 
         throw new WorkerException(String.format("Discover job subprocess finished with exit code %s", exitCode));

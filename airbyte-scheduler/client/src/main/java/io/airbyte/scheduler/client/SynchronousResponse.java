@@ -4,8 +4,8 @@
 
 package io.airbyte.scheduler.client;
 
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobConfig.ConfigType;
-import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.util.Objects;
 import java.util.UUID;
@@ -14,17 +14,17 @@ public class SynchronousResponse<T> {
 
   private final T output;
   private final SynchronousJobMetadata metadata;
-  private JobStatus jobStatus;
 
   public static <T> SynchronousResponse<T> error(final SynchronousJobMetadata metadata) {
-    return new SynchronousResponse<>(null, metadata, JobStatus.FAILED);
+    return new SynchronousResponse<>(null, metadata);
   }
 
   public static <T> SynchronousResponse<T> success(final T output, final SynchronousJobMetadata metadata) {
-    return new SynchronousResponse<>(output, metadata, JobStatus.SUCCEEDED);
+    return new SynchronousResponse<>(output, metadata);
   }
 
-  public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<T> temporalResponse,
+  public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<ConnectorJobOutput> temporalResponse,
+                                                                final T output,
                                                                 final UUID id,
                                                                 final ConfigType configType,
                                                                 final UUID configId,
@@ -38,30 +38,20 @@ public class SynchronousResponse<T> {
         configId,
         createdAt,
         endedAt);
-    final JobStatus jobStatus = metadata.isSucceeded() ? JobStatus.SUCCEEDED : JobStatus.FAILED;
-    return new SynchronousResponse<>(temporalResponse.getOutput().orElse(null), metadata, jobStatus);
+    return new SynchronousResponse<>(output, metadata);
   }
 
-  public SynchronousResponse(final T output, final SynchronousJobMetadata metadata, final JobStatus jobStatus) {
+  public SynchronousResponse(final T output, final SynchronousJobMetadata metadata) {
     this.output = output;
     this.metadata = metadata;
-    this.jobStatus = jobStatus;
   }
 
   public boolean isSuccess() {
-    return jobStatus == JobStatus.SUCCEEDED;
+    return metadata.isSucceeded();
   }
 
   public T getOutput() {
     return output;
-  }
-
-  public JobStatus getJobStatus() {
-    return jobStatus;
-  }
-
-  public void setJobStatus(final JobStatus jobStatus) {
-    this.jobStatus = jobStatus;
   }
 
   public SynchronousJobMetadata getMetadata() {

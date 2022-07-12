@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.temporal.check.connection;
 
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
@@ -29,6 +29,6 @@ public interface CheckConnectionActivity {
   }
 
   @ActivityMethod
-  StandardCheckConnectionOutput run(CheckConnectionInput input);
+  ConnectorJobOutput run(CheckConnectionInput input);
 
 }

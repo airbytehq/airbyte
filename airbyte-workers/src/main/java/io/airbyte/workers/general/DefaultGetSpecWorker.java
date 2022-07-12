@@ -6,6 +6,8 @@ package io.airbyte.workers.general;
 
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -46,7 +48,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
   }
 
   @Override
-  public ConnectorSpecification run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {
+  public ConnectorJobOutput run(final JobGetSpecConfig config, final Path jobRoot) throws WorkerException {
     try {
       process = integrationLauncher.spec(jobRoot);
 
@@ -72,9 +74,11 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
           throw new WorkerException("integration failed to output a spec struct.");
         }
 
-        return spec.get();
+        return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withSpec(spec.get());
 
       } else {
+        // TODO process airbyte trace messages for this job type
+
         throw new WorkerException(String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
     } catch (final Exception e) {

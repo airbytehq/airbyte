@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.general;
 
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.workers.Worker;
 
-public interface DiscoverCatalogWorker extends Worker<StandardDiscoverCatalogInput, StandardDiscoverCatalogOutput> {}
+public interface DiscoverCatalogWorker extends Worker<StandardDiscoverCatalogInput, ConnectorJobOutput> {}

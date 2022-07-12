@@ -6,21 +6,19 @@ package io.airbyte.scheduler.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
-import io.airbyte.workers.JobStatus;
-import io.airbyte.workers.OutputAndStatus;
 import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
@@ -58,6 +56,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         ConfigType.CHECK_CONNECTION_SOURCE,
         source.getSourceDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
+        ConnectorJobOutput::getCheckConnection,
         source.getWorkspaceId());
   }
 
@@ -77,11 +76,12 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         ConfigType.CHECK_CONNECTION_DESTINATION,
         destination.getDestinationDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
+        ConnectorJobOutput::getCheckConnection,
         destination.getWorkspaceId());
   }
 
   @Override
-  public SynchronousResponse<StandardDiscoverCatalogOutput> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage)
+  public SynchronousResponse<AirbyteCatalog> createDiscoverSchemaJob(final SourceConnection source, final String dockerImage)
       throws IOException {
     final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
         source.getSourceDefinitionId(),
@@ -95,6 +95,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         ConfigType.DISCOVER_SCHEMA,
         source.getSourceDefinitionId(),
         jobId -> temporalClient.submitDiscoverSchema(UUID.randomUUID(), 0, jobDiscoverCatalogConfig),
+        ConnectorJobOutput::getDiscoverCatalog,
         source.getWorkspaceId());
   }
 
@@ -106,77 +107,42 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         ConfigType.GET_SPEC,
         null,
         jobId -> temporalClient.submitGetSpec(UUID.randomUUID(), 0, jobSpecConfig),
+        ConnectorJobOutput::getSpec,
         null);
-  }
-
-  private <T> OutputAndStatus<T> toOutputAndStatus(final ConfigType configType, final TemporalResponse<T> response) {
-    final JobStatus status;
-    if (!response.isSuccess()) {
-      status = JobStatus.FAILED;
-    } else {
-      final FailureReason failureReason;
-      switch (configType) {
-        case DISCOVER_SCHEMA:
-          failureReason = ((StandardDiscoverCatalogOutput) response.getOutput().orElseThrow()).getFailureReason();
-          break;
-        // TODO others
-        default:
-          failureReason = null;
-      }
-
-      if (failureReason != null) {
-        status = JobStatus.FAILED;
-      } else {
-        status = JobStatus.SUCCEEDED;
-      }
-    }
-    return new OutputAndStatus<>(status, response.getOutput().orElse(null));
   }
 
   @VisibleForTesting
   <T> SynchronousResponse<T> execute(final ConfigType configType,
                                      @Nullable final UUID connectorDefinitionId,
-                                     final Function<UUID, TemporalResponse<T>> executor,
+                                     final Function<UUID, TemporalResponse<ConnectorJobOutput>> executor,
+                                     final Function<ConnectorJobOutput, T> outputMapper,
                                      final UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = UUID.randomUUID();
     try {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
-      final TemporalResponse<T> operationOutput = executor.apply(jobId);
-      final OutputAndStatus<T> outputAndStatus = toOutputAndStatus(configType, operationOutput);
-      final JobState outputState = outputAndStatus.getStatus() == JobStatus.SUCCEEDED ? JobState.SUCCEEDED : JobState.FAILED;
-      track(jobId, configType, connectorDefinitionId, workspaceId, outputState, operationOutput.getOutput().orElse(null));
-      reportJob(configType, outputAndStatus);
+      final TemporalResponse<ConnectorJobOutput> temporalResponse = executor.apply(jobId);
+      final ConnectorJobOutput jobOutput = temporalResponse.getOutput().orElse(null);
+      final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
+      track(jobId, configType, connectorDefinitionId, workspaceId, outputState, jobOutput);
       final long endedAt = Instant.now().toEpochMilli();
 
       if (outputState == JobState.FAILED) {
         throw new RuntimeException("Job failed");
       }
 
-      final SynchronousResponse<T> synchronousResponse = SynchronousResponse.fromTemporalResponse(
-          operationOutput,
+      return SynchronousResponse.fromTemporalResponse(
+          temporalResponse,
+          outputMapper.apply(jobOutput),
           jobId,
           configType,
           connectorDefinitionId,
           createdAt,
           endedAt);
-
-      // TODO make this a part of the SynchronousResponse creation
-      synchronousResponse.setJobStatus(outputAndStatus.getStatus());
-
-      return synchronousResponse;
     } catch (final RuntimeException e) {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.FAILED, null);
       throw e;
     }
-  }
-
-  private <T> void reportJob(final ConfigType configType, final OutputAndStatus<T> outputAndStatus) {
-    if (outputAndStatus.getStatus() == JobStatus.FAILED) {
-      // TODO send this to the job error reporter
-      // JobErrorReporter.reportJobFailure();
-    }
-
   }
 
   /**
