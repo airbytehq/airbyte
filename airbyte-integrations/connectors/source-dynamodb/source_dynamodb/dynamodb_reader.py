@@ -134,16 +134,3 @@ class Reader:
             return data
         except Exception as e:
             raise Exception(f"An excpetion occurred: {str(e)}")
-
-
-if __name__ == "__main__":
-    spec = Spec( # deprecated
-        **{
-            "aws_access_key_id": "AKIA6BNKWOY4X6YTOPPS",
-            "aws_secret_access_key": "HgkqkQkOlpJQyR2tOBcueubUw6NhM"
-            "yCf6tWfjgUi",
-            "region_name": "us-east-1",
-        }
-    )
-    rdr = Reader(logger=logging.getLogger("airbyte"), config=spec)
-    print((rdr.read(table_name="ProductCatalog")))
