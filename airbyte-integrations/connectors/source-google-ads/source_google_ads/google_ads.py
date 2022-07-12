@@ -30,7 +30,7 @@ REPORT_MAPPING = {
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
 }
-API_VERSION = "v9"
+API_VERSION = "v11"
 
 
 class GoogleAds:
