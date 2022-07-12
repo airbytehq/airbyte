@@ -19,7 +19,7 @@ SOME_BACKOFF_TIME = 60
         ("test_wait_time_from_header_string", "wait_time", "60", None, SOME_BACKOFF_TIME),
         ("test_wait_time_from_header_not_a_number", "wait_time", "61,60", None, None),
         ("test_wait_time_from_header_with_regex", "wait_time", "61,60", "([-+]?\d+)", 61),  # noqa
-        ("test_wait_time_from_header_with_regex_no_match", "wait_time", "...", "[-+]?\d+", None),  # noqa
+        ("test_wait_time_fœrom_header_with_regex_no_match", "wait_time", "...", "[-+]?\d+", None),  # noqa
         ("test_wait_time_from_header", "absent_header", None, None, None),
     ],
 )
