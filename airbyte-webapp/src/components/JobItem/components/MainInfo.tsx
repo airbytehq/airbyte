@@ -13,6 +13,8 @@ import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/comp
 import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
+import { ResetIcon } from "./ResetIcon";
+import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
   (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
@@ -39,8 +41,11 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
   const jobStatus = getJobStatus(job);
   const isPartialSuccess = partialSuccessCheck(attempts);
 
+  const streamsToReset = (job as JobsWithJobs).job.resetConfig?.streamsToReset;
   const statusIcon = () => {
     switch (true) {
+      case Boolean(streamsToReset):
+        return <ResetIcon />;
       case jobStatus === JobStatus.cancelled:
         return <StatusIcon status="error" />;
       case jobStatus === JobStatus.running:
@@ -56,6 +61,21 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
     }
   };
 
+  const label = () => {
+    if (streamsToReset) {
+      const formattedMessageId = streamsToReset.length % 10 === 1 ? "sources.streamReset" : "sources.streamsReset";
+      return (
+        <>
+          {streamsToReset.length} <FormattedMessage id={formattedMessageId} />
+        </>
+      );
+    }
+    if (isPartialSuccess) {
+      return <FormattedMessage id="sources.partialSuccess" />;
+    }
+    return <FormattedMessage id={`sources.${getJobStatus(job)}`} />;
+  };
+
   return (
     <Row
       className={classNames(styles.mainView, { [styles.failed]: isFailed, [styles.open]: isOpen })}
@@ -64,11 +84,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
       <Cell className={styles.titleCell}>
         <div className={styles.statusIcon}>{statusIcon()}</div>
         <div className={styles.justification}>
-          {isPartialSuccess ? (
-            <FormattedMessage id="sources.partialSuccess" />
-          ) : (
-            <FormattedMessage id={`sources.${getJobStatus(job)}`} />
-          )}
+          {label()}
           {attempts.length > 0 && (
             <>
               {attempts.length > 1 && (
@@ -76,7 +92,10 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
                   <FormattedMessage id="sources.lastAttempt" />
                 </div>
               )}
-              <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+              {!streamsToReset && (
+                <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
+              )}
+              {streamsToReset && <ResetStreamsDetails names={streamsToReset.map((stream) => stream.name)} />}
             </>
           )}
         </div>
