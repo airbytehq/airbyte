@@ -12,11 +12,10 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.source.elasticsearch.typemapper.ElasticsearchTypeMapper;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.util.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 class ElasticsearchSourcesTest {
 
@@ -31,13 +30,13 @@ class ElasticsearchSourcesTest {
 
   @Test
   @DisplayName("Actual mapper keyset should contain expected keyset")
-  public void actualMapperKeySetShouldContainExpectedKeySet () {
+  public void actualMapperKeySetShouldContainExpectedKeySet() {
     final Set<String> expectedKeySet = new HashSet<>(Arrays.asList(
-            "binary", "boolean", "keyword", "constant_keyword",
-            "wildcard", "long", "unsigned_long",
-            "integer", "short", "byte", "double", "float",
-            "half_float", "scaled_float", "date", "date_nanos", "ip",
-            "text", "geo_point", "geo_shape", "shape", "point"));
+        "binary", "boolean", "keyword", "constant_keyword",
+        "wildcard", "long", "unsigned_long",
+        "integer", "short", "byte", "double", "float",
+        "half_float", "scaled_float", "date", "date_nanos", "ip",
+        "text", "geo_point", "geo_shape", "shape", "point"));
     Set<String> actualKeySet = new HashSet<>(ElasticsearchTypeMapper.getMapper().keySet());
 
     assertTrue(actualKeySet.containsAll(expectedKeySet));
@@ -47,9 +46,9 @@ class ElasticsearchSourcesTest {
   @DisplayName("Formatter should transform objects conforming to airbyte spec")
   public void testFormatter() throws IOException, UnsupportedDatatypeException {
     final JsonNode input = Jsons.deserialize(
-            MoreResources.readResource("sample_input.json"), JsonNode.class);
+        MoreResources.readResource("sample_input.json"), JsonNode.class);
     final JsonNode expectedOutput = Jsons.deserialize(
-            MoreResources.readResource("expected_output.json"), JsonNode.class);
+        MoreResources.readResource("expected_output.json"), JsonNode.class);
     JsonNode actualOutput = ElasticsearchTypeMapper.formatJSONSchema(input);
     assertEquals(expectedOutput, actualOutput);
   }
@@ -58,16 +57,11 @@ class ElasticsearchSourcesTest {
   @DisplayName("Formatter should remove extra fields")
   public void testFormatterRemovals() throws IOException, UnsupportedDatatypeException {
     final JsonNode input = Jsons.deserialize(
-            MoreResources.readResource("sample_input_extra_fields.json"), JsonNode.class);
+        MoreResources.readResource("sample_input_extra_fields.json"), JsonNode.class);
     final JsonNode expectedOutput = Jsons.deserialize(
-            MoreResources.readResource("expected_output_extra_fields.json"), JsonNode.class);
+        MoreResources.readResource("expected_output_extra_fields.json"), JsonNode.class);
     JsonNode actualOutput = ElasticsearchTypeMapper.formatJSONSchema(input);
     assertEquals(expectedOutput, actualOutput);
   }
-
-
-
-
-
 
 }
