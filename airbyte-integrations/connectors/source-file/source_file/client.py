@@ -248,7 +248,8 @@ class Client:
             builder.add_object(json.load(fp))
 
         result = builder.to_schema()
-        return result["properties"]
+        result["$schema"] = "http://json-schema.org/draft-07/schema#"
+        return result
 
     def load_nested_json(self, fp) -> list:
         if self._reader_format == "jsonl":
@@ -339,25 +340,25 @@ class Client:
                     df = df.where(pd.notnull(df), None)
                     yield from df[columns].to_dict(orient="records")
 
-    def _stream_properties(self):
-        with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json" or self._reader_format == "jsonl":
-                return self.load_nested_json_schema(fp)
-
-            df_list = self.load_dataframes(fp, skip_data=False)
-            fields = {}
-            for df in df_list:
-                for col in df.columns:
-                    fields[col] = self.dtype_to_json_type(df[col].dtype)
-            return {field: {"type": [fields[field], "null"]} for field in fields}
+    def _stream_properties(self, fp):
+        df_list = self.load_dataframes(fp, skip_data=False)
+        fields = {}
+        for df in df_list:
+            for col in df.columns:
+                fields[col] = self.dtype_to_json_type(df[col].dtype)
+        return {field: {"type": [fields[field], "null"]} for field in fields}
 
     @property
     def streams(self) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
-        json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": self._stream_properties(),
-        }
+        with self.reader.open(binary=self.binary_source) as fp:
+            if self._reader_format == "json" or self._reader_format == "jsonl":
+                json_schema = self.load_nested_json_schema(fp)
+            else:
+                json_schema = {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": self._stream_properties(fp),
+                }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])
