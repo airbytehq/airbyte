@@ -17,14 +17,19 @@ const FormContainer = styled.div`
   width: 100%;
 `;
 
-const FormContent: React.FC<{ toLogin?: boolean }> = (props) => {
+interface FormContentProps {
+  toLogin?: boolean;
+  gitBlockVisible?: boolean;
+}
+
+const FormContent: React.FC<FormContentProps> = ({ toLogin, children, gitBlockVisible }) => {
   return (
     <>
-      <Header toLogin={props.toLogin} />
+      <Header toLogin={toLogin} />
       <MainBlock>
-        <FormContainer>{props.children}</FormContainer>
+        <FormContainer>{children}</FormContainer>
       </MainBlock>
-      <GitBlock />
+      {gitBlockVisible && <GitBlock />}
     </>
   );
 };

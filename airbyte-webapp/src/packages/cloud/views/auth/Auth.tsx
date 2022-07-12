@@ -37,13 +37,14 @@ const Auth: React.FC = () => {
   const { pathname, location } = useRouter();
   const { loggedOut } = useAuthService();
   const rightSideUrl = useExperiment("authPage.rightSideUrl", undefined);
+  const selfHostedCTAVisible = useExperiment("authPage.selfHostedCTAVisible", true);
 
   const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
 
   return (
     <div className={styles.container}>
       <div className={styles.leftSide}>
-        <FormContent toLogin={toLogin}>
+        <FormContent toLogin={toLogin} gitBlockVisible={selfHostedCTAVisible}>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
               <Route path={CloudRoutes.Login} element={<LoginPage />} />
