@@ -177,11 +177,16 @@ export const SecurityField: React.FC = () => {
 interface SignupButtonProps {
   isLoading: boolean;
   disabled: boolean;
+  buttonMessageId?: string;
 }
 
-export const SignupButton: React.FC<SignupButtonProps> = ({ isLoading, disabled }) => (
+export const SignupButton: React.FC<SignupButtonProps> = ({
+  isLoading,
+  disabled,
+  buttonMessageId = "login.signup.submitButton",
+}) => (
   <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
-    <FormattedMessage id="login.signup" />
+    <FormattedMessage id={buttonMessageId} />
   </LoadingButton>
 );
 
