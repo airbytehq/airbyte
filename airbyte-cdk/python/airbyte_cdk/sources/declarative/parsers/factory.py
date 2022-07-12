@@ -92,7 +92,11 @@ class DeclarativeComponentFactory:
                 for sub in definition
             ]
         else:
-            return definition
+            expected_type = self.get_default_type(key, parent_class)
+            if expected_type and not isinstance(definition, expected_type):
+                return expected_type(definition)
+            else:
+                return definition
 
     @staticmethod
     def is_object_definition_with_class_name(definition):
@@ -116,7 +120,6 @@ class DeclarativeComponentFactory:
                 interface = args[0]
             else:
                 break
-
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
         return expected_type
 
