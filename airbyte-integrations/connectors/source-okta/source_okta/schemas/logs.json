@@ -32,7 +32,8 @@
             "LDAP",
             "FEDERATION",
             "SOCIAL",
-            "FACTOR_PROVIDER"
+            "FACTOR_PROVIDER",
+            null
           ],
           "type": ["string", "null"]
         },
@@ -47,7 +48,8 @@
             "SYMANTEC",
             "GOOGLE",
             "DUO",
-            "YUBIKEY"
+            "YUBIKEY",
+            null
           ],
           "type": ["string", "null"]
         },
@@ -60,7 +62,8 @@
             "IWA",
             "EMAIL",
             "OAUTH2",
-            "JWT"
+            "JWT",
+            null
           ],
           "type": ["string", "null"]
         },
@@ -149,7 +152,7 @@
       "properties": {
         "debugData": {
           "additionalProperties": {
-            "type": ["object", "null"]
+            "type": ["object", "null", "string"]
           },
           "type": ["object", "null"]
         }
@@ -264,7 +267,7 @@
           },
           "detailEntry": {
             "additionalProperties": {
-              "type": ["object", "null"]
+              "type": ["object", "null", "string"]
             },
             "type": ["object", "null"]
           },
@@ -286,7 +289,7 @@
       "properties": {
         "detail": {
           "additionalProperties": {
-            "type": ["object", "null"]
+            "type": ["object", "null", "string"]
           },
           "type": ["object", "null"]
         },
