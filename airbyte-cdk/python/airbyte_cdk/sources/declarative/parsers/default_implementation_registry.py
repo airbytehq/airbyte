@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Requester: HttpRequester,
@@ -38,4 +39,5 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     State: DictState,
     StreamSlicer: SingleSlice,
     Paginator: NoPagination,
+    AddedFieldDefinition: AddedFieldDefinition,
 }

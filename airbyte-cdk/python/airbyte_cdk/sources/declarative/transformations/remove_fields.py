@@ -39,7 +39,7 @@ class RemoveFields(RecordTransformation):
         """
         self._field_pointers = field_pointers
 
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def transform(self, record: Mapping[str, Any], **kwargs) -> Mapping[str, Any]:
         """
         :param record: The record to be transformed
         :return: the input record with the requested fields removed

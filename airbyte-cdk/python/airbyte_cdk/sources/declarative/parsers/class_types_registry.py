@@ -10,14 +10,21 @@ from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginat
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
-    "DatetimeStreamSlicer": DatetimeStreamSlicer,
+    # Authenticators
+    "TokenAuthenticator": TokenAuthenticator,
+    # Paginators
     "InterpolatedPaginator": InterpolatedPaginator,
-    "MinMaxDatetime": MinMaxDatetime,
     "NextPageUrlPaginator": NextPageUrlPaginator,
     "OffsetPaginator": OffsetPaginator,
-    "TokenAuthenticator": TokenAuthenticator,
+    # Transformations
+    "AddFields": AddFields,
     "RemoveFields": RemoveFields,
+    # Slicers
+    "DatetimeStreamSlicer": DatetimeStreamSlicer,
+    # Misc
+    "MinMaxDatetime": MinMaxDatetime,
 }

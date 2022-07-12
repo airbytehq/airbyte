@@ -104,6 +104,8 @@ class DeclarativeComponentFactory:
 
     @staticmethod
     def get_default_type(parameter_name, parent_class):
+        print("PARAM NAME: " + parameter_name)
+        print(f" PARENT CLASS : {parent_class}")
         type_hints = get_type_hints(parent_class.__init__)
         interface = type_hints.get(parameter_name)
         origin = get_origin(interface)
