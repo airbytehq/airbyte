@@ -65,6 +65,7 @@
             "title": "OAuth2.0",
             "type": "object",
             "order": 0,
+            "required": ["access_token", "refresh_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -124,6 +125,7 @@
           {
             "title": "Username and Password",
             "type": "object",
+            "required": ["password"],
             "order": 2,
             "properties": {
               "password": {
