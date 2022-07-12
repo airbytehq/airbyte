@@ -1,0 +1,12 @@
+{
+  "access_key": "invalid-access-key",
+  "start_date": "2021-01-01",
+  "base": "USD",
+  "symbols": [
+    "USD",
+    "JPY",
+    "BGN",
+    "CZK",
+    "DKK"
+  ]
+}
