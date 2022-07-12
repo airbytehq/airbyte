@@ -347,12 +347,6 @@ public class CdcAcceptanceTests {
   public void testPartialResetFromStreamSelection() throws Exception {
     LOGGER.info("Starting partial reset cdc test");
 
-    // TODO: remove this logic to set source to dev once postgres source has been released with the CDC
-    // changes
-    LOGGER.info("Setting source connector to dev to test out partial CDC resets...");
-    final UUID sourceDefinitionId = testHarness.getPostgresSourceDefinitionId();
-    testHarness.updateSourceDefinitionVersion(sourceDefinitionId, "dev");
-
     final UUID connectionId = createCdcConnection();
     LOGGER.info("Starting sync 1");
 
