@@ -2,6 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
+
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -17,6 +20,8 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
@@ -49,13 +54,23 @@ def test_factory():
 
 def test_interpolate_config():
     content = """
-authenticator:
-  class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
-  token: "{{ config['apikey'] }}"
+    authenticator:
+      class_name: airbyte_cdk.sources.declarative.auth.oauth.DeclarativeOauth2Authenticator
+      client_id: "some_client_id"
+      client_secret: "some_client_secret"
+      token_refresh_endpoint: "https://api.sendgrid.com/v3/auth"
+      refresh_token: "{{ config['apikey'] }}"
+      refresh_request_body:
+        body_field: "yoyoyo"
+        interpolated_body_field: "{{ config['apikey'] }}"
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._tokens == ["verysecrettoken"]
+    assert authenticator._client_id._string == "some_client_id"
+    assert authenticator._client_secret._string == "some_client_secret"
+    assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token._string == "verysecrettoken"
+    assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
 def test_list_based_stream_slicer_with_values_refd():
@@ -83,6 +98,37 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+
+
+def test_datetime_stream_slicer():
+    content = """
+    stream_slicer:
+        class_name: airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer
+        options:
+          datetime_format: "%Y-%m-%d"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_time'] }}"
+          min_datetime: "{{ config['start_time'] + day_delta(2) }}"
+        end_datetime:
+          class_name: airbyte_cdk.sources.declarative.datetime.min_max_datetime.MinMaxDatetime
+          datetime: "{{ config['end_time'] }}"
+        step: "10d"
+        cursor_value: "created"
+    """
+
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    assert type(stream_slicer) == DatetimeStreamSlicer
+    assert stream_slicer._timezone == datetime.timezone.utc
+    assert type(stream_slicer._start_datetime) == MinMaxDatetime
+    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%d"
+    assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
+    assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
+    assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
+    assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
+    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._cursor_value._string == "created"
 
 
 def test_full_config():
@@ -259,3 +305,52 @@ def test_full_config_with_defaults():
     assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
         "next_page_token": "{{ decoded_response.metadata.next}}"
     }
+
+
+class TestCreateTransformations:
+    # the tabbing matters
+    base_options = """
+                name: "lists"
+                primary_key: id
+                url_base: "https://api.sendgrid.com"
+                schema_loader:
+                  file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+                retriever:
+                  requester:
+                    path: "/v3/marketing/lists"
+                    request_parameters:
+                      page_size: 10
+                  record_selector:
+                    extractor:
+                      transform: ".result[]"
+    """
+
+    def test_no_transformations(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        assert [] == component._transformations
+
+    def test_remove_fields(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+                transformations:
+                    - type: RemoveFields
+                      field_pointers:
+                        - ["path", "to", "field1"]
+                        - ["path2"]
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]])]
+        assert expected == component._transformations

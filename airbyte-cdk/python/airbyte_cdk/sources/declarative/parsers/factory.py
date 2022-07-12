@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping, Type, Union, get_type_hints
+from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -67,7 +67,6 @@ class DeclarativeComponentFactory:
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
-
             return self.create_component(definition, config)()
         elif self.is_object_definition_with_type(definition):
             # If type is set instead of class_name, get the class_name from the CLASS_TYPES_REGISTRY
@@ -107,6 +106,13 @@ class DeclarativeComponentFactory:
     def get_default_type(parameter_name, parent_class):
         type_hints = get_type_hints(parent_class.__init__)
         interface = type_hints.get(parameter_name)
+        origin = get_origin(interface)
+        if origin == Union:
+            # Handling Optional, which are implement as a Union[T, None]
+            # the interface we're looking for being the first type argument
+            args = get_args(interface)
+            interface = args[0]
+
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
         return expected_type
 

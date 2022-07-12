@@ -75,6 +75,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
       final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
+      log.info("Found the following streams to reset for connection {}: {}", input.getConnectionId(), streamsToReset);
 
       if (!streamsToReset.isEmpty()) {
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());

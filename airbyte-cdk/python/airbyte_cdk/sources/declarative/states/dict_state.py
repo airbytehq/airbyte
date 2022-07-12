@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Mapping, Union
+from typing import Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.state import State
@@ -25,23 +25,18 @@ class StateType(Enum):
 class DictState(State):
     stream_state_field = "stream_state"
 
-    def __init__(self, initial_mapping: Mapping[str, str] = None, state_type: Union[str, StateType, type] = "STR", config=None):
+    def __init__(self, initial_mapping: Mapping[str, str] = None, config=None):
         if initial_mapping is None:
             initial_mapping = dict()
         if config is None:
             config = dict()
         self._templates_to_evaluate = initial_mapping
-        if type(state_type) == str:
-            self._state_type = StateType[state_type].value
-        elif type(state_type) == StateType:
-            self._state_type = state_type.value
-        elif type(state_type) == type:
-            self._state_type = state_type
-        else:
-            raise Exception(f"Unexpected type for state_type. Got {state_type}")
         self._interpolator = JinjaInterpolation()
         self._context = dict()
         self._config = config
+
+    def set_state(self, state):
+        self._context[self.stream_state_field] = state
 
     def update_state(self, **kwargs):
         stream_state = kwargs.get(self.stream_state_field)
@@ -61,7 +56,7 @@ class DictState(State):
             self._interpolator.eval(name, self._config): self._interpolator.eval(value, self._config, **self._context)
             for name, value in self._templates_to_evaluate.items()
         }
-        updated_state = {name: self._state_type(value) for name, value in updated_state.items() if value}
+        updated_state = {name: value for name, value in updated_state.items() if value}
 
         if prev_state:
             next_state = {name: _get_max(name=name, val=value, other_state=prev_state) for name, value in updated_state.items()}
