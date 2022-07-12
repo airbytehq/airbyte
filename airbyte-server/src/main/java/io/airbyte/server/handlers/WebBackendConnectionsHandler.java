@@ -67,7 +67,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -362,6 +361,30 @@ public class WebBackendConnectionsHandler {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
 
+    ConnectionRead connectionRead;
+    final boolean needReset = MoreBooleans.isTruthy(webBackendConnectionUpdate.getWithRefreshedCatalog());
+
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
+    if (needReset) {
+      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+          webBackendConnectionUpdate.getConnectionId(),
+          // TODO (https://github.com/airbytehq/airbyte/issues/12741): change this to only get new/updated
+          // streams, instead of all
+          configRepository.getAllStreamsForConnection(webBackendConnectionUpdate.getConnectionId()));
+      verifyManualOperationResult(manualOperationResult);
+      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+      verifyManualOperationResult(manualOperationResult);
+      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
+    }
+    return buildWebBackendConnectionRead(connectionRead);
+  }
+
+  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
+    final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
+
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
 
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
@@ -371,9 +394,7 @@ public class WebBackendConnectionsHandler {
     final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
     final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
 
-    final Set<StreamDescriptor> streamWithConfigChange = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
-    final Set<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
-    apiStreamsToReset.addAll(streamWithConfigChange);
+    final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
     List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
         apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
@@ -513,8 +534,8 @@ public class WebBackendConnectionsHandler {
   }
 
   @VisibleForTesting
-  static Set<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
-    return catalogDiff.getTransforms().stream().map(StreamTransform::getStreamDescriptor).collect(Collectors.toSet());
+  static List<StreamDescriptor> getStreamsToReset(final CatalogDiff catalogDiff) {
+    return catalogDiff.getTransforms().stream().map(StreamTransform::getStreamDescriptor).toList();
   }
 
   /**
