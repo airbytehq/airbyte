@@ -42,6 +42,9 @@
     },
     "ConversionRate": {
       "type": ["null", "number"]
+    },
+    "Conversions": {
+      "type": ["null", "number"]
     }
   }
 }

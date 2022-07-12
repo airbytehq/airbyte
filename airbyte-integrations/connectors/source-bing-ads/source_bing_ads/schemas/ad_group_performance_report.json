@@ -50,6 +50,9 @@
     "ConversionRate": {
       "type": ["null", "number"]
     },
+    "Conversions": {
+      "type": ["null", "number"]
+    },
     "AdGroupName": {
       "type": ["null", "string"]
     },
