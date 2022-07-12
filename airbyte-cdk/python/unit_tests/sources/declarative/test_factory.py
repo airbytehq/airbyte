@@ -13,6 +13,7 @@ from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponent
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -276,6 +277,7 @@ def test_create_composite_error_handler():
     component = factory.create_component(config["error_handler"], input_config)()
     assert len(component._error_handlers) == 2
     assert isinstance(component._error_handlers[0], DefaultErrorHandler)
+    assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
     assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
     assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
