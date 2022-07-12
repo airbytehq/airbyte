@@ -1539,7 +1539,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-dixa:0.1.2"
+- dockerImage: "airbyte/source-dixa:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/dixa"
     connectionSpecification:
@@ -2487,7 +2487,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.1"
+- dockerImage: "airbyte/source-freshdesk:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
     connectionSpecification:
@@ -2593,7 +2593,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.41"
+- dockerImage: "airbyte/source-github:0.2.42"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3347,7 +3347,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-sheets:0.2.15"
+- dockerImage: "airbyte/source-google-sheets:0.2.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-sheets"
     connectionSpecification:
@@ -3362,15 +3362,13 @@
         spreadsheet_id:
           type: "string"
           title: "Spreadsheet Link"
-          description: "The link to your spreadsheet. See <a href='https://docs.airbyte.com/integrations/sources/google-sheets#sheetlink'>this\
-            \ guide</a> for more details."
+          description: "Enter the link to the Google spreadsheet you want to sync"
           examples:
           - "https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit"
         credentials:
           type: "object"
           title: "Authentication"
-          description: "Google API Credentials for connecting to Google Sheets and\
-            \ Google Drive APIs"
+          description: "Credentials for connecting to the Google Sheets API"
           oneOf:
           - title: "Authenticate via Google (OAuth)"
             type: "object"
@@ -3386,17 +3384,17 @@
               client_id:
                 title: "Client ID"
                 type: "string"
-                description: "The Client ID of your Google Sheets developer application."
+                description: "Enter your Google application's Client ID"
                 airbyte_secret: true
               client_secret:
                 title: "Client Secret"
                 type: "string"
-                description: "The Client Secret of your Google Sheets developer application."
+                description: "Enter your Google application's Client Secret"
                 airbyte_secret: true
               refresh_token:
                 title: "Refresh Token"
                 type: "string"
-                description: "The token for obtaining new access token."
+                description: "Enter your Google application's refresh token"
                 airbyte_secret: true
           - title: "Service Account Key Authentication"
             type: "object"
@@ -3410,9 +3408,8 @@
               service_account_info:
                 type: "string"
                 title: "Service Account Information."
-                description: "The JSON key of the service account to use for authorization.\
-                  \ See <a href='https://github.com/airbytehq/airbyte/blob/master/docs/integrations/sources/google-sheets.md#setupguide'>Setup\
-                  \ Guide</a> for more details"
+                description: "Enter your Google Cloud <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys\"\
+                  >service account key</a> in JSON format"
                 airbyte_secret: true
                 examples:
                 - "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID,\
@@ -3918,7 +3915,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.21"
+- dockerImage: "airbyte/source-intercom:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -5426,7 +5423,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-monday:0.1.3"
+- dockerImage: "airbyte/source-monday:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/monday"
     connectionSpecification:
@@ -5458,9 +5455,6 @@
               auth_type:
                 type: "string"
                 const: "oauth2.0"
-                enum:
-                - "oauth2.0"
-                default: "oauth2.0"
                 order: 1
               client_id:
                 type: "string"
@@ -5486,9 +5480,6 @@
               auth_type:
                 type: "string"
                 const: "api_token"
-                enum:
-                - "api_token"
-                default: "api_token"
                 order: 0
               api_token:
                 type: "string"
@@ -5885,7 +5876,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.3"
+- dockerImage: "airbyte/source-notion:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -6863,7 +6854,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.30"
+- dockerImage: "airbyte/source-postgres:0.4.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7800,7 +7791,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.10"
+- dockerImage: "airbyte/source-salesforce:1.0.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -7815,10 +7806,8 @@
       properties:
         is_sandbox:
           title: "Sandbox"
-          description: "Whether the app is in a Salesforce sandbox or not. If you\
-            \ do not know what this is, assume it as false. We provide more info on\
-            \ this field in the <a href=\"https://docs.airbyte.com/integrations/sources/salesforce#sandbox-accounts\"\
-            >docs</a>."
+          description: "Toggle if you're using a <a href=\"https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5\"\
+            >Salesforce Sandbox</a>"
           type: "boolean"
           default: false
           order: 1
@@ -7827,29 +7816,30 @@
           const: "Client"
         client_id:
           title: "Client ID"
-          description: "The Client ID of your Salesforce developer application."
+          description: "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\"\
+            >Client ID</a>"
           type: "string"
           order: 2
         client_secret:
           title: "Client Secret"
-          description: "The Client Secret of your Salesforce developer application."
+          description: "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\"\
+            >Client secret</a>"
           type: "string"
           airbyte_secret: true
           order: 3
         refresh_token:
           title: "Refresh Token"
-          description: "Salesforce Refresh Token used for Airbyte to access your Salesforce\
-            \ account. If you don't know what this is, follow this <a href=\"https://medium.com/@bpmmendis94/obtain-access-refresh-tokens-from-salesforce-rest-api-a324fe4ccd9b\"\
-            >guide</a> to retrieve it."
+          description: "Enter your application's <a href=\"https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm\"\
+            >Salesforce Refresh Token</a> used for Airbyte to access your Salesforce\
+            \ account. "
           type: "string"
           airbyte_secret: true
           order: 4
         start_date:
           title: "Start Date"
-          description: "Date in the format 2017-01-25. Any data before this date will\
-            \ not be replicated. This field uses the \"updated\" field if available,\
-            \ otherwise the \"created\" fields if they are available for a stream.\
-            \ If not set, then by default all your data is replicated."
+          description: "Enter the date in the YYYY-MM-DD format. Airbyte will replicate\
+            \ the data added on and after this date. If this field is blank, Airbyte\
+            \ will replicate all data."
           type: "string"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z|[0-9]{4}-[0-9]{2}-[0-9]{2}$"
           examples:
@@ -7883,9 +7873,8 @@
                 type: "string"
                 title: "Search value"
                 order: 2
-          title: "Salesforce Object filtering criteria (Optional)"
-          description: "Add selection criteria for streams to read only the Salesforce\
-            \ objects which are relevant to you."
+          title: "Filter Salesforce Objects (Optional)"
+          description: "Filter streams relevant to you"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
@@ -8005,7 +7994,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-sendgrid:0.2.6"
+- dockerImage: "airbyte/source-sendgrid:0.2.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/sendgrid"
     connectionSpecification:
@@ -8017,15 +8006,19 @@
       additionalProperties: false
       properties:
         apikey:
+          title: "Sendgrid API key"
           type: "string"
           description: "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\"\
             >admin</a> to generate this key."
+          order: 0
         start_time:
+          title: "Start time"
           type: "integer"
           description: "Start time in timestamp integer format. Any data before this\
             \ timestamp will not be replicated."
           examples:
           - 1558359837
+          order: 1
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

@@ -208,7 +208,7 @@
 - name: Dixa
   sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerRepository: airbyte/source-dixa
-  dockerImageTag: 0.1.2
+  dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.io/integrations/sources/dixa
   icon: dixa.svg
   sourceType: api
@@ -279,7 +279,7 @@
 - name: Freshdesk
   sourceDefinitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
   dockerRepository: airbyte/source-freshdesk
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/freshdesk
   icon: freshdesk.svg
   sourceType: api
@@ -303,7 +303,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.2.41
+  dockerImageTag: 0.2.42
   documentationUrl: https://docs.airbyte.io/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -359,7 +359,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.2.16
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -430,7 +430,7 @@
 - name: Intercom
   sourceDefinitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
   dockerRepository: airbyte/source-intercom
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.22
   documentationUrl: https://docs.airbyte.io/integrations/sources/intercom
   icon: intercom.svg
   sourceType: api
@@ -573,7 +573,7 @@
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/monday
   icon: monday.svg
   sourceType: api
@@ -605,7 +605,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -747,7 +747,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.30
+  dockerImageTag: 0.4.31
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -822,7 +822,7 @@
   documentationUrl: https://docs.airbyte.io/integrations/sources/s3
   icon: s3.svg
   sourceType: file
-  releaseStage: beta
+  releaseStage: generally_available
 - name: SalesLoft
   sourceDefinitionId: 41991d12-d4b5-439e-afd0-260a31d4c53f
   dockerRepository: airbyte/source-salesloft
@@ -834,7 +834,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.10
+  dockerImageTag: 1.0.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -850,7 +850,7 @@
 - name: Sendgrid
   sourceDefinitionId: fbb5fbe2-16ad-4cf4-af7d-ff9d9c316c87
   dockerRepository: airbyte/source-sendgrid
-  dockerImageTag: 0.2.6
+  dockerImageTag: 0.2.8
   documentationUrl: https://docs.airbyte.io/integrations/sources/sendgrid
   icon: sendgrid.svg
   sourceType: api

@@ -14,6 +14,11 @@ public class DefaultStateAggregator implements StateAggregator {
   private AirbyteStateType stateType = null;
   private final StateAggregator streamStateAggregator = new StreamStateAggregator();
   private final StateAggregator singleStateAggregator = new SingleStateAggregator();
+  private final boolean useStreamCapableState;
+
+  public DefaultStateAggregator(boolean useStreamCapableState) {
+    this.useStreamCapableState = useStreamCapableState;
+  }
 
   @Override
   public void ingest(final AirbyteStateMessage stateMessage) {
@@ -31,10 +36,14 @@ public class DefaultStateAggregator implements StateAggregator {
    * Return the state aggregator that match the state type.
    */
   private StateAggregator getStateAggregator() {
-    return switch (stateType) {
-      case STREAM -> streamStateAggregator;
-      case GLOBAL, LEGACY -> singleStateAggregator;
-    };
+    if (!useStreamCapableState) {
+      return singleStateAggregator;
+    } else {
+      return switch (stateType) {
+        case STREAM -> streamStateAggregator;
+        case GLOBAL, LEGACY -> singleStateAggregator;
+      };
+    }
   }
 
   /**
