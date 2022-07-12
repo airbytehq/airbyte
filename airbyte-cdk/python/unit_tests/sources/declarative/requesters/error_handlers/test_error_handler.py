@@ -110,35 +110,35 @@ SOME_BACKOFF_TIME = 60
         ),
     ],
 )
-def test_default_retrier(
+def test_default_error_handler(
     test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy
 ):
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
     response_filters = [f for f in [retry_response_filter, ignore_response_filter] if f]
-    retrier = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy)
-    actual_should_retry = retrier.should_retry(response_mock)
+    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy)
+    actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == should_retry
     if should_retry.action == ResponseAction.RETRY:
         assert actual_should_retry.retry_in == should_retry.retry_in
 
 
-def test_default_retrier_attempt_count_increases():
+def test_default_error_handler_attempt_count_increases():
     status_code = 500
     response_mock = create_response(status_code)
-    retrier = DefaultErrorHandler()
-    actual_should_retry = retrier.should_retry(response_mock)
+    error_handler = DefaultErrorHandler()
+    actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10
 
     # This is the same request, so the count should increase
-    actual_should_retry = retrier.should_retry(response_mock)
+    actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == ResponseStatus.retry(20)
     assert actual_should_retry.retry_in == 20
 
     # This is a different request, so the count should not increase
     another_identical_request = create_response(status_code)
-    actual_should_retry = retrier.should_retry(another_identical_request)
+    actual_should_retry = error_handler.should_retry(another_identical_request)
     assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10
 

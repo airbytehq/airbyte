@@ -12,7 +12,7 @@ SOME_BACKOFF_TIME = 60
 
 
 @pytest.mark.parametrize(
-    "test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior",
+    "test_name, first_handler_behavior, second_handler_behavior, expected_behavior",
     [
         (
             "test_chain_retrier_ok_ok",
@@ -88,14 +88,14 @@ SOME_BACKOFF_TIME = 60
         ),
     ],
 )
-def test_chain_retrier(test_name, first_retrier_behavior, second_retrier_behavior, expected_behavior):
-    first_retier = MagicMock()
-    first_retier.should_retry.return_value = first_retrier_behavior
-    second_retrier = MagicMock()
-    second_retrier.should_retry.return_value = second_retrier_behavior
-    second_retrier.should_retry.return_value = second_retrier_behavior
-    retriers = [first_retier, second_retrier]
+def test_composite_error_handler(test_name, first_handler_behavior, second_handler_behavior, expected_behavior):
+    first_error_handler = MagicMock()
+    first_error_handler.should_retry.return_value = first_handler_behavior
+    second_error_handler = MagicMock()
+    second_error_handler.should_retry.return_value = second_handler_behavior
+    second_error_handler.should_retry.return_value = second_handler_behavior
+    retriers = [first_error_handler, second_error_handler]
     retrier = CompositeErrorHandler(retriers)
     response_mock = MagicMock()
-    response_mock.ok = first_retrier_behavior == ResponseStatus.success() or second_retrier_behavior == ResponseStatus.success()
+    response_mock.ok = first_handler_behavior == ResponseStatus.success() or second_handler_behavior == ResponseStatus.success()
     assert retrier.should_retry(response_mock) == expected_behavior
