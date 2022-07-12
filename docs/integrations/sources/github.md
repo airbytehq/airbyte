@@ -141,6 +141,7 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                      |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------|
+| 0.2.42  | 2022-07-12 | [14613](https://github.com/airbytehq/airbyte/pull/14613) | Improve schema for stream `pull_request_commits` added "null"                                              |
 | 0.2.41  | 2022-07-03 | [14376](https://github.com/airbytehq/airbyte/pull/14376) | Add Retry for GraphQL API Resource limitations                                                             |
 | 0.2.40  | 2022-07-01 | [14338](https://github.com/airbytehq/airbyte/pull/14338) | Revert: "Rename field `mergeable` to `is_mergeable`"                                                       |
 | 0.2.39  | 2022-06-30 | [14274](https://github.com/airbytehq/airbyte/pull/14274) | Rename field `mergeable` to `is_mergeable`                                                                 |
