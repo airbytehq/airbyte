@@ -47,10 +47,10 @@ class DatetimeStreamSlicer(StreamSlicer):
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
-        if isinstance(start_datetime, str):
-            start_datetime = MinMaxDatetime(start_datetime)
-        if isinstance(end_datetime, str):
-            end_datetime = MinMaxDatetime(end_datetime)
+        # if isinstance(start_datetime, str):
+        #    start_datetime = MinMaxDatetime(start_datetime)
+        # if isinstance(end_datetime, str):
+        #    end_datetime = MinMaxDatetime(end_datetime)
         self._datetime_format = datetime_format
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime

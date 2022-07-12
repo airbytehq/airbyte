@@ -92,7 +92,11 @@ class DeclarativeComponentFactory:
                 for sub in definition
             ]
         else:
-            return definition
+            expected_type = self.get_default_type(key, parent_class)
+            if expected_type:
+                return expected_type(definition)
+            else:
+                return definition
 
     @staticmethod
     def is_object_definition_with_class_name(definition):

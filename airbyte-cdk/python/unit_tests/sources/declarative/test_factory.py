@@ -112,9 +112,7 @@ def test_datetime_stream_slicer():
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
-        end_datetime:
-          class_name: airbyte_cdk.sources.declarative.datetime.min_max_datetime.MinMaxDatetime
-          datetime: "{{ config['end_time'] }}"
+        end_datetime: "{{ config['end_time'] }}"
         step: "10d"
         cursor_field: "created"
     """
