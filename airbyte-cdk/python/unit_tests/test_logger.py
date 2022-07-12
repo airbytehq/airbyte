@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 import json
 import logging
 from typing import Dict
@@ -48,13 +47,6 @@ def test_level_transform(logger, caplog):
     level_critical = log_critical.get("level")
     assert level_warn == "WARN"
     assert level_critical == "FATAL"
-
-
-def test_trace(logger, caplog):
-    logger.log(logging.getLevelName("TRACE"), "Test trace 1")
-    record = caplog.records[0]
-    assert record.levelname == "TRACE"
-    assert record.message == "Test trace 1"
 
 
 def test_debug(logger, caplog):
