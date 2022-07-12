@@ -22,6 +22,7 @@ SOME_BACKOFF_TIME = 60
     "test_name, http_code, retry_response_filter, ignore_response_filter, response_headers, should_retry, backoff_strategy",
     [
         ("test_bad_gateway", HTTPStatus.BAD_GATEWAY, None, None, {}, ResponseStatus.retry(10), None),
+        ("test_too_many_requests", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, ResponseStatus.retry(10), None),
         (
             "test_bad_gateway_constant_retry",
             HTTPStatus.BAD_GATEWAY,
