@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "aws_access_key_id": "not_an_access_key_id",
+  "aws_secret_access_key": "not_a_secret_access_key",
+  "region_name": "us-east-1"
 }
