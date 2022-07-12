@@ -6,5 +6,5 @@
 export interface Experiments {
   "connector.orderOverwrite": Record<string, number>;
   "authPage.rightSideUrl": string | undefined;
-  "authPage.selfHostedCTAVisible": boolean;
+  "authPage.hideSelfHostedCTA": boolean;
 }

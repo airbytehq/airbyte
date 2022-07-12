@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
+import { useExperiment } from "hooks/services/Experiment";
+
 import { GitBlock } from "./GitBlock";
 import { Header } from "./Header";
 
@@ -19,17 +21,18 @@ const FormContainer = styled.div`
 
 interface FormContentProps {
   toLogin?: boolean;
-  gitBlockVisible?: boolean;
 }
 
-const FormContent: React.FC<FormContentProps> = ({ toLogin, children, gitBlockVisible }) => {
+const FormContent: React.FC<FormContentProps> = ({ toLogin, children }) => {
+  const hideSelfHostedCTA = useExperiment("authPage.hideSelfHostedCTA", false);
+
   return (
     <>
       <Header toLogin={toLogin} />
       <MainBlock>
         <FormContainer>{children}</FormContainer>
       </MainBlock>
-      {gitBlockVisible && <GitBlock />}
+      {!hideSelfHostedCTA && <GitBlock />}
     </>
   );
 };
