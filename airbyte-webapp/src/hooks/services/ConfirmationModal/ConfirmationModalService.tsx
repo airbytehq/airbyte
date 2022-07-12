@@ -66,6 +66,8 @@ export const ConfirmationModalService = ({ children }: { children: React.ReactNo
           submitButtonText={state.confirmationModal.submitButtonText}
           submitButtonDataId={state.confirmationModal.submitButtonDataId}
           cancelButtonText={state.confirmationModal.cancelButtonText}
+          secondaryButtonText={state.confirmationModal.secondaryButtonText}
+          secondaryButtonDataId={state.confirmationModal.secondaryButtonDataId}
         />
       ) : null}
     </>

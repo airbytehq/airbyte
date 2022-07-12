@@ -9,12 +9,10 @@ import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "componen
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
-import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { equal } from "utils/objects";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
@@ -97,7 +95,10 @@ export type ConnectionFormMode = "create" | "edit" | "readonly";
 // eslint-disable-next-line react/function-component-definition
 function FormValuesChangeTracker<T>({ onChangeValues }: { onChangeValues?: (values: T) => void }) {
   // Grab values from context
-  const { values } = useFormikContext<T>();
+  const { values, errors, dirty } = useFormikContext<T>();
+  console.log("values", values);
+  console.log("errors", errors);
+  console.log("dirty", dirty);
   useDebounce(
     () => {
       onChangeValues?.(values);
@@ -113,13 +114,12 @@ interface ConnectionFormProps {
   className?: string;
   additionBottomControls?: React.ReactNode;
   successMessage?: React.ReactNode;
-  onReset?: (connectionId?: string) => void;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
   onChangeValues?: (values: FormikConnectionFormValues) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
-  editSchemeMode?: boolean;
+  allowSavingUntouchedForm?: boolean;
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
@@ -130,19 +130,18 @@ interface ConnectionFormProps {
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({
   onSubmit,
-  onReset,
   onCancel,
   className,
   onDropDownSelect,
   mode,
   successMessage,
   additionBottomControls,
-  editSchemeMode,
+  allowSavingUntouchedForm,
   additionalSchemaControl,
   connection,
   onChangeValues,
 }) => {
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
@@ -155,18 +154,19 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const initialValues = useInitialValues(connection, destDefinition, isEditMode);
   const workspace = useCurrentWorkspace();
 
-  const openResetDataModal = useCallback(() => {
-    openConfirmationModal({
-      title: "form.resetData",
-      text: "form.changedColumns",
-      submitButtonText: "form.reset",
-      cancelButtonText: "form.noNeed",
-      onSubmit: async () => {
-        await onReset?.();
-        closeConfirmationModal();
-      },
-    });
-  }, [closeConfirmationModal, onReset, openConfirmationModal]);
+  // TODO: Remove this
+  // const openResetDataModal = useCallback(() => {
+  //   openConfirmationModal({
+  //     title: "form.resetData",
+  //     text: "form.changedColumns",
+  //     submitButtonText: "form.reset",
+  //     cancelButtonText: "form.noNeed",
+  //     onSubmit: async () => {
+  //       await onReset?.();
+  //       closeConfirmationModal();
+  //     },
+  //   });
+  // }, [closeConfirmationModal, onReset, openConfirmationModal]);
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
@@ -183,29 +183,19 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
         formikHelpers.resetForm({ values });
         clearFormChange(formId);
 
-        const requiresReset =
-          mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog) && !editSchemeMode;
+        // // TODO: Remove this
+        // const requiresReset = mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog);
 
-        if (requiresReset) {
-          openResetDataModal();
-        }
+        // if (requiresReset) {
+        //   openResetDataModal();
+        // }
 
         result?.onSubmitComplete?.();
       } catch (e) {
         setSubmitError(e);
       }
     },
-    [
-      connection.operations,
-      workspace.workspaceId,
-      onSubmit,
-      clearFormChange,
-      formId,
-      mode,
-      initialValues.syncCatalog,
-      editSchemeMode,
-      openResetDataModal,
-    ]
+    [connection.operations, workspace.workspaceId, onSubmit, clearFormChange, formId]
   );
 
   const errorMessage = submitError ? createFormErrorMessage(submitError) : null;
@@ -362,7 +352,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 errorMessage={
                   errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
                 }
-                editSchemeMode={editSchemeMode}
+                enableControls={allowSavingUntouchedForm}
               />
             )}
             {mode === "create" && (

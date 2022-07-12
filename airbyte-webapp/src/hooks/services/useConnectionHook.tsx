@@ -63,7 +63,7 @@ function useWebConnectionService() {
   );
 }
 
-function useConnectionService() {
+export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);

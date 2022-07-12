@@ -1,6 +1,5 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FormikHelpers } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
@@ -10,11 +9,11 @@ import { Button, Card } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
-import { ConnectionStatus } from "core/request/AirbyteClient";
+import { ConnectionStateType, ConnectionStatus } from "core/request/AirbyteClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
   useConnectionLoad,
-  useResetConnection,
+  useConnectionService,
   useUpdateConnection,
   ValuesProps,
 } from "hooks/services/useConnectionHook";
@@ -38,27 +37,16 @@ const TryArrow = styled(FontAwesomeIcon)`
   font-size: 14px;
 `;
 
-const Message = styled.div`
-  font-weight: 500;
-  font-size: 12px;
-  line-height: 15px;
-  color: ${({ theme }) => theme.greyColor40};
-`;
-
-const Note = styled.span`
-  color: ${({ theme }) => theme.dangerColor};
-`;
-
 export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
+  const connectionService = useConnectionService();
+
+  console.log("saved", saved);
 
   const { mutateAsync: updateConnection } = useUpdateConnection();
-  const { mutateAsync: resetConnection } = useResetConnection();
-
-  const onReset = () => resetConnection(connectionId);
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
 
@@ -86,14 +74,11 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     return initialConnection;
   }, [activeUpdatingSchemaMode, connectionWithRefreshCatalog, initialConnection, connectionFormValues]);
 
-  const onSubmit = async (values: ValuesProps, formikHelpers?: FormikHelpers<ValuesProps>) => {
-    if (!connection) {
-      // onSubmit should only be called when a connection object exists.
-      return;
-    }
-
+  const saveConnection = async (values: ValuesProps, skipReset = false) => {
     const initialSyncSchema = connection.syncCatalog;
     const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
+
+    console.log("skipReset", skipReset);
 
     await updateConnection({
       ...connectionAsUpdate,
@@ -103,7 +88,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       // The status can be toggled and the name can be changed in-between refreshing the schema
       name: initialConnection.name,
       status: initialConnection.status || "",
-      withRefreshedCatalog: activeUpdatingSchemaMode,
+      // TODO: skipRefresh: true/false
+      // skipReset,
     });
 
     setSaved(true);
@@ -114,57 +100,63 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     if (activeUpdatingSchemaMode) {
       setActiveUpdatingSchemaMode(false);
     }
-
-    formikHelpers?.resetForm({ values });
-  };
-
-  const openResetDataModal = (values: ValuesProps) => {
-    openConfirmationModal({
-      title: "connection.updateSchema",
-      text: "connection.updateSchemaText",
-      submitButtonText: "connection.updateSchema",
-      submitButtonDataId: "refresh",
-      onSubmit: async () => {
-        await onSubmit(values);
-        closeConfirmationModal();
-      },
-    });
   };
 
   const onSubmitForm = async (values: ValuesProps) => {
-    if (activeUpdatingSchemaMode) {
-      openResetDataModal(values);
+    console.log("values.syncCatalog", values.syncCatalog);
+    console.log("initialConnection", initialConnection.syncCatalog);
+    const hasCatalogChanged = !equal(values.syncCatalog, initialConnection.syncCatalog);
+
+    console.log("hasCatalogChanged?", hasCatalogChanged);
+    if (hasCatalogChanged) {
+      const stateType = await connectionService.getStateType(connectionId);
+      console.log("ConnectionStateType", stateType);
+      if (stateType === ConnectionStateType.legacy) {
+        // The state type is legacy so the server will do a full reset after saving
+        // TODO: Show confirm dialog with full reset option
+        openConfirmationModal({
+          title: "connection.updateSchema",
+          text: "connection.updateSchemaText",
+          submitButtonText: "connection.updateSchema",
+          submitButtonDataId: "refresh",
+          secondaryButtonText: "connection.updateSchemaWithoutReset",
+          onSubmit: async (type) => {
+            await saveConnection(values, type === "secondary");
+            closeConfirmationModal();
+          },
+        });
+      } else {
+        // TODO: Show confirm dialog with partial reset option
+        openConfirmationModal({
+          title: "connection.updateSchema",
+          text: "connection.updateSchemaText",
+          submitButtonText: "connection.updateSchema",
+          submitButtonDataId: "refresh",
+          secondaryButtonText: "connection.updateSchemaWithoutReset",
+          onSubmit: async (type) => {
+            await saveConnection(values, type === "secondary");
+            closeConfirmationModal();
+          },
+        });
+      }
+      // const skipRefresh = true;
+      // await saveConnection(values, skipRefresh);
     } else {
-      await onSubmit(values);
+      // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save
+      // TODO: Clarify if we want to have `skipRefresh` true or false in this case with BE.
+      await saveConnection(values, true);
     }
   };
 
-  const onEnterRefreshCatalogMode = async () => {
+  const onRefreshSourceSchema = async () => {
+    setSaved(false);
     setActiveUpdatingSchemaMode(true);
     await refreshCatalog();
   };
 
   const onCancelConnectionFormEdit = () => {
+    setSaved(false);
     setActiveUpdatingSchemaMode(false);
-  };
-
-  const renderUpdateSchemaButton = () => {
-    if (!activeUpdatingSchemaMode) {
-      return (
-        <Button onClick={onEnterRefreshCatalogMode} type="button" secondary>
-          <TryArrow icon={faSyncAlt} />
-          <FormattedMessage id="connection.updateSchema" />
-        </Button>
-      );
-    }
-    return (
-      <Message>
-        <FormattedMessage id="form.toSaveSchema" />{" "}
-        <Note>
-          <FormattedMessage id="form.noteStartSync" />
-        </Note>
-      </Message>
-    );
   };
 
   return (
@@ -175,11 +167,15 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
             mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
             connection={connection}
             onSubmit={onSubmitForm}
-            onReset={onReset}
             successMessage={saved && <FormattedMessage id="form.changesSaved" />}
             onCancel={onCancelConnectionFormEdit}
-            editSchemeMode={activeUpdatingSchemaMode}
-            additionalSchemaControl={renderUpdateSchemaButton()}
+            allowSavingUntouchedForm={activeUpdatingSchemaMode}
+            additionalSchemaControl={
+              <Button onClick={onRefreshSourceSchema} type="button" secondary>
+                <TryArrow icon={faSyncAlt} />
+                <FormattedMessage id="connection.updateSchema" />
+              </Button>
+            }
             onChangeValues={setConnectionFormValues}
           />
         ) : (
