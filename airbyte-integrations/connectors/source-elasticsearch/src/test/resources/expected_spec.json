@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/source/elasticsearch",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "ElasticSearch Connection Configuration",
+    "title": "Elasticsearch Connection Configuration",
     "type": "object",
     "required": ["endpoint"],
     "additionalProperties": false,
@@ -25,19 +25,19 @@
             "properties": {
               "method": {
                 "type": "string",
-                "const": "NONE"
+                "const": "none"
               }
             }
           },
           {
-            "title": "API Key/Secret",
+            "title": "Api Key/Secret",
             "additionalProperties": false,
-            "description": "Use a API key and secret combination to authenticate",
+            "description": "Use a api key and secret combination to authenticate",
             "required": ["method", "apiKeyId", "apiKeySecret"],
             "properties": {
               "method": {
                 "type": "string",
-                "const": "API_KEY"
+                "const": "secret"
               },
               "apiKeyId": {
                 "title": "API Key ID",
@@ -60,7 +60,7 @@
             "properties": {
               "method": {
                 "type": "string",
-                "const": "BASIC"
+                "const": "basic"
               },
               "username": {
                 "title": "Username",
