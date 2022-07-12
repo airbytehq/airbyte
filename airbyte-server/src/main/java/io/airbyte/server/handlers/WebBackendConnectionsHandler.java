@@ -390,7 +390,7 @@ public class WebBackendConnectionsHandler {
     ConnectionRead connectionRead;
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if(!webBackendConnectionUpdate.getSkipReset()) {
+    if (!webBackendConnectionUpdate.getSkipReset()) {
       final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
       final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
       final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
