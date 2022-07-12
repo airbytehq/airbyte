@@ -112,6 +112,7 @@ class Groups(IncrementalOktaStream):
     def path(self, **kwargs) -> str:
         return "groups"
 
+
 class GroupMembers(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
@@ -147,6 +148,7 @@ class GroupMembers(IncrementalOktaStream):
             )
         }
 
+
 class Logs(IncrementalOktaStream):
 
     cursor_field = "published"
@@ -175,7 +177,7 @@ class Logs(IncrementalOktaStream):
             parsed = pendulum.parse(latest_entry)
             utc_now = pendulum.utcnow()
             if parsed > utc_now:
-              params["until"] = latest_entry
+                params["until"] = latest_entry
 
         return params
 
@@ -227,5 +229,5 @@ class SourceOkta(AbstractSource):
             Groups(**initialization_params),
             Logs(**initialization_params),
             Users(**initialization_params),
-            GroupMembers(**initialization_params)
+            GroupMembers(**initialization_params),
         ]
