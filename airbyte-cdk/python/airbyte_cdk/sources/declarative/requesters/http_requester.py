@@ -64,6 +64,8 @@ class HttpRequester(Requester):
     def get_method(self):
         return self._method
 
+     # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly 
+     # only care about the status of the last response received
     @lru_cache(maxsize=10)
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
