@@ -1,0 +1,10 @@
+{
+  "$id": "shared-link.json",
+  "properties": {
+    "herf": {
+      "format": "uri",
+      "type": ["string", "null"]
+    }
+  },
+  "type": ["object", "null"]
+}
