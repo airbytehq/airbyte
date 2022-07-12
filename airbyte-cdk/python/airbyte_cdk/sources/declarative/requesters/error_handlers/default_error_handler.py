@@ -4,13 +4,16 @@
 
 from typing import List, MutableMapping, Optional, Union
 
+import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler, ResponseAction, ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 
 
 class DefaultErrorHandler(ErrorHandler):
@@ -109,7 +112,7 @@ class DefaultErrorHandler(ErrorHandler):
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         request = response.request
         if response.ok:
-            return ResponseStatus.success()
+            return response_status.SUCCESS
         if request not in self._last_request_to_attempt_count:
             self._last_request_to_attempt_count = {request: 1}
         else:
@@ -123,7 +126,7 @@ class DefaultErrorHandler(ErrorHandler):
                 else:
                     return ResponseStatus(filter_action)
         # Fail if the response matches no filters
-        return ResponseStatus.fail()
+        return response_status.FAIL
 
     def _backoff_time(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         backoff = None

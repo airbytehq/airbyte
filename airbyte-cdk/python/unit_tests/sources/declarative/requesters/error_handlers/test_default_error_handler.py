@@ -5,6 +5,7 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import (
@@ -12,7 +13,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
     HttpResponseFilter,
     ResponseStatus,
 )
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 
 SOME_BACKOFF_TIME = 60
 
@@ -50,16 +51,16 @@ SOME_BACKOFF_TIME = 60
             ResponseStatus.retry(10),
             [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY(), ConstantBackoffStrategy(SOME_BACKOFF_TIME)],
         ),
-        ("test_200", HTTPStatus.OK, None, None, {}, ResponseStatus.success(), None),
-        ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, ResponseStatus.success(), None),
-        ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, ResponseStatus.fail(), None),
+        ("test_200", HTTPStatus.OK, None, None, {}, response_status.SUCCESS, None),
+        ("test_3XX", HTTPStatus.PERMANENT_REDIRECT, None, None, {}, response_status.SUCCESS, None),
+        ("test_403", HTTPStatus.FORBIDDEN, None, None, {}, response_status.FAIL, None),
         (
             "test_403_ignore_error_message",
             HTTPStatus.FORBIDDEN,
             None,
             HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contain="found"),
             {},
-            ResponseStatus.ignore(),
+            response_status.IGNORE,
             None,
         ),
         (
@@ -68,7 +69,7 @@ SOME_BACKOFF_TIME = 60
             None,
             HttpResponseFilter(action=ResponseAction.IGNORE, error_message_contain="not_found"),
             {},
-            ResponseStatus.fail(),
+            response_status.FAIL,
             None,
         ),
         ("test_429", HTTPStatus.TOO_MANY_REQUESTS, None, None, {}, ResponseStatus.retry(10), None),
@@ -78,7 +79,7 @@ SOME_BACKOFF_TIME = 60
             None,
             HttpResponseFilter(action=ResponseAction.IGNORE, http_codes={HTTPStatus.FORBIDDEN}),
             {},
-            ResponseStatus.ignore(),
+            response_status.IGNORE,
             None,
         ),
         (
@@ -96,7 +97,7 @@ SOME_BACKOFF_TIME = 60
             HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in decoded_response }}"),
             None,
             {},
-            ResponseStatus.fail(),
+            response_status.FAIL,
             None,
         ),
         (

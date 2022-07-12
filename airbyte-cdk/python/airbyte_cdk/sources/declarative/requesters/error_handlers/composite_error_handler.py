@@ -4,8 +4,11 @@
 
 from typing import List, Union
 
+import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler, ResponseAction, ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 
 
 class CompositeErrorHandler(ErrorHandler):
@@ -46,12 +49,12 @@ class CompositeErrorHandler(ErrorHandler):
         for retrier in self._error_handlers:
             should_retry = retrier.should_retry(response)
             if should_retry.action == ResponseAction.SUCCESS:
-                return ResponseStatus.success()
-            if should_retry == ResponseStatus.ignore():
+                return response_status.SUCCESS
+            if should_retry == response_status.IGNORE:
                 ignore = True
             elif retry is None or retry.action != ResponseAction.RETRY:
                 retry = should_retry
         if ignore:
-            return ResponseStatus.ignore()
+            return response_status.IGNORE
         else:
             return retry

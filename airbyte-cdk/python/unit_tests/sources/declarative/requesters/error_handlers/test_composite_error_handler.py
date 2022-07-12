@@ -4,6 +4,7 @@
 
 from unittest.mock import MagicMock
 
+import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import ResponseStatus
@@ -16,69 +17,69 @@ SOME_BACKOFF_TIME = 60
     [
         (
             "test_chain_retrier_ok_ok",
-            ResponseStatus.success(),
-            ResponseStatus.success(),
-            ResponseStatus.success(),
+            response_status.SUCCESS,
+            response_status.SUCCESS,
+            response_status.SUCCESS,
         ),
         (
             "test_chain_retrier_ignore_fail",
-            ResponseStatus.ignore(),
-            ResponseStatus.fail(),
-            ResponseStatus.ignore(),
+            response_status.IGNORE,
+            response_status.FAIL,
+            response_status.IGNORE,
         ),
         (
             "test_chain_retrier_fail_ignore",
-            ResponseStatus.fail(),
-            ResponseStatus.ignore(),
-            ResponseStatus.ignore(),
+            response_status.FAIL,
+            response_status.IGNORE,
+            response_status.IGNORE,
         ),
         (
             "test_chain_retrier_ignore_retry",
-            ResponseStatus.ignore(),
+            response_status.IGNORE,
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.ignore(),
+            response_status.IGNORE,
         ),
         (
             "test_chain_retrier_retry_ignore",
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.ignore(),
-            ResponseStatus.ignore(),
+            response_status.IGNORE,
+            response_status.IGNORE,
         ),
         (
             "test_chain_retrier_retry_fail",
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.fail(),
+            response_status.FAIL,
             ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
         (
             "test_chain_retrier_fail_retry",
-            ResponseStatus.fail(),
+            response_status.FAIL,
             ResponseStatus.retry(SOME_BACKOFF_TIME),
             ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
         (
             "test_chain_retrier_ignore_ok",
-            ResponseStatus.ignore(),
-            ResponseStatus.success(),
-            ResponseStatus.success(),
+            response_status.IGNORE,
+            response_status.SUCCESS,
+            response_status.SUCCESS,
         ),
         (
             "test_chain_retrier_ok_ignore",
-            ResponseStatus.success(),
-            ResponseStatus.ignore(),
-            ResponseStatus.success(),
+            response_status.SUCCESS,
+            response_status.IGNORE,
+            response_status.SUCCESS,
         ),
         (
             "test_chain_retrier_ok_retry",
-            ResponseStatus.success(),
+            response_status.SUCCESS,
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.success(),
+            response_status.SUCCESS,
         ),
         (
             "test_chain_retrier_retry_ok",
             ResponseStatus.retry(SOME_BACKOFF_TIME),
-            ResponseStatus.success(),
-            ResponseStatus.success(),
+            response_status.SUCCESS,
+            response_status.SUCCESS,
         ),
         (
             "test_chain_retrier_return_first_retry",
@@ -97,5 +98,5 @@ def test_composite_error_handler(test_name, first_handler_behavior, second_handl
     retriers = [first_error_handler, second_error_handler]
     retrier = CompositeErrorHandler(retriers)
     response_mock = MagicMock()
-    response_mock.ok = first_handler_behavior == ResponseStatus.success() or second_handler_behavior == ResponseStatus.success()
+    response_mock.ok = first_handler_behavior == response_status.SUCCESS or second_handler_behavior == response_status.SUCCESS
     assert retrier.should_retry(response_mock) == expected_behavior
