@@ -104,7 +104,7 @@
             "title": "Key Pair Authentication",
             "type": "object",
             "order": 0,
-            "required": ["auth_type", "private_key"],
+            "required": ["private_key"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -118,6 +118,12 @@
                 "title": "Private Key",
                 "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
                 "multiline": true,
+                "airbyte_secret": true
+              },
+              "passphrase": {
+                "type": "string",
+                "title": "Passphrase (Optional)",
+                "description": "Passphrase for private key",
                 "airbyte_secret": true
               }
             }
