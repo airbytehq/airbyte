@@ -84,3 +84,4 @@ all values in the array must be of the same data type. Hence, every field can be
 ## Changelog
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
+| `0.1.0` | 2022-07-12 | [14118](https://github.com/airbytehq/airbyte/pull/14118) | Initial Release |
