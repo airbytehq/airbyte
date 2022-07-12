@@ -137,7 +137,7 @@ class Reader:
 
 
 if __name__ == "__main__":
-    spec = Spec(
+    spec = Spec( # deprecated
         **{
             "aws_access_key_id": "AKIA6BNKWOY4X6YTOPPS",
             "aws_secret_access_key": "HgkqkQkOlpJQyR2tOBcueubUw6NhM"
