@@ -69,9 +69,24 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * These tests test the CDC source behavior in Airbyte, ensuring that the behavior of syncs when in
+ * CDC mode is as expected
+ * <p>
+ * Some of the tests in this class are specifically testing partial reset behavior when in CDC mode,
+ * support for which was recently added to the postgres connector.
+ * <p>
+ * These tests are disabled in Kube, similar to the BasicAcceptanceTests, because they aren't
+ * testing any behavior that is specific to or dependent on this being run on kube vs docker.
+ * Therefore, since operations tend to take longer to perform on kube, there is little value in
+ * re-running these tests on kube when we already run them on docker.
+ */
+@DisabledIfEnvironmentVariable(named = "KUBE",
+                               matches = "true")
 public class CdcAcceptanceTests {
 
   record DestinationCdcRecordMatcher(JsonNode sourceRecord, Instant minUpdatedAt, Optional<Instant> minDeletedAt) {}
