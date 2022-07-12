@@ -72,7 +72,8 @@ public class ElasticsearchDestinationAcceptanceTest extends DestinationAcceptanc
 
   @Override
   protected boolean supportArrayDataTypeTest() {
-    return true;
+    // TODO: Enable supportArrayDataTypeTest after ticket 14568 will be done
+    return false;
   }
 
   @Override
