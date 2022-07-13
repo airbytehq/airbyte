@@ -23,10 +23,10 @@ const FeedbackButtons = styled.div`
   align-items: center;
 `;
 
-type ModalBodyProps = {
+interface ModalBodyProps {
   onClose: () => void;
   onPassFeedback: (feedback: string) => void;
-};
+}
 
 const ModalBody: React.FC<ModalBodyProps> = ({ onClose, onPassFeedback }) => {
   return (

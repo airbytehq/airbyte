@@ -21,12 +21,15 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.ResetConfig;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
+import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StreamSyncStats;
@@ -41,11 +44,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JobConverter {
-
-  private static final int LOG_TAIL_SIZE = 1000000;
 
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
@@ -58,13 +60,13 @@ public class JobConverter {
   public JobInfoRead getJobInfoRead(final Job job) {
     return new JobInfoRead()
         .job(getJobWithAttemptsRead(job).getJob())
-        .attempts(job.getAttempts().stream().map(attempt -> getAttemptInfoRead(attempt)).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(this::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
-  public JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
-                                          final SourceDefinitionRead sourceDefinitionRead,
-                                          final DestinationDefinitionRead destinationDefinitionRead,
-                                          final AirbyteVersion airbyteVersion) {
+  public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
+                                                 final SourceDefinitionRead sourceDefinitionRead,
+                                                 final DestinationDefinitionRead destinationDefinitionRead,
+                                                 final AirbyteVersion airbyteVersion) {
     return new JobDebugRead()
         .id(jobInfoRead.getJob().getId())
         .configId(jobInfoRead.getJob().getConfigId())
@@ -84,10 +86,34 @@ public class JobConverter {
             .id(job.getId())
             .configId(configId)
             .configType(configType)
+            .resetConfig(extractResetConfigIfReset(job).orElse(null))
             .createdAt(job.getCreatedAtInSecond())
             .updatedAt(job.getUpdatedAtInSecond())
             .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(attempt -> getAttemptRead(attempt)).collect(Collectors.toList()));
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+  }
+
+  /**
+   * If the job is of type RESET, extracts the part of the reset config that we expose in the API.
+   * Otherwise, returns empty optional.
+   *
+   * @param job - job
+   * @return api representation of reset config
+   */
+  private static Optional<ResetConfig> extractResetConfigIfReset(final Job job) {
+    if (job.getConfigType() == ConfigType.RESET_CONNECTION) {
+      final ResetSourceConfiguration resetSourceConfiguration = job.getConfig().getResetConnection().getResetSourceConfiguration();
+      if (resetSourceConfiguration == null) {
+        return Optional.empty();
+      }
+      return Optional.ofNullable(
+          new ResetConfig().streamsToReset(job.getConfig().getResetConnection().getResetSourceConfiguration().getStreamsToReset()
+              .stream()
+              .map(ProtocolConverters::streamDescriptorToApi)
+              .toList()));
+    } else {
+      return Optional.empty();
+    }
   }
 
   public AttemptInfoRead getAttemptInfoRead(final Attempt attempt) {

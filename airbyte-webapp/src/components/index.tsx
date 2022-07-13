@@ -2,6 +2,7 @@ export * from "./base";
 
 export * from "./ArrayOfObjectsEditor";
 export * from "./ContentCard";
+export * from "./CodeEditor";
 export * from "./DefaultLogoCatalog";
 export * from "./ImageBlock";
 export * from "./Label";
@@ -19,3 +20,4 @@ export * from "./Spinner";
 export * from "./StatusIcon";
 export * from "./TextWithHTML";
 export * from "./ProgressBar";
+export * from "./ConnectorCard";

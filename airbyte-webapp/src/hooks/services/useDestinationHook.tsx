@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "react-query";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationService } from "core/domain/connector/DestinationService";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -21,13 +21,16 @@ export const destinationsKeys = {
   detail: (destinationId: string) => [...destinationsKeys.all, "details", destinationId] as const,
 };
 
-type ValuesProps = {
+interface ValuesProps {
   name: string;
   serviceType?: string;
   connectionConfiguration?: ConnectionConfiguration;
-};
+}
 
-type ConnectorProps = { name: string; destinationDefinitionId: string };
+interface ConnectorProps {
+  name: string;
+  destinationDefinitionId: string;
+}
 
 function useDestinationService() {
   const { apiUrl } = useConfig();
@@ -35,7 +38,9 @@ function useDestinationService() {
   return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type DestinationList = { destinations: DestinationRead[] };
+interface DestinationList {
+  destinations: DestinationRead[];
+}
 
 const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
@@ -87,17 +92,16 @@ const useCreateDestination = () => {
 const useDeleteDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
-  const analyticsService = useAnalyticsService();
+  const trackDestinationAction = useTrackAction(TrackActionNamespace.DESTINATION, TrackActionLegacyType.SOURCE);
 
   return useMutation(
     (payload: { destination: DestinationRead; connectionsWithDestination: WebBackendConnectionRead[] }) =>
       service.delete(payload.destination.destinationId),
     {
       onSuccess: (_data, ctx) => {
-        analyticsService.track("Destination - Action", {
-          action: "Delete destination",
+        trackDestinationAction("Delete destination", TrackActionType.DELETE, {
           connector_destination: ctx.destination.destinationName,
-          connector_destination_id: ctx.destination.destinationDefinitionId,
+          connector_destination_definition_id: ctx.destination.destinationDefinitionId,
         });
 
         queryClient.removeQueries(destinationsKeys.detail(ctx.destination.destinationId));

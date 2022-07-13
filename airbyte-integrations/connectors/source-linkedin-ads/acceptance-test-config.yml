@@ -5,10 +5,6 @@ tests:
   spec:
     - spec_path: "source_linkedin_ads/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "secrets/config_token.json"
-      status: "succeed"
     - config_path: "secrets/config_oauth.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
