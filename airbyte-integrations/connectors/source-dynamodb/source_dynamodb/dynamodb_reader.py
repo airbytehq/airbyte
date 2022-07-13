@@ -4,18 +4,21 @@
 
 from __future__ import annotations
 
-import logging
-from typing import Any, Dict, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Mapping, Union
 
 import boto3
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from pydantic.types import NonNegativeInt
-from source_dynamodb import constants as cnst
-from source_dynamodb.typing import Spec
+
+MAX_ITEMS_PAGINATOR: int = 50
+MAX_PAGES_PAGINATOR: int = 10
 
 
 class Reader:
-    def __init__(self, logger: logging.Logger, config: Spec) -> None:
+    def __init__(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> None:
         self.logger = logger
         self.aws_access_key_id = config["aws_access_key_id"]
         self.aws_secret_access_key = config["aws_secret_access_key"]
@@ -79,15 +82,17 @@ class Reader:
             while last_evaluated_table:
                 response_iterator = paginator.paginate(
                     PaginationConfig={
-                        "MaxItems": cnst.MAX_ITEMS_PAGINATOR,
-                        "PageSize": cnst.MAX_ITEMS_PAGINATOR,
+                        "MaxItems": MAX_ITEMS_PAGINATOR,
+                        "PageSize": MAX_ITEMS_PAGINATOR,
                         "StartingToken": last_evaluated_table,
                     },
                 )
 
                 for response in response_iterator:
                     tables.extend(response["TableNames"])
-                    last_evaluated_table = response.get("LastEvaluatedTableName")
+                    last_evaluated_table = response.get(
+                        "LastEvaluatedTableName"
+                    )
 
             streams: List[AirbyteStream] = []
             for table in tables:
@@ -125,7 +130,9 @@ class Reader:
             data = response["Items"]
 
             while "LastEvaluatedKey" in response.keys():
-                response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+                response = table.scan(
+                    ExclusiveStartKey=response["LastEvaluatedKey"]
+                )
                 data.extend(response["Items"])
 
             return data

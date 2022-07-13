@@ -3,11 +3,13 @@
 #
 
 
-import logging
+from __future__ import annotations
+
 import traceback
 from datetime import datetime
-from typing import Any, Dict, Generator
+from typing import Any, Dict, Generator, Mapping
 
+from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -20,11 +22,12 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 from source_dynamodb import dynamodb_reader
-from source_dynamodb.typing import Spec
 
 
 class SourceDynamodb(Source):
-    def check(self, logger: logging.Logger, config: Spec) -> AirbyteConnectionStatus:
+    def check(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -49,7 +52,9 @@ class SourceDynamodb(Source):
                 message=f"An exception occurred: {str(e)}",
             )
 
-    def discover(self, logger: logging.Logger, config: Spec) -> AirbyteCatalog:
+    def discover(
+        self, logger: AirbyteLogger, config: Mapping[str, Any]
+    ) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
         For example, given valid credentials to a Postgres database,
@@ -73,8 +78,8 @@ class SourceDynamodb(Source):
 
     def read(
         self,
-        logger: logging.Logger,
-        config: Spec,
+        logger: AirbyteLogger,
+        config,
         catalog: ConfiguredAirbyteCatalog,
         state: Dict[str, Any],
     ) -> Generator[AirbyteMessage, None, None]:
@@ -116,11 +121,15 @@ class SourceDynamodb(Source):
                             record=AirbyteRecordMessage(
                                 stream=stream_name,
                                 data=row,
-                                emitted_at=int(datetime.now().timestamp()) * 1000,
+                                emitted_at=int(datetime.now().timestamp())
+                                * 1000,
                                 namespace=config_stream.stream.namespace,
                             ),
                         )
             except Exception as e:
-                msg = f"Failed to read data for stream '{stream_name}': " f"{repr(e)}\n{traceback.format_exc()}"
-                logger.error(msg=msg)
+                msg = (
+                    f"Failed to read data for stream '{stream_name}': "
+                    f"{repr(e)}\n{traceback.format_exc()}"
+                )
+                logger.error(message=msg)
                 raise e
