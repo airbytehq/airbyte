@@ -29,7 +29,7 @@ class ConditionalPaginator(Paginator, ABC):
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
-        url_base: str = "",
+        url_base: str,
         decoder: Decoder = None,
     ):
         """
@@ -77,6 +77,7 @@ class ConditionalPaginator(Paginator, ABC):
 
     def path(self):
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
+            # Replace url base to only return the path
             return self._token.replace(self._url_base, "")
         else:
             return None
