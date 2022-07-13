@@ -52,6 +52,9 @@
     },
     "Conversions": {
       "type": ["null", "number"]
+    },
+    "CostPerConversion": {
+      "type": ["null", "number"]
     }
   }
 }

@@ -53,6 +53,9 @@
     "Conversions": {
       "type": ["null", "number"]
     },
+    "CostPerConversion": {
+      "type": ["null", "number"]
+    },
     "AdGroupName": {
       "type": ["null", "string"]
     },

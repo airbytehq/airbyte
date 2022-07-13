@@ -350,7 +350,8 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
         "ReturnOnAdSpend",
         "RevenuePerConversion",
         "ConversionRate",
-        "Conversions"
+        "Conversions",
+        "CostPerConversion"
     ]
 
 
@@ -397,6 +398,7 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
         "RevenuePerConversion",
         "ConversionRate",
         "Conversions",
+        "CostPerConversion",
         "AdGroupName",
         "AdGroupId",
         "AdTitle",
@@ -448,6 +450,7 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
         "RevenuePerConversion",
         "ConversionRate",
         "Conversions",
+        "CostPerConversion",
         "AdGroupName",
         "AdGroupId",
     ]
@@ -496,6 +499,7 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
         "RevenuePerConversion",
         "ConversionRate",
         "Conversions",
+        "CostPerConversion",
         "AdGroupName",
         "AdGroupId",
         "AdId",
@@ -549,6 +553,7 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
         "RevenuePerConversion",
         "ConversionRate",
         "Conversions",
+        "CostPerConversion"
     ]
 
 
