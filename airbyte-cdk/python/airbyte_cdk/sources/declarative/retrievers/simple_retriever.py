@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
@@ -30,7 +31,7 @@ class SimpleRetriever(Retriever, HttpStream):
     ):
         self._name = name
         self._primary_key = primary_key
-        self._paginator = paginator
+        self._paginator = paginator or NoPagination()
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())

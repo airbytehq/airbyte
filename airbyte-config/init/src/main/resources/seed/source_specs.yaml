@@ -2261,7 +2261,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.11"
+- dockerImage: "airbyte/source-file:0.2.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -4389,6 +4389,54 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+- dockerImage: "airbyte/source-kyriba:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Kyriba Spec"
+      type: "object"
+      required:
+      - "domain"
+      - "username"
+      - "password"
+      - "start_date"
+      additionalProperties: false
+      properties:
+        domain:
+          type: "string"
+          description: "Kyriba domain"
+          title: "Domain"
+          examples:
+          - "demo.kyriba.com"
+          pattern: "^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
+        username:
+          type: "string"
+          description: "Username to be used in basic auth"
+          title: "Username"
+        password:
+          type: "string"
+          description: "Password to be used in basic auth"
+          title: "Password"
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          description: "The date the sync should start from."
+          title: "Start Date"
+          examples:
+          - "2021-01-10"
+          pattern: "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"
+        end_date:
+          type: "string"
+          description: "The date the sync should end. If let empty the sync will run\
+            \ to the current date."
+          title: "End Date"
+          examples:
+          - "2022-03-01"
+          pattern: "^(?:(\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01]))|)$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-lemlist:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -5907,7 +5955,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-okta:0.1.5"
+- dockerImage: "airbyte/source-okta:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
