@@ -25,12 +25,9 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -199,7 +196,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 
-  //normalization test
+  // normalization test
 
   /**
    * This test is disabled because it is very slow, and should only be run manually for now.

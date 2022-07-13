@@ -29,16 +29,19 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
     Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(internalStagingConfig));
     return internalStagingConfig;
   }
+
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair.json");
   }
+
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalizationWithKeyPairEncrypt(final String messagesFilename, final String catalogFilename) throws Exception {
     testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair_encrypted.json");
   }
+
   private void testSyncWithNormalizationWithKeyPairAuth(String messagesFilename, String catalogFilename, String configName) throws Exception {
     if (!normalizationFromSpec()) {
       return;
