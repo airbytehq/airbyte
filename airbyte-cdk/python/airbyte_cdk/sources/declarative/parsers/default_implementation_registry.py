@@ -1,16 +1,19 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
@@ -48,4 +51,6 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Stream: DeclarativeStream,
     RequestOption: RequestOption,
     InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
+    MinMaxDatetime: MinMaxDatetime,
+    InterpolatedString: InterpolatedString,
 }

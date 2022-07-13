@@ -43,7 +43,7 @@ SOME_BACKOFF_TIME = 60
             "test_chain_retrier_retry_ignore",
             ResponseStatus.retry(SOME_BACKOFF_TIME),
             response_status.IGNORE,
-            response_status.IGNORE,
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
         (
             "test_chain_retrier_retry_fail",
@@ -61,7 +61,7 @@ SOME_BACKOFF_TIME = 60
             "test_chain_retrier_ignore_ok",
             response_status.IGNORE,
             response_status.SUCCESS,
-            response_status.SUCCESS,
+            response_status.IGNORE,
         ),
         (
             "test_chain_retrier_ok_ignore",
@@ -79,7 +79,7 @@ SOME_BACKOFF_TIME = 60
             "test_chain_retrier_retry_ok",
             ResponseStatus.retry(SOME_BACKOFF_TIME),
             response_status.SUCCESS,
-            response_status.SUCCESS,
+            ResponseStatus.retry(SOME_BACKOFF_TIME),
         ),
         (
             "test_chain_retrier_return_first_retry",

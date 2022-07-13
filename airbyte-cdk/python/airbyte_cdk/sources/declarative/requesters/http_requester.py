@@ -24,8 +24,8 @@ class HttpRequester(Requester):
         self,
         *,
         name: str,
-        url_base: [str, InterpolatedString],
-        path: [str, InterpolatedString],
+        url_base: InterpolatedString,
+        path: InterpolatedString,
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
         authenticator: HttpAuthenticator = None,
@@ -38,11 +38,7 @@ class HttpRequester(Requester):
             request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
         self._name = name
         self._authenticator = authenticator or NoAuth()
-        if type(url_base) == str:
-            url_base = InterpolatedString(url_base)
         self._url_base = url_base
-        if type(path) == str:
-            path = InterpolatedString(path)
         self._path: InterpolatedString = path
         if type(http_method) == str:
             http_method = HttpMethod[http_method]
