@@ -39,5 +39,5 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     State: DictState,
     StreamSlicer: SingleSlice,
     Paginator: NoPagination,
-    AddedFieldDefinition: AddedFieldDefinition,
+    AddedFieldDefinition: AddedFieldDefinition,  # TODO this is a concrete class, this map is ideally only for abcs
 }
