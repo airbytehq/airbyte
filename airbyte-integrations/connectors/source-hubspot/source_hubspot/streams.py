@@ -1282,7 +1282,7 @@ class Owners(Stream):
     scopes = {"crm.objects.owners.read"}
 
 
-class PropertyHistory(IncrementalStream):
+class PropertyHistory(Stream):
     """Contacts Endpoint, API v1
     Is used to get all Contacts and the history of their respective
     Properties. Whenever a property is changed it is added here.
@@ -1295,9 +1295,10 @@ class PropertyHistory(IncrementalStream):
     created_at_field = "timestamp"
     entity = "contacts"
     data_field = "contacts"
-    page_field = "vid-offset"
-    page_filter = "vidOffset"
+    page_field = "time-offset"
+    page_filter = "timeOffset"
     denormalize_records = True
+    limit_field = "count"
     limit = 100
     scopes = {"crm.objects.contacts.read"}
 
@@ -1307,8 +1308,9 @@ class PropertyHistory(IncrementalStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state, stream_slice, next_page_token)
-        params.update(propertyMode="value_and_history")
+        params = {self.limit_field: self.limit, "propertyMode": "value_and_history"}
+        if next_page_token:
+            params.update(next_page_token)
         return params
 
     def _transform(self, records: Iterable) -> Iterable:
