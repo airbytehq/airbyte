@@ -97,6 +97,7 @@ export type ConnectionFormMode = "create" | "edit" | "readonly";
 function FormValuesChangeTracker<T>({ onChangeValues }: { onChangeValues?: (values: T) => void }) {
   // Grab values from context
   const { values, errors, dirty } = useFormikContext<T>();
+  // TODO: Remove debug output
   console.log("values", values);
   console.log("errors", errors);
   console.log("dirty", dirty);
@@ -142,7 +143,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   connection,
   onChangeValues,
 }) => {
-  // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
