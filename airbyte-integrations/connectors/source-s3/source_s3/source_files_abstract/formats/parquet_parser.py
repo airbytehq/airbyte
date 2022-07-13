@@ -108,7 +108,9 @@ class ParquetParser(AbstractFileParser):
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
         logical_types = {
-            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1] for field in reader.schema
+            field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1]
+            for field in reader.schema
+            if field.name in self._master_schema
         }
         if not reader.schema:
             # pyarrow can parse empty parquet files but a connector can't generate dynamic schema
@@ -123,10 +125,9 @@ class ParquetParser(AbstractFileParser):
             for batch in reader.iter_batches(**args):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column
                 # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
-                batch_columns = [col.name for col in batch.schema]
                 batch_dict = batch.to_pydict()
-                columnwise_record_values = [batch_dict[column] for column in batch_columns]
-
+                batch_columns = [column for column in batch_dict.keys() if column in self._master_schema]
+                columnwise_record_values = [batch_dict[column] for column in batch_columns if column in self._master_schema]
                 # we zip this to get row-by-row
                 for record_values in zip(*columnwise_record_values):
                     yield {
