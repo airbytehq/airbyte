@@ -78,6 +78,8 @@ class DeclarativeComponentFactory:
         elif isinstance(definition, dict):
             # Try to infer object type
             expected_type = self.get_default_type(key, parent_class)
+            # if there is an expected type, and it's not a builtin type, then instantiate it
+            # We don't have to instantiate builtin types (eg string and dict) because definition is already going to be of that type
             if expected_type and not self._is_builtin_type(expected_type):
                 definition["class_name"] = expected_type
                 definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
