@@ -107,6 +107,7 @@ class ParquetParser(AbstractFileParser):
 
         reader = self._init_reader(file)
         self.logger.info(f"found {reader.num_row_groups} row groups")
+        # parsing logical_types with respect to master_schema column names.
         logical_types = {
             field.name: self.parse_field_type(field.logical_type.type.lower(), field.physical_type)[1]
             for field in reader.schema
@@ -126,6 +127,10 @@ class ParquetParser(AbstractFileParser):
                 # this gives us a dist of lists where each nested list holds ordered values for a single column
                 # {'number': [1.0, 2.0, 3.0], 'name': ['foo', None, 'bar'], 'flag': [True, False, True], 'delta': [-1.0, 2.5, 0.1]}
                 batch_dict = batch.to_pydict()
+                # sometimes the batch file has more columns than master_schema declares, like:
+                # master schema: ['number', 'name', 'flag', 'delta'],
+                # batch_file_schema: ['number', 'name', 'flag', 'delta', 'EXTRA_COL_NAME'].
+                # we need to check wether batch_file_schema == master_schema and reeject reading extra columns, otherwise "KeyError" raises.
                 batch_columns = [column for column in batch_dict.keys() if column in self._master_schema]
                 columnwise_record_values = [batch_dict[column] for column in batch_columns if column in self._master_schema]
                 # we zip this to get row-by-row
