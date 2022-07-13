@@ -118,71 +118,38 @@ class GranularityType(Enum):
 #
 auxiliary_id_map = {}
 
-# The default value that is returned by stream_slices if there is no slice found: [None]
-default_stream_slices_return_value = [None]
-
 
 class SnapchatMarketingException(Exception):
     """Just for formatting the exception as SnapchatMarketing"""
 
 
 def get_parent_ids(parent) -> List:
-    """This auxiliary function is to help retrieving the ids from another stream
+    """Return record ids from <parent> stream full_refresh sync, example:
+    [{'id': record_1['id']}, {'id': record_2['id']}, ... {'id': record_N['id']}]
+
+    Function uses global cache 'auxiliary_id_map' to save results of parent syncs.
+    It prevents multiple actual syncs of the same basic streams like organizations, adacounts etc
 
     :param parent: instance of stream class from what we need to retrieve ids
     :returns: empty list in case no ids of the stream was found or list with {'id': id}
     """
 
-    # The trick with this code is that some streams are chained:
-    # For example Creatives -> AdAccounts -> Organizations.
-    # Creatives need the ad_account_id as path variable
-    # AdAccounts need the organization_id as path variable
-    # So organization_ids from Organizations goes as slices to AdAccounts
-    # and after that ad_account_ids from AdAccounts goes as slices to Creatives for path variables
-    # So first we must get the AdAccounts, then do the slicing for them
-    # and then call the read_records for each slice
-
-    # This auxiliary_id_map is used to prevent the extracting of ids that are used in most streams
-    # Instead of running the request to get (for example) AdAccounts for each stream as slices we put them in the dict and
-    # return if the same ids are requested in the stream. This saves us a lot of time and requests
+    # return cached data if it has been already extracted
     if parent.name in auxiliary_id_map:
         return auxiliary_id_map[parent.name]
 
-    # Some damn logic a?
-    # Relax, that has some meaning:
-    # if we want to get just 1 level of parent ids (For example AdAccounts need the organization_ids from Organizations, but
-    # Organizations do not have slices and returns [None] from stream_slices method) this switch goes for else clause and get all the
-    # organization_ids from Organizations and return them as slices
-    # But in case we want to retrieve 2 levels of parent ids (For example we run Creatives stream - it needs the ad_account_ids from AdAccount
-    # and AdAccount need organization_ids from Organizations and first we must get all organization_ids
-    # and for each of them get the ad_account_ids) so switch goes to if claus to get all the nested ids.
-    # Let me visualize this for you:
-    #
-    #           organization_id_1                      organization_id_2
-    #                 / \                                    / \
-    #                /   \                                  /   \
-    # ad_account_id_1     ad_account_id_2    ad_account_id_3     ad_account_id_4
-    #
-    # So for the AdAccount slices will be [{'organization_id': organization_id_1}, {'organization_id': organization_id_2}]
-    # And for the Creatives (Media, Ad, AdSquad, etc...) the slices will be
-    # [{'ad_account_id': ad_account_id_1}, {'ad_account_id': ad_account_id_2},
-    #  {'ad_account_id': ad_account_id_3},{'ad_account_id': ad_account_id_4}]
-    #
-    # After getting all the account_ids, they go as slices to Creatives (Media, Ad, AdSquad, etc...)
-    # and are used in the path function as a path variables according to the API docs
-
     parent_ids = []
 
+    # Run actual sync for parent stream
     parent_stream_slices = parent.stream_slices(sync_mode=SyncMode.full_refresh)
     for parent_stream_slice in parent_stream_slices:
         records = parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=parent_stream_slice)
         for record in records:
             parent_ids.append({"id": record["id"]})
 
-    if not parent_ids:
-        return []
-
+    # add data to cache to prevent further actual syncs of the same streams. (they always return the same data)
     auxiliary_id_map[parent.name] = parent_ids
+
     return parent_ids
 
 
