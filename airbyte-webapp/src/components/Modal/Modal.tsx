@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React, { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
@@ -10,9 +11,17 @@ export interface ModalProps {
   onClose?: () => void;
   clear?: boolean;
   closeOnBackground?: boolean;
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
-const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground }) => {
+const cardStyleBySize = {
+  sm: styles.sm,
+  md: styles.md,
+  lg: styles.lg,
+  xl: styles.xl,
+};
+
+const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground, size }) => {
   const handleUserKeyPress = useCallback((event, closeModal) => {
     const { keyCode } = event;
     // Escape key
@@ -39,7 +48,7 @@ const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnB
       {clear ? (
         children
       ) : (
-        <ContentCard title={title} className={styles.card}>
+        <ContentCard title={title} className={classNames(styles.card, size ? cardStyleBySize[size] : undefined)}>
           {children}
         </ContentCard>
       )}

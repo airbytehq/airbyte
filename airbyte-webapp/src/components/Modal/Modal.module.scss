@@ -22,6 +22,22 @@
 }
 
 .card {
-  margin-left: 93px;
-  max-width: calc(100% - 93px - variables.$spacing-lg * 2);
+  margin-left: variables.$width-size-menu;
+  max-width: calc(100% - variables.$width-size-menu - variables.$spacing-lg * 2);
+
+  &.sm {
+    width: variables.$width-modal-sm;
+  }
+
+  &.md {
+    width: variables.$width-modal-md;
+  }
+
+  &.lg {
+    width: variables.$width-modal-lg;
+  }
+
+  &.xl {
+    width: variables.$width-modal-xl;
+  }
 }

@@ -17,7 +17,7 @@ const Template: ComponentStory<typeof Modal> = (args) => {
 
   return (
     <Modal {...args}>
-      <ModalBody width="450px">{args.children}</ModalBody>
+      <ModalBody>{args.children}</ModalBody>
       <ModalFooter>
         <button>Button 1</button>
         <button>Button 2</button>
