@@ -11,6 +11,7 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
+    "requests-mock~=1.9.3",
     "source-acceptance-test",
 ]
 

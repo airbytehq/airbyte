@@ -250,7 +250,7 @@ PAGE_FIELDS = ",".join(
         "likes",
         "live_videos",
         "locations",
-        "nativeoffers",
+        # "nativeoffers",        Tried accessing nonexisting field (nativeoffers) on node type (Page)
         "page_backed_instagram_accounts",
         "photos",
         "posts",

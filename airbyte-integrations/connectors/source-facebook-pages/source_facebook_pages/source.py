@@ -3,6 +3,7 @@
 #
 
 
+from json import JSONDecodeError
 from typing import Any, List, Mapping, Tuple
 
 import requests
@@ -25,6 +26,7 @@ class SourceFacebookPages(AbstractSource):
             _ = list(Page(access_token=access_token, page_id=page_id).read_records(sync_mode=SyncMode.full_refresh))
             ok = True
         except Exception as e:
+            logger.info(f'Error:{e}')
             error_msg = repr(e)
 
         return ok, error_msg
@@ -38,7 +40,14 @@ class SourceFacebookPages(AbstractSource):
         # token it would be no problem unless it has wrong page ID.
         # https://developers.facebook.com/docs/pages/access-tokens#get-a-page-access-token
         r = requests.get(f"https://graph.facebook.com/{page_id}", params={"fields": "access_token", "access_token": access_token})
-        return r.json()["access_token"]
+        if r.ok:
+            return r.json().get("access_token")
+
+        try:
+            error_msg = r.json().get("error", {}).get("message")
+        except JSONDecodeError:
+            error_msg = r.text
+        raise Exception(error_msg)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         access_token, page_id = config["access_token"], config["page_id"]

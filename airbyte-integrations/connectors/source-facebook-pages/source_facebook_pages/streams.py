@@ -12,7 +12,7 @@ from source_facebook_pages.metrics import PAGE_FIELDS, PAGE_METRICS, POST_FIELDS
 
 
 class FacebookPagesStream(HttpStream, ABC):
-    url_base = "https://graph.facebook.com/v12.0/"
+    url_base = "https://graph.facebook.com/v14.0/"
     primary_key = "id"
     data_field = "data"
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
