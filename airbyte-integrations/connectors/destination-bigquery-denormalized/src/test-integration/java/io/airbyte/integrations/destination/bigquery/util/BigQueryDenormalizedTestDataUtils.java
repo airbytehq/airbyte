@@ -7,6 +7,11 @@ package io.airbyte.integrations.destination.bigquery.util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedDestination;
+import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -48,6 +53,22 @@ public class BigQueryDenormalizedTestDataUtils {
 
   public static JsonNode getDataArrays() {
     return getTestDataFromResourceJson("dataArrays.json");
+  }
+
+  public static JsonNode getSchemaTooDeepNestedDepth() {
+    return getTestDataFromResourceJson("schemaTooDeepNestedDepth.json");
+  }
+
+  public static JsonNode getDataTooDeepNestedDepth() {
+    return getTestDataFromResourceJson("dataTooDeepNestedDepth.json");
+  }
+
+  public static JsonNode getSchemaMaxNestedDepth() {
+    return getTestDataFromResourceJson("schemaMaxNestedDepth.json");
+  }
+
+  public static JsonNode getDataMaxNestedDepth() {
+    return getTestDataFromResourceJson("dataMaxNestedDepth.json");
   }
 
   public static JsonNode getExpectedDataArrays() {
@@ -114,6 +135,16 @@ public class BigQueryDenormalizedTestDataUtils {
     return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(new ConfiguredAirbyteStream()
         .withStream(new AirbyteStream().withName(USERS_STREAM_NAME).withNamespace(datasetId).withJsonSchema(schema))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
+  }
+
+  public static void runDestinationWrite(ConfiguredAirbyteCatalog catalog, JsonNode config, AirbyteMessage...messages) throws Exception {
+    final BigQueryDestination destination = new BigQueryDenormalizedDestination();
+    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+
+    for (AirbyteMessage message : messages) {
+      consumer.accept(message);
+    }
+    consumer.close();
   }
 
 }
