@@ -266,6 +266,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
+  @Disabled // Issue #5912 is reopened
   void testAnyOf() throws Exception {
     catalog = getCommonCatalog(getAnyOfSchema(), datasetId);
 
@@ -294,7 +295,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
-  @Disabled // Issue #11166 is reopened
+  @Disabled // Issue #5912 is reopened
   void testAnyOfWithNull() throws Exception {
     catalog = getCommonCatalog(getAnyOfSchema(), datasetId);
 
@@ -315,7 +316,7 @@ class BigQueryDenormalizedDestinationTest {
   }
 
   @Test
-  @Disabled // Issue #11166 is reopened
+  @Disabled // Issue #5912 is reopened
   void testAnyOfWithEmptyList() throws Exception {
     catalog = getCommonCatalog(getAnyOfSchema(), datasetId);
 
