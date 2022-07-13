@@ -73,7 +73,7 @@ public class PersistStateActivityTest {
   // For per-stream state, we expect there to be state for each stream within the configured catalog
   // input into a job
   // This test is to ensure that we correctly throw an error if not every stream in the configured
-  // catalog has a state message
+  // catalog has a state message when migrating from Legacy to Per-Stream
   @Test
   public void testPersistWithInvalidStateDuringMigration() throws IOException {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
