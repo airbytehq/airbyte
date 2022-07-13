@@ -8,7 +8,7 @@ The Airbyte Python CDK is a framework for rapidly developing production-grade Ai
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-protocol) before proceeding.
 
 If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the \#connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
 
@@ -23,7 +23,7 @@ cd airbyte-integrations/connector-templates/generator
 
 then follow the interactive prompt. Next, find all `TODO`s in the generated project directory -- they're accompanied by lots of comments explaining what you'll need to do in order to implement your connector. Upon completing all TODOs properly, you should have a functioning connector.
 
-Additionally, you can follow [this tutorial](https://docs.airbyte.io/connector-development/tutorials/cdk-tutorial-python-http) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
+Additionally, you can follow [this tutorial](../tutorials/cdk-tutorial-python-http/getting-started.md) for a complete walkthrough of creating an HTTP connector using the Airbyte CDK.
 
 ### Concepts & Documentation
 
@@ -45,7 +45,7 @@ Airbyte recommends using the CDK template generator to develop with the CDK. The
 
 For tips on useful Python knowledge, see the [Python Concepts](python-concepts.md) page.
 
-You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/)
+You can find a complete tutorial for implementing an HTTP source connector in [this tutorial](../tutorials/cdk-tutorial-python-http/getting-started.md)
 
 ### Example Connectors
 

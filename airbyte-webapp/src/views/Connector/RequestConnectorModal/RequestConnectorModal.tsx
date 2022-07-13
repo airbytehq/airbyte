@@ -10,11 +10,11 @@ import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 import ConnectorForm from "./components/ConnectorForm";
 import { Values } from "./types";
 
-type RequestConnectorModalProps = {
+interface RequestConnectorModalProps {
   onClose: () => void;
   connectorType: "source" | "destination";
   initialName?: string;
-};
+}
 const Content = styled.div`
   width: 492px;
   padding: 22px 34px 36px 32px;

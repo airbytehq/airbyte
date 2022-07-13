@@ -27,6 +27,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,10 +36,13 @@ import java.util.UUID;
 
 public class ConnectionHelpers {
 
-  private static final String STREAM_NAME = "users-data";
+  private static final String STREAM_NAME_BASE = "users-data";
+  private static final String STREAM_NAME = STREAM_NAME_BASE + "0";
   private static final String FIELD_NAME = "id";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
+
+  public static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName(STREAM_NAME);
 
   // only intended for unit tests, so intentionally set very high to ensure they aren't being used
   // elsewhere
@@ -99,7 +103,8 @@ public class ConnectionHelpers {
   public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
                                                               final UUID sourceId,
                                                               final UUID destinationId,
-                                                              final List<UUID> operationIds) {
+                                                              final List<UUID> operationIds,
+                                                              final UUID sourceCatalogId) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -117,7 +122,8 @@ public class ConnectionHelpers {
             .cpuRequest(TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
             .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()));
+            .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
+        .sourceCatalogId(sourceCatalogId);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -125,7 +131,8 @@ public class ConnectionHelpers {
         standardSync.getConnectionId(),
         standardSync.getSourceId(),
         standardSync.getDestinationId(),
-        standardSync.getOperationIds());
+        standardSync.getOperationIds(),
+        standardSync.getSourceCatalogId());
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -147,7 +154,8 @@ public class ConnectionHelpers {
         .operationIds(standardSync.getOperationIds())
         .name(standardSync.getName())
         .namespaceFormat(standardSync.getNamespaceFormat())
-        .prefix(standardSync.getPrefix());
+        .prefix(standardSync.getPrefix())
+        .sourceCatalogId(standardSync.getSourceCatalogId());
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
@@ -196,7 +204,7 @@ public class ConnectionHelpers {
 
   public static AirbyteCatalog generateBasicApiCatalog() {
     return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
-        .stream(generateBasicApiStream())
+        .stream(generateBasicApiStream(null))
         .config(generateBasicApiStreamConfig())));
   }
 
@@ -204,7 +212,7 @@ public class ConnectionHelpers {
     final List<AirbyteStreamAndConfiguration> streamAndConfigurations = new ArrayList<>();
     for (int i = 0; i < streamsCount; i++) {
       streamAndConfigurations.add(new AirbyteStreamAndConfiguration()
-          .stream(generateBasicApiStream())
+          .stream(generateBasicApiStream(String.valueOf(i)))
           .config(generateBasicApiStreamConfig()));
     }
     return new AirbyteCatalog().streams(streamAndConfigurations);
@@ -221,8 +229,12 @@ public class ConnectionHelpers {
   }
 
   private static AirbyteStream generateBasicApiStream() {
+    return generateBasicApiStream(null);
+  }
+
+  private static AirbyteStream generateBasicApiStream(final String nameSuffix) {
     return new AirbyteStream()
-        .name(STREAM_NAME)
+        .name(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix)
         .jsonSchema(generateBasicJsonSchema())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)

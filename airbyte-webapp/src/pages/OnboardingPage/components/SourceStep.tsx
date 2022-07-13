@@ -4,7 +4,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { JobInfo } from "core/domain/job";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -29,7 +29,7 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { mutateAsync: createSource } = useCreateSource();
 
-  const trackNewSourceAction = useTrackAction(TrackActionType.NEW_SOURCE);
+  const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.NEW_SOURCE);
 
   const getSourceDefinitionById = (id: string) => sourceDefinitions.find((item) => item.sourceDefinitionId === id);
 
@@ -74,7 +74,8 @@ const SourceStep: React.FC<SourcesStepProps> = ({ onNextStep, onSuccess }) => {
     setDocumentationPanelOpen(false);
     const sourceDefinition = getSourceDefinitionById(sourceId);
     setDocumentationUrl(sourceDefinition?.documentationUrl || "");
-    trackNewSourceAction("Select a connector", {
+
+    trackNewSourceAction("Select a connector", TrackActionType.SELECT, {
       connector_source: sourceDefinition?.name,
       connector_source_definition_id: sourceDefinition?.sourceDefinitionId,
     });

@@ -328,13 +328,13 @@ class TestRequestBody:
             list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
     def test_body_for_all_methods(self, mocker, requests_mock):
-        """Stream must send a body for POST/PATCH/PUT methods only"""
+        """Stream must send a body for GET/POST/PATCH/PUT methods only"""
         stream = PostHttpStream()
         methods = {
             "POST": True,
             "PUT": True,
             "PATCH": True,
-            "GET": False,
+            "GET": True,
             "DELETE": False,
             "OPTIONS": False,
         }
@@ -476,10 +476,10 @@ def test_default_parse_response_error_message(api_response: dict, expected_messa
     assert message == expected_message
 
 
-def test_default_parse_response_error_message_not_json():
+def test_default_parse_response_error_message_not_json(requests_mock):
     stream = StubBasicReadHttpStream()
-    response = MagicMock()
-    response.json.side_effect = requests.exceptions.JSONDecodeError()
+    requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
+    response = requests.get("mock://test.com/not_json")
 
     message = stream.parse_response_error_message(response)
     assert message is None

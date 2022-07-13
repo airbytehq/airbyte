@@ -41,6 +41,7 @@ N/A
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.1.5   | 2022-06-10 | [xxx](https://github.com/airbytehq/airbyte/pull/xx)      | Emit timestamps in the proper ISO format                  |
 | 0.1.4   | 2022-05-27 | [13298](https://github.com/airbytehq/airbyte/pull/13298) | Test publication flow                                     |
 | 0.1.3   | 2022-05-27 | [13248](https://github.com/airbytehq/airbyte/pull/13248) | Add options for records_per_sync and page_size            |
 | 0.1.2   | 2022-05-26 | [13248](https://github.com/airbytehq/airbyte/pull/13293) | Test publication flow                                     |

@@ -4,10 +4,10 @@ import styled from "styled-components";
 
 import { Card } from "components";
 
-type PaddingProps = {
+interface PaddingProps {
   left?: number;
   right?: number;
-};
+}
 
 type IHeaderProps = {
   headerHighlighted?: boolean;
@@ -97,7 +97,7 @@ const Th = styled.th<IThProps>`
   }
 `;
 
-type IProps = {
+interface IProps {
   light?: boolean;
   columns: Array<IHeaderProps | Column<Record<string, unknown>>>;
   erroredRows?: boolean;
@@ -107,7 +107,7 @@ type IProps = {
   onClickRow?: (data: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sortBy?: Array<SortingRule<any>>;
-};
+}
 
 const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortBy, light }) => {
   const [plugins, config] = useMemo(() => {
@@ -161,22 +161,19 @@ const Table: React.FC<IProps> = ({ columns, data, onClickRow, erroredRows, sortB
               onClick={() => onClickRow?.(row.original)}
               erroredRows={erroredRows && !!row.original.error}
             >
-              {
-                // @ts-ignore needs to address proper types for table
-                row.cells.map((cell: ICellProps, key) => {
-                  return (
-                    <Td
-                      {...cell.getCellProps()}
-                      collapse={cell.column.collapse}
-                      customPadding={cell.column.customPadding}
-                      customWidth={cell.column.customWidth}
-                      key={`table-cell-${row.id}-${key}`}
-                    >
-                      {cell.render("Cell")}
-                    </Td>
-                  );
-                })
-              }
+              {row.cells.map((cell: ICellProps, key) => {
+                return (
+                  <Td
+                    {...cell.getCellProps()}
+                    collapse={cell.column.collapse}
+                    customPadding={cell.column.customPadding}
+                    customWidth={cell.column.customWidth}
+                    key={`table-cell-${row.id}-${key}`}
+                  >
+                    {cell.render("Cell")}
+                  </Td>
+                );
+              })}
             </Tr>
           );
         })}

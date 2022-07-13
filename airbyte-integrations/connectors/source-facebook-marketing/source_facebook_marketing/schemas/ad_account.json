@@ -191,7 +191,7 @@
       "type": ["null", "string"]
     },
     "tax_id": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "tax_id_status": {
       "type": ["null", "number"]
