@@ -10,13 +10,13 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
 
 
-@dataclass
+@dataclass(frozen=True)
 class AddedFieldDefinition:
     path: FieldPointer
     value: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class ParsedAddFieldDefinition:
     path: FieldPointer
     value: InterpolatedString
@@ -83,7 +83,7 @@ class AddFields(RecordTransformation):
             self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString(field.value)))
 
     def transform(
-        self, record: Mapping[str, Any], config: Config, stream_state: StreamState, stream_slice: StreamSlice
+        self, record: Mapping[str, Any], config: Config = None, stream_state: StreamState = None, stream_slice: StreamSlice = None
     ) -> Mapping[str, Any]:
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for field in self._fields:

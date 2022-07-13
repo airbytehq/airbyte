@@ -14,7 +14,9 @@ class RecordTransformation(ABC):
     """
 
     @abstractmethod
-    def transform(self, record: Mapping[str, Any], config: Config, state: StreamState, slice: StreamSlice) -> Mapping[str, Any]:
+    def transform(
+        self, record: Mapping[str, Any], config: Config = None, state: StreamState = None, slice: StreamSlice = None
+    ) -> Mapping[str, Any]:
         """
         :param record: the input record to be transformed
         :return: the transformed record
