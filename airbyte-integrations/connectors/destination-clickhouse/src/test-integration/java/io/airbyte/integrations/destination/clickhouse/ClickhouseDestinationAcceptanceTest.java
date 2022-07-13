@@ -142,7 +142,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.11");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
   }
 
