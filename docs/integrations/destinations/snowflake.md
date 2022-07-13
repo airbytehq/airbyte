@@ -166,7 +166,9 @@ Field | Description |
 
 
 ### Key pair authentication
-    You need to generate private key - openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+    You need to generate private key without encryption - openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+
+    You can generate private key with encryption - openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8
 
     Based on private key we need to generate public key with - openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
     Add generated public key to snowflake user - alter user <user_name> set rsa_public_key=<public_key_value>;

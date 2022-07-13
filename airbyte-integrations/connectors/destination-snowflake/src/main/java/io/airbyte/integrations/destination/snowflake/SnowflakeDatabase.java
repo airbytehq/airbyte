@@ -51,6 +51,7 @@ public class SnowflakeDatabase {
       .build();
   public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
   public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
+  public static final String PASSPHRASE = "passphrase";
 
   public static HikariDataSource createDataSource(final JsonNode config) {
     final HikariDataSource dataSource = new HikariDataSource();
@@ -101,6 +102,9 @@ public class SnowflakeDatabase {
       String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
       createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
       properties.put("private_key_file", PRIVATE_KEY_FILE_NAME);
+      if (credentials.has(PASSPHRASE)) {
+        properties.put("private_key_file_pwd", credentials.get(PASSPHRASE).asText());
+      }
     } else {
       LOGGER.warn(
           "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
@@ -137,10 +141,10 @@ public class SnowflakeDatabase {
     return dataSource;
   }
 
-  private static void createPrivateKeyFile(String fileName, String fileValue){
+  private static void createPrivateKeyFile(String fileName, String fileValue) {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
-    } catch (IOException e){
+    } catch (IOException e) {
       throw new RuntimeException("Failed to create file for private key");
     }
   }
