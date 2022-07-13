@@ -114,7 +114,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     final ActivityExecutionContext context = Activity.getExecutionContext();
     return TemporalUtils.withBackgroundHeartbeat(
         () -> {
-
+          LOGGER.warn("made it inside the replicate impl method");
           final var fullSourceConfig = secretsHydrator.hydrate(syncInput.getSourceConfiguration());
           final var fullDestinationConfig = secretsHydrator.hydrate(syncInput.getDestinationConfiguration());
 

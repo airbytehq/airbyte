@@ -20,7 +20,6 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.temporal.ConnectionManagerUtils;
-import io.airbyte.workers.temporal.TemporalJobType;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity.CheckConnectionInput;
 import io.airbyte.workers.temporal.exception.RetryableException;
@@ -683,15 +682,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * since the latter is a long running workflow, in the future, using a different Node pool would
    * make sense.
    */
-  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
-    final int taskQueueChangeVersion =
-        Workflow.getVersion("task_queue_change_from_connection_updater_to_sync", Workflow.DEFAULT_VERSION, TASK_QUEUE_CHANGE_CURRENT_VERSION);
+  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs, final String taskQueue) {
 
-    String taskQueue = TemporalJobType.SYNC.name();
-
-    if (taskQueueChangeVersion < TASK_QUEUE_CHANGE_CURRENT_VERSION) {
-      taskQueue = TemporalJobType.CONNECTION_UPDATER.name();
-    }
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
             .setWorkflowId("sync_" + workflowInternalState.getJobId())

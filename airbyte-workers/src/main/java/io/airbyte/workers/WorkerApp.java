@@ -174,6 +174,9 @@ public class WorkerApp {
 
     if (configs.shouldRunSyncWorkflows()) {
       registerSync(factory);
+      // registerDataPlaneA(factory); simulate data plane A workers being down, want to see rerouting to
+      // Data Plane B
+      registerDataPlaneB(factory);
     }
 
     if (configs.shouldRunConnectionManagerWorkflows()) {
@@ -220,6 +223,11 @@ public class WorkerApp {
   }
 
   private void registerSync(final WorkerFactory factory) {
+    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+  }
+
+  private void registerDataPlaneA(final WorkerFactory factory) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
     final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
@@ -232,9 +240,25 @@ public class WorkerApp {
 
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    final Worker dataPlaneAWorker = factory.newWorker("DATA_PLANE_A", getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    dataPlaneAWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+  }
+
+  private void registerDataPlaneB(final WorkerFactory factory) {
+    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
+
+    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
+        defaultWorkerConfigs,
+        defaultProcessFactory);
+
+    final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
+        defaultWorkerConfigs,
+        defaultProcessFactory);
+
+    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
+
+    final Worker dataPlaneBWorker = factory.newWorker("DATA_PLANE_B", getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    dataPlaneBWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
   }
 
   private void registerDiscover(final WorkerFactory factory) {

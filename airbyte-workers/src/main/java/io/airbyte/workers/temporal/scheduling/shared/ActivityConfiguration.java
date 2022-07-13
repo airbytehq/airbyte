@@ -24,6 +24,7 @@ public class ActivityConfiguration {
   private static final Configs configs = new EnvConfigs();
 
   private static final int MAX_SYNC_TIMEOUT_DAYS = configs.getSyncJobMaxTimeoutDays();
+  private static final Duration SCHEDULE_TO_START_TIMEOUT = Duration.ofSeconds(10); // experimenting w/ 10 seconds for LONG_RUN_OPTIONS
   private static final Duration DB_INTERACTION_TIMEOUT = Duration.ofSeconds(configs.getMaxActivityTimeoutSecond());
 
   // retry infinitely if the worker is killed without exceptions and dies due to timeouts
@@ -37,7 +38,7 @@ public class ActivityConfiguration {
   public static final ActivityOptions LONG_RUN_OPTIONS = ActivityOptions.newBuilder()
       .setScheduleToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
       .setStartToCloseTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
-      .setScheduleToStartTimeout(Duration.ofDays(MAX_SYNC_TIMEOUT_DAYS))
+      .setScheduleToStartTimeout(SCHEDULE_TO_START_TIMEOUT) // to re-route activity tasks to a different task queue
       .setCancellationType(ActivityCancellationType.WAIT_CANCELLATION_COMPLETED)
       .setRetryOptions(RETRY_POLICY)
       .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
@@ -54,5 +55,9 @@ public class ActivityConfiguration {
       .setRetryOptions(TemporalUtils.RETRY)
       .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
       .build();
+
+  public static final ActivityOptions onTaskQueue(final ActivityOptions options, final String taskQueue) {
+    return ActivityOptions.newBuilder(options).setTaskQueue(taskQueue).build();
+  }
 
 }
