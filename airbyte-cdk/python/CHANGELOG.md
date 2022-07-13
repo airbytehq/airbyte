@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.65
+## Unreleased
 - Add the ability to remove & add records in YAML-based sources
 
 ## 0.1.64
