@@ -12,6 +12,7 @@ import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.config.persistence.StatePersistence;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
@@ -54,9 +55,8 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
     final List<StreamDescriptor> stateStreamDescriptors =
         state.getStateMessages().stream().map(stateMessage -> stateMessage.getStream().getStreamDescriptor()).toList();
-    configuredCatalog.getStreams().forEach(stream -> {
-      final StreamDescriptor streamDescriptor = new StreamDescriptor().withName(stream.getStream().getName())
-          .withNamespace(stream.getStream().getNamespace());
+    final List<StreamDescriptor> catalogStreamDescriptors = CatalogHelpers.extractStreamDescriptors(configuredCatalog);
+    catalogStreamDescriptors.forEach(streamDescriptor -> {
       if (!stateStreamDescriptors.contains(streamDescriptor)) {
         throw new IllegalStateException(
             "Job ran during migration from Legacy State to Per Stream State. One of the streams that did not have state is: " + streamDescriptor
