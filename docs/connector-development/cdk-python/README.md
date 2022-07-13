@@ -86,6 +86,18 @@ pip install -e ".[tests]" # [tests] installs test-only dependencies
 * Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
 * The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
 
+#### Debugging
+
+While developing your connector, you can print detailed debug information during a sync by specifying the `--debug` flag. This allows you to get a better picture of what is happening during each step of your sync.
+```text
+python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json --debug
+```
+
+In addition to preset CDK debug statements, you can also add your own statements to emit debug information specific to your connector:
+```python
+self.logger.debug("your debug message here", extra={"debug_field": self.value})
+```
+
 #### Testing
 
 All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them. This also presents a test coverage report.
