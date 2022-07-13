@@ -91,19 +91,19 @@ class ConditionalPaginator(Paginator, ABC):
             **self._request_options_provider.request_params(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self) -> Mapping[str, str]:
         return {
             **self._get_request_options(RequestOptionType.header),
             **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Union[Mapping[str, Any], str]:
         return {
             **self._get_request_options(RequestOptionType.body_data),
             **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         return {
             **self._get_request_options(RequestOptionType.body_json),
             **self._request_options_provider.request_body_json(stream_state=None, stream_slice=None, next_page_token=None),
