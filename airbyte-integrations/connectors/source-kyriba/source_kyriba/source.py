@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -13,21 +13,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-
-
-class KyribaClient:
-    def __init__(self, username: str, password: str, gateway_url: str):
-        self.username = username
-        self.password = password
-        self.url = f"{gateway_url}/oauth/token"
-
-    def login(self) -> TokenAuthenticator:
-        data = {"grant_type": "client_credentials"}
-        auth = requests.auth.HTTPBasicAuth(self.username, self.password)
-        response = requests.post(self.url, auth=auth, data=data)
-        response.raise_for_status()
-        self.access_token = response.json()["access_token"]
-        return TokenAuthenticator(self.access_token)
 
 
 class KyribaClient:
@@ -82,7 +67,6 @@ class KyribaStream(HttpStream):
         # Kyriba uses basic auth to generate an expiring bearer token
         # There is no refresh token, so users need to log in again when the token expires
         if response.status_code == 401:
-            old_tokens = self._session.auth
             self._session.auth = self.client.login()
             response.request.headers["Authorization"] = f"Bearer {self.client.access_token}"
             # change the response status code to 571, so should_give_up in rate_limiting.py

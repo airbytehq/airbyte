@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from http import HTTPStatus
@@ -18,17 +18,6 @@ def patch_base_class(mocker):
     mocker.patch.object(KyribaStream, "primary_key", "test_primary_key")
     mocker.patch.object(KyribaStream, "__abstractmethods__", set())
 
-
-def config():
-    gateway_url = "https://demo.kyriba.com/gateway"
-    client = KyribaClient("username", "password", gateway_url)
-    client.login = MagicMock(return_value=TokenAuthenticator("token"))
-    return {
-        "gateway_url": "https://demo.kyriba.com/gateway",
-        "client": client,
-        "start_date": "2022-01-01",
-        "end_date": "2022-03-01",
-    }
 
 def config():
     gateway_url = "https://demo.kyriba.com/gateway"
@@ -104,18 +93,6 @@ def test_should_retry(patch_base_class, http_status, should_retry):
     stream = KyribaStream(**config())
     assert stream.should_retry(response_mock) == should_retry
 
-
-def test_should_retry_401(patch_base_class):
-    response_mock = MagicMock()
-    response_mock.status_code = HTTPStatus.UNAUTHORIZED
-    cfg = config()
-    client = KyribaClient("username", "password", "https://gateway.url")
-    client.login = MagicMock(return_value=TokenAuthenticator("token"))
-    client.access_token = "token"
-    cfg["client"] = client
-    stream = KyribaStream(**cfg)
-    client.login.assert_called_once()
-    assert stream.should_retry(response_mock)
 
 def test_should_retry_401(patch_base_class):
     response_mock = MagicMock()
