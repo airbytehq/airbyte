@@ -36,12 +36,12 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -407,8 +407,10 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(1, stateAfterFirstBatch.size());
 
     final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(0);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
-    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());
+    assertEquals(AirbyteStateType.LEGACY, stateMessageEmittedAfterFirstSyncCompletion.getType());
+    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getData());
+    /*assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
+    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());*/
     final Set<StreamDescriptor> streamsInStateAfterFirstSyncCompletion = stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
@@ -462,8 +464,12 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(2, stateAfterSecondBatch.size());
 
     final AirbyteStateMessage stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateAfterSecondBatch.get(0);
-    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getSharedState());
+    // TODO: bmoric restore
+    /*assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
+    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSnapshotCompletionInSecondSync
+    .getGlobal().getSharedState());*/
+    assertEquals(AirbyteStateMessage.AirbyteStateType.LEGACY, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
+    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getData(), stateMessageEmittedAfterSnapshotCompletionInSecondSync.getData());
     final Set<StreamDescriptor> streamsInSnapshotState = stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
