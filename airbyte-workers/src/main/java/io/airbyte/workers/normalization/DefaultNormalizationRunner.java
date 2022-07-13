@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
@@ -15,17 +16,27 @@ import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +51,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
+  private final AirbyteStreamFactory streamFactory = new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
+  private Map<Type, List<AirbyteMessage>> messagesByType;
 
   private Process process = null;
 
@@ -135,10 +148,15 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           Collections.emptyMap(),
           args);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+//      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
+
+      try (final InputStream stdout = process.getInputStream()) {
+        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+            .collect(Collectors.groupingBy(AirbyteMessage::getType));
+      }
 
       return process.exitValue() == 0;
     } catch (final Exception e) {
@@ -161,6 +179,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Normalization process wasn't successful");
     }
+  }
+
+  @Override
+  public Stream<AirbyteTraceMessage> getTraceMessages() {
+    return messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream().map(AirbyteMessage::getTrace);
   }
 
   @VisibleForTesting

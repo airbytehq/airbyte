@@ -5,14 +5,18 @@
 package io.airbyte.workers.general;
 
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.normalization.NormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationWorker;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -45,6 +49,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
 
+    List<FailureReason> traceFailureReasons = new ArrayList<>();
+
     try (normalizationRunner) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
@@ -57,10 +63,14 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
       if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
           input.getResourceRequirements())) {
-        throw new WorkerException("Normalization Failed.");
+        normalizationRunner.getTraceMessages()
+            .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
+//        throw new WorkerException("Normalization Failed.");
       }
     } catch (final Exception e) {
-      throw new WorkerException("Normalization Failed.", e);
+      normalizationRunner.getTraceMessages()
+          .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
+//      throw new WorkerException("Normalization Failed.", e);
     }
 
     if (cancelled.get()) {
@@ -75,6 +85,10 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     final NormalizationSummary summary = new NormalizationSummary()
         .withStartTime(startTime)
         .withEndTime(endTime);
+
+    if (!traceFailureReasons.isEmpty()) {
+      summary.setFailures(traceFailureReasons);
+    }
 
     LOGGER.info("Normalization summary: {}", summary);
 
