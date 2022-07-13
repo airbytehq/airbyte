@@ -1,6 +1,12 @@
+---
+sidebar_position: 11
+sidebar_label: "Source Acceptance Tests Reference"
+sidebar_class_name: connector-development
+---
+
 # Source Acceptance Tests Reference
 
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../understanding-airbyte/airbyte-protocol.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 _Note: If you are looking for reference documentation for the deprecated first version of test suites, see_ [_Standard Tests \(Legacy\)_](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/legacy-standard-source-tests.md)_._
 
@@ -8,7 +14,7 @@ _Note: If you are looking for reference documentation for the deprecated first v
 
 The Standard Test Suite runs its tests against the connector's Docker image. It takes as input the configuration file `acceptance-tests-config.yml`.
 
-![Standard test sequence diagram](../../.gitbook/assets/standard_tests_sequence_diagram.png)
+![Standard test sequence diagram](../.gitbook/assets/standard_tests_sequence_diagram.png)
 
 The Standard Test Suite use pytest as a test runner and was built as pytest plugin `source-acceptance-test`. This plugin adds a new configuration option `—acceptance-test-config` - it should points to the folder with `acceptance-tests-config.yml`.
 

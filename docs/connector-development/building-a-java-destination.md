@@ -1,3 +1,9 @@
+---
+sidebar_position: 5
+sidebar_label: "Building a Java Destination"
+sidebar_class_name: connector-development
+---
+
 # Building a Java Destination
 
 ## Summary
@@ -6,7 +12,7 @@ This article provides a checklist for how to create a Java destination. Each ste
 
 ## Requirements
 
-Docker and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
+Docker and Java with the versions listed in the [tech stack section](../understanding-airbyte/tech-stack.md).
 
 ## Checklist
 
@@ -114,7 +120,7 @@ The nice thing about this approach is that you are running your destination exac
 
 #### Handling Exceptions
 
-In order to best propagate user-friendly error messages and log error information to the platform, the [Airbyte Protocol](../../understanding-airbyte/airbyte-protocol.md#The Airbyte Protocol) implements AirbyteTraceMessage.
+In order to best propagate user-friendly error messages and log error information to the platform, the [Airbyte Protocol](../understanding-airbyte/airbyte-protocol.md#The Airbyte Protocol) implements AirbyteTraceMessage.
 
 We recommend using AirbyteTraceMessages for known errors, as in these cases you can likely offer the user a helpful message as to what went wrong and suggest how they can resolve it.
 
@@ -150,7 +156,7 @@ Each destination contains a specification written in JsonSchema that describes i
 
 Your generated template should have the spec file in `airbyte-integrations/connectors/destination-<name>/src/main/resources/spec.json`. The generated connector will take care of reading this file and converting it to the correct output. Edit it and you should be done with this step.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-protocol.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../understanding-airbyte/airbyte-protocol.md).
 
 See the `spec` operation in action:
 
@@ -200,7 +206,7 @@ The Postgres destination leverages the `AbstractJdbcDestination` superclass whic
 
 :::
 
-For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md).
+For a brief overview on the Airbyte catalog check out [the Beginner's Guide to the Airbyte Catalog](../understanding-airbyte/beginners-guide-to-catalog.md).
 
 ### Step 6: Set up Acceptance Tests
 

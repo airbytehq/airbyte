@@ -1,3 +1,9 @@
+---
+sidebar_position: 8
+sidebar_label: "Connector Development Kit (Javascript)"
+sidebar_class_name: connector-development
+---
+
 # Connector Development Kit (Javascript)
 
 The [Faros AI TypeScript/JavaScript CDK](https://github.com/faros-ai/airbyte-connectors/tree/main/faros-airbyte-cdk) allows you to build Airbyte connectors quickly similarly to how our [Python CDK](cdk-python/) does. This CDK currently offers support for creating Airbyte source connectors for:

@@ -1,3 +1,9 @@
+---
+sidebar_position: 13
+sidebar_label: "Best Practices"
+sidebar_class_name: connector-development
+---
+
 # Best Practices
 
 In order to guarantee the highest quality for connectors, we've compiled the following best practices for connector development. Connectors which follow these best practices will be labelled as "Airbyte Certified" to indicate they've passed a high quality bar and will perform reliably in all production use cases. Following these guidelines is **not required** for your contribution to Airbyte to be accepted, as they add a barrier to entry for contribution \(though adopting them certainly doesn't hurt!\).
@@ -31,7 +37,7 @@ When reviewing connectors, we'll use the following "checklist" to verify whether
 * **API connectors** should validate records that every stream outputs data
   * If this causes rate limiting problems, there should be a periodic CI build which tests this on a less frequent cadence to avoid rate limiting
 
-**Thoroughly test edge cases.** While Airbyte provides a [Standard Test Suite](testing-connectors/source-acceptance-tests-reference.md) that all connectors must pass, it's not possible for the standard test suite to cover all edge cases. When in doubt about whether the standard tests provide sufficient evidence of functionality, write a custom test case for your connector.
+**Thoroughly test edge cases.** While Airbyte provides a [Standard Test Suite](source-acceptance-tests-reference.md) that all connectors must pass, it's not possible for the standard test suite to cover all edge cases. When in doubt about whether the standard tests provide sufficient evidence of functionality, write a custom test case for your connector.
 
 ### Check Connection
 

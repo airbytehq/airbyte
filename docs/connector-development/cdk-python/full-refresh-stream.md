@@ -1,3 +1,9 @@
+---
+sidebar_position: 3
+sidebar_label: "Full Refresh Streams"
+sidebar_class_name: cdk-python
+---
+
 # Full Refresh Streams
 
 As mentioned in the [Basic Concepts Overview](basic-concepts.md), a `Stream` is the atomic unit for reading data from a Source. A stream can read data from anywhere: a relational database, an API, or even scrape a web page! \(although that might be stretching the limits of what a connector should do\).

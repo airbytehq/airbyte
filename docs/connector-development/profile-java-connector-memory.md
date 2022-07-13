@@ -1,3 +1,9 @@
+---
+sidebar_position: 6
+sidebar_label: "Profile Java Connector Memory Usage"
+sidebar_class_name: connector-development
+---
+
 # Profile Java Connector Memory Usage
 
 This tutorial demos how to profile the memory usage of a Java connector with Visual VM. Such profiling can be useful when we want to debug memory leaks, or optimize the connector's memory footprint.

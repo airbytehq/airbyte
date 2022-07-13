@@ -1,8 +1,14 @@
+---
+sidebar_position: 1
+sidebar_label: "Python CDK Speedrun: Creating a Source"
+sidebar_class_name: connector-development
+---
+
 # Python CDK Speedrun: Creating a Source
 
 ## CDK Speedrun \(HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route\)
 
-This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/0-getting-started.md)
+This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/getting-started.md)
 
 If you are a visual learner and want to see a video version of this guide going over each part in detail, check it out below.
 

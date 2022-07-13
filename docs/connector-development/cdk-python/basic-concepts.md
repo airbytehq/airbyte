@@ -1,3 +1,9 @@
+---
+sidebar_position: 1
+sidebar_label: "Basic Concepts"
+sidebar_class_name: cdk-python
+---
+
 # Basic Concepts
 
 ## The Airbyte Specification

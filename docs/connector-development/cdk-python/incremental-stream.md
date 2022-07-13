@@ -1,3 +1,9 @@
+---
+sidebar_position: 4
+sidebar_label: "Incremental Streams"
+sidebar_class_name: cdk-python
+---
+
 # Incremental Streams
 
 An incremental Stream is a stream which reads data incrementally. That is, it only reads data that was generated or updated since the last time it ran, and is thus far more efficient than a stream which reads all the source data every time it runs. If possible, developers are encouraged to implement incremental streams to reduce sync times and resource usage.

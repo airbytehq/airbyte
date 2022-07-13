@@ -1,3 +1,9 @@
+---
+sidebar_position: 2
+sidebar_label:  "Step 1: Creating the Source"
+sidebar_class_name: cdk-tutorial-python-http
+---
+
 # Step 1: Creating the Source
 
 Airbyte provides a code generator which bootstraps the scaffolding for our connector.

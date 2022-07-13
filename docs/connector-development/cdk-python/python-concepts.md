@@ -1,3 +1,9 @@
+---
+sidebar_position: 6
+sidebar_label: "Python Concepts"
+sidebar_class_name: cdk-python
+---
+
 # Python Concepts
 
 The Airbyte CDK makes use of various not-so-obvious Python concepts. You might want to revisit these concepts as you implement your connector:

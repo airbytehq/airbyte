@@ -1,3 +1,9 @@
+---
+sidebar_position: 6
+sidebar_label:  "Step 5: Declare the Schema"
+sidebar_class_name: cdk-tutorial-python-http
+---
+
 # Step 5: Declare the Schema
 
 The `discover` method of the Airbyte Protocol returns an `AirbyteCatalog`: an object which declares all the streams output by a connector and their schemas. It also declares the sync modes supported by the stream \(full refresh or incremental\). See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
@@ -74,5 +80,5 @@ you should see some output like:
 
 It's that simple! Now the connector knows how to declare your connector's stream's schema. We declare only one stream since our source is simple, but the principle is exactly the same if you had many streams.
 
-You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](../../cdk-python/full-refresh-stream.md#defining-the-streams-schema) for more information.
+You can also dynamically define schemas, but that's beyond the scope of this tutorial. See the [schema docs](../cdk-python/full-refresh-stream.md#defining-the-streams-schema) for more information.
 

@@ -1,8 +1,14 @@
+---
+sidebar_position: 7
+sidebar_label:  "Step 6: Read Data"
+sidebar_class_name: cdk-tutorial-python-http
+---
+
 # Step 6: Read Data
 
 Describing schemas is good and all, but at some point we have to start reading data! So let's get to work. But before, let's describe what we're about to do:
 
-The `HttpStream` superclass, like described in the [concepts documentation](../../cdk-python/http-streams.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
+The `HttpStream` superclass, like described in the [concepts documentation](../cdk-python/http-streams.md), is facilitating reading data from HTTP endpoints. It contains built-in functions or helpers for:
 
 * authentication
 * pagination
@@ -98,7 +104,7 @@ def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
 We're now ready to query the API!
 
-To do this, we'll need a [ConfiguredCatalog](../../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
+To do this, we'll need a [ConfiguredCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md). We've prepared one [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/configured_catalog.json) -- download this and place it in `sample_files/configured_catalog.json`. Then run:
 
 ```text
  python main.py read --config secrets/config.json --catalog sample_files/configured_catalog.json
@@ -125,7 +131,7 @@ To add incremental sync, we'll do a few things:
 6. Update the `path` method to specify the date to pull exchange rates for. 
 7. Update the configured catalog to use `incremental` sync when we're testing the stream.
 
-We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](../../../understanding-airbyte/connections/incremental-append.md).
+We'll describe what each of these methods do below. Before we begin, it may help to familiarize yourself with how incremental sync works in Airbyte by reading the [docs on incremental](../../understanding-airbyte/connections/incremental-append.md).
 
 To keep things concise, we'll only show functions as we edit them one by one.
 
@@ -211,7 +217,7 @@ We'll implement the `stream_slices` method to return a list of the dates for whi
         return self._chunk_date_range(start_date)
 ```
 
-Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../../cdk-python/stream-slices.md).
+Each slice will cause an HTTP request to be made to the API. We can then use the information present in the `stream_slice` parameter \(a single element from the list we constructed in `stream_slices` above\) to set other configurations for the outgoing request like `path` or `request_params`. For more info about stream slicing, see [the slicing docs](../cdk-python/stream-slices.md).
 
 In order to pull data for a specific date, the Exchange Rates API requires that we pass the date as the path component of the URL. Let's override the `path` method to achieve this:
 

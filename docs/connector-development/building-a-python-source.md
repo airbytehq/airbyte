@@ -1,3 +1,9 @@
+---
+sidebar_position: 3
+sidebar_label: "Building a Python Source"
+sidebar_class_name: connector-development
+---
+
 # Building a Python Source
 
 ## Summary
@@ -6,7 +12,7 @@ This article provides a checklist for how to create a python source. Each step i
 
 ## Requirements
 
-Docker, Python, and Java with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md).
+Docker, Python, and Java with the versions listed in the [tech stack section](../understanding-airbyte/tech-stack.md).
 
 :::info
 
@@ -159,7 +165,7 @@ The nice thing about this approach is that you are running your source exactly a
 
 Each source contains a specification that describes what inputs it needs in order for it to pull data. This file can be found in `airbyte-integrations/connectors/source-<source-name>/spec.yaml`. This is a good place to start when developing your source. Using JsonSchema define what the inputs are \(e.g. username and password\). Here's [an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/spec.yaml) of what the `spec.yaml` looks like for the stripe source.
 
-For more details on what the spec is, you can read about the Airbyte Protocol [here](../../understanding-airbyte/airbyte-protocol.md).
+For more details on what the spec is, you can read about the Airbyte Protocol [here](../understanding-airbyte/airbyte-protocol.md).
 
 The generated code that Airbyte provides, handles implementing the `spec` method for you. It assumes that there will be a file called `spec.yaml` in the same directory as `source.py`. If you have declared the necessary JsonSchema in `spec.yaml` you should be done with this step.
 
@@ -173,15 +179,15 @@ While developing, we recommend storing this object in `secrets/config.json`. The
 
 As described in the template code, this method takes in the same config object as `check`. It then returns a json object called a `catalog` that describes what data is available and metadata on what options are available for how to replicate it.
 
-For a brief overview on the catalog check out [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md).
+For a brief overview on the catalog check out [Beginner's Guide to the Airbyte Catalog](../understanding-airbyte/beginners-guide-to-catalog.md).
 
 ### Step 7: Implement `read`
 
-As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](../../understanding-airbyte/beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
+As described in the template code, this method takes in the same config object as the previous methods. It also takes in a "configured catalog". This object wraps the catalog emitted by the `discover` step and includes configuration on how the data should be replicated. For a brief overview on the configured catalog check out [Beginner's Guide to the Airbyte Catalog](../understanding-airbyte/beginners-guide-to-catalog.md). It then returns a generator which returns each record in the stream.
 
 ### Step 8: Set up Standard Tests
 
-The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](../testing-connectors/source-acceptance-tests-reference.md) explains Standard Tests and how to run them.
+The Standard Tests are a set of tests that run against all sources. These tests are run in the Airbyte CI to prevent regressions. They also can help you sanity check that your source works as expected. The following [article](source-acceptance-tests-reference.md) explains Standard Tests and how to run them.
 
 You can run the tests using `./gradlew :airbyte-integrations:connectors:source-<source-name>:integrationTest`. Make sure to run this command from the Airbyte repository root.
 
@@ -215,7 +221,7 @@ The template fills in most of the information for the readme for you. Unless the
 
 Open the following file: `airbyte-config/init/src/main/resources/seed/source_definitions.yaml`. You'll find a list of all the connectors that Airbyte displays in the UI. Pattern match to add your own connector. Make sure to generate a new _unique_ UUIDv4 for the `sourceDefinitionId` field. You can get one [here](https://www.uuidgenerator.net/). Note that modifications to source_definitions.yaml will only be picked-up the first time you start Airbyte, or when you upgrade Airbyte, or if you entirely wipe our your instance of Airbyte and start from scratch.
 
-Note that for simple and quick testing use cases, you can also do this step [using the UI](../../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
+Note that for simple and quick testing use cases, you can also do this step [using the UI](../integrations/custom-connectors.md#adding-your-connectors-in-the-ui).
 
 ### Step 12: Add docs
 

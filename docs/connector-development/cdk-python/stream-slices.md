@@ -1,3 +1,9 @@
+---
+sidebar_position: 7
+sidebar_label: "Stream Slices"
+sidebar_class_name: cdk-python
+---
+
 # Stream Slices
 
 ## Stream Slicing

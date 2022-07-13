@@ -1,3 +1,9 @@
+---
+sidebar_position: 5
+sidebar_label: "HTTP-API-based Connectors"
+sidebar_class_name: cdk-python
+---
+
 # HTTP-API-based Connectors
 
 The CDK offers base classes that greatly simplify writing HTTP API-based connectors. Some of the most useful features include helper functionality for:

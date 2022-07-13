@@ -1,3 +1,8 @@
+---
+sidebar_position: 3
+sidebar_label: "Step 2: Install Dependencies"
+sidebar_class_name: cdk-tutorial-python-http
+---
 # Step 2: Install Dependencies
 
 Now that you've generated the module, let's navigate to its directory and install dependencies:

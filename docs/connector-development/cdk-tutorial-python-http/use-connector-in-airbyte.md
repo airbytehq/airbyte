@@ -1,3 +1,9 @@
+---
+sidebar_position: 8
+sidebar_label:  "Step 7: Use the Connector in Airbyte"
+sidebar_class_name: cdk-tutorial-python-http
+---
+
 # Step 7: Use the Connector in Airbyte
 
 To use your connector in your own installation of Airbyte, build the docker image for your container by running `docker build . -t airbyte/source-python-http-example:dev`. Then, follow the instructions from the [building a Python source tutorial](../building-a-python-source.md#step-11-add-the-connector-to-the-api-ui) for using the connector in the Airbyte UI, replacing the name as appropriate.

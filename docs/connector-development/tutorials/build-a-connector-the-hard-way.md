@@ -9,7 +9,7 @@ This tutorial walks you through building a simple Airbyte source without using a
 * [The Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and the interface implemented by a source connector
 * [The AirbyteCatalog](../../understanding-airbyte/beginners-guide-to-catalog.md)
 * [Packaging your connector](https://docs.airbyte.io/connector-development#1.-implement-and-package-the-connector)
-* [Testing your connector](../testing-connectors/source-acceptance-tests-reference.md)
+* [Testing your connector](../source-acceptance-tests-reference.md)
 
 At the end of this tutorial, you will have a working source that you will be able to use in the Airbyte UI.
 
@@ -936,7 +936,7 @@ $ docker run -v $(pwd)/secrets/valid_config.json:/data/config.json -v $(pwd)/ful
 {'type': 'RECORD', 'record': {'stream': 'stock_prices', 'data': {'date': '2020-12-21', 'stock_ticker': 'TSLA', 'price': 649.86}, 'emitted_at': 1608628424000}}
 ```
 
-and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Source Acceptance Test suite](../testing-connectors/source-acceptance-tests-reference.md).
+and with that, we've packaged our connector in a functioning Docker image. The last requirement before calling this connector finished is to pass the [Airbyte Source Acceptance Test suite](../source-acceptance-tests-reference.md).
 
 ### 4. Test the connector
 

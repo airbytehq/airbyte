@@ -1,3 +1,9 @@
+---
+sidebar_position: 14
+sidebar_label: "UX Handbook"
+sidebar_class_name: connector-development
+---
+
 # UX Handbook
 
 ## Connector Development UX Handbook

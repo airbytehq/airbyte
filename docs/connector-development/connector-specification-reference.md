@@ -1,3 +1,9 @@
+---
+sidebar_position: 12
+sidebar_label: "Connector Specification Reference"
+sidebar_class_name: connector-development
+---
+
 # Connector Specification Reference
 
 The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.

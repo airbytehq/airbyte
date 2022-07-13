@@ -1,3 +1,9 @@
+---
+sidebar_position: 5
+sidebar_label:  "Step 4: Connection Checking"
+sidebar_class_name: cdk-tutorial-python-http
+---
+
 # Step 4: Connection Checking
 
 The second operation in the Airbyte Protocol that we'll implement is the `check` operation.

@@ -1,3 +1,9 @@
+---
+sidebar_position: 10
+sidebar_label: "Testing Connectors"
+sidebar_class_name: connector-development
+---
+
 # Testing Connectors
 
 ## Running Integration tests

@@ -1,3 +1,9 @@
+---
+sidebar_position: 4
+sidebar_label: "Building a Python Destination"
+sidebar_class_name: connector-development
+---
+
 # Building a Python Destination
 
 ## Summary
@@ -6,7 +12,7 @@ This article provides a checklist for how to create a Python destination. Each s
 
 ## Requirements
 
-Docker and Python with the versions listed in the [tech stack section](../../understanding-airbyte/tech-stack.md). You can use any Python version between 3.7 and 3.9, but this tutorial was tested with 3.7.
+Docker and Python with the versions listed in the [tech stack section](../understanding-airbyte/tech-stack.md). You can use any Python version between 3.7 and 3.9, but this tutorial was tested with 3.7.
 
 ## Checklist
 
@@ -77,7 +83,7 @@ Pretty much all it takes to create a destination is to implement the `Destinatio
 2. `check`: tests if the user-provided configuration can be used to connect to the underlying data destination, and with the correct write permissions
 3. `write`: writes data to the underlying destination by reading a configuration, a stream of records from stdin, and a configured catalog describing the schema of the data and how it should be written to the destination
 
-The destination interface is described in detail in the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) reference.
+The destination interface is described in detail in the [Airbyte Specification](../understanding-airbyte/airbyte-protocol.md) reference.
 
 The generated files fill in a lot of information for you and have docstrings describing what you need to do to implement each method. The next few steps are just implementing that interface.
 

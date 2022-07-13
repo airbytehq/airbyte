@@ -1,3 +1,9 @@
+---
+sidebar_position: 4
+sidebar_label:  "Step 3: Define Inputs"
+sidebar_class_name: cdk-tutorial-python-http
+---
+
 # Step 3: Define Inputs
 
 Each connector declares the inputs it needs to read data from the underlying data source. This is the Airbyte Protocol's `spec` operation.

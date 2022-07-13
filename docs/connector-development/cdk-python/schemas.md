@@ -1,3 +1,9 @@
+---
+sidebar_position: 2
+sidebar_label: "Defining Stream Schemas"
+sidebar_class_name: cdk-python
+---
+
 # Defining Stream Schemas
 
 Your connector must describe the schema of each stream it can output using [JSONSchema](https://json-schema.org).

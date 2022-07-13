@@ -1,3 +1,7 @@
+---
+sidebar_label: "Build a connector"
+---
+
 # Connector Development
 
 Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-protocol.md).
@@ -63,11 +67,11 @@ and choose the relevant template by using the arrow keys. This will generate a n
 
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
-* [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
-* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/getting-started.md)
-* [Building a Python source](tutorials/building-a-python-source.md) 
-* [Building a Python destination](tutorials/building-a-python-destination.md)
-* [Building a Java destination](tutorials/building-a-java-destination.md)
+* [Speedrun: Building a HTTP source with the CDK](cdk-speedrun.md)
+* [Building a HTTP source with the CDK](cdk-tutorial-python-http/getting-started.md)
+* [Building a Python source](building-a-python-source.md)
+* [Building a Python destination](building-a-python-destination.md)
+* [Building a Java destination](building-a-java-destination.md)
 
 As you implement your connector, make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is not a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
 

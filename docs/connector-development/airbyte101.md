@@ -1,3 +1,9 @@
+---
+sidebar_position: 9
+sidebar_label: "Airbyte 101 for Connector Development"
+sidebar_class_name: connector-development
+---
+
 # Airbyte 101 for Connector Development
 
 ## The Airbyte Catalog

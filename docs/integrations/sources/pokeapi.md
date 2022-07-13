@@ -5,7 +5,7 @@
 The PokéAPI is primarly used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
 
 - [Airbyte Quickstart: An Introduction to Deploying and Syncing](../../quickstart/deploy-airbyte.md)
-- [Airbyte CDK Speedrun: A Quick Primer on Building Source Connectors](../../connector-development/tutorials/cdk-speedrun.md)
+- [Airbyte CDK Speedrun: A Quick Primer on Building Source Connectors](../../connector-development/cdk-speedrun.md)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
 
 ## Features
