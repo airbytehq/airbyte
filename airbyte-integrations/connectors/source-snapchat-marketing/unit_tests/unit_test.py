@@ -5,11 +5,10 @@
 # from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
+import source_snapchat_marketing
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
-import source_snapchat_marketing
 from source_snapchat_marketing.source import (
-    auxiliary_id_map,
     Adaccounts,
     AdaccountsStatsDaily,
     Ads,
@@ -334,20 +333,24 @@ def test_ads_stats_daily(requests_mock):
 
 def test_get_parent_ids(requests_mock):
     """Test cache usage in get_parent_ids"""
+    # nonlocal auxiliary_id_map
 
     requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
     requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1/adaccounts", json=response_adaccounts)
 
     stream = Adaccounts(**config_mock)
 
+    # reset cache, it can be filled by calls in previous tests
+    source_snapchat_marketing.source.auxiliary_id_map = {}
+
     # 1st call
-    records = list(run_stream(stream))
+    list(run_stream(stream))
     # 1st request to organizations
     # 2nd request to adaccounts
     assert len(requests_mock.request_history) == 2
 
     # 2nd call
-    records = list(run_stream(stream))
+    list(run_stream(stream))
     # request to organizations is skipped due to cache
     # 3rd request to adaccounts
     assert len(requests_mock.request_history) == 3
