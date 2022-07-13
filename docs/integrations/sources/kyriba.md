@@ -21,4 +21,4 @@ You have to reach out to Kyriba to get these.
 ## Changelog
 | Version | Date       | Pull Request                                             | Subject                     |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.1.0   | 2022-05-10 | [11738](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created |
+| 0.1.0   | 2022-07-13 | [12748](https://github.com/airbytehq/airbyte/pull/12748) | The Kyriba Source is created |
