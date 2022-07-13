@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 from dataclasses import dataclass
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Union
 
 import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSl
 @dataclass(frozen=True)
 class AddedFieldDefinition:
     path: FieldPointer
-    value: str
+    value: Union[InterpolatedString, str]
 
 
 @dataclass(frozen=True)
@@ -79,8 +79,10 @@ class AddFields(RecordTransformation):
             if not isinstance(field.value, InterpolatedString):
                 if not isinstance(field.value, str):
                     raise f"Expected a string value for the AddFields transformation: {field}"
-
-            self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString(field.value)))
+                else:
+                    self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString(field.value)))
+            else:
+                self._fields.append(ParsedAddFieldDefinition(field.path, field.value))
 
     def transform(
         self, record: Mapping[str, Any], config: Config = None, stream_state: StreamState = None, stream_slice: StreamSlice = None
