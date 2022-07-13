@@ -44,4 +44,7 @@ public class ConnectionUpdaterInput {
   @Builder.Default
   private boolean skipScheduling = false;
 
+  @Nullable
+  private String taskQueueOverride;
+
 }

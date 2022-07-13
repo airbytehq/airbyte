@@ -58,9 +58,11 @@ import io.airbyte.workers.temporal.scheduling.state.WorkflowState;
 import io.airbyte.workers.temporal.scheduling.state.listener.NoopStateListener;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
 import io.temporal.api.enums.v1.ParentClosePolicy;
+import io.temporal.api.enums.v1.TimeoutType;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.failure.CanceledFailure;
 import io.temporal.failure.ChildWorkflowFailure;
+import io.temporal.failure.TimeoutFailure;
 import io.temporal.workflow.CancellationScope;
 import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
@@ -92,6 +94,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
+
+  private static final String DATA_PLANE_A = "DATA_PLANE_A";
+  private static final String DATA_PLANE_B = "DATA_PLANE_B";
 
   static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
@@ -173,6 +178,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         workflowState.setSkipScheduling(true);
       }
 
+      if (connectionUpdaterInput.getTaskQueueOverride() != null) {
+        workflowInternalState.setTaskQueueOverride(connectionUpdaterInput.getTaskQueueOverride());
+      }
+
       // Clean the job state by failing any jobs for this connection that are currently non-terminal.
       // This catches cases where the temporal workflow was terminated and restarted while a job was
       // actively running, leaving that job in an orphaned and non-terminal state.
@@ -239,6 +248,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               workflowInternalState.getJobId(),
               workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
+
+          if (isScheduleToStartTimeout(childWorkflowFailure)) {
+            log.warn("Detected a schedule to start timeout failure, re-routing next attempt to {}", DATA_PLANE_B);
+            connectionUpdaterInput.setTaskQueueOverride(DATA_PLANE_B);
+          }
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         } else {
           workflowInternalState.getFailures().add(
@@ -682,7 +696,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * since the latter is a long running workflow, in the future, using a different Node pool would
    * make sense.
    */
-  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs, final String taskQueue) {
+  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs) {
+
+    // default to DATA_PLANE_A unless there is an override
+    final String taskQueue = workflowInternalState.getTaskQueueOverride() == null ? DATA_PLANE_A : workflowInternalState.getTaskQueueOverride();
 
     final SyncWorkflow childSync = Workflow.newChildWorkflowStub(SyncWorkflow.class,
         ChildWorkflowOptions.newBuilder()
@@ -698,6 +715,27 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         jobInputs.getDestinationLauncherConfig(),
         jobInputs.getSyncInput(),
         connectionId);
+  }
+
+  private boolean isScheduleToStartTimeout(final Exception e) {
+    TimeoutFailure timeoutFailure = null;
+    Throwable cause = e;
+    int depth = 0;
+    while (timeoutFailure == null && depth < 5) {
+      if (cause instanceof TimeoutFailure) {
+        timeoutFailure = (TimeoutFailure) cause;
+      } else {
+        depth++;
+        cause = cause.getCause();
+      }
+    }
+    if (timeoutFailure == null) {
+      log.warn("caught an exception but didn't find TimeoutException");
+      return false;
+    } else {
+      log.warn("found timeoutFailure of type {}", timeoutFailure.getTimeoutType());
+      return timeoutFailure.getTimeoutType().equals(TimeoutType.TIMEOUT_TYPE_SCHEDULE_TO_START);
+    }
   }
 
   /**

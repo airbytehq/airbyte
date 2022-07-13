@@ -22,5 +22,6 @@ public class WorkflowInternalState {
   // StandardSyncOutput standardSyncOutput = null;
   private final Set<FailureReason> failures = new HashSet<>();
   private Boolean partialSuccess = null;
+  private String taskQueueOverride = null;
 
 }

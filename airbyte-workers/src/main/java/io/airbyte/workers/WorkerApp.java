@@ -91,6 +91,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executors;
@@ -113,6 +114,9 @@ public class WorkerApp {
   // IMPORTANT: Changing the storage location will orphan already existing kube pods when the new
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
+
+  private static final String DATA_PLANE_A = "DATA_PLANE_A";
+  private static final String DATA_PLANE_B = "DATA_PLANE_B";
 
   private final Path workspaceRoot;
   private final ProcessFactory defaultProcessFactory;
@@ -173,10 +177,12 @@ public class WorkerApp {
     }
 
     if (configs.shouldRunSyncWorkflows()) {
-      registerSync(factory);
-      // registerDataPlaneA(factory); simulate data plane A workers being down, want to see rerouting to
-      // Data Plane B
-      registerDataPlaneB(factory);
+      // registers a workflow worker for the syncWorkflow for each Data Plane (A and B);
+      registerSyncWorkflowWorkers(factory);
+
+      // don't register any activity workers for DATA_PLANE_A to force schedule-to-start timeouts
+      List<String> dataPlanes = List.of(/* DATA_PLANE_A , */ DATA_PLANE_B);
+      dataPlanes.forEach(dataPlane -> registerActivityWorkersForDataPlane(factory, dataPlane));
     }
 
     if (configs.shouldRunConnectionManagerWorkflows()) {
@@ -222,12 +228,16 @@ public class WorkerApp {
         new StreamResetActivityImpl(streamResetPersistence, jobPersistence));
   }
 
-  private void registerSync(final WorkerFactory factory) {
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+  private void registerSyncWorkflowWorkers(final WorkerFactory factory) {
+    List<String> dataPlanes = List.of(DATA_PLANE_A, DATA_PLANE_B);
+
+    dataPlanes.forEach(dataPlane -> {
+      final Worker worker = factory.newWorker(dataPlane, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+      worker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    });
   }
 
-  private void registerDataPlaneA(final WorkerFactory factory) {
+  private void registerActivityWorkersForDataPlane(final WorkerFactory factory, final String dataPlane) {
     final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
 
     final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
@@ -240,25 +250,8 @@ public class WorkerApp {
 
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
-    final Worker dataPlaneAWorker = factory.newWorker("DATA_PLANE_A", getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    dataPlaneAWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
-  }
-
-  private void registerDataPlaneB(final WorkerFactory factory) {
-    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
-
-    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
-
-    final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
-
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
-
-    final Worker dataPlaneBWorker = factory.newWorker("DATA_PLANE_B", getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-    dataPlaneBWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    final Worker worker = factory.newWorker(dataPlane, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+    worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
   }
 
   private void registerDiscover(final WorkerFactory factory) {

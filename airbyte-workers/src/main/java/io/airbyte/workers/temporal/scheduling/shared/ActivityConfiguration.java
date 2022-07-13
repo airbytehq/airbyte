@@ -56,8 +56,4 @@ public class ActivityConfiguration {
       .setHeartbeatTimeout(TemporalUtils.HEARTBEAT_TIMEOUT)
       .build();
 
-  public static final ActivityOptions onTaskQueue(final ActivityOptions options, final String taskQueue) {
-    return ActivityOptions.newBuilder(options).setTaskQueue(taskQueue).build();
-  }
-
 }
