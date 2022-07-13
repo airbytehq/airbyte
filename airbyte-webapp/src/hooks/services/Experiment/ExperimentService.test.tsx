@@ -4,17 +4,31 @@ import React from "react";
 import { EMPTY, Subject } from "rxjs";
 
 import { Experiments } from "./experiments";
-import { ExperimentProvider, useExperiment } from "./ExperimentService";
+import { ExperimentProvider, ExperimentService, useExperiment } from "./ExperimentService";
+
+type TestExperimentValueType = Experiments["connector.orderOverwrite"];
+
+const TEST_EXPERIMENT_KEY = "connector.orderOverwrite";
+
+const getExperiment: ExperimentService["getExperiment"] = (key) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  key === TEST_EXPERIMENT_KEY ? { test: 13 } : ({} as any);
 
 describe("ExperimentService", () => {
   describe("useExperiment", () => {
     it("should return the value from the ExperimentService if provided", () => {
       const wrapper: React.FC = ({ children }) => (
-        <ExperimentProvider value={{ getExperiment: () => ({ test: 13 }), getExperimentChanges$: () => EMPTY }}>
+        <ExperimentProvider
+          value={{
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            getExperiment,
+            getExperimentChanges$: () => EMPTY,
+          }}
+        >
           {children}
         </ExperimentProvider>
       );
-      const { result } = renderHook(() => useExperiment("connector.orderOverwrite", { test: 10 }), { wrapper });
+      const { result } = renderHook(() => useExperiment(TEST_EXPERIMENT_KEY, { test: 10 }), { wrapper });
       expect(result.current).toEqual({ test: 13 });
     });
 
@@ -25,25 +39,24 @@ describe("ExperimentService", () => {
           {children}
         </ExperimentProvider>
       );
-      const { result } = renderHook(() => useExperiment("connector.orderOverwrite", { test: 10 }), { wrapper });
+      const { result } = renderHook(() => useExperiment(TEST_EXPERIMENT_KEY, { test: 10 }), { wrapper });
       expect(result.current).toEqual({ test: 10 });
     });
 
     it("should return the default value if no ExperimentService is provided", () => {
-      const { result } = renderHook(() => useExperiment("connector.orderOverwrite", { test: 42 }));
+      const { result } = renderHook(() => useExperiment(TEST_EXPERIMENT_KEY, { test: 42 }));
       expect(result.current).toEqual({ test: 42 });
     });
 
     it("should rerender whenever the ExperimentService emits a new value", () => {
-      const subject = new Subject<Experiments["connector.orderOverwrite"]>();
+      const subject = new Subject<TestExperimentValueType>();
       const wrapper: React.FC = ({ children }) => (
-        <ExperimentProvider
-          value={{ getExperiment: () => ({ test: 13 }), getExperimentChanges$: () => subject.asObservable() }}
-        >
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        <ExperimentProvider value={{ getExperiment, getExperimentChanges$: () => subject.asObservable() as any }}>
           {children}
         </ExperimentProvider>
       );
-      const { result } = renderHook(() => useExperiment("connector.orderOverwrite", { test: 10 }), {
+      const { result } = renderHook(() => useExperiment(TEST_EXPERIMENT_KEY, { test: 10 }), {
         wrapper,
       });
       expect(result.current).toEqual({ test: 13 });
