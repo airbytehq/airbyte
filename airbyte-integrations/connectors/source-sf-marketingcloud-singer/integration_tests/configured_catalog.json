@@ -3,9 +3,13 @@
     {
       "stream": {
         "name": "email",
-        "json_schema": {}
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["ModifiedDate"]
       },
       "sync_mode": "full_refresh",
+      "cursor_field": ["ModifiedDate"],
       "destination_sync_mode": "append"
     }
   ]

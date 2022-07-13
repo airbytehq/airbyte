@@ -76,7 +76,6 @@ class SourceSfMarketingcloudSinger(SingerSource):
         try:
             logger.info("Trying to authenticate using V2 endpoint")
             local_config["useOAuth2Authentication"] = "True"
-
             local_config["authenticationurl"] = "https://{}.auth.marketingcloudapis.com".format(local_config["tenant_subdomain"])
             auth_stub = FuelSDK.ET_Client(params=local_config)
             transport = HttpAuthenticated(timeout=int(local_config.get("request_timeout", 900)))
@@ -98,7 +97,6 @@ class SourceSfMarketingcloudSinger(SingerSource):
         """
         Return the string commands to invoke the tap with the right configuration options to read data from the source
         """
-        # TODO update the command below if needed. Otherwise you're good to go
         config_option = f"--config {config_path}"
         properties_option = f"--properties {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""

@@ -25,7 +25,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
+    "airbyte-cdk~=0.1",
     "Salesforce-FuelSDK==1.3.0",
     "suds-py3==1.4.4.1",
     "tap-exacttarget==1.6.1",
