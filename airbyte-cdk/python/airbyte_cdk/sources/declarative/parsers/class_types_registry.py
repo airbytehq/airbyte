@@ -16,7 +16,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
@@ -30,7 +29,6 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "MinMaxDatetime": MinMaxDatetime,
     "NextPageUrlPaginator": NextPageUrlPaginator,
     "OffsetPaginator": OffsetPaginator,
-    "NoPaginator": NoPagination,
     "TokenAuthenticator": TokenAuthenticator,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "ListStreamSlicer": ListStreamSlicer,
