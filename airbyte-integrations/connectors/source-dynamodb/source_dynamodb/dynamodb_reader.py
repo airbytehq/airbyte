@@ -16,30 +16,16 @@ MAX_PAGES_PAGINATOR: int = 10
 
 
 class Reader:
-    def __init__(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> None:
+    def __init__(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> None:
         self.logger = logger
-        self.aws_access_key_id = config["aws_access_key_id"]
-        self.aws_secret_access_key = config["aws_secret_access_key"]
-        self.region_name = config["region_name"]
+        self.config = config
         try:
-            self.client = boto3.client(
-                "dynamodb",
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key,
-                region_name=self.region_name,
-            )
+            self.client = boto3.client("dynamodb", **config)
         except Exception as e:
             raise Exception(f"An exception occurred: {str(e)}")
 
         try:
-            self.service = boto3.resource(
-                "dynamodb",
-                aws_access_key_id=self.aws_access_key_id,
-                aws_secret_access_key=self.aws_secret_access_key,
-                region_name=self.region_name,
-            )
+            self.service = boto3.resource("dynamodb", **config)
         except Exception as e:
             raise Exception(f"An exception occured: {str(e)}")
 
@@ -90,9 +76,7 @@ class Reader:
 
                 for response in response_iterator:
                     tables.extend(response["TableNames"])
-                    last_evaluated_table = response.get(
-                        "LastEvaluatedTableName"
-                    )
+                    last_evaluated_table = response.get("LastEvaluatedTableName")
 
             streams: List[AirbyteStream] = []
             for table in tables:
@@ -130,9 +114,7 @@ class Reader:
             data = response["Items"]
 
             while "LastEvaluatedKey" in response.keys():
-                response = table.scan(
-                    ExclusiveStartKey=response["LastEvaluatedKey"]
-                )
+                response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
                 data.extend(response["Items"])
 
             return data

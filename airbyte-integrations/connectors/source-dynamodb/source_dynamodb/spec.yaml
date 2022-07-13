@@ -41,7 +41,7 @@
               "order": 3,
               "airbyte_secret": false,
             },
-          "endpoint":
+          "endpoint_url":
             {
               "title": "DynamoDB Endpoint",
               "type": "string",
