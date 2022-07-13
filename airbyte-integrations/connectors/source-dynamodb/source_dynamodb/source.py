@@ -25,9 +25,7 @@ from source_dynamodb import dynamodb_reader
 
 
 class SourceDynamodb(Source):
-    def check(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the integration
             e.g: if a provided Stripe API token can be used to connect to the Stripe API.
@@ -52,9 +50,7 @@ class SourceDynamodb(Source):
                 message=f"An exception occurred: {str(e)}",
             )
 
-    def discover(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> AirbyteCatalog:
+    def discover(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteCatalog:
         """
         Returns an AirbyteCatalog representing the available streams and fields in this integration.
         For example, given valid credentials to a Postgres database,
@@ -121,15 +117,11 @@ class SourceDynamodb(Source):
                             record=AirbyteRecordMessage(
                                 stream=stream_name,
                                 data=row,
-                                emitted_at=int(datetime.now().timestamp())
-                                * 1000,
+                                emitted_at=int(datetime.now().timestamp()) * 1000,
                                 namespace=config_stream.stream.namespace,
                             ),
                         )
             except Exception as e:
-                msg = (
-                    f"Failed to read data for stream '{stream_name}': "
-                    f"{repr(e)}\n{traceback.format_exc()}"
-                )
+                msg = f"Failed to read data for stream '{stream_name}': " f"{repr(e)}\n{traceback.format_exc()}"
                 logger.error(message=msg)
                 raise e
