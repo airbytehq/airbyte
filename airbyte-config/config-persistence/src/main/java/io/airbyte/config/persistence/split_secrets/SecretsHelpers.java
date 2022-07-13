@@ -167,7 +167,7 @@ public class SecretsHelpers {
   }
 
   /**
-   * This returns all the path to the airbyte secrets based on a schema spec. The path will be return
+   * This returns all the unique path to the airbyte secrets based on a schema spec. The path will be return
    * in an ascending alphabetical order.
    */
   public static List<String> getSortedSecretPaths(final JsonNode spec) {
