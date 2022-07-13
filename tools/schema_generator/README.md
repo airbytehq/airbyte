@@ -19,7 +19,7 @@ First install the tools in it's own virtual environment:
 $ cd tools/schema_generator # assumes you are starting from the root of the Airbyte project.
 $ python -m venv .venv # Create a virtual environment in the .venv directory
 $ source .venv/bin/activate # enable the venv
-$ python setup.py install
+$ pip install -r requirements.txt
 ```
 
 To use a connectors `run` command we first need an AirbyteConfiguredCatalog:

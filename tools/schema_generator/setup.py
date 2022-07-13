@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,7 +11,7 @@ TEST_REQUIREMENTS = ["pytest"]
 
 
 setup(
-    version="0.0.0",
+    version="0.1.0",
     name="schema_generator",
     description="Util to create catalog schemas for an Airbyte Connector.",
     author="Airbyte",
