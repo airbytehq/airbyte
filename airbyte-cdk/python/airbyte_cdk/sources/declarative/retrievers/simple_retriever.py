@@ -123,6 +123,15 @@ class SimpleRetriever(Retriever, HttpStream):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
+        base_body_data = self._requester.request_body_data(self.state, stream_slice, next_page_token)
+        if isinstance(base_body_data, str):
+            paginator_body_data = self._paginator.request_body_data()
+            if paginator_body_data:
+                raise ValueError(
+                    f"Cannot combine requester's body data= {base_body_data} with paginator's body_data: {paginator_body_data}"
+                )
+            else:
+                return base_body_data
         return self._get_request_options(
             stream_slice, next_page_token, self._requester.request_body_data, self._paginator.request_body_data
         )

@@ -212,3 +212,34 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, expec
                 assert False
             except ValueError:
                 pass
+
+
+@pytest.mark.parametrize(
+    "test_name, requester_body_data, paginator_body_data, expected_body_data",
+    [
+        ("test_only_requester_mapping", {"key": "value"}, {}, {"key": "value"}),
+        ("test_only_requester_string", "key=value", {}, "key=value"),
+        ("test_requester_mapping_and_paginator_no_duplicate", {"key": "value"}, {"offset": 1000}, {"key": "value", "offset": 1000}),
+        ("test_requester_mapping_and_paginator_with_duplicate", {"key": "value"}, {"key": 1000}, None),
+        ("test_requester_string_and_paginator", "key=value", {"offset": 1000}, None),
+    ],
+)
+def test_request_body_data(test_name, requester_body_data, paginator_body_data, expected_body_data):
+    paginator = MagicMock()
+    paginator.request_body_data.return_value = paginator_body_data
+    requester = MagicMock()
+
+    requester.request_body_data.return_value = requester_body_data
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+
+    if expected_body_data:
+        actual_body_data = retriever.request_body_data(None, None, None)
+        assert expected_body_data == actual_body_data
+    else:
+        try:
+            retriever.request_body_data(None, None, None)
+            assert False
+        except ValueError:
+            pass
