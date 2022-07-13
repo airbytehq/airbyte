@@ -24,6 +24,7 @@ import io.airbyte.api.model.generated.CustomSourceDefinitionUpdate;
 import io.airbyte.api.model.generated.DbMigrationExecutionRead;
 import io.airbyte.api.model.generated.DbMigrationReadList;
 import io.airbyte.api.model.generated.DbMigrationRequestBody;
+import io.airbyte.api.model.generated.DestinationCloneRequestBody;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationCreate;
 import io.airbyte.api.model.generated.DestinationDefinitionCreate;
@@ -64,6 +65,7 @@ import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SlugRequestBody;
+import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCoreConfig;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDefinitionCreate;
@@ -469,8 +471,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public SourceRead cloneSource(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> sourceHandler.cloneSource(sourceIdRequestBody));
+  public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody) {
+    return execute(() -> sourceHandler.cloneSource(sourceCloneRequestBody));
   }
 
   @Override
@@ -629,8 +631,8 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public DestinationRead cloneDestination(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationHandler.cloneDestination(destinationIdRequestBody));
+  public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody) {
+    return execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
   }
 
   @Override
@@ -818,6 +820,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
+  }
+
+  @Override
+  public WebBackendConnectionRead webBackendUpdateConnectionNew(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
+    return execute(() -> webBackendConnectionsHandler.webBackendUpdateConnectionNew(webBackendConnectionUpdate));
   }
 
   @Override
