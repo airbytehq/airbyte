@@ -155,6 +155,24 @@ Add environment variables to configure database values
 {{- end -}}
 
 {{/*
+Add variable for temporal host
+*/}}
+{{- define "airbyte.temporal.host" -}}
+{{- ternary (printf "%s-%s" (include "common.names.fullname" .) "temporal") .Values.externalTemporal.host .Values.temporal.enabled -}}
+{{- end -}}
+
+{{/*
+Add variable for temporal port
+*/}}
+{{- define "airbyte.temporal.port" -}}
+{{- ternary  .Values.temporal.service.port .Values.externalTemporal.port .Values.temporal.enabled -}}
+{{- end -}}
+
+{{- define "airbyte.temporal.url" -}}
+{{- (printf "%s:%d" (include "airbyte.temporal.host" .) (include "airbyte.temporal.port" . | default 7233 | int)) -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified minio name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
