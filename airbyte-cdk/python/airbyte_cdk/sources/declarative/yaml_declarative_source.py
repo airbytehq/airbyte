@@ -4,6 +4,7 @@
 
 from typing import Any, List, Mapping
 
+from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
@@ -16,7 +17,7 @@ class YamlDeclarativeSource(DeclarativeSource):
         self._source_config = self._read_and_parse_yaml_file(path_to_yaml)
 
     @property
-    def connection_checker(self):
+    def connection_checker(self) -> ConnectionChecker:
         check = self._source_config["check"]
         if "class_name" not in check:
             check["class_name"] = "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"

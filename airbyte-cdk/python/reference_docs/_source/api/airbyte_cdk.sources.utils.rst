@@ -26,6 +26,14 @@ airbyte\_cdk.sources.utils.schema\_helpers module
    :undoc-members:
    :show-inheritance:
 
+airbyte\_cdk.sources.utils.schema\_models module
+------------------------------------------------
+
+.. automodule:: airbyte_cdk.sources.utils.schema_models
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 airbyte\_cdk.sources.utils.transform module
 -------------------------------------------
 

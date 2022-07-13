@@ -58,6 +58,7 @@ public class AirbyteDebeziumHandler {
   public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(final ConfiguredAirbyteCatalog catalog,
                                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                                     final Properties connectorProperties,
+                                                                    final CdcStateHandler cdcStateHandler,
                                                                     final Instant emittedAt) {
     LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
@@ -81,10 +82,12 @@ public class AirbyteDebeziumHandler {
         publisher::hasClosed,
         publisher::close);
 
-    return AutoCloseableIterators
+    return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
         .transform(
             eventIterator,
-            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
+            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt)),
+        AutoCloseableIterators
+            .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
@@ -93,7 +96,7 @@ public class AirbyteDebeziumHandler {
                                                                        final CdcMetadataInjector cdcMetadataInjector,
                                                                        final Properties connectorProperties,
                                                                        final Instant emittedAt) {
-    LOGGER.info("using CDC: {}", true);
+    LOGGER.info("Using CDC: {}", true);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);

@@ -1,3 +1,5 @@
+import { fireEvent } from "@testing-library/react";
+
 import { render } from "utils/testutils";
 
 import { Input } from "./Input";
@@ -40,5 +42,14 @@ describe("<Input />", () => {
     expect(getByTestId("input")).toHaveAttribute("type", "text");
     expect(getByTestId("input")).toHaveValue(value);
     expect(getByRole("img", { hidden: true })).toHaveAttribute("data-icon", "eye-slash");
+  });
+
+  test("should trigger onChange once", async () => {
+    const onChange = jest.fn();
+    const { getByTestId } = await render(<Input onChange={onChange} />);
+    const inputEl = getByTestId("input");
+
+    fireEvent.change(inputEl, { target: { value: "one more test" } });
+    expect(onChange).toHaveBeenCalledTimes(1);
   });
 });
