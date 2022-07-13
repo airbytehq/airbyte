@@ -78,7 +78,7 @@ class DeclarativeComponentFactory:
         elif isinstance(definition, dict):
             # Try to infer object type
             expected_type = self.get_default_type(key, parent_class)
-            if expected_type:
+            if expected_type and not self._is_builtin_type(expected_type):
                 definition["class_name"] = expected_type
                 definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
                 return self.create_component(definition, config)()
@@ -119,10 +119,10 @@ class DeclarativeComponentFactory:
 
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
 
-        if interface and not expected_type and not DeclarativeComponentFactory._is_builtin_type(interface):
+        if expected_type:
+            return expected_type
+        else:
             return interface
-
-        return expected_type
 
     @staticmethod
     def _get_subcomponent_options(sub: Any):
