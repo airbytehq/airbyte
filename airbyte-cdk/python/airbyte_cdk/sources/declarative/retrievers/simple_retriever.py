@@ -97,7 +97,15 @@ class SimpleRetriever(Retriever, HttpStream):
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_headers(self.state, stream_slice, next_page_token)
+        return self._get_request_options(stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers)
+
+    def _get_request_options(self, stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any], requester_method, paginator_method):
+        base_mapping = requester_method(self.state, stream_slice, next_page_token)
+        paginator_mapping = paginator_method()
+        keys_intersection = set(base_mapping.keys()) & set(paginator_mapping.keys())
+        if keys_intersection:
+            raise ValueError(f"Duplicate keys found: {keys_intersection}")
+        return {**base_mapping, **paginator_mapping}
 
     def request_body_data(
         self,
@@ -115,7 +123,9 @@ class SimpleRetriever(Retriever, HttpStream):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_body_data(self.state, stream_slice, next_page_token)
+        return self._get_request_options(
+            stream_slice, next_page_token, self._requester.request_body_data, self._paginator.request_body_data
+        )
 
     def request_body_json(
         self,
@@ -129,7 +139,9 @@ class SimpleRetriever(Retriever, HttpStream):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_body_json(self.state, stream_slice, next_page_token)
+        return self._get_request_options(
+            stream_slice, next_page_token, self._requester.request_body_json, self._paginator.request_body_json
+        )
 
     def request_kwargs(
         self,
@@ -175,9 +187,7 @@ class SimpleRetriever(Retriever, HttpStream):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        static_request_params = self._requester.request_params(self.state, stream_slice, next_page_token)
-        paginator_request_params = self._paginator.request_params()
-        return {**static_request_params, **paginator_request_params}
+        return self._get_request_options(stream_slice, next_page_token, self._requester.request_params, self._paginator.request_params)
 
     @property
     def cache_filename(self):

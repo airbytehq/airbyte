@@ -10,6 +10,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
@@ -167,3 +168,47 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
             assert False
         except ValueError:
             pass
+
+
+@pytest.mark.parametrize(
+    "test_name, paginator_mapping, expected_mapping",
+    [
+        ("test_only_base_headers", {}, {"key": "value"}),
+        ("test_header_from_pagination", {"offset": 1000}, {"key": "value", "offset": 1000}),
+        ("test_duplicate_header", {"key": 1000}, None),
+    ],
+)
+def test_get_request_options_from_pagination(test_name, paginator_mapping, expected_mapping):
+    paginator = MagicMock()
+    paginator.request_headers.return_value = paginator_mapping
+    paginator.request_params.return_value = paginator_mapping
+    paginator.request_body_data.return_value = paginator_mapping
+    paginator.request_body_json.return_value = paginator_mapping
+    requester = MagicMock()
+
+    base_mapping = {"key": "value"}
+    requester.request_headers.return_value = base_mapping
+    requester.request_params.return_value = base_mapping
+    requester.request_body_data.return_value = base_mapping
+    requester.request_body_json.return_value = base_mapping
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+
+    request_option_type_to_method = {
+        RequestOptionType.header: retriever.request_headers,
+        RequestOptionType.request_parameter: retriever.request_params,
+        RequestOptionType.body_data: retriever.request_body_data,
+        RequestOptionType.body_json: retriever.request_body_json,
+    }
+
+    for _, method in request_option_type_to_method.items():
+        if expected_mapping:
+            actual_mapping = method(None, None, None)
+            assert expected_mapping == actual_mapping
+        else:
+            try:
+                method(None, None, None)
+                assert False
+            except ValueError:
+                pass
