@@ -347,6 +347,24 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(getExpectedDataArrays(), retrieveRecordsAsJson(USERS_STREAM_NAME).get(0));
   }
 
+  // Issue #14668
+  @Test
+  void testTooDeepNestedDepth() {
+    try {
+      runDestinationWrite(getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
+    } catch (Exception e) {
+      assert(((HttpResponseException)e.getCause()).getContent().contains("nested too deeply"));
+    }
+  }
+
+  // Issue #14668
+  @Test
+  void testMaxNestedDepth() throws Exception {
+    runDestinationWrite(getCommonCatalog(getSchemaMaxNestedDepth(), datasetId), config, MESSAGE_USERS13);
+
+    assertEquals(getDataMaxNestedDepth().findValue("str_value").asText(), retrieveRecordsAsJson(USERS_STREAM_NAME).get(0).findValue("str_value").asText());
+  }
+
   private Set<String> extractJsonValues(final JsonNode node, final String attributeName) {
     final List<JsonNode> valuesNode = node.findValues(attributeName);
     final Set<String> resultSet = new HashSet<>();
