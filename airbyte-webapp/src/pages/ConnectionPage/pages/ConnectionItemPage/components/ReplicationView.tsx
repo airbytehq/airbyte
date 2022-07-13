@@ -116,10 +116,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     const initialSyncSchema = connection.syncCatalog;
     const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
-    // TODO: Remove
-    console.log("skipReset", skipReset);
-
-    // TODO: Switch to v2 of this API
     await updateConnection({
       ...connectionAsUpdate,
       ...values,
@@ -128,8 +124,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       // The status can be toggled and the name can be changed in-between refreshing the schema
       name: initialConnection.name,
       status: initialConnection.status || "",
-      // TODO: skipRefresh: true/false
-      // skipReset,
+      skipReset,
     });
 
     setSaved(true);
