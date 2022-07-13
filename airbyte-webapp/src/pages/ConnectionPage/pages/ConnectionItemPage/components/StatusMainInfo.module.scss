@@ -1,0 +1,21 @@
+@use "../../../../../scss/colors";
+
+.connectorLink {
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 10px;
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+}
+
+.container {
+  width: 650px;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: white;
+  border-radius: 10px;
+  align-items: center;
+}
