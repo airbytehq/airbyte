@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -281,16 +282,6 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
   }
-
-  @Test
-  void testIncrementalTimestampCheckCursor() throws Exception {
-    incrementalCursorCheck(
-        COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
-        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
-  }
-
   @Test
   void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
@@ -302,58 +293,67 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     });
 
     final DbState state = new DbState()
-        .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
+            .withStreams(Lists.newArrayList(new DbStreamState().withStreamName(streamName).withStreamNamespace(namespace)));
     final List<AirbyteMessage> actualMessagesFirstSync = MoreIterators
-        .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
+            .toList(source.read(config, configuredCatalog, Jsons.jsonNode(state)));
 
     final Optional<AirbyteMessage> stateAfterFirstSyncOptional = actualMessagesFirstSync.stream()
-        .filter(r -> r.getType() == AirbyteMessage.Type.STATE).findFirst();
+            .filter(r -> r.getType() == AirbyteMessage.Type.STATE).findFirst();
     assertTrue(stateAfterFirstSyncOptional.isPresent());
 
     database.execute(connection -> {
       connection.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+              String.format("INSERT INTO %s(id, name, updated_at) VALUES (4,'riker', '2006-10-19')",
+                      getFullyQualifiedTableName(TABLE_NAME)));
       connection.createStatement().execute(
-          String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
-              getFullyQualifiedTableName(TABLE_NAME)));
+              String.format("INSERT INTO %s(id, name, updated_at) VALUES (5, 'data', '2006-10-19')",
+                      getFullyQualifiedTableName(TABLE_NAME)));
     });
 
     final List<AirbyteMessage> actualMessagesSecondSync = MoreIterators
-        .toList(source.read(config, configuredCatalog,
-            stateAfterFirstSyncOptional.get().getState().getData()));
+            .toList(source.read(config, configuredCatalog,
+                    stateAfterFirstSyncOptional.get().getState().getData()));
 
     Assertions.assertEquals(2,
-        (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == AirbyteMessage.Type.RECORD).count());
+            (int) actualMessagesSecondSync.stream().filter(r -> r.getType() == AirbyteMessage.Type.RECORD).count());
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_4,
-                    COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+                    .withData(Jsons.jsonNode(ImmutableMap
+                            .of(COL_ID, ID_VALUE_4,
+                                    COL_NAME, "riker",
+                                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-        .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
-            .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_5,
-                    COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+            .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
+                    .withData(Jsons.jsonNode(ImmutableMap
+                            .of(COL_ID, ID_VALUE_5,
+                                    COL_NAME, "data",
+                                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
     expectedMessages.add(new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
-                .withCdc(false)
-                .withStreams(Lists.newArrayList(new DbStreamState()
-                    .withStreamName(streamName)
-                    .withStreamNamespace(namespace)
-                    .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))))));
+            .withType(AirbyteMessage.Type.STATE)
+            .withState(new AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
+                    .withData(Jsons.jsonNode(new DbState()
+                            .withCdc(false)
+                            .withStreams(Lists.newArrayList(new DbStreamState()
+                                    .withStreamName(streamName)
+                                    .withStreamNamespace(namespace)
+                                    .withCursorField(ImmutableList.of(COL_ID))
+                                    .withCursor("5")))))));
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertArrayEquals(expectedMessages.toArray(), actualMessagesSecondSync.toArray());
     assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
     assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
   }
 
+  @Test
+  void testIncrementalTimestampCheckCursor() throws Exception {
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
+  }
 }
