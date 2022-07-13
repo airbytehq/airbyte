@@ -2,8 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 import datetime
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from abc import ABC, abstractmethod
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 
@@ -22,67 +22,52 @@ class ExchangeRateApiStream(HttpStream, ABC):
         super(ExchangeRateApiStream, self).__init__(*args, **kwargs)
         self.config: Mapping[str, Any] = config
 
+    @property
+    @abstractmethod
+    def primary_key(self) -> Union[str, List[str]]:
+        return super().primary_key
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield response.json()
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        params = {"base": self.config["base"]}
+        if "symbols" in self.config and self.config["symbols"]:
+            params["symbols"] = self.config["symbols"]
+        return params
+
 
 class LatestRates(ExchangeRateApiStream):
-    primary_key = "timestamp"
+    @property
+    def primary_key(self) -> Union[str, List[str]]:
+        return "timestamp"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "latest"
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = {"base": self.config["base"]}
-        if "symbols" in self.config and self.config["symbols"]:
-            params["symbols"] = self.config["symbols"]
-        return params
 
-
-class IncrementalExchangeRateApiStream(HttpStream, IncrementalMixin, ABC):
+class IncrementalExchangeRateApiStream(ExchangeRateApiStream, IncrementalMixin, ABC):
     state_checkpoint_interval = None
 
-    url_base = "https://api.apilayer.com/exchangerates_data/"
-
-    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(IncrementalExchangeRateApiStream, self).__init__(*args, **kwargs)
-        self.config = config
         self._cursor_value = None
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
+    @property
+    @abstractmethod
+    def cursor_field(self) -> Union[str, List[str]]:
+        return super().cursor_field
 
 
 class HistoricalRates(IncrementalExchangeRateApiStream):
     _date_format = "%Y-%m-%d"
-
-    cursor_field = "date"
-    primary_key = "date"
-
-    def _to_cursor_normalized_value(self, cursor_value: str) -> datetime.date:
-        return datetime.datetime.strptime(cursor_value, self._date_format).date()
-
-    def path(self, stream_state: Mapping[str, Any] = None,
-             stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
-        return stream_slice[self.cursor_field]
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        params = {"base": self.config["base"]}
-        if "symbols" in self.config and self.config["symbols"]:
-            params["symbols"] = self.config["symbols"]
-        return params
 
     @property
     def state(self) -> Mapping[str, Any]:
@@ -92,8 +77,20 @@ class HistoricalRates(IncrementalExchangeRateApiStream):
     def state(self, value: Mapping[str, Any]) -> None:
         self._cursor_value = self._to_cursor_normalized_value(value[self.cursor_field]) + datetime.timedelta(days=1)
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {self.cursor_field: self._to_cursor_normalized_value(latest_record[self.cursor_field])}
+    @property
+    def cursor_field(self) -> Union[str, List[str]]:
+        return "date"
+
+    @property
+    def primary_key(self) -> Union[str, List[str]]:
+        return "date"
+
+    def _to_cursor_normalized_value(self, cursor_value: str) -> datetime.date:
+        return datetime.datetime.strptime(cursor_value, self._date_format).date()
+
+    def path(self, stream_state: Mapping[str, Any] = None,
+             stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+        return stream_slice[self.cursor_field]
 
     def read_records(
             self,

@@ -43,7 +43,7 @@ def test_get_updated_state(patch_incremental_base_class):
         "current_stream_state": {},
         "latest_record": record
     }
-    expected_state = {"date": datetime.datetime.strptime(record["date"], "%Y-%m-%d").date()}
+    expected_state = {}
     assert stream.get_updated_state(**inputs) == expected_state
 
 
