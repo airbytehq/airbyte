@@ -45,17 +45,11 @@ class CompositeErrorHandler(ErrorHandler):
         return self._error_handlers[0].max_retries
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
-        retry = None
-        ignore = False
+        should_retry = None
         for retrier in self._error_handlers:
             should_retry = retrier.should_retry(response)
             if should_retry.action == ResponseAction.SUCCESS:
                 return response_status.SUCCESS
-            if should_retry == response_status.IGNORE:
-                ignore = True
-            elif retry is None or retry.action != ResponseAction.RETRY:
-                retry = should_retry
-        if ignore:
-            return response_status.IGNORE
-        else:
-            return retry
+            if should_retry == response_status.IGNORE or should_retry.action == ResponseAction.RETRY:
+                return should_retry
+        return should_retry

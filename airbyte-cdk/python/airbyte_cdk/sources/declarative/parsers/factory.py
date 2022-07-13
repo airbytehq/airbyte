@@ -27,7 +27,12 @@ class DeclarativeComponentFactory:
         :return: the object to create
         """
         kwargs = copy.deepcopy(component_definition)
-        class_name = kwargs.pop("class_name")
+        if "class_name" in kwargs:
+            class_name = kwargs.pop("class_name")
+        elif "type" in kwargs:
+            class_name = CLASS_TYPES_REGISTRY[kwargs.pop("type")]
+        else:
+            raise ValueError(f"Failed to create component because it has no class_name or type. Definition: {component_definition}")
         return self.build(class_name, config, **kwargs)
 
     def build(self, class_or_class_name: Union[str, Type], config, **kwargs):
@@ -93,7 +98,8 @@ class DeclarativeComponentFactory:
             ]
         else:
             expected_type = self.get_default_type(key, parent_class)
-            if expected_type:
+            if expected_type and not isinstance(definition, expected_type):
+                # call __init__(definition) if definition is not a dict and is not of the expected type
                 return expected_type(definition)
             else:
                 return definition
@@ -120,7 +126,6 @@ class DeclarativeComponentFactory:
                 interface = args[0]
             else:
                 break
-
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
         return expected_type
 

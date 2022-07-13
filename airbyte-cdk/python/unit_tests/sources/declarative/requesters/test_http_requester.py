@@ -5,10 +5,11 @@
 from unittest.mock import MagicMock
 
 import requests
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
 
 
-def test():
+def test_http_requester():
     http_method = "GET"
 
     request_options_provider = MagicMock()
@@ -40,8 +41,8 @@ def test():
 
     requester = HttpRequester(
         name=name,
-        url_base="{{ config['url'] }}",
-        path="v1/{{ stream_slice['id'] }}",
+        url_base=InterpolatedString("{{ config['url'] }}"),
+        path=InterpolatedString("v1/{{ stream_slice['id'] }}"),
         http_method=http_method,
         request_options_provider=request_options_provider,
         authenticator=authenticator,

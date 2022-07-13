@@ -20,9 +20,7 @@ def get_numeric_value_from_header(response: requests.Response, header: str, rege
     header_value = response.headers.get(header, None)
     if not header_value:
         return None
-    print(f"header_value: {header_value}")
     if isinstance(header_value, str):
-        print("isstr")
         if regex:
             match = regex.match(header_value)
             if match:
