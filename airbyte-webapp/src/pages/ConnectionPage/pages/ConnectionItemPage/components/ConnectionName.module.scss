@@ -2,7 +2,7 @@
 @use "../../../../../scss/variables";
 
 .container {
-  margin-top: variables.$spacing-m;
+  margin-top: variables.$spacing-md;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -32,7 +32,7 @@
       line-height: 29px;
       text-align: center;
       color: colors.$dark-blue-900;
-      margin: variables.$spacing-m;
+      margin: variables.$spacing-md;
       word-wrap: break-word;
     }
   }
