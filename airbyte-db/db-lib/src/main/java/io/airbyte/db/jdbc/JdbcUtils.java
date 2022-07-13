@@ -66,12 +66,11 @@ public class JdbcUtils {
   }
 
   /**
-   * Checks that SSL_KEY has not been set or that an SSL_KEY is set and value
-   * can be mapped to true (e.g. non-zero integers, string true, etc)
+   * Checks that SSL_KEY has not been set or that an SSL_KEY is set and value can be mapped to true
+   * (e.g. non-zero integers, string true, etc)
    *
    * @param config A configuration used to check Jdbc connection
-   * @return true: if ssl has not been set or it has been set with true
-   *         false: in all other cases
+   * @return true: if ssl has not been set or it has been set with true, false: in all other cases
    */
   public static boolean useSsl(final JsonNode config) {
     return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();

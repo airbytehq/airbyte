@@ -5,6 +5,8 @@
 package io.airbyte.db.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -175,35 +177,35 @@ public class TestJdbcUtils {
   void testUseSslWithSslNotSet() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
     final boolean sslSet = JdbcUtils.useSsl(config);
-    assertEquals(sslSet, true);
+    assertTrue(sslSet);
   }
 
   @Test
   void testUseSslWithSslSetAndValueStringFalse() {
     final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, "false");
     final boolean sslSet = JdbcUtils.useSsl(config);
-    assertEquals(sslSet, false);
+    assertFalse(sslSet);
   }
 
   @Test
   void testUseSslWithSslSetAndValueIntegerFalse() {
     final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, 0);
     final boolean sslSet = JdbcUtils.useSsl(config);
-    assertEquals(sslSet, false);
+    assertFalse(sslSet);
   }
 
   @Test
   void testUseSslWithSslSetAndValueStringTrue() {
     final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, "true");
     final boolean sslSet = JdbcUtils.useSsl(config);
-    assertEquals(sslSet, true);
+    assertTrue(sslSet);
   }
 
   @Test
   void testUssSslWithSslSetAndValueIntegerTrue() {
     final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, 3);
     final boolean sslSet = JdbcUtils.useSsl(config);
-    assertEquals(sslSet, true);
+    assertTrue(sslSet);
   }
 
   private static void createTableWithAllTypes(final Connection connection) throws SQLException {
