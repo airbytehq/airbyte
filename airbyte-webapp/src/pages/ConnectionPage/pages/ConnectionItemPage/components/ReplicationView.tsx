@@ -1,11 +1,11 @@
 import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useState } from "react";
-import { FormattedMessage } from "react-intl";
-import { useAsyncFn } from "react-use";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button, Card } from "components";
+import { Button, Card, LabeledSwitch } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
@@ -19,12 +19,49 @@ import {
 } from "hooks/services/useConnectionHook";
 import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+
+import styles from "./ReplicationView.module.scss";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
   connectionId: string;
 }
+
+interface ResetWarningModalProps {
+  onClose: (withReset: boolean) => void;
+  onCancel: () => void;
+  stateType: ConnectionStateType;
+}
+
+const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose, stateType }) => {
+  const { formatMessage } = useIntl();
+  const [withReset, setWithReset] = useState(true);
+  const requireFullReset = stateType === ConnectionStateType.legacy;
+  return (
+    <div className={styles.resetWarningModal}>
+      {/* TODO: This should use proper text stylings once we have them available. */}
+      <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
+      <p>
+        <LabeledSwitch
+          checked={withReset}
+          onChange={(ev) => setWithReset(ev.target.checked)}
+          label={formatMessage({ id: requireFullReset ? "connection.saveWithFullReset" : "connection.saveWithReset" })}
+          checkbox
+        />
+      </p>
+      <div className={styles.resetWarningModalButtons}>
+        <Button onClick={onCancel} secondary>
+          <FormattedMessage id="form.cancel" />
+        </Button>
+        <Button onClick={() => onClose(withReset)}>
+          <FormattedMessage id="connection.save" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const Content = styled.div`
   max-width: 1279px;
@@ -38,7 +75,7 @@ const TryArrow = styled(FontAwesomeIcon)`
 `;
 
 export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSchema, connectionId }) => {
-  // const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { formatMessage } = useIntl();
   const { openModal, closeModal } = useModalService();
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -53,6 +90,8 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     refreshConnectionCatalog,
     [connectionId]
   );
+
+  useUnmount(() => closeModal());
 
   const connection = useMemo(() => {
     if (activeUpdatingSchemaMode && connectionWithRefreshCatalog) {
@@ -77,8 +116,10 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     const initialSyncSchema = connection.syncCatalog;
     const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
+    // TODO: Remove
     console.log("skipReset", skipReset);
 
+    // TODO: Switch to v2 of this API
     await updateConnection({
       ...connectionAsUpdate,
       ...values,
@@ -101,45 +142,29 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     }
   };
 
-  const onSubmitForm = async (values: ValuesProps) => {
-    console.log("values.syncCatalog", values.syncCatalog);
-    console.log("initialConnection", initialConnection.syncCatalog);
+  const onSubmitForm = async (values: ValuesProps): Promise<void | ConnectionFormSubmitResult> => {
+    // Detect whether the catalog has any differences compared to the original one.
+    // This could be due to user changes (e.g. in the sync mode) or due to new/removed
+    // streams due to a "refreshed source schema".
     const hasCatalogChanged = !equal(values.syncCatalog, initialConnection.syncCatalog);
-
-    console.log("hasCatalogChanged?", hasCatalogChanged);
+    // Whenever the catalog changed show a warning to the user, that we're about to reset their data.
+    // Given them a choice to opt-out in which case we'll be sending skipRefresh: true to the update
+    // endpoint.
     if (hasCatalogChanged) {
       const stateType = await connectionService.getStateType(connectionId);
-      console.log("ConnectionStateType", stateType);
-      if (stateType === ConnectionStateType.legacy) {
-        // The state type is legacy so the server will do a full reset after saving
-        // TODO: Show confirm dialog with full reset option
-        // TODO: This should render a nicer modal with a checkbox inside, once we have a proper modal service
-        const result = await openModal({ title: "test", content: () => <h2>props</h2> });
-        console.log("result", result);
-        if (result.type !== "canceled") {
-          // TODO: right skipRefresh
-          await saveConnection(values, false);
-        }
-        // openConfirmationModal({
-        //   title: "connection.updateSchema",
-        //   text: "connection.updateSchemaText",
-        //   submitButtonText: "connection.updateSchema",
-        //   submitButtonDataId: "refresh",
-        //   secondaryButtonText: "connection.updateSchemaWithoutReset",
-        //   onSubmit: async (type) => {
-        //     await saveConnection(values, type === "secondary");
-        //     closeConfirmationModal();
-        //   },
-        // });
-      } else {
-        // TODO: Show confirm dialog with partial reset option
-        // TODO: This should render a nicer modal with a checkbox inside, once we have a proper modal service
-        const result = await openModal({ title: "test", content: () => <h2>props</h2> });
-        console.log("result", result);
+      const result = await openModal<boolean>({
+        title: formatMessage({ id: "connection.resetModalTitle" }),
+        content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
+      });
+      if (result.type === "canceled") {
+        return {
+          submitCancelled: true,
+        };
       }
+      // Save the connection taking into account the correct skipRefresh value from the dialog choice.
+      await saveConnection(values, !result.reason);
     } else {
-      // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save
-      // TODO: Clarify if we want to have `skipRefresh` true or false in this case with BE.
+      // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
       await saveConnection(values, true);
     }
   };

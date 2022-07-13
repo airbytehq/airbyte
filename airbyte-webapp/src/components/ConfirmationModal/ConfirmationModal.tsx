@@ -31,9 +31,7 @@ export interface ConfirmationModalProps {
   title: string;
   text: string;
   submitButtonText: string;
-  secondaryButtonText?: string;
-  secondaryButtonDataId?: string;
-  onSubmit: (button: "primary" | "secondary") => void;
+  onSubmit: () => void;
   submitButtonDataId?: string;
   cancelButtonText?: string;
 }
@@ -45,13 +43,10 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onSubmit,
   submitButtonText,
   submitButtonDataId,
-  secondaryButtonText,
-  secondaryButtonDataId,
   cancelButtonText,
 }) => {
   const { isLoading, startAction } = useLoadingState();
-  const onSubmitBtnClick = () => startAction({ action: () => onSubmit("primary") });
-  const onSecondaryBtnClick = () => startAction({ action: () => onSubmit("secondary") });
+  const onSubmitBtnClick = () => startAction({ action: () => onSubmit() });
 
   return (
     <Modal onClose={onClose} title={<FormattedMessage id={title} />}>
@@ -61,17 +56,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <ButtonWithMargin onClick={onClose} type="button" secondary disabled={isLoading}>
             <FormattedMessage id={cancelButtonText ?? "form.cancel"} />
           </ButtonWithMargin>
-          {secondaryButtonText && (
-            <ButtonWithMargin
-              danger
-              type="button"
-              onClick={onSecondaryBtnClick}
-              data-testid={secondaryButtonDataId}
-              disabled={isLoading}
-            >
-              <FormattedMessage id={secondaryButtonText} />
-            </ButtonWithMargin>
-          )}
           <LoadingButton danger onClick={onSubmitBtnClick} data-id={submitButtonDataId} isLoading={isLoading}>
             <FormattedMessage id={submitButtonText} />
           </LoadingButton>

@@ -4,6 +4,8 @@ import styled, { keyframes } from "styled-components";
 
 import ContentCard from "components/ContentCard";
 
+import styles from "./Modal.module.scss";
+
 export interface ModalProps {
   title?: string | React.ReactNode;
   onClose?: () => void;
@@ -47,7 +49,13 @@ const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnB
 
   return createPortal(
     <Overlay onClick={() => (closeOnBackground && onClose ? onClose() : null)}>
-      {clear ? children : <ContentCard title={title}>{children}</ContentCard>}
+      {clear ? (
+        children
+      ) : (
+        <ContentCard title={title} className={styles.modalContent}>
+          {children}
+        </ContentCard>
+      )}
     </Overlay>,
     document.body
   );

@@ -86,8 +86,9 @@ const FormContainer = styled(Form)`
   }
 `;
 
-interface ConnectionFormSubmitResult {
-  onSubmitComplete: () => void;
+export interface ConnectionFormSubmitResult {
+  onSubmitComplete?: () => void;
+  submitCancelled?: boolean;
 }
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
@@ -154,20 +155,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const initialValues = useInitialValues(connection, destDefinition, isEditMode);
   const workspace = useCurrentWorkspace();
 
-  // TODO: Remove this
-  // const openResetDataModal = useCallback(() => {
-  //   openConfirmationModal({
-  //     title: "form.resetData",
-  //     text: "form.changedColumns",
-  //     submitButtonText: "form.reset",
-  //     cancelButtonText: "form.noNeed",
-  //     onSubmit: async () => {
-  //       await onReset?.();
-  //       closeConfirmationModal();
-  //     },
-  //   });
-  // }, [closeConfirmationModal, onReset, openConfirmationModal]);
-
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       const formValues: ConnectionFormValues = connectionValidationSchema.cast(values, {
@@ -180,17 +167,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       try {
         const result = await onSubmit(formValues);
 
-        formikHelpers.resetForm({ values });
-        clearFormChange(formId);
+        if (!result?.submitCancelled) {
+          formikHelpers.resetForm({ values });
+          clearFormChange(formId);
 
-        // // TODO: Remove this
-        // const requiresReset = mode === "edit" && !equal(initialValues.syncCatalog, values.syncCatalog);
-
-        // if (requiresReset) {
-        //   openResetDataModal();
-        // }
-
-        result?.onSubmitComplete?.();
+          result?.onSubmitComplete?.();
+        }
       } catch (e) {
         setSubmitError(e);
       }

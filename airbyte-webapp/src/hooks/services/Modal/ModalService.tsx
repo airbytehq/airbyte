@@ -8,23 +8,29 @@ import { ModalOptions, ModalResult, ModalServiceContextType } from "./types";
 const ModalServiceContext = React.createContext<ModalServiceContextType | undefined>(undefined);
 
 export const ModalServiceProvider: React.FC = ({ children }) => {
-  const [modalOptions, setModalOptions] = useState<ModalOptions>();
-  const promiseRef = useRef<Subject<ModalResult>>();
+  // The any here is due to the fact, that every call to open a modal might come in with
+  // a different type, thus we can't type this with unknown or a generic.
+  // The consuming code of this service though is properly typed, so that this `any` stays
+  // encapsulated within this component.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [modalOptions, setModalOptions] = useState<ModalOptions<any>>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const resultSubjectRef = useRef<Subject<ModalResult<any>>>();
 
   const service: ModalServiceContextType = useMemo(
     () => ({
       openModal: (options) => {
-        promiseRef.current = new Subject();
+        resultSubjectRef.current = new Subject();
         setModalOptions(options);
 
-        return firstValueFrom(promiseRef.current).then((reason) => {
+        return firstValueFrom(resultSubjectRef.current).then((reason) => {
           setModalOptions(undefined);
-          promiseRef.current = undefined;
+          resultSubjectRef.current = undefined;
           return reason;
         });
       },
       closeModal: () => {
-        promiseRef.current?.next({ type: "canceled" });
+        resultSubjectRef.current?.next({ type: "canceled" });
       },
     }),
     []
@@ -34,10 +40,10 @@ export const ModalServiceProvider: React.FC = ({ children }) => {
     <ModalServiceContext.Provider value={service}>
       {children}
       {modalOptions && (
-        <Modal title={modalOptions.title} onClose={() => promiseRef.current?.next({ type: "canceled" })}>
+        <Modal title={modalOptions.title} onClose={() => resultSubjectRef.current?.next({ type: "canceled" })}>
           <modalOptions.content
-            onCancel={() => promiseRef.current?.next({ type: "canceled" })}
-            onClose={(reason: unknown) => promiseRef.current?.next({ type: "closed", reason })}
+            onCancel={() => resultSubjectRef.current?.next({ type: "canceled" })}
+            onClose={(reason) => resultSubjectRef.current?.next({ type: "closed", reason })}
           />
         </Modal>
       )}
