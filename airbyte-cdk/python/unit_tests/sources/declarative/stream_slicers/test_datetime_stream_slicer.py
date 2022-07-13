@@ -30,7 +30,7 @@ def mock_datetime_now(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "test_name, stream_state, start, end, step, cursor, expected_slices",
+    "test_name, stream_state, start, end, step, cursor, lookback_window, expected_slices",
     [
         (
             "test_1_day",
@@ -39,6 +39,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             cursor_value,
+            None,
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-01"},
                 {"start_date": "2021-01-02", "end_date": "2021-01-02"},
@@ -59,6 +60,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "2d",
             cursor_value,
+            None,
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-02"},
                 {"start_date": "2021-01-03", "end_date": "2021-01-04"},
@@ -74,6 +76,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             cursor_value,
+            None,
             [
                 # FIXME: should this include 2021-01-05?
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
@@ -91,6 +94,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "12d",
             cursor_value,
+            None,
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-10"},
             ],
@@ -102,6 +106,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime(f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}", datetime_format=datetime_format),
             "1d",
             cursor_value,
+            None,
             [
                 {"start_date": "2021-12-28", "end_date": "2021-12-28"},
                 {"start_date": "2021-12-29", "end_date": "2021-12-29"},
@@ -117,6 +122,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ stream_state['date'] }}", datetime_format=datetime_format),
             "1d",
             cursor_value,
+            None,
             [
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
             ],
@@ -128,6 +134,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             InterpolatedString("{{ stream_state['date'] }}"),
+            None,
             [
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
                 {"start_date": "2021-01-06", "end_date": "2021-01-06"},
@@ -144,6 +151,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
             InterpolatedString("{{ stream_state['date'] }}"),
+            None,
             [
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
                 {"start_date": "2021-01-06", "end_date": "2021-01-06"},
@@ -160,6 +168,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format=datetime_format),
             "1d",
             None,
+            None,
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-01"},
                 {"start_date": "2021-01-02", "end_date": "2021-01-02"},
@@ -175,6 +184,42 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
             "1d",
             None,
+            None,
+            [
+                {"start_date": "2021-01-01", "end_date": "2021-01-01"},
+                {"start_date": "2021-01-02", "end_date": "2021-01-02"},
+                {"start_date": "2021-01-03", "end_date": "2021-01-03"},
+                {"start_date": "2021-01-04", "end_date": "2021-01-04"},
+                {"start_date": "2021-01-05", "end_date": "2021-01-05"},
+            ],
+        ),
+        (
+            "test_with_lookback_window_from_start_date",
+            {"date": "2021-01-05"},
+            MinMaxDatetime("{{ config['start_date'] }}"),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
+            "1d",
+            None,
+            "3d",
+            [
+                {"start_date": "2020-12-29", "end_date": "2020-12-29"},
+                {"start_date": "2020-12-30", "end_date": "2020-12-30"},
+                {"start_date": "2020-12-31", "end_date": "2020-12-31"},
+                {"start_date": "2021-01-01", "end_date": "2021-01-01"},
+                {"start_date": "2021-01-02", "end_date": "2021-01-02"},
+                {"start_date": "2021-01-03", "end_date": "2021-01-03"},
+                {"start_date": "2021-01-04", "end_date": "2021-01-04"},
+                {"start_date": "2021-01-05", "end_date": "2021-01-05"},
+            ],
+        ),
+        (
+            "test_with_lookback_window_defaults_to_0d",
+            {"date": "2021-01-05"},
+            MinMaxDatetime("{{ config['start_date'] }}"),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
+            "1d",
+            None,
+            "{{ config['does_not_exist'] }}",
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-01"},
                 {"start_date": "2021-01-02", "end_date": "2021-01-02"},
@@ -185,8 +230,16 @@ def mock_datetime_now(monkeypatch):
         ),
     ],
 )
-def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, cursor, step, expected_slices):
-    slicer = DatetimeStreamSlicer(start, end, step, cursor, datetime_format, config)
+def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, cursor, step, lookback_window, expected_slices):
+    slicer = DatetimeStreamSlicer(
+        start_datetime=start,
+        end_datetime=end,
+        step=step,
+        cursor_value=cursor,
+        datetime_format=datetime_format,
+        lookback_window=lookback_window,
+        config=config,
+    )
     stream_slices = slicer.stream_slices(SyncMode.incremental, stream_state)
 
     assert expected_slices == stream_slices
