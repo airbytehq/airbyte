@@ -100,6 +100,7 @@ class DeclarativeComponentFactory:
             expected_type = self.get_default_type(key, parent_class)
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
+                # for instance, to turn a string into an InterpolatedString
                 return expected_type(definition)
             else:
                 return definition
