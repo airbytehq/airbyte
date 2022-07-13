@@ -748,7 +748,7 @@ public class AirbyteAcceptanceTestHarness {
         LOGGER.info("Max wait time of {} has been reached. Stopping wait.", maxWaitTime);
         break;
       }
-      sleep(1000);
+      sleep(5000);
 
       job = jobsApi.getJobInfo(new JobIdRequestBody().id(job.getId())).getJob();
       LOGGER.info("waiting: job id: {} config type: {} status: {}", job.getId(), job.getConfigType(), job.getStatus());
