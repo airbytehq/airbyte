@@ -21,6 +21,9 @@ from airbyte_cdk.sources.declarative.types import Config
 class ConditionalPaginator(Paginator, ABC):
     """
     A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
+
+    next_page_token() updates self._token with the token, and returns {"next_page_token: token}
+    path, request_params, request_headers, request_body_data, and request_body_json return the request options to set using self._token set by next_page_token
     """
 
     def __init__(
