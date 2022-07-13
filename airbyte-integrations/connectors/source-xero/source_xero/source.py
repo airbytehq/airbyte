@@ -43,4 +43,4 @@ class SourceXero(AbstractSource):
         return [Accounts(), DoleadJournals(), DoleadManualJournals(), DoleadIncJournals(), DoleadIncManualJournals(),
                 DoleadUkManualJournals(), DoleadDdsManualJournals(), DoleadUkJournals(), DoleadDdsJournals(), Contacts(),
                 Invoices(), DoleadInvoices(), DoleadIncInvoices(), DoleadUkInvoices(), DoleadDdsInvoices(),
-                TrackingCategories(), Tenants()]
+                TrackingCategories(), Tenants(), DoleadCreditNotes(), DoleadIncCreditNotes(), DoleadUkCreditNotes(), DoleadDdsCreditNotes()]

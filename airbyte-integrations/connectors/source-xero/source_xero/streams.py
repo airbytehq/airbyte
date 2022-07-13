@@ -232,6 +232,41 @@ class DoleadDdsInvoices(Invoices):
             return {"tenant_id": self.dolead_dds_id, "page": "1"}
 
 
+class DoleadCreditNotes(XeroPaginatedData):
+    def path(self, **kwargs) -> str:
+        return "/xero/credit_notes"
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": "1"}
+
+
+class DoleadIncCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_inc_id, "page": "1"}
+
+
+class DoleadUkCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_uk_id, "page": "1"}
+
+
+class DoleadDdsCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_dds_id, "page": "1"}
+
+
 class Tenants(XeroHttpStream):
     url_base = "http://acore01.prod.dld/"
     headers = {"Dolead-Current-User": "1", "Dolead-User": "1", "User-Agent": "dolead_client/billing"}
