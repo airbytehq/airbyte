@@ -6,12 +6,18 @@ from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -20,9 +26,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.http_response_filter import HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
@@ -39,7 +42,7 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     SchemaLoader: JsonSchema,
     HttpSelector: RecordSelector,
     ConnectionChecker: CheckStream,
-    Retrier: DefaultRetrier,
+    ErrorHandler: DefaultErrorHandler,
     Decoder: JsonDecoder,
     JelloExtractor: JelloExtractor,
     State: DictState,
@@ -50,4 +53,7 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     DeclarativeStream: DeclarativeStream,
     RequestOption: RequestOption,
     InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
+    MinMaxDatetime: MinMaxDatetime,
+    InterpolatedString: InterpolatedString,
+    InterpolatedBoolean: InterpolatedBoolean,
 }

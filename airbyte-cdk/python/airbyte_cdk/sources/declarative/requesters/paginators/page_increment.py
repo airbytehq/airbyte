@@ -9,6 +9,10 @@ from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy i
 
 
 class PageIncrement(PaginationStrategy, JsonSchemaMixin):
+    """
+    Pagination strategy that returns the number of pages reads so far and returns it as the next page token
+    """
+
     def __init__(self):
         self._offset = 0
 

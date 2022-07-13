@@ -40,7 +40,7 @@ class YamlDeclarativeSource(DeclarativeSource):
         return stream_configs
 
     @property
-    def connection_checker(self):
+    def connection_checker(self) -> ConnectionChecker:
         check = self._source_config["check"]
         if "class_name" not in check:
             check["class_name"] = "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"

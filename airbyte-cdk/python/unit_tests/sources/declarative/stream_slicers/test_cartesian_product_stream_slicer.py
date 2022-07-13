@@ -4,6 +4,7 @@
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
@@ -38,10 +39,10 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
             [
                 ListStreamSlicer(["customer", "store", "subscription"], {"owner_resource": "{{ slice_value }}"}, None),
                 DatetimeStreamSlicer(
-                    InterpolatedString(string="2021-01-01"),
-                    InterpolatedString(string="2021-01-03"),
+                    MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d"),
+                    MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d"),
                     "1d",
-                    InterpolatedString(string=""),
+                    InterpolatedString(""),
                     "%Y-%m-%d",
                     None,
                 ),

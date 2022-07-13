@@ -7,9 +7,10 @@ import json
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import InterpolatedConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.cursor_pagination_strategy import CursorPaginationStrategy
-from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -46,7 +47,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
 
     paginator = InterpolatedConditionalPaginator(
-        stop_condition_template, request_options_provider, page_token, strategy, config, None, decoder
+        InterpolatedBoolean(stop_condition_template), request_options_provider, page_token, strategy, config, None, decoder
     )
     next_page_token = paginator.next_page_token(response, last_records)
 

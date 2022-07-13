@@ -8,11 +8,9 @@ import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUti
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.setEmittedAtToNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -410,9 +408,9 @@ class PostgresSourceTest {
         });
       }
 
-      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
-      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      Set<String> expectedVisibleNames = Sets.newHashSet(
+      final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",
           "table_granted_by_role_with_options",
           "test_table_granted_directly",
@@ -441,18 +439,6 @@ class PostgresSourceTest {
     setEmittedAtToNull(actualMessages);
 
     assertEquals(ASCII_MESSAGES, actualMessages);
-  }
-
-  @Test
-  void testIsCdc() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
-
-    assertFalse(PostgresSource.isCdc(config));
-
-    ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
-        "replication_slot", "slot",
-        "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
   }
 
   @Test

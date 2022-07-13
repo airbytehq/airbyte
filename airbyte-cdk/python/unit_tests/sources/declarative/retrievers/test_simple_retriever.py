@@ -4,11 +4,14 @@
 
 from unittest.mock import MagicMock
 
+import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import NonRetriableResponseStatus, RetryResponseStatus
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 
 primary_key = "pk"
@@ -44,12 +47,8 @@ def test_simple_retriever():
     requester.get_path.return_value = path
     http_method = HttpMethod.GET
     requester.get_method.return_value = http_method
-    max_retries = 10
-    requester.max_retries = max_retries
-    retry_factor = 2
-    requester.retry_factor = retry_factor
     backoff_time = 60
-    should_retry = RetryResponseStatus(backoff_time)
+    should_retry = ResponseStatus.retry(backoff_time)
     requester.should_retry.return_value = should_retry
     request_body_data = {"body": "data"}
     requester.request_body_data.return_value = request_body_data
@@ -91,8 +90,6 @@ def test_simple_retriever():
 
     assert retriever.http_method == "GET"
     assert not retriever.raise_on_http_errors
-    assert retriever.max_retries == max_retries
-    assert retriever.retry_factor == retry_factor
     assert retriever.should_retry(requests.Response())
     assert retriever.backoff_time(requests.Response()) == backoff_time
     assert retriever.request_body_data(None, None, None) == request_body_data
@@ -105,9 +102,9 @@ def test_simple_retriever():
 @pytest.mark.parametrize(
     "test_name, requester_response, expected_should_retry, expected_backoff_time",
     [
-        ("test_should_retry_fail", NonRetriableResponseStatus.FAIL, False, None),
-        ("test_should_retry_none_backoff", RetryResponseStatus(None), True, None),
-        ("test_should_retry_custom_backoff", RetryResponseStatus(60), True, 60),
+        ("test_should_retry_fail", response_status.FAIL, False, None),
+        ("test_should_retry_none_backoff", ResponseStatus.retry(None), True, None),
+        ("test_should_retry_custom_backoff", ResponseStatus.retry(60), True, 60),
     ],
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
@@ -115,16 +112,16 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=MagicMock())
     requester.should_retry.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
-    if isinstance(requester_response, RetryResponseStatus):
+    if requester_response.action == ResponseAction.RETRY:
         assert retriever.backoff_time(requests.Response()) == expected_backoff_time
 
 
 @pytest.mark.parametrize(
     "test_name, status_code, response_status, len_expected_records",
     [
-        ("test_parse_response_fails_if_should_retry_is_fail", 404, NonRetriableResponseStatus.FAIL, None),
-        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, NonRetriableResponseStatus.Ok, 1),
-        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, NonRetriableResponseStatus.IGNORE, 0),
+        ("test_parse_response_fails_if_should_retry_is_fail", 404, response_status.FAIL, None),
+        ("test_parse_response_succeeds_if_should_retry_is_ok", 200, response_status.SUCCESS, 1),
+        ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, response_status.IGNORE, 0),
     ],
 )
 def test_parse_response(test_name, status_code, response_status, len_expected_records):
@@ -144,3 +141,126 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records
+
+
+@pytest.mark.parametrize(
+    "test_name, response_action, retry_in, expected_backoff_time",
+    [
+        ("test_backoff_retriable_request", ResponseAction.RETRY, 10, 10),
+        ("test_backoff_fail_request", ResponseAction.FAIL, 10, None),
+        ("test_backoff_ignore_request", ResponseAction.IGNORE, 10, None),
+        ("test_backoff_success_request", ResponseAction.IGNORE, 10, None),
+    ],
+)
+def test_backoff_time(test_name, response_action, retry_in, expected_backoff_time):
+    requester = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = [{"id": 100}]
+    response = requests.Response()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    if expected_backoff_time:
+        requester.should_retry.return_value = ResponseStatus(response_action, retry_in)
+        actual_backoff_time = retriever.backoff_time(response)
+        assert expected_backoff_time == actual_backoff_time
+    else:
+        try:
+            retriever.backoff_time(response)
+            assert False
+        except ValueError:
+            pass
+
+
+@pytest.mark.parametrize(
+    "test_name, paginator_mapping, expected_mapping",
+    [
+        ("test_only_base_headers", {}, {"key": "value"}),
+        ("test_header_from_pagination", {"offset": 1000}, {"key": "value", "offset": 1000}),
+        ("test_duplicate_header", {"key": 1000}, None),
+    ],
+)
+def test_get_request_options_from_pagination(test_name, paginator_mapping, expected_mapping):
+    paginator = MagicMock()
+    paginator.request_headers.return_value = paginator_mapping
+    paginator.request_params.return_value = paginator_mapping
+    paginator.request_body_data.return_value = paginator_mapping
+    paginator.request_body_json.return_value = paginator_mapping
+    requester = MagicMock()
+
+    base_mapping = {"key": "value"}
+    requester.request_headers.return_value = base_mapping
+    requester.request_params.return_value = base_mapping
+    requester.request_body_data.return_value = base_mapping
+    requester.request_body_json.return_value = base_mapping
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+
+    request_option_type_to_method = {
+        RequestOptionType.header: retriever.request_headers,
+        RequestOptionType.request_parameter: retriever.request_params,
+        RequestOptionType.body_data: retriever.request_body_data,
+        RequestOptionType.body_json: retriever.request_body_json,
+    }
+
+    for _, method in request_option_type_to_method.items():
+        if expected_mapping:
+            actual_mapping = method(None, None, None)
+            assert expected_mapping == actual_mapping
+        else:
+            try:
+                method(None, None, None)
+                assert False
+            except ValueError:
+                pass
+
+
+@pytest.mark.parametrize(
+    "test_name, requester_body_data, paginator_body_data, expected_body_data",
+    [
+        ("test_only_requester_mapping", {"key": "value"}, {}, {"key": "value"}),
+        ("test_only_requester_string", "key=value", {}, "key=value"),
+        ("test_requester_mapping_and_paginator_no_duplicate", {"key": "value"}, {"offset": 1000}, {"key": "value", "offset": 1000}),
+        ("test_requester_mapping_and_paginator_with_duplicate", {"key": "value"}, {"key": 1000}, None),
+        ("test_requester_string_and_paginator", "key=value", {"offset": 1000}, None),
+    ],
+)
+def test_request_body_data(test_name, requester_body_data, paginator_body_data, expected_body_data):
+    paginator = MagicMock()
+    paginator.request_body_data.return_value = paginator_body_data
+    requester = MagicMock()
+
+    requester.request_body_data.return_value = requester_body_data
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+
+    if expected_body_data:
+        actual_body_data = retriever.request_body_data(None, None, None)
+        assert expected_body_data == actual_body_data
+    else:
+        try:
+            retriever.request_body_data(None, None, None)
+            assert False
+        except ValueError:
+            pass
+
+
+@pytest.mark.parametrize(
+    "test_name, requester_path, paginator_path, expected_path",
+    [
+        ("test_path_from_requester", "/v1/path", None, "/v1/path"),
+        ("test_path_from_paginator", "/v1/path/", "/v2/paginator", "/v2/paginator"),
+    ],
+)
+def test_path(test_name, requester_path, paginator_path, expected_path):
+    paginator = MagicMock()
+    paginator.path.return_value = paginator_path
+    requester = MagicMock()
+
+    requester.get_path.return_value = requester_path
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+
+    actual_path = retriever.path(stream_state=None, stream_slice=None, next_page_token=None)
+    assert expected_path == actual_path

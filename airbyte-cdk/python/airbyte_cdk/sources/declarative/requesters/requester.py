@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import ResponseStatus
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from requests.auth import AuthBase
 
 
@@ -53,20 +53,6 @@ class Requester(ABC):
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
-        """
-
-    @property
-    @abstractmethod
-    def max_retries(self) -> Union[int, None]:
-        """
-        Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-
-    @property
-    @abstractmethod
-    def retry_factor(self) -> float:
-        """
-        Specifies factor for backoff policy.
         """
 
     @abstractmethod
