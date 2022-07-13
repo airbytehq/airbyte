@@ -196,8 +196,6 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 
-  // normalization test
-
   /**
    * This test is disabled because it is very slow, and should only be run manually for now.
    */

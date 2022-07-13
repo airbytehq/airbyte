@@ -99,7 +99,7 @@ public class SnowflakeDatabase {
     } else if (credentials != null && credentials.has(PRIVATE_KEY_FIELD_NAME)) {
       LOGGER.debug("Login mode with key pair is used");
       dataSource.setUsername(username);
-      String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
+      final String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
       createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
       properties.put("private_key_file", PRIVATE_KEY_FILE_NAME);
       if (credentials.has(PASSPHRASE)) {
@@ -141,7 +141,7 @@ public class SnowflakeDatabase {
     return dataSource;
   }
 
-  private static void createPrivateKeyFile(String fileName, String fileValue) {
+  private static void createPrivateKeyFile(final String fileName, final String fileValue) {
     try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
       out.print(fileValue);
     } catch (IOException e) {
