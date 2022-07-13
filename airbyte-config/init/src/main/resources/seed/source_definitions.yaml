@@ -475,6 +475,13 @@
   icon: klaviyo.svg
   sourceType: api
   releaseStage: alpha
+- name: Kyriba
+  sourceDefinitionId: 547dc08e-ab51-421d-953b-8f3745201a8c
+  dockerRepository: airbyte/source-kyriba
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/kyriba
+  sourceType: api
+  releaseStage: alpha
 - name: Lemlist
   sourceDefinitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-lemlist
