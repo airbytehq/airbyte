@@ -216,6 +216,8 @@ class CustomRoles(OktaStream):
         **kwargs,
     ) -> Iterable[Mapping]:
         yield from response.json()["roles"]
+
+
 class UserRoleAssignments(OktaStream):
     primary_key = "id"
     use_cache = True
@@ -228,6 +230,7 @@ class UserRoleAssignments(OktaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         user_id = stream_slice["user_id"]
         return f"users/{user_id}/roles"
+
 
 class SourceOkta(AbstractSource):
     def initialize_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
