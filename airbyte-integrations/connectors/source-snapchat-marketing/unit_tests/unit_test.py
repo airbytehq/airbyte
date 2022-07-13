@@ -7,7 +7,9 @@
 import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+import source_snapchat_marketing
 from source_snapchat_marketing.source import (
+    auxiliary_id_map,
     Adaccounts,
     AdaccountsStatsDaily,
     Ads,
@@ -328,6 +330,27 @@ def test_ads_stats_daily(requests_mock):
     stream = AdsStatsDaily(**config_mock)
     records = run_stream(stream)
     assert len(list(records)) == 4  # 2 records for each of 2 slices
+
+
+def test_get_parent_ids(requests_mock):
+    """Test cache usage in get_parent_ids"""
+
+    requests_mock.get("https://adsapi.snapchat.com/v1/me/organizations", json=response_organizations)
+    requests_mock.get("https://adsapi.snapchat.com/v1/organizations/organization_id_1/adaccounts", json=response_adaccounts)
+
+    stream = Adaccounts(**config_mock)
+
+    # 1st call
+    records = list(run_stream(stream))
+    # 1st request to organizations
+    # 2nd request to adaccounts
+    assert len(requests_mock.request_history) == 2
+
+    # 2nd call
+    records = list(run_stream(stream))
+    # request to organizations is skipped due to cache
+    # 3rd request to adaccounts
+    assert len(requests_mock.request_history) == 3
 
 
 def test_source_streams():
