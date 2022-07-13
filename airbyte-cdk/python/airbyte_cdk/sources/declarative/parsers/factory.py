@@ -27,7 +27,12 @@ class DeclarativeComponentFactory:
         :return: the object to create
         """
         kwargs = copy.deepcopy(component_definition)
-        class_name = kwargs.pop("class_name")
+        if "class_name" in kwargs:
+            class_name = kwargs.pop("class_name")
+        elif "type" in kwargs:
+            class_name = CLASS_TYPES_REGISTRY[kwargs.pop("type")]
+        else:
+            raise ValueError(f"Failed to create component because it has no class_name or type. Definition: {component_definition}")
         return self.build(class_name, config, **kwargs)
 
     def build(self, class_or_class_name: Union[str, Type], config, **kwargs):

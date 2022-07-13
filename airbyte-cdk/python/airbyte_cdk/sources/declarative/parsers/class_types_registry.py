@@ -5,12 +5,15 @@
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
+from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -36,4 +39,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "CompositeErrorHandler": CompositeErrorHandler,
     "DefaultErrorHandler": DefaultErrorHandler,
     "RemoveFields": RemoveFields,
+    "JelloExtractor": JelloExtractor,
+    "DeclarativeStream": DeclarativeStream,
+    "HttpRequester": HttpRequester,
 }

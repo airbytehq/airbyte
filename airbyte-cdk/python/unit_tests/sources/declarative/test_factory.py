@@ -106,7 +106,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_datetime_stream_slicer():
     content = """
     stream_slicer:
-        class_name: airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer
+        type: DatetimeStreamSlicer
         options:
           datetime_format: "%Y-%m-%d"
         start_datetime:
@@ -239,7 +239,7 @@ check:
 def test_create_record_selector():
     content = """
     extractor:
-      class_name: airbyte_cdk.sources.declarative.extractors.jello.JelloExtractor
+      type: JelloExtractor
       transform: "_"
     selector:
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
@@ -261,7 +261,7 @@ def test_create_record_selector():
 def test_create_requester():
     content = """
   requester:
-    class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
+    type: HttpRequester
     path: "/v3/marketing/lists"
     name: lists
     url_base: "https://api.sendgrid.com"
@@ -290,7 +290,7 @@ def test_create_requester():
 def test_create_composite_error_handler():
     content = """
         error_handler:
-          class_name: "airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler.CompositeErrorHandler"
+          type: "CompositeErrorHandler"
           error_handlers:
             - response_filters:
                 - predicate: "{{ 'code' in decoded_response }}"
@@ -312,7 +312,7 @@ def test_create_composite_error_handler():
 def test_config_with_defaults():
     content = """
     lists_stream:
-      class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+      type: "DeclarativeStream"
       options:
         name: "lists"
         primary_key: id
@@ -378,7 +378,7 @@ class TestCreateTransformations:
     def test_no_transformations(self):
         content = f"""
         the_stream:
-            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            type: DeclarativeStream
             options:
                 {self.base_options}
         """
@@ -390,7 +390,7 @@ class TestCreateTransformations:
     def test_remove_fields(self):
         content = f"""
         the_stream:
-            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            type: DeclarativeStream
             options:
                 {self.base_options}
                 transformations:
