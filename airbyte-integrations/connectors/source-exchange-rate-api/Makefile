@@ -23,3 +23,6 @@ read-incremental:
 
 read-incremental-abnormal:
 	@docker run --rm -v $(PWD)/secrets:/secrets -v $(PWD)/sample_files:/sample_files $(docker_image) read --config /secrets/config.json --catalog /sample_files/configured_catalog_incremental.json --state /sample_files/abnormal_state.json | jq
+
+unittest-local:
+	@python -m pytest unit_tests

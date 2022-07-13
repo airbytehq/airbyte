@@ -74,7 +74,7 @@ class HistoricalRates(IncrementalExchangeRateApiStream):
 
     def path(self, stream_state: Mapping[str, Any] = None,
              stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
-        return stream_slice[self.cursor_field] if stream_slice else ""
+        return stream_slice[self.cursor_field]
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -139,8 +139,8 @@ class SourceExchangeRateApi(AbstractSource):
         stream = LatestRates(authenticator=auth, config=config)
         try:
             next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
-        except requests.exceptions.RequestException as e:
-            return False, e
+        except Exception as e:
+            return False, str(e)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
