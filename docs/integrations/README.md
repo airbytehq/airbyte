@@ -82,6 +82,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
 | [Klaviyo](sources/klaviyo.md)                                                               | Alpha                | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
+| [Kyriba](sources/kyriba.md)                                                             | Alpha                | Yes                 |
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
 | [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
