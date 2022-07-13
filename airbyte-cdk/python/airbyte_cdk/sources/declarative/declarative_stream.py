@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -23,13 +24,25 @@ class DeclarativeStream(Stream):
         schema_loader: SchemaLoader,
         retriever: Retriever,
         cursor_field: Optional[List[str]] = None,
+        transformations: List[RecordTransformation] = None,
         checkpoint_interval: Optional[int] = None,
     ):
+        """
+
+        :param name: stream name
+        :param primary_key: the primary key of the stream
+        :param schema_loader:
+        :param retriever:
+        :param cursor_field:
+        :param transformations: A list of transformations to be applied to each output record in the stream. Transformations are applied
+        in the order in which they are defined.
+        """
         self._name = name
         self._primary_key = primary_key
         self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
         self._retriever = retriever
+        self._transformations = transformations or []
         self._checkpoint_interval = checkpoint_interval
 
     @property
@@ -84,7 +97,15 @@ class DeclarativeStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        return self._retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        for record in self._retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
+            yield self._apply_transformations(record)
+
+    def _apply_transformations(self, record: Mapping[str, Any]):
+        output_record = record
+        for transformation in self._transformations:
+            output_record = transformation.transform(record)
+
+        return output_record
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """
