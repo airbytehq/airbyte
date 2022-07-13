@@ -8,7 +8,7 @@ from typing import Any, Iterator, List, Mapping, MutableMapping
 
 import pendulum
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v9.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v11.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from proto.marshal.collections import Repeated, RepeatedComposite
 
 REPORT_MAPPING = {
@@ -30,7 +30,7 @@ REPORT_MAPPING = {
     "geographic_report": "geographic_view",
     "keyword_report": "keyword_view",
 }
-API_VERSION = "v9"
+API_VERSION = "v11"
 
 
 class GoogleAds:
