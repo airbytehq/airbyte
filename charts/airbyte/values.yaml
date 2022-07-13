@@ -612,6 +612,7 @@ bootloader:
 ## TODO: Move to consuming temporal from a dedicated helm chart
 
 temporal:
+  enabled: true
   ## @param temporal.replicaCount The number of temporal replicas to deploy
   replicaCount: 1
 
@@ -751,6 +752,14 @@ temporal:
     ##    memory: 1Gi
     limits: {}
 
+## External Temporal configuration
+## All of these values are only used when temporal.enabled is set to false
+## @param externalTemporal.host temporal API host
+## @param externalDatabase.port temporal API port
+externalTemporal:
+  host: ""
+  port: ""
+
 ## @section Airbyte Database parameters
 
 ## PostgreSQL chart configuration
@@ -798,20 +807,16 @@ externalDatabase:
 
 ## @section Logs parameters
 logs:
-  ## @param logs.accessKey.password Logs Access Key
   ## @param logs.accessKey.existingSecret
   ## @param logs.accessKey.existingSecretKey
   accessKey:
-    password: minio
-    existingSecret: ""
-    existingSecretKey: ""
-  ## @param logs.secretKey.password Logs Secret Key
+    existingSecret: "airbyte-minio"
+    existingSecretKey: "root-user"
   ## @param logs.secretKey.existingSecret
   ## @param logs.secretKey.existingSecretKey
   secretKey:
-    password: minio123
-    existingSecret: ""
-    existingSecretKey: ""
+    existingSecret: "airbyte-minio"
+    existingSecretKey: "root-password"
 
   ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
   minio:
@@ -846,13 +851,12 @@ logs:
     credentialsJson: ""
 
 ## @section Minio chart overwrites
-## @param minio.accessKey.password Minio Access Key
-## @param minio.secretKey.password Minio Secret Key
+## @param minio.rootUser Minio User
+## @param minio.rootPassword Minio Password
 minio:
-  accessKey:
-    password: minio
-  secretKey:
-    password: minio123
+  rootUser: airbyte-user
+  rootPassword: airbyte-password-123
+
 
 jobs:
   ## Jobs resource requests and limits
