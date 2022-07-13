@@ -138,7 +138,7 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
 
     def __init__(
         self,
-        stop_condition: str,
+        stop_condition: InterpolatedBoolean,
         request_options_provider: InterpolatedRequestOptionsProvider,
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
@@ -157,7 +157,7 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
         :param decoder: decoder to decode the response
         """
         self._decoder = decoder
-        self._stop_condition_interpolator = InterpolatedBoolean(stop_condition)
+        self._stop_condition_interpolator = stop_condition
         super().__init__(request_options_provider, page_token_option, pagination_strategy, config, url_base, decoder)
 
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
