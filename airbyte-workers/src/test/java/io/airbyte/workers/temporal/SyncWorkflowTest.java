@@ -139,7 +139,7 @@ class SyncWorkflowTest {
     final StandardSyncOutput actualOutput = execute();
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, new ConfiguredAirbyteCatalog());
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
     assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
@@ -177,7 +177,7 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, new ConfiguredAirbyteCatalog());
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
   }
@@ -220,7 +220,7 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, new ConfiguredAirbyteCatalog());
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
   }
