@@ -1,13 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 
-type IProps = {
+interface IProps {
   name: string | React.ReactNode;
   isActive?: boolean;
   count?: number;
   id?: string;
   onClick: () => void;
-};
+}
 
 const Item = styled.div<{
   isActive?: boolean;

@@ -50,13 +50,20 @@ public class ConfigFetchActivityTest {
   private final static StandardSync standardSyncWithSchedule = new StandardSync()
       .withSchedule(new Schedule()
           .withTimeUnit(TimeUnit.MINUTES)
-          .withUnits(5L));
+          .withUnits(5L))
+      .withStatus(Status.ACTIVE);
 
   private final static StandardSync standardSyncWithScheduleDisable = new StandardSync()
       .withSchedule(new Schedule()
           .withTimeUnit(TimeUnit.MINUTES)
           .withUnits(5L))
       .withStatus(Status.INACTIVE);
+
+  private final static StandardSync standardSyncWithScheduleDeleted = new StandardSync()
+      .withSchedule(new Schedule()
+          .withTimeUnit(TimeUnit.MINUTES)
+          .withUnits(5L))
+      .withStatus(Status.DEPRECATED);
   private static final StandardSync standardSyncWithoutSchedule = new StandardSync();
 
   @Nested
@@ -103,6 +110,22 @@ public class ConfigFetchActivityTest {
 
       Mockito.when(mConfigRepository.getStandardSync(connectionId))
           .thenReturn(standardSyncWithScheduleDisable);
+
+      final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
+
+      final ScheduleRetrieverOutput output = configFetchActivity.getTimeToWait(input);
+
+      Assertions.assertThat(output.getTimeToWait())
+          .hasDays(100 * 365);
+    }
+
+    @Test
+    @DisplayName("Test that the connection will wait for a long time if it is deleted")
+    public void testDeleted() throws IOException, JsonValidationException, ConfigNotFoundException {
+      configFetchActivity = new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mConfigs, () -> Instant.now().getEpochSecond());
+
+      Mockito.when(mConfigRepository.getStandardSync(connectionId))
+          .thenReturn(standardSyncWithScheduleDeleted);
 
       final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
 

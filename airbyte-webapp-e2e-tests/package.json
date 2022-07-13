@@ -5,7 +5,8 @@
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run",
-    "cypress:ci:record": "CYPRESS_BASE_URL=http://localhost:8000 cypress run --record --key $CYPRESS_KEY"
+    "cypress:ci:record": "CYPRESS_BASE_URL=http://localhost:8000 cypress run --record --key $CYPRESS_KEY",
+    "createdb": "docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci --name airbyte_ci_pg postgres"
   },
   "eslintConfig": {
     "env": {

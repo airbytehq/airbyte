@@ -8,9 +8,9 @@ import { Button } from "components";
 import { JobDebugInfoRead } from "../../../core/request/AirbyteClient";
 import DebugInfoDetailsModal from "./DebugInfoDetailsModal";
 
-type IProps = {
+interface IProps {
   jobDebugInfo: JobDebugInfoRead;
-};
+}
 
 const DebugInfoButton: React.FC<IProps> = ({ jobDebugInfo }) => {
   const { formatMessage } = useIntl();

@@ -10,6 +10,7 @@ config = {
     "string_key": "compare_me",
     "zero_value": 0,
     "empty_array": [],
+    "non_empty_array": [1],
     "empty_dict": {},
     "empty_tuple": (),
 }
@@ -29,6 +30,10 @@ config = {
         ("test_empty_dict_is_false", "{{ config['empty_dict'] }}", False),
         ("test_empty_tuple_is_false", "{{ config['empty_tuple'] }}", False),
         ("test_lowercase_false", '{{ "false" }}', False),
+        ("test_False", "{{ False }}", False),
+        ("test_True", "{{ True }}", True),
+        ("test_value_in_array", "{{ 1 in config['non_empty_array'] }}", True),
+        ("test_value_not_in_array", "{{ 2 in config['non_empty_array'] }}", False),
     ],
 )
 def test_interpolated_boolean(test_name, template, expected_result):
