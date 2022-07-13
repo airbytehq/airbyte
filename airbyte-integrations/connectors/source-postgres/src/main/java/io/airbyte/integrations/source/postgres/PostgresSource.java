@@ -355,6 +355,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   // state
   @Override
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.LEGACY)
+          .withData(Jsons.emptyObject()));
+    }
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
