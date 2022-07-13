@@ -190,6 +190,20 @@ class Users(IncrementalOktaStream):
         return "users"
 
 
+class CustomRoles(OktaStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "iam/roles"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["roles"]
+
+
 class SourceOkta(AbstractSource):
     def initialize_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         return TokenAuthenticator(config["token"], auth_method="SSWS")
@@ -230,4 +244,5 @@ class SourceOkta(AbstractSource):
             Logs(**initialization_params),
             Users(**initialization_params),
             GroupMembers(**initialization_params),
+            CustomRoles(**initialization_params),
         ]

@@ -116,6 +116,7 @@ def test_datetime_stream_slicer():
         end_datetime: "{{ config['end_time'] }}"
         step: "10d"
         cursor_value: "created"
+        lookback_window: "5d"
     """
 
     config = parser.parse(content)
@@ -131,6 +132,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer._cursor_value._string == "created"
+    assert stream_slicer._lookback_window._string == "5d"
 
 
 def test_full_config():
