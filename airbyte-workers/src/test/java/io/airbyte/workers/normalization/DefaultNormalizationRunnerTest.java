@@ -5,9 +5,10 @@
 package io.airbyte.workers.normalization;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -149,16 +150,41 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testFailure() {
-    doThrow(new RuntimeException()).when(process).exitValue();
+  public void testFailure() throws Exception {
+    when(process.exitValue()).thenReturn(1);
 
     final NormalizationRunner runner =
         new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
             NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
-    assertThrows(RuntimeException.class,
-        () -> runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
+    assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
-    verify(process).destroy();
+    verify(process).waitFor();
+
+    assertThrows(WorkerException.class, runner::close);
+  }
+
+  @Test
+  public void testFailureWithTraceMessage() throws Exception {
+    when(process.exitValue()).thenReturn(1);
+
+    String errorTraceString = """
+      {"type": "TRACE", "trace": {
+        "type": "ERROR", "emitted_at": 123.0, "error": {
+          "message": "Something went wrong in normalization.", "internal_message": "internal msg",
+          "stack_trace": "abc.xyz", "failure_type": "system_error"}}}
+      """.replace("\n", "");
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(errorTraceString.getBytes(StandardCharsets.UTF_8)));
+
+    final NormalizationRunner runner =
+        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+    assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
+
+    assertEquals(1, runner.getTraceMessages().count());
+
+    verify(process).waitFor();
+
+    assertThrows(WorkerException.class, runner::close);
   }
 
 }

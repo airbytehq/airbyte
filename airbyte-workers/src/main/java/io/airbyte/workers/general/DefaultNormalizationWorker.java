@@ -49,6 +49,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
 
+    boolean failed = false;
     List<FailureReason> traceFailureReasons = new ArrayList<>();
 
     try (normalizationRunner) {
@@ -65,12 +66,10 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
           input.getResourceRequirements())) {
         normalizationRunner.getTraceMessages()
             .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
-//        throw new WorkerException("Normalization Failed.");
+        failed = true;
       }
     } catch (final Exception e) {
-      normalizationRunner.getTraceMessages()
-          .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
-//      throw new WorkerException("Normalization Failed.", e);
+      throw new WorkerException("Normalization Failed.", e);
     }
 
     if (cancelled.get()) {
@@ -88,6 +87,9 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
     if (!traceFailureReasons.isEmpty()) {
       summary.setFailures(traceFailureReasons);
+      LOGGER.error("Normalization Failed.");
+    } else if (failed) {
+      throw new WorkerException("Normalization Failed.");
     }
 
     LOGGER.info("Normalization summary: {}", summary);
