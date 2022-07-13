@@ -32,6 +32,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -358,7 +359,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     if (!featureFlags.useStreamCapableState()) {
       return List.of(new AirbyteStateMessage()
           .withType(AirbyteStateType.LEGACY)
-          .withData(Jsons.emptyObject()));
+          .withData(Jsons.jsonNode(new DbState())));
     }
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
