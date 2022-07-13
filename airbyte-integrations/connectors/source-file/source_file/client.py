@@ -19,6 +19,7 @@ from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
+from yaml import safe_load
 
 
 class ConfigurationError(Exception):
@@ -265,6 +266,10 @@ class Client:
                 result = [result]
         return result
 
+    def load_yaml(self, fp):
+        if self._reader_format == "yaml":
+            return pd.DataFrame(safe_load(fp))
+
     def load_dataframes(self, fp, skip_data=False) -> Iterable:
         """load and return the appropriate pandas dataframe.
 
@@ -334,6 +339,12 @@ class Client:
         with self.reader.open(binary=self.binary_source) as fp:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
+            elif self._reader_format == "yaml":
+                fields = set(fields) if fields else None
+                df = self.load_yaml(fp)
+                columns = fields.intersection(set(df.columns)) if fields else df.columns
+                df = df.where(pd.notnull(df), None)
+                yield from df[columns].to_dict(orient="records")
             else:
                 fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
@@ -345,8 +356,10 @@ class Client:
         with self.reader.open(binary=self.binary_source) as fp:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 return self.load_nested_json_schema(fp)
-
-            df_list = self.load_dataframes(fp, skip_data=False)
+            elif self._reader_format == "yaml":
+                df_list = [self.load_yaml(fp)]
+            else:
+                df_list = self.load_dataframes(fp, skip_data=False)
             fields = {}
             for df in df_list:
                 for col in df.columns:

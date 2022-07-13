@@ -335,6 +335,11 @@ public class AirbyteAcceptanceTestHarness {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
+  public AirbyteCatalog discoverSourceSchemaWithoutCache(final UUID sourceId) throws ApiException {
+    return apiClient.getSourceApi().discoverSchemaForSource(
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true)).getCatalog();
+  }
+
   public void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
@@ -357,7 +362,7 @@ public class AirbyteAcceptanceTestHarness {
     return getDatabase(sourcePsql);
   }
 
-  private Database getDestinationDatabase() {
+  public Database getDestinationDatabase() {
     if (isKube && isGke) {
       return GKEPostgresConfig.getDestinationDatabase();
     }
