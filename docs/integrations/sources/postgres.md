@@ -20,7 +20,7 @@
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
 
-Note, Postgres source currently does not handle schemas larger than 4MB. Given that 5 integer columns take roughly 8kb and 7 varchar columns take 16kb, Postgres source should have not more than 2500 integer columns or 1750 varchar columns per schema roughly (Postgres table could have 1600 columns maximum)
+Note, Airbyte currently cannot handle schemas larger than 4MB. While a 4MB schema does not translate into a specific number of tables and columns, it is an equivalent of roughly 2,500 integer columns, or 1,750 VARCHAR columns per schema.
 
 ## Getting Started \(Airbyte Cloud\)
 
