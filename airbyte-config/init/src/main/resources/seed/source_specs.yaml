@@ -2261,7 +2261,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.12"
+- dockerImage: "airbyte/source-file:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2320,6 +2320,11 @@
               storage:
                 type: "string"
                 const: "HTTPS"
+              user_agent:
+                type: "boolean"
+                title: "User-Agent"
+                default: false
+                description: "Add User-Agent to request"
           - title: "GCS: Google Cloud Storage"
             required:
             - "storage"
