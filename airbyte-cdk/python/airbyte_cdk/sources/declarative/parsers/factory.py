@@ -118,6 +118,10 @@ class DeclarativeComponentFactory:
                 break
 
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
+
+        if interface and not expected_type and not DeclarativeComponentFactory._is_builtin_type(interface):
+            return interface
+
         return expected_type
 
     @staticmethod
@@ -126,3 +130,9 @@ class DeclarativeComponentFactory:
             return sub.get("options", {})
         else:
             return {}
+
+    @staticmethod
+    def _is_builtin_type(cls) -> bool:
+        if not cls:
+            return False
+        return cls.__module__ == "builtins"

@@ -14,6 +14,10 @@ from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSel
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
+)
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
@@ -25,7 +29,6 @@ from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Requester: HttpRequester,
@@ -38,6 +41,6 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     JelloExtractor: JelloExtractor,
     State: DictState,
     StreamSlicer: SingleSlice,
+    RequestOptionsProvider: InterpolatedRequestOptionsProvider,
     Paginator: NoPagination,
-    AddedFieldDefinition: AddedFieldDefinition,  # TODO this is a concrete class, this map is ideally only for abcs
 }
