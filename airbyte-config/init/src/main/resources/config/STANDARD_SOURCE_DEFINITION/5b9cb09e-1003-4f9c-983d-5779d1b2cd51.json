@@ -1,0 +1,8 @@
+{
+  "sourceDefinitionId": "5b9cb09e-1003-4f9c-983d-5779d1b2cd51",
+  "name": "Mailgun",
+  "dockerRepository": "blotout/source-mailgun",
+  "dockerImageTag": "0.1.0",
+  "documentationUrl": "https://docs.airbyte.io/integrations/sources/mailgun",
+  "icon": "mailgun.svg"
+}
