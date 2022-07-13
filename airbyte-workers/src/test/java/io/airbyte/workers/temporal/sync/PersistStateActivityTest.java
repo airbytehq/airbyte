@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static org.mockito.Mockito.spy;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
@@ -48,7 +50,7 @@ public class PersistStateActivityTest {
 
   @Test
   public void testPersistEmpty() {
-    persistStateActivity.persist(CONNECTION_ID, new StandardSyncOutput());
+    persistStateActivity.persist(CONNECTION_ID, new StandardSyncOutput(), new ConfiguredAirbyteCatalog());
 
     Mockito.verifyNoInteractions(statePersistence);
   }
@@ -62,7 +64,7 @@ public class PersistStateActivityTest {
 
     final State state = new State().withState(jsonState);
 
-    persistStateActivity.persist(CONNECTION_ID, new StandardSyncOutput().withState(state));
+    persistStateActivity.persist(CONNECTION_ID, new StandardSyncOutput().withState(state), new ConfiguredAirbyteCatalog());
 
     // The ser/der of the state into a state wrapper is tested in StateMessageHelperTest
     Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
@@ -86,10 +88,10 @@ public class PersistStateActivityTest {
     final State state = new State().withState(jsonState);
 
     final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
-    final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state).withOutputCatalog(migrationConfiguredCatalog);
+    final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state);
     Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
     Mockito.when(statePersistence.isMigration(Mockito.eq(CONNECTION_ID), Mockito.eq(StateType.STREAM), Mockito.any(Optional.class))).thenReturn(true);
-    Assertions.assertThrows(IllegalStateException.class, () -> persistStateActivity.persist(CONNECTION_ID, syncOutput));
+    Assertions.assertThrows(IllegalStateException.class, () -> persistStateActivity.persist(CONNECTION_ID, syncOutput, migrationConfiguredCatalog));
   }
 
   @Test
@@ -110,10 +112,30 @@ public class PersistStateActivityTest {
     final State state = new State().withState(jsonState);
 
     final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
-    final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state).withOutputCatalog(migrationConfiguredCatalog);
+    final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state);
     Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
     Mockito.when(statePersistence.isMigration(Mockito.eq(CONNECTION_ID), Mockito.eq(StateType.STREAM), Mockito.any(Optional.class))).thenReturn(true);
-    persistStateActivity.persist(CONNECTION_ID, syncOutput);
+    persistStateActivity.persist(CONNECTION_ID, syncOutput, migrationConfiguredCatalog);
+    Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
+  }
+
+  // Global stream states do not need to be validated during the migration to per-stream state
+  @Test
+  public void testPersistWithGlobalStateDuringMigration() throws IOException {
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
+    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
+
+    final AirbyteStateMessage stateMessage = new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL);
+    final JsonNode jsonState = Jsons.jsonNode(List.of(stateMessage));
+    final State state = new State().withState(jsonState);
+
+    final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
+    final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state);
+    Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
+    Mockito.when(statePersistence.isMigration(Mockito.eq(CONNECTION_ID), Mockito.eq(StateType.GLOBAL), Mockito.any(Optional.class))).thenReturn(true);
+    persistStateActivity.persist(CONNECTION_ID, syncOutput, migrationConfiguredCatalog);
+    final PersistStateActivityImpl persistStateSpy = spy(persistStateActivity);
+    Mockito.verify(persistStateSpy, Mockito.times(0)).validateStreamStates(Mockito.any(), Mockito.any());
     Mockito.verify(statePersistence).updateOrCreateState(Mockito.eq(CONNECTION_ID), Mockito.any(StateWrapper.class));
   }
 

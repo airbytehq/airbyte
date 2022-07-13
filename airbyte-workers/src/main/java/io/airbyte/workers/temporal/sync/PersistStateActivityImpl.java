@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
@@ -26,7 +27,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   private final FeatureFlags featureFlags;
 
   @Override
-  public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput) {
+  public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
     final State state = syncOutput.getState();
     if (state != null) {
       try {
@@ -35,7 +36,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
           final Optional<StateWrapper> previousState = statePersistence.getCurrentState(connectionId);
           final StateType newStateType = maybeStateWrapper.get().getStateType();
           if (statePersistence.isMigration(connectionId, newStateType, previousState) && newStateType == StateType.STREAM) {
-            validateStreamStates(maybeStateWrapper.get(), syncOutput.getOutputCatalog());
+            validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
           }
 
           statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
@@ -49,7 +50,8 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     }
   }
 
-  private static void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
+  @VisibleForTesting
+  void validateStreamStates(final StateWrapper state, final ConfiguredAirbyteCatalog configuredCatalog) {
     final List<StreamDescriptor> stateStreamDescriptors =
         state.getStateMessages().stream().map(stateMessage -> stateMessage.getStream().getStreamDescriptor()).toList();
     configuredCatalog.getStreams().forEach(stream -> {
