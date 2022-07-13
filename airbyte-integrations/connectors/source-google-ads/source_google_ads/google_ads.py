@@ -1,22 +1,25 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from enum import Enum
-from typing import Any, List, Mapping
+from typing import Any, Iterator, List, Mapping, MutableMapping
 
 import pendulum
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v8.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
+from google.ads.googleads.v9.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
 from proto.marshal.collections import Repeated, RepeatedComposite
-import pendulum
 
 REPORT_MAPPING = {
     "accounts": "customer",
+    "service_accounts": "customer",
     "ad_group_ads": "ad_group_ad",
+    "ad_group_ad_labels": "ad_group_ad_label",
     "ad_groups": "ad_group",
+    "ad_group_labels": "ad_group_label",
     "campaigns": "campaign",
+    "campaign_labels": "campaign_label",
     "account_performance_report": "customer",
     "ad_group_ad_report": "ad_group_ad",
     "display_keyword_performance_report": "display_keyword_view",
@@ -24,25 +27,29 @@ REPORT_MAPPING = {
     "shopping_performance_report": "shopping_performance_view",
     "user_location_report": "user_location_view",
     "click_view": "click_view",
+    "geographic_report": "geographic_view",
+    "keyword_report": "keyword_view",
 }
+API_VERSION = "v9"
 
 
 class GoogleAds:
     DEFAULT_PAGE_SIZE = 1000
 
-    def __init__(self, credentials: Mapping[str, Any], customer_id: str):
-        self.client = GoogleAdsClient.load_from_dict(credentials)
-        self.customer_id = customer_id
+    def __init__(self, credentials: MutableMapping[str, Any]):
+        # `google-ads` library version `14.0.0` and higher requires an additional required parameter `use_proto_plus`.
+        # More details can be found here: https://developers.google.com/google-ads/api/docs/client-libs/python/protobuf-messages
+        credentials["use_proto_plus"] = True
+        self.client = GoogleAdsClient.load_from_dict(credentials, version=API_VERSION)
         self.ga_service = self.client.get_service("GoogleAdsService")
 
-    def send_request(self, query: str) -> SearchGoogleAdsResponse:
+    def send_request(self, query: str, customer_id: str) -> Iterator[SearchGoogleAdsResponse]:
         client = self.client
         search_request = client.get_type("SearchGoogleAdsRequest")
-        search_request.customer_id = self.customer_id
         search_request.query = query
         search_request.page_size = self.DEFAULT_PAGE_SIZE
-
-        return self.ga_service.search(search_request)
+        search_request.customer_id = customer_id
+        yield self.ga_service.search(search_request)
 
     def get_fields_metadata(self, fields: List[str]) -> Mapping[str, Any]:
         """
@@ -73,8 +80,7 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-            schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None,
-            cursor_field: str = None
+        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
     ) -> str:
         from_category = REPORT_MAPPING[report_name]
         fields = GoogleAds.get_fields_from_schema(schema)
@@ -84,13 +90,9 @@ class GoogleAds:
 
         if cursor_field:
             end_date_inclusive = "<=" if (pendulum.parse(to_date) - pendulum.parse(from_date)).days > 1 else "<"
-            if from_category == 'click_view':
-                # ClickView must have a filter limiting the results to one day.
-                to_date = pendulum.parse(from_date).add(days=1).to_date_string()
-                query_template += f"WHERE {cursor_field} > '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
-            else:
-                # Fix issue 5411: Make date_start and date_end inclusive.
-                query_template += f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
+            query_template += (
+                f"WHERE {cursor_field} >= '{from_date}' AND {cursor_field} {end_date_inclusive} '{to_date}' ORDER BY {cursor_field} ASC"
+            )
 
         return query_template
 
