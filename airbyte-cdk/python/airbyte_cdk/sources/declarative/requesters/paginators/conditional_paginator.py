@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )

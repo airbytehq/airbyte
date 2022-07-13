@@ -8,7 +8,7 @@ import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import ConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
