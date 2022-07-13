@@ -9,7 +9,6 @@ from airbyte_cdk.sources.declarative.checks.connection_checker import Connection
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
@@ -38,7 +37,6 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     ConnectionChecker: CheckStream,
     Retrier: DefaultRetrier,
     Decoder: JsonDecoder,
-    JelloExtractor: JelloExtractor,
     State: DictState,
     StreamSlicer: SingleSlice,
     RequestOptionsProvider: InterpolatedRequestOptionsProvider,
