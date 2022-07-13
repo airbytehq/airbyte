@@ -29,7 +29,7 @@ class JsonParser(AbstractFileParser):
     def _read_options(self) -> Mapping[str, str]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.csv.ReadOptions.html
-        build ReadOptions object like: pa.csv.ReadOptions(**self._read_options())
+        build ReadOptions object like: pa.json.ReadOptions(**self._read_options())
         """
         return {**{"block_size": self.format.block_size, "use_threads": True}}
 
@@ -41,16 +41,17 @@ class JsonParser(AbstractFileParser):
 
         return {"newlines_in_values": self.format.newlines_in_values, "unexpected_field_behavior": self.format.unexpected_field_behavior}
 
+    def _read_table(self, file: Union[TextIO, BinaryIO]) -> pa.Table:
+        return pa_json.read_json(file, pa.json.ReadOptions(**self._read_options()), pa.json.ParseOptions(**self._parse_options()))
+
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.json.read_json.html
         Json reader support multi thread hence, donot need to add external process
         https://arrow.apache.org/docs/python/generated/pyarrow.json.ReadOptions.html
         """
-        streaming_reader = pa_json.read_json(
-            file, pa_json.ReadOptions(**self._read_options()), pa_json.ParseOptions(**self._parse_options())
-        )
-        schema_dict = {field.name: field.type for field in streaming_reader.schema}
+        table = self._read_table(file)
+        schema_dict = {field.name: field.type for field in table.schema}
         return self.json_schema_to_pyarrow_schema(schema_dict, reverse=True)
 
     def stream_records(self, file: Union[TextIO, BinaryIO]) -> Iterator[Mapping[str, Any]]:
@@ -58,13 +59,5 @@ class JsonParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.json.read_json.html
 
         """
-        json_reader = pa_json.read_json(file, pa.json.ReadOptions(**self._read_options()), pa.json.ParseOptions(**self._parse_options()))
-        batch_dict = json_reader.to_pydict()
-        batch_columns = [col_info.name for col_info in json_reader.schema]
-        # this gives us a list of lists where each nested list holds ordered values for a single column
-        # e.g. [ [1,2,3], ["a", "b", "c"], [True, True, False] ]
-        columnwise_record_values = [batch_dict[column] for column in batch_columns]
-        # we zip this to get row-by-row, e.g. [ [1, "a", True], [2, "b", True], [3, "c", False] ]
-        for record_values in zip(*columnwise_record_values):
-            # create our record of {col: value, col: value} by dict comprehension, iterating through all cols in batch_columns
-            yield {batch_columns[i]: record_values[i] for i in range(len(batch_columns))}
+        table = self._read_table(file)
+        yield from table.to_pylist()
