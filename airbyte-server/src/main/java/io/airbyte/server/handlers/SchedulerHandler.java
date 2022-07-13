@@ -387,7 +387,7 @@ public class SchedulerHandler {
 
   private JobInfoRead readJobFromResult(final ManualOperationResult manualOperationResult) throws IOException, IllegalStateException {
     if (manualOperationResult.getFailingReason().isPresent()) {
-      if (VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET.contains(manualOperationResult.getErrorCode())) {
+      if (VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET.contains(manualOperationResult.getErrorCode().get())) {
         throw new ValueConflictKnownException(manualOperationResult.getFailingReason().get());
       } else {
         throw new IllegalStateException(manualOperationResult.getFailingReason().get());

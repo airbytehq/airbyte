@@ -594,7 +594,6 @@ class SchedulerHandlerTest {
   void testSyncConnectionFailWithOtherSyncRunning() throws IOException {
     final UUID connectionId = UUID.randomUUID();
 
-    final long jobId = 123L;
     final ManualOperationResult manualOperationResult = ManualOperationResult
         .builder()
         .failingReason(Optional.of("another sync running"))
