@@ -9,9 +9,9 @@ import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v9.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v9.errors.types.request_error import RequestErrorEnum
-from google.ads.googleads.v9.services.services.google_ads_service.pagers import SearchPager
+from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v11.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
 from .models import Customer
