@@ -112,6 +112,9 @@ class Stream(ABC):
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
 
+        if self.namespace:
+            stream.namespace = self.namespace
+
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
             stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
@@ -140,6 +143,14 @@ class Stream(ABC):
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
         return []
+
+    @property
+    def namespace(self) -> Optional[str]:
+        """
+        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+        :return: A string containing the name of the namespace.
+        """
+        return None
 
     @property
     def source_defined_cursor(self) -> bool:

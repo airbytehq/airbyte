@@ -282,6 +282,15 @@ class TestBaseResource:
         assert resource.update() == resource._create_or_update.return_value
         resource._create_or_update.assert_called_with(resource._update_fn, resource.update_payload)
 
+    def test_manage(self, mocker, resource):
+        mocker.patch.object(resources, "ResourceState")
+        remote_resource, new_state = resource.manage("resource_id")
+        resources.ResourceState.create.assert_called_with(
+            resource.configuration_path, resource.configuration_hash, resource.workspace_id, "resource_id"
+        )
+        assert new_state == resources.ResourceState.create.return_value
+        assert remote_resource == resource.remote_resource
+
     @pytest.mark.parametrize(
         "configuration, invalid_keys, expect_error",
         [

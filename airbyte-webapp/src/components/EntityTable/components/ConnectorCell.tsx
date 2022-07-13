@@ -23,7 +23,7 @@ const Image = styled(ConnectorIcon)`
 const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
   return (
     <Content enabled={enabled}>
-      <Image small icon={img} />
+      <Image icon={img} />
       {value}
     </Content>
   );

@@ -35,7 +35,7 @@ public class ScyllaConfig {
     this.username = jsonNode.get("username").asText();
     this.password = jsonNode.get("password").asText();
     this.address = jsonNode.get("address").asText();
-    this.port = jsonNode.get("port").asInt(9042);
+    this.port = jsonNode.get("port").asInt();
     this.replication = jsonNode.get("replication").asInt(1);
   }
 

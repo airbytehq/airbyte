@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.64
+- Add support for configurable oauth request payload and declarative oauth authenticator.
+
+## 0.1.63
+- Define `namespace` property on the `Stream` class inside `core.py`.
+
 ## 0.1.62
 Bugfix: Correctly obfuscate nested secrets and secrets specified inside oneOf blocks inside the connector's spec.
  

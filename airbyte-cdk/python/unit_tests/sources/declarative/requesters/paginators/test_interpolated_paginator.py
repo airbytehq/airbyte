@@ -13,7 +13,7 @@ config = {"option": "OPTION"}
 
 response = requests.Response()
 response.headers = {"A_HEADER": "HEADER_VALUE"}
-response_body = {"next_page_cursor": "12345"}
+response_body = {"next_page_cursor": 12345}
 response._content = json.dumps(response_body).encode("utf-8")
 last_responses = [{"id": 0}]
 decoder = JsonDecoder()
@@ -29,7 +29,7 @@ decoder = JsonDecoder()
             {"cursor": response_body["next_page_cursor"]},
         ),
         ("test_value_depends_response_header", {"cursor": "{{ headers['A_HEADER'] }}"}, {"cursor": response.headers["A_HEADER"]}),
-        ("test_value_depends_on_last_responses", {"cursor": "{{ last_records[-1]['id'] }}"}, {"cursor": "0"}),
+        ("test_value_depends_on_last_responses", {"cursor": "{{ last_records[-1]['id'] }}"}, {"cursor": 0}),
         (
             "test_name_is_interpolated",
             {"{{ decoded_response['next_page_cursor'] }}": "a_static_value"},
