@@ -15,9 +15,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -232,7 +234,7 @@ public class SecretsHelpers {
     var fullConfigCopy = newFullConfig.deepCopy();
     final var secretMap = new HashMap<SecretCoordinate, String>();
 
-    final List<String> paths = getSortedSecretPaths(spec);
+    final Set<String> paths = new HashSet(getSortedSecretPaths(spec));
 
     for (final String path : paths) {
       fullConfigCopy = JsonPaths.replaceAt(fullConfigCopy, path, (json, pathOfNode) -> {
