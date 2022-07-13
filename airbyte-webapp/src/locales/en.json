@@ -319,7 +319,7 @@
   "connection.streamResetHint": "Due to changes in the stream configuration the affected streams should be resetted. This will delete all data of those streams in the destination and sync it again. Skipping this might lead to unexpected behavior and is discouraged.",
   "connection.streamFullResetHint": "Due to changes in the stream configuration all streams should be resetted. This will delete all data in the destination and sync it again. Skipping this might lead to unexpected behavior and is discouraged.",
   "connection.saveWithReset": "Reset affected streams (recommended)",
-  "connection.saveWithFullReset": "Reset data in all streams (recommended)",
+  "connection.saveWithFullReset": "Reset all streams (recommended)",
   "connection.save": "Save connection",
   "connection.title": "Connection",
   "connection.description": "<b>Connections</b> link Sources to Destinations.",
