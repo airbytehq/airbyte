@@ -130,7 +130,7 @@ class ParquetParser(AbstractFileParser):
                 # sometimes the batch file has more columns than master_schema declares, like:
                 # master schema: ['number', 'name', 'flag', 'delta'],
                 # batch_file_schema: ['number', 'name', 'flag', 'delta', 'EXTRA_COL_NAME'].
-                # we need to check wether batch_file_schema == master_schema and reeject reading extra columns, otherwise "KeyError" raises.
+                # we need to check wether batch_file_schema == master_schema and reject extra columns, otherwise "KeyError" raises.
                 batch_columns = [column for column in batch_dict.keys() if column in self._master_schema]
                 columnwise_record_values = [batch_dict[column] for column in batch_columns if column in self._master_schema]
                 # we zip this to get row-by-row
