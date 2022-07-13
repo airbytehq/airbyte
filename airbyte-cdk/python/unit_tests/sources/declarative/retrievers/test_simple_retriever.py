@@ -243,3 +243,24 @@ def test_request_body_data(test_name, requester_body_data, paginator_body_data, 
             assert False
         except ValueError:
             pass
+
+
+@pytest.mark.parametrize(
+    "test_name, requester_path, paginator_path, expected_path",
+    [
+        ("test_path_from_requester", "/v1/path", None, "/v1/path"),
+        ("test_path_from_paginator", "/v1/path/", "/v2/paginator", "/v2/paginator"),
+    ],
+)
+def test_path(test_name, requester_path, paginator_path, expected_path):
+    paginator = MagicMock()
+    paginator.path.return_value = paginator_path
+    requester = MagicMock()
+
+    requester.get_path.return_value = requester_path
+
+    record_selector = MagicMock()
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+
+    actual_path = retriever.path(stream_state=None, stream_slice=None, next_page_token=None)
+    assert expected_path == actual_path
