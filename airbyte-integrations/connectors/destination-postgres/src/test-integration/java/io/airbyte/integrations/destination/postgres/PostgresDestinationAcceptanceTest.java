@@ -34,7 +34,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "host.docker.internal")
+        .put("host", db.getHost())
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "public")
