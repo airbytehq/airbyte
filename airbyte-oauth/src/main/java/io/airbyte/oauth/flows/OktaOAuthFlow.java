@@ -54,7 +54,7 @@ public class OktaOAuthFlow extends BaseOAuth2Flow {
         // required
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
-        .addParameter("scope", "okta.users.read okta.logs.read okta.groups.read offline_access")
+        .addParameter("scope", "okta.users.read okta.logs.read okta.groups.read okta.roles.read offline_access")
         .addParameter("response_type", "code")
         .addParameter("state", getState());
 
