@@ -57,7 +57,7 @@ public class CockroachDBContainerHelper {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("schema", "public")
@@ -73,7 +73,7 @@ public class CockroachDBContainerHelper {
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()));
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
   }
 
   public static Database getDatabaseFromConfig(final DSLContext dslContext) {// final JsonNode config) {

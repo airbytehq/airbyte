@@ -49,7 +49,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
         .put("jdbc_url", String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asInt(),
-            redshiftConfig.get("database").asText()));
+            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {
       schemas = new ArrayList<>();

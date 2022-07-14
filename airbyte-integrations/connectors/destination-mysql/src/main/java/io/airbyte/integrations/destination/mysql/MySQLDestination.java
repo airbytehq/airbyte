@@ -29,7 +29,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
 
-  public static final String DATABASE_KEY = "database";
   public static final String HOST_KEY = "host";
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
@@ -65,7 +64,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       final JdbcDatabase database = getDatabase(dataSource);
       final MySQLSqlOperations mySQLSqlOperations = (MySQLSqlOperations) getSqlOperations();
 
-      final String outputSchema = getNamingResolver().getIdentifier(config.get(DATABASE_KEY).asText());
+      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, getNamingResolver(),
           mySQLSqlOperations);
 
@@ -111,7 +110,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     final String jdbcUrl = String.format("jdbc:mysql://%s:%s/%s",
         config.get(HOST_KEY).asText(),
         config.get(PORT_KEY).asText(),
-        config.get(DATABASE_KEY).asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())

@@ -43,7 +43,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asInt(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (config.get("jdbc_url_params") != null
         && !config.get("jdbc_url_params").asText().isEmpty()) {

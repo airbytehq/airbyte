@@ -11,8 +11,8 @@ import java.util.Map;
 import org.jooq.JSONFormat;
 
 public class JdbcUtils {
-
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String DATABASE_KEY = "database";
   public static final String SSL_KEY = "ssl";
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 

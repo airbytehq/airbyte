@@ -113,9 +113,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get(HOST_KEY).asText(),
-        config.get(PORT_KEY).asText(),
-        config.get(DATABASE_KEY).asText()));
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
       jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append("&");
@@ -232,7 +232,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
           ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
-          ps.setString(3, config.get("database").asText());
+          ps.setString(3, config.get(JdbcUtils.DATABASE_KEY).asText());
 
           LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
 

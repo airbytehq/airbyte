@@ -27,7 +27,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
-  public static final String DATABASE_KEY = "database";
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String PASSWORD_KEY = "password";
   public static final String USERNAME_KEY = "username";
@@ -62,7 +61,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get(DATABASE_KEY).asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())

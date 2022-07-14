@@ -7,6 +7,7 @@ package io.airbyte.test.utils;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class GKEPostgresConfig {
     dbConfig.put("password", hiddenPassword ? "**********" : PASSWORD);
 
     dbConfig.put("port", PORT);
-    dbConfig.put("database", DB);
+    dbConfig.put(JdbcUtils.DATABASE_KEY, DB);
     dbConfig.put("username", USERNAME);
 
     if (withSchema) {
