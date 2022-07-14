@@ -15,7 +15,6 @@
       "databricks_personal_access_token",
       "data_source"
     ],
-    "additionalProperties": false,
     "properties": {
       "accept_terms": {
         "title": "Agree to the Databricks JDBC Driver Terms & Conditions",
