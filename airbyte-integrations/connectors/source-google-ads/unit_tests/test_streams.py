@@ -7,8 +7,8 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import SyncMode
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v9.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
-from google.ads.googleads.v9.errors.types.request_error import RequestErrorEnum
+from google.ads.googleads.v11.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
+from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import ClickView

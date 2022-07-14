@@ -303,7 +303,7 @@ class Transaction(IncrementalChargebeeStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["sort_by[asc]"] = "created_at"
+        params["sort_by[asc]"] = "date"
         return params
 
 

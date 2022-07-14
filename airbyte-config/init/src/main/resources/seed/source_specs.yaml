@@ -1070,7 +1070,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.11"
+- dockerImage: "airbyte/source-chargebee:0.1.12"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -2261,7 +2261,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.10"
+- dockerImage: "airbyte/source-file:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2289,6 +2289,7 @@
           - "excel"
           - "feather"
           - "parquet"
+          - "yaml"
           default: "csv"
           title: "File Format"
           description: "The Format of the file which should be replicated (Warning:\
@@ -2300,7 +2301,7 @@
             \ chosen file format to provide additional options and tune its behavior."
           examples:
           - "{}"
-          - "{'sep': ' '}"
+          - "{\"sep\": \" \"}"
         url:
           type: "string"
           title: "URL"
@@ -2319,6 +2320,11 @@
               storage:
                 type: "string"
                 const: "HTTPS"
+              user_agent:
+                type: "boolean"
+                title: "User-Agent"
+                default: false
+                description: "Add User-Agent to request"
           - title: "GCS: Google Cloud Storage"
             required:
             - "storage"
@@ -2487,7 +2493,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshdesk:0.3.1"
+- dockerImage: "airbyte/source-freshdesk:0.3.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshdesk"
     connectionSpecification:
@@ -2593,7 +2599,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.41"
+- dockerImage: "airbyte/source-github:0.2.42"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2778,7 +2784,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.42"
+- dockerImage: "airbyte/source-google-ads:0.1.43"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2884,7 +2890,7 @@
                 title: "Custom Query"
                 description: "A custom defined GAQL query for building the report.\
                   \ Should not contain segments.date expression because it is used\
-                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v9/overview_query_builder\"\
+                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v11/overview_query_builder\"\
                   >query builder</a> for more information."
                 examples:
                 - "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type\
@@ -3687,7 +3693,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.72"
+- dockerImage: "airbyte/source-hubspot:0.1.73"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -3915,7 +3921,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.21"
+- dockerImage: "airbyte/source-intercom:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -4358,7 +4364,7 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-klaviyo:0.1.4"
+- dockerImage: "airbyte/source-klaviyo:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
@@ -4388,6 +4394,54 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+- dockerImage: "airbyte/source-kyriba:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Kyriba Spec"
+      type: "object"
+      required:
+      - "domain"
+      - "username"
+      - "password"
+      - "start_date"
+      additionalProperties: false
+      properties:
+        domain:
+          type: "string"
+          description: "Kyriba domain"
+          title: "Domain"
+          examples:
+          - "demo.kyriba.com"
+          pattern: "^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
+        username:
+          type: "string"
+          description: "Username to be used in basic auth"
+          title: "Username"
+        password:
+          type: "string"
+          description: "Password to be used in basic auth"
+          title: "Password"
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          description: "The date the sync should start from."
+          title: "Start Date"
+          examples:
+          - "2021-01-10"
+          pattern: "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"
+        end_date:
+          type: "string"
+          description: "The date the sync should end. If let empty the sync will run\
+            \ to the current date."
+          title: "End Date"
+          examples:
+          - "2022-03-01"
+          pattern: "^(?:(\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01]))|)$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-lemlist:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -5876,7 +5930,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.3"
+- dockerImage: "airbyte/source-notion:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -5906,7 +5960,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-okta:0.1.4"
+- dockerImage: "airbyte/source-okta:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
@@ -7491,7 +7545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.15"
+- dockerImage: "airbyte/source-s3:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -10446,6 +10500,81 @@
           type: "string"
           title: "Engine"
           description: "Engine name or url to connect to."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-elasticsearch:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/source/elasticsearch"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Elasticsearch Connection Configuration"
+      type: "object"
+      required:
+      - "endpoint"
+      additionalProperties: false
+      properties:
+        endpoint:
+          title: "Server Endpoint"
+          type: "string"
+          description: "The full url of the Elasticsearch server"
+        authenticationMethod:
+          title: "Authentication Method"
+          type: "object"
+          description: "The type of authentication to be used"
+          oneOf:
+          - title: "None"
+            additionalProperties: false
+            description: "No authentication will be used"
+            required:
+            - "method"
+            properties:
+              method:
+                type: "string"
+                const: "none"
+          - title: "Api Key/Secret"
+            additionalProperties: false
+            description: "Use a api key and secret combination to authenticate"
+            required:
+            - "method"
+            - "apiKeyId"
+            - "apiKeySecret"
+            properties:
+              method:
+                type: "string"
+                const: "secret"
+              apiKeyId:
+                title: "API Key ID"
+                description: "The Key ID to used when accessing an enterprise Elasticsearch\
+                  \ instance."
+                type: "string"
+              apiKeySecret:
+                title: "API Key Secret"
+                description: "The secret associated with the API Key ID."
+                type: "string"
+                airbyte_secret: true
+          - title: "Username/Password"
+            additionalProperties: false
+            description: "Basic auth header with a username and password"
+            required:
+            - "method"
+            - "username"
+            - "password"
+            properties:
+              method:
+                type: "string"
+                const: "basic"
+              username:
+                title: "Username"
+                description: "Basic auth username to access a secure Elasticsearch\
+                  \ server"
+                type: "string"
+              password:
+                title: "Password"
+                description: "Basic auth password to access a secure Elasticsearch\
+                  \ server"
+                type: "string"
+                airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []

@@ -1,3 +1,4 @@
+{{- if .Values.temporal.enabled -}}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -46,3 +47,4 @@ data:
     limit.blobSize.warn:
       - value: 10485760 # 10MB
         constraints: {}
+{{- end -}}
