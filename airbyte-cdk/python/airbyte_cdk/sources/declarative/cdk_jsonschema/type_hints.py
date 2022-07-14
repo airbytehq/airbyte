@@ -70,6 +70,7 @@ class RewriteBuiltinGenerics(ast.NodeTransformer):
 def get_class_type_hints(klass: Type, localns=None) -> Dict[str, Any]:
     """Return type hints for a class. Adapted from `typing.get_type_hints`, adds support for PEP 585 & PEP 604"""
     hints = {}
+    print(f"get_class_type_hints for {klass}")
     for base in reversed(klass.__mro__):
         base_globals = sys.modules[base.__module__].__dict__
         base_globals["_Union"] = Union

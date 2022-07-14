@@ -379,6 +379,7 @@ class JsonSchemaMixin:
 
             mapped_fields = []
             type_hints = get_class_type_hints(cls)
+            print(f"type_hints: {type_hints}")
             for f in fields(cls):
                 # Skip internal fields
                 if f.name.startswith("__") or (not base_fields and (f.name, f.type) in base_fields_types):
@@ -916,6 +917,7 @@ class JsonSchemaMixin:
         If embedding the schema into a swagger api, specify 'swagger_version' to generate a spec compatible with that
         version.
         """
+        print(f"json_schema.cls: {cls}")
         if "swagger_version" in kwargs and kwargs["swagger_version"] is not None:
             schema_type = kwargs["swagger_version"]
 

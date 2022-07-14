@@ -1,45 +1,47 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from dataclasses import dataclass
-from functools import lru_cache
+from dataclasses import dataclass, fields
 from typing import Union
 
 from airbyte_cdk.sources.declarative.cdk_jsonschema import DEFAULT_SCHEMA_TYPE, JsonDict, JsonSchemaMixin, SchemaType
 
 
-class InterfaceMixin:
+@dataclass
+class InterfaceMixin(JsonSchemaMixin):
     @classmethod
     def full_type_definition(cls):
         return Union[tuple(cls.__subclasses__())]
 
 
 @dataclass
-class Interface(JsonSchemaMixin):
+class Interface(InterfaceMixin, JsonSchemaMixin):
     """This is an interface"""
 
-    @classmethod
-    @lru_cache
-    def json_schema(
-        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
-    ) -> JsonDict:
-        print(f"Interface.json_schema with {cls}")
-        if cls != Interface:
-            print(f"{cls} is not interface. calling JsonSchemaMixin")
-            return cls.json_schema()
-        subclasses = cls.__subclasses__()
-        if not subclasses:
-            return cls.get_json_schema()
-        print(f"subclasses for {cls}: {subclasses}")
-        t = Union[tuple(subclasses)]
+    # @classmethod
+    # @lru_cache
+    # def _json_schema(
+    #        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
+    # ) -> JsonDict:
+    #    print(f"Interface.json_schema with {cls}")
+    #    if cls != Interface:
+    #        print(f"{cls} is not interface. calling JsonSchemaMixin")
+    #        return cls.json_schema()
+    #    subclasses = cls.__subclasses__()
+    #    if not subclasses:
+    #        return cls.get_json_schema()
+    #    print(f"subclasses for {cls}: {subclasses}")
+    #    t = Union[tuple(subclasses)]
 
-        @dataclass
-        class _anon(JsonSchemaMixin):
-            field: t
 
-        _anon.__name__ = cls.__name__
-        _anon.__doc__ = cls.__doc__
-        return _anon.get_json_schema(embeddable=True)
+#
+#        @dataclass
+#        class _anon(JsonSchemaMixin):
+#            field: t
+#
+#        _anon.__name__ = cls.__name__
+#        _anon.__doc__ = cls.__doc__
+#        return _anon.get_json_schema(embeddable=True)
 
 
 count = 0
@@ -51,24 +53,12 @@ class ChildInterfaceString(Interface, JsonSchemaMixin):
 
     child_field: str
 
-    @classmethod
-    def json_schema(
-        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
-    ) -> JsonDict:
-        return cls.get_json_schema(embeddable=True)
-
 
 @dataclass
 class ChildInt(Interface):
     """ConcreteType2"""
 
     int_field: int
-
-    @classmethod
-    def json_schema(
-        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
-    ) -> JsonDict:
-        return cls.get_json_schema(embeddable=True)
 
 
 #
@@ -88,6 +78,34 @@ class SomeOtherClass(JsonSchemaMixin):
 
     #   f: Union[ChildString, ChildInt]
     g: Interface
+
+    @classmethod
+    def json_schema(
+        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
+    ) -> JsonDict:
+        # Copy class so we don't modify the fields directly
+        # copy_cls = type('CopyOfB', cls.__bases__, dict(cls.__dict__))
+        copy_mixin = type("Copymixin", cls.__bases__, dict(cls.__dict__))
+
+        class_fields = fields(cls)
+        print(cls.__dict__)
+
+        for field in class_fields:
+            t = field.type
+            if "__subclasses__" in t.__dict__:
+                subsclasses = t.__subclasses__()
+                if subsclasses:
+                    field.type = Union[tuple(subsclasses)]
+                    copy_mixin["__annotations__"][field.name] = Union[tuple(subsclasses)]
+        setattr(copy_mixin, "__dataclass_fields__", cls.__dict__["__dataclass_fields__"])
+
+        copy_mixin.__name__ = cls.__name__
+        copy_mixin.__doc__ = cls.__doc__
+
+        # setattr(copy_mixin, "json_schema", InterfaceMixin.json_schema)
+
+        schema = copy_mixin.json_schema(embeddable=True)
+        return schema
 
 
 #    h: InterfaceTypeHint
