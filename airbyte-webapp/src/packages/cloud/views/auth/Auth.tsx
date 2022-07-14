@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import { useIntl } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
@@ -35,6 +36,7 @@ const hasValidRightSideUrl = (url?: string): boolean => {
 
 const Auth: React.FC = () => {
   const { pathname, location } = useRouter();
+  const { formatMessage } = useIntl();
   const { loggedOut } = useAuthService();
   const rightSideUrl = useExperiment("authPage.rightSideUrl", undefined);
 
@@ -60,7 +62,12 @@ const Auth: React.FC = () => {
       </div>
       <div className={styles.rightSide}>
         {hasValidRightSideUrl(rightSideUrl) ? (
-          <iframe src={rightSideUrl} title="Right Side" scrolling="no" />
+          <iframe
+            className={styles.rightSideFrame}
+            src={rightSideUrl}
+            scrolling="no"
+            title={formatMessage({ id: "login.rightSideFrameTitle" })}
+          />
         ) : (
           <PersonQuoteCover />
         )}

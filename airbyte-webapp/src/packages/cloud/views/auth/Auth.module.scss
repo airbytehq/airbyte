@@ -18,11 +18,11 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
 
-  > iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    overflow: hidden;
-  }
+.rightSideFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  overflow: hidden;
 }
