@@ -3,6 +3,7 @@
 #
 
 import base64
+from dataclasses import dataclass
 from itertools import cycle
 from typing import Any, List, Mapping
 
@@ -10,6 +11,7 @@ from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from requests.auth import AuthBase
 
 
+@dataclass()
 class MultipleTokenAuthenticator(AuthBase, JsonSchemaMixin):
     """
     Builds auth header, based on the list of tokens provided.

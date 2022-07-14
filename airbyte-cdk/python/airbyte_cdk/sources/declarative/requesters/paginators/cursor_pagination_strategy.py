@@ -1,9 +1,11 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -11,7 +13,8 @@ from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy i
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class CursorPaginationStrategy(PaginationStrategy):
+@dataclass
+class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
     """
     Pagination strategy that evaluates an interpolated string to define the next page token
     """

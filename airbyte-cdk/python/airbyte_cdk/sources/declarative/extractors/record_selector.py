@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import Any, List, Mapping
 
 import requests
@@ -12,6 +13,7 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.types import Record
 
 
+@dataclass()
 class RecordSelector(HttpSelector, JsonSchemaMixin):
     """
     Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering

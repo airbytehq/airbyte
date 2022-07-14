@@ -3,12 +3,15 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 
 
-class Retriever(ABC):
+@dataclass
+class Retriever(ABC, DeclarativeComponentMixin):
     @abstractmethod
     def read_records(
         self,

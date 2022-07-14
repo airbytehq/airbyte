@@ -43,7 +43,8 @@ def create(func, /, *args, **keywords):
         interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
         interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
 
-        all_keywords.update(interpolated_keywords)
+        if "string_template" not in interpolated_keywords:
+            all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:

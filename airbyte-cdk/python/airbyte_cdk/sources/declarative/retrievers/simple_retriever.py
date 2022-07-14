@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -9,36 +10,30 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
-    def __init__(
-        self,
-        name: str,
-        primary_key: str,
-        requester: Requester,
-        record_selector: HttpSelector,
-        paginator: Optional[Paginator] = None,
-        stream_slicer: Optional[StreamSlicer] = SingleSlice(),
-        state: Optional[State] = None,
-    ):
-        self._name = name
-        self._primary_key = primary_key
-        self._paginator = paginator or NoPagination()
-        self._requester = requester
-        self._record_selector = record_selector
-        super().__init__(self._requester.get_authenticator())
-        self._iterator = stream_slicer
-        self._state: State = (state or DictState()).deep_copy()
+@dataclass
+class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin, serialise_properties=False):
+    """SimpleRetriever"""
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    stream_name: str
+    stream_primary_key: str = field()
+    paginator: Optional[Paginator] = None
+    stream_slicer: Optional[StreamSlicer.full_type_definition()] = SingleSlice()
+    state_object: Optional[State.full_type_definition()] = None
+
+    def __post_init__(self):
+        self._init(self.requester.get_authenticator())
         self._last_response = None
         self._last_records = None
 
@@ -47,15 +42,15 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """
         :return: Stream name
         """
-        return self._name
+        return self.stream_name
 
     @property
     def url_base(self) -> str:
-        return self._requester.get_url_base()
+        return self.requester.get_url_base()
 
     @property
     def http_method(self) -> str:
-        return str(self._requester.get_method().value)
+        return str(self.requester.get_method().value)
 
     @property
     def raise_on_http_errors(self) -> bool:
@@ -72,7 +67,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return self._requester.should_retry(response).action == ResponseAction.RETRY
+        return self.requester.should_retry(response).action == ResponseAction.RETRY
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -84,7 +79,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
          :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
          to the default backoff behavior (e.g using an exponential algorithm).
         """
-        should_retry = self._requester.should_retry(response)
+        should_retry = self.requester.should_retry(response)
         if should_retry.action != ResponseAction.RETRY:
             raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
         assert should_retry.action == ResponseAction.RETRY
@@ -98,7 +93,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers)
+        return self._get_request_options(stream_slice, next_page_token, self.requester.request_headers, self.paginator.request_headers)
 
     def _get_request_options(self, stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any], requester_method, paginator_method):
         base_mapping = requester_method(self.state, stream_slice, next_page_token)
@@ -124,18 +119,16 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        base_body_data = self._requester.request_body_data(self.state, stream_slice, next_page_token)
+        base_body_data = self.requester.request_body_data(self.state, stream_slice, next_page_token)
         if isinstance(base_body_data, str):
-            paginator_body_data = self._paginator.request_body_data()
+            paginator_body_data = self.paginator.request_body_data()
             if paginator_body_data:
                 raise ValueError(
                     f"Cannot combine requester's body data= {base_body_data} with paginator's body_data: {paginator_body_data}"
                 )
             else:
                 return base_body_data
-        return self._get_request_options(
-            stream_slice, next_page_token, self._requester.request_body_data, self._paginator.request_body_data
-        )
+        return self._get_request_options(stream_slice, next_page_token, self.requester.request_body_data, self.paginator.request_body_data)
 
     def request_body_json(
         self,
@@ -149,9 +142,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(
-            stream_slice, next_page_token, self._requester.request_body_json, self._paginator.request_body_json
-        )
+        return self._get_request_options(stream_slice, next_page_token, self.requester.request_body_json, self.paginator.request_body_json)
 
     def request_kwargs(
         self,
@@ -165,7 +156,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_kwargs(self.state, stream_slice, next_page_token)
+        return self.requester.request_kwargs(self.state, stream_slice, next_page_token)
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -179,11 +170,11 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        paginator_path = self._paginator.path()
+        paginator_path = self.paginator.path()
         if paginator_path:
             return paginator_path
         else:
-            return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
+            return self.requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
         self,
@@ -197,21 +188,21 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(stream_slice, next_page_token, self._requester.request_params, self._paginator.request_params)
+        return self._get_request_options(stream_slice, next_page_token, self.requester.request_params, self.paginator.request_params)
 
     @property
     def cache_filename(self):
         """
         Return the name of cache file
         """
-        return self._requester.cache_filename
+        return self.requester.cache_filename
 
     @property
     def use_cache(self):
         """
         If True, all records will be cached.
         """
-        return self._requester.use_cache
+        return self.requester.use_cache
 
     def parse_response(
         self,
@@ -224,7 +215,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # if fail -> raise exception
         # if ignore -> ignore response and return no records
         # else -> delegate to record selector
-        response_status = self._requester.should_retry(response)
+        response_status = self.requester.should_retry(response)
         if response_status.action == ResponseAction.FAIL:
             response.raise_for_status()
         elif response_status.action == ResponseAction.IGNORE:
@@ -233,7 +224,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
         # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
-        records = self._record_selector.select_records(
+        records = self.record_selector.select_records(
             response=response, stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
         )
         self._last_records = records
@@ -241,7 +232,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
+        return self.stream_primary_key
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -251,7 +242,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
         :return: The token for the next page from the input response object. Returning None means there are no more pages to read in this response.
         """
-        return self._paginator.next_page_token(response, self._last_records)
+        return self.paginator.next_page_token(response, self._last_records)
 
     def read_records(
         self,
@@ -263,10 +254,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # Warning: use self.state instead of the stream_state passed as argument!
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
-            self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_response=self._last_response, last_record=r)
+            # self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_response=self._last_response, last_record=r)
             yield r
         else:
-            self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_reponse=self._last_response)
+            # self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_reponse=self._last_response)
             yield from []
 
     def stream_slices(
@@ -281,13 +272,13 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._iterator.stream_slices(sync_mode, self.state)
+        return self.stream_slicer.stream_slices(sync_mode, self.state)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._state.get_stream_state()
+        return {}  # self._state.get_stream_state() #FIXME
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._state.set_state(value)
+        # self._state.set_state(value) #FIXME

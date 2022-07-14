@@ -39,7 +39,9 @@ from airbyte_cdk.sources.streams.core import Stream
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
+    SimpleRetriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
+    JsonSchema: JsonSchema,
     HttpSelector: RecordSelector,
     ConnectionChecker: CheckStream,
     ErrorHandler: DefaultErrorHandler,

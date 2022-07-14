@@ -369,6 +369,8 @@ class JsonSchemaMixin:
 
     @classmethod
     def _get_fields(cls, base_fields=True) -> List[JsonSchemaField]:
+        # print(f"_get_fields for {cls}")
+
         def _get_fields_uncached():
             dataclass_bases = [klass for klass in cls.__bases__ if is_dataclass(klass) and issubclass(klass, JsonSchemaMixin)]
             base_fields_types = set()

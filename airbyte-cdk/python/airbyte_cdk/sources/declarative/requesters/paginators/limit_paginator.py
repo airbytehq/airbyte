@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import Any, List, Mapping
 
 import requests
@@ -16,6 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.types import Config
 
 
+@dataclass
 class LimitPaginator(ConditionalPaginator, JsonSchemaMixin):
     """
     Limit paginator.

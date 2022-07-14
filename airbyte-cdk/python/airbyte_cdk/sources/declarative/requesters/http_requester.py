@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from functools import lru_cache
+from dataclasses import dataclass
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -20,13 +20,14 @@ from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 
 
+@dataclass
 class HttpRequester(Requester, JsonSchemaMixin):
     def __init__(
         self,
         *,
         name: str,
-        url_base: InterpolatedString,
-        path: InterpolatedString,
+        url_base: Union[InterpolatedString, str],
+        path: Union[InterpolatedString],
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
         authenticator: HttpAuthenticator = None,
@@ -64,7 +65,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
 
     # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
     # only care about the status of the last response received
-    @lru_cache(maxsize=10)
+    # @lru_cache(maxsize=10)
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
         return self._error_handler.should_retry(response)

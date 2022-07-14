@@ -8,8 +8,14 @@ from typing import Union
 from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 
 
+class InterfaceMixin:
+    @classmethod
+    def full_type_definition(cls):
+        return Union[tuple(cls.__subclasses__())]
+
+
 @dataclass
-class Interface(JsonSchemaMixin):
+class Interface(JsonSchemaMixin, InterfaceMixin):
     pass
 
 
@@ -31,6 +37,7 @@ class SomeOtherClass(JsonSchemaMixin):
     f: Union[ChildString, ChildInt]
     g: Interface
     h: InterfaceTypeHint
+    i: Interface.full_type_definition()
 
 
 def test_json_schema():

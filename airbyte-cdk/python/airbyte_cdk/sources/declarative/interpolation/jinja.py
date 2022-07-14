@@ -3,6 +3,7 @@
 #
 
 import ast
+from dataclasses import dataclass
 
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
@@ -10,6 +11,7 @@ from jinja2 import Environment
 from jinja2.exceptions import UndefinedError
 
 
+@dataclass
 class JinjaInterpolation(Interpolation):
     def __init__(self):
         self._environment = Environment()

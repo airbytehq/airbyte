@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
@@ -14,10 +15,10 @@ from airbyte_cdk.sources.streams import Stream
 from jsonschema import validate
 
 
+@dataclass
 class ConcreteDeclarativeSource(JsonSchemaMixin):
-    def __init__(self, check: ConnectionChecker, streams: List[DeclarativeStream]):
-        self._check = check
-        self._streams = streams
+    check: ConnectionChecker.full_type_definition()
+    streams: List[DeclarativeStream.full_type_definition()]
 
 
 class YamlDeclarativeSource(DeclarativeSource):
@@ -29,8 +30,15 @@ class YamlDeclarativeSource(DeclarativeSource):
     def _validate_definition(self):
         # run validation
         expanded_streams = [self._factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
+        # pprint.pprint(expanded_streams)
         config_to_validate = {"check": self._source_config["check"], "streams": expanded_streams}
         validate(config_to_validate, ConcreteDeclarativeSource.json_schema())
+
+        # import pprint
+        # pprint.pprint(ConcreteDeclarativeSource.json_schema())
+        # exit()
+
+    #        pprint.pprint(ConcreteDeclarativeSource.json_schema())
 
     def _stream_configs(self):
         stream_configs = self._source_config["streams"]

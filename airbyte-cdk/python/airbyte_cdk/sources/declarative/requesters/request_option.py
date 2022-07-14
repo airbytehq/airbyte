@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Union
 
@@ -20,34 +21,27 @@ class RequestOptionType(Enum):
     body_json = "body_json"
 
 
+@dataclass
 class RequestOption(JsonSchemaMixin):
     """
     Describes an option to set on a request
     """
 
-    def __init__(self, option_type: Union[RequestOptionType, str], field_name: Optional[str] = None):
-        """
+    """
+    :param option_type: where to set the value
+    :param field_name: field name to set. None if option_type == path. Required otherwise.
+    """
 
-        :param option_type: where to set the value
-        :param field_name: field name to set. None if option_type == path. Required otherwise.
-        """
-        if isinstance(option_type, str):
-            option_type = RequestOptionType[option_type]
-        self._option_type = option_type
-        self._field_name = field_name
-        if self._option_type == RequestOptionType.path:
-            if self._field_name is not None:
-                raise ValueError(f"RequestOption with path cannot have a field name. Get {field_name}")
-        elif self._field_name is None:
-            raise ValueError(f"RequestOption expected field name for type {self._option_type}")
+    option_type: Union[RequestOptionType, str]
+    field_name: Optional[str] = None
 
-    @property
-    def option_type(self) -> RequestOptionType:
-        return self._option_type
-
-    @property
-    def field_name(self) -> Optional[RequestOptionType]:
-        return self._field_name
-
-    def is_path(self):
-        return self._option_type == RequestOptionType.path
+    def __post_init__(self):
+        if isinstance(self.option_type, str):
+            self.option_type = RequestOptionType[self.option_type]
+        self.option_type = self.option_type
+        self.field_name = self.field_name
+        if self.option_type == RequestOptionType.path:
+            if self.field_name is not None:
+                raise ValueError(f"RequestOption with path cannot have a field name. Get {self.field_name}")
+        elif self.field_name is None:
+            raise ValueError(f"RequestOption expected field name for type {self.option_type}")

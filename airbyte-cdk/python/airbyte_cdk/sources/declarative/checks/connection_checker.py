@@ -4,12 +4,15 @@
 
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, Mapping, Tuple
 
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 from airbyte_cdk.sources.source import Source
 
 
-class ConnectionChecker(ABC):
+@dataclass
+class ConnectionChecker(ABC, DeclarativeComponentMixin):
     """
     Abstract base class for checking a connection
     """

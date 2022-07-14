@@ -4,6 +4,7 @@
 
 
 import base64
+from dataclasses import dataclass
 from itertools import cycle
 from typing import Any, List, Mapping
 
@@ -14,6 +15,7 @@ from .core import HttpAuthenticator
 
 
 @deprecated(version="0.1.20", reason="Use airbyte_cdk.sources.streams.http.requests_native_auth.TokenAuthenticator instead")
+@dataclass
 class TokenAuthenticator(HttpAuthenticator, JsonSchemaMixin):
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         self.auth_method = auth_method

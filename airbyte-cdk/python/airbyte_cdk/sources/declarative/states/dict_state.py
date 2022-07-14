@@ -2,10 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Mapping
 
-from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.types import Config
@@ -24,18 +24,18 @@ class StateType(Enum):
     INT = int
 
 
-class DictState(State, JsonSchemaMixin):
+@dataclass
+class DictState(State):
     stream_state_field = "stream_state"
 
-    def __init__(self, initial_mapping: Mapping[str, str] = None, config: Config = None):
-        if initial_mapping is None:
-            initial_mapping = dict()
-        if config is None:
-            config = dict()
-        self._templates_to_evaluate = initial_mapping
-        self._interpolator = JinjaInterpolation()
+    templates_to_evaluate: Mapping[str, str] = field(default_factory=dict)
+    config: Config = field(default_factory=dict)
+
+    def __post_init__(self):
+        self._initial_mapping = self.templates_to_evaluate or dict()
+        self.templates_to_evaluate = self._initial_mapping
         self._context = dict()
-        self._config = config
+        self._interpolator = JinjaInterpolation()
 
     def set_state(self, state):
         self._context[self.stream_state_field] = state

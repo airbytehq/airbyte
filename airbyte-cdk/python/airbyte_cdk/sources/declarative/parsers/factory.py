@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
 from airbyte_cdk.sources.declarative.types import Config
-from jsonschema import validate
+from jsonschema import ValidationError, validate
 
 
 class DeclarativeComponentFactory:
@@ -56,7 +56,10 @@ class DeclarativeComponentFactory:
             # full_definition = {**{"config": config}, **updated_kwargs}
             full_definition = {**updated_kwargs, **{k: v for k, v in updated_kwargs["options"].items() if k not in updated_kwargs}}
             full_definition["config"] = {}
-            validate(full_definition, schema)
+            try:
+                validate(full_definition, schema)
+            except ValidationError as e:
+                raise Exception(f"Failed to validate {class_or_class_name} with definition={full_definition}. Error: {e}")
             return lambda: full_definition
 
     @staticmethod
@@ -115,6 +118,7 @@ class DeclarativeComponentFactory:
             ]
         else:
             expected_type = self.get_default_type(key, parent_class)
+            print(f"expected type for {parent_class}.{key} = {expected_type}")
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
                 # for instance, to turn a string into an InterpolatedString
@@ -144,7 +148,9 @@ class DeclarativeComponentFactory:
                 interface = args[0]
             else:
                 break
+        print(f"interface for {parent_class}.{parameter_name} = {interface}")
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
+        print(f"expected_type for {parent_class}.{parameter_name} = {interface}")
         return expected_type
 
     @staticmethod

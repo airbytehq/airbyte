@@ -6,12 +6,12 @@ import logging
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
-from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 from airbyte_cdk.sources.source import Source
 
 
-class CheckStream(ConnectionChecker, JsonSchemaMixin):
+class CheckStream(ConnectionChecker, DeclarativeComponentMixin):
     """
     Checks the connections by trying to read records from one or many of the streams selected by the developer
     """

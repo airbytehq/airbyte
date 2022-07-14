@@ -5,12 +5,13 @@
 from typing import Any, List, Mapping
 
 import pendulum
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
-class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
+class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeComponentMixin):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials based on
     a declarative connector configuration file. Credentials can be defined explicitly or via interpolation

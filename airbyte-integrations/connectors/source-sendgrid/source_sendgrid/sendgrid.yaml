@@ -1,18 +1,24 @@
 lists_stream:
   options:
     name: "lists"
+    stream_name: "lists"
     primary_key: id
+    stream_primary_key: id
     url_base: "https://api.sendgrid.com"
     schema_loader:
-      file_path: "./source_sendgrid/schemas/{{options.name}}.json"
+      name: "lists"
+      file_path:
+        { "string_template": "./source_sendgrid/schemas/{{name}}.json" }
     retriever:
+      stream_name: "lists"
+      stream_primary_key: "id"
       paginator:
         type: "LimitPaginator"
         limit_value: 10
         limit_option:
           option_type: request_parameter
           field_name: page_size
-        page_token:
+        page_token_option:
           option_type: path
         pagination_strategy:
           type: "CursorPagination"
@@ -21,7 +27,7 @@ lists_stream:
       requester:
         path:
           class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
-          string: "{{ next_page_token['next_page_url'] }}"
+          string_template: "{{ next_page_token['next_page_url'] }}"
           default: "/v3/marketing/lists"
         authenticator:
           type: "TokenAuthenticator"

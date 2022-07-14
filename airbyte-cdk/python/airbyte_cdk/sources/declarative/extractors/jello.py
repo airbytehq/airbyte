@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import List, Optional
 
 import requests
@@ -13,6 +14,7 @@ from airbyte_cdk.sources.declarative.types import Config, Record
 from jello import lib as jello_lib
 
 
+@dataclass
 class JelloExtractor(JsonSchemaMixin):
     default_transform = "."
 
