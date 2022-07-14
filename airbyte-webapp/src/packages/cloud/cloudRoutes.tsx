@@ -72,7 +72,7 @@ const MainRoutes: React.FC = () => {
     return () => {
       setWorkspaceFeatures(undefined);
     };
-  }, [cloudWorkspace, setWorkspaceFeatures]);
+  }, [cloudWorkspace.creditStatus, setWorkspaceFeatures]);
 
   const analyticsContext = useMemo(
     () => ({
