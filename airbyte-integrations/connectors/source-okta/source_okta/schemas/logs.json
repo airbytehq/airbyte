@@ -5,10 +5,7 @@
         "alternateId": {
           "type": ["string", "null"]
         },
-        "detail": {
-          "additionalProperties": {
-            "type": ["object", "null"]
-          },
+        "detailEntry": {
           "type": ["object", "null"]
         },
         "displayName": {
@@ -26,42 +23,15 @@
     "authenticationContext": {
       "properties": {
         "authenticationProvider": {
-          "enum": [
-            "OKTA_AUTHENTICATION_PROVIDER",
-            "ACTIVE_DIRECTORY",
-            "LDAP",
-            "FEDERATION",
-            "SOCIAL",
-            "FACTOR_PROVIDER"
-          ],
           "type": ["string", "null"]
         },
         "authenticationStep": {
-          "type": ["integer", "null"]
+          "type": ["integer"]
         },
         "credentialProvider": {
-          "enum": [
-            "OKTA_AUTHENTICATION_PROVIDER",
-            "OKTA_CREDENTIAL_PROVIDER",
-            "RSA",
-            "SYMANTEC",
-            "GOOGLE",
-            "DUO",
-            "YUBIKEY"
-          ],
           "type": ["string", "null"]
         },
         "credentialType": {
-          "enum": [
-            "OTP",
-            "SMS",
-            "PASSWORD",
-            "ASSERTION",
-            "IWA",
-            "EMAIL",
-            "OAUTH2",
-            "JWT"
-          ],
           "type": ["string", "null"]
         },
         "externalSessionId": {
@@ -148,9 +118,6 @@
     "debugContext": {
       "properties": {
         "debugData": {
-          "additionalProperties": {
-            "type": ["object", "null"]
-          },
           "type": ["object", "null"]
         }
       },
@@ -171,7 +138,16 @@
           "type": ["string", "null"]
         },
         "result": {
-          "type": ["string", "null"]
+          "enum": [
+            "SUCCESS",
+            "FAILURE",
+            "SKIPPED",
+            "ALLOW",
+            "DENY",
+            "CHALLENGE",
+            "UNKNOWN"
+          ],
+          "type": "string"
         }
       },
       "type": ["object", "null"]
@@ -222,7 +198,7 @@
                 "type": ["string", "null"]
               },
               "version": {
-                "type": "string"
+                "type": ["string", "null"]
               }
             },
             "type": ["object", "null"]
@@ -263,19 +239,16 @@
             "type": ["string", "null"]
           },
           "detailEntry": {
-            "additionalProperties": {
-              "type": ["object", "null"]
-            },
             "type": ["object", "null"]
           },
           "displayName": {
             "type": ["string", "null"]
           },
           "id": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "type": {
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
         "type": ["object", "null"]
@@ -285,9 +258,6 @@
     "transaction": {
       "properties": {
         "detail": {
-          "additionalProperties": {
-            "type": ["object", "null"]
-          },
           "type": ["object", "null"]
         },
         "id": {

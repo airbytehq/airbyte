@@ -12,7 +12,7 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator
 
 
 class OktaStream(HttpStream, ABC):
@@ -147,24 +147,63 @@ class Users(IncrementalOktaStream):
         return "users"
 
 
+class OktaOauth2Authenticator(Oauth2Authenticator):
+    def get_refresh_request_body(self) -> Mapping[str, Any]:
+        return {
+            "grant_type": "refresh_token",
+            "refresh_token": self.refresh_token,
+        }
+
+    def refresh_access_token(self) -> Tuple[str, int]:
+        try:
+            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body(),
+                                        auth=(self.client_id, self.client_secret))
+            response.raise_for_status()
+            response_json = response.json()
+            return response_json["access_token"], response_json["expires_in"]
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
+
+
 class SourceOkta(AbstractSource):
-    @staticmethod
-    def initialize_authenticator(config: Mapping[str, Any]) -> TokenAuthenticator:
-        if "token" in config or config["credentials"]["auth_type"] == "api_token":
-            token = config.get("token") or config["credentials"]["token"]
-            return TokenAuthenticator(token, auth_method="SSWS")
-        return TokenAuthenticator(config["credentials"]["access_token"])
+    def initialize_authenticator(self, config: Mapping[str, Any]):
+        if "token" in config:
+            return TokenAuthenticator(config["token"], auth_method="SSWS")
+
+        creds = config.get("credentials")
+        if not creds:
+            raise "Config validation error. `credentials` not specified."
+
+        auth_type = creds.get("auth_type")
+        if not auth_type:
+            raise "Config validation error. `auth_type` not specified."
+
+        if auth_type == "api_token":
+            return TokenAuthenticator(creds["api_token"], auth_method="SSWS")
+
+        if auth_type == "oauth2.0":
+            return OktaOauth2Authenticator(
+                token_refresh_endpoint=self.get_token_refresh_endpoint(config),
+                client_secret=creds["client_secret"],
+                client_id=creds["client_id"],
+                refresh_token=creds["refresh_token"],
+            )
 
     @staticmethod
     def get_url_base(config: Mapping[str, Any]) -> str:
-        base_url = config.get("base_url") or f"https://{config['domain']}.okta.com"
-        return parse.urljoin(base_url, "/api/v1/")
+        return config.get("base_url") or f"https://{config['domain']}.okta.com"
+
+    def get_api_endpoint(self, config: Mapping[str, Any]) -> str:
+        return parse.urljoin(self.get_url_base(config), "/api/v1/")
+
+    def get_token_refresh_endpoint(self, config: Mapping[str, Any]) -> str:
+        return parse.urljoin(self.get_url_base(config), "/oauth2/v1/token")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             auth = self.initialize_authenticator(config)
-            base_url = self.get_url_base(config)
-            url = parse.urljoin(base_url, "users")
+            api_endpoint = self.get_api_endpoint(config)
+            url = parse.urljoin(api_endpoint, "users")
 
             response = requests.get(
                 url,
@@ -177,15 +216,16 @@ class SourceOkta(AbstractSource):
 
             return False, response.json()
         except Exception:
-            return False, "Failed to authenticate with the provided credentials"
+            import traceback
+            return False, traceback.format_exc()
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.initialize_authenticator(config)
-        url_base = self.get_url_base(config)
+        api_endpoint = self.get_api_endpoint(config)
 
         initialization_params = {
             "authenticator": auth,
-            "url_base": url_base,
+            "url_base": api_endpoint,
         }
 
         return [

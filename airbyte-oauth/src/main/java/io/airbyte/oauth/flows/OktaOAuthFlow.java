@@ -18,15 +18,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Following docs from
- * https://developer.okta.com/docs/guides/implement-oauth-for-okta/main/
+ * Following docs from https://developer.okta.com/docs/guides/implement-oauth-for-okta/main/
  */
 public class OktaOAuthFlow extends BaseOAuth2Flow {
 
@@ -56,7 +54,7 @@ public class OktaOAuthFlow extends BaseOAuth2Flow {
         // required
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
-        .addParameter("scope", "okta.users.read okta.logs.read okta.groups.read")
+        .addParameter("scope", "okta.users.read okta.logs.read okta.groups.read offline_access")
         .addParameter("response_type", "code")
         .addParameter("state", getState());
 
@@ -115,18 +113,6 @@ public class OktaOAuthFlow extends BaseOAuth2Flow {
     } catch (final InterruptedException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }
-  }
-
-  @Override
-  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
-    final Map<String, Object> result = new HashMap<>();
-    // getting out access_token
-    if (data.has("access_token")) {
-      result.put("access_token", data.get("access_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
-    }
-    return result;
   }
 
 }
