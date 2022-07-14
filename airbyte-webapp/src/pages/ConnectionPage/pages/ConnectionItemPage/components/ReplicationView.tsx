@@ -40,7 +40,7 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
   const [withReset, setWithReset] = useState(true);
   const requireFullReset = stateType === ConnectionStateType.legacy;
   return (
-    <div className={styles.resetWarningModal}>
+    <div className={styles.resetWarningModal} data-testid={`resetModal-${requireFullReset ? "full" : "partial"}`}>
       {/* TODO: This should use proper text stylings once we have them available. */}
       <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
       <p>
@@ -49,13 +49,14 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
           onChange={(ev) => setWithReset(ev.target.checked)}
           label={formatMessage({ id: requireFullReset ? "connection.saveWithFullReset" : "connection.saveWithReset" })}
           checkbox
+          data-testid="resetModal-reset-checkbox"
         />
       </p>
       <div className={styles.resetWarningModalButtons}>
-        <Button onClick={onCancel} secondary>
+        <Button onClick={onCancel} secondary data-testid="resetModal-cancel">
           <FormattedMessage id="form.cancel" />
         </Button>
-        <Button onClick={() => onClose(withReset)}>
+        <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">
           <FormattedMessage id="connection.save" />
         </Button>
       </div>
