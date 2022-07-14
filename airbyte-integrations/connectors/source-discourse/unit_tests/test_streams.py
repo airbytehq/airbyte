@@ -6,7 +6,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_discourse.source import DiscourseStream, SourceDiscourse
+from source_discourse.streams import DiscourseStream
 
 
 @pytest.fixture
@@ -24,13 +24,6 @@ def test_request_params(patch_base_class):
     assert stream.request_params(**inputs) == expected_params
 
 
-def test_next_page_token(patch_base_class):
-    stream = DiscourseStream()
-    inputs = {"response": MagicMock()}
-    expected_token = None
-    assert stream.next_page_token(**inputs) == expected_token
-
-
 def test_parse_response(patch_base_class):
     stream = DiscourseStream()
     mock_record = {}
@@ -40,18 +33,8 @@ def test_parse_response(patch_base_class):
     assert parsed_item == mock_record
 
 
-def test_request_headers(patch_base_class):
-    stream = DiscourseStream()
-    # TODO: replace this with your input parameters
-    inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
-    expected_headers = {}
-    assert stream.request_headers(**inputs) == expected_headers
-
-
 def test_http_method(patch_base_class):
     stream = DiscourseStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 

@@ -4,18 +4,17 @@
 
 
 import logging
-from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+
 from .auth import DiscourseAuthenticator
-from .streams import DiscourseStream, TagGroups, LatestTopics, Posts
+from .streams import LatestTopics, Posts, TagGroups
 
 
 # Source
 class SourceDiscourse(AbstractSource):
-
     @staticmethod
     def get_authenticator(config):
         api_key = config.get("api_key", None)

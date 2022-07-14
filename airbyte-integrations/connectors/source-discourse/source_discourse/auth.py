@@ -4,10 +4,11 @@
 
 
 from typing import Any, Mapping
+
 from requests.auth import AuthBase
 
-class DiscourseAuthenticator(AuthBase):
 
+class DiscourseAuthenticator(AuthBase):
     def __init__(self, api_key, api_username):
         self.api_key = api_key
         self.username = api_username

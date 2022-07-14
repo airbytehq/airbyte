@@ -3,12 +3,12 @@
 #
 
 
-import logging
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+
 
 class DiscourseStream(HttpStream, ABC):
 
@@ -27,6 +27,7 @@ class DiscourseStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield {}
 
+
 class TagGroups(DiscourseStream):
     """
     API docs: https://docs.discourse.org/#tag/Tags/operation/listTagGroups
@@ -39,19 +40,20 @@ class TagGroups(DiscourseStream):
         super().__init__(**kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> str:
         path = "tag_groups.json"
         return path
-    
-    def parse_response(
-        self,
-        response: requests.Response,
-        **kwargs
-    ) -> Iterable[Mapping]:
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        for item in response_json['tag_groups']:
+        for item in response_json["tag_groups"]:
             yield item
+
 
 class LatestTopics(DiscourseStream):
     """
@@ -65,18 +67,19 @@ class LatestTopics(DiscourseStream):
         super().__init__(**kwargs)
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> str:
         path = "latest.json"
         return path
-    
-    def parse_response(
-        self,
-        response: requests.Response,
-        **kwargs
-    ) -> Iterable[Mapping]:
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield response_json
+
 
 class Posts(DiscourseStream):
     """
@@ -94,11 +97,7 @@ class Posts(DiscourseStream):
         """
         path = "posts.json"
         return path
-    
-    def parse_response(
-        self,
-        response: requests.Response,
-        **kwargs
-    ) -> Iterable[Mapping]:
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield response_json
