@@ -368,6 +368,7 @@ def test_config_with_defaults():
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
+
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
     assert stream._retriever._paginator._limit == 10
 

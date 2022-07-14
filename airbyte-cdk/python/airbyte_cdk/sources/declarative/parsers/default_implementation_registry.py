@@ -53,6 +53,6 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     RequestOption: RequestOption,
     InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
     MinMaxDatetime: MinMaxDatetime,
-    InterpolatedString: InterpolatedString,
     InterpolatedBoolean: InterpolatedBoolean,
+    InterpolatedString: InterpolatedString,
 }
