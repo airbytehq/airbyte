@@ -5,6 +5,9 @@
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.uber.m3.tally.RootScopeBuilder;
+import com.uber.m3.tally.Scope;
+import com.uber.m3.tally.StatsReporter;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
@@ -21,6 +24,7 @@ import io.temporal.client.WorkflowClientOptions;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
 import io.temporal.common.RetryOptions;
+import io.temporal.common.reporter.MicrometerClientStatsReporter;
 import io.temporal.serviceclient.SimpleSslContextBuilder;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.serviceclient.WorkflowServiceStubsOptions;
@@ -91,9 +95,14 @@ public class TemporalUtils {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
     try {
+      StatsReporter reporter = new MicrometerClientStatsReporter(registry);
+      Scope scope = new RootScopeBuilder()
+          .reporter(reporter)
+          .reportEvery(com.uber.m3.util.Duration.ofSeconds(10));
       return WorkflowServiceStubsOptions.newBuilder()
           .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
           .setTarget(configs.getTemporalCloudHost())
+          .setMetricsScope(scope)
           .build();
     } catch (final SSLException e) {
       log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
