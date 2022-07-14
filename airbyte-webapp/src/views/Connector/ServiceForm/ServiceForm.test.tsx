@@ -217,7 +217,8 @@ describe("Service Form", () => {
             }
             availableServices={[]}
           />
-        </ConnectorDocumentationWrapper>
+        </ConnectorDocumentationWrapper>,
+        { container: document.body }
       );
       container = renderResult.container;
     });
@@ -328,31 +329,40 @@ describe("Service Form", () => {
 
     test("should fill right values in array of objects field", async () => {
       const priceList = container.querySelector("div[data-testid='connectionConfiguration.priceList']");
-      let addButton = priceList?.querySelector("button[data-testid='addItemButton']");
-      await waitFor(() => userEvent.click(addButton!));
 
-      const done = priceList!.querySelector("button[data-testid='done-button']");
+      let index = 0;
+      const addPriceListItem = async (name: string, price: string) => {
+        const getPriceListInput = (index: number, key: string) =>
+          container.querySelector(`input[name='__hidden_connectionConfiguration.priceList[${index}].${key}']`);
 
-      const name1 = container.querySelector("input[name='connectionConfiguration.priceList.0.name']");
-      const price1 = container.querySelector("input[name='connectionConfiguration.priceList.0.price']");
-      userEvent.type(name1!, "test-1");
-      userEvent.type(price1!, "1");
-      await waitFor(() => userEvent.click(done!));
-      addButton = priceList?.querySelector("button[data-testid='addItemButton']");
-      await waitFor(() => userEvent.click(addButton!));
+        const addButton = priceList?.querySelector("button[data-testid='addItemButton']");
+        await waitFor(() => userEvent.click(addButton!));
 
-      const name2 = container.querySelector("input[name='connectionConfiguration.priceList.1.name']");
-      const price2 = container.querySelector("input[name='connectionConfiguration.priceList.1.price']");
+        // Type items into input
+        const nameInput = getPriceListInput(index, "name");
+        userEvent.type(nameInput!, name);
 
-      userEvent.type(name2!, "test-2");
-      userEvent.type(price2!, "2");
-      await waitFor(() => userEvent.click(done!));
+        const priceInput = getPriceListInput(index, "price");
+        userEvent.type(priceInput!, price);
+
+        const arrayOfObjectsEditModal = container.querySelector("div[data-testid='arrayOfObjects-editModal']");
+        const doneButton = arrayOfObjectsEditModal!.querySelector("button[data-testid='done-button']");
+        await waitFor(() => userEvent.click(doneButton!));
+
+        index++;
+      };
+
+      await addPriceListItem("test-1", "1");
+      await addPriceListItem("test-2", "2");
 
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
 
-      // @ts-expect-error typed unknown, okay in test file
-      expect(result.connectionConfiguration.priceList).toEqual([
+      const { connectionConfiguration } = result as {
+        connectionConfiguration: { priceList: Array<{ name: string; price: number }> };
+      };
+
+      expect(connectionConfiguration.priceList).toEqual([
         { name: "test-1", price: 1 },
         { name: "test-2", price: 2 },
       ]);
