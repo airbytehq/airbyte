@@ -479,15 +479,18 @@ public class AirbyteAcceptanceTestHarness {
     );
   }
 
-  public DestinationRead createDestination() throws ApiException {
-    return createDestination(
+  public DestinationRead createPostgresDestination() throws ApiException {
+    return createPostgresDestination(
         "AccTestDestination-" + UUID.randomUUID(),
         defaultWorkspaceId,
-        getDestinationDefId(),
+        getPostgresDestinationDefinitionId(),
         getDestinationDbConfig());
   }
 
-  public DestinationRead createDestination(final String name, final UUID workspaceId, final UUID destinationDefId, final JsonNode destinationConfig)
+  public DestinationRead createPostgresDestination(final String name,
+                                                   final UUID workspaceId,
+                                                   final UUID destinationDefId,
+                                                   final JsonNode destinationConfig)
       throws ApiException {
     final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()
@@ -511,15 +514,6 @@ public class AirbyteAcceptanceTestHarness {
     final OperationRead operation = apiClient.getOperationApi().createOperation(operationCreate);
     operationIds.add(operation.getOperationId());
     return operation;
-  }
-
-  public UUID getDestinationDefId() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
-        .stream()
-        .filter(dr -> dr.getName().toLowerCase().contains("postgres"))
-        .findFirst()
-        .orElseThrow()
-        .getDestinationDefinitionId();
   }
 
   public List<JsonNode> retrieveSourceRecords(final Database database, final String table) throws SQLException {
@@ -554,28 +548,43 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public JsonNode getSourceDbConfig() {
-    return getDbConfig(sourcePsql, false, false, Type.SOURCE);
+    return getDbConfig(sourcePsql, false, false, false, Type.SOURCE);
+  }
+
+  public JsonNode getSourceDbStrictEnforceConfig() {
+    return getDbConfig(sourcePsql, false, false, true, Type.SOURCE);
   }
 
   public JsonNode getDestinationDbConfig() {
-    return getDbConfig(destinationPsql, false, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, false, true, false, Type.DESTINATION);
+  }
+
+  public JsonNode getDestinationDbStrictEnforceConfig() {
+    return getDbConfig(destinationPsql, false, true, true, Type.DESTINATION);
   }
 
   public JsonNode getDestinationDbConfigWithHiddenPassword() {
-    return getDbConfig(destinationPsql, true, true, Type.DESTINATION);
+    return getDbConfig(destinationPsql, true, true, false, Type.DESTINATION);
   }
 
-  public JsonNode getDbConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema, final Type connectorType) {
+  public JsonNode getDbConfig(final PostgreSQLContainer psql,
+                              final boolean hiddenPassword,
+                              final boolean withSchema,
+                              final boolean strictEnforce,
+                              final Type connectorType) {
     try {
       final Map<Object, Object> dbConfig = (isKube && isGke) ? GKEPostgresConfig.dbConfig(connectorType, hiddenPassword, withSchema)
-          : localConfig(psql, hiddenPassword, withSchema);
+          : localConfig(psql, hiddenPassword, withSchema, strictEnforce);
       return Jsons.jsonNode(dbConfig);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  private Map<Object, Object> localConfig(final PostgreSQLContainer psql, final boolean hiddenPassword, final boolean withSchema)
+  private Map<Object, Object> localConfig(final PostgreSQLContainer psql,
+                                          final boolean hiddenPassword,
+                                          final boolean strictEnforce,
+                                          final boolean withSchema)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
@@ -602,6 +611,12 @@ public class AirbyteAcceptanceTestHarness {
     dbConfig.put("port", psql.getFirstMappedPort());
     dbConfig.put("database", psql.getDatabaseName());
     dbConfig.put("username", psql.getUsername());
+
+    // Some database docker images labeled strict-enforce do not contain an option to ssl off, so it is
+    // not included in the schema.
+    if (!strictEnforce) {
+      dbConfig.put("ssl", false);
+    }
 
     if (withSchema) {
       dbConfig.put("schema", "public");
@@ -631,6 +646,14 @@ public class AirbyteAcceptanceTestHarness {
         defaultWorkspaceId,
         getPostgresSourceDefinitionId(),
         getSourceDbConfig());
+  }
+
+  public SourceRead createPostgresStrictEnforceSource() throws ApiException {
+    return createSource(
+        "acceptanceTestDb-" + UUID.randomUUID(),
+        defaultWorkspaceId,
+        getPostgresSourceDefinitionId(),
+        getSourceDbStrictEnforceConfig());
   }
 
   public SourceRead createSource(final String name, final UUID workspaceId, final UUID sourceDefId, final JsonNode sourceConfig)

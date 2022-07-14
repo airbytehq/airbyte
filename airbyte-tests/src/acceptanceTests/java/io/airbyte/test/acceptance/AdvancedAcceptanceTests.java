@@ -136,7 +136,7 @@ public class AdvancedAcceptanceTests {
   public void testManualSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -164,7 +164,7 @@ public class AdvancedAcceptanceTests {
             .put("throw_after_n_records", 100)
             .build()));
 
-    final DestinationRead destination = testHarness.createDestination(
+    final DestinationRead destination = testHarness.createPostgresDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
@@ -253,7 +253,7 @@ public class AdvancedAcceptanceTests {
             .put("max_records", 5000)
             .build()));
 
-    final DestinationRead destination = testHarness.createDestination(
+    final DestinationRead destination = testHarness.createPostgresDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),

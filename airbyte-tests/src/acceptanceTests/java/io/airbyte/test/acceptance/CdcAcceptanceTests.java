@@ -224,8 +224,8 @@ public class CdcAcceptanceTests {
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final Database source = testHarness.getSourceDatabase();
-    List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
-    List<DestinationCdcRecordMatcher> expectedDestRecordMatchers = new ArrayList<>(sourceRecords
+    final List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, STREAM_NAME);
+    final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers = new ArrayList<>(sourceRecords
         .stream()
         .map(sourceRecord -> new DestinationCdcRecordMatcher(sourceRecord, Instant.EPOCH, Optional.empty()))
         .toList());
@@ -237,7 +237,7 @@ public class CdcAcceptanceTests {
     // delete a record
     source.query(ctx -> ctx.execute("DELETE FROM id_and_name WHERE id=1"));
 
-    Map<String, Object> deletedRecordMap = new HashMap<>();
+    final Map<String, Object> deletedRecordMap = new HashMap<>();
     deletedRecordMap.put(COLUMN_ID, 1);
     deletedRecordMap.put(COLUMN_NAME, null);
     expectedDestRecordMatchers.add(new DestinationCdcRecordMatcher(
@@ -257,7 +257,7 @@ public class CdcAcceptanceTests {
   private UUID createCdcConnection() throws ApiException {
     final SourceRead sourceRead = createCdcSource();
     final UUID sourceId = sourceRead.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
 
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
@@ -298,7 +298,7 @@ public class CdcAcceptanceTests {
         Jsons.jsonNode(sourceDbConfigMap));
   }
 
-  private void assertDestinationMatches(List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
+  private void assertDestinationMatches(final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
     final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, STREAM_NAME));
     if (destRecords.size() != expectedDestRecordMatchers.size()) {
       final String errorMessage = String.format(
@@ -310,22 +310,22 @@ public class CdcAcceptanceTests {
       throw new IllegalStateException(errorMessage);
     }
 
-    for (DestinationCdcRecordMatcher recordMatcher : expectedDestRecordMatchers) {
+    for (final DestinationCdcRecordMatcher recordMatcher : expectedDestRecordMatchers) {
       final List<JsonNode> matchingDestRecords = destRecords.stream().filter(destRecord -> {
-        Map<String, Object> sourceRecordMap = Jsons.object(recordMatcher.sourceRecord, Map.class);
-        Map<String, Object> destRecordMap = Jsons.object(destRecord, Map.class);
+        final Map<String, Object> sourceRecordMap = Jsons.object(recordMatcher.sourceRecord, Map.class);
+        final Map<String, Object> destRecordMap = Jsons.object(destRecord, Map.class);
 
-        boolean sourceRecordValuesMatch = sourceRecordMap.keySet()
+        final boolean sourceRecordValuesMatch = sourceRecordMap.keySet()
             .stream()
             .allMatch(column -> Objects.equals(sourceRecordMap.get(column), destRecordMap.get(column)));
 
         final Object cdcUpdatedAtValue = destRecordMap.get(CDC_UPDATED_AT_COLUMN);
         // use epoch millis to guarantee the two values are at the same precision
-        boolean cdcUpdatedAtMatches = cdcUpdatedAtValue != null
+        final boolean cdcUpdatedAtMatches = cdcUpdatedAtValue != null
             && Instant.parse(String.valueOf(cdcUpdatedAtValue)).toEpochMilli() >= recordMatcher.minUpdatedAt.toEpochMilli();
 
         final Object cdcDeletedAtValue = destRecordMap.get(CDC_DELETED_AT_COLUMN);
-        boolean cdcDeletedAtMatches;
+        final boolean cdcDeletedAtMatches;
         if (recordMatcher.minDeletedAt.isPresent()) {
           cdcDeletedAtMatches = cdcDeletedAtValue != null
               && Instant.parse(String.valueOf(cdcDeletedAtValue)).toEpochMilli() >= recordMatcher.minDeletedAt.get().toEpochMilli();
