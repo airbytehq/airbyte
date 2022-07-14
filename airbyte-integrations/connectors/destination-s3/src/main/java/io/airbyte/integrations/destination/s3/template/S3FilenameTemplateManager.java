@@ -34,7 +34,7 @@ public class S3FilenameTemplateManager {
     stringSubstitutor = new StringSubstitutor();
   }
 
-  public String adaptFilenameAccordingSpecificationPatternWithDefaultConfig(final S3FilenameTemplateParameterObject parameterObject)
+  public String applyPatternToFilename(final S3FilenameTemplateParameterObject parameterObject)
       throws IOException {
     // sanitize fileFormat
     final String sanitizedFileFormat = parameterObject

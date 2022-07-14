@@ -25,14 +25,14 @@ class S3FilenameTemplateManagerTest {
 
   @Test
   @DisplayName("Should replace the date placeholder with the current date in the format YYYY-MM-DD")
-  void adaptFilenameAccordingSpecificationPatternWithDefaultConfigShouldReplaceDatePlaceholderWithCurrentDateInTheFormatYYYY_MM_DD()
+  void testDatePlaceholder()
       throws IOException {
     final String fileNamePattern = "test-{date}";
     final String fileExtension = "csv";
     final String partId = "1";
 
     final String actual = s3FilenameTemplateManager
-        .adaptFilenameAccordingSpecificationPatternWithDefaultConfig(S3FilenameTemplateParameterObject
+        .applyPatternToFilename(S3FilenameTemplateParameterObject
             .builder()
             .objectPath("")
             .fileNamePattern(fileNamePattern)
@@ -45,7 +45,7 @@ class S3FilenameTemplateManagerTest {
 
   @Test
   @DisplayName("Should replace the timestamp placeholder with the current timestamp in milliseconds")
-  void adaptFilenameAccordingSpecificationPatternWithDefaultConfigShouldReplaceTimestampPlaceholderWithCurrentTimestampInMilliseconds()
+  void testTimestampPlaceholder()
       throws IOException {
     final String fileNamePattern = "test-{timestamp}.csv";
 
@@ -55,7 +55,7 @@ class S3FilenameTemplateManagerTest {
     try (final MockedStatic<Instant> mocked = mockStatic(Instant.class)) {
       mocked.when(Instant::now).thenReturn(instant);
       final String actual = s3FilenameTemplateManager
-          .adaptFilenameAccordingSpecificationPatternWithDefaultConfig(S3FilenameTemplateParameterObject.builder()
+          .applyPatternToFilename(S3FilenameTemplateParameterObject.builder()
               .objectPath("")
               .fileNamePattern(fileNamePattern)
               .fileExtension("csv")
@@ -71,7 +71,7 @@ class S3FilenameTemplateManagerTest {
   void testIfFilenameTemplateStringWasSanitized() throws IOException {
     final String fileNamePattern = "  te  st.csv  ";
     final String actual = s3FilenameTemplateManager
-        .adaptFilenameAccordingSpecificationPatternWithDefaultConfig(S3FilenameTemplateParameterObject.builder()
+        .applyPatternToFilename(S3FilenameTemplateParameterObject.builder()
             .objectPath("")
             .fileNamePattern(fileNamePattern)
             .fileExtension("csv")
