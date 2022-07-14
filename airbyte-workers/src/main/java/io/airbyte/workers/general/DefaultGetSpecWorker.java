@@ -94,8 +94,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
                 .findFirst();
 
         if (traceMessage.isPresent()) {
-          // TODO(pedro) fix these -1s by making something specific in the FailureHelper
-          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), -1L, -1);
+          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
           return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withFailureReason(failureReason);
         }
 

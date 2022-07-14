@@ -93,6 +93,9 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         LOGGER.debug("Check connection job received output: {}", output);
         return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
       } else {
+        final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
+        LOGGER.error(message);
+
         final Optional<AirbyteTraceMessage> traceMessage =
             messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
                 .map(AirbyteMessage::getTrace)
@@ -100,15 +103,10 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
                 .findFirst();
 
         if (traceMessage.isPresent()) {
-          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), -1L, -1);
+          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
           return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withFailureReason(failureReason);
         }
 
-        final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
-        LOGGER.error(message);
-
-        // TODO (pedro) this should throw a WorkerException, not make a StandardCheckConnectionOutput
-        // we should keep the ConnectorJobOutput for things the connector itself has returned
         return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(new StandardCheckConnectionOutput()
             .withStatus(Status.FAILED)
             .withMessage(message));

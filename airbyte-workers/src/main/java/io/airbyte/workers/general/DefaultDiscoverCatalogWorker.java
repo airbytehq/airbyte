@@ -100,7 +100,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                 .findFirst();
 
         if (traceMessage.isPresent()) {
-          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), -1L, -1);
+          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
           return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withFailureReason(failureReason);
         }
 
