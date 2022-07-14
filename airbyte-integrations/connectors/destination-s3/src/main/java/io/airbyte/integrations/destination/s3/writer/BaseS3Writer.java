@@ -144,9 +144,7 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
   }
 
   /**
-   * @param parameterObject A string to append to the filename. Commonly used to distinguish multiple
-   *        part files within a single upload. You probably want to use strings with a leading
-   *        underscore (i.e. prefer "_0" to "0").
+   * @param parameterObject - an object which holds all necessary parameters required for default filename creation.
    * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For
    *         example, "2021_12_09_1639077474000_customSuffix.csv"
    */
