@@ -96,6 +96,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         final Optional<AirbyteTraceMessage> traceMessage =
             messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
                 .map(AirbyteMessage::getTrace)
+                .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
                 .findFirst();
 
         if (traceMessage.isPresent()) {
