@@ -8,7 +8,7 @@ import Table from "components/Table";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
-import { FeatureItem, OnlyWithFeature, useFeature } from "hooks/services/Feature";
+import { FeatureItem, IfFeatureEnabled, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
@@ -108,9 +108,9 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <div>
-        <OnlyWithFeature feature={FeatureItem.AllowUploadCustomImage}>
+        <IfFeatureEnabled feature={FeatureItem.AllowUploadCustomImage}>
           <CreateConnector type={type} />
-        </OnlyWithFeature>
+        </IfFeatureEnabled>
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
             isLoading={loading}

@@ -92,7 +92,7 @@ export const useFeature = (feature: FeatureItem): boolean => {
   return features.includes(feature);
 };
 
-export const OnlyWithFeature: React.FC<{ feature: FeatureItem }> = ({ feature, children }) => {
+export const IfFeatureEnabled: React.FC<{ feature: FeatureItem }> = ({ feature, children }) => {
   const hasFeature = useFeature(feature);
   return hasFeature ? <>{children}</> : null;
 };

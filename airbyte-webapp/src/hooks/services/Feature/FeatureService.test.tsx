@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { useEffect } from "react";
 
-import { FeatureService, OnlyWithFeature, useFeature, useFeatureService } from "./FeatureService";
+import { FeatureService, IfFeatureEnabled, useFeature, useFeatureService } from "./FeatureService";
 import { FeatureItem, FeatureSet } from "./types";
 
 const wrapper: React.FC = ({ children }) => (
@@ -161,12 +161,12 @@ describe("Feature Service", () => {
     });
   });
 
-  describe("OnlyWithFeature", () => {
+  describe("IfFeatureEnabled", () => {
     it("renders its children if the given feature is enabled", () => {
       const { getByTestId } = render(
-        <OnlyWithFeature feature={FeatureItem.AllowCreateConnection}>
+        <IfFeatureEnabled feature={FeatureItem.AllowCreateConnection}>
           <span data-testid="content" />
-        </OnlyWithFeature>,
+        </IfFeatureEnabled>,
         { wrapper }
       );
       expect(getByTestId("content")).toBeTruthy();
@@ -174,9 +174,9 @@ describe("Feature Service", () => {
 
     it("does not render its children if the given feature is disabled", () => {
       const { queryByTestId } = render(
-        <OnlyWithFeature feature={FeatureItem.AllowOAuthConnector}>
+        <IfFeatureEnabled feature={FeatureItem.AllowOAuthConnector}>
           <span data-testid="content" />
-        </OnlyWithFeature>,
+        </IfFeatureEnabled>,
         { wrapper }
       );
       expect(queryByTestId("content")).toBeFalsy();
@@ -185,17 +185,17 @@ describe("Feature Service", () => {
     it("allows changing features and rerenders correctly", () => {
       const { queryByTestId, rerender } = render(
         <FeatureService features={[FeatureItem.AllowCreateConnection]}>
-          <OnlyWithFeature feature={FeatureItem.AllowOAuthConnector}>
+          <IfFeatureEnabled feature={FeatureItem.AllowOAuthConnector}>
             <span data-testid="content" />
-          </OnlyWithFeature>
+          </IfFeatureEnabled>
         </FeatureService>
       );
       expect(queryByTestId("content")).toBeFalsy();
       rerender(
         <FeatureService features={[FeatureItem.AllowOAuthConnector]}>
-          <OnlyWithFeature feature={FeatureItem.AllowOAuthConnector}>
+          <IfFeatureEnabled feature={FeatureItem.AllowOAuthConnector}>
             <span data-testid="content" />
-          </OnlyWithFeature>
+          </IfFeatureEnabled>
         </FeatureService>
       );
       expect(queryByTestId("content")).toBeTruthy();

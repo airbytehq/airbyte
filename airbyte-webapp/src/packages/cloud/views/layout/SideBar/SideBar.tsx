@@ -8,7 +8,7 @@ import styled from "styled-components";
 
 import { Link } from "components";
 
-import { FeatureItem, OnlyWithFeature } from "hooks/services/Feature";
+import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useIntercom } from "packages/cloud/services/thirdParty/intercom";
@@ -198,11 +198,11 @@ const SideBar: React.FC = () => {
         </li>
         <li>
           <MenuItem to={RoutePaths.Settings}>
-            <OnlyWithFeature feature={FeatureItem.AllowUpdateConnectors}>
+            <IfFeatureEnabled feature={FeatureItem.AllowUpdateConnectors}>
               <React.Suspense fallback={null}>
                 <NotificationIndicator />
               </React.Suspense>
-            </OnlyWithFeature>
+            </IfFeatureEnabled>
             <SettingsIcon />
             <Text>
               <FormattedMessage id="sidebar.settings" />
