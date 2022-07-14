@@ -9,6 +9,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginato
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
@@ -18,4 +19,5 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "NextPageUrlPaginator": NextPageUrlPaginator,
     "OffsetPaginator": OffsetPaginator,
     "TokenAuthenticator": TokenAuthenticator,
+    "RemoveFields": RemoveFields,
 }

@@ -35,17 +35,21 @@ class DatetimeStreamSlicer(StreamSlicer):
         cursor_value: Union[InterpolatedString, str],
         datetime_format: str,
         config: Config,
+        lookback_window: Union[InterpolatedString, str] = None,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
         if isinstance(cursor_value, str):
             cursor_value = InterpolatedString(cursor_value)
+        if isinstance(lookback_window, str):
+            lookback_window = InterpolatedString(lookback_window)
         self._datetime_format = datetime_format
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
         self._step = self._parse_timedelta(step)
         self._config = config
         self._cursor_value = cursor_value
+        self._lookback_window = lookback_window
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
         if not self._start_datetime.datetime_format:
@@ -58,7 +62,9 @@ class DatetimeStreamSlicer(StreamSlicer):
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self._end_datetime.get_datetime(self._config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
-        start_datetime = min(self._start_datetime.get_datetime(self._config, **kwargs), end_datetime)
+        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self._config, **kwargs) if self._lookback_window else "0d")
+        start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
+        start_datetime = min(start_datetime, end_datetime)
         if self._cursor_value and self._cursor_value.eval(self._config, **kwargs):
             cursor_datetime = self.parse_date(self._cursor_value.eval(self._config, **kwargs))
         else:

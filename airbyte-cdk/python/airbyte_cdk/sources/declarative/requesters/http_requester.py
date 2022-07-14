@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Req
 from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 
 
 class HttpRequester(Requester):
@@ -26,7 +26,7 @@ class HttpRequester(Requester):
         path: [str, InterpolatedString],
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
-        authenticator: HttpAuthenticator,
+        authenticator: HttpAuthenticator = None,
         retrier: Optional[Retrier] = None,
         config: Config,
     ):
@@ -35,7 +35,7 @@ class HttpRequester(Requester):
         elif isinstance(request_options_provider, dict):
             request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
         self._name = name
-        self._authenticator = authenticator
+        self._authenticator = authenticator or NoAuth()
         if type(url_base) == str:
             url_base = InterpolatedString(url_base)
         self._url_base = url_base

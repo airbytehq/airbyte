@@ -16,6 +16,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -149,7 +150,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    db = new ClickHouseContainer("yandex/clickhouse-server");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
   }
 
@@ -175,9 +176,6 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   @Disabled
   public void testCustomDbtTransformationsFailure() throws Exception {}
 
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!TODO to check when normalization is fixed !!!!!!!!!!!!!!!!!!!!!!!!!
-
   /**
    * The normalization container needs native port, while destination container needs HTTP port, we
    * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
@@ -190,21 +188,21 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     super.testIncrementalDedupeSync();
   }
 
-//  /**
-//   * The normalization container needs native port, while destination container needs HTTP port, we
-//   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-//   * test, so we skip it.
-//   *
-//   * @throws Exception
-//   */
-//  @Disabled
-//  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-//    super.testSyncWithNormalization(messagesFilename, catalogFilename);
-//  }
-//
-//  @Disabled
-//  public void specNormalizationValueShouldBeCorrect() throws Exception {
-//    super.specNormalizationValueShouldBeCorrect();
-//  }
+  /**
+   * The normalization container needs native port, while destination container needs HTTP port, we
+   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
+   * test, so we skip it.
+   *
+   * @throws Exception
+   */
+  @Disabled
+  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
+    super.testSyncWithNormalization(messagesFilename, catalogFilename);
+  }
+
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
+  }
 
 }
