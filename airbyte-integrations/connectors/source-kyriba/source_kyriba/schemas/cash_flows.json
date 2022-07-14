@@ -1,12 +1,6 @@
 {
   "type": "object",
-  "required": [
-    "uuid",
-    "account",
-    "flowAmount",
-    "flowCode",
-    "status"
-  ],
+  "required": ["uuid", "account", "flowAmount", "flowCode", "status"],
   "properties": {
     "uuid": {
       "type": "string",
@@ -15,29 +9,29 @@
       "description": "UUID of the cash flow."
     },
     "transactionDate": {
-       "type": "string",
-       "format": "date",
-       "example": "2021-04-01",
-       "description": "Transaction date"
-     },
-     "valueDate": {
-       "type": "string",
-       "format": "date",
-       "example": "2021-04-02",
-       "description": "Value date"
-     },
-     "accountingDate": {
-       "type": "string",
-       "format": "date",
-       "example": "2021-04-03",
-       "description": "Accounting date"
-     },
-     "updateDateTime": {
-       "type": "string",
-       "format": "date-time",
-       "example": "2020-01-02T13:04:35Z",
-       "description": "Update date time"
-     },
+      "type": "string",
+      "format": "date",
+      "example": "2021-04-01",
+      "description": "Transaction date"
+    },
+    "valueDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2021-04-02",
+      "description": "Value date"
+    },
+    "accountingDate": {
+      "type": "string",
+      "format": "date",
+      "example": "2021-04-03",
+      "description": "Accounting date"
+    },
+    "updateDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "example": "2020-01-02T13:04:35Z",
+      "description": "Update date time"
+    },
     "account": {
       "description": "Bank account",
       "$ref": "_definitions.json#/definitions/ReferenceModel"
