@@ -966,7 +966,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:0.2.3"
+- dockerImage: "airbyte/destination-databricks:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
     connectionSpecification:
@@ -979,7 +979,6 @@
       - "databricks_http_path"
       - "databricks_personal_access_token"
       - "data_source"
-      additionalProperties: false
       properties:
         accept_terms:
           title: "Agree to the Databricks JDBC Driver Terms & Conditions"
