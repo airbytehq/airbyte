@@ -4,11 +4,16 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.USERS_STREAM_NAME;
+import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.AIRBYTE_COLUMNS;
+import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.BIGQUERY_DATETIME_FORMAT;
+import static io.airbyte.integrations.destination.bigquery.BigQueryDenormalizedTestConstants.USERS_STREAM_NAME;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.configureBigQuery;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.createCommonConfig;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormats;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormatsWithEmptyList;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfFormatsWithNull;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getAnyOfSchema;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getBigQueryDataSet;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getCommonCatalog;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getData;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getDataArrays;
@@ -30,33 +35,25 @@ import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormal
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithNestedDatetimeInsideNullObject;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.getSchemaWithReferenceDefinition;
 import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.runDestinationWrite;
+import static io.airbyte.integrations.destination.bigquery.util.BigQueryDenormalizedTestDataUtils.tearDownBigQuery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.api.client.http.HttpResponseException;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Dataset;
-import com.google.cloud.bigquery.DatasetInfo;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.StandardSQLTypeName;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -82,37 +79,31 @@ import org.slf4j.LoggerFactory;
 
 class BigQueryDenormalizedDestinationTest {
 
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
-  private static final Set<String> AIRBYTE_METADATA_FIELDS = Set.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, JavaBaseConstants.COLUMN_NAME_AB_ID);
-
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDenormalizedDestinationTest.class);
+  protected static final Instant NOW = Instant.now();
+  protected static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
+  protected static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
+  protected static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
+  protected static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
+  protected static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
+  protected static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
+  protected static final AirbyteMessage MESSAGE_USERS7 = createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
+  protected static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
+  protected static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
+  protected static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
+  protected static final AirbyteMessage MESSAGE_USERS11 = createRecordMessage(USERS_STREAM_NAME, getDataArrays());
+  protected static final AirbyteMessage MESSAGE_USERS12 = createRecordMessage(USERS_STREAM_NAME, getDataTooDeepNestedDepth());
+  protected static final AirbyteMessage MESSAGE_USERS13 = createRecordMessage(USERS_STREAM_NAME, getDataMaxNestedDepth());
+  protected static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
 
-  private static final String BIG_QUERY_CLIENT_CHUNK_SIZE = "big_query_client_buffer_size_mb";
-  private static final Instant NOW = Instant.now();
-  private static final AirbyteMessage MESSAGE_USERS1 = createRecordMessage(USERS_STREAM_NAME, getData());
-  private static final AirbyteMessage MESSAGE_USERS2 = createRecordMessage(USERS_STREAM_NAME, getDataWithEmptyObjectAndArray());
-  private static final AirbyteMessage MESSAGE_USERS3 = createRecordMessage(USERS_STREAM_NAME, getDataWithFormats());
-  private static final AirbyteMessage MESSAGE_USERS4 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONDateTimeFormats());
-  private static final AirbyteMessage MESSAGE_USERS5 = createRecordMessage(USERS_STREAM_NAME, getDataWithJSONWithReference());
-  private static final AirbyteMessage MESSAGE_USERS6 = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{\"users\":null}"));
-  private static final AirbyteMessage MESSAGE_USERS7 = createRecordMessage(USERS_STREAM_NAME, getDataWithNestedDatetimeInsideNullObject());
-  private static final AirbyteMessage MESSAGE_USERS8 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormats());
-  private static final AirbyteMessage MESSAGE_USERS9 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithNull());
-  private static final AirbyteMessage MESSAGE_USERS10 = createRecordMessage(USERS_STREAM_NAME, getAnyOfFormatsWithEmptyList());
-  private static final AirbyteMessage MESSAGE_USERS11 = createRecordMessage(USERS_STREAM_NAME, getDataArrays());
-  private static final AirbyteMessage MESSAGE_USERS12 = createRecordMessage(USERS_STREAM_NAME, getDataTooDeepNestedDepth());
-  private static final AirbyteMessage MESSAGE_USERS13 = createRecordMessage(USERS_STREAM_NAME, getDataMaxNestedDepth());
+  protected JsonNode config;
+  protected BigQuery bigquery;
+  protected Dataset dataset;
+  protected String datasetId;
 
-  private static final AirbyteMessage EMPTY_MESSAGE = createRecordMessage(USERS_STREAM_NAME, Jsons.deserialize("{}"));
-
-  private JsonNode config;
-
-  private BigQuery bigquery;
-  private Dataset dataset;
-  private ConfiguredAirbyteCatalog catalog;
-  private String datasetId;
-
-  private boolean tornDown = true;
+  protected JsonNode createConfig() throws IOException {
+    return createCommonConfig();
+  }
 
   @BeforeEach
   void setup(final TestInfo info) throws IOException {
@@ -120,25 +111,11 @@ class BigQueryDenormalizedDestinationTest {
       return;
     }
 
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
-              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
-    }
-    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    config = createConfig();
+    bigquery = configureBigQuery(config);
+    dataset = getBigQueryDataSet(config, bigquery);
+    datasetId = dataset.getDatasetId().getDataset();
 
-    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    final ServiceAccountCredentials credentials =
-        ServiceAccountCredentials.fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(projectId)
-        .setCredentials(credentials)
-        .build()
-        .getService();
-
-    datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-    final String datasetLocation = "EU";
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_USERS3.getRecord().setNamespace(datasetId);
@@ -154,28 +131,8 @@ class BigQueryDenormalizedDestinationTest {
     MESSAGE_USERS13.getRecord().setNamespace(datasetId);
     EMPTY_MESSAGE.getRecord().setNamespace(datasetId);
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(datasetLocation).build();
-    dataset = bigquery.create(datasetInfo);
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
-        .build());
-
-    tornDown = false;
-    Runtime.getRuntime()
-        .addShutdownHook(
-            new Thread(
-                () -> {
-                  if (!tornDown) {
-                    tearDownBigQuery();
-                  }
-                }));
-
   }
+
 
   @AfterEach
   void tearDown(final TestInfo info) {
@@ -183,21 +140,7 @@ class BigQueryDenormalizedDestinationTest {
       return;
     }
 
-    tearDownBigQuery();
-  }
-
-  private void tearDownBigQuery() {
-    // allows deletion of a dataset that has contents
-    final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
-
-    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
-    if (success) {
-      LOGGER.info("BQ Dataset " + dataset + " deleted...");
-    } else {
-      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
-    }
-
-    tornDown = true;
+    tearDownBigQuery(dataset, bigquery);
   }
 
   @ParameterizedTest
@@ -226,6 +169,15 @@ class BigQueryDenormalizedDestinationTest {
     assertEquals(extractJsonValues(resultJson, "appointment"), extractJsonValues(expectedUsersJson, "appointment"));
   }
 
+  protected Schema getExpectedSchemaForWriteWithFormatTest() {
+    return Schema.of(
+        Field.of("name", StandardSQLTypeName.STRING),
+        Field.of("date_of_birth", StandardSQLTypeName.DATE),
+        Field.of("updated_at", StandardSQLTypeName.DATETIME),
+        Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
+        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
+  }
+
   @Test
   void testWriteWithFormat() throws Exception {
     runDestinationWrite(getCommonCatalog(getSchemaWithFormats(), datasetId), config, MESSAGE_USERS3);
@@ -239,20 +191,13 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+    var expectedValue = LocalDate.parse(extractDateValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
+        DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     var actualValue =
-        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+        LocalDate.parse(extractDateValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     assertEquals(expectedValue, actualValue);
 
-    final Schema expectedSchema = Schema.of(
-        Field.of("name", StandardSQLTypeName.STRING),
-        Field.of("date_of_birth", StandardSQLTypeName.DATE),
-        Field.of("updated_at", StandardSQLTypeName.DATETIME),
-        Field.of(JavaBaseConstants.COLUMN_NAME_AB_ID, StandardSQLTypeName.STRING),
-        Field.of(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, StandardSQLTypeName.TIMESTAMP));
-
-    assertEquals(BigQueryUtils.getTableDefinition(bigquery, dataset.getDatasetId().getDataset(), USERS_STREAM_NAME).getSchema(), expectedSchema);
+    assertEquals(BigQueryUtils.getTableDefinition(bigquery, datasetId, USERS_STREAM_NAME).getSchema(), getExpectedSchemaForWriteWithFormatTest());
   }
 
   @Test
@@ -316,12 +261,14 @@ class BigQueryDenormalizedDestinationTest {
     final JsonNode resultJson = usersActual.get(0);
 
     // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
-    // returns "yyyy-MM-dd'T'HH:mm:ss" format
-    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ss")),
-        extractJsonValues(resultJson, "updated_at"));
+    Set<String> actualValues = extractDateValues(resultJson, "updated_at");
+    assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString(BIGQUERY_DATETIME_FORMAT)),
+        actualValues);
+
     // check nested datetime
-    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString("yyyy-MM-dd'T'HH:mm:ss")),
-        extractJsonValues(resultJson.get("items"), "nested_datetime"));
+    actualValues = extractDateValues(resultJson.get("items"), "nested_datetime");
+    assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString(BIGQUERY_DATETIME_FORMAT)),
+        actualValues);
   }
 
   @Test
@@ -353,7 +300,7 @@ class BigQueryDenormalizedDestinationTest {
     try {
       runDestinationWrite(getCommonCatalog(getSchemaTooDeepNestedDepth(), datasetId), config, MESSAGE_USERS12);
     } catch (Exception e) {
-      assert(((HttpResponseException)e.getCause()).getContent().contains("nested too deeply"));
+      assert(e.getCause().getMessage().contains("nested too deeply"));
     }
   }
 
@@ -380,9 +327,15 @@ class BigQueryDenormalizedDestinationTest {
 
     return resultSet;
   }
+  
+  // BigQuery returns in a different formats Datetime and Timestamp columns.
+  // This method makes Timestamp format similar to Datetime to simplify tests.
+  private Set<String> extractDateValues(final JsonNode node, final String attributeName) {
+    return extractJsonValues(node, attributeName).stream().map(s -> s.replaceAll("Z$", "")).collect(Collectors.toSet());
+  }
 
   private JsonNode removeAirbyteMetadataFields(final JsonNode record) {
-    for (final String airbyteMetadataField : AIRBYTE_METADATA_FIELDS) {
+    for (final String airbyteMetadataField : AIRBYTE_COLUMNS) {
       ((ObjectNode) record).remove(airbyteMetadataField);
     }
     return record;
@@ -392,7 +345,7 @@ class BigQueryDenormalizedDestinationTest {
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
-                String.format("select TO_JSON_STRING(t) as jsonValue from %s.%s t;", dataset.getDatasetId().getDataset(), tableName.toLowerCase()))
+                String.format("select TO_JSON_STRING(t) as jsonValue from %s.%s t;", datasetId, tableName.toLowerCase()))
             .setUseLegacySql(false).build();
     BigQueryUtils.executeQuery(bigquery, queryConfig);
 
