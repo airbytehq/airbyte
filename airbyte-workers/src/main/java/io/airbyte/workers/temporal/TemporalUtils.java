@@ -12,7 +12,11 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.statsd.StatsdConfig;
+import io.micrometer.statsd.StatsdFlavor;
+import io.micrometer.statsd.StatsdMeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -96,7 +100,23 @@ public class TemporalUtils {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
     try {
-      StatsReporter reporter = new MicrometerClientStatsReporter(new SimpleMeterRegistry());
+      StatsdConfig config = new StatsdConfig() {
+
+        @Override
+        public String get(String k) {
+          return null;
+        }
+
+        @Override
+        public StatsdFlavor flavor() {
+          return StatsdFlavor.DATADOG;
+        }
+
+      };
+
+      MeterRegistry registry = new StatsdMeterRegistry(config, Clock.SYSTEM);
+
+      StatsReporter reporter = new MicrometerClientStatsReporter(registry);
       Scope scope = new RootScopeBuilder()
           .reporter(reporter)
           .reportEvery(com.uber.m3.util.Duration.ofSeconds(10));
