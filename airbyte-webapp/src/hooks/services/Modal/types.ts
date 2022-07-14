@@ -1,7 +1,10 @@
 import React from "react";
 
+import { ModalProps } from "components/Modal/Modal";
+
 export interface ModalOptions<T> {
-  title: React.ReactNode;
+  title: ModalProps["title"];
+  size?: ModalProps["size"];
   content: React.ComponentType<ModalContentProps<T>>;
 }
 

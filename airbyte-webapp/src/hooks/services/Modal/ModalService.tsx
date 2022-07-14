@@ -40,7 +40,11 @@ export const ModalServiceProvider: React.FC = ({ children }) => {
     <ModalServiceContext.Provider value={service}>
       {children}
       {modalOptions && (
-        <Modal title={modalOptions.title} onClose={() => resultSubjectRef.current?.next({ type: "canceled" })}>
+        <Modal
+          title={modalOptions.title}
+          size={modalOptions.size}
+          onClose={() => resultSubjectRef.current?.next({ type: "canceled" })}
+        >
           <modalOptions.content
             onCancel={() => resultSubjectRef.current?.next({ type: "canceled" })}
             onClose={(reason) => resultSubjectRef.current?.next({ type: "closed", reason })}

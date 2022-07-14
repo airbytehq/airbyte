@@ -149,6 +149,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       const stateType = await connectionService.getStateType(connectionId);
       const result = await openModal<boolean>({
         title: formatMessage({ id: "connection.resetModalTitle" }),
+        size: "md",
         content: (props) => <ResetWarningModal {...props} stateType={stateType} />,
       });
       if (result.type === "canceled") {
