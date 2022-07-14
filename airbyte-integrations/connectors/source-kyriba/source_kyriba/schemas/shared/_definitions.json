@@ -2,9 +2,7 @@
   "definitions": {
     "AggregatedGroupDto": {
       "type": "object",
-      "required": [
-        "aggregation"
-      ],
+      "required": ["aggregation"],
       "properties": {
         "entity": {
           "description": "Entity",
@@ -28,9 +26,7 @@
     },
     "AggregationDto": {
       "type": "object",
-      "required": [
-        "amount"
-      ],
+      "required": ["amount"],
       "properties": {
         "amount": {
           "type": "number",
@@ -47,22 +43,14 @@
     },
     "AggregationLevelDto": {
       "type": "object",
-      "required": [
-        "groupingCriterion",
-        "groups",
-        "level"
-      ],
+      "required": ["groupingCriterion", "groups", "level"],
       "properties": {
         "level": {
           "type": "integer",
           "format": "int32",
           "example": 1,
           "description": "The level of the aggregation",
-          "enum": [
-            1,
-            2,
-            3
-          ]
+          "enum": [1, 2, 3]
         },
         "groupingCriterion": {
           "type": "string",
@@ -245,9 +233,7 @@
     },
     "CashFlowAggregationFilteringDto": {
       "type": "object",
-      "required": [
-        "entityFilters"
-      ],
+      "required": ["entityFilters"],
       "properties": {
         "entityFilters": {
           "type": "array",
@@ -259,11 +245,7 @@
         "accountType": {
           "type": "string",
           "description": "The account type selected to filter cash flows",
-          "enum": [
-            "ALL",
-            "BANK",
-            "INTERCO"
-          ]
+          "enum": ["ALL", "BANK", "INTERCO"]
         },
         "period": {
           "description": "The period used to filter cash flows",
@@ -320,31 +302,17 @@
         "status": {
           "type": "string",
           "description": "Status of a cash flow",
-          "enum": [
-            "ESTIMATED",
-            "CONFIRMED",
-            "ACTUAL",
-            "INTRADAY"
-          ]
+          "enum": ["ESTIMATED", "CONFIRMED", "ACTUAL", "INTRADAY"]
         },
         "actualMode": {
           "type": "string",
           "description": "Select the actual mode to filter the cash flows",
-          "enum": [
-            "ALL",
-            "CASHREC",
-            "MANUAL"
-          ]
+          "enum": ["ALL", "CASHREC", "MANUAL"]
         },
         "glStatus": {
           "type": "string",
           "description": "GL status",
-          "enum": [
-            "EMPTY",
-            "NOT_BALANCED",
-            "NOT_SENT_TO_GL",
-            "SENT_TO_GL"
-          ]
+          "enum": ["EMPTY", "NOT_BALANCED", "NOT_SENT_TO_GL", "SENT_TO_GL"]
         }
       },
       "title": "CashFlowAggregationFilteringDto"
@@ -417,10 +385,7 @@
     },
     "CashFlowAggregationRequestDto": {
       "type": "object",
-      "required": [
-        "currencyConversion",
-        "filtering"
-      ],
+      "required": ["currencyConversion", "filtering"],
       "properties": {
         "filtering": {
           "description": "Filtering",
@@ -439,10 +404,7 @@
     },
     "CashFlowAggregationResponseDto": {
       "type": "object",
-      "required": [
-        "accountAmountAggregationTotal",
-        "currency"
-      ],
+      "required": ["accountAmountAggregationTotal", "currency"],
       "properties": {
         "accountAmountAggregationTotal": {
           "description": "Calculated aggregation total of the cash flows",
@@ -491,13 +453,7 @@
     },
     "CashFlowModel": {
       "type": "object",
-      "required": [
-        "account",
-        "date",
-        "flowAmount",
-        "flowCode",
-        "status"
-      ],
+      "required": ["account", "date", "flowAmount", "flowCode", "status"],
       "properties": {
         "account": {
           "description": "Bank account",
@@ -644,13 +600,7 @@
     },
     "CashFlowSearchModel": {
       "type": "object",
-      "required": [
-        "account",
-        "date",
-        "flowAmount",
-        "flowCode",
-        "status"
-      ],
+      "required": ["account", "date", "flowAmount", "flowCode", "status"],
       "properties": {
         "account": {
           "description": "Bank account",
@@ -725,13 +675,7 @@
     },
     "CashFlowUpdateModel": {
       "type": "object",
-      "required": [
-        "account",
-        "date",
-        "flowAmount",
-        "flowCode",
-        "status"
-      ],
+      "required": ["account", "date", "flowAmount", "flowCode", "status"],
       "properties": {
         "account": {
           "description": "Bank account",
@@ -783,10 +727,7 @@
     },
     "CounterpartyFlowModel": {
       "type": "object",
-      "required": [
-        "company",
-        "consolidationCode"
-      ],
+      "required": ["company", "consolidationCode"],
       "properties": {
         "company": {
           "description": "Company",
@@ -801,10 +742,7 @@
     },
     "CurrencyConversionDto": {
       "type": "object",
-      "required": [
-        "currency",
-        "currencyRate"
-      ],
+      "required": ["currency", "currencyRate"],
       "properties": {
         "currency": {
           "description": "Currency used for conversion",
@@ -819,17 +757,12 @@
     },
     "CurrencyConversionRateDto": {
       "type": "object",
-      "required": [
-        "mode"
-      ],
+      "required": ["mode"],
       "properties": {
         "mode": {
           "type": "string",
           "description": "Currency rate mode to use for currency conversion",
-          "enum": [
-            "FIXING",
-            "HISTORICAL"
-          ]
+          "enum": ["FIXING", "HISTORICAL"]
         },
         "fixingDate": {
           "type": "string",
@@ -840,11 +773,7 @@
         "historicalDateType": {
           "type": "string",
           "description": "The dates of that type of the cash flows will be used as the currency rate datesif selected mode is HISTORICAL.",
-          "enum": [
-            "TRANSACTION",
-            "VALUE",
-            "ACCOUNTING"
-          ]
+          "enum": ["TRANSACTION", "VALUE", "ACCOUNTING"]
         },
         "type": {
           "description": "Currency rate type",
@@ -855,10 +784,7 @@
     },
     "EntityFilterDto": {
       "type": "object",
-      "required": [
-        "entities",
-        "entityType"
-      ],
+      "required": ["entities", "entityType"],
       "properties": {
         "entityType": {
           "type": "string",
@@ -892,13 +818,7 @@
           "type": "string",
           "example": "TRANSACTION",
           "description": "The date type based on which the period is defined",
-          "enum": [
-            "TRANSACTION",
-            "VALUE",
-            "ACCOUNTING",
-            "UPDATE",
-            "CREATION"
-          ]
+          "enum": ["TRANSACTION", "VALUE", "ACCOUNTING", "UPDATE", "CREATION"]
         },
         "startDate": {
           "type": "string",
@@ -951,9 +871,7 @@
     },
     "ResponseUUIDModel": {
       "type": "object",
-      "required": [
-        "uuid"
-      ],
+      "required": ["uuid"],
       "properties": {
         "uuid": {
           "type": "string",
@@ -966,10 +884,7 @@
     },
     "RestApiError": {
       "type": "object",
-      "required": [
-        "code",
-        "message"
-      ],
+      "required": ["code", "message"],
       "properties": {
         "code": {
           "type": "string",
