@@ -406,7 +406,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.72
+  dockerImageTag: 0.1.73
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -470,7 +470,7 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.io/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
@@ -1024,7 +1024,7 @@
 - name: Webflow
   sourceDefinitionId: ef580275-d9a9-48bb-af5e-db0f5855be04
   dockerRepository: airbyte/source-webflow
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.io/integrations/sources/webflow
   icon: webflow.svg
   sourceType: api
