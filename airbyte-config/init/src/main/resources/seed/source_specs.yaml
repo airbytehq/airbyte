@@ -1070,7 +1070,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.11"
+- dockerImage: "airbyte/source-chargebee:0.1.12"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -2261,7 +2261,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.11"
+- dockerImage: "airbyte/source-file:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2320,6 +2320,11 @@
               storage:
                 type: "string"
                 const: "HTTPS"
+              user_agent:
+                type: "boolean"
+                title: "User-Agent"
+                default: false
+                description: "Add User-Agent to request"
           - title: "GCS: Google Cloud Storage"
             required:
             - "storage"
@@ -2531,7 +2536,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-freshsales:0.1.1"
+- dockerImage: "airbyte/source-freshsales:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/freshsales"
     connectionSpecification:
@@ -2779,7 +2784,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.42"
+- dockerImage: "airbyte/source-google-ads:0.1.43"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2885,7 +2890,7 @@
                 title: "Custom Query"
                 description: "A custom defined GAQL query for building the report.\
                   \ Should not contain segments.date expression because it is used\
-                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v9/overview_query_builder\"\
+                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v11/overview_query_builder\"\
                   >query builder</a> for more information."
                 examples:
                 - "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type\
@@ -3688,7 +3693,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.72"
+- dockerImage: "airbyte/source-hubspot:0.1.73"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -4359,7 +4364,7 @@
     supported_destination_sync_modes: []
     supported_source_sync_modes:
     - "append"
-- dockerImage: "airbyte/source-klaviyo:0.1.4"
+- dockerImage: "airbyte/source-klaviyo:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/klaviyo"
@@ -4389,6 +4394,54 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
+- dockerImage: "airbyte/source-kyriba:0.1.0"
+  spec:
+    documentationUrl: "https://docsurl.com"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Kyriba Spec"
+      type: "object"
+      required:
+      - "domain"
+      - "username"
+      - "password"
+      - "start_date"
+      additionalProperties: false
+      properties:
+        domain:
+          type: "string"
+          description: "Kyriba domain"
+          title: "Domain"
+          examples:
+          - "demo.kyriba.com"
+          pattern: "^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
+        username:
+          type: "string"
+          description: "Username to be used in basic auth"
+          title: "Username"
+        password:
+          type: "string"
+          description: "Password to be used in basic auth"
+          title: "Password"
+          airbyte_secret: true
+        start_date:
+          type: "string"
+          description: "The date the sync should start from."
+          title: "Start Date"
+          examples:
+          - "2021-01-10"
+          pattern: "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$"
+        end_date:
+          type: "string"
+          description: "The date the sync should end. If let empty the sync will run\
+            \ to the current date."
+          title: "End Date"
+          examples:
+          - "2022-03-01"
+          pattern: "^(?:(\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01]))|)$"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-lemlist:0.1.0"
   spec:
     documentationUrl: "https://docsurl.com"
@@ -5907,7 +5960,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-okta:0.1.5"
+- dockerImage: "airbyte/source-okta:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
@@ -7492,7 +7545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.15"
+- dockerImage: "airbyte/source-s3:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -9574,7 +9627,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-webflow:0.1.1"
+- dockerImage: "airbyte/source-webflow:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/webflow"
     connectionSpecification:
