@@ -487,6 +487,14 @@ public class AirbyteAcceptanceTestHarness {
         getDestinationDbConfig());
   }
 
+  public DestinationRead createPostgresStrictEnforceDestination() throws ApiException {
+    return createPostgresDestination(
+        "AccTestDestination-" + UUID.randomUUID(),
+        defaultWorkspaceId,
+        getPostgresDestinationDefinitionId(),
+        getDestinationDbStrictEnforceConfig());
+  }
+
   public DestinationRead createPostgresDestination(final String name,
                                                    final UUID workspaceId,
                                                    final UUID destinationDefId,
@@ -583,8 +591,8 @@ public class AirbyteAcceptanceTestHarness {
 
   private Map<Object, Object> localConfig(final PostgreSQLContainer psql,
                                           final boolean hiddenPassword,
-                                          final boolean strictEnforce,
-                                          final boolean withSchema)
+                                          final boolean withSchema,
+                                          final boolean strictEnforce)
       throws UnknownHostException {
     final Map<Object, Object> dbConfig = new HashMap<>();
     // don't use psql.getHost() directly since the ip we need differs depending on environment
