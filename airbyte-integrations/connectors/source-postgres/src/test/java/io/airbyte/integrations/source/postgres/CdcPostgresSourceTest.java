@@ -9,6 +9,7 @@ import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,18 +36,20 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
@@ -57,11 +60,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.assertj.core.api.Assertions;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -394,6 +397,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   // TODO (Subodh): This should be a generic test
   @Test
+  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global state for this test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
@@ -405,17 +409,15 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(1, stateAfterFirstBatch.size());
 
     final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion = stateAfterFirstBatch.get(0);
-    assertEquals(AirbyteStateType.LEGACY, stateMessageEmittedAfterFirstSyncCompletion.getType());
-    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getData());
-    /*assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
-    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());*/
-    /*final Set<StreamDescriptor> streamsInStateAfterFirstSyncCompletion = stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getStreamStates()
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterFirstSyncCompletion.getType());
+    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState());
+    final Set<StreamDescriptor> streamsInStateAfterFirstSyncCompletion = stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
         .collect(Collectors.toSet());
     assertEquals(1, streamsInStateAfterFirstSyncCompletion.size());
     assertTrue(streamsInStateAfterFirstSyncCompletion.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
-    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getData());*/
+    assertNotNull(stateMessageEmittedAfterFirstSyncCompletion.getData());
 
     assertEquals((MODEL_RECORDS.size()), recordsFromFirstBatch.size());
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordsFromFirstBatch);
@@ -459,13 +461,11 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(secondBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-    assertEquals(1, stateAfterSecondBatch.size());
+    assertEquals(2, stateAfterSecondBatch.size());
 
     final AirbyteStateMessage stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateAfterSecondBatch.get(0);
-    // TODO: bmoric restore
-    /*assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSnapshotCompletionInSecondSync
-    .getGlobal().getSharedState());
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
+    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSnapshotState = stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
@@ -473,14 +473,11 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(2, streamsInSnapshotState.size());
     assertTrue(
         streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(MODELS_SCHEMA + "_random")));
-    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));*/
-    assertEquals(AirbyteStateMessage.AirbyteStateType.LEGACY, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
+    assertTrue(streamsInSnapshotState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSnapshotCompletionInSecondSync.getData());
-    Assertions.assertThat(stateMessageEmittedAfterSnapshotCompletionInSecondSync.getData()).containsExactlyInAnyOrder(stateMessageEmittedAfterFirstSyncCompletion.getData());
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateAfterSecondBatch.get(1);
-    // TODO: bmoric restore
-    /*assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
     assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
         .stream()
@@ -490,10 +487,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertTrue(
         streamsInSyncCompletionState.contains(
             new StreamDescriptor().withName(MODELS_STREAM_NAME + "_random").withNamespace(MODELS_SCHEMA + "_random")));
-    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));*/
-    assertEquals(AirbyteStateMessage.AirbyteStateType.LEGACY, stateMessageEmittedAfterSecondSyncCompletion.getType());
+    assertTrue(streamsInSyncCompletionState.contains(new StreamDescriptor().withName(MODELS_STREAM_NAME).withNamespace(MODELS_SCHEMA)));
     assertNotNull(stateMessageEmittedAfterSecondSyncCompletion.getData());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getData(), stateMessageEmittedAfterSecondSyncCompletion.getData());
 
     final Map<String, Set<AirbyteRecordMessage>> recordsStreamWise = extractRecordMessagesStreamWise(dataFromSecondBatch);
     assertTrue(recordsStreamWise.containsKey(MODELS_STREAM_NAME));
