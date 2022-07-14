@@ -5,7 +5,7 @@
     "title": "Okta Spec",
     "type": "object",
     "required": [],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "domain": {
         "type": "string",
@@ -14,18 +14,13 @@
         "airbyte_secret": false
       },
       "credentials": {
-        "title": "Authorization Method",
+        "title": "Authorization Method *",
         "type": "object",
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": [
-              "auth_type",
-              "client_id",
-              "client_secret",
-              "access_token"
-            ],
+            "required": ["auth_type", "access_token"],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -91,7 +86,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": true,
+        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string"
