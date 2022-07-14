@@ -1,3 +1,4 @@
+{{- if .Values.temporal.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -114,3 +115,4 @@ spec:
       {{- if .Values.temporal.extraVolumes }}
 {{ toYaml .Values.temporal.extraVolumes | nindent 6 }}
       {{- end }}
+{{- end }}
