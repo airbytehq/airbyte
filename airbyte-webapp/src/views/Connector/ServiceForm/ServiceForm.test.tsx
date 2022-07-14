@@ -22,6 +22,34 @@ jest.mock(
 
 jest.setTimeout(10000);
 
+const useAddPriceListItem = (container: HTMLElement) => {
+  const priceList = getByTestId(container, "connectionConfiguration.priceList");
+  let index = 0;
+
+  return async (name: string, price: string) => {
+    const addButton = getByTestId(priceList, "addItemButton");
+    await waitFor(() => userEvent.click(addButton));
+
+    const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
+    const getPriceListInput = (index: number, key: string) =>
+      arrayOfObjectsEditModal.querySelector(
+        `input[name='__hidden_connectionConfiguration.priceList[${index}].${key}']`
+      );
+
+    // Type items into input
+    const nameInput = getPriceListInput(index, "name");
+    userEvent.type(nameInput!, name);
+
+    const priceInput = getPriceListInput(index, "price");
+    userEvent.type(priceInput!, price);
+
+    const doneButton = getByTestId(arrayOfObjectsEditModal, "done-button");
+    await waitFor(() => userEvent.click(doneButton));
+
+    index++;
+  };
+};
+
 const schema: AirbyteJSONSchema = {
   type: "object",
   properties: {
@@ -217,8 +245,7 @@ describe("Service Form", () => {
             }
             availableServices={[]}
           />
-        </ConnectorDocumentationWrapper>,
-        { container: document.body }
+        </ConnectorDocumentationWrapper>
       );
       container = renderResult.container;
     });
@@ -232,8 +259,6 @@ describe("Service Form", () => {
       const apiKey = container.querySelector("input[name='connectionConfiguration.credentials.api_key']");
       const emails = container.querySelector("input[name='connectionConfiguration.emails']");
       const workTime = container.querySelector("div[name='connectionConfiguration.workTime']");
-      const priceList = getByTestId(container, "connectionConfiguration.priceList");
-      const addButton = getByTestId(priceList, "addItemButton");
 
       userEvent.type(name!, "{selectall}{del}name");
       userEvent.type(host!, "test-host");
@@ -244,13 +269,8 @@ describe("Service Form", () => {
       userEvent.type(emails!, "test@test.com{enter}");
       userEvent.type(workTime!.querySelector("input")!, "day{enter}");
 
-      await waitFor(() => userEvent.click(addButton));
-      const listName = container.querySelector("input[name='connectionConfiguration.priceList.0.name']");
-      const listPrice = container.querySelector("input[name='connectionConfiguration.priceList.0.price']");
-      const done = getByTestId(container, "done-button");
-      userEvent.type(listName!, "test-price-list-name");
-      userEvent.type(listPrice!, "1");
-      await waitFor(() => userEvent.click(done));
+      const addPriceListItem = useAddPriceListItem(container);
+      await addPriceListItem("test-price-list-name", "1");
 
       const submit = container.querySelector("button[type='submit']");
       await waitFor(() => userEvent.click(submit!));
@@ -329,29 +349,7 @@ describe("Service Form", () => {
 
     test("should fill right values in array of objects field", async () => {
       const priceList = container.querySelector("div[data-testid='connectionConfiguration.priceList']");
-
-      let index = 0;
-      const addPriceListItem = async (name: string, price: string) => {
-        const getPriceListInput = (index: number, key: string) =>
-          container.querySelector(`input[name='__hidden_connectionConfiguration.priceList[${index}].${key}']`);
-
-        const addButton = priceList?.querySelector("button[data-testid='addItemButton']");
-        await waitFor(() => userEvent.click(addButton!));
-
-        // Type items into input
-        const nameInput = getPriceListInput(index, "name");
-        userEvent.type(nameInput!, name);
-
-        const priceInput = getPriceListInput(index, "price");
-        userEvent.type(priceInput!, price);
-
-        const arrayOfObjectsEditModal = container.querySelector("div[data-testid='arrayOfObjects-editModal']");
-        const doneButton = arrayOfObjectsEditModal!.querySelector("button[data-testid='done-button']");
-        await waitFor(() => userEvent.click(doneButton!));
-
-        index++;
-      };
-
+      const addPriceListItem = useAddPriceListItem(container);
       await addPriceListItem("test-1", "1");
       await addPriceListItem("test-2", "2");
 
