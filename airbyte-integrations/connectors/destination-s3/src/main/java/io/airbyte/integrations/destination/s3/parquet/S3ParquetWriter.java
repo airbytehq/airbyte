@@ -10,6 +10,7 @@ import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroRecordFactory;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -52,7 +53,11 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
       throws URISyntaxException, IOException {
     super(config, s3Client, configuredStream);
 
-    outputFilename = determineOutputFilename(config, S3Format.PARQUET, uploadTimestamp);
+    outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .fileExtension(S3Format.PARQUET.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .build());
 
     objectKey = String.join("/", outputPrefix, outputFilename);
 

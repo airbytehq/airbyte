@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
@@ -47,7 +48,11 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = determineOutputFilename(config, S3Format.AVRO, uploadTimestamp);
+    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .fileExtension(S3Format.AVRO.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .build());
 
     objectKey = String.join("/", outputPrefix, outputFilename);
 

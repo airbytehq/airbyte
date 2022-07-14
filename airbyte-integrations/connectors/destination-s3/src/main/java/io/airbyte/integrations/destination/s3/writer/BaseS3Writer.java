@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3.writer;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
@@ -135,66 +137,31 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
     // Do nothing by default
   }
 
-  protected String determineOutputFilename(final S3DestinationConfig config, final S3Format s3Format, final Timestamp uploadTimestamp)
+  public static String determineOutputFilename(final S3FilenameTemplateParameterObject parameterObject)
       throws IOException {
-    final String outputFilename;
-    if (StringUtils.isNotBlank(config.getFileNamePattern())) {
-      outputFilename = getOutputFilename(S3FilenameTemplateParameterObject
-          .builder()
-          .fileExtension(s3Format.getFileExtension())
-          .fileNamePattern(config.getFileNamePattern())
-          .build());
-    } else {
-      outputFilename = getOutputFilename(uploadTimestamp, s3Format);
-    }
-    return outputFilename;
-  }
-
-  protected String determineOutputFilename(final S3DestinationConfig config,
-                                           final S3Format s3Format,
-                                           final String suffix,
-                                           final Timestamp uploadTimestamp)
-      throws IOException {
-    final String outputFilename;
-    if (StringUtils.isNotBlank(config.getFileNamePattern())) {
-      outputFilename = getOutputFilename(S3FilenameTemplateParameterObject
-          .builder()
-          .fileExtension(s3Format.getFileExtension())
-          .fileNamePattern(config.getFileNamePattern())
-          .build());
-    } else {
-      outputFilename = getOutputFilename(uploadTimestamp, suffix, s3Format);
-    }
-    return outputFilename;
+    return isNotBlank(parameterObject.getFileNamePattern()) ?
+        getOutputFilename(parameterObject) : getDefaultOutputFilename(parameterObject);
   }
 
   /**
-   * @return A string in the format "{upload-date}_{upload-millis}_0.{format-extension}". For example,
-   *         "2021_12_09_1639077474000_0.csv"
-   */
-  public static String getOutputFilename(final Timestamp timestamp, final S3Format format) {
-    return getOutputFilename(timestamp, DEFAULT_SUFFIX, format);
-  }
-
-  /**
-   * @param customSuffix A string to append to the filename. Commonly used to distinguish multiple
+   * @param parameterObject A string to append to the filename. Commonly used to distinguish multiple
    *        part files within a single upload. You probably want to use strings with a leading
    *        underscore (i.e. prefer "_0" to "0").
    * @return A string in the format "{upload-date}_{upload-millis}_{suffix}.{format-extension}". For
    *         example, "2021_12_09_1639077474000_customSuffix.csv"
    */
-  public static String getOutputFilename(final Timestamp timestamp, final String customSuffix, final S3Format format) {
+  private static String getDefaultOutputFilename(final S3FilenameTemplateParameterObject parameterObject) {
     final DateFormat formatter = new SimpleDateFormat(S3DestinationConstants.YYYY_MM_DD_FORMAT_STRING);
     formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     return String.format(
         "%s_%d%s.%s",
-        formatter.format(timestamp),
-        timestamp.getTime(),
-        customSuffix,
-        format.getFileExtension());
+        formatter.format(parameterObject.getTimestamp()),
+        parameterObject.getTimestamp().getTime(),
+        null == parameterObject.getCustomSuffix() ? DEFAULT_SUFFIX : parameterObject.getCustomSuffix(),
+        parameterObject.getS3Format().getFileExtension());
   }
 
-  public static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
+  private static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
     return s3FilenameTemplateManager.adaptFilenameAccordingSpecificationPatternWithDefaultConfig(parameterObject);
   }
 

@@ -15,6 +15,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
@@ -47,7 +48,11 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = determineOutputFilename(config, S3Format.JSONL, uploadTimestamp);
+    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .fileExtension(S3Format.JSONL.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .build());
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
