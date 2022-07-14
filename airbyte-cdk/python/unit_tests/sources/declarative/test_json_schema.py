@@ -23,13 +23,22 @@ class ChildInt(Interface):
     int_field: int
 
 
+InterfaceTypeHint = Union[tuple(Interface.__subclasses__())]
+
+
 @dataclass
 class SomeOtherClass(JsonSchemaMixin):
     f: Union[ChildString, ChildInt]
     g: Interface
+    h: InterfaceTypeHint
 
 
 def test_json_schema():
     json_schema = SomeOtherClass.json_schema()
     pprint.pprint(json_schema)
+    # print(json_schema)
+    # print()
+    # print()
+    # json_schema = PydanticSomeOtherClass.schema_json()
+    # pprint.pprint(json_schema)
     assert False
