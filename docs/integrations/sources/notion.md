@@ -5,11 +5,11 @@ Notion is a productivity and project management software. It was designed to hel
 ## Prerequisites
 * Created Notion account with integration on [my integrations](https://www.notion.so/my-integrations) page. 
 
-## Prerequisites (Token authentication)
+## Airbyte OSS
 * Start Date
 * Token (received when integration was created). 
 
-## Prerequisites (OAuth2.0 authentication)
+## Airbyte Cloud
 * Start Date
 * Client ID (received when integration was created).
 * Client Secret (received when integration was created).
