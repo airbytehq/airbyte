@@ -18,7 +18,7 @@ from .streams import Blocks, Databases, Pages, Users
 class SourceNotion(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            authenticator = TokenAuthenticator(config["access_token"])
+            authenticator = TokenAuthenticator(self.get_access_token(config["credentials"]))
             stream = Users(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -28,11 +28,18 @@ class SourceNotion(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
+        authenticator = TokenAuthenticator(self.get_access_token(config["credentials"]))
 
-        authenticator = TokenAuthenticator(config["access_token"])
         args = {"authenticator": authenticator, "config": config}
 
         pages = Pages(**args)
         blocks = Blocks(parent=pages, **args)
 
         return [Users(**args), Databases(**args), pages, blocks]
+
+    @staticmethod
+    def get_access_token(credentials):
+        if credentials.get("auth_type") == "OAuth":
+            return credentials.get("access_token")
+        else:
+            return credentials.get("access_token_")
