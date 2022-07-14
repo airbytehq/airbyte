@@ -2369,7 +2369,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-local-json:0.2.10"
+- dockerImage: "airbyte/destination-local-json:0.2.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/local-json"
     connectionSpecification:

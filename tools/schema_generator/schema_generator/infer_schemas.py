@@ -36,6 +36,7 @@ class NoRequiredObj(Object):
     This class has Object behaviour, but it does not generate "required[]" fields
     every time it parses object. So we dont add unnecessary extra field.
     """
+
     def to_schema(self):
         schema = super(Object, self).to_schema()
         schema["type"] = "object"
@@ -50,7 +51,7 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
     EXTRA_STRATEGIES = (NoRequiredObj,)
 
 
-def main():
+def infer_schemas():
     default_folder = os.path.join(os.getcwd(), "schemas")
     if not os.path.exists(default_folder):
         os.mkdir(default_folder)
@@ -71,7 +72,3 @@ def main():
         output_file_name = os.path.join(default_folder, stream_name + ".json")
         with open(output_file_name, "w") as outfile:
             json.dump(schema, outfile, indent=2, sort_keys=True)
-
-
-if __name__ == "__main__":
-    main()
