@@ -19,10 +19,11 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -86,9 +87,11 @@ public class DefaultDiscoverCatalogWorkerTest {
   @Test
   public void testDiscoverSchema() throws Exception {
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
-    final StandardDiscoverCatalogOutput output = worker.run(INPUT, jobRoot);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
-    assertEquals(CATALOG, output.getCatalog());
+    assertNull(output.getFailureReason());
+    assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
+    assertEquals(CATALOG, output.getDiscoverCatalog());
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -116,9 +119,9 @@ public class DefaultDiscoverCatalogWorkerTest {
     when(mProcess.exitValue()).thenReturn(1);
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, mIntegrationLauncher, mStreamFactory);
-    final StandardDiscoverCatalogOutput output = worker.run(INPUT, jobRoot);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
-    assertNull(output.getCatalog());
+    assertNull(output.getDiscoverCatalog());
     assertNotNull(output.getFailureReason());
 
     final FailureReason failureReason = output.getFailureReason();

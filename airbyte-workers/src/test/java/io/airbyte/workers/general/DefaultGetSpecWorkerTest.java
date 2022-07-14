@@ -15,6 +15,8 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Charsets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -65,8 +67,9 @@ class DefaultGetSpecWorkerTest {
     when(process.waitFor(anyLong(), any())).thenReturn(true);
     when(process.exitValue()).thenReturn(0);
 
-    final ConnectorSpecification actualOutput = worker.run(config, jobRoot);
-    final ConnectorSpecification expectedOutput = Jsons.deserialize(expectedSpecString, ConnectorSpecification.class);
+    final ConnectorJobOutput actualOutput = worker.run(config, jobRoot);
+    final ConnectorJobOutput expectedOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC)
+        .withSpec(Jsons.deserialize(expectedSpecString, ConnectorSpecification.class));
 
     assertThat(actualOutput).isEqualTo(expectedOutput);
   }

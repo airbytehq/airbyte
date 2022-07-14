@@ -6,6 +6,8 @@ package io.airbyte.workers.temporal.scheduling;
 
 import static org.mockito.Mockito.atLeastOnce;
 
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
@@ -152,7 +154,8 @@ public class ConnectionManagerWorkflowTest {
                 new StandardSyncInput()));
 
     Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
-        .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("check worked"));
+        .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+            .withCheckConnection(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("check worked")));
 
     Mockito.when(mAutoDisableConnectionActivity.autoDisableFailingConnection(Mockito.any()))
         .thenReturn(new AutoDisableConnectionOutput(false));
@@ -918,7 +921,8 @@ public class ConnectionManagerWorkflowTest {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
           .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
       Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
-          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope"));
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withCheckConnection(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")));
 
       testEnv.start();
 
@@ -956,8 +960,13 @@ public class ConnectionManagerWorkflowTest {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
           .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
       Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
-          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("all good")) // First call (source) succeeds
-          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")); // Second call (destination) fails
+          // First call (source) succeeds
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withCheckConnection(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("all good")))
+
+          // Second call (destination) fails
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withCheckConnection(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")));
 
       testEnv.start();
 
@@ -996,8 +1005,9 @@ public class ConnectionManagerWorkflowTest {
           .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
       mockResetJobInput();
       Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
-          .thenReturn(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")); // first call, but should fail destination
-                                                                                                          // because source check is skipped
+          // first call, but should fail destination because source check is skipped
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withCheckConnection(new StandardCheckConnectionOutput().withStatus(Status.FAILED).withMessage("nope")));
 
       testEnv.start();
 
