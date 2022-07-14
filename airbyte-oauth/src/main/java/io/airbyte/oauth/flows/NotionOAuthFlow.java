@@ -18,7 +18,6 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -72,8 +71,8 @@ public class NotionOAuthFlow extends BaseOAuth2Flow {
     return ImmutableMap.<String, String>builder()
         // required
         .put("grant_type", "authorization_code")
-        .put("redirect_uri", redirectUrl)
         .put("code", authCode)
+        .put("redirect_uri", redirectUrl)
         .build();
   }
 
@@ -126,9 +125,9 @@ public class NotionOAuthFlow extends BaseOAuth2Flow {
     return result;
   }
 
-  @Override
-  public List<String> getDefaultOAuthOutputPath() {
-    return List.of();
-  }
+  // @Override
+  // public List<String> getDefaultOAuthOutputPath() {
+  // return List.of();
+  // }
 
 }

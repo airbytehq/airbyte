@@ -15,10 +15,25 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from .streams import Blocks, Databases, Pages, Users
 
 
+class NotionAuthenticator:
+    
+    def __init__(self, config: Mapping[str, Any]):
+        self.config = config
+    
+    def get_access_token(self):
+        credentials = self.config.get("credentials")
+        auth_type = credentials.get("auth_type")
+        if auth_type == "OAuth2.0":
+            return TokenAuthenticator(credentials.get("access_token"))
+        else:
+            return TokenAuthenticator(credentials.get("token"))
+              
+
 class SourceNotion(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            authenticator = TokenAuthenticator(self.get_access_token(config["credentials"]))
+            authenticator = NotionAuthenticator(config).get_access_token()
             stream = Users(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -28,18 +43,11 @@ class SourceNotion(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
-        authenticator = TokenAuthenticator(self.get_access_token(config["credentials"]))
-
+        authenticator = NotionAuthenticator(config).get_access_token()
         args = {"authenticator": authenticator, "config": config}
-
         pages = Pages(**args)
         blocks = Blocks(parent=pages, **args)
-
+        
         return [Users(**args), Databases(**args), pages, blocks]
 
-    @staticmethod
-    def get_access_token(credentials):
-        if credentials.get("auth_type") == "OAuth":
-            return credentials.get("access_token")
-        else:
-            return credentials.get("access_token_")
+    

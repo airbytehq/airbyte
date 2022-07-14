@@ -7,7 +7,7 @@ tests:
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
-    - config_path: "secrets/oauth_config.json"
+    - config_path: "secrets/config_oauth.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
