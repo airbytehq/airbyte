@@ -22,11 +22,18 @@ class NotionAuthenticator:
     
     def get_access_token(self):
         credentials = self.config.get("credentials")
-        auth_type = credentials.get("auth_type")
-        if auth_type == "OAuth2.0":
-            return TokenAuthenticator(credentials.get("access_token"))
-        else:
-            return TokenAuthenticator(credentials.get("token"))
+        if credentials:
+            auth_type = credentials.get("auth_type")
+            if auth_type == "OAuth2.0":
+                return TokenAuthenticator(credentials.get("access_token"))
+            elif auth_type == "token":
+                return TokenAuthenticator(credentials.get("token"))
+            else:
+                raise NotImplementedError("This authentication method is not implemented.")
+        
+        # support the old config
+        if "access_token" in self.config:
+            return TokenAuthenticator(self.config.get("access_token"))
               
 
 class SourceNotion(AbstractSource):
