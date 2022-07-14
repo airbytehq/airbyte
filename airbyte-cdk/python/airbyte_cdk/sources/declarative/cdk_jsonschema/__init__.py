@@ -810,6 +810,100 @@ class JsonSchemaMixin:
         return definitions
 
     @classmethod
+    def get_json_schema(
+        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
+    ) -> JsonDict:
+        """Returns the JSON schema for the dataclass, along with the schema of any nested dataclasses
+        within the 'definitions' field.
+
+        Enable the embeddable flag to generate the schema in a format for embedding into other schemas
+        or documents supporting JSON schema such as Swagger specs.
+
+        If embedding the schema into a swagger api, specify 'swagger_version' to generate a spec compatible with that
+        version.
+        """
+        if "swagger_version" in kwargs and kwargs["swagger_version"] is not None:
+            schema_type = kwargs["swagger_version"]
+
+        schema_options = SchemaOptions(schema_type, validate_enums)
+        if schema_options.schema_type in (SchemaType.SWAGGER_V3, SchemaType.SWAGGER_V2) and not embeddable:
+            schema_options = SchemaOptions(SchemaType.DRAFT_06, validate_enums)
+            warnings.warn("'Swagger schema types unsupported when 'embeddable=False', using 'SchemaType.DRAFT_06'")
+
+        if cls is JsonSchemaMixin:
+            warnings.warn(
+                "Calling 'JsonSchemaMixin.json_schema' is deprecated. Use 'JsonSchemaMixin.all_json_schemas' instead", DeprecationWarning
+            )
+            return cls.all_json_schemas(schema_options.schema_type, validate_enums)
+
+        definitions: JsonDict = {}
+        if schema_options not in cls.__definitions:
+            cls.__definitions[schema_options] = definitions
+        else:
+            definitions = cls.__definitions[schema_options]
+
+        if schema_options in cls.__schema:
+            schema = cls.__schema[schema_options]
+        else:
+            properties = {}
+            required = []
+            for f in cls._get_fields(base_fields=False):
+                properties[f.mapped_name], is_required = cls._get_field_schema(f.field, schema_options)
+                if f.is_property:
+                    properties[f.mapped_name]["readOnly"] = True
+                cls._get_field_definitions(f.field.type, definitions, schema_options)
+                # Only add 'readOnly' properties to required for OpenAPI 3
+                if is_required and (not f.is_property or schema_options.schema_type == SchemaType.OPENAPI_3):
+                    required.append(f.mapped_name)
+            schema = {"type": "object", "required": required, "properties": properties}
+
+            if schema_options.schema_type == SchemaType.OPENAPI_3:
+                schema["x-module-name"] = cls.__module__
+
+            if not cls.__allow_additional_props:
+                schema["additionalProperties"] = False
+
+            if (
+                cls.__discriminator_name is not None
+                and schema_options.schema_type == SchemaType.OPENAPI_3
+                and not cls.__discriminator_inherited
+            ):
+                schema["discriminator"] = {"propertyName": cls.__discriminator_name}
+                properties[cls.__discriminator_name] = {"type": "string"}
+                required.append(cls.__discriminator_name)
+
+            # Needed for Draft 04 backwards compatibility
+            if len(required) == 0:
+                del schema["required"]
+
+            dataclass_bases = [klass for klass in cls.__bases__ if is_dataclass(klass) and issubclass(klass, JsonSchemaMixin)]
+            if len(dataclass_bases) > 0:
+                schema = {"allOf": [schema_reference(schema_options.schema_type, base.__name__) for base in dataclass_bases] + [schema]}
+                for base in dataclass_bases:
+                    definitions.update(
+                        base.get_json_schema(
+                            embeddable=True, schema_type=schema_options.schema_type, validate_enums=schema_options.validate_enums
+                        )
+                    )
+
+            if cls.__doc__:
+                schema["description"] = cls.__doc__
+
+            cls.__schema[schema_options] = schema
+
+        if embeddable:
+            return {**definitions, cls.__name__: schema}
+        else:
+            schema_uri = "http://json-schema.org/draft-06/schema#"
+            if schema_options.schema_type == SchemaType.DRAFT_04:
+                schema_uri = "http://json-shema.org/draft-04/schema#"
+
+            full_schema = {**schema, **{"$schema": schema_uri}}
+            if len(definitions) > 0:
+                full_schema["definitions"] = definitions
+            return full_schema
+
+    @classmethod
     def json_schema(
         cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
     ) -> JsonDict:
@@ -881,7 +975,7 @@ class JsonSchemaMixin:
                 schema = {"allOf": [schema_reference(schema_options.schema_type, base.__name__) for base in dataclass_bases] + [schema]}
                 for base in dataclass_bases:
                     definitions.update(
-                        base.json_schema(
+                        base.get_json_schema(
                             embeddable=True, schema_type=schema_options.schema_type, validate_enums=schema_options.validate_enums
                         )
                     )
