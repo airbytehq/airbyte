@@ -41,7 +41,6 @@ export const diffReducer = <T extends StreamTransform | FieldTransform>(diffArra
     }
     return sortedDiff;
   });
-  console.log(sortedDiff);
   return sortedDiff;
 };
 export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff, catalog, setDiffAcknowledged }) => {
