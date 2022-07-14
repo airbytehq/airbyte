@@ -4,7 +4,6 @@
 
 package io.airbyte.scheduler.client;
 
-import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.util.Objects;
@@ -23,13 +22,13 @@ public class SynchronousResponse<T> {
     return new SynchronousResponse<>(output, metadata);
   }
 
-  public static <T> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<ConnectorJobOutput> temporalResponse,
-                                                                final T output,
-                                                                final UUID id,
-                                                                final ConfigType configType,
-                                                                final UUID configId,
-                                                                final long createdAt,
-                                                                final long endedAt) {
+  public static <T, U> SynchronousResponse<T> fromTemporalResponse(final TemporalResponse<U> temporalResponse,
+                                                                   final T output,
+                                                                   final UUID id,
+                                                                   final ConfigType configType,
+                                                                   final UUID configId,
+                                                                   final long createdAt,
+                                                                   final long endedAt) {
 
     final SynchronousJobMetadata metadata = SynchronousJobMetadata.fromJobMetadata(
         temporalResponse.getMetadata(),

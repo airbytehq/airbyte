@@ -112,20 +112,22 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @VisibleForTesting
-  <T> SynchronousResponse<T> execute(final ConfigType configType,
-                                     @Nullable final UUID connectorDefinitionId,
-                                     final Function<UUID, TemporalResponse<ConnectorJobOutput>> executor,
-                                     final Function<ConnectorJobOutput, T> outputMapper,
-                                     final UUID workspaceId) {
+  <T, U> SynchronousResponse<T> execute(final ConfigType configType,
+                                        @Nullable final UUID connectorDefinitionId,
+                                        final Function<UUID, TemporalResponse<U>> executor,
+                                        final Function<U, T> outputMapper,
+                                        final UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = UUID.randomUUID();
     try {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
-      final TemporalResponse<ConnectorJobOutput> temporalResponse = executor.apply(jobId);
-      final ConnectorJobOutput jobOutput = temporalResponse.getOutput().orElse(null);
+      final TemporalResponse<U> temporalResponse = executor.apply(jobId);
+      final U jobOutput = temporalResponse.getOutput().orElse(null);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, jobOutput);
       final long endedAt = Instant.now().toEpochMilli();
+
+      // TODO(pedro): report ConnectorJobOutput's failureReason to the JobErrorReporter, akin to track()
 
       if (outputState == JobState.FAILED) {
         throw new RuntimeException("Job failed");
