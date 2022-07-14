@@ -184,12 +184,27 @@ Field | Description |
 
 
 ### Key pair authentication
-    You need to generate private key without encryption - openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+    In order to configure key pair authentication you will need a private/public key pair.
+    If you do not have the key pair yet, you can generate one using openssl command line tool
+    Use this command in order to generate an unencrypted private key file:
 
-    You can generate private key with encryption - openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8
+       `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt`
 
-    Based on private key we need to generate public key with - openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
-    Add generated public key to snowflake user - alter user <user_name> set rsa_public_key=<public_key_value>;
+    Alternatively, use this command to generate an encrypted private key file:
+
+      `openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v1 PBE-SHA1-RC4-128 -out rsa_key.p8`
+
+    Once you have your private key, you need to generate a matching public key.
+    You can do so with the following command:
+
+      `openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub`
+
+    Finally, you need to add the public key to your Snowflake user account.
+    You can do so with the following SQL command in Snowflake:
+
+      `alter user <user_name> set rsa_public_key=<public_key_value>;`
+
+    and replace <user_name> with your user name and <public_key_value> with your public key.
 
 
 
@@ -259,11 +274,12 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.32  | 2022-07-14 | [\#14388](https://github.com/airbytehq/airbyte/pull/14388) | Add support for key pair authentication  |
 | 0.4.31  | 2022-07-07 | [\#13729](https://github.com/airbytehq/airbyte/pull/13729) | Improve configuration field description  |
 | 0.4.30  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
 | 0.4.29  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
 | 0.4.28  | 2022-05-18 | [\#12952](https://github.com/airbytehq/airbyte/pull/12952) | Apply buffering strategy on GCS staging |
-| 0.4.27  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
+| 0.4.27  | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
 | 0.4.26  | 2022-05-12 | [\#12805](https://github.com/airbytehq/airbyte/pull/12805) | Updated to latest base-java to emit AirbyteTraceMessages on error.                                                                                  |
 | 0.4.25  | 2022-05-03 | [\#12452](https://github.com/airbytehq/airbyte/pull/12452) | Add support for encrypted staging on S3; fix the purge_staging_files option                                                                         |
 | 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support (Compatible with Airbyte Version 0.35.60+)                                                                                      |
