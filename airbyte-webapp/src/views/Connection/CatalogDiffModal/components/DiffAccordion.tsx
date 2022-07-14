@@ -24,7 +24,6 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
     return null;
   }
 
-  console.log(streamTransform.updateStream);
   const { newItems, removedItems, changedItems } = diffReducer(streamTransform.updateStream);
 
   // eslint-disable-next-line css-modules/no-undef-class
