@@ -25,7 +25,7 @@ class ExchangeRateApiStream(HttpStream, ABC):
     @property
     @abstractmethod
     def primary_key(self) -> Union[str, List[str]]:
-        return super().primary_key
+        pass
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -61,7 +61,6 @@ class IncrementalExchangeRateApiStream(ExchangeRateApiStream, IncrementalMixin, 
         self._cursor_value = None
 
     @property
-    @abstractmethod
     def cursor_field(self) -> Union[str, List[str]]:
         return super().cursor_field
 
