@@ -16,6 +16,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.mysql.MySqlSource.ReplicationMethod;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
@@ -103,7 +104,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put("password", container.getPassword())
         .put("replication_method", ReplicationMethod.CDC)
         .build());

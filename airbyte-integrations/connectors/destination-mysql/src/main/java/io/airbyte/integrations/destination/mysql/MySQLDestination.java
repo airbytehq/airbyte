@@ -34,7 +34,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
   public static final String PORT_KEY = "port";
-  public static final String USERNAME_KEY = "username";
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
 
@@ -113,7 +112,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(PASSWORD_KEY)) {

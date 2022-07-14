@@ -36,7 +36,7 @@ public class GKEPostgresConfig {
 
     dbConfig.put("port", PORT);
     dbConfig.put(JdbcUtils.DATABASE_KEY, DB);
-    dbConfig.put("username", USERNAME);
+    dbConfig.put(JdbcUtils.USERNAME_KEY, USERNAME);
 
     if (withSchema) {
       dbConfig.put("schema", "public");

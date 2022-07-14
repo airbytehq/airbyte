@@ -35,7 +35,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get("password").asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format("jdbc:oracle:thin:@//%s:%d/%s",
@@ -58,7 +58,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get("password").asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
@@ -86,7 +86,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get("password").asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),

@@ -68,7 +68,7 @@ class TestStreamingJdbcDatabase {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     final DataSource connectionPool = DataSourceFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
@@ -157,7 +157,7 @@ class TestStreamingJdbcDatabase {
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
-        .put("username", psqlDb.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .build());
   }

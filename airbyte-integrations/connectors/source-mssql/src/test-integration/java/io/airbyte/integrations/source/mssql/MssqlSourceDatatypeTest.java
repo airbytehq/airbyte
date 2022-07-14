@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
@@ -26,7 +27,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("username", container.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put("password", container.getPassword())
         .build());
 
@@ -46,7 +47,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",

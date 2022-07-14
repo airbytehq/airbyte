@@ -54,7 +54,7 @@ class JdbcSourceStressTest extends JdbcStressTest {
         .put("host", PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
         .put("database", schemaName)
-        .put("username", PSQL_DB.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
         .build());
 
@@ -103,7 +103,7 @@ class JdbcSourceStressTest extends JdbcStressTest {
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
+          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get("host").asText(),
               config.get("port").asInt(),

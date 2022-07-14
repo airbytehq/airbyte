@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
@@ -61,7 +62,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
-        .put("username", db.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put("password", db.getPassword())
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")

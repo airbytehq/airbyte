@@ -78,7 +78,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         config.get("sid").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", connectionString);
 
     if (config.has("password")) {
@@ -86,7 +86,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     }
 
     // Use the upper-cased username by default.
-    schemas = List.of(config.get("username").asText().toUpperCase(Locale.ROOT));
+    schemas = List.of(config.get(JdbcUtils.USERNAME_KEY).asText().toUpperCase(Locale.ROOT));
     if (config.has("schemas") && config.get("schemas").isArray()) {
       schemas = new ArrayList<>();
       for (final JsonNode schema : config.get("schemas")) {

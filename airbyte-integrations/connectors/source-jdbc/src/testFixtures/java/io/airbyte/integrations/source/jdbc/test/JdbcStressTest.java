@@ -16,6 +16,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -116,7 +117,7 @@ public abstract class JdbcStressTest {
     final JsonNode jdbcConfig = source.toDatabaseConfig(config);
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            jdbcConfig.get("username").asText(),
+            jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
             jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
             getDriverClass(),
             jdbcConfig.get("jdbc_url").asText()));

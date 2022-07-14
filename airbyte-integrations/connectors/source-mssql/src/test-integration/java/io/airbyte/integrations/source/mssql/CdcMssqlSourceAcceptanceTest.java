@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -104,7 +105,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
-        .put("username", TEST_USER_NAME)
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
         .put("replication", replicationConfig)
         .build());

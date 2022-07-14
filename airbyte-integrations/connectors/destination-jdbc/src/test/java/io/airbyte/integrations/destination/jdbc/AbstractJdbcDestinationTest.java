@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class AbstractJdbcDestinationTest {
     return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
-        "username", "user",
+        JdbcUtils.USERNAME_KEY, "user",
         "database", "db"));
   }
 
@@ -29,7 +30,7 @@ public class AbstractJdbcDestinationTest {
     return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
-        "username", "user",
+        JdbcUtils.USERNAME_KEY, "user",
         "database", "db",
         "jdbc_url_params", extraParam));
   }

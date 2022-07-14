@@ -16,6 +16,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -49,7 +50,7 @@ class PostgresUtilsTest {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
@@ -70,7 +71,7 @@ class PostgresUtilsTest {
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
-        .put("username", psqlDb.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .build());
   }

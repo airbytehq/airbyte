@@ -12,6 +12,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -106,7 +107,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
-        .put("username", db.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put("password", db.getPassword())
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "encrypted_verify_certificate")
@@ -122,7 +123,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
     dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
         jdbcUrl);

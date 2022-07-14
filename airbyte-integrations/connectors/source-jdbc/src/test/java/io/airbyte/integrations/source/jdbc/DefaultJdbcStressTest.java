@@ -50,13 +50,13 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
-    config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", "username", "postgres", "password", ""));
+    config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", JdbcUtils.USERNAME_KEY, "postgres", "password", ""));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
         .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
         .build());
 
@@ -105,7 +105,7 @@ class DefaultJdbcStressTest extends JdbcStressTest {
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
+          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get("host").asText(),
               config.get("port").asInt(),

@@ -194,7 +194,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", mssqlConfig.get("username").asText())
+        .put(JdbcUtils.USERNAME_KEY, mssqlConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put("password", mssqlConfig.get("password").asText())
         .put("jdbc_url", jdbcUrl.toString());
 
@@ -291,7 +291,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final PreparedStatement ps = connection.prepareStatement(sql);
       LOGGER.info(String.format(
           "Checking user '%s' can query the cdc schema and that we have at least 1 cdc enabled table using the query: '%s'",
-          config.get("username").asText(), sql));
+          config.get(JdbcUtils.USERNAME_KEY).asText(), sql));
       return ps;
     }, sourceOperations::rowToJson);
 

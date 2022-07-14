@@ -15,6 +15,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -70,7 +71,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
-        .put("username", userName)
+        .put(JdbcUtils.USERNAME_KEY, userName)
         .put("password", password)
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
@@ -115,7 +116,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
     config = getConfig(db.getUsername(), db.getPassword());
 
     dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         Db2Source.DRIVER_CLASS,
         String.format(DatabaseDriver.DB2.getUrlFormatString(),

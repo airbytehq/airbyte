@@ -58,7 +58,7 @@ public class CockroachDBContainerHelper {
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put("username", psqlDb.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("schema", "public")
         .put(JdbcUtils.SSL_KEY, false)
@@ -67,7 +67,7 @@ public class CockroachDBContainerHelper {
 
   public static DataSource getDataSourceFromConfig(final JsonNode config) {
     return DataSourceFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),

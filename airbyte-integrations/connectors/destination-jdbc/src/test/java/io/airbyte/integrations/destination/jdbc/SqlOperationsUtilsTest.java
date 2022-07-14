@@ -50,7 +50,7 @@ class SqlOperationsUtilsTest {
 
     database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get("password").asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             config.get("jdbc_url").asText()));
@@ -113,7 +113,7 @@ class SqlOperationsUtilsTest {
 
   private JsonNode createConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", container.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put("password", container.getPassword())
         .put("schema", SCHEMA_NAME)
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",

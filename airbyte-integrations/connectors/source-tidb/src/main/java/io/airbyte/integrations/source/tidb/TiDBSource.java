@@ -56,7 +56,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", jdbcUrl.toString());
 
     if (config.has("password")) {

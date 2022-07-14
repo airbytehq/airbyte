@@ -205,7 +205,7 @@ public abstract class JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         getDriverClass(),
         jdbcConfig.get("jdbc_url").asText(),

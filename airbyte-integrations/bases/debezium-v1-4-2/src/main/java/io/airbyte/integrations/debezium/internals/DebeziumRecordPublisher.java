@@ -155,7 +155,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     // db connection configuration
     props.setProperty("database.hostname", config.get("host").asText());
     props.setProperty("database.port", config.get("port").asText());
-    props.setProperty("database.user", config.get("username").asText());
+    props.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
     props.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     if (config.has("password")) {

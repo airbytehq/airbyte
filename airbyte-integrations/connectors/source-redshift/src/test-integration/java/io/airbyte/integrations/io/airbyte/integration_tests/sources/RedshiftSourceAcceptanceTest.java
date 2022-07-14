@@ -68,7 +68,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
 
     // use test user user
-    config = config.set("username", Jsons.jsonNode(testUserName));
+    config = config.set(JdbcUtils.USERNAME_KEY, Jsons.jsonNode(testUserName));
     config = config.set("password", Jsons.jsonNode(testUserPassword));
 
     // create a test data
@@ -83,7 +83,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected JdbcDatabase createDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get("password").asText(),
             RedshiftSource.DRIVER_CLASS,
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),

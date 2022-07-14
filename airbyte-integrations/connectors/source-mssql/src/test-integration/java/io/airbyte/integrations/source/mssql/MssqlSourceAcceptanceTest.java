@@ -12,6 +12,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -40,7 +41,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put("password", db.getPassword())
         .build());
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
@@ -101,7 +102,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",

@@ -13,6 +13,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.JDBCType;
@@ -41,12 +42,12 @@ public class MssqlStressTest extends JdbcStressTest {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
         .put("password", dbContainer.getPassword())
         .build());
 
     final DataSource dataSource = DataSourceFactory.create(
-        configWithoutDbName.get("username").asText(),
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",

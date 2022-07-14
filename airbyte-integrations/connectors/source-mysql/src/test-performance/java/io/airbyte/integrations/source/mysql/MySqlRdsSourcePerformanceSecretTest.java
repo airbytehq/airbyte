@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.Map;
@@ -36,13 +37,13 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
         .put("database", dbName)
-        .put("username", plainConfig.get("username"))
+        .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
         .put("password", plainConfig.get("password"))
         .put("replication_method", plainConfig.get("replication_method"))
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),

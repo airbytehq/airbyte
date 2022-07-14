@@ -11,6 +11,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.CatalogHelpers;
@@ -42,7 +43,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("username", container.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put("password", container.getPassword())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
@@ -51,7 +52,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         config.get("jdbc_url").asText(),

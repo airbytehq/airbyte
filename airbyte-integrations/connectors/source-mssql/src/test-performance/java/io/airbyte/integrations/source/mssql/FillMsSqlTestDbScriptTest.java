@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
@@ -46,13 +47,13 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("host", "your_host")
         .put("port", 1433)
         .put("database", dbName) // set your db name
-        .put("username", "your_username")
+        .put(JdbcUtils.USERNAME_KEY, "your_username")
         .put("password", "your_pass")
         .put("replication", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",

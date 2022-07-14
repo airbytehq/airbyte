@@ -76,7 +76,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("port", PSQL_DB.getFirstMappedPort())
         .put("database", dbName)
         .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-        .put("username", PSQL_DB.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put("password", PSQL_DB.getPassword())
         .put("ssl", false)
         .build());
@@ -91,7 +91,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         getDriverClass(),
         jdbcConfig.get("jdbc_url").asText(),

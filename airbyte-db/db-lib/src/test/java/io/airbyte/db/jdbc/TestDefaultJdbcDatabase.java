@@ -100,7 +100,7 @@ class TestDefaultJdbcDatabase {
 
   private DataSource getDataSourceFromConfig(final JsonNode config) {
     return DataSourceFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),

@@ -28,6 +28,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
@@ -91,7 +92,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("port", container.getFirstMappedPort())
         .put("database", dbName)
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", TEST_USER_NAME)
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put("password", TEST_USER_PASSWORD)
         .put("replication", replicationConfig)
         .build());
@@ -342,7 +343,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       throw new RuntimeException(e);
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
-        DataSourceFactory.create(config.get("username").asText(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get("password").asText(),
             DRIVER_CLASS,
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",

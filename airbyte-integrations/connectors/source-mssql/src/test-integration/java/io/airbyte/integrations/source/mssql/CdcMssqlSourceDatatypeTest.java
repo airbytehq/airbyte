@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.util.Map;
 import org.jooq.DSLContext;
@@ -39,7 +40,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
-        .put("username", container.getUsername())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put("password", container.getPassword())
         .put("replication", replicationConfig)
         .build());

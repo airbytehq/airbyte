@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.stream.Stream;
@@ -30,7 +31,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
         .put("database", dbName)
-        .put("username", plainConfig.get("username"))
+        .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
         .put("password", plainConfig.get("password"))
         .build());
   }
