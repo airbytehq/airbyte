@@ -63,12 +63,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
 
   const label = () => {
     if (streamsToReset) {
-      const formattedMessageId = streamsToReset.length % 10 === 1 ? "sources.streamReset" : "sources.streamsReset";
-      return (
-        <>
-          {streamsToReset.length} <FormattedMessage id={formattedMessageId} />
-        </>
-      );
+      return <FormattedMessage values={{ count: streamsToReset.length }} id="sources.streamsReset" />;
     }
     if (isPartialSuccess) {
       return <FormattedMessage id="sources.partialSuccess" />;

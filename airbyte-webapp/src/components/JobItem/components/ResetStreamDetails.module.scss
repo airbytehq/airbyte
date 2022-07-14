@@ -1,0 +1,21 @@
+.textContainer {
+  margin: 4px 0 0 0;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  line-height: 20px;
+}
+
+.text {
+  display: inline-block;
+  padding: 0 5px;
+  background: #f8f8fa;
+  border: 1px solid #e8e8ed;
+  border-radius: 4px;
+  margin-right: 8px;
+  white-space: nowrap;
+  font-weight: 400;
+  font-size: 12px;
+  color: #8b8ba0;
+}
