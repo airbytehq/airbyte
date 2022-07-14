@@ -430,7 +430,6 @@ public class WorkerApp {
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
 
-
     final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
