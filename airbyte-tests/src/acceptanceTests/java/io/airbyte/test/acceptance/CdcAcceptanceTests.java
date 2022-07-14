@@ -350,7 +350,7 @@ public class CdcAcceptanceTests {
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
-    JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
+    JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
@@ -397,7 +397,7 @@ public class CdcAcceptanceTests {
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
-    JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
+    JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
     LOGGER.info("Waiting for sync job after update to complete");
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
@@ -412,7 +412,7 @@ public class CdcAcceptanceTests {
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
-    syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
+    syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
     LOGGER.info("Checking that id_and_name table is unaffected by the partial reset");
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
     LOGGER.info("Checking that color_palette table was cleared in the destination due to the reset triggered by the update");
@@ -599,29 +599,6 @@ public class CdcAcceptanceTests {
         .sourceCatalogId(connection.getSourceCatalogId())
         .status(connection.getStatus())
         .prefix(connection.getPrefix());
-  }
-
-  private JobRead getMostRecentSyncJobId(final UUID connectionId) throws Exception {
-    return apiClient.getJobsApi()
-        .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
-        .getJobs()
-        .stream()
-        .max(Comparator.comparingLong(job -> job.getJob().getCreatedAt()))
-        .map(JobWithAttemptsRead::getJob).orElseThrow();
-  }
-
-  private JobRead waitUntilTheNextJobIsStarted(final UUID connectionId) throws Exception {
-    final JobRead lastJob = getMostRecentSyncJobId(connectionId);
-    if (lastJob.getStatus() != JobStatus.SUCCEEDED) {
-      return lastJob;
-    }
-
-    JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
-      Thread.sleep(Duration.ofSeconds(2).toMillis());
-      mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    }
-    return mostRecentSyncJob;
   }
 
   // can be helpful for debugging
