@@ -41,7 +41,6 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardDiscoverCatalogOutput;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
