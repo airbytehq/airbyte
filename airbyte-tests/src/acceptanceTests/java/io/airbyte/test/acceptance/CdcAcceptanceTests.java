@@ -347,7 +347,7 @@ public class CdcAcceptanceTests {
     AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Refreshed catalog: {}", refreshedCatalog);
     WebBackendConnectionUpdate update = getUpdateInput(connectionRead, refreshedCatalog, operationRead);
-    webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
     JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
@@ -394,7 +394,7 @@ public class CdcAcceptanceTests {
     catalog.setStreams(updatedStreams);
     LOGGER.info("Updated catalog: {}", catalog);
     WebBackendConnectionUpdate update = getUpdateInput(connectionRead, catalog, operationRead);
-    webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
     JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
@@ -409,7 +409,7 @@ public class CdcAcceptanceTests {
     catalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Updated catalog: {}", catalog);
     update = getUpdateInput(connectionRead, catalog, operationRead);
-    webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connectionId);
