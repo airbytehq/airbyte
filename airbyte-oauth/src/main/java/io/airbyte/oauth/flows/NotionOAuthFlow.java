@@ -125,9 +125,4 @@ public class NotionOAuthFlow extends BaseOAuth2Flow {
     return result;
   }
 
-  // @Override
-  // public List<String> getDefaultOAuthOutputPath() {
-  // return List.of();
-  // }
-
 }
