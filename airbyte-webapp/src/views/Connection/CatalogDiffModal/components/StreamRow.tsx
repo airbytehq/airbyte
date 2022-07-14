@@ -4,8 +4,8 @@ import classnames from "classnames";
 
 import { StreamTransform } from "core/request/AirbyteClient";
 
+import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
 import { DiffVerb } from "../CatalogDiffModal";
-import { ModificationIcon } from "./ModificationIcon";
 import styles from "./StreamRow.module.scss";
 
 interface StreamRowProps {

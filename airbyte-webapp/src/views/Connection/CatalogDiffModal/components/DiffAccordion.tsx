@@ -8,10 +8,10 @@ import { ImageBlock } from "components";
 
 import { StreamTransform } from "core/request/AirbyteClient";
 
+import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
 import { diffReducer } from "../CatalogDiffModal";
 import styles from "./DiffAccordion.module.scss";
 import { DiffFieldTable } from "./DiffFieldTable";
-import { ModificationIcon } from "./ModificationIcon";
 
 interface DiffAccordionProps {
   streamTransform: StreamTransform;

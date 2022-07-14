@@ -4,8 +4,8 @@ import classnames from "classnames";
 
 import { FieldTransform } from "core/request/AirbyteClient";
 
+import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
 import styles from "./FieldRow.module.scss";
-import { ModificationIcon } from "./ModificationIcon";
 
 interface FieldRowProps {
   transform: FieldTransform;
