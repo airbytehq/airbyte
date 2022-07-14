@@ -977,7 +977,7 @@ public class BasicAcceptanceTests {
     LOGGER.info("ConnectionState after the update request: {}", postResetState.toString());
 
     // Wait until the sync from the UpdateConnection is finished
-    final JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
+    final JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connection.getConnectionId());
     LOGGER.info("Generated SyncJob config: {}", syncFromTheUpdate.toString());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
@@ -1006,27 +1006,6 @@ public class BasicAcceptanceTests {
           .toString()
           .split("\\n")).forEach(LOGGER::info);
     }
-  }
-
-  private JobRead getMostRecentSyncJobId(UUID connectionId) throws Exception {
-    return apiClient.getJobsApi()
-        .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
-        .getJobs()
-        .stream().findFirst().map(JobWithAttemptsRead::getJob).orElseThrow();
-  }
-
-  private JobRead waitUntilTheNextJobIsStarted(final UUID connectionId) throws Exception {
-    final JobRead lastJob = getMostRecentSyncJobId(connectionId);
-    if (lastJob.getStatus() != JobStatus.SUCCEEDED) {
-      return lastJob;
-    }
-
-    JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
-      Thread.sleep(Duration.ofSeconds(1).toMillis());
-      mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    }
-    return mostRecentSyncJob;
   }
 
   @Test
