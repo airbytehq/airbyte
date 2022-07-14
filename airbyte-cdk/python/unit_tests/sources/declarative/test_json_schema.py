@@ -67,7 +67,7 @@ InterfaceTypeHint = Union[tuple(Interface.__subclasses__())]
 
 @dataclass
 class ConcreteClass(JsonSchemaMixin):
-    number: int
+    number: int = 15
 
 
 @dataclass
