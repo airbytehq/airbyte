@@ -727,7 +727,7 @@ public class AirbyteAcceptanceTestHarness {
       }
     }
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
-    Thread.sleep(5000);
+    Thread.sleep(10000);
   }
 
   public static JobRead waitWhileJobHasStatus(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
