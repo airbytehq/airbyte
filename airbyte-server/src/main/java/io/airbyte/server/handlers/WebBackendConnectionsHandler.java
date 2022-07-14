@@ -384,39 +384,39 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
-
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
-    final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
-    final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
-    final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
-    final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
-
-    final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
-    List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
-        apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
-
     ConnectionRead connectionRead;
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if (!streamsToReset.isEmpty()) {
-      final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
-      final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+    final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
+    if (!skipReset) {
+      final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
+      final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
+      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
 
-      if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET || stateType == ConnectionStateType.GLOBAL) {
-        streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+      final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+      List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
+          apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+
+      if (!streamsToReset.isEmpty()) {
+        final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
+        final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+
+        if (stateType == ConnectionStateType.LEGACY) {
+          streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+        }
+        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+            webBackendConnectionUpdate.getConnectionId(),
+            streamsToReset);
+        verifyManualOperationResult(manualOperationResult);
+        manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        verifyManualOperationResult(manualOperationResult);
+        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
-      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-          webBackendConnectionUpdate.getConnectionId(),
-          streamsToReset);
-      verifyManualOperationResult(manualOperationResult);
-      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      verifyManualOperationResult(manualOperationResult);
-      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
-
     return buildWebBackendConnectionRead(connectionRead);
   }
 

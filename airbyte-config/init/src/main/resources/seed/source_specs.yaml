@@ -1070,7 +1070,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-chargebee:0.1.11"
+- dockerImage: "airbyte/source-chargebee:0.1.12"
   spec:
     documentationUrl: "https://apidocs.chargebee.com/docs/api"
     connectionSpecification:
@@ -2261,7 +2261,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-file:0.2.12"
+- dockerImage: "airbyte/source-file:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/file"
     connectionSpecification:
@@ -2320,6 +2320,11 @@
               storage:
                 type: "string"
                 const: "HTTPS"
+              user_agent:
+                type: "boolean"
+                title: "User-Agent"
+                default: false
+                description: "Add User-Agent to request"
           - title: "GCS: Google Cloud Storage"
             required:
             - "storage"
@@ -2779,7 +2784,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.42"
+- dockerImage: "airbyte/source-google-ads:0.1.43"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2885,7 +2890,7 @@
                 title: "Custom Query"
                 description: "A custom defined GAQL query for building the report.\
                   \ Should not contain segments.date expression because it is used\
-                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v9/overview_query_builder\"\
+                  \ by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v11/overview_query_builder\"\
                   >query builder</a> for more information."
                 examples:
                 - "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type\
@@ -7540,7 +7545,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.15"
+- dockerImage: "airbyte/source-s3:0.1.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"

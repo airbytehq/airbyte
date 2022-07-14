@@ -479,13 +479,13 @@
         "type": "string"
       }
     },
-    "ad_group_ad.ad.video_ad.discovery.description1": {
+    "ad_group_ad.ad.video_ad.in_feed.description1": {
       "type": ["null", "string"]
     },
-    "ad_group_ad.ad.video_ad.discovery.description2": {
+    "ad_group_ad.ad.video_ad.in_feed.description2": {
       "type": ["null", "string"]
     },
-    "ad_group_ad.ad.video_ad.discovery.headline": {
+    "ad_group_ad.ad.video_ad.in_feed.headline": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.video_ad.in_stream.action_button_label": {
