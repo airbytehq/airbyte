@@ -66,11 +66,18 @@ InterfaceTypeHint = Union[tuple(Interface.__subclasses__())]
 
 
 @dataclass
+class ConcreteClass(JsonSchemaMixin):
+    number: int
+
+
+@dataclass
 class SomeOtherClass(JsonSchemaMixin):
     """Outerobject containing interface"""
 
-    #   f: Union[ChildString, ChildInt]
-    g: Interface
+    f: int
+
+    g: ConcreteClass
+    h: Interface
 
     @classmethod
     def _json_schema(
@@ -87,10 +94,10 @@ class SomeOtherClass(JsonSchemaMixin):
             t = field.type
             if "__subclasses__" in t.__dict__:
                 subsclasses = t.__subclasses__()
-                if subsclasses:
+                if subsclasses and not t.__module__ == "builtins":
                     field.type = Union[tuple(subsclasses)]
                     copy_mixin["__annotations__"][field.name] = Union[tuple(subsclasses)]
-        setattr(copy_mixin, "__dataclass_fields__", cls.__dict__["__dataclass_fields__"])
+        # setattr(copy_mixin, "__dataclass_fields__", cls.__dict__["__dataclass_fields__"])
 
         copy_mixin.__name__ = cls.__name__
         copy_mixin.__doc__ = cls.__doc__
@@ -105,16 +112,20 @@ class SomeOtherClass(JsonSchemaMixin):
 
 
 def test_json_schema():
+    # copy the top level class
     copy_cls = type("Copymixin", SomeOtherClass.__bases__, dict(SomeOtherClass.__dict__))
-    class_fields = fields(copy_cls)
 
+    class_fields = fields(copy_cls)
+    # iterate over the fields
     for field in class_fields:
         t = field.type
         subsclasses = t.__subclasses__()
-        if subsclasses:
+        # Only replace the type if there are subclasses and t is not in builtins
+        if subsclasses and t.__module__ != "builtins":
+            print(f"subclasses for {field.name}: {subsclasses}")
+            # replace the type with union of subclasses
             field.type = Union[tuple(subsclasses)]
             copy_cls.__dict__["__annotations__"][field.name] = Union[tuple(subsclasses)]
-    setattr(copy_cls, "__dataclass_fields__", copy_cls.__dict__["__dataclass_fields__"])
 
     json_schema = copy_cls.json_schema()
     # json_schema = get_json_schema(SomeOtherClass)
