@@ -2501,7 +2501,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-mssql:0.1.19"
+- dockerImage: "airbyte/destination-mssql:0.1.20"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -2514,7 +2514,6 @@
       - "username"
       - "database"
       - "schema"
-      additionalProperties: true
       properties:
         host:
           title: "Host"
@@ -2572,7 +2571,6 @@
           order: 7
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "The data transfer will not be encrypted."
             required:
             - "ssl_method"
@@ -2585,7 +2583,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "Encrypted (trust server certificate)"
-            additionalProperties: false
             description: "Use the certificate provided by the server without verification.\
               \ (For testing purposes only!)"
             required:
@@ -2599,7 +2596,6 @@
                 - "encrypted_trust_server_certificate"
                 default: "encrypted_trust_server_certificate"
           - title: "Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the certificate provided by the server."
             required:
             - "ssl_method"
