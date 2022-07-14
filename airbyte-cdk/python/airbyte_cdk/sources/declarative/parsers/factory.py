@@ -27,7 +27,12 @@ class DeclarativeComponentFactory:
         :return: the object to create
         """
         kwargs = copy.deepcopy(component_definition)
-        class_name = kwargs.pop("class_name")
+        if "class_name" in kwargs:
+            class_name = kwargs.pop("class_name")
+        elif "type" in kwargs:
+            class_name = CLASS_TYPES_REGISTRY[kwargs.pop("type")]
+        else:
+            raise ValueError(f"Failed to create component because it has no class_name or type. Definition: {component_definition}")
         return self.build(class_name, config, **kwargs)
 
     def build(self, class_or_class_name: Union[str, Type], config, **kwargs):
@@ -92,7 +97,13 @@ class DeclarativeComponentFactory:
                 for sub in definition
             ]
         else:
-            return definition
+            expected_type = self.get_default_type(key, parent_class)
+            if expected_type and not isinstance(definition, expected_type):
+                # call __init__(definition) if definition is not a dict and is not of the expected type
+                # for instance, to turn a string into an InterpolatedString
+                return expected_type(definition)
+            else:
+                return definition
 
     @staticmethod
     def is_object_definition_with_class_name(definition):
@@ -106,13 +117,16 @@ class DeclarativeComponentFactory:
     def get_default_type(parameter_name, parent_class):
         type_hints = get_type_hints(parent_class.__init__)
         interface = type_hints.get(parameter_name)
-        origin = get_origin(interface)
-        if origin == Union:
-            # Handling Optional, which are implement as a Union[T, None]
-            # the interface we're looking for being the first type argument
-            args = get_args(interface)
-            interface = args[0]
-
+        while True:
+            origin = get_origin(interface)
+            if origin:
+                # Unnest types until we reach the raw type
+                # List[T] -> T
+                # Optional[List[T]] -> T
+                args = get_args(interface)
+                interface = args[0]
+            else:
+                break
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
         return expected_type
 
