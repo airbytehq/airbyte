@@ -10,9 +10,13 @@ type TestExperimentValueType = Experiments["connector.orderOverwrite"];
 
 const TEST_EXPERIMENT_KEY = "connector.orderOverwrite";
 
-const getExperiment: ExperimentService["getExperiment"] = (key) =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  key === TEST_EXPERIMENT_KEY ? { test: 13 } : ({} as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const getExperiment: ExperimentService["getExperiment"] = (key): any => {
+  if (key === TEST_EXPERIMENT_KEY) {
+    return { test: 13 };
+  }
+  throw new Error(`${key} not mocked for testing`);
+};
 
 describe("ExperimentService", () => {
   describe("useExperiment", () => {
@@ -20,7 +24,6 @@ describe("ExperimentService", () => {
       const wrapper: React.FC = ({ children }) => (
         <ExperimentProvider
           value={{
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             getExperiment,
             getExperimentChanges$: () => EMPTY,
           }}
