@@ -33,7 +33,6 @@ export const StreamRow: React.FC<StreamRowProps> = ({ streamTransform, syncMode,
 
   const itemName = streamTransform.streamDescriptor.name;
   const namespace = streamTransform.streamDescriptor.namespace;
-  console.log(syncMode);
   return (
     <tr className={rowStyle}>
       <td>
