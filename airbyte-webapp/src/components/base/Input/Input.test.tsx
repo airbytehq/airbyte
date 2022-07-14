@@ -52,4 +52,22 @@ describe("<Input />", () => {
     fireEvent.change(inputEl, { target: { value: "one more test" } });
     expect(onChange).toHaveBeenCalledTimes(1);
   });
+
+  test("should trigger onFocus once", async () => {
+    const onFocus = jest.fn();
+    const { getByTestId } = await render(<Input onFocus={onFocus} />);
+    const inputEl = getByTestId("input");
+
+    fireEvent.focus(inputEl);
+    expect(onFocus).toHaveBeenCalledTimes(1);
+  });
+
+  test("should trigger onBlur once", async () => {
+    const onBlur = jest.fn();
+    const { getByTestId } = await render(<Input onBlur={onBlur} />);
+    const inputEl = getByTestId("input");
+
+    fireEvent.blur(inputEl);
+    expect(onBlur).toHaveBeenCalledTimes(1);
+  });
 });
