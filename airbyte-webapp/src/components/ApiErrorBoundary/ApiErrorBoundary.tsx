@@ -10,10 +10,13 @@ import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
+import ServerUnavailableView from "./components/ServerUnavailableView";
+
 interface ApiErrorBoundaryState {
   errorId?: string;
   message?: string;
   didRetry?: boolean;
+  retryDelay?: number;
 }
 
 enum ErrorId {
@@ -36,7 +39,9 @@ class ApiErrorBoundary extends React.Component<
   ApiErrorBoundaryHookProps & ApiErrorBoundaryProps,
   ApiErrorBoundaryState
 > {
-  state: ApiErrorBoundaryState = {};
+  state: ApiErrorBoundaryState = {
+    retryDelay: 2500,
+  };
 
   static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
     // Update state so the next render will show the fallback UI.
@@ -69,7 +74,7 @@ class ApiErrorBoundary extends React.Component<
   componentDidCatch(): void {}
 
   render(): React.ReactNode {
-    const { errorId, didRetry, message } = this.state;
+    const { errorId, didRetry, message, retryDelay } = this.state;
     const { onRetry, navigate, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
@@ -78,11 +83,11 @@ class ApiErrorBoundary extends React.Component<
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
       return (
-        <ErrorOccurredView
-          message={<FormattedMessage id="webapp.cannotReachServer" />}
-          ctaButtonText={<FormattedMessage id="errorView.retry" />}
-          onCtaButtonClick={() => {
-            this.setState({ didRetry: true, errorId: undefined });
+        <ServerUnavailableView
+          retryDelay={retryDelay}
+          onRetryClick={() => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.setState({ didRetry: true, errorId: undefined, retryDelay: Math.round(retryDelay! * 1.2) });
             onRetry?.();
           }}
         />
