@@ -53,21 +53,44 @@ describe("<Input />", () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
-  test("should trigger onFocus once", async () => {
+  test("has focused class after focus", async () => {
+    const { getByTestId } = await render(<Input />);
+    const inputEl = getByTestId("input");
+
+    fireEvent.focus(inputEl);
+    fireEvent.focus(inputEl);
+
+    expect(getByTestId("input-container")).toHaveClass("input-container--focused");
+  });
+
+  test("does not have focused class after blur", async () => {
+    const { getByTestId } = await render(<Input />);
+    const inputEl = getByTestId("input");
+
+    fireEvent.focus(inputEl);
+    fireEvent.blur(inputEl);
+    fireEvent.blur(inputEl);
+
+    expect(getByTestId("input-container")).not.toHaveClass("input-container--focused");
+  });
+
+  test("calls onFocus if passed as prop", async () => {
     const onFocus = jest.fn();
     const { getByTestId } = await render(<Input onFocus={onFocus} />);
     const inputEl = getByTestId("input");
 
     fireEvent.focus(inputEl);
+
     expect(onFocus).toHaveBeenCalledTimes(1);
   });
 
-  test("should trigger onBlur once", async () => {
+  test("calls onBlur if passed as prop", async () => {
     const onBlur = jest.fn();
     const { getByTestId } = await render(<Input onBlur={onBlur} />);
     const inputEl = getByTestId("input");
 
     fireEvent.blur(inputEl);
+
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
 });

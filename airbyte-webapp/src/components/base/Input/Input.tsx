@@ -1,5 +1,6 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
@@ -99,7 +100,10 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ..
   }, [inputRef, defaultFocus]);
 
   return (
-    <InputContainer className={focused ? "input-container--focused" : undefined}>
+    <InputContainer
+      className={classNames("input-container", { "input-container--focused": focused })}
+      data-testid="input-container"
+    >
       <InputComponent
         data-testid="input"
         {...props}
