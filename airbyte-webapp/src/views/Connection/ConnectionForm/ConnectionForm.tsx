@@ -96,11 +96,7 @@ export type ConnectionFormMode = "create" | "edit" | "readonly";
 // eslint-disable-next-line react/function-component-definition
 function FormValuesChangeTracker<T>({ onChangeValues }: { onChangeValues?: (values: T) => void }) {
   // Grab values from context
-  const { values, errors, dirty } = useFormikContext<T>();
-  // TODO: Remove debug output
-  console.log("values", values);
-  console.log("errors", errors);
-  console.log("dirty", dirty);
+  const { values } = useFormikContext<T>();
   useDebounce(
     () => {
       onChangeValues?.(values);
