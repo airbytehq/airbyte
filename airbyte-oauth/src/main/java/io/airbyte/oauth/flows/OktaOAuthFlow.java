@@ -52,11 +52,11 @@ public class OktaOAuthFlow extends BaseOAuth2Flow {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost(domain + ".okta.com")
-        .setPath("oauth2/default/v1/authorize")
+        .setPath("oauth2/v1/authorize")
         // required
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
-        .addParameter("scope", "openid")
+        .addParameter("scope", "okta.users.read okta.logs.read okta.groups.read")
         .addParameter("response_type", "code")
         .addParameter("state", getState());
 
@@ -84,7 +84,7 @@ public class OktaOAuthFlow extends BaseOAuth2Flow {
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     // getting domain value from user's config
     final String domain = getConfigValueUnsafe(inputOAuthConfiguration, "domain");
-    return "https://" + domain + ".okta.com/oauth2/default/v1/token";
+    return "https://" + domain + ".okta.com/oauth2/v1/token";
   }
 
   @Override
