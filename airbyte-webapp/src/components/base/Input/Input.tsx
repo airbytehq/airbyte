@@ -1,6 +1,6 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 import styled from "styled-components";
@@ -86,7 +86,7 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ..
   const { formatMessage } = useIntl();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isContentVisible, setIsContentVisible] = useToggle(false);
-  const [focused, toggleFocused] = useToggle(false);
+  const [focused, setFocused] = useState(false);
 
   const isPassword = props.type === "password";
   const isVisibilityButtonVisible = isPassword && !props.disabled;
@@ -107,11 +107,11 @@ const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ..
         type={type}
         isPassword={isPassword}
         onFocus={(event) => {
-          toggleFocused();
+          setFocused(true);
           onFocus?.(event);
         }}
         onBlur={(event) => {
-          toggleFocused();
+          setFocused(false);
           onBlur?.(event);
         }}
       />
