@@ -31,6 +31,7 @@ const MainView = styled(Row)<{
 `;
 
 const Title = styled.div<{ isFailed?: boolean }>`
+  width: 80%;
   position: relative;
   color: ${({ theme, isFailed }) => (isFailed ? theme.dangerColor : theme.darkPrimaryColor)};
 `;
@@ -54,6 +55,10 @@ const CancelButton = styled(LoadingButton)`
 
 const InfoCell = styled(Cell)`
   flex: none;
+`;
+
+const CenterInfoCell = styled(InfoCell)`
+  width: 80%;
 `;
 
 const Arrow = styled.div<{
@@ -124,12 +129,7 @@ const MainInfo: React.FC<MainInfoProps> = ({
 
   const getLabel = () => {
     if (streamsToReset) {
-      const formattedMessageId = streamsToReset.length % 10 === 1 ? "sources.streamReset" : "sources.streamsReset";
-      return (
-        <>
-          {streamsToReset.length} <FormattedMessage id={formattedMessageId} />
-        </>
-      );
+      return <FormattedMessage values={{ count: streamsToReset.length }} id="sources.streamsReset" />;
     }
     if (isPartialSuccess) {
       return <FormattedMessage id="sources.partialSuccess" />;
@@ -148,16 +148,15 @@ const MainInfo: React.FC<MainInfoProps> = ({
     }
     return <StyledStatusIcon status="success" />;
   };
-
   return (
     <MainView isOpen={isOpen} isFailed={isFailed} onClick={onExpand}>
       {getIcon()}
-      <InfoCell>
+      <CenterInfoCell>
         <Title isFailed={isFailed}>
           {getLabel()}
           {shortInfo ? <FormattedMessage id="sources.additionLogs" /> : null}
           {attempts.length && !shortInfo ? (
-            <div>
+            <>
               {attempts.length > 1 && (
                 <Text>
                   <FormattedMessage id="sources.lastAttempt" />
@@ -167,10 +166,10 @@ const MainInfo: React.FC<MainInfoProps> = ({
                 <AttemptDetails attempt={attempts[attempts.length - 1]} configType={getJobConfig(job)} />
               )}
               {streamsToReset && <ResetStreamsDetails names={streamsToReset.map((stream) => stream.name)} />}
-            </div>
+            </>
           ) : null}
         </Title>
-      </InfoCell>
+      </CenterInfoCell>
       <InfoCell>
         {!shortInfo && isNotCompleted && (
           <CancelButton
