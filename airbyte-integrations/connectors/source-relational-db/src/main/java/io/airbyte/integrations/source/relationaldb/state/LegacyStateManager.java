@@ -75,7 +75,7 @@ public class LegacyStateManager extends AbstractStateManager<DbState, DbStreamSt
         CURSOR_FIELD_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
 
-    this.cdcStateManager = new CdcStateManager(dbState.getCdcState());
+    this.cdcStateManager = new CdcStateManager(dbState.getCdcState(), AirbyteStreamNameNamespacePair.fromConfiguredCatalog(catalog));
     this.isCdc = dbState.getCdc();
     if (dbState.getCdc() == null) {
       this.isCdc = false;

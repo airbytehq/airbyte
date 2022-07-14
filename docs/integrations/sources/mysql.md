@@ -148,7 +148,7 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
-| `tinyint`                                 | number                 |                                                                                                                |
+| `tinyint(>1)`                             | number                 |                                                                                                                |
 | `smallint`                                | number                 |                                                                                                                |
 | `mediumint`                               | number                 |                                                                                                                |
 | `int`                                     | number                 |                                                                                                                |

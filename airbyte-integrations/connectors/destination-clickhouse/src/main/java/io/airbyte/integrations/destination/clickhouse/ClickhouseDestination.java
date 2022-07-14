@@ -17,7 +17,6 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -36,6 +35,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   private static final String PASSWORD = "password";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "socket_timeout", "3000000",
       "ssl", "true",
       "sslmode", "none");
 
@@ -97,8 +97,8 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     if (useSsl(config)) {
       return SSL_JDBC_PARAMETERS;
     } else {
-      // No need for any parameters if the connection doesn't use SSL
-      return new HashMap<>();
+      // No need for any parameters if the connection doesn't use SSL except socket_timeout
+      return ImmutableMap.of("socket_timeout", "3000000");
     }
   }
 

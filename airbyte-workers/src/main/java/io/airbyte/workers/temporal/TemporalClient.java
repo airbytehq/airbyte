@@ -386,6 +386,8 @@ public class TemporalClient {
           Optional.empty());
     }
 
+    Optional<Long> newJobId;
+
     do {
       try {
         Thread.sleep(DELAY_BETWEEN_QUERY_MS);
@@ -394,23 +396,22 @@ public class TemporalClient {
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (!newJobStarted(connectionId, oldJobId));
+      newJobId = getNewJobId(connectionId, oldJobId);
+    } while (newJobId.isEmpty());
 
     log.info("end of reset submission");
 
-    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
-
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        newJobId);
   }
 
-  private boolean newJobStarted(final UUID connectionId, final long oldJobId) {
+  private Optional<Long> getNewJobId(final UUID connectionId, final long oldJobId) {
     final long currentJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
     if (currentJobId == NON_RUNNING_JOB_ID || currentJobId == oldJobId) {
-      return false;
+      return Optional.empty();
     } else {
-      return true;
+      return Optional.of(currentJobId);
     }
   }
 
@@ -426,16 +427,7 @@ public class TemporalClient {
       return resetResult;
     }
 
-    try {
-      ConnectionManagerUtils.getConnectionManagerWorkflow(client, connectionId);
-    } catch (final Exception e) {
-      log.error("Encountered exception retrieving workflow after reset.", e);
-      return new ManualOperationResult(
-          Optional.of(e.getMessage()),
-          Optional.empty());
-    }
-
-    final long oldJobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
+    final long resetJobId = resetResult.getJobId().get();
 
     do {
       try {
@@ -445,15 +437,13 @@ public class TemporalClient {
             Optional.of("Didn't manage to reset a sync for: " + connectionId),
             Optional.empty());
       }
-    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == oldJobId);
+    } while (ConnectionManagerUtils.getCurrentJobId(client, connectionId) == resetJobId);
 
     log.info("End of reset");
 
-    final long jobId = ConnectionManagerUtils.getCurrentJobId(client, connectionId);
-
     return new ManualOperationResult(
         Optional.empty(),
-        Optional.of(jobId));
+        Optional.of(resetJobId));
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
