@@ -34,7 +34,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final String SCHEMA_KEY = "schema";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
+      JdbcUtils.SSL_KEY, "true",
       "sslmode", "require");
 
   public static Destination sshWrappedDestination() {
@@ -79,7 +79,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = PostgresDestination.sshWrappedDestination();

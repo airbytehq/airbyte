@@ -62,7 +62,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
         config.get("port").asText(),
         config.get("database").asText()));
 
-    if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
+    if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean() || !config.has(JdbcUtils.SSL_KEY)) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }

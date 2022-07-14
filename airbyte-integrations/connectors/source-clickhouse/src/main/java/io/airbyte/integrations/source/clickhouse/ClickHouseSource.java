@@ -88,7 +88,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
         config.get("database").asText()));
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
     }
 

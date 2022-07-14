@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -50,7 +51,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
     }
 
     // only if config ssl and ssl == true, use ssl to connect db
-    if (config.has("ssl") && config.get("ssl").asBoolean()) {
+    if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       jdbcUrl.append(String.join("&", SSL_PARAMETERS)).append("&");
     }
 

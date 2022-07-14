@@ -35,7 +35,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
   public static final String PORT_KEY = "port";
-  public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
@@ -106,7 +105,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       return DEFAULT_JDBC_PARAMETERS;
     }
   }
-
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {

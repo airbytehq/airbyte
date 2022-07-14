@@ -18,6 +18,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -147,7 +148,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
+    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
       jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
     }
 

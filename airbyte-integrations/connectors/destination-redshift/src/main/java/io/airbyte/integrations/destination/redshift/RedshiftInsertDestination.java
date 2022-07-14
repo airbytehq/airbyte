@@ -11,6 +11,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   private static final String SCHEMA = "schema";
 
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
+      JdbcUtils.SSL_KEY, "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
 
   public RedshiftInsertDestination() {

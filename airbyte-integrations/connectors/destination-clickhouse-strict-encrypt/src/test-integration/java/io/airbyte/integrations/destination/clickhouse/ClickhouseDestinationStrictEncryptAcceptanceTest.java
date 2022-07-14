@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -85,7 +86,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password").put("ssl", false);
+    ((ObjectNode) clone).put("password", "wrong password").put(JdbcUtils.SSL_KEY, false);
     return clone;
   }
 

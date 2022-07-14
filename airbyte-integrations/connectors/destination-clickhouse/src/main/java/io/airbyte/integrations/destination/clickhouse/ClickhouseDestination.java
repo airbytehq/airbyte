@@ -37,7 +37,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "socket_timeout", "3000000",
-      "ssl", "true",
+      JdbcUtils.SSL_KEY, "true",
       "sslmode", "none");
 
   public static Destination sshWrappedDestination() {
@@ -65,7 +65,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
