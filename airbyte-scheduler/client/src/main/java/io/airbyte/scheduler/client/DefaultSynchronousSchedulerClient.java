@@ -23,6 +23,7 @@ import io.airbyte.workers.temporal.TemporalClient;
 import io.airbyte.workers.temporal.TemporalResponse;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -122,8 +123,8 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
     try {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
       final TemporalResponse<U> temporalResponse = executor.apply(jobId);
-      final U jobOutput = temporalResponse.getOutput().orElse(null);
-      final T mappedOutput = outputMapper.apply(jobOutput);
+      final Optional<U> jobOutput = temporalResponse.getOutput();
+      final T mappedOutput = jobOutput.map(outputMapper).orElse(null);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
 
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
