@@ -64,6 +64,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -396,6 +397,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   // TODO (Subodh): This should be a generic test
   @Test
+  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global state for this test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
