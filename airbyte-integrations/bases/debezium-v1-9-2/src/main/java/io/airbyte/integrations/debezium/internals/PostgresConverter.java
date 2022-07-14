@@ -4,22 +4,10 @@
 
 package io.airbyte.integrations.debezium.internals;
 
-import static io.airbyte.protocol.models.JsonSchemaType.AIRBYTE_TYPE;
-import static io.airbyte.protocol.models.JsonSchemaType.DATE;
-import static io.airbyte.protocol.models.JsonSchemaType.DATE_TIME;
-import static io.airbyte.protocol.models.JsonSchemaType.FORMAT;
-import static io.airbyte.protocol.models.JsonSchemaType.TIME;
-import static io.airbyte.protocol.models.JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE;
-import static io.airbyte.protocol.models.JsonSchemaType.TIMESTAMP_WITH_TIMEZONE;
-import static io.airbyte.protocol.models.JsonSchemaType.TIME_WITHOUT_TIMEZONE;
-import static io.airbyte.protocol.models.JsonSchemaType.TIME_WITH_TIMEZONE;
-
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Properties;
@@ -57,8 +45,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       registerMoney(field, registration);
     } else if (BYTEA_TYPE.equalsIgnoreCase(field.typeName())) {
       registerBytea(field, registration);
-    }
-    else if (Arrays.stream(NUMERIC_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
+    } else if (Arrays.stream(NUMERIC_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerNumber(field, registration);
     }
   }
@@ -68,22 +55,23 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
-//      Bad solution
-//      We applied a solution like this for several reasons:
-//      1. Regarding #13608, CDC and nor-CDC data output format should be the same.
-//      2. In the non-CDC mode 'decimal' and 'numeric' values are put to JSON node as BigDecimal value.
-//      According to Jackson Object mapper configuration, all trailing zeros are omitted and
-//      numbers with decimal places are deserialized with exponent. (e.g. 1234567890.1234567 would
-//      be deserialized as 1.2345678901234567E9).
-//      3. In the CDC mode 'decimal' and 'numeric' values are deserialized as a regular number (e.g.
-//      1234567890.1234567 would be deserialized as 1234567890.1234567). Numbers without
-//      decimal places (e.g 1, 24, 354) are represented with trailing zero (e.g 1.0, 24.0, 354.0).
-//      One of solution to align deserialization for these 2 modes is setting
-//      DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS as true for ObjectMapper. But this breaks
-//      deserialization for other data-types.
-//      A worked solution was to keep deserialization for non-CDC mode as it is and change it for CDC one.
-//      The code below strips trailing zeros for integer numbers and represents number with exponent
-//      if this number has decimals point.
+      // Bad solution
+      // We applied a solution like this for several reasons:
+      // 1. Regarding #13608, CDC and nor-CDC data output format should be the same.
+      // 2. In the non-CDC mode 'decimal' and 'numeric' values are put to JSON node as BigDecimal value.
+      // According to Jackson Object mapper configuration, all trailing zeros are omitted and
+      // numbers with decimal places are deserialized with exponent. (e.g. 1234567890.1234567 would
+      // be deserialized as 1.2345678901234567E9).
+      // 3. In the CDC mode 'decimal' and 'numeric' values are deserialized as a regular number (e.g.
+      // 1234567890.1234567 would be deserialized as 1234567890.1234567). Numbers without
+      // decimal places (e.g 1, 24, 354) are represented with trailing zero (e.g 1.0, 24.0, 354.0).
+      // One of solution to align deserialization for these 2 modes is setting
+      // DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS as true for ObjectMapper. But this breaks
+      // deserialization for other data-types.
+      // A worked solution was to keep deserialization for non-CDC mode as it is and change it for CDC
+      // one.
+      // The code below strips trailing zeros for integer numbers and represents number with exponent
+      // if this number has decimals point.
       final double doubleValue = Double.parseDouble(x.toString());
       var valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toString();
       return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
