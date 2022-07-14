@@ -8,14 +8,7 @@ from airbyte_cdk.sources.declarative.cdk_jsonschema import DEFAULT_SCHEMA_TYPE, 
 
 
 @dataclass
-class InterfaceMixin(JsonSchemaMixin):
-    @classmethod
-    def full_type_definition(cls):
-        return Union[tuple(cls.__subclasses__())]
-
-
-@dataclass
-class Interface(InterfaceMixin, JsonSchemaMixin):
+class Interface(JsonSchemaMixin):
     """This is an interface"""
 
     # @classmethod
@@ -80,7 +73,7 @@ class SomeOtherClass(JsonSchemaMixin):
     g: Interface
 
     @classmethod
-    def json_schema(
+    def _json_schema(
         cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
     ) -> JsonDict:
         # Copy class so we don't modify the fields directly
@@ -112,7 +105,18 @@ class SomeOtherClass(JsonSchemaMixin):
 
 
 def test_json_schema():
-    json_schema = SomeOtherClass.json_schema()
+    copy_cls = type("Copymixin", SomeOtherClass.__bases__, dict(SomeOtherClass.__dict__))
+    class_fields = fields(copy_cls)
+
+    for field in class_fields:
+        t = field.type
+        subsclasses = t.__subclasses__()
+        if subsclasses:
+            field.type = Union[tuple(subsclasses)]
+            copy_cls.__dict__["__annotations__"][field.name] = Union[tuple(subsclasses)]
+    setattr(copy_cls, "__dataclass_fields__", copy_cls.__dict__["__dataclass_fields__"])
+
+    json_schema = copy_cls.json_schema()
     # json_schema = get_json_schema(SomeOtherClass)
     import pprint
 

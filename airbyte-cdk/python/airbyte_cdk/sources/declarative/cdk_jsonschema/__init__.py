@@ -379,7 +379,7 @@ class JsonSchemaMixin:
 
             mapped_fields = []
             type_hints = get_class_type_hints(cls)
-            print(f"type_hints: {type_hints}")
+            # print(f"type_hints: {type_hints}")
             for f in fields(cls):
                 # Skip internal fields
                 if f.name.startswith("__") or (not base_fields and (f.name, f.type) in base_fields_types):
@@ -811,7 +811,7 @@ class JsonSchemaMixin:
         return definitions
 
     @classmethod
-    def get_json_schema(
+    def _get_json_schema(
         cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
     ) -> JsonDict:
         """Returns the JSON schema for the dataclass, along with the schema of any nested dataclasses
@@ -882,7 +882,7 @@ class JsonSchemaMixin:
                 schema = {"allOf": [schema_reference(schema_options.schema_type, base.__name__) for base in dataclass_bases] + [schema]}
                 for base in dataclass_bases:
                     definitions.update(
-                        base.get_json_schema(
+                        base.json_schema(
                             embeddable=True, schema_type=schema_options.schema_type, validate_enums=schema_options.validate_enums
                         )
                     )
@@ -917,7 +917,7 @@ class JsonSchemaMixin:
         If embedding the schema into a swagger api, specify 'swagger_version' to generate a spec compatible with that
         version.
         """
-        print(f"json_schema.cls: {cls}")
+        # print(f"json_schema.cls: {cls}")
         if "swagger_version" in kwargs and kwargs["swagger_version"] is not None:
             schema_type = kwargs["swagger_version"]
 
@@ -977,7 +977,7 @@ class JsonSchemaMixin:
                 schema = {"allOf": [schema_reference(schema_options.schema_type, base.__name__) for base in dataclass_bases] + [schema]}
                 for base in dataclass_bases:
                     definitions.update(
-                        base.get_json_schema(
+                        base.json_schema(
                             embeddable=True, schema_type=schema_options.schema_type, validate_enums=schema_options.validate_enums
                         )
                     )
