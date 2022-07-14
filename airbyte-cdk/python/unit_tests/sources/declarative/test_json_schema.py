@@ -1,40 +1,60 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from dataclasses import dataclass, fields
-from typing import Union
+import dataclasses
+import inspect
+from dataclasses import dataclass, fields, make_dataclass
+from typing import Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.cdk_jsonschema import DEFAULT_SCHEMA_TYPE, JsonDict, JsonSchemaMixin, SchemaType
+
+_FIELDS = "__dataclass_fields__"
+
+
+def get_constructor_params(cls):
+    parameters = inspect.signature(cls.__init__).parameters
+    print(f"parameters: {parameters}")
+    params = {}
+    for parameter_name, param_type in parameters.items():
+        print(f"param: {parameter_name}")
+        type_hints = get_type_hints(cls.__init__, parameter_name)
+        interface = type_hints.get(parameter_name)
+        while True:
+            origin = get_origin(interface)
+            if origin:
+                # Unnest types until we reach the raw type
+                # List[T] -> T
+                # Optional[List[T]] -> T
+                args = get_args(interface)
+                interface = args[0]
+            else:
+                break
+        params[parameter_name] = interface
+    return params
 
 
 @dataclass
 class Interface(JsonSchemaMixin):
     """This is an interface"""
 
-    # @classmethod
-    # @lru_cache
-    # def _json_schema(
-    #        cls, embeddable: bool = False, schema_type: SchemaType = DEFAULT_SCHEMA_TYPE, validate_enums: bool = True, **kwargs
-    # ) -> JsonDict:
-    #    print(f"Interface.json_schema with {cls}")
-    #    if cls != Interface:
-    #        print(f"{cls} is not interface. calling JsonSchemaMixin")
-    #        return cls.json_schema()
-    #    subclasses = cls.__subclasses__()
-    #    if not subclasses:
-    #        return cls.get_json_schema()
-    #    print(f"subclasses for {cls}: {subclasses}")
-    #    t = Union[tuple(subclasses)]
+
+class InterfaceNotDataClass(JsonSchemaMixin):
+    pass
 
 
-#
-#        @dataclass
-#        class _anon(JsonSchemaMixin):
-#            field: t
-#
-#        _anon.__name__ = cls.__name__
-#        _anon.__doc__ = cls.__doc__
-#        return _anon.get_json_schema(embeddable=True)
+class ChildA(InterfaceNotDataClass):
+    def __init__(self, i: int = 15):
+        self._i = i
+
+
+class ChildB(InterfaceNotDataClass):
+    def __init__(self, a: str):
+        self._a = a
+
+
+class WrapperClass(JsonSchemaMixin):
+    def __init__(self, interface: InterfaceNotDataClass):
+        self._interface = interface
 
 
 count = 0
@@ -67,17 +87,34 @@ InterfaceTypeHint = Union[tuple(Interface.__subclasses__())]
 
 @dataclass
 class ConcreteClass(JsonSchemaMixin):
-    number: int = 15
+    def __init__(self, number: int = 15):
+        self._n = number
 
 
 @dataclass
-class SomeOtherClass(JsonSchemaMixin):
+class SomeOtherClassWithFields(JsonSchemaMixin):
     """Outerobject containing interface"""
 
-    f: int
+    def __init__(self):
+
+        f: int
 
     g: ConcreteClass
     h: Interface
+
+
+@dataclass
+class SomeOtherClass:
+    """Outerobject containing interface"""
+
+    # f: int
+
+    # g: ConcreteClass
+    # h: Interface
+    # _f: int
+
+    def __init__(self, f: int, g: ConcreteClass, h: Interface):
+        pass
 
     @classmethod
     def _json_schema(
@@ -112,11 +149,49 @@ class SomeOtherClass(JsonSchemaMixin):
 
 
 def test_json_schema():
+    import inspect
+
     # copy the top level class
     copy_cls = type("Copymixin", SomeOtherClass.__bases__, dict(SomeOtherClass.__dict__))
 
     class_fields = fields(copy_cls)
     # iterate over the fields
+
+    parameters = inspect.signature(SomeOtherClass.__init__).parameters
+    print(f"cls_copy: {copy_cls.__dict__}")
+
+    fields_from_constructor = []
+    for name, param in parameters.items():
+        if name == "self":
+            continue
+        print(f"param: {param}")
+        type_hint = get_type_hints(SomeOtherClass.__init__)[name]
+        print(f"type_hint: {type_hint}")
+        subclasses = type_hint.__subclasses__()
+        print(f"subclasses for {name}: {subclasses}")
+        f = dataclasses.field()
+        f.name = name
+        f.type = type_hint
+        copy_cls.__dict__[_FIELDS].clear()
+        copy_cls.__dict__[_FIELDS][name] = f
+        # copy_cls.__dict__["__annotations__"][field.name] = type_hint
+        fields_from_constructor.append((name, type_hint))
+        # if subclasses and type_hint.__module__ != "builtins":
+        # replace the type with union of subclasses
+        # field.type = Union[tuple(subsclasses)]
+        # copy_cls.__dict__["__annotations__"][field.name] = Union[tuple(subsclasses)]
+    print(f"cls_copy: {copy_cls.__dict__}")
+    print(f"withfields: {SomeOtherClassWithFields.__dict__}")
+
+    print(f"class_fields: {fields_from_constructor}")
+
+    made_dataclass = make_dataclass(
+        cls_name="SomeOtherClassCopy",
+        fields=fields_from_constructor,
+        bases=(JsonSchemaMixin,),
+    )
+    print(made_dataclass.__dict__)
+
     for field in class_fields:
         t = field.type
         subsclasses = t.__subclasses__()
@@ -127,7 +202,7 @@ def test_json_schema():
             field.type = Union[tuple(subsclasses)]
             copy_cls.__dict__["__annotations__"][field.name] = Union[tuple(subsclasses)]
 
-    json_schema = copy_cls.json_schema()
+    json_schema = made_dataclass.json_schema()
     # json_schema = get_json_schema(SomeOtherClass)
     import pprint
 
@@ -148,4 +223,7 @@ def test_json_schema():
     # print()
     # json_schema = PydanticSomeOtherClass.schema_json()
     # pprint.pprint(json_schema)
+
+    c = ConcreteClass(number=20)
+    print(f"c._number: {c._n}")
     assert False
