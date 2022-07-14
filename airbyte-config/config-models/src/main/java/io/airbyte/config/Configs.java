@@ -584,6 +584,11 @@ public interface Configs {
    */
   int getActivityNumberOfAttempt();
 
+  /**
+   * Get the worker's plane (ie, CONTROL, DATA_PLANE_A, DATA_PLANE_B, etc)
+   */
+  String getPlane();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

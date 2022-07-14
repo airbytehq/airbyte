@@ -115,6 +115,7 @@ public class WorkerApp {
   // version is deployed!
   public static final Path STATE_STORAGE_PREFIX = Path.of("/state");
 
+  private static final String CONTROL = "CONTROL";
   private static final String DATA_PLANE_A = "DATA_PLANE_A";
   private static final String DATA_PLANE_B = "DATA_PLANE_B";
 
@@ -178,15 +179,17 @@ public class WorkerApp {
 
     if (configs.shouldRunSyncWorkflows()) {
       // registers a workflow worker for the syncWorkflow for each Data Plane (A and B);
-      registerSyncWorkflowWorkers(factory);
-
-      // don't register any activity workers for DATA_PLANE_A to force schedule-to-start timeouts
-      List<String> dataPlanes = List.of(/* DATA_PLANE_A , */ DATA_PLANE_B);
-      dataPlanes.forEach(dataPlane -> registerActivityWorkersForDataPlane(factory, dataPlane));
+      if (configs.getPlane().equals(CONTROL)) {
+        registerSyncWorkflowWorkers(factory, List.of(DATA_PLANE_A, DATA_PLANE_B));
+      } else {
+        registerActivityWorkersForDataPlane(factory, configs.getPlane());
+      }
     }
 
     if (configs.shouldRunConnectionManagerWorkflows()) {
-      registerConnectionManager(factory);
+      if (configs.getPlane().equals(CONTROL)) {
+        registerConnectionManager(factory);
+      }
     }
 
     factory.start();
@@ -228,9 +231,7 @@ public class WorkerApp {
         new StreamResetActivityImpl(streamResetPersistence, jobPersistence));
   }
 
-  private void registerSyncWorkflowWorkers(final WorkerFactory factory) {
-    List<String> dataPlanes = List.of(DATA_PLANE_A, DATA_PLANE_B);
-
+  private void registerSyncWorkflowWorkers(final WorkerFactory factory, final List<String> dataPlanes) {
     dataPlanes.forEach(dataPlane -> {
       final Worker worker = factory.newWorker(dataPlane, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
       worker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);

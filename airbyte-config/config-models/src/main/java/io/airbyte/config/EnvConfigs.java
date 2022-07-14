@@ -171,6 +171,8 @@ public class EnvConfigs implements Configs {
   private static final String VAULT_PREFIX = "VAULT_PREFIX";
   private static final String VAULT_AUTH_TOKEN = "VAULT_AUTH_TOKEN";
 
+  private static final String PLANE = "PLANE";
+
   public static final long DEFAULT_MAX_SPEC_WORKERS = 5;
   public static final long DEFAULT_MAX_CHECK_WORKERS = 5;
   public static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
@@ -932,6 +934,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getActivityNumberOfAttempt() {
     return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "5"));
+  }
+
+  @Override
+  public String getPlane() {
+    return getEnvOrDefault(PLANE, "CONTROL");
   }
 
   // Helpers
