@@ -32,7 +32,7 @@ RUN apt-get update && ACCEPT_EULA=Y apt-get install -y \
 ENV PATH=$PATH:/opt/mssql-tools/bin
 
 # Install SSH Tunneling dependencies
-RUN apt-get install -y jq sshpass
+RUN apt-get install -y jq sshpass autossh
 
 # clean up
 RUN apt-get -y autoremove && apt-get clean

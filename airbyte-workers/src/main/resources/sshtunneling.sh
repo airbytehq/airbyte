@@ -34,7 +34,7 @@ function openssh() {
     cat $1 | jq -r '.tunnel_map.ssh_key | gsub("\\\\n"; "\n")' > $tmpkeyfile
     # -f=background  -N=no remote command  -M=master mode  StrictHostKeyChecking=no auto-adds host
     echo "Running: ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -i {key file} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
-    ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
+    autossh -M 0 -o "ServerAliveInterval 30" -o "ServerAliveCountMax 3" -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
     sshopen="yes" &&
     echo "ssh tunnel opened"
     rm -f $tmpkeyfile
@@ -50,7 +50,7 @@ function openssh() {
     # put ssh password in env var for use in sshpass. Better than directly passing with -p
     export SSHPASS=$(cat $1 | jq -r '.tunnel_map.tunnel_user_password')
     echo "Running: sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host}"
-    sshpass -e ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
+    sshpass -e autossh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} ${tunnel_host} &&
     sshopen="yes" &&
     echo "ssh tunnel opened"
   fi

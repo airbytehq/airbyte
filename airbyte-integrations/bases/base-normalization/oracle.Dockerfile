@@ -21,7 +21,7 @@ RUN pip install cx_Oracle
 
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
-RUN apt-get update && apt-get install -y jq sshpass
+RUN apt-get update && apt-get install -y jq sshpass autossh
 
 WORKDIR /airbyte
 COPY entrypoint.sh .
