@@ -82,9 +82,7 @@ const VisibilityButton = styled(Button)`
   border: none;
 `;
 
-const Input: React.FC<InputProps> = (props) => {
-  const { defaultFocus = false } = props;
-
+const Input: React.FC<InputProps> = ({ defaultFocus = false, onFocus, onBlur, ...props }) => {
   const { formatMessage } = useIntl();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isContentVisible, setIsContentVisible] = useToggle(false);
@@ -93,7 +91,6 @@ const Input: React.FC<InputProps> = (props) => {
   const isPassword = props.type === "password";
   const isVisibilityButtonVisible = isPassword && !props.disabled;
   const type = isPassword ? (isContentVisible ? "text" : "password") : props.type;
-  const onInputFocusChange = () => toggleFocused();
 
   useEffect(() => {
     if (defaultFocus && inputRef.current !== null) {
@@ -109,8 +106,14 @@ const Input: React.FC<InputProps> = (props) => {
         ref={inputRef}
         type={type}
         isPassword={isPassword}
-        onFocus={onInputFocusChange}
-        onBlur={onInputFocusChange}
+        onFocus={(event) => {
+          toggleFocused();
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          toggleFocused();
+          onBlur?.(event);
+        }}
       />
       {isVisibilityButtonVisible ? (
         <VisibilityButton
