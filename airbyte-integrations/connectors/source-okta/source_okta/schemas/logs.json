@@ -23,15 +23,45 @@
     "authenticationContext": {
       "properties": {
         "authenticationProvider": {
+          "enum": [
+            "OKTA_AUTHENTICATION_PROVIDER",
+            "ACTIVE_DIRECTORY",
+            "LDAP",
+            "FEDERATION",
+            "SOCIAL",
+            "FACTOR_PROVIDER",
+            null
+          ],
           "type": ["string", "null"]
         },
         "authenticationStep": {
           "type": ["integer"]
         },
         "credentialProvider": {
+          "enum": [
+            "OKTA_AUTHENTICATION_PROVIDER",
+            "OKTA_CREDENTIAL_PROVIDER",
+            "RSA",
+            "SYMANTEC",
+            "GOOGLE",
+            "DUO",
+            "YUBIKEY",
+            null
+          ],
           "type": ["string", "null"]
         },
         "credentialType": {
+          "enum": [
+            "OTP",
+            "SMS",
+            "PASSWORD",
+            "ASSERTION",
+            "IWA",
+            "EMAIL",
+            "OAUTH2",
+            "JWT",
+            null
+          ],
           "type": ["string", "null"]
         },
         "externalSessionId": {

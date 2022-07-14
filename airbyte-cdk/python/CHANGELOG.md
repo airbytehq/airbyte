@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.65
+- Allow for detailed debug messages to be enabled using the --debug command.
+
 ## 0.1.64
 - Add support for configurable oauth request payload and declarative oauth authenticator.
 
