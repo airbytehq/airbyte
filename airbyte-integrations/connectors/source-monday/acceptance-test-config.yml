@@ -22,10 +22,13 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["updates"]
     - config_path: "secrets/config_api_token.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["updates"]
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["updates"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

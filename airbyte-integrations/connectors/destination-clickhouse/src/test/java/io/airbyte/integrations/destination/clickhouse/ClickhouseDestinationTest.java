@@ -57,6 +57,7 @@ public class ClickhouseDestinationTest {
   private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
       CONFIG_WITH_SSL,
       ImmutableMap.of(
+          "socket_timeout", "3000000",
           "ssl", "false"));
 
   @BeforeAll
@@ -95,7 +96,7 @@ public class ClickhouseDestinationTest {
   void testDefaultParamsNoSSL() {
     final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
         Jsons.jsonNode(CONFIG_NO_SSL));
-    assertEquals(new HashMap<>(), defaultProperties);
+    assertEquals(ImmutableMap.of("socket_timeout", "3000000"), defaultProperties);
   }
 
   @Test
