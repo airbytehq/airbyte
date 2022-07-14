@@ -110,17 +110,6 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   }
 
   @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
-    database.query(ctx -> {
-      ctx.execute(String.format("USE %s;", config.get("database").asText()));
-      ctx.execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      ctx.execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      return null;
-    });
-  }
-
-  @Override
   public String getDriverClass() {
     return MySqlSource.DRIVER_CLASS;
   }

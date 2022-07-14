@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.jdbc.test;
 
+import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -170,7 +171,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   protected JdbcSourceOperations getSourceOperations() {
-    return new JdbcSourceOperations();
+    return getDefaultSourceOperations();
   }
 
   protected String createTableQuery(final String tableName, final String columnClause, final String primaryKeyClause) {
@@ -202,8 +203,8 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void createTableWithoutCursorFields() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');",
+          .execute(String.format("CREATE TABLE %s (bitfield bit);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(0);",
           getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
     });
   }
@@ -223,7 +224,7 @@ public abstract class JdbcSourceAcceptanceTest {
         JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
-        JdbcUtils.getDefaultSourceOperations(),
+        getDefaultSourceOperations(),
         AdaptiveStreamingQueryConfig::new);
 
     if (supportsSchemas()) {
@@ -327,20 +328,14 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testDiscoverWithNonCursorFields() throws Exception {
-    // could not find a way to add specific types that could not be used as cursor fields for mssql, db2
-    // and snowflake
-    if (!(getDriverClass().toLowerCase().contains("microsoft") ||
-        getDriverClass().toLowerCase().contains("db2") ||
-        getDriverClass().toLowerCase().contains("snowflake"))) {
-      createTableWithoutCursorFields();
-      final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
-      AirbyteStream stream =
-          actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
-      assertNotNull(stream);
-      assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD, stream.getName().toLowerCase());
-      assertEquals(1, stream.getSupportedSyncModes().size());
-      assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
-    }
+    createTableWithoutCursorFields();
+    final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
+    AirbyteStream stream =
+        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
+    assertNotNull(stream);
+    assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD, stream.getName().toLowerCase());
+    assertEquals(1, stream.getSupportedSyncModes().size());
+    assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
   }
 
   protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {

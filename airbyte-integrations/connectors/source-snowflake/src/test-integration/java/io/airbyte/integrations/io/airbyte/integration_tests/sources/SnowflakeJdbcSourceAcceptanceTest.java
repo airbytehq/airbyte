@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -90,6 +91,16 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ((ObjectNode) config.get("credentials")).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
+  }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s (bitfield boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(true)",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
   }
 
 }

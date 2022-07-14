@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -94,7 +95,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
             sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
-
+    super.database.execute(connection -> connection.createStatement().execute(String
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_FIELD))));
     super.tearDown();
   }
 
@@ -121,6 +124,16 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
+  }
+
+  @Override
+  protected void createTableWithoutCursorFields() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s.%s (bitfield boolean)", SCHEMA_NAME, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(true)",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
   }
 
 }

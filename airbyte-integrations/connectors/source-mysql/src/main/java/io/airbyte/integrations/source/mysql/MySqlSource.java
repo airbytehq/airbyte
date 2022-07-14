@@ -43,7 +43,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,11 +59,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "useSSL=true",
       "requireSSL=true",
       "verifyServerCertificate=false");
-  private final Set<MysqlType> allowedCursorTypes = Set.of(BIT, BOOLEAN, TINYINT, TINYINT_UNSIGNED, SMALLINT,
-      SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
-      FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
-      TIME, YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT, ENUM, SET,
-      TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY);
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new MySqlSource(), List.of("host"), List.of("port"));
@@ -135,14 +129,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     }
 
     return catalog;
-  }
-
-  @Override
-  protected List<String> getCursorFields(List<CommonField<MysqlType>> fields) {
-    return fields.stream()
-        .filter(field -> allowedCursorTypes.contains(MysqlType.valueOf(field.getType().toString())))
-        .map(field -> field.getName())
-        .collect(Collectors.toList());
   }
 
   @Override

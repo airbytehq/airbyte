@@ -7,11 +7,8 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.ALLOWED_CURSOR_TYPES;
 import static java.sql.JDBCType.BIGINT;
-import static java.sql.JDBCType.BINARY;
-import static java.sql.JDBCType.BIT;
-import static java.sql.JDBCType.BLOB;
-import static java.sql.JDBCType.BOOLEAN;
 import static java.sql.JDBCType.CHAR;
 import static java.sql.JDBCType.DATE;
 import static java.sql.JDBCType.DECIMAL;
@@ -93,9 +90,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String CDC_LSN = "_ab_cdc_lsn";
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  private final Set<JDBCType> allowedCursorTypes = Set.of(TIMESTAMP, TIMESTAMP_WITH_TIMEZONE, TIME, TIME_WITH_TIMEZONE,
-      DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL,
-      CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB);
+
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -154,14 +149,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     return Jsons.jsonNode(configBuilder.build());
-  }
-
-  @Override
-  protected List<String> getCursorFields(List<CommonField<JDBCType>> fields) {
-    return fields.stream()
-        .filter(field -> allowedCursorTypes.contains(JDBCType.valueOf(field.getType().toString())))
-        .map(field -> field.getName())
-        .collect(Collectors.toList());
   }
 
   @Override

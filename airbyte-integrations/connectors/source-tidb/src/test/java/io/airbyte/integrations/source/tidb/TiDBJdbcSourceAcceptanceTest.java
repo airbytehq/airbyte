@@ -10,7 +10,6 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import java.sql.SQLException;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -68,16 +67,6 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<MysqlType> getJdbcSource() {
     return new TiDBSource();
-  }
-
-  @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-    });
   }
 
   @AfterAll

@@ -258,6 +258,12 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
+  public List<String> getCursorFields(List<CommonField<Datatype>> fields) {
+    return fields.stream().filter(field -> sourceOperations.isCursorType(field.getType()))
+        .map(f -> f.getName()).collect(Collectors.toList());
+  }
+
+  @Override
   public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
                                                                final List<String> columnNames,
                                                                final String schemaName,

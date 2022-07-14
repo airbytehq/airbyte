@@ -20,7 +20,6 @@ import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -110,17 +109,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public JsonNode getConfig() {
     return Jsons.clone(config);
-  }
-
-  @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
-    database.query(ctx -> {
-      ctx.execute(String.format("USE %s;", config.get("database").asText()));
-      ctx.execute(String.format("CREATE TABLE %s (jdoc JSON);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      ctx.execute(String.format("INSERT INTO %s VALUES('{\"key1\": \"value1\", \"key2\": \"value2\"}');",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      return null;
-    });
   }
 
   @Test

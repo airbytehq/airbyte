@@ -4,28 +4,6 @@
 
 package io.airbyte.integrations.source.relationaldb;
 
-import static java.sql.JDBCType.BIGINT;
-import static java.sql.JDBCType.BINARY;
-import static java.sql.JDBCType.BIT;
-import static java.sql.JDBCType.BLOB;
-import static java.sql.JDBCType.BOOLEAN;
-import static java.sql.JDBCType.CHAR;
-import static java.sql.JDBCType.DATE;
-import static java.sql.JDBCType.DECIMAL;
-import static java.sql.JDBCType.DOUBLE;
-import static java.sql.JDBCType.FLOAT;
-import static java.sql.JDBCType.INTEGER;
-import static java.sql.JDBCType.LONGVARCHAR;
-import static java.sql.JDBCType.NCHAR;
-import static java.sql.JDBCType.NUMERIC;
-import static java.sql.JDBCType.NVARCHAR;
-import static java.sql.JDBCType.REAL;
-import static java.sql.JDBCType.SMALLINT;
-import static java.sql.JDBCType.TIME;
-import static java.sql.JDBCType.TIMESTAMP;
-import static java.sql.JDBCType.TINYINT;
-import static java.sql.JDBCType.VARCHAR;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -65,7 +43,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -89,9 +66,6 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDbSource<DataType, Database extends AbstractDatabase> extends
     BaseConnector implements Source, AutoCloseable {
-
-  protected static final Set<JDBCType> allowedCursorTypes = Set.of(TIMESTAMP, TIME, DATE, BIT, BOOLEAN, TINYINT, SMALLINT, INTEGER,
-      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR, BINARY, BLOB);
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDbSource.class);
   // TODO: Remove when the flag is not use anymore
@@ -166,13 +140,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           Exceptions.toRuntime(this::close);
           LOGGER.info("Closed database connection pool.");
         });
-  }
-
-  protected List<String> getCursorFields(List<CommonField<DataType>> fields) {
-    return fields.stream()
-        .filter(field -> allowedCursorTypes.contains(JDBCType.valueOf(field.getType().toString())))
-        .map(field -> field.getName())
-        .collect(Collectors.toList());
   }
 
   protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database) throws Exception {
@@ -545,6 +512,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         String cursorField,
                                                                         DataType cursorFieldType,
                                                                         String cursor);
+
+  /**
+   *
+   * @return list of fields that could be used as cursors
+   */
+  public abstract List<String> getCursorFields(List<CommonField<DataType>> fields);
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);
