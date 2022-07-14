@@ -100,12 +100,22 @@ class SimpleRetriever(Retriever, HttpStream):
         return self._get_request_options(stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers)
 
     def _get_request_options(self, stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any], requester_method, paginator_method):
-        base_mapping = requester_method(self.state, stream_slice, next_page_token)
+        """
+        Get the request_option from the requester and from the paginator
+        Raise a ValueError if there's a key collision
+        Returned merged mapping otherwise
+        :param stream_slice:
+        :param next_page_token:
+        :param requester_method:
+        :param paginator_method:
+        :return:
+        """
+        requester_mapping = requester_method(self.state, stream_slice, next_page_token)
         paginator_mapping = paginator_method()
-        keys_intersection = set(base_mapping.keys()) & set(paginator_mapping.keys())
+        keys_intersection = set(requester_mapping.keys()) & set(paginator_mapping.keys())
         if keys_intersection:
             raise ValueError(f"Duplicate keys found: {keys_intersection}")
-        return {**base_mapping, **paginator_mapping}
+        return {**requester_mapping, **paginator_mapping}
 
     def request_body_data(
         self,
