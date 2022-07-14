@@ -7,6 +7,7 @@ from typing import Any, List, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import ConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
@@ -18,7 +19,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 @dataclass
-class LimitPaginator(ConditionalPaginator, JsonSchemaMixin):
+class LimitPaginator(ConditionalPaginator, DeclarativeComponentMixin, JsonSchemaMixin):
     """
     Limit paginator.
     Requests pages of results with a maximum number of records defined by limit_value.
@@ -77,15 +78,16 @@ class LimitPaginator(ConditionalPaginator, JsonSchemaMixin):
 
     """
 
-    def __init__(
+    limit_value: int
+    limit_option: RequestOption
+    page_token_option: RequestOption
+    pagination_strategy: PaginationStrategy.full_type_definition()
+    config: Config
+    url_base: str
+    decoder: Decoder = None
+
+    def __post_init__(
         self,
-        limit_value: int,
-        limit_option: RequestOption,
-        page_token_option: RequestOption,
-        pagination_strategy: PaginationStrategy,
-        config: Config,
-        url_base: str,
-        decoder: Decoder = None,
     ):
         """
 
@@ -97,31 +99,29 @@ class LimitPaginator(ConditionalPaginator, JsonSchemaMixin):
         :param url_base: endpoint's base url
         :param decoder: decoder to decode the response
         """
-        self._config = config
-        self._limit = limit_value
 
-        super().__init__(
-            self._create_request_options_provider(limit_value, limit_option),
-            page_token_option,
-            pagination_strategy,
-            config,
-            url_base,
-            decoder,
+        self._init(
+            self._create_request_options_provider(self.limit_value, self.limit_option),
+            self.page_token_option,
+            self.pagination_strategy,
+            self.config,
+            self.url_base,
+            self.decoder,
         )
 
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
-        return len(last_records) < self._limit
+        return len(last_records) < self.limit_value
 
     def _create_request_options_provider(self, limit_value, limit_option: RequestOption):
         if limit_option.option_type == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
         elif limit_option.option_type == RequestOptionType.request_parameter:
-            return InterpolatedRequestOptionsProvider(request_parameters={limit_option.field_name: limit_value}, config=self._config)
+            return InterpolatedRequestOptionsProvider(request_parameters={limit_option.field_name: limit_value}, config=self.config)
         elif limit_option.option_type == RequestOptionType.header:
-            return InterpolatedRequestOptionsProvider(request_headers={limit_option.field_name: limit_value}, config=self._config)
+            return InterpolatedRequestOptionsProvider(request_headers={limit_option.field_name: limit_value}, config=self.config)
         elif limit_option.option_type == RequestOptionType.body_json:
-            return InterpolatedRequestOptionsProvider(request_body_json={limit_option.field_name: limit_value}, config=self._config)
+            return InterpolatedRequestOptionsProvider(request_body_json={limit_option.field_name: limit_value}, config=self.config)
         elif limit_option.option_type == RequestOptionType.body_data:
-            return InterpolatedRequestOptionsProvider(request_body_data={limit_option.field_name: limit_value}, config=self._config)
+            return InterpolatedRequestOptionsProvider(request_body_data={limit_option.field_name: limit_value}, config=self.config)
         else:
             raise ValueError(f"Unexpected request option type. Got :{limit_option}")

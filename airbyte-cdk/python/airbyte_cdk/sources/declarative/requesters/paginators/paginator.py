@@ -3,12 +3,16 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.cdk_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 
 
-class Paginator(ABC):
+@dataclass
+class Paginator(ABC, DeclarativeComponentMixin, JsonSchemaMixin):
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """

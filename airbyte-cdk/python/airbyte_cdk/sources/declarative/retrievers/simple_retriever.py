@@ -28,7 +28,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin, serialise_properti
 
     stream_name: str
     stream_primary_key: str = field()
-    paginator: Optional[Paginator] = None
+    paginator: Optional[Paginator.full_type_definition()] = field(default=None)
     stream_slicer: Optional[StreamSlicer.full_type_definition()] = SingleSlice()
     state_object: Optional[State.full_type_definition()] = None
 

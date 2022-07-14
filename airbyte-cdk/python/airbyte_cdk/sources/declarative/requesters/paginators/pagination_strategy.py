@@ -1,13 +1,17 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from abc import abstractmethod
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.declarative_component_mixin import DeclarativeComponentMixin
 
 
-class PaginationStrategy:
+@dataclass
+class PaginationStrategy(ABC, DeclarativeComponentMixin):
     """
     Defines how to get the next page token
     """

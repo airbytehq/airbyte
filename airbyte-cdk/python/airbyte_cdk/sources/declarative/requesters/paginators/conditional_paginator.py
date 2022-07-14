@@ -3,6 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
@@ -19,6 +20,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 from airbyte_cdk.sources.declarative.types import Config
 
 
+@dataclass
 class ConditionalPaginator(Paginator, ABC):
     """
     A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
@@ -44,6 +46,17 @@ class ConditionalPaginator(Paginator, ABC):
         :param url_base: endpoint's base url
         :param decoder: decoder to decode the response
         """
+        self._init(request_options_provider, page_token_option, pagination_strategy, config, url_base, decoder)
+
+    def _init(
+        self,
+        request_options_provider: InterpolatedRequestOptionsProvider,
+        page_token_option: RequestOption,
+        pagination_strategy: PaginationStrategy,
+        config: Config,
+        url_base: str,
+        decoder: Decoder = None,
+    ):
         self._request_options_provider = request_options_provider
         self._config = config
         self._page_token_option = page_token_option
