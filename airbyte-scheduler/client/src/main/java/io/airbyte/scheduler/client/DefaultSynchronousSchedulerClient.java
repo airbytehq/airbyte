@@ -125,11 +125,11 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       final U jobOutput = temporalResponse.getOutput().orElse(null);
       final T mappedOutput = outputMapper.apply(jobOutput);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
+
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
+      // TODO(pedro): report ConnectorJobOutput's failureReason to the JobErrorReporter, like the above
+
       final long endedAt = Instant.now().toEpochMilli();
-
-      // TODO(pedro): report ConnectorJobOutput's failureReason to the JobErrorReporter, akin to track()
-
       return SynchronousResponse.fromTemporalResponse(
           temporalResponse,
           mappedOutput,

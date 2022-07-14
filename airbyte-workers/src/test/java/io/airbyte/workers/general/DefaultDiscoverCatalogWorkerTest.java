@@ -120,7 +120,7 @@ public class DefaultDiscoverCatalogWorkerTest {
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, mIntegrationLauncher, mStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
-
+    assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
     assertNull(output.getDiscoverCatalog());
     assertNotNull(output.getFailureReason());
 

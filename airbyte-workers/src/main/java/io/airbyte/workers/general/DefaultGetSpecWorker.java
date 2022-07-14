@@ -8,20 +8,27 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +61,10 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Optional<ConnectorSpecification> spec;
+      final Map<Type, List<AirbyteMessage>> messagesByType;
       try (final InputStream stdout = process.getInputStream()) {
-        spec = streamFactory.create(IOs.newBufferedReader(stdout))
-            .filter(message -> message.getType() == Type.SPEC)
-            .map(AirbyteMessage::getSpec)
-            .findFirst();
+        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+            .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
         // this.
@@ -67,6 +72,11 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         // it could take a while longer depending on internet conditions as well.
         WorkerUtils.gentleClose(workerConfigs, process, 30, TimeUnit.MINUTES);
       }
+
+      final Optional<ConnectorSpecification> spec = messagesByType
+          .getOrDefault(Type.SPEC, new ArrayList<>()).stream()
+          .map(AirbyteMessage::getSpec)
+          .findFirst();;
 
       final int exitCode = process.exitValue();
       if (exitCode == 0) {
@@ -77,7 +87,16 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withSpec(spec.get());
 
       } else {
-        // TODO process airbyte trace messages for this job type
+        final Optional<AirbyteTraceMessage> traceMessage =
+            messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
+                .map(AirbyteMessage::getTrace)
+                .findFirst();
+
+        if (traceMessage.isPresent()) {
+          // TODO(pedro) fix these -1s by making something specific in the FailureHelper
+          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), -1L, -1);
+          return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withFailureReason(failureReason);
+        }
 
         throw new WorkerException(String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
