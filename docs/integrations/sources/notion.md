@@ -12,22 +12,24 @@ Notion is a productivity and project management software. It was designed to hel
 2. Create a new integration. Make sure to check the `Read content` capability.
 3. Check the appropriate user capability depending on your use case.
 4. Click `Submit`.
-5. Copy the access token from the next screen.
+5. Copy the **access_token** or **client_id** and **client_secret** from the next screen depending on selected authentication method.
 6. On Airbyte, go to the sources option on the left and click the `+ New source` option.
 7. Select the Notion source and provide the start date.
-8. Paste the access token from the Notion integration page.
+8. Paste the access token or client_id and client_secret from the Notion integration page.
 9. Click the `Setup source` button. You should be able to start getting data.
 
 
 ## Connector Reference
 
 ### Supported features
-| Feature | Supported? | Notes
-| :--- | :--- | :---
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes | Not supported for `Users` stream
-| SSL connection | Yes |
-| Namespaces | No |
+| Feature                     | Supported? | Notes                            
+|:----------------------------|:----|:---------------------------------|
+| Full Refresh Sync           | Yes |                                  |
+| Incremental - Append Sync   | Yes | Not supported for `Users` stream |
+| SSL connection              | Yes |                                  | 
+| OAuth2.0 authentication     | Yes |                                  |
+| Access token authentication | Yes |                                  |
+| Namespaces                  | No  |                                  |
 
 ### Output schema
 
@@ -59,12 +61,13 @@ In order for your connection to successfully sync the pages and blocks you expec
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.4 | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through |
-| 0.1.3 | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream |
-| 0.1.2 | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084) | Fix documentation URL |
-| 0.1.1 | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207) | Update connector fields title/description |
-| 0.1.0 | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092) | Initial Release |
+| Version | Date | Pull Request                                             | Subject                                         |
+|:--------| :--- |:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.5   | 2022-07-07 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                   |
+| 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through |
+| 0.1.3   | 2022-04-22 | [11452](https://github.com/airbytehq/airbyte/pull/11452) | Use pagination for User stream                  |
+| 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                           |
+| 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description       |
+| 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                 |
 
 
