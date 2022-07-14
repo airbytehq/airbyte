@@ -5,12 +5,11 @@
 package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardCheckConnectionOutput;
-import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -350,8 +349,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       log.info("SOURCE CHECK: Skipped");
     } else {
       log.info("SOURCE CHECK: Starting");
-      final StandardCheckConnectionOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
-      if (sourceCheckResponse.getStatus() == Status.FAILED) {
+      final ConnectorJobOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
+      if (SyncCheckConnectionFailure.isOutputFailed(sourceCheckResponse)) {
         checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
         checkFailure.setFailureOutput(sourceCheckResponse);
         log.info("SOURCE CHECK: Failed");
@@ -367,8 +366,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       log.info("DESTINATION CHECK: Skipped");
     } else {
       log.info("DESTINATION CHECK: Starting");
-      final StandardCheckConnectionOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
-      if (destinationCheckResponse.getStatus() == Status.FAILED) {
+      final ConnectorJobOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
+      if (SyncCheckConnectionFailure.isOutputFailed(destinationCheckResponse)) {
         checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
         checkFailure.setFailureOutput(destinationCheckResponse);
         log.info("DESTINATION CHECK: Failed");

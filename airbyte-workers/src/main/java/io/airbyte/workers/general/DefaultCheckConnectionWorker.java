@@ -87,8 +87,10 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
         LOGGER.error(message);
 
-        // TODO process airbyte trace messages for this job type
-        // (pedro) i think this should be a FailureReason, not a custom StandardCheckConnectionOutput
+        // TODO(pedro) process airbyte trace messages for this job type
+
+        // TODO (pedro) this should throw a WorkerException, not make a StandardCheckConnectionOutput
+        // we should keep the ConnectorJobOutput for things the connector itself has returned
 
         return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(new StandardCheckConnectionOutput()
             .withStatus(Status.FAILED)
