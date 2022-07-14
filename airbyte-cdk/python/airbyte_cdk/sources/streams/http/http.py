@@ -338,7 +338,8 @@ class HttpStream(Stream, ABC):
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
-    def parse_response_error_message(self, response: requests.Response) -> Optional[str]:
+    @classmethod
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
         """
         Parses the raw response object from a failed request into a user-friendly error message.
         By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
