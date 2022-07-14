@@ -953,6 +953,45 @@ public class ConnectionManagerWorkflowTest {
     @Test
     @Timeout(value = 10,
              unit = TimeUnit.SECONDS)
+    @DisplayName("Test that Source CHECK failure reasons are recorded")
+    public void testSourceCheckFailureReasonsRecorded() throws InterruptedException {
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
+          .thenReturn(new JobCreationOutput(JOB_ID));
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
+          .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
+      Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withFailureReason(new FailureReason().withFailureType(FailureType.SYSTEM_ERROR)));
+
+      testEnv.start();
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(JOB_ID)
+          .attemptId(ATTEMPT_ID)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(workflowState)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.submitManualSync();
+      Thread.sleep(500); // any time after no-waiting manual run
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity)
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.SOURCE, FailureType.SYSTEM_ERROR)));
+    }
+
+    @Test
+    @Timeout(value = 10,
+             unit = TimeUnit.SECONDS)
     @DisplayName("Test that Destination CHECK failures are recorded")
     public void testDestinationCheckFailuresRecorded() throws InterruptedException {
       Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
@@ -992,6 +1031,50 @@ public class ConnectionManagerWorkflowTest {
 
       Mockito.verify(mJobCreationAndStatusUpdateActivity)
           .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.CONFIG_ERROR)));
+    }
+
+    @Test
+    @Timeout(value = 10,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that Destination CHECK failure reasons are recorded")
+    public void testDestinationCheckFailureReasonsRecorded() throws InterruptedException {
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewJob(Mockito.any()))
+          .thenReturn(new JobCreationOutput(JOB_ID));
+      Mockito.when(mJobCreationAndStatusUpdateActivity.createNewAttemptNumber(Mockito.any()))
+          .thenReturn(new AttemptNumberCreationOutput(ATTEMPT_ID));
+      Mockito.when(mCheckConnectionActivity.run(Mockito.any()))
+          // First call (source) succeeds
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withCheckConnection(new StandardCheckConnectionOutput().withStatus(Status.SUCCEEDED).withMessage("all good")))
+
+          // Second call (destination) fails
+          .thenReturn(new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION)
+              .withFailureReason(new FailureReason().withFailureType(FailureType.SYSTEM_ERROR)));
+
+      testEnv.start();
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(JOB_ID)
+          .attemptId(ATTEMPT_ID)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(workflowState)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.submitManualSync();
+      Thread.sleep(500); // any time after no-waiting manual run
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity)
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOriginWithType(FailureOrigin.DESTINATION, FailureType.SYSTEM_ERROR)));
     }
 
     @Test

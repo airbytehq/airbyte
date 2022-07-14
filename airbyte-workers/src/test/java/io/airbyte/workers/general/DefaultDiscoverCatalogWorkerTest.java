@@ -104,21 +104,30 @@ public class DefaultDiscoverCatalogWorkerTest {
 
   @SuppressWarnings("BusyWait")
   @Test
-  public void testDiscoverSchemaTrace() throws Exception {
-    final IntegrationLauncher mIntegrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
-    final Process mProcess = mock(Process.class);
+  public void testDiscoverSchemaProcessFail() throws Exception {
+    when(process.exitValue()).thenReturn(1);
 
-    when(mIntegrationLauncher.discover(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDENTIALS))).thenReturn(mProcess);
-    final InputStream inputStream = mock(InputStream.class);
-    when(mProcess.getInputStream()).thenReturn(inputStream);
-    when(mProcess.getErrorStream()).thenReturn(new ByteArrayInputStream(new byte[0]));
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
+    assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
-    final AirbyteStreamFactory mStreamFactory = noop -> Lists.newArrayList(
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).exitValue();
+  }
+
+  @SuppressWarnings("BusyWait")
+  @Test
+  public void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
+    final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
         AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
 
-    when(mProcess.exitValue()).thenReturn(1);
+    when(process.exitValue()).thenReturn(1);
 
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, mIntegrationLauncher, mStreamFactory);
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, traceStreamFactory);
     final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
     assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
     assertNull(output.getDiscoverCatalog());
@@ -126,23 +135,6 @@ public class DefaultDiscoverCatalogWorkerTest {
 
     final FailureReason failureReason = output.getFailureReason();
     assertEquals("some error from the connector", failureReason.getExternalMessage());
-
-    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
-      while (mProcess.getErrorStream().available() != 0) {
-        Thread.sleep(50);
-      }
-    });
-
-    verify(mProcess).exitValue();
-  }
-
-  @SuppressWarnings("BusyWait")
-  @Test
-  public void testDiscoverSchemaProcessFail() throws Exception {
-    when(process.exitValue()).thenReturn(1);
-
-    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
-    assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {

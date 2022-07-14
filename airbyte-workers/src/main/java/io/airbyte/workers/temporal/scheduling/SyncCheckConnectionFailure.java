@@ -72,7 +72,7 @@ public class SyncCheckConnectionFailure {
                     .withRecordsCommitted(0L)));;
 
     if (failureOutput.getFailureReason() != null) {
-      syncOutput.setFailures(List.of(failureOutput.getFailureReason()));
+      syncOutput.setFailures(List.of(failureOutput.getFailureReason().withFailureOrigin(origin)));
     } else {
       final StandardCheckConnectionOutput checkOutput = failureOutput.getCheckConnection();
       final Exception ex = new IllegalArgumentException(checkOutput.getMessage());

@@ -118,6 +118,26 @@ class DefaultSynchronousSchedulerClientTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    void testExecuteMappedOutput() {
+      final UUID sourceDefinitionId = UUID.randomUUID();
+      final Function<UUID, TemporalResponse<Integer>> function = mock(Function.class);
+      final Function<Integer, String> mapperFunction = Object::toString;
+      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
+
+      final SynchronousResponse<String> response = schedulerClient
+          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+
+      assertNotNull(response);
+      assertEquals("42", response.getOutput());
+      assertEquals(ConfigType.DISCOVER_SCHEMA, response.getMetadata().getConfigType());
+      assertTrue(response.getMetadata().getConfigId().isPresent());
+      assertEquals(sourceDefinitionId, response.getMetadata().getConfigId().get());
+      assertTrue(response.getMetadata().isSucceeded());
+      assertEquals(LOG_PATH, response.getMetadata().getLogPath());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
     void testExecuteJobFailure() {
       final UUID sourceDefinitionId = UUID.randomUUID();
       final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
