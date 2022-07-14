@@ -12,7 +12,7 @@
         "description": "Kyriba domain",
         "title": "Domain",
         "examples": ["demo.kyriba.com"],
-        "pattern":"^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
+        "pattern": "^[a-zA-Z0-9._-]*\\.[a-zA-Z0-9._-]*\\.[a-z]*"
       },
       "username": {
         "type": "string",
