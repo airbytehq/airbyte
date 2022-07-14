@@ -44,13 +44,19 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
 
   @Override
   protected boolean compareBooleanValues(final String firstValue, final String secondValue) {
-    final boolean firstBooleanValue = Boolean.parseBoolean(firstValue);
+    return parseBool(firstValue) == parseBool(secondValue);
+  }
 
-    // Type bool is stored as UInt8. Possible values true (1), false (0).
-    //https://clickhouse.com/docs/en/sql-reference/data-types/boolean
-    final boolean secondBooleanValue = Integer.parseInt(secondValue) > 0;
 
-    return firstBooleanValue == secondBooleanValue;
+  private boolean parseBool(final String valueAsString){
+    // boolen as a String may be returned as true\false and as 0\1
+    // https://clickhouse.com/docs/en/sql-reference/data-types/boolean
+    try {
+      return Integer.parseInt(valueAsString) > 0;
+    } catch (final NumberFormatException ex){
+      return Boolean.parseBoolean(valueAsString);
+    }
+
   }
 
 }
