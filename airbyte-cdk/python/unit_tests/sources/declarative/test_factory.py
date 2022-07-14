@@ -7,17 +7,20 @@ import datetime
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
+from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
@@ -103,16 +106,14 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_datetime_stream_slicer():
     content = """
     stream_slicer:
-        class_name: airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer.DatetimeStreamSlicer
+        type: DatetimeStreamSlicer
         options:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
-        end_datetime:
-          class_name: airbyte_cdk.sources.declarative.datetime.min_max_datetime.MinMaxDatetime
-          datetime: "{{ config['end_time'] }}"
+        end_datetime: "{{ config['end_time'] }}"
         step: "10d"
         cursor_value: "created"
         lookback_window: "5d"
@@ -123,6 +124,7 @@ def test_datetime_stream_slicer():
     assert type(stream_slicer) == DatetimeStreamSlicer
     assert stream_slicer._timezone == datetime.timezone.utc
     assert type(stream_slicer._start_datetime) == MinMaxDatetime
+    assert type(stream_slicer._end_datetime) == MinMaxDatetime
     assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%d"
     assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
@@ -163,8 +165,8 @@ requester:
     class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
-  retrier:
-    class_name: airbyte_cdk.sources.declarative.requesters.retriers.default_retrier.DefaultRetrier
+  error_handler:
+    type: DefaultErrorHandler
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
@@ -179,7 +181,7 @@ partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    file_path: "./source_sendgrid/schemas/{{options['name']}}.json"
+    file_path: "./source_sendgrid/schemas/{{ name }}.json"
   cursor_field: [ ]
 list_stream:
   ref: "*ref(partial_stream)"
@@ -210,6 +212,9 @@ check:
     assert stream_config["class_name"] == "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
     assert stream_config["cursor_field"] == []
     stream = factory.create_component(stream_config, input_config)()
+
+    assert isinstance(stream._retriever._record_selector._extractor, JelloExtractor)
+
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
@@ -219,10 +224,11 @@ check:
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
+
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
     assert type(stream._retriever._record_selector._record_filter) == RecordFilter
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
-    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.json"
+    assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
 
     checker = factory.create_component(config["check"], input_config)()
     streams_to_check = checker._stream_names
@@ -232,10 +238,32 @@ check:
     assert stream._retriever._requester._path._default == "marketing/lists"
 
 
+def test_create_record_selector():
+    content = """
+    extractor:
+      type: JelloExtractor
+      transform: "_"
+    selector:
+      class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
+      record_filter:
+        class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
+        condition: "{{ record['id'] > stream_state['id'] }}"
+      extractor:
+        ref: "*ref(extractor)"
+        transform: "_"
+    """
+    config = parser.parse(content)
+    selector = factory.create_component(config["selector"], input_config)()
+    assert isinstance(selector, RecordSelector)
+    assert isinstance(selector._extractor, JelloExtractor)
+    assert selector._extractor._transform == "_"
+    assert isinstance(selector._record_filter, RecordFilter)
+
+
 def test_create_requester():
     content = """
   requester:
-    class_name: airbyte_cdk.sources.declarative.requesters.http_requester.HttpRequester
+    type: HttpRequester
     path: "/v3/marketing/lists"
     name: lists
     url_base: "https://api.sendgrid.com"
@@ -251,7 +279,7 @@ def test_create_requester():
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
-    assert isinstance(component._retrier, DefaultRetrier)
+    assert isinstance(component._error_handler, DefaultErrorHandler)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, TokenAuthenticator)
@@ -261,16 +289,38 @@ def test_create_requester():
     assert component._name == "lists"
 
 
-def test_full_config_with_defaults():
+def test_create_composite_error_handler():
+    content = """
+        error_handler:
+          type: "CompositeErrorHandler"
+          error_handlers:
+            - response_filters:
+                - predicate: "{{ 'code' in decoded_response }}"
+                  action: RETRY
+            - response_filters:
+                - http_codes: [ 403 ]
+                  action: RETRY
+    """
+    config = parser.parse(content)
+    component = factory.create_component(config["error_handler"], input_config)()
+    assert len(component._error_handlers) == 2
+    assert isinstance(component._error_handlers[0], DefaultErrorHandler)
+    assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
+    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
+    assert isinstance(component, CompositeErrorHandler)
+
+
+def test_config_with_defaults():
     content = """
     lists_stream:
-      class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+      type: "DeclarativeStream"
       options:
         name: "lists"
         primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
-          file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+          file_path: "./source_sendgrid/schemas/{{name}}.yaml"
         retriever:
           paginator:
             type: "NextPageUrlPaginator"
@@ -301,7 +351,7 @@ def test_full_config_with_defaults():
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
-    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
+    assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
     assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
@@ -330,7 +380,7 @@ class TestCreateTransformations:
     def test_no_transformations(self):
         content = f"""
         the_stream:
-            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            type: DeclarativeStream
             options:
                 {self.base_options}
         """
@@ -342,7 +392,7 @@ class TestCreateTransformations:
     def test_remove_fields(self):
         content = f"""
         the_stream:
-            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            type: DeclarativeStream
             options:
                 {self.base_options}
                 transformations:
