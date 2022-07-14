@@ -1,3 +1,4 @@
+@use "../../../../scss/variables";
 @forward "../components/StreamRow.module.scss";
 @forward "../components/DiffSection.module.scss";
 
@@ -14,8 +15,8 @@
   flex-direction: row;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  padding: 5px 30px 5px 0px;
+  gap: variables.$spacing-md;
+  padding: variables.$spacing-sm 30px variables.$spacing-sm 0px;
   font-weight: 400;
 }
 

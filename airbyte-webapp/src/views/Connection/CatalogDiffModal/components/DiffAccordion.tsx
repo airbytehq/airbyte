@@ -45,7 +45,10 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
                 {open ? <FontAwesomeIcon icon={faAngleDown} /> : <FontAwesomeIcon icon={faAngleRight} />}
                 {streamTransform.streamDescriptor.namespace}
               </div>
-              <div className={nameCellStyle} aria-labelledby={formatMessage({ id: "connection.updateSchema.name" })}>
+              <div
+                className={nameCellStyle}
+                aria-labelledby={formatMessage({ id: "connection.updateSchema.streamName" })}
+              >
                 {streamTransform.streamDescriptor.name}
               </div>
               <div className={styles.iconBlock}>

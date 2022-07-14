@@ -1,11 +1,11 @@
 import { Dispatch, SetStateAction } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { LoadingButton } from "components";
+import { Button } from "components";
 
 import { AirbyteCatalog, CatalogDiff, FieldTransform, StreamTransform } from "core/request/AirbyteClient";
 
-import { Modal } from "../../../components/Modal";
+import { Modal, ModalFooter } from "../../../components/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";
@@ -53,11 +53,11 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
         {newItems.length > 0 && <DiffSection streams={newItems} diffVerb="new" />}
         {changedItems.length > 0 && <FieldSection streams={changedItems} diffVerb="changed" />}
       </div>
-      <div className={styles.buttonContainer}>
-        <LoadingButton onClick={() => setDiffAcknowledged(true)}>
+      <ModalFooter>
+        <Button onClick={() => setDiffAcknowledged(true)}>
           <FormattedMessage id="connection.updateSchema.confirm" />
-        </LoadingButton>
-      </div>
+        </Button>
+      </ModalFooter>
     </Modal>
   );
 };

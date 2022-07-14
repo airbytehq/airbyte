@@ -1,11 +1,12 @@
+@use "../../../../scss/variables";
 @use "../../../../scss/colors";
 
 .row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 5px 20px 5px 20px;
-  gap: 10px;
+  padding: variables.$spacing-sm variables.$spacing-xl;
+  gap: variables.$spacing-md;
   height: 35px;
   font-size: 12px;
 }
@@ -49,11 +50,11 @@
 .cell {
   width: 228px;
   &.update {
-    border-radius: 6px;
+    border-radius: variables.$border-radius-sm;
     & span {
       background-color: rgba(98, 94, 255, 0.1);
-      padding: 7px;
-      border-radius: 6px;
+      padding: variables.$spacing-sm;
+      border-radius: variables.$border-radius-sm;
     }
   }
 }

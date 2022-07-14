@@ -26,7 +26,7 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diff
               <FormattedMessage id="connection.updateSchema.namespace" />
             </th>
             <th>
-              <FormattedMessage id="connection.updateSchema.name" />
+              <FormattedMessage id="connection.updateSchema.streamName" />
             </th>
             <th />
           </tr>

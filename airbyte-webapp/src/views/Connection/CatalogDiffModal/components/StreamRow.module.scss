@@ -1,12 +1,13 @@
 @use "../../../../scss/colors";
+@use "../../../../scss/variables";
 
 .row {
   display: flex;
   flex-direction: row;
   height: 40px;
   align-items: center;
-  padding: 5px 20px 5px 20px;
-  gap: 10px;
+  padding: variables.$spacing-sm variables.$spacing-xl;
+  gap: variables.$spacing-md;
   border-bottom: 1px solid colors.$white;
   width: 100%;
   font-size: 12px;
@@ -35,8 +36,8 @@
 .syncModeBox {
   font-size: 11px;
   line-height: 12px;
-  border-radius: 5px;
-  padding: 5px 9px 5px 9px;
+  border-radius: variables.$border-radius-sm;
+  padding: variables.$spacing-sm variables.$spacing-md;
   width: 226px;
   opacity: 50%;
   background: colors.$red-100;
