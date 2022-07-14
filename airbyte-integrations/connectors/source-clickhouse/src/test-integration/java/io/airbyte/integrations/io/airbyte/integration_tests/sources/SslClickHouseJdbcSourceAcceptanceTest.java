@@ -15,6 +15,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
 import java.util.List;
 import javax.sql.DataSource;
@@ -68,8 +69,8 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(container))
+        .put("port", HostPortResolver.resolvePort(container))
         .put("username", "default")
         .put("password", "")
         .build());

@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
@@ -32,12 +33,12 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(db))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("database", SCHEMA_NAME)
         .put("username", db.getUsername())
         .put("password", db.getPassword())

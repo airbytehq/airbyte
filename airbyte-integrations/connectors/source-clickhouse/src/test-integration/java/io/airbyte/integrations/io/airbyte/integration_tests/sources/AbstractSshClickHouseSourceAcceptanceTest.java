@@ -100,7 +100,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   }
 
   private void initAndStartJdbcContainer() {
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine").withNetwork(network);
+    db = (ClickHouseContainer) new ClickHouseContainer("clickhouse/clickhouse-server:22.5").withNetwork(network);
     db.start();
   }
 

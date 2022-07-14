@@ -82,7 +82,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
