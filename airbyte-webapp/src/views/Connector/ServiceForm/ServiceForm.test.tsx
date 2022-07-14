@@ -8,17 +8,27 @@ import { render } from "utils/testutils";
 import { ServiceForm } from "views/Connector/ServiceForm";
 
 import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
-import { ConnectorDocumentationWrapper } from "../ConnectorDocumentationLayout";
+import { DocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "./types";
 
 // hack to fix tests. https://github.com/remarkjs/react-markdown/issues/635
-jest.mock(
-  "components/Markdown",
-  () =>
-    function ReactMarkdown({ children }: React.PropsWithChildren<unknown>) {
-      return <>{children}</>;
-    }
-);
+jest.mock("components/Markdown", () => ({ children }: React.PropsWithChildren<unknown>) => <>{children}</>);
+
+jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  const emptyFn = () => {};
+
+  const useDocumentationPanelContext: () => DocumentationPanelContext = () => ({
+    documentationPanelOpen: false,
+    documentationUrl: "",
+    setDocumentationPanelOpen: emptyFn,
+    setDocumentationUrl: emptyFn,
+  });
+
+  return {
+    useDocumentationPanelContext,
+  };
+});
 
 jest.setTimeout(10000);
 
@@ -145,21 +155,19 @@ describe("Service Form", () => {
     beforeEach(async () => {
       const handleSubmit = jest.fn();
       const renderResult = await render(
-        <ConnectorDocumentationWrapper>
-          <ServiceForm
-            formType="source"
-            onSubmit={handleSubmit}
-            selectedConnectorDefinitionSpecification={
-              // @ts-expect-error Partial objects for testing
-              {
-                connectionSpecification: schema,
-                sourceDefinitionId: "1",
-                documentationUrl: "",
-              } as DestinationDefinitionSpecificationRead
-            }
-            availableServices={[]}
-          />
-        </ConnectorDocumentationWrapper>
+        <ServiceForm
+          formType="source"
+          onSubmit={handleSubmit}
+          selectedConnectorDefinitionSpecification={
+            // @ts-expect-error Partial objects for testing
+            {
+              connectionSpecification: schema,
+              sourceDefinitionId: "1",
+              documentationUrl: "",
+            } as DestinationDefinitionSpecificationRead
+          }
+          availableServices={[]}
+        />
       );
       container = renderResult.container;
     });
@@ -230,22 +238,20 @@ describe("Service Form", () => {
     let container: HTMLElement;
     beforeEach(async () => {
       const renderResult = await render(
-        <ConnectorDocumentationWrapper>
-          <ServiceForm
-            formType="source"
-            formValues={{ name: "test-name", serviceType: "test-service-type" }}
-            onSubmit={(values) => (result = values)}
-            selectedConnectorDefinitionSpecification={
-              // @ts-expect-error Partial objects for testing
-              {
-                connectionSpecification: schema,
-                sourceDefinitionId: "test-service-type",
-                documentationUrl: "",
-              } as DestinationDefinitionSpecificationRead
-            }
-            availableServices={[]}
-          />
-        </ConnectorDocumentationWrapper>
+        <ServiceForm
+          formType="source"
+          formValues={{ name: "test-name", serviceType: "test-service-type" }}
+          onSubmit={(values) => (result = values)}
+          selectedConnectorDefinitionSpecification={
+            // @ts-expect-error Partial objects for testing
+            {
+              connectionSpecification: schema,
+              sourceDefinitionId: "test-service-type",
+              documentationUrl: "",
+            } as DestinationDefinitionSpecificationRead
+          }
+          availableServices={[]}
+        />
       );
       container = renderResult.container;
     });
@@ -348,7 +354,6 @@ describe("Service Form", () => {
     });
 
     test("should fill right values in array of objects field", async () => {
-      const priceList = container.querySelector("div[data-testid='connectionConfiguration.priceList']");
       const addPriceListItem = useAddPriceListItem(container);
       await addPriceListItem("test-1", "1");
       await addPriceListItem("test-2", "2");
