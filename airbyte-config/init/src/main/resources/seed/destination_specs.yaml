@@ -966,7 +966,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:0.2.3"
+- dockerImage: "airbyte/destination-databricks:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
     connectionSpecification:
@@ -979,7 +979,6 @@
       - "databricks_http_path"
       - "databricks_personal_access_token"
       - "data_source"
-      additionalProperties: false
       properties:
         accept_terms:
           title: "Agree to the Databricks JDBC Driver Terms & Conditions"
@@ -4365,7 +4364,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.31"
+- dockerImage: "airbyte/destination-snowflake:0.4.32"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4507,7 +4506,6 @@
                 - "Standard"
                 default: "Standard"
           - title: "[Recommended] Internal Staging"
-            additionalProperties: false
             description: "Recommended for large production workloads for better speed\
               \ and scalability."
             required:
@@ -4521,7 +4519,6 @@
                 - "Internal Staging"
                 default: "Internal Staging"
           - title: "AWS S3 Staging"
-            additionalProperties: false
             description: "Recommended for large production workloads for better speed\
               \ and scalability."
             required:
@@ -4639,7 +4636,6 @@
                         \ key for each sync."
                       airbyte_secret: true
           - title: "Google Cloud Storage Staging"
-            additionalProperties: false
             description: "Recommended for large production workloads for better speed\
               \ and scalability."
             required:
@@ -4682,7 +4678,6 @@
                 multiline: true
                 order: 3
           - title: "Azure Blob Storage Staging"
-            additionalProperties: false
             description: "Recommended for large production workloads for better speed\
               \ and scalability."
             required:
@@ -4757,7 +4752,6 @@
               - "host"
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             access_token:
               type: "string"
@@ -4771,7 +4765,6 @@
               - "refresh_token"
         complete_oauth_server_input_specification:
           type: "object"
-          additionalProperties: false
           properties:
             client_id:
               type: "string"
@@ -4779,7 +4772,6 @@
               type: "string"
         complete_oauth_server_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             client_id:
               type: "string"
