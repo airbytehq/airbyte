@@ -52,10 +52,7 @@
                 "type": "string",
                 "example": "TRANSACTION",
                 "description": "The date type based on which the cash balance is calculated.",
-                "enum": [
-                  "TRANSACTION",
-                  "VALUE"
-                ]
+                "enum": ["TRANSACTION", "VALUE"]
               }
             },
             "title": "BK-BalanceDateModel"
