@@ -572,9 +572,6 @@ public class CdcAcceptanceTests {
     assertNull(state.getGlobalState());
   }
 
-  // TODO: consolidate the below methods with those added in
-  // https://github.com/airbytehq/airbyte/pull/14406
-
   private WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
     final SyncMode syncMode = SyncMode.INCREMENTAL;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
