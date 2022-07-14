@@ -2,7 +2,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { StreamTransform } from "core/request/AirbyteClient";
 
-import { DiffVerb } from "../CatalogDiffModal";
+import { DiffVerb } from "../utils/types";
 import { DiffAccordion } from "./DiffAccordion";
 import { DiffHeader } from "./DiffHeader";
 import styles from "./FieldSection.module.scss";

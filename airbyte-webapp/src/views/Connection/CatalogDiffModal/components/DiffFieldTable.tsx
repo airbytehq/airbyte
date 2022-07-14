@@ -2,7 +2,7 @@ import { FormattedMessage } from "react-intl";
 
 import { FieldTransform } from "core/request/AirbyteClient";
 
-import { DiffVerb } from "../CatalogDiffModal";
+import { DiffVerb } from "../utils/types";
 import styles from "./DiffFieldTable.module.scss";
 import { DiffHeader } from "./DiffHeader";
 import { FieldRow } from "./FieldRow";
