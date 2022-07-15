@@ -130,5 +130,5 @@ You cannot create more than 200 worksheets within single spreadsheet.
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------- |
-| 0.1.1   | 2022-06-15 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Yield state only when records saved |
+| 0.1.1   | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
 | 0.1.0   | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release                     |
