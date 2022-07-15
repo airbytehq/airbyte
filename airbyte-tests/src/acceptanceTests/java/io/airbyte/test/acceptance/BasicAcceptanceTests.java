@@ -9,6 +9,7 @@ import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.AWESOME_PEOPLE_
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_ID;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COOL_EMPLOYEES_TABLE_NAME;
+import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.PUBLIC_SCHEMA_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STAGING_SCHEMA_NAME;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.STREAM_NAME;
@@ -888,8 +889,10 @@ public class BasicAcceptanceTests {
       return null;
     });
 
-    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+    final SourceRead source = testHarness.createPostgresSource();
+    // Force an older version of the Postgres connector that is not using per stream
+    testHarness.updateSourceDefinitionVersion(source.getSourceDefinitionId(), POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(source.getSourceId());
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
@@ -897,7 +900,7 @@ public class BasicAcceptanceTests {
     LOGGER.info("Discovered catalog: {}", catalog);
 
     final ConnectionRead connection =
-        testHarness.createConnection(name, sourceId, destinationId, List.of(operation.getOperationId()), catalog, null);
+        testHarness.createConnection(name, source.getSourceId(), destinationId, List.of(operation.getOperationId()), catalog, null);
     LOGGER.info("Created Connection: {}", connection);
 
     sourceDb.query(ctx -> {
@@ -942,7 +945,7 @@ public class BasicAcceptanceTests {
       return null;
     });
 
-    final AirbyteCatalog updatedCatalog = testHarness.discoverSourceSchemaWithoutCache(sourceId);
+    final AirbyteCatalog updatedCatalog = testHarness.discoverSourceSchemaWithoutCache(source.getSourceId());
     LOGGER.info("Discovered updated catalog: {}", updatedCatalog);
 
     // Update with refreshed catalog
