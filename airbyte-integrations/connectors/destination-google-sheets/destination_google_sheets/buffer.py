@@ -14,7 +14,7 @@ class WriteBufferMixin:
     # Default instance of AirbyteLogger
     logger = AirbyteLogger()
     # interval after which the records_buffer should be cleaned up for selected stream
-    flush_interval = 1000
+    flush_interval = 500
 
     def __init__(self):
         # Buffer for input records

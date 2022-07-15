@@ -69,7 +69,8 @@ class DestinationGoogleSheets(Destination):
                     writer.queue_write_operation(record.stream)
             elif message.type == Type.STATE:
                 # yielding a state message indicates that all preceding records have been persisted to the destination
-                writer.write_whats_left()
+                # cleaning records_buffer for target stream.
+                writer.clear_buffer(record.stream)
                 yield message
             else:
                 continue
