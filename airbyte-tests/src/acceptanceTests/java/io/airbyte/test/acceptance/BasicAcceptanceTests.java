@@ -1029,7 +1029,7 @@ public class BasicAcceptanceTests {
         .status(connection.getStatus())
         .resourceRequirements(connection.getResourceRequirements())
         .withRefreshedCatalog(true);
-    final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
     destDb.query(ctx -> {

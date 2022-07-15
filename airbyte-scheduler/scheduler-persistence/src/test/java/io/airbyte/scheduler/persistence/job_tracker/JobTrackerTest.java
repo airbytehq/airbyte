@@ -241,7 +241,7 @@ class JobTrackerTest {
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, WORKSPACE_ID, jobState), metadata);
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata, false);
+    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata);
   }
 
   @Test
@@ -600,10 +600,6 @@ class JobTrackerTest {
     }
   }
 
-  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer, final Map<String, Object> expectedMetadata) {
-    assertCorrectMessageForEachState(jobStateConsumer, expectedMetadata, true);
-  }
-
   /**
    * Tests that the tracker emits the correct message for when the job starts, succeeds, and fails.
    *
@@ -612,8 +608,7 @@ class JobTrackerTest {
    * @param expectedMetadata - expected metadata (except job state).
    */
   private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer,
-                                                final Map<String, Object> expectedMetadata,
-                                                final boolean workspaceSet) {
+                                                final Map<String, Object> expectedMetadata) {
     jobStateConsumer.accept(JobState.STARTED);
     assertCorrectMessageForStartedState(expectedMetadata);
     jobStateConsumer.accept(JobState.SUCCEEDED);

@@ -11,6 +11,7 @@ import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -99,16 +100,13 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (useSSL(config)) {
+    if (JdbcUtils.useSsl(config)) {
       return DEFAULT_SSL_JDBC_PARAMETERS;
     } else {
       return DEFAULT_JDBC_PARAMETERS;
     }
   }
 
-  private boolean useSSL(final JsonNode config) {
-    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
-  }
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
