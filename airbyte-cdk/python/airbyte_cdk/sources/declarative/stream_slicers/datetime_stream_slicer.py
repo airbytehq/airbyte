@@ -4,17 +4,25 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
+import dateutil
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config
 
 
 class DatetimeStreamSlicer(StreamSlicer):
+    def path(self) -> Optional[str]:
+        pass
+
     timedelta_regex = re.compile(
         r"((?P<weeks>[\.\d]+?)w)?"
         r"((?P<days>[\.\d]+?)d)?"
@@ -25,33 +33,57 @@ class DatetimeStreamSlicer(StreamSlicer):
         r"((?P<milliseconds>[\.\d]+?)us)?$"
     )
 
-    # FIXME: start_time, end_time, and step should be datetime and timedelta?
-    # FIXME: timezone should be declarative?
     def __init__(
         self,
         start_datetime: MinMaxDatetime,
         end_datetime: MinMaxDatetime,
         step: str,
-        cursor_value: InterpolatedString,
+        cursor_field: InterpolatedString,
         datetime_format: str,
         config: Config,
+        start_time_option: Optional[RequestOption] = None,
+        end_time_option: Optional[RequestOption] = None,
+        stream_state_field: Optional[str] = None,
         lookback_window: Optional[InterpolatedString] = None,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
+        self._timezone = datetime.timezone.utc
+        self._interpolation = JinjaInterpolation()
+
         self._datetime_format = datetime_format
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
         self._step = self._parse_timedelta(step)
         self._config = config
-        self._cursor_value = cursor_value
         self._lookback_window = lookback_window
+        self._cursor_field = cursor_field
+        self._start_time_option = start_time_option
+        self._end_time_option = end_time_option
+        self._stream_state_field = stream_state_field or cursor_field
+        self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
+        self._cursor = None
 
-        # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
-        if not self._start_datetime.datetime_format:
-            self._start_datetime.datetime_format = self._datetime_format
-        if not self._end_datetime.datetime_format:
-            self._end_datetime.datetime_format = self._datetime_format
+    def set_state(self, stream_state: Mapping[str, Any]):
+        self._cursor = stream_state.get(self._stream_state_field)
+
+    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+        return {self._stream_state_field: self._cursor} if self._cursor else None
+
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+        stream_slice_value = stream_slice.get(self._cursor_field)
+        last_record_value = last_record.get(self._cursor_field) if last_record else None
+        cursor = None
+        if stream_slice_value and last_record_value:
+            cursor = max(stream_slice_value, last_record_value, self._cursor)
+        elif stream_slice_value:
+            cursor = stream_slice_value
+        else:
+            cursor = last_record_value
+        if self._cursor and cursor:
+            self._cursor = max(cursor, self._cursor)
+        elif cursor:
+            self._cursor = cursor
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         # Evaluate and compare start_date, end_date, and cursor_value based on configs and runtime state
@@ -61,8 +93,9 @@ class DatetimeStreamSlicer(StreamSlicer):
         lookback_delta = self._parse_timedelta(self._lookback_window.eval(self._config, **kwargs) if self._lookback_window else "0d")
         start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
-        if self._cursor_value and self._cursor_value.eval(self._config, **kwargs):
-            cursor_datetime = self.parse_date(self._cursor_value.eval(self._config, **kwargs))
+
+        if self._stream_state_field in stream_state:
+            cursor_datetime = self.parse_date(stream_state[self._stream_state_field])
         else:
             cursor_datetime = start_datetime
         start_datetime = max(cursor_datetime, start_datetime)
@@ -71,11 +104,18 @@ class DatetimeStreamSlicer(StreamSlicer):
 
         return self._partition_daterange(start_datetime, end_datetime, self._step)
 
+    def _format_datetime(self, dt: datetime.datetime):
+        if self._datetime_format == "timestamp":
+            return dt.timestamp()
+        else:
+            return dt.strftime(self._datetime_format)
+
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         dates = []
+        print(f"format: {self._datetime_format}")
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
-            dates.append({"start_date": start.strftime(self._datetime_format), "end_date": end_date.strftime(self._datetime_format)})
+            dates.append({"start_date": self._format_datetime(start), "end_date": self._format_datetime(end_date)})
             start += step
         return dates
 
@@ -88,7 +128,7 @@ class DatetimeStreamSlicer(StreamSlicer):
             if self.is_int(date):
                 return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
             else:
-                return datetime.datetime.strptime(date, self._datetime_format).replace(tzinfo=self._timezone)
+                return dateutil.parser.parse(date).replace(tzinfo=self._timezone)
         elif isinstance(date, int):
             return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
         return date
@@ -118,3 +158,48 @@ class DatetimeStreamSlicer(StreamSlicer):
     @staticmethod
     def _is_start_date_valid(start_date: datetime, end_date: datetime) -> bool:
         return start_date <= end_date
+
+    def request_params(self) -> Mapping[str, Any]:
+        return {
+            **self._get_request_options(RequestOptionType.request_parameter),
+            **self._request_options_provider.request_params(stream_state=None, stream_slice=None, next_page_token=None),
+        }
+
+    def request_headers(self) -> Mapping[str, Any]:
+        return {
+            **self._get_request_options(RequestOptionType.header),
+            **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
+        }
+
+    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+        return {
+            **self._get_request_options(RequestOptionType.body_data),
+            **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
+        }
+
+    def request_body_json(self) -> Optional[Mapping]:
+        return {
+            **self._get_request_options(RequestOptionType.body_json),
+            **self._request_options_provider.request_body_json(stream_state=None, stream_slice=None, next_page_token=None),
+        }
+
+    def _get_request_options(self, option_type):
+        options = {}
+        if self._start_time_option.option_type == option_type:
+            if option_type != RequestOptionType.path and self._cursor:
+                options[self._start_time_option.field_name] = self._cursor
+        return options
+
+    def _create_request_options_provider(self, limit_value, limit_option: RequestOption):
+        if limit_option.option_type == RequestOptionType.path:
+            raise ValueError("Limit parameter cannot be a path")
+        elif limit_option.option_type == RequestOptionType.request_parameter:
+            return InterpolatedRequestOptionsProvider(request_parameters={limit_option.field_name: limit_value}, config=self._config)
+        elif limit_option.option_type == RequestOptionType.header:
+            return InterpolatedRequestOptionsProvider(request_headers={limit_option.field_name: limit_value}, config=self._config)
+        elif limit_option.option_type == RequestOptionType.body_json:
+            return InterpolatedRequestOptionsProvider(request_body_json={limit_option.field_name: limit_value}, config=self._config)
+        elif limit_option.option_type == RequestOptionType.body_data:
+            return InterpolatedRequestOptionsProvider(request_body_data={limit_option.field_name: limit_value}, config=self._config)
+        else:
+            raise ValueError(f"Unexpected request option type. Got :{limit_option}")

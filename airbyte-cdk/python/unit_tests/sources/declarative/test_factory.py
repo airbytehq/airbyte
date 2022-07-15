@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_h
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -109,15 +109,19 @@ def test_datetime_stream_slicer():
     stream_slicer:
         type: DatetimeStreamSlicer
         options:
-          datetime_format: "%Y-%m-%d"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
         step: "10d"
+<<<<<<< HEAD
         cursor_value: "created"
         lookback_window: "5d"
+=======
+        cursor_field: "created"
+>>>>>>> alex/streamslicerRefactor
     """
 
     config = parser.parse(content)
@@ -126,14 +130,14 @@ def test_datetime_stream_slicer():
     assert stream_slicer._timezone == datetime.timezone.utc
     assert type(stream_slicer._start_datetime) == MinMaxDatetime
     assert type(stream_slicer._end_datetime) == MinMaxDatetime
-    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%d"
+    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
     assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
     assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer._cursor_value._string == "created"
     assert stream_slicer._lookback_window._string == "5d"
+    assert stream_slicer._cursor_field == "created"
 
 
 def test_full_config():
@@ -149,9 +153,17 @@ selector:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
-  class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
-  next_page_token_template:
-    "next_page_url": "{{ decoded_response['_metadata']['next'] }}"
+    type: "LimitPaginator"
+    limit_value: 10
+    limit_option:
+      option_type: request_parameter
+      field_name: page_size
+    page_token_option:
+      option_type: path
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ decoded_response._metadata.next }}"
+    url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
@@ -324,9 +336,16 @@ def test_config_with_defaults():
           file_path: "./source_sendgrid/schemas/{{name}}.yaml"
         retriever:
           paginator:
-            type: "NextPageUrlPaginator"
-            next_page_token_template:
-                next_page_token: "{{ decoded_response.metadata.next}}"
+            type: "LimitPaginator"
+            limit_value: 10
+            limit_option:
+              option_type: request_parameter
+              field_name: page_size
+            page_token_option:
+              option_type: path
+            pagination_strategy:
+              type: "CursorPagination"
+              cursor_value: "{{ decoded_response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -352,12 +371,12 @@ def test_config_with_defaults():
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
-    assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
+    assert isinstance(stream._retriever._paginator, LimitPaginator)
+
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
-        "next_page_token": "{{ decoded_response.metadata.next}}"
-    }
+    assert stream._retriever._paginator._limit == 10
 
 
 class TestCreateTransformations:

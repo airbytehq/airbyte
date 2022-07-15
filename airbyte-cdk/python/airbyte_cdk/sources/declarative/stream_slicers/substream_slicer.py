@@ -2,12 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -18,10 +17,51 @@ class SubstreamSlicer(StreamSlicer):
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
     """
 
-    def __init__(self, parent_streams: List[Stream], state: DictState, slice_definition: Mapping[str, Any]):
+    def path(self) -> Optional[str]:
+        if self._cursor and self._parent_option and self._parent_option.option_type == RequestOptionType.path:
+            return (
+                InterpolatedString(self._parent_option.path)
+                .eval(self._cursor, **{self._stream_state_field: self._cursor})
+                .replace(self._url_base, "")
+            )
+        else:
+            return None
+
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+        print(f"update_cursor. stream_slice: {stream_slice}")
+
+    def request_params(self) -> Mapping[str, Any]:
+        return {}
+
+    def request_headers(self) -> Mapping[str, Any]:
+        return {}
+
+    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+        return {}
+
+    def request_body_json(self) -> Optional[Mapping]:
+        return {}
+
+    def set_state(self, stream_state: Mapping[str, Any]):
+        self._cursor = stream_state.get(self._stream_state_field)
+
+    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+        return {self._stream_state_field: self._cursor} if self._cursor else None
+
+    def __init__(
+        self,
+        url_base: str,
+        parent_streams: List[Stream],
+        parent_field: str,
+        parent_option: Optional[RequestOption] = None,
+        stream_state_field: Optional[str] = None,
+    ):
         self._parent_streams = parent_streams
-        self._state = state
-        self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
+        self._parent_field = parent_field
+        self._stream_state_field = stream_state_field or "parent_id"
+        self._cursor = None
+        self._url_base = url_base
+        self._parent_option = parent_option
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -42,24 +82,15 @@ class SubstreamSlicer(StreamSlicer):
         else:
             for parent_stream in self._parent_streams:
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
-                    self._state.update_state(parent_stream_slice=parent_stream_slice)
-                    self._state.update_state(parent_record=None)
                     empty_parent_slice = True
 
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
                         empty_parent_slice = False
-                        slice_definition = self._get_slice_definition(parent_stream_slice, parent_record, parent_stream.name)
-                        self._state.update_state(parent_record=parent_record)
-                        yield slice_definition
+                        self._cursor = parent_record.get(self._parent_field)
+                        yield {self._stream_state_field: self._cursor}
                     # If the parent slice contains no records,
-                    # yield a slice definition with parent_record==None
                     if empty_parent_slice:
-                        slice_definition = self._get_slice_definition(parent_stream_slice, None, parent_stream.name)
-                        yield slice_definition
-
-    def _get_slice_definition(self, parent_stream_slice, parent_record, parent_stream_name):
-        return self._interpolation.eval(
-            None, parent_stream_slice=parent_stream_slice, parent_record=parent_record, parent_stream_name=parent_stream_name
-        )
+                        self._cursor = parent_stream_slice.get(self._parent_field)
+                        yield {self._stream_state_field: self._cursor}

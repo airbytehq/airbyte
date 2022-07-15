@@ -6,7 +6,6 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -100,7 +99,6 @@ class MockStream(Stream):
     ],
 )
 def test_substream_slicer(test_name, parent_streams, slice_definition, expected_slices):
-    state = DictState()
-    slicer = SubstreamSlicer(parent_streams, state, slice_definition)
+    slicer = SubstreamSlicer(parent_streams, slice_definition)
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices

@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
@@ -17,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -48,6 +48,8 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Paginator: NoPagination,
     HttpResponseFilter: HttpResponseFilter,
     Stream: DeclarativeStream,
+    RequestOption: RequestOption,
+    InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
     MinMaxDatetime: MinMaxDatetime,
     InterpolatedString: InterpolatedString,
 }

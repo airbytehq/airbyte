@@ -15,6 +15,7 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRe
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
+config = {}
 
 
 def test_simple_retriever():
@@ -24,6 +25,7 @@ def test_simple_retriever():
 
     paginator = MagicMock()
     next_page_token = {"cursor": "cursor_value"}
+    paginator.path.return_value = None
     paginator.next_page_token.return_value = next_page_token
 
     record_selector = MagicMock()
@@ -35,9 +37,8 @@ def test_simple_retriever():
 
     response = requests.Response()
 
-    state = MagicMock()
     underlying_state = {"date": "2021-01-01"}
-    state.get_stream_state.return_value = underlying_state
+    iterator.get_stream_state.return_value = underlying_state
 
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
@@ -66,11 +67,8 @@ def test_simple_retriever():
         paginator=paginator,
         record_selector=record_selector,
         stream_slicer=iterator,
-        state=state,
+        config=config,
     )
-
-    # hack because we clone the state...
-    retriever._state = state
 
     assert retriever.primary_key == primary_key
     assert retriever.url_base == url_base
@@ -107,7 +105,7 @@ def test_simple_retriever():
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
     requester = MagicMock()
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=MagicMock())
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=MagicMock(), config=config)
     requester.should_retry.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
     if requester_response.action == ResponseAction.RETRY:
@@ -126,7 +124,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     requester = MagicMock()
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, config=config)
     response = requests.Response()
     response.status_code = status_code
     requester.should_retry.return_value = response_status

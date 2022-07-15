@@ -43,7 +43,8 @@ def create(func, /, *args, **keywords):
         interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
         interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
 
-        all_keywords.update(interpolated_keywords)
+        if "auth" in str(func).lower():
+            all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:
@@ -51,10 +52,11 @@ def create(func, /, *args, **keywords):
 
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
+        all_keywords = {**all_keywords_to_pass_down, **kwargs_to_pass_down}
         try:
-            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+            ret = func(*args, *fargs, **all_keywords)
         except TypeError as e:
-            raise Exception(f"failed to create object of type {func} because {e}")
+            raise Exception(f"failed to create object of type {func} because {e}. all keywords: {all_keywords}")
         return ret
 
     newfunc.func = func

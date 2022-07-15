@@ -129,7 +129,6 @@ class DeclarativeComponentFactory:
                 interface = args[0]
             else:
                 break
-
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
 
         if expected_type:

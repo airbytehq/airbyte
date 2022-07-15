@@ -3,7 +3,7 @@
 #
 
 import ast
-from typing import Any, Iterable, List, Mapping, Union
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -17,6 +17,30 @@ class ListStreamSlicer(StreamSlicer):
     Stream slicer that iterates over the values of a list
     If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list
     """
+
+    def path(self) -> Optional[str]:
+        pass
+
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+        pass
+
+    def set_state(self, stream_state: Mapping[str, Any]):
+        pass
+
+    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+        pass
+
+    def request_params(self) -> Mapping[str, Any]:
+        pass
+
+    def request_headers(self) -> Mapping[str, Any]:
+        pass
+
+    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+        pass
+
+    def request_body_json(self) -> Optional[Mapping]:
+        pass
 
     def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
         if isinstance(slice_values, str):

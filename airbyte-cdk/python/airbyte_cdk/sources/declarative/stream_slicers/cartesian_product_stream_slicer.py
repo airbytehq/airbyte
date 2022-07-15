@@ -4,7 +4,7 @@
 
 import itertools
 from collections import ChainMap
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -26,6 +26,30 @@ class CartesianProductStreamSlicer(StreamSlicer):
         {"i": 2, "s": "world"},
     ]
     """
+
+    def path(self) -> Optional[str]:
+        pass
+
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+        pass
+
+    def request_params(self) -> Mapping[str, Any]:
+        pass
+
+    def request_headers(self) -> Mapping[str, Any]:
+        pass
+
+    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+        pass
+
+    def request_body_json(self) -> Optional[Mapping]:
+        pass
+
+    def set_state(self, stream_state: Mapping[str, Any]):
+        pass
+
+    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+        pass
 
     def __init__(self, stream_slicers: List[StreamSlicer]):
         self._stream_slicers = stream_slicers
