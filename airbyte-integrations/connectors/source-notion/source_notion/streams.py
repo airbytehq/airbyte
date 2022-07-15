@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -9,6 +9,8 @@ import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+
+from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
@@ -124,7 +126,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
             if not stream_state or record_lmd >= state_lmd:
-                yield record
+                yield from transform_properties(record)
 
     def get_updated_state(
         self,
@@ -148,6 +150,12 @@ class Users(NotionStream):
 
     def path(self, **kwargs) -> str:
         return "users"
+
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = {"page_size": self.page_size}
+        if next_page_token:
+            params["start_cursor"] = next_page_token["next_cursor"]
+        return params
 
 
 class Databases(IncrementalNotionStream):

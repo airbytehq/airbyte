@@ -1,8 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
+import logging
 import re
 from collections import defaultdict
 from datetime import datetime
@@ -17,6 +18,8 @@ from googleapiclient import discovery
 from .models.spreadsheet import RowData, Spreadsheet
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
+
+logger = logging.getLogger("airbyte")
 
 
 class Helpers(object):
@@ -135,7 +138,7 @@ class Helpers(object):
         client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-        print(f"available_sheets: {available_sheets}")
+        logger.info(f"Available sheets: {available_sheets}")
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:

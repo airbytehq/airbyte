@@ -1,27 +1,30 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.relationaldb;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import java.util.Collections;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CdcStateManager {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(StateManager.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CdcStateManager.class);
 
   private final CdcState initialState;
+  private final Set<AirbyteStreamNameNamespacePair> initialStreamsSynced;
 
   private CdcState currentState;
 
-  @VisibleForTesting
-  CdcStateManager(final CdcState serialized) {
+  public CdcStateManager(final CdcState serialized, final Set<AirbyteStreamNameNamespacePair> initialStreamsSynced) {
     this.initialState = serialized;
     this.currentState = serialized;
+    this.initialStreamsSynced = initialStreamsSynced;
 
     LOGGER.info("Initialized CDC state with: {}", serialized);
   }
@@ -32,6 +35,10 @@ public class CdcStateManager {
 
   public CdcState getCdcState() {
     return currentState != null ? Jsons.clone(currentState) : null;
+  }
+
+  public Set<AirbyteStreamNameNamespacePair> getInitialStreamsSynced() {
+    return initialStreamsSynced != null ? Collections.unmodifiableSet(initialStreamsSynced) : null;
   }
 
   @Override

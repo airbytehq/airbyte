@@ -1,7 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { LoadingButton } from "components";
 
@@ -31,12 +31,9 @@ const LogsContent: React.FC = () => {
   const fetchLogs = useGetLogs();
 
   const downloadLogs = async (logType: LogType) => {
-    const { file } = await fetchLogs({ logType });
+    const file = await fetchLogs({ logType });
     const name = `${logType}-logs.txt`;
-
-    if (file) {
-      downloadFile(file, name);
-    }
+    downloadFile(file, name);
   };
 
   // TODO: get rid of useAsyncFn and use react-query

@@ -4,7 +4,7 @@ set -e
 
 [ -z "$ROOT_DIR" ] && exit 1
 
-YAML_DIR=airbyte-protocol/models/src/main/resources/airbyte_protocol
+YAML_DIR=airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol
 OUTPUT_DIR=airbyte-cdk/python/airbyte_cdk/models
 
 function main() {
@@ -18,6 +18,7 @@ function main() {
     docker run --user "$(id -u):$(id -g)" -v "$ROOT_DIR":/airbyte airbyte/code-generator:dev \
       --input "/airbyte/$YAML_DIR/$filename_wo_ext.yaml" \
       --output "/airbyte/$OUTPUT_DIR/$filename_wo_ext.py" \
+      --use-title-as-name \
       --disable-timestamp
   done
 }

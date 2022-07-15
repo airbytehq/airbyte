@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.storage;
@@ -8,6 +8,7 @@ import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
 import io.airbyte.config.storage.DefaultS3ClientFactory;
 import io.airbyte.config.storage.MinioS3ClientFactory;
+import io.airbyte.workers.general.DocumentStoreClient;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;

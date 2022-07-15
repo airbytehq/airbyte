@@ -1,84 +1,89 @@
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { Link as ReactLink } from "react-router-dom";
 import styled from "styled-components";
 
-import { ContentCard, ImageBlock } from "components";
-import { Header, Row, Cell } from "components/SimpleTableComponents";
-import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+import ConnectorCard from "components/ConnectorCard";
 
-import { DestinationDefinition, SourceDefinition } from "core/domain/connector";
-import { Connection } from "core/domain/connection";
+import { getFrequencyConfig } from "config/utils";
+import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
+import { RoutePaths } from "pages/routePaths";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import EnabledControl from "./EnabledControl";
 
-const MainInfo = styled(ContentCard)`
-  margin-bottom: 14px;
-  padding: 23px 20px 20px 23px;
-`;
-
-const Img = styled(ImageBlock)`
-  display: inline-block;
-`;
-
-const SourceCell = styled(Cell)`
+const MainContainer = styled.div`
+  width: 650px;
   display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: white;
+  border-radius: 10px;
   align-items: center;
-  gap: 6px;
 `;
 
-const EnabledCell = styled(Cell)`
-  display: flex;
-  align-items: center;
-  margin-top: -18px;
+const ConnectorsLink = styled(ReactLink)`
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: 10px;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.greyColor10};
+  }
 `;
 
-type IProps = {
-  connection: Connection;
-  frequencyText?: string;
-  destinationDefinition?: DestinationDefinition;
-  sourceDefinition?: SourceDefinition;
-  allowSync?: boolean;
-};
+interface StatusMainInfoProps {
+  connection: WebBackendConnectionRead;
+  source: SourceRead;
+  destination: DestinationRead;
+  onStatusUpdating?: (updating: boolean) => void;
+}
 
-const StatusMainInfo: React.FC<IProps> = ({
+export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
+  onStatusUpdating,
   connection,
-  frequencyText,
-  destinationDefinition,
-  sourceDefinition,
-  allowSync,
+  source,
+  destination,
 }) => {
+  const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
+  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
+
+  const allowSync = useFeature(FeatureItem.AllowSync);
+  const frequency = getFrequencyConfig(connection.schedule);
+
+  const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
+  const destinationConnectionPath = `../../${RoutePaths.Destination}/${destination.destinationId}`;
+
   return (
-    <MainInfo>
-      <Header>
-        <Cell flex={2}>
-          <FormattedMessage id="sources.source" />
-        </Cell>
-        <Cell flex={2}>
-          <FormattedMessage id="sidebar.destinations" />
-        </Cell>
-        <Cell>
-          <FormattedMessage id="tables.frequency" />
-        </Cell>
-        <Cell flex={1.1}></Cell>
-      </Header>
-      <Row>
-        <SourceCell flex={2}>
-          <Img img={sourceDefinition?.icon} />
-          {connection.source?.sourceName}
-          <ReleaseStageBadge stage={sourceDefinition?.releaseStage} />
-        </SourceCell>
-        <SourceCell flex={2}>
-          <Img img={destinationDefinition?.icon} />
-          {connection.destination?.destinationName}
-          <ReleaseStageBadge stage={destinationDefinition?.releaseStage} />
-        </SourceCell>
-        <Cell>{frequencyText}</Cell>
-        <EnabledCell flex={1.1}>
-          <EnabledControl disabled={!allowSync} connection={connection} frequencyText={frequencyText} />
-        </EnabledCell>
-      </Row>
-    </MainInfo>
+    <MainContainer>
+      <ConnectorsLink to={sourceConnectionPath}>
+        <ConnectorCard
+          connectionName={source.sourceName}
+          icon={sourceDefinition?.icon}
+          connectorName={source.name}
+          releaseStage={sourceDefinition?.releaseStage}
+        />
+      </ConnectorsLink>
+      <FontAwesomeIcon icon={faArrowRight} />
+      <ConnectorsLink to={destinationConnectionPath}>
+        <ConnectorCard
+          connectionName={destination.destinationName}
+          icon={destinationDefinition?.icon}
+          connectorName={destination.name}
+          releaseStage={destinationDefinition?.releaseStage}
+        />
+      </ConnectorsLink>
+      {connection.status !== ConnectionStatus.deprecated && (
+        <EnabledControl
+          onStatusUpdating={onStatusUpdating}
+          disabled={!allowSync}
+          connection={connection}
+          frequencyType={frequency?.type}
+        />
+      )}
+    </MainContainer>
   );
 };
-
-export default StatusMainInfo;

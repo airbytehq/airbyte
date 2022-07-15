@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
 
 import StatusIcon from "components/StatusIcon";
+import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
 
 import Status from "core/statuses";
 
-type IProps = {
+interface IProps {
   id: string;
   lightMode?: boolean;
   name: string | React.ReactNode;
@@ -14,7 +15,7 @@ type IProps = {
   isPartialSuccess?: boolean;
   num: number;
   status?: string;
-};
+}
 
 const StepView = styled.div<{
   isActive?: boolean;
@@ -63,6 +64,11 @@ const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, s
     }
   };
 
+  const statusIconStatus: StatusIconStatus | undefined = useMemo(
+    () => (status !== Status.FAILED && !isPartialSuccess ? "success" : isPartialSuccess ? "warning" : undefined),
+    [status, isPartialSuccess]
+  );
+
   return (
     <StepView
       data-id={`${id.toLowerCase()}-step`}
@@ -72,9 +78,7 @@ const Step: React.FC<IProps> = ({ name, id, isActive, onClick, num, lightMode, s
       lightMode={lightMode}
     >
       {lightMode ? null : <Num isActive={isActive}>{num}</Num>}
-      {status ? (
-        <StatusIcon success={status !== Status.FAILED && !isPartialSuccess} warning={isPartialSuccess} />
-      ) : null}
+      {status ? <StatusIcon status={statusIconStatus} /> : null}
       {name}
     </StepView>
   );

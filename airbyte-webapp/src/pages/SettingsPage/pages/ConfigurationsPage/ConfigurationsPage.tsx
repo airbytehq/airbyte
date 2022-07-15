@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 import { useAsyncFn } from "react-use";
+import styled from "styled-components";
 
 import { Button, ContentCard, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
@@ -63,10 +63,10 @@ const ConfigurationsPage: React.FC = () => {
             if (!file) {
               throw new Error("No file");
             }
+
             try {
               const deploymentService = getService<DeploymentService>("DeploymentService");
-              await deploymentService.importDeployment(file);
-
+              await deploymentService.importDeployment(new Blob([file]));
               window.location.reload();
               resolve(true);
             } catch (e) {
@@ -83,7 +83,6 @@ const ConfigurationsPage: React.FC = () => {
 
   const [{ loading: loadingExport }, onExport] = useAsyncFn(async () => {
     const deploymentService = getService<DeploymentService>("DeploymentService");
-
     const file = await deploymentService.exportDeployment();
     window.location.assign(file);
   }, []);
@@ -101,7 +100,7 @@ const ConfigurationsPage: React.FC = () => {
               id="admin.exportConfigurationText"
               values={{
                 lnk: (lnk: React.ReactNode) => (
-                  <DocLink target="_blank" href={config.ui.configurationArchiveLink} as="a">
+                  <DocLink target="_blank" href={config.links.configurationArchiveLink} as="a">
                     {lnk}
                   </DocLink>
                 ),

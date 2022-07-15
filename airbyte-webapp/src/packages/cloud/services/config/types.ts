@@ -8,20 +8,22 @@ declare global {
     FULLSTORY?: string;
     FIREBASE_API_KEY?: string;
     FIREBASE_AUTH_DOMAIN?: string;
+    FIREBASE_AUTH_EMULATOR_HOST?: string;
     CLOUD_API_URL?: string;
   }
 }
 
-export type CloudConfigExtension = {
+export interface CloudConfigExtension {
   cloudApiUrl: string;
   fullstory: Fullstory.SnippetOptions & { enabled: boolean };
   firebase: {
     apiKey: string;
     authDomain: string;
+    authEmulatorHost: string;
   };
   intercom: {
     appId: string;
   };
-};
+}
 
 export type CloudConfig = Config & CloudConfigExtension;

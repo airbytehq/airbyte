@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -86,6 +86,8 @@ public class IntegrationRunner {
     this.source = source;
     this.destination = destination;
     validator = new JsonSchemaValidator();
+
+    Thread.setDefaultUncaughtExceptionHandler(new AirbyteExceptionHandler());
   }
 
   @VisibleForTesting
@@ -151,7 +153,7 @@ public class IntegrationRunner {
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-          AirbyteSentry.executeWithTracing("ReadSource", () -> messageIterator.forEachRemaining(outputRecordCollector::accept));
+          AirbyteSentry.executeWithTracing("ReadSource", () -> produceMessages(messageIterator));
         }
       }
       // destination only
@@ -167,6 +169,16 @@ public class IntegrationRunner {
     }
 
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
+  }
+
+  private void produceMessages(final AutoCloseableIterator<AirbyteMessage> messageIterator) throws Exception {
+    watchForOrphanThreads(
+        () -> messageIterator.forEachRemaining(outputRecordCollector),
+        () -> System.exit(FORCED_EXIT_CODE),
+        INTERRUPT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES,
+        EXIT_THREAD_DELAY_MINUTES,
+        TimeUnit.MINUTES);
   }
 
   @VisibleForTesting

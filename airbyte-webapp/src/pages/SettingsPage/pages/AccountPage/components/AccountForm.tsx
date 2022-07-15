@@ -1,12 +1,12 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
 import { LoadingButton } from "components";
-import { Row, Cell } from "components/SimpleTableComponents";
 import LabeledInput from "components/LabeledInput";
+import { Row, Cell } from "components/SimpleTableComponents";
 
 const InputRow = styled(Row)`
   height: auto;
@@ -44,22 +44,23 @@ const accountValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
-type AccountFormProps = {
+interface AccountFormProps {
   email: string;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   onSubmit: (data: { email: string }) => void;
-};
+}
 
 const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessage, errorMessage }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <Formik
       initialValues={{ email }}
-      validateOnBlur={true}
+      validateOnBlur
       validateOnChange={false}
       validationSchema={accountValidationSchema}
+      enableReinitialize
       onSubmit={onSubmit}
     >
       {({ isSubmitting, dirty, values }) => (

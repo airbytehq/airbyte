@@ -11,8 +11,6 @@ images:
     newTag: dev
   - name: airbyte/bootloader
     newTag: dev
-  - name: airbyte/scheduler
-    newTag: dev
   - name: airbyte/server
     newTag: dev
   - name: airbyte/webapp

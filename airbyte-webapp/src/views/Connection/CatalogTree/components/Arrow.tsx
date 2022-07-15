@@ -1,14 +1,14 @@
+import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 
-type ArrowProps = {
+interface ArrowProps {
   isItemHasChildren?: boolean;
   depth?: number;
   isItemOpen?: boolean;
   onExpand?: () => void;
-};
+}
 
 const ArrowContainer = styled.span`
   padding: 0 12px;

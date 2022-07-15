@@ -46,7 +46,11 @@ The following variables are relevant to both Docker and Kubernetes.
 #### Secrets
 1. `SECRET_STORE_GCP_PROJECT_ID` - Defines the GCP Project to store secrets in. Alpha support.
 2. `SECRET_STORE_GCP_CREDENTIALS` - Define the JSON credentials used to read/write Airbyte Configuration to Google Secret Manager. These credentials must have Secret Manager Read/Write access. Alpha support.
-3. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Alpha support. Undefined behavior will result if this is turned on and then off.
+3. `VAULT_ADDRESS` - Define the vault address to read/write Airbyte Configuration to Hashicorp Vault. Alpha Support.
+4. `VAULT_PREFIX` - Define the vault path prefix. Empty by default. Alpha Support.
+5. `VAULT_AUTH_TOKEN` - The token used for vault authentication. Alpha Support.
+6. `VAULT_AUTH_METHOD` - How vault will preform authentication. Currently, only supports Token auth. Defaults to token. Alpha Support.
+7. `SECRET_PERSISTENCE` - Defines the Secret Persistence type. Defaults to NONE. Set to GOOGLE_SECRET_MANAGER to use Google Secret Manager. Set to TESTING_CONFIG_DB_TABLE to use the database as a test. Set to VAULT to use Hashicorp Vault, currently only the token based authentication is supported. Alpha support. Undefined behavior will result if this is turned on and then off.
 
 #### Database
 1. `DATABASE_USER` - Define the Jobs Database user.
@@ -80,13 +84,7 @@ The following variables are relevant to both Docker and Kubernetes.
 2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
 3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
 4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
-5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md) 
-
-#### Scheduler
-1. `SUBMITTER_NUM_THREADS` - Define the maximum number of concurrent jobs the Scheduler schedules. Defaults to 5.
-2. `MINIMUM_WORKSPACE_RETENTION_DAYS` - Defines the minimum configuration file age for sweeping. The Scheduler will do it's best to now sweep files younger than this. Defaults to 1 day.
-3. `MAXIMUM_WORKSPACE_RETENTION_DAYS` - Defines the oldest un-swept configuration file age. Files older than this will definitely be swept. Defaults to 60 days.
-4. `MAXIMUM_WORKSPACE_SIZE_MB` - Defines the workspace size sweeping will continue until. Defaults to 5GB.
+5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md)
 
 ### Docker-Only
 1. `WORKSPACE_DOCKER_MOUNT` - Defines the name of the Airbyte docker volume.
@@ -100,10 +98,11 @@ The following variables are relevant to both Docker and Kubernetes.
 3. `JOB_KUBE_ANNOTATIONS` - Define one or more Job pod annotations. Each k=v pair is separated by a `,`. For example: `key1=value1,key2=value2`. It is the pod annotations of the sync job and the default pod annotations fallback for others jobs.
 4. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY` - Define the Job pod connector image pull policy.
 5. `JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET` - Define the Job pod connector image pull secret. Useful when hosting private images.
-6. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
-7. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
-8. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
-9. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
+6. `JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY` - Define the image pull policy on the sidecar containers in the Job pod. Useful when there are cluster policies enforcing to always pull.
+7. `JOB_KUBE_SOCAT_IMAGE` - Define the Job pod socat image.
+8. `JOB_KUBE_BUSYBOX_IMAGE` - Define the Job pod busybox image.
+9. `JOB_KUBE_CURL_IMAGE` - Define the Job pod curl image pull.
+10. `JOB_KUBE_NAMESPACE` - Define the Kubernetes namespace Job pods are created in.
 
 #### Jobs specific
 

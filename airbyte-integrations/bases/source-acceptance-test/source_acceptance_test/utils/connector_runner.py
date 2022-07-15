@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -88,7 +88,7 @@ class ConnectorRunner:
         output = list(self.run(cmd=cmd, config=config, catalog=catalog, state=state, **kwargs))
         return output
 
-    def run(self, cmd, config=None, state=None, catalog=None, **kwargs) -> Iterable[AirbyteMessage]:
+    def run(self, cmd, config=None, state=None, catalog=None, raise_container_error: bool = True, **kwargs) -> Iterable[AirbyteMessage]:
         self._runs += 1
         volumes = self._prepare_volumes(config, state, catalog)
         logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
@@ -103,7 +103,7 @@ class ConnectorRunner:
             **kwargs,
         )
         with open(self.output_folder / "raw", "wb+") as f:
-            for line in self.read(container, command=cmd):
+            for line in self.read(container, command=cmd, with_ext=raise_container_error):
                 f.write(line.encode())
                 try:
                     yield AirbyteMessage.parse_raw(line)

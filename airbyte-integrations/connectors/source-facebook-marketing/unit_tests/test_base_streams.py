@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -11,7 +11,6 @@ from facebook_business import FacebookSession
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookRequest
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
-from source_facebook_marketing.streams.common import MAX_BATCH_SIZE
 
 
 @pytest.fixture(name="mock_batch_responses")
@@ -64,7 +63,7 @@ class TestBaseStream:
         )
 
         stream = SomeTestStream(api=api)
-        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(MAX_BATCH_SIZE + 1)]
+        requests = [FacebookRequest("node", "GET", "endpoint") for _ in range(50 + 1)]
 
         result = list(stream.execute_in_batch(requests))
 

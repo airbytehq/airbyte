@@ -1,28 +1,30 @@
 import { useMemo } from "react";
 import { useMutation } from "react-query";
 
-import { Connector, Scheduler } from "core/domain/connector";
-import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
+import { useConfig } from "config";
+import { ConnectionConfiguration } from "core/domain/connection";
+import { Connector } from "core/domain/connector";
+import { DestinationService } from "core/domain/connector/DestinationService";
+import { SourceService } from "core/domain/connector/SourceService";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
 } from "services/connector/DestinationDefinitionService";
-import { DestinationService } from "core/domain/connector/DestinationService";
-import { useConfig } from "config";
+import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { SourceService } from "core/domain/connector/SourceService";
-import { ConnectionConfiguration } from "core/domain/connection";
 
-type ConnectorService = {
+import { CheckConnectionRead } from "../../core/request/AirbyteClient";
+
+interface ConnectorService {
   hasNewVersions: boolean;
   hasNewSourceVersion: boolean;
   hasNewDestinationVersion: boolean;
   countNewSourceVersion: number;
   countNewDestinationVersion: number;
-  updateAllSourceVersions: () => unknown;
-  updateAllDestinationVersions: () => unknown;
-};
+  updateAllSourceVersions: () => Promise<void>;
+  updateAllDestinationVersions: () => Promise<void>;
+}
 
 const useConnector = (): ConnectorService => {
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -43,7 +45,7 @@ const useConnector = (): ConnectorService => {
       newSourceDefinitions?.map((item) =>
         updateSourceDefinition({
           sourceDefinitionId: item.sourceDefinitionId,
-          dockerImageTag: item.latestDockerImageTag,
+          dockerImageTag: item.latestDockerImageTag ?? "",
         })
       )
     );
@@ -54,7 +56,7 @@ const useConnector = (): ConnectorService => {
       newDestinationDefinitions?.map((item) =>
         updateDestinationDefinition({
           destinationDefinitionId: item.destinationDefinitionId,
-          dockerImageTag: item.latestDockerImageTag,
+          dockerImageTag: item.latestDockerImageTag ?? "",
         })
       )
     );
@@ -77,7 +79,6 @@ const useConnector = (): ConnectorService => {
 
 function useGetDestinationService(): DestinationService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(() => new DestinationService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
@@ -85,13 +86,12 @@ function useGetDestinationService(): DestinationService {
 
 function useGetSourceService(): SourceService {
   const { apiUrl } = useConfig();
-
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(() => new SourceService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
 }
 
-type CheckConnectorParams = { signal: AbortSignal } & (
+export type CheckConnectorParams = { signal: AbortSignal } & (
   | { selectedConnectorId: string }
   | {
       selectedConnectorId: string;
@@ -104,11 +104,11 @@ type CheckConnectorParams = { signal: AbortSignal } & (
     }
 );
 
-const useCheckConnector = (formType: "source" | "destination") => {
+export const useCheckConnector = (formType: "source" | "destination") => {
   const destinationService = useGetDestinationService();
   const sourceService = useGetSourceService();
 
-  return useMutation<Scheduler, Error, CheckConnectorParams>(async (params: CheckConnectorParams) => {
+  return useMutation<CheckConnectionRead, Error, CheckConnectorParams>(async (params: CheckConnectorParams) => {
     const payload: Record<string, unknown> = {};
 
     if ("connectionConfiguration" in params) {
@@ -147,6 +147,4 @@ const useCheckConnector = (formType: "source" | "destination") => {
   });
 };
 
-export { useCheckConnector };
-export type { CheckConnectorParams };
 export default useConnector;

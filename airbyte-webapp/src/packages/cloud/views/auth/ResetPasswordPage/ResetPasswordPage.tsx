@@ -1,16 +1,17 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
 import { LoadingButton, LabeledInput, Link } from "components";
+import HeadTitle from "components/HeadTitle";
 
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
+import { CloudRoutes } from "../../../cloudRoutes";
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
 import { FormTitle } from "../components/FormTitle";
-import { CloudRoutes } from "../../../cloudRoutes";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -19,11 +20,12 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordPage: React.FC = () => {
   const { requirePasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <div>
-      <FormTitle bold>
+      <HeadTitle titles={[{ id: "login.resetPassword" }]} />
+      <FormTitle>
         <FormattedMessage id="login.resetPassword" />
       </FormTitle>
 
@@ -32,15 +34,21 @@ const ResetPasswordPage: React.FC = () => {
           email: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={async ({ email }) => {
-          await requirePasswordReset(email);
-          registerNotification({
-            id: "resetPassword.emailSent",
-            title: formatMessage({ id: "login.resetPassword.emailSent" }),
-            isError: false,
-          });
+        onSubmit={async ({ email }, FormikBag) => {
+          try {
+            await requirePasswordReset(email);
+            registerNotification({
+              id: "resetPassword.emailSent",
+              title: formatMessage({ id: "login.resetPassword.emailSent" }),
+              isError: false,
+            });
+          } catch (err) {
+            err.message.includes("user-not-found")
+              ? FormikBag.setFieldError("email", "login.yourEmail.notFound")
+              : FormikBag.setFieldError("email", "login.unknownError");
+          }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (

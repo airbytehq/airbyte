@@ -1,10 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
 import traceback
+from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
 
@@ -19,6 +20,7 @@ from botocore.config import Config
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
+from yaml import safe_load
 
 
 class ConfigurationError(Exception):
@@ -113,6 +115,17 @@ class URLFile:
             else:
                 uri = f"{storage}{user}@{host}:{port}/{url}"
             return smart_open.open(uri, transport_params=transport_params, mode=mode)
+        elif storage in ("https://", "http://"):
+            transport_params = None
+            if "user_agent" in self._provider and self._provider["user_agent"]:
+                airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
+                transport_params = {"headers": {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}}
+            logger.info(f"TransportParams: {transport_params}")
+            return smart_open.open(
+                self.full_url,
+                mode=mode,
+                transport_params=transport_params,
+            )
         return smart_open.open(self.full_url, mode=mode)
 
     @property
@@ -248,8 +261,7 @@ class Client:
             builder.add_object(json.load(fp))
 
         result = builder.to_schema()
-        if "items" in result and "properties" in result["items"]:
-            result = result["items"]["properties"]
+        result["$schema"] = "http://json-schema.org/draft-07/schema#"
         return result
 
     def load_nested_json(self, fp) -> list:
@@ -264,6 +276,10 @@ class Client:
             if not isinstance(result, list):
                 result = [result]
         return result
+
+    def load_yaml(self, fp):
+        if self._reader_format == "yaml":
+            return pd.DataFrame(safe_load(fp))
 
     def load_dataframes(self, fp, skip_data=False) -> Iterable:
         """load and return the appropriate pandas dataframe.
@@ -334,6 +350,12 @@ class Client:
         with self.reader.open(binary=self.binary_source) as fp:
             if self._reader_format == "json" or self._reader_format == "jsonl":
                 yield from self.load_nested_json(fp)
+            elif self._reader_format == "yaml":
+                fields = set(fields) if fields else None
+                df = self.load_yaml(fp)
+                columns = fields.intersection(set(df.columns)) if fields else df.columns
+                df = df.where(pd.notnull(df), None)
+                yield from df[columns].to_dict(orient="records")
             else:
                 fields = set(fields) if fields else None
                 for df in self.load_dataframes(fp):
@@ -341,25 +363,28 @@ class Client:
                     df = df.where(pd.notnull(df), None)
                     yield from df[columns].to_dict(orient="records")
 
-    def _stream_properties(self):
-        with self.reader.open(binary=self.binary_source) as fp:
-            if self._reader_format == "json" or self._reader_format == "jsonl":
-                return self.load_nested_json_schema(fp)
-
+    def _stream_properties(self, fp):
+        if self._reader_format == "yaml":
+            df_list = [self.load_yaml(fp)]
+        else:
             df_list = self.load_dataframes(fp, skip_data=False)
-            fields = {}
-            for df in df_list:
-                for col in df.columns:
-                    fields[col] = self.dtype_to_json_type(df[col].dtype)
-            return {field: {"type": [fields[field], "null"]} for field in fields}
+        fields = {}
+        for df in df_list:
+            for col in df.columns:
+                fields[col] = self.dtype_to_json_type(df[col].dtype)
+        return {field: {"type": [fields[field], "null"]} for field in fields}
 
     @property
     def streams(self) -> Iterable:
         """Discovers available streams"""
         # TODO handle discovery of directories of multiple files instead
-        json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": self._stream_properties(),
-        }
+        with self.reader.open(binary=self.binary_source) as fp:
+            if self._reader_format == "json" or self._reader_format == "jsonl":
+                json_schema = self.load_nested_json_schema(fp)
+            else:
+                json_schema = {
+                    "$schema": "http://json-schema.org/draft-07/schema#",
+                    "type": "object",
+                    "properties": self._stream_properties(fp),
+                }
         yield AirbyteStream(name=self.stream_name, json_schema=json_schema, supported_sync_modes=[SyncMode.full_refresh])

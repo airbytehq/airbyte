@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -57,6 +57,26 @@ class StreamStubIncremental(Stream):
 
     cursor_field = "test_cursor"
     primary_key = "primary_key"
+    namespace = "test_namespace"
+
+
+class StreamStubIncrementalEmptyNamespace(Stream):
+    """
+    Stub full incremental class, with empty namespace, to assist with testing.
+    """
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        pass
+
+    cursor_field = "test_cursor"
+    primary_key = "primary_key"
+    namespace = ""
 
 
 def test_as_airbyte_stream_incremental(mocker):
@@ -71,6 +91,7 @@ def test_as_airbyte_stream_incremental(mocker):
 
     exp = AirbyteStream(
         name="stream_stub_incremental",
+        namespace="test_namespace",
         json_schema={},
         supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
         default_cursor_field=["test_cursor"],
@@ -97,6 +118,47 @@ def test_supports_incremental_cursor_not_set():
     test_stream = StreamStubFullRefresh()
 
     assert not test_stream.supports_incremental
+
+
+def test_namespace_set():
+    """
+    Should allow namespace property to be set.
+    """
+    test_stream = StreamStubIncremental()
+
+    assert test_stream.namespace == "test_namespace"
+
+
+def test_namespace_set_to_empty_string(mocker):
+    """
+    Should not set namespace property if equal to empty string.
+    """
+    test_stream = StreamStubIncremental()
+
+    mocker.patch.object(StreamStubIncremental, "get_json_schema", return_value={})
+    mocker.patch.object(StreamStubIncremental, "namespace", "")
+
+    airbyte_stream = test_stream.as_airbyte_stream()
+
+    exp = AirbyteStream(
+        name="stream_stub_incremental",
+        json_schema={},
+        supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+        default_cursor_field=["test_cursor"],
+        source_defined_cursor=True,
+        source_defined_primary_key=[["primary_key"]],
+        namespace=None,
+    )
+    assert exp == airbyte_stream
+
+
+def test_namespace_not_set():
+    """
+    Should be equal to unset value of None.
+    """
+    test_stream = StreamStubFullRefresh()
+
+    assert test_stream.namespace is None
 
 
 @pytest.mark.parametrize(

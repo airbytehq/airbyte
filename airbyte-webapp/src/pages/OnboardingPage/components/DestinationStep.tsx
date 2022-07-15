@@ -1,25 +1,23 @@
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import React, { useEffect, useState } from "react";
 
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
-import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
-import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { JobInfo } from "core/domain/job";
+import { useCreateDestination } from "hooks/services/useDestinationHook";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { createFormErrorMessage } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 
-import HighlightedText from "./HighlightedText";
-import TitlesBlock from "./TitlesBlock";
-
-type Props = {
+interface Props {
   onNextStep: () => void;
   onSuccess: () => void;
-};
+}
 
 const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const [destinationDefinitionId, setDestinationDefinitionId] = useState<string | null>(null);
+  const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const { data: destinationDefinitionSpecification, isLoading } =
     useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
   const { destinationDefinitions } = useDestinationDefinitionList();
@@ -31,10 +29,20 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   } | null>(null);
 
   const { mutateAsync: createDestination } = useCreateDestination();
-  const analyticsService = useAnalyticsService();
+
+  const trackNewDestinationAction = useTrackAction(
+    TrackActionNamespace.DESTINATION,
+    TrackActionLegacyType.NEW_DESTINATION
+  );
 
   const getDestinationDefinitionById = (id: string) =>
     destinationDefinitions.find((item) => item.destinationDefinitionId === id);
+
+  useEffect(() => {
+    return () => {
+      setDocumentationPanelOpen(false);
+    };
+  }, [setDocumentationPanelOpen]);
 
   const onSubmitDestinationStep = async (values: {
     name: string;
@@ -63,9 +71,11 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   };
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
+    setDocumentationPanelOpen(false);
     const destinationConnector = getDestinationDefinitionById(destinationDefinitionId);
-    analyticsService.track("New Destination - Action", {
-      action: "Select a connector",
+    setDocumentationUrl(destinationConnector?.documentationUrl || "");
+
+    trackNewDestinationAction("Select a connector", TrackActionType.SELECT, {
       connector_destination: destinationConnector?.name,
       connector_destination_definition_id: destinationConnector?.destinationDefinitionId,
     });
@@ -83,31 +93,17 @@ const DestinationStep: React.FC<Props> = ({ onNextStep, onSuccess }) => {
   const errorMessage = error ? createFormErrorMessage(error) : null;
 
   return (
-    <>
-      <TitlesBlock
-        title={
-          <FormattedMessage
-            id="onboarding.createFirstDestination"
-            values={{
-              name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
-            }}
-          />
-        }
-      >
-        <FormattedMessage id="onboarding.createFirstDestination.text" />
-      </TitlesBlock>
-      <ConnectorCard
-        full
-        formType="destination"
-        onServiceSelect={onDropDownSelect}
-        onSubmit={onSubmitForm}
-        hasSuccess={successRequest}
-        availableServices={destinationDefinitions}
-        errorMessage={errorMessage}
-        selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
-        isLoading={isLoading}
-      />
-    </>
+    <ConnectorCard
+      full
+      formType="destination"
+      onServiceSelect={onDropDownSelect}
+      onSubmit={onSubmitForm}
+      hasSuccess={successRequest}
+      availableServices={destinationDefinitions}
+      errorMessage={errorMessage}
+      selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+      isLoading={isLoading}
+    />
   );
 };
 

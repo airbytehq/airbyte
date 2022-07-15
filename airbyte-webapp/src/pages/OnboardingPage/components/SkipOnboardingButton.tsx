@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 
@@ -10,9 +10,9 @@ const ButtonWithMargin = styled(Button)`
   margin-right: 9px;
 `;
 
-type IProps = {
+interface IProps {
   step: string;
-};
+}
 
 const SkipOnboardingButton: React.FC<IProps> = ({ step }) => {
   const { finishOnboarding } = useWorkspace();

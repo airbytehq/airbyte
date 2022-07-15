@@ -43,8 +43,8 @@ set -o errexit
 set +o xtrace
 
 if test $clean -eq 0; then
-  echo -e "$red_text""\n\n\nDocusaurs has no changes to commit!""$default_text"
-  echo -e "$red_text""Generated documentation should be as local testing""$default_text"
+  echo -e "$blue_text""\n\n\nDocusaurs has no changes to commit!""$default_text"
+  echo -e "$blue_text""Generated documentation should be as local testing""$default_text"
 
 else
   echo -e "$red_text""\n\n\ndocusaurs build resulted in changes from this commit.""$default_text"

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -35,7 +35,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
-      if (standardSync.getSchedule() == null || standardSync.getStatus() == Status.INACTIVE) {
+      if (standardSync.getSchedule() == null || standardSync.getStatus() != Status.ACTIVE) {
         // Manual syncs wait for their first run
         return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
       }

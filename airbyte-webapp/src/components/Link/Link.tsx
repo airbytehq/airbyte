@@ -1,14 +1,14 @@
-import styled from "styled-components";
 import {
   Link as ReactLink,
   // LinkProps as ReactLinkProps,
 } from "react-router-dom";
+import styled from "styled-components";
 
-export type ILinkProps = {
+export interface ILinkProps {
   bold?: boolean;
   $clear?: boolean;
   $light?: boolean;
-};
+}
 
 // TODO: fix typings
 const Link = styled(ReactLink)<ILinkProps /*& ReactLinkProps */>`

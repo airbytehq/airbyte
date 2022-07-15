@@ -1,17 +1,19 @@
 import type { FormikErrors } from "formik/dist/types";
 
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
-import * as yup from "yup";
 import { getIn, useFormik } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
+import * as yup from "yup";
 
 import { Button, ControlLabels, DropDown, Input } from "components";
+import { FormChangeTracker } from "components/FormChangeTracker";
 
-import { equal } from "utils/objects";
-import { Transformation } from "core/domain/connection/operation";
-import { useGetService } from "core/servicesProvider";
 import { OperationService } from "core/domain/connection";
+import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
+import { useGetService } from "core/servicesProvider";
+import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { equal } from "utils/objects";
 
 const Content = styled.div`
   display: flex;
@@ -41,9 +43,10 @@ const SmallButton = styled(Button)`
 `;
 
 interface TransformationProps {
-  transformation: Transformation;
+  transformation: OperationCreate;
   onCancel: () => void;
-  onDone: (tr: Transformation) => void;
+  onDone: (tr: OperationCreate) => void;
+  isNewTransformation?: boolean;
 }
 
 const validationSchema = yup.object({
@@ -59,7 +62,7 @@ const validationSchema = yup.object({
 });
 
 function prepareLabelFields(
-  errors: FormikErrors<Transformation>,
+  errors: FormikErrors<OperationRead>,
   name: string
 ): { error?: boolean; message?: React.ReactNode } {
   const error = getIn(errors, name);
@@ -77,21 +80,35 @@ function prepareLabelFields(
 // enum with only one value for the moment
 const TransformationTypes = [{ value: "custom", label: "Custom DBT" }];
 
-const TransformationForm: React.FC<TransformationProps> = ({ transformation, onCancel, onDone }) => {
-  const formatMessage = useIntl().formatMessage;
+const TransformationForm: React.FC<TransformationProps> = ({
+  transformation,
+  onCancel,
+  onDone,
+  isNewTransformation,
+}) => {
+  const { formatMessage } = useIntl();
   const operationService = useGetService<OperationService>("OperationService");
+  const { clearFormChange } = useFormChangeTrackerService();
+  const formId = useUniqueFormId();
 
   const formik = useFormik({
     initialValues: transformation,
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: async (values) => {
       await operationService.check(values);
+      clearFormChange(formId);
       onDone(values);
     },
   });
 
+  const onFormCancel: React.MouseEventHandler<HTMLButtonElement> = () => {
+    clearFormChange(formId);
+    onCancel?.();
+  };
+
   return (
     <>
+      <FormChangeTracker changed={isNewTransformation || formik.dirty} formId={formId} />
       <Content>
         <Column>
           <Label
@@ -145,7 +162,7 @@ const TransformationForm: React.FC<TransformationProps> = ({ transformation, onC
         </Column>
       </Content>
       <ButtonContainer>
-        <SmallButton onClick={onCancel} type="button" secondary>
+        <SmallButton onClick={onFormCancel} type="button" secondary>
           <FormattedMessage id="form.cancel" />
         </SmallButton>
         <SmallButton

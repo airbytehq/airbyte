@@ -1,16 +1,14 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping
 
 import pendulum
-import requests
-from requests.auth import AuthBase
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
-class Oauth2Authenticator(AuthBase):
+class Oauth2Authenticator(AbstractOauth2Authenticator):
     """
     Generates OAuth2.0 access tokens from an OAuth2.0 refresh token and client credentials.
     The generated access token is attached to each request via the Authorization header.
@@ -26,6 +24,7 @@ class Oauth2Authenticator(AuthBase):
         token_expiry_date: pendulum.DateTime = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
+        refresh_request_body: Mapping[str, Any] = None,
     ):
         self.token_refresh_endpoint = token_refresh_endpoint
         self.client_secret = client_secret
@@ -34,51 +33,87 @@ class Oauth2Authenticator(AuthBase):
         self.scopes = scopes
         self.access_token_name = access_token_name
         self.expires_in_name = expires_in_name
+        self.refresh_request_body = refresh_request_body
 
-        self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
-        self._access_token = None
+        self.token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
+        self.access_token = None
 
-    def __call__(self, request):
-        request.headers.update(self.get_auth_header())
-        return request
+    @property
+    def token_refresh_endpoint(self) -> str:
+        return self._token_refresh_endpoint
 
-    def get_auth_header(self) -> Mapping[str, Any]:
-        return {"Authorization": f"Bearer {self.get_access_token()}"}
+    @token_refresh_endpoint.setter
+    def token_refresh_endpoint(self, value: str):
+        self._token_refresh_endpoint = value
 
-    def get_access_token(self):
-        if self.token_has_expired():
-            t0 = pendulum.now()
-            token, expires_in = self.refresh_access_token()
-            self._access_token = token
-            self._token_expiry_date = t0.add(seconds=expires_in)
+    @property
+    def client_id(self) -> str:
+        return self._client_id
 
+    @client_id.setter
+    def client_id(self, value: str):
+        self._client_id = value
+
+    @property
+    def client_secret(self) -> str:
+        return self._client_secret
+
+    @client_secret.setter
+    def client_secret(self, value: str):
+        self._client_secret = value
+
+    @property
+    def refresh_token(self) -> str:
+        return self._refresh_token
+
+    @refresh_token.setter
+    def refresh_token(self, value: str):
+        self._refresh_token = value
+
+    @property
+    def access_token_name(self) -> str:
+        return self._access_token_name
+
+    @access_token_name.setter
+    def access_token_name(self, value: str):
+        self._access_token_name = value
+
+    @property
+    def scopes(self) -> [str]:
+        return self._scopes
+
+    @scopes.setter
+    def scopes(self, value: [str]):
+        self._scopes = value
+
+    @property
+    def token_expiry_date(self) -> pendulum.DateTime:
+        return self._token_expiry_date
+
+    @token_expiry_date.setter
+    def token_expiry_date(self, value: pendulum.DateTime):
+        self._token_expiry_date = value
+
+    @property
+    def expires_in_name(self) -> str:
+        return self._expires_in_name
+
+    @expires_in_name.setter
+    def expires_in_name(self, value):
+        self._expires_in_name = value
+
+    @property
+    def refresh_request_body(self) -> Mapping[str, Any]:
+        return self._refresh_request_body
+
+    @refresh_request_body.setter
+    def refresh_request_body(self, value: Mapping[str, Any]):
+        self._refresh_request_body = value
+
+    @property
+    def access_token(self) -> str:
         return self._access_token
 
-    def token_has_expired(self) -> bool:
-        return pendulum.now() > self._token_expiry_date
-
-    def get_refresh_request_body(self) -> Mapping[str, Any]:
-        """Override to define additional parameters"""
-        payload: MutableMapping[str, Any] = {
-            "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "refresh_token": self.refresh_token,
-        }
-
-        if self.scopes:
-            payload["scopes"] = self.scopes
-
-        return payload
-
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        returns a tuple of (access_token, token_lifespan_in_seconds)
-        """
-        try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
-            response.raise_for_status()
-            response_json = response.json()
-            return response_json[self.access_token_name], response_json[self.expires_in_name]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
+    @access_token.setter
+    def access_token(self, value: str):
+        self._access_token = value

@@ -1,13 +1,15 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-ads==14.1.0", "pendulum"]
+# pin protobuf==3.20.0 as other versions may cause problems on different architectures
+# (see https://github.com/airbytehq/airbyte/issues/13580)
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "google-ads==17.0.0", "protobuf==3.20.0", "pendulum"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "freezegun"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "freezegun", "requests-mock"]
 
 setup(
     name="source_google_ads",

@@ -1,11 +1,11 @@
 import styled from "styled-components";
 
-type IProps = {
+interface IProps {
   center?: boolean;
   bold?: boolean;
   parentColor?: boolean;
   highlighted?: boolean;
-};
+}
 
 export const H1 = styled.h1<IProps>`
   font-size: ${({ theme }) => theme.h1?.fontSize || "28px"};

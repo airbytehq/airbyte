@@ -1,23 +1,23 @@
-import React, { useMemo } from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
+import React, { useMemo } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 import * as yup from "yup";
 
-import ContentCard from "components/ContentCard";
 import { Button, ControlLabels, DropDown } from "components";
-import ImageBlock from "components/ImageBlock";
+import { ConnectorIcon } from "components/ConnectorIcon";
+import ContentCard from "components/ContentCard";
 
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
-import { useSourceList } from "../../../../../hooks/services/useSourceHook";
 import { useDestinationList } from "../../../../../hooks/services/useDestinationHook";
+import { useSourceList } from "../../../../../hooks/services/useSourceHook";
 
-type IProps = {
+interface IProps {
   type: "source" | "destination";
   onSubmit: (id: string) => void;
-};
+}
 
 const FormContent = styled(Form)`
   padding: 22px 27px 23px 24px;
@@ -41,7 +41,7 @@ const existingEntityValidationSchema = yup.object().shape({
 });
 
 const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
@@ -56,21 +56,21 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
         return {
           label: item.name,
           value: item.sourceId,
-          img: <ImageBlock img={sourceDef?.icon} />,
-        };
-      });
-    } else {
-      return destinations.map((item) => {
-        const destinationDef = destinationDefinitions.find(
-          (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
-        );
-        return {
-          label: item.name,
-          value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={sourceDef?.icon} />,
         };
       });
     }
+    return destinations.map((item) => {
+      const destinationDef = destinationDefinitions.find(
+        (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
+      );
+      return {
+        label: item.name,
+        value: item.destinationId,
+        img: <ConnectorIcon icon={destinationDef?.icon} />,
+      };
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type]);
 

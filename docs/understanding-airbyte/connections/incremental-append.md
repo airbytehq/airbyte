@@ -66,7 +66,7 @@ Some sources are able to determine the cursor that they use without any user inp
 
 ![](../../.gitbook/assets/incremental_source_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../catalog.md)\).
+\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
 
 ## User-Defined Cursor
 
@@ -74,7 +74,7 @@ Some sources cannot define the cursor without user input. For example, in the [p
 
 ![](../../.gitbook/assets/incremental_user_defined.png)
 
-\(You can find a more technical details about the configuration data model [here](../catalog.md)\).
+\(You can find a more technical details about the configuration data model [here](../airbyte-protocol.md#catalog)\).
 
 ## Getting the Latest Snapshot of data
 

@@ -11,7 +11,6 @@ airbytePython {
 
 dependencies {
     implementation project(':airbyte-workers')
-    implementation files(project(':airbyte-integrations:bases:airbyte-protocol').airbyteDocker.outputs)
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
@@ -33,7 +32,6 @@ airbyteDocker.dependsOn(checkSshScriptCopy)
 assemble.dependsOn(checkSshScriptCopy)
 test.dependsOn(checkSshScriptCopy)
 
-installReqs.dependsOn(":airbyte-integrations:bases:airbyte-protocol:installReqs")
 integrationTest.dependsOn(build)
 
 
@@ -103,6 +101,27 @@ task("customIntegrationTestPython", type: PythonTask, dependsOn: installTestReqs
     dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
     dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
 }
+
+// not really sure what this task does differently from customIntegrationTestPython, but it seems to also run integration tests
+// and as such it depends on the docker images.
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:bases:base-normalization:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-bigquery:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mysql:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-postgres:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-redshift:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-snowflake:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-oracle:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-mssql:airbyteDocker'
+project.tasks.findByName('_customIntegrationTestsCoverage').dependsOn ':airbyte-integrations:connectors:destination-clickhouse:airbyteDocker'
+
+// DATs have some additional tests that exercise normalization code paths,
+// so we want to run these in addition to the base-normalization integration tests.
+// If you add more items here, make sure to also to have CI fetch their credentials.
+// See git history for an example.
+// TODO reenable these - they're causing flakiness in our test results, need to figure that out
+// integrationTest.dependsOn(":airbyte-integrations:connectors:destination-bigquery:integrationTest")
+// integrationTest.dependsOn(":airbyte-integrations:connectors:destination-postgres:integrationTest")
+// integrationTest.dependsOn(":airbyte-integrations:connectors:destination-snowflake:integrationTest")
 
 integrationTest.dependsOn("customIntegrationTestPython")
 customIntegrationTests.dependsOn("customIntegrationTestPython")

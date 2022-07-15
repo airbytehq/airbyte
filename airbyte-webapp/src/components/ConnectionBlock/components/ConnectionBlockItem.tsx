@@ -1,12 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 
-import ImageBlock from "components/ImageBlock";
+import { ConnectorIcon } from "components/ConnectorIcon";
 
-type IProps = {
+interface IProps {
   name: string;
   icon?: string;
-};
+}
 
 export const Content = styled.div`
   background: ${({ theme }) => theme.lightPrimaryColor};
@@ -31,7 +31,7 @@ const Name = styled.div`
 const ConnectionBlockItem: React.FC<IProps> = (props) => {
   return (
     <Content>
-      <ImageBlock img={props.icon} />
+      <ConnectorIcon icon={props.icon} />
       <Name>{props.name}</Name>
     </Content>
   );

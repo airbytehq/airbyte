@@ -1,14 +1,14 @@
+import { Field, FieldProps, Formik, Form } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldProps, Formik, Form } from "formik";
 import * as yup from "yup";
 
 import { LoadingButton, Input } from "components";
 
-type CreateWorkspaceFormProps = {
+interface CreateWorkspaceFormProps {
   onSubmit: (values: { name: string }) => Promise<void>;
-};
+}
 
 const CreateWorkspaceFormValidationSchema = yup.object().shape({
   name: yup.string().required("form.empty.error"),
@@ -43,7 +43,7 @@ const CreateWorkspaceForm: React.FC<CreateWorkspaceFormProps> = ({ onSubmit }) =
       }}
       validationSchema={CreateWorkspaceFormValidationSchema}
       onSubmit={onSubmit}
-      validateOnBlur={true}
+      validateOnBlur
     >
       {({ isSubmitting }) => (
         <CreationForm>

@@ -6,14 +6,14 @@ import { BigButton } from "components/CenteredPageComponents";
 
 import { useConfig } from "config";
 
-import TitlesBlock from "./TitlesBlock";
 import HighlightedText from "./HighlightedText";
+import TitlesBlock from "./TitlesBlock";
 import VideoItem from "./VideoItem";
 
-type WelcomeStepProps = {
+interface WelcomeStepProps {
   onNextStep: () => void;
   userName?: string;
-};
+}
 
 const Videos = styled.div`
   width: 100%;
@@ -65,7 +65,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ userName, onNextStep }) => {
         <VideoItem
           description={<FormattedMessage id="onboarding.exploreDemo" />}
           img="/videoCover.png"
-          link={config.ui.demoLink}
+          link={config.links.demoLink}
         />
       </Videos>
       <BigButton onClick={onNextStep} shadow>
