@@ -973,6 +973,14 @@
   icon: tiktok.svg
   sourceType: api
   releaseStage: generally_available
+- name: Timely
+  sourceDefinitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
+  dockerRepository: airbyte/source-timely
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/timely
+  icon: timely.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
