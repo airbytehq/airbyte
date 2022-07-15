@@ -16,7 +16,6 @@
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
         <!-- to be applied eventually -->
-        <exclude name="AbstractClassWithoutAbstractMethod"/>
         <exclude name="ArrayIsStoredDirectly"/>
         <exclude name="AvoidPrintStackTrace"/>
         <exclude name="AvoidReassigningLoopVariables"/>
