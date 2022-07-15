@@ -5,11 +5,11 @@
 from typing import Any, List, Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.types import Config, Record
 
 
 class RecordFilter:
-    def __init__(self, config, condition: str = None):
+    def __init__(self, config: Config, condition: str = None):
         self._config = config
         self._filter_interpolator = InterpolatedBoolean(condition)
 
