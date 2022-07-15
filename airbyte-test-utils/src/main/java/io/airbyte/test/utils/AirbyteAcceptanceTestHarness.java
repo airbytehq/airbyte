@@ -483,7 +483,7 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public DestinationRead createPostgresDestination() throws ApiException {
-    return createPostgresDestination(
+    return createDestination(
         "AccTestDestination-" + UUID.randomUUID(),
         defaultWorkspaceId,
         getPostgresDestinationDefinitionId(),
@@ -491,17 +491,17 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   public DestinationRead createPostgresStrictEnforceDestination() throws ApiException {
-    return createPostgresDestination(
+    return createDestination(
         "AccTestDestination-" + UUID.randomUUID(),
         defaultWorkspaceId,
         getPostgresDestinationDefinitionId(),
         getDestinationDbStrictEnforceConfig());
   }
 
-  public DestinationRead createPostgresDestination(final String name,
-                                                   final UUID workspaceId,
-                                                   final UUID destinationDefId,
-                                                   final JsonNode destinationConfig)
+  public DestinationRead createDestination(final String name,
+                                           final UUID workspaceId,
+                                           final UUID destinationDefId,
+                                           final JsonNode destinationConfig)
       throws ApiException {
     final DestinationRead destination =
         apiClient.getDestinationApi().createDestination(new DestinationCreate()

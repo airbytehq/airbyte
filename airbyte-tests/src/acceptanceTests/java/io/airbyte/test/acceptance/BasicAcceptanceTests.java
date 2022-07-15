@@ -157,7 +157,7 @@ public class BasicAcceptanceTests {
     final JsonNode destinationConfig = testHarness.getDestinationDbConfig();
     final String name = "AccTestDestinationDb-" + UUID.randomUUID();
 
-    final DestinationRead createdDestination = testHarness.createPostgresDestination(
+    final DestinationRead createdDestination = testHarness.createDestination(
         name,
         workspaceId,
         destinationDefId,
@@ -1122,7 +1122,7 @@ public class BasicAcceptanceTests {
 
     // Destination fails after processing 5 messages, so the job should fail after the graceful close
     // timeout of 1 minute
-    final DestinationRead destination = testHarness.createPostgresDestination(
+    final DestinationRead destination = testHarness.createDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),

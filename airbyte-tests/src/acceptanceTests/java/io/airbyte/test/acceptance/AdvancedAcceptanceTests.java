@@ -164,7 +164,7 @@ public class AdvancedAcceptanceTests {
             .put("throw_after_n_records", 100)
             .build()));
 
-    final DestinationRead destination = testHarness.createPostgresDestination(
+    final DestinationRead destination = testHarness.createDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
@@ -253,7 +253,7 @@ public class AdvancedAcceptanceTests {
             .put("max_records", 5000)
             .build()));
 
-    final DestinationRead destination = testHarness.createPostgresDestination(
+    final DestinationRead destination = testHarness.createDestination(
         "E2E Test Destination -" + UUID.randomUUID(),
         workspaceId,
         destinationDefinition.getDestinationDefinitionId(),
