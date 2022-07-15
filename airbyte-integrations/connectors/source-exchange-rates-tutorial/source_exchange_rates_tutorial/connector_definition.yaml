@@ -1,22 +1,23 @@
-<TODO>_stream:
+rates_stream:
   options:
-    name: "<TODO>"
-    primary_key: "<TODO>"
-    url_base: "<TODO>"
+    name: "rates"
+    primary_key: ""
+    url_base: "https://api.exchangeratesapi.io/v1/"
     schema_loader:
       file_path: "./source_exchange_rates_tutorial/schemas/{{name}}.json"
     retriever:
       requester:
-        path: "<TODO>"
-        authenticator:
-          type: "TokenAuthenticator"
-          token: "<TODO>"
+        path: "/latest"
+        request_options_provider:
+          request_parameters:
+            access_key: "{{ config.access_key }}"
+            base: "{{ config.base }}"
       record_selector:
         extractor:
-          transform: "<TODO>"
+          transform: "[_]"
 
 streams:
-  - "*ref(<TODO>_stream)"
+  - "*ref(rates_stream)"
 check:
   stream_names:
-    - "<TODO>>"
+    - "rates"

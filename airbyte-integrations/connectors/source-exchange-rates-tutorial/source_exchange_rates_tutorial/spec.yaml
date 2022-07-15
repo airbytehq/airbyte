@@ -4,10 +4,13 @@ connectionSpecification:
   title: Exchange Rates Tutorial Spec
   type: object
   required:
-    - TODO
-  additionalProperties: false
+    - access_key
+  additionalProperties: true
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    access_key:
       type: string
-      description: describe me
+      description: >-
+        Your API Access Key. See <a
+        href="https://exchangeratesapi.io/documentation/">here</a>. The key is
+        case sensitive.
+      airbyte_secret: true
