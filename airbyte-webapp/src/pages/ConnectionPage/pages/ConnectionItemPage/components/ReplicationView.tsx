@@ -41,7 +41,10 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
   const requireFullReset = stateType === ConnectionStateType.legacy;
   return (
     <div className={styles.resetWarningModal} data-testid={`resetModal-${requireFullReset ? "full" : "partial"}`}>
-      {/* TODO: This should use proper text stylings once we have them available. */}
+      {/* 
+        TODO: This should use proper text stylings once we have them available.
+        See https://github.com/airbytehq/airbyte/issues/14478
+      */}
       <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
       <p>
         <LabeledSwitch
@@ -113,7 +116,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
     return initialConnection;
   }, [activeUpdatingSchemaMode, connectionWithRefreshCatalog, initialConnection, connectionFormValues]);
 
-  const saveConnection = async (values: ValuesProps, skipReset = false) => {
+  const saveConnection = async (values: ValuesProps, { skipReset }: { skipReset: boolean }) => {
     const initialSyncSchema = connection.syncCatalog;
     const connectionAsUpdate = toWebBackendConnectionUpdate(connection);
 
@@ -159,10 +162,10 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         };
       }
       // Save the connection taking into account the correct skipRefresh value from the dialog choice.
-      await saveConnection(values, !result.reason);
+      await saveConnection(values, { skipReset: !result.reason });
     } else {
       // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
-      await saveConnection(values, true);
+      await saveConnection(values, { skipReset: true });
     }
   };
 
@@ -187,7 +190,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
             onSubmit={onSubmitForm}
             successMessage={saved && <FormattedMessage id="form.changesSaved" />}
             onCancel={onCancelConnectionFormEdit}
-            allowSavingUntouchedForm={activeUpdatingSchemaMode}
+            canSubmitUntouchedForm={activeUpdatingSchemaMode}
             additionalSchemaControl={
               <Button onClick={onRefreshSourceSchema} type="button" secondary>
                 <TryArrow icon={faSyncAlt} />

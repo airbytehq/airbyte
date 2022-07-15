@@ -3,9 +3,9 @@ import { firstValueFrom, Subject } from "rxjs";
 
 import { Modal } from "components";
 
-import { ModalOptions, ModalResult, ModalServiceContextType } from "./types";
+import { ModalOptions, ModalResult, ModalServiceContext } from "./types";
 
-const ModalServiceContext = React.createContext<ModalServiceContextType | undefined>(undefined);
+const modalServiceContext = React.createContext<ModalServiceContext | undefined>(undefined);
 
 export const ModalServiceProvider: React.FC = ({ children }) => {
   // The any here is due to the fact, that every call to open a modal might come in with
@@ -17,7 +17,7 @@ export const ModalServiceProvider: React.FC = ({ children }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const resultSubjectRef = useRef<Subject<ModalResult<any>>>();
 
-  const service: ModalServiceContextType = useMemo(
+  const service: ModalServiceContext = useMemo(
     () => ({
       openModal: (options) => {
         resultSubjectRef.current = new Subject();
@@ -37,7 +37,7 @@ export const ModalServiceProvider: React.FC = ({ children }) => {
   );
 
   return (
-    <ModalServiceContext.Provider value={service}>
+    <modalServiceContext.Provider value={service}>
       {children}
       {modalOptions && (
         <Modal
@@ -51,12 +51,12 @@ export const ModalServiceProvider: React.FC = ({ children }) => {
           />
         </Modal>
       )}
-    </ModalServiceContext.Provider>
+    </modalServiceContext.Provider>
   );
 };
 
 export const useModalService = () => {
-  const context = useContext(ModalServiceContext);
+  const context = useContext(modalServiceContext);
   if (!context) {
     throw new Error("Can't use ModalService outside ModalServiceProvider");
   }

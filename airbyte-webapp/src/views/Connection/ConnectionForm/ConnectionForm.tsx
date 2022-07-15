@@ -117,7 +117,7 @@ interface ConnectionFormProps {
   onChangeValues?: (values: FormikConnectionFormValues) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
-  allowSavingUntouchedForm?: boolean;
+  canSubmitUntouchedForm?: boolean;
   mode: ConnectionFormMode;
   additionalSchemaControl?: React.ReactNode;
 
@@ -134,7 +134,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   mode,
   successMessage,
   additionBottomControls,
-  allowSavingUntouchedForm,
+  canSubmitUntouchedForm,
   additionalSchemaControl,
   connection,
   onChangeValues,
@@ -163,12 +163,14 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       try {
         const result = await onSubmit(formValues);
 
-        if (!result?.submitCancelled) {
-          formikHelpers.resetForm({ values });
-          clearFormChange(formId);
-
-          result?.onSubmitComplete?.();
+        if (result?.submitCancelled) {
+          return;
         }
+
+        formikHelpers.resetForm({ values });
+        clearFormChange(formId);
+
+        result?.onSubmitComplete?.();
       } catch (e) {
         setSubmitError(e);
       }
@@ -330,7 +332,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 errorMessage={
                   errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
                 }
-                enableControls={allowSavingUntouchedForm}
+                enableControls={canSubmitUntouchedForm}
               />
             )}
             {mode === "create" && (

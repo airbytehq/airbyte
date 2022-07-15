@@ -15,7 +15,7 @@ interface ModalContentProps<T> {
   onCancel: () => void;
 }
 
-export interface ModalServiceContextType {
+export interface ModalServiceContext {
   openModal: <ResultType>(options: ModalOptions<ResultType>) => Promise<ModalResult<ResultType>>;
   closeModal: () => void;
 }
