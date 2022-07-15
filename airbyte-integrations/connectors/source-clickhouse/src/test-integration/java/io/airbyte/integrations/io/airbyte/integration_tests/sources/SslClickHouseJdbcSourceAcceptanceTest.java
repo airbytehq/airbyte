@@ -25,40 +25,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.GenericContainer;
 
-public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceAcceptanceTest {
 
   private static GenericContainer container;
   private static JdbcDatabase jdbcDatabase;
   private static DataSource dataSource;
   private JsonNode config;
   private String dbName;
-
-  @Override
-  public boolean supportsSchemas() {
-    return false;
-  }
-
-  @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
-  }
-
-  @Override
-  public String getDriverClass() {
-    return ClickHouseSource.DRIVER_CLASS;
-  }
-
-  @Override
-  public String createTableQuery(final String tableName,
-                                 final String columnClause,
-                                 final String primaryKeyClause) {
-    // ClickHouse requires Engine to be mentioned as part of create table query.
-    // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        dbName + "." + tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
-            : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
-                + primaryKeyClause);
-  }
 
   @BeforeAll
   static void init() {
@@ -106,38 +79,4 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
     DataSourceFactory.close(dataSource);
     container.close();
   }
-
-  @Override
-  public String primaryKeyClause(final List<String> columns) {
-    if (columns.isEmpty()) {
-      return "";
-    }
-
-    final StringBuilder clause = new StringBuilder();
-    clause.append("(");
-    for (int i = 0; i < columns.size(); i++) {
-      clause.append(columns.get(i));
-      if (i != (columns.size() - 1)) {
-        clause.append(",");
-      }
-    }
-    clause.append(")");
-    return clause.toString();
-  }
-
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new ClickHouseSource();
-  }
-
-  @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (`arr` Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();",
-          dbName + "." + getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-    });
-  }
-
 }
