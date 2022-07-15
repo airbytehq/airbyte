@@ -4376,7 +4376,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.32"
+- dockerImage: "airbyte/destination-snowflake:0.4.33"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4647,6 +4647,18 @@
                         \ or 256 bits. Leave blank to have Airbyte generate an ephemeral\
                         \ key for each sync."
                       airbyte_secret: true
+              file_name_pattern:
+                type: "string"
+                description: "The pattern allows you to set the file-name format for\
+                  \ the S3 staging file(s)"
+                title: "S3 Filename pattern (Optional)"
+                examples:
+                - "{date}"
+                - "{date:yyyy_MM}"
+                - "{timestamp}"
+                - "{part_number}"
+                - "{sync_id}"
+                order: 7
           - title: "Google Cloud Storage Staging"
             description: "Recommended for large production workloads for better speed\
               \ and scalability."
