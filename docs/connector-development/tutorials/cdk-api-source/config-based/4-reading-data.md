@@ -18,30 +18,11 @@ Let's first add the stream to the configured catalog in `source-exchange-rates-t
     }
   ]
 }
-
 ```
 
-and add an empty stream schema in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/schemas/rates.json`
-```
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-  }
-}
-```
 
-We should now think about the data we're interested in.
-Let's request the exchange rates for a specific base currency, and produce records with the following fields:
-{
-  "date",
-  "base",
-  "rates": {
-    "currency": "exchange_rate_value"
-  }
-}
-
-Let's update the stream schema. Note that we're only going to sync exchanges rates with CAD, EUR, and USD for simplicity. Other currencies can be added to the schema as needed.:
+Let's define the stream schema in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/schemas/rates.json`
+Note that we're only going to sync exchanges rates with CAD, EUR, and USD for simplicity. Other currencies can be added to the schema as needed.
 ```
 {
   "type": "object",
