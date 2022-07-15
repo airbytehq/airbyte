@@ -273,7 +273,7 @@ class DoleadBankTransactions(XeroPaginatedData):
             return {"tenant_id": self.dolead_id, "page": "1"}
 
 
-class DoleadIncBankTransactions(XeroPaginatedData):
+class DoleadIncBankTransactions(DoleadBankTransactions):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
@@ -281,7 +281,7 @@ class DoleadIncBankTransactions(XeroPaginatedData):
             return {"tenant_id": self.dolead_inc_id, "page": "1"}
 
 
-class DoleadUkBankTransactions(XeroPaginatedData):
+class DoleadUkBankTransactions(DoleadBankTransactions):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
@@ -289,7 +289,7 @@ class DoleadUkBankTransactions(XeroPaginatedData):
             return {"tenant_id": self.dolead_uk_id, "page": "1"}
 
 
-class DoleadDdsBankTransactions(XeroPaginatedData):
+class DoleadDdsBankTransactions(DoleadBankTransactions):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
