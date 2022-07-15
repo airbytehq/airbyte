@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "required": ["base", "date", "rates"],
+  "properties": {
+    "base": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string"
+    },
+    "rates": {
+      "type": "object",
+      "properties": {
+        "CAD": {
+          "type": ["null", "number"]
+        },
+        "EUR": {
+          "type": ["null", "number"]
+        },
+        "USD": {
+          "type": ["null", "number"]
+        }
+      }
+    }
+  }
+}
