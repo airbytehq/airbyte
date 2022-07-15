@@ -78,7 +78,7 @@ class ReportsMixin(ABC):
     timeout: int = 300000
     report_file_format: str = "Csv"
 
-    primary_key: List[str] = ["TimePeriod", "Network", "DeviceType"]
+    primary_key: List[str] = ["TimePeriod", "Network", "DeviceType", "CampaignId"]
 
     @property
     @abstractmethod
