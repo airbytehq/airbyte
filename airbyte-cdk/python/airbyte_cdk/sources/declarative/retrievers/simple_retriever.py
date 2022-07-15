@@ -165,9 +165,7 @@ class SimpleRetriever(Retriever, HttpStream):
         elif stream_slicer_path:
             return stream_slicer_path
         else:
-            static_path = self._requester.get_path(
-                stream_state=self.state, stream_slice=self._iterator.get_stream_state(), next_page_token=next_page_token
-            )
+            static_path = self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
             if not static_path:
                 raise ValueError("Found no path to fetch")
             else:
@@ -273,8 +271,8 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        print(f"stream_slicer: {type(self._iterator)}")
-        return self._iterator.stream_slices(sync_mode, self.state)
+        slices = self._iterator.stream_slices(sync_mode, self.state)
+        return slices
 
     @property
     def state(self) -> MutableMapping[str, Any]:
