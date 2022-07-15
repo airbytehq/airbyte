@@ -89,6 +89,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.Result;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.AfterAll;
@@ -1164,6 +1166,30 @@ public class BasicAcceptanceTests {
   }
 
   @Test
+  public void testMultipleSchemasAndTablesSyncAndReset() throws Exception {
+    // create tables in another schema
+    PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
+
+    final String connectionName = "test-connection";
+    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID operationId = testHarness.createOperation().getOperationId();
+    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+
+    final SyncMode syncMode = SyncMode.FULL_REFRESH;
+    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+    final UUID connectionId =
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+    testHarness.assertSourceAndDestinationDbInSync(false);
+    final JobInfoRead connectionResetRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    waitForSuccessfulJob(apiClient.getJobsApi(), connectionResetRead.getJob());
+    testHarness.assertDestinationDbEmpty(false);
+  }
+
+  @Test
   public void testPartialResetResetAllWhenSchemaIsModified() throws Exception {
     // Add Table
     final String additionalTable = "additional_table";
@@ -1178,11 +1204,12 @@ public class BasicAcceptanceTests {
     });
     UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(catalog, List.of(COLUMN_ID));
     final UUID destinationId = testHarness.createDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final UUID operationId = operation.getOperationId();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
+
+    testHarness.setIncrementalAppendSyncMode(catalog, List.of(COLUMN_ID));
 
     final ConnectionRead connection =
         testHarness.createConnection(name, sourceId, destinationId, List.of(operationId), catalog, null);
@@ -1192,7 +1219,7 @@ public class BasicAcceptanceTests {
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connection.getConnectionId()));
     waitForSuccessfulJob(apiClient.getJobsApi(), syncRead.getJob());
 
-    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
@@ -1200,15 +1227,11 @@ public class BasicAcceptanceTests {
     /**
      * Remove stream
      */
-    sourceDb.query(ctx -> {
-      ctx.dropTableIfExists(additionalTable).execute();
-      return null;
-    });
+    sourceDb.query(ctx -> ctx.dropTableIfExists(additionalTable).execute());
+
     // Update with refreshed catalog
-    sourceId = testHarness.createPostgresSource().getSourceId();
-    AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
-    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
-    WebBackendConnectionUpdate update = getUpdateInput(connection, refreshedCatalog, operation);
+    AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchemaWithoutCache(sourceId);
+    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
 
     // Wait until the sync from the UpdateConnection is finished
@@ -1235,8 +1258,7 @@ public class BasicAcceptanceTests {
 
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
-    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
-    update = getUpdateInput(connection, refreshedCatalog, operation);
+    update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
@@ -1265,8 +1287,7 @@ public class BasicAcceptanceTests {
 
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
-    testHarness.setIncrementalAppendDedupSyncModeWithPrimaryKey(refreshedCatalog, List.of(COLUMN_ID));
-    update = getUpdateInput(connection, refreshedCatalog, operation);
+    update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
     webBackendApi.webBackendUpdateConnection(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
@@ -1281,31 +1302,30 @@ public class BasicAcceptanceTests {
 
   }
 
+  // can be helpful for debugging
+  private void printDbs() throws SQLException {
+    final Database sourceDb = testHarness.getSourceDatabase();
+    Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
+    LOGGER.info("Printing source tables");
+    for (final SchemaTableNamePair pair : pairs) {
+      final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
+      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+    }
+
+    final Database destDb = testHarness.getDestinationDatabase();
+    pairs = testHarness.listAllTables(destDb);
+    LOGGER.info("Printing destination tables");
+    for (final SchemaTableNamePair pair : pairs) {
+      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
+      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+    }
+  }
+
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {
     final ConnectionState state = apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
     final List<StreamDescriptor> streamDescriptors = state.getStreamState().stream().map(StreamState::getStreamDescriptor).toList();
 
     Assertions.assertTrue(streamDescriptors.containsAll(expectedStreamDescriptors) && expectedStreamDescriptors.containsAll(streamDescriptors));
-  }
-
-  private WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
-    return new WebBackendConnectionUpdate()
-        .connectionId(connection.getConnectionId())
-        .name(connection.getName())
-        .operationIds(connection.getOperationIds())
-        .operations(List.of(new WebBackendOperationCreateOrUpdate()
-            .name(operation.getName())
-            .operationId(operation.getOperationId())
-            .workspaceId(operation.getWorkspaceId())
-            .operatorConfiguration(operation.getOperatorConfiguration())))
-        .namespaceDefinition(connection.getNamespaceDefinition())
-        .namespaceFormat(connection.getNamespaceFormat())
-        .syncCatalog(catalog)
-        .schedule(connection.getSchedule())
-        .sourceCatalogId(connection.getSourceCatalogId())
-        .status(connection.getStatus())
-        .prefix(connection.getPrefix())
-        .withRefreshedCatalog(true);
   }
 
   private JobRead getMostRecentSyncJobId(final UUID connectionId) throws Exception {

@@ -389,7 +389,7 @@ public class WebBackendConnectionsHandler {
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
     ConnectionRead connectionRead;
-    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
 
     final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
     if (!skipReset) {
@@ -405,6 +405,7 @@ public class WebBackendConnectionsHandler {
       List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
           allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
       if (!streamsToReset.isEmpty()) {
         final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
         final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
@@ -420,6 +421,8 @@ public class WebBackendConnectionsHandler {
         verifyManualOperationResult(manualOperationResult);
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
+    } else {
+      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
     }
     return buildWebBackendConnectionRead(connectionRead);
   }
