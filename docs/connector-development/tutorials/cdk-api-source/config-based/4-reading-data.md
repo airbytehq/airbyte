@@ -93,6 +93,10 @@ check:
     - "rates"
 ```
 
+Finally, we also need to add the start date to the config file
+echo '{"access_key": "<your-access-key>", "start_date": "2022-01-01", "base": "USD"}'  > secrets/config.json
+
+
 Reading from the source can be done by running the `read` operation
 ```
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
