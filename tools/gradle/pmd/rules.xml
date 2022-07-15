@@ -34,11 +34,6 @@
         <exclude name="PreserveStackTrace"/>
         <exclude name="SwitchStmtsShouldHaveDefault"/>
         <exclude name="SystemPrintln"/>
-        <exclude name="UnusedAssignment"/>
-        <exclude name="UnusedFormalParameter"/>
-        <exclude name="UnusedLocalVariable"/>
-        <exclude name="UnusedPrivateField"/>
-        <exclude name="UnusedPrivateMethod"/>
         <exclude name="UseCollectionIsEmpty"/>
         <exclude name="UseVarargs"/>
     </rule>

@@ -965,7 +965,7 @@ public class BasicAcceptanceTests {
         .status(connection.getStatus())
         .resourceRequirements(connection.getResourceRequirements())
         .withRefreshedCatalog(true);
-    final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
     destDb.query(ctx -> {
@@ -1020,7 +1020,7 @@ public class BasicAcceptanceTests {
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
-    for (AirbyteStreamAndConfiguration streamAndConfig : catalog.getStreams()) {
+    for (final AirbyteStreamAndConfiguration streamAndConfig : catalog.getStreams()) {
       final AirbyteStream stream = streamAndConfig.getStream();
       assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
       // instead of assertFalse to avoid NPE from unboxed.
