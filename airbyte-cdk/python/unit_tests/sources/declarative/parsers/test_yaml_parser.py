@@ -130,3 +130,15 @@ reference_to_nested_nested_value:
     assert config["reference_to_nested_path"] == "uh oh"
     assert config["example"]["nested"]["more_nested"]["value"] == "found it!"
     assert config["reference_to_nested_nested_value"] == "found it!"
+
+
+def test_list():
+    content = """
+    list:
+      - "A"
+      - "B"
+    elem_ref: "*ref(list[0])"
+    """
+    config = parser.parse(content)
+    elem_ref = config["elem_ref"]
+    assert elem_ref == "A"
