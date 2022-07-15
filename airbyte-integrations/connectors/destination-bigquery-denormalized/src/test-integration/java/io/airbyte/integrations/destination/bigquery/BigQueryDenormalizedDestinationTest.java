@@ -41,9 +41,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.api.client.http.HttpResponseException;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.QueryJobConfiguration;
@@ -191,10 +189,10 @@ class BigQueryDenormalizedDestinationTest {
 
     // Bigquery's datetime type accepts multiple input format but always outputs the same, so we can't
     // expect to receive the value we sent.
-    var expectedValue = LocalDate.parse(extractDateValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
+    var expectedValue = LocalDate.parse(extractJsonValues(expectedUsersJson, "updated_at").stream().findFirst().get(),
         DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     var actualValue =
-        LocalDate.parse(extractDateValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
+        LocalDate.parse(extractJsonValues(resultJson, "updated_at").stream().findFirst().get(), DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT));
     assertEquals(expectedValue, actualValue);
 
     assertEquals(BigQueryUtils.getTableDefinition(bigquery, datasetId, USERS_STREAM_NAME).getSchema(), getExpectedSchemaForWriteWithFormatTest());
@@ -261,12 +259,12 @@ class BigQueryDenormalizedDestinationTest {
     final JsonNode resultJson = usersActual.get(0);
 
     // BigQuery Accepts "YYYY-MM-DD HH:MM:SS[.SSSSSS]" format
-    Set<String> actualValues = extractDateValues(resultJson, "updated_at");
+    Set<String> actualValues = extractJsonValues(resultJson, "updated_at");
     assertEquals(Set.of(new DateTime("2021-10-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString(BIGQUERY_DATETIME_FORMAT)),
         actualValues);
 
     // check nested datetime
-    actualValues = extractDateValues(resultJson.get("items"), "nested_datetime");
+    actualValues = extractJsonValues(resultJson.get("items"), "nested_datetime");
     assertEquals(Set.of(new DateTime("2021-11-11T06:36:53+00:00").withZone(DateTimeZone.UTC).toString(BIGQUERY_DATETIME_FORMAT)),
         actualValues);
   }
@@ -327,12 +325,6 @@ class BigQueryDenormalizedDestinationTest {
 
     return resultSet;
   }
-  
-  // BigQuery returns in a different formats Datetime and Timestamp columns.
-  // This method makes Timestamp format similar to Datetime to simplify tests.
-  private Set<String> extractDateValues(final JsonNode node, final String attributeName) {
-    return extractJsonValues(node, attributeName).stream().map(s -> s.replaceAll("Z$", "")).collect(Collectors.toSet());
-  }
 
   private JsonNode removeAirbyteMetadataFields(final JsonNode record) {
     for (final String airbyteMetadataField : AIRBYTE_COLUMNS) {
@@ -349,12 +341,24 @@ class BigQueryDenormalizedDestinationTest {
             .setUseLegacySql(false).build();
     BigQueryUtils.executeQuery(bigquery, queryConfig);
 
-    return StreamSupport
+    var valuesStream = StreamSupport
         .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
-        .map(v -> v.get("jsonValue").getStringValue())
+        .map(v -> v.get("jsonValue").getStringValue());
+    return formatDateValues(valuesStream)
         .map(Jsons::deserialize)
         .map(this::removeAirbyteMetadataFields)
         .collect(Collectors.toList());
+  }
+
+  /**
+   * BigQuery returns date values in a different format based on the column type.
+   * Datetime  : YYYY-MM-DD'T'HH:MM:SS
+   * Timestamp : YYYY-MM-DD'T'HH:MM:SS'Z'
+   *
+   * This method formats all values as Airbite format to simplify test result validation.
+   */
+  private Stream<String> formatDateValues(Stream<String> values) {
+    return values.map(s -> s.replaceAll("(\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(Z)(\")", "$1$3"));
   }
 
   private static Stream<Arguments> schemaAndDataProvider() {
