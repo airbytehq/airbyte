@@ -4,10 +4,8 @@
 Airbyte provides a code generator which bootstraps the scaffolding for our connector.
 
 Let's start by cloning the Airbyte repository
-### FIXME: remove the git checkout once stream slicer refactor is in master
 ```
-git@github.com:airbytehq/airbyte.git
-git checkout alex/tutorialIncremental
+git clone git@github.com:airbytehq/airbyte.git
 ```
 
 Next we'll run the code generator
@@ -27,6 +25,7 @@ For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`. Th
 
 
 ## Temporary instructions
+`git checkout alex/tutorialIncremental`
 paste the content to the files
 1. `airbyte-integrations/connectors/source-exchange-rates-tutorial/source_exchange_rates_tutorial/connector_definition.yaml`
 ```
