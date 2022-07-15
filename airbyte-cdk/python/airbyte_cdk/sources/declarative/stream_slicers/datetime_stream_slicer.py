@@ -104,7 +104,10 @@ class DatetimeStreamSlicer(StreamSlicer):
 
         dates = self._partition_daterange(start_datetime, end_datetime, self._step)
         state_date = stream_state.get(self._stream_state_field.eval(self._config))
-        dates_later_than_state = [d for d in dates if d["start_date"] > state_date]
+        if state_date:
+            dates_later_than_state = [d for d in dates if d["start_date"] > state_date]
+        else:
+            dates_later_than_state = dates
         print(f"dates_later_than_state: {dates_later_than_state}")
         return dates_later_than_state
 
