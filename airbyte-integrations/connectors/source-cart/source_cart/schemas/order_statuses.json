@@ -1,7 +1,7 @@
 {
   "type": "object",
   "properties": {
-    "id": ["null", "integer"],
+    "id": "integer",
     "name": ["null", "string"],
     "is_open": ["null", "boolean"],
     "is_declined": ["null", "boolean"],
