@@ -93,7 +93,21 @@ class YamlParser(ConfigParser):
         elif isinstance(value, dict):
             return self.preprocess_dict(value, evaluated_config, path)
         elif type(value) == list:
-            evaluated_list = [self.preprocess(v, evaluated_config, path) for v in value]
+            evaluated_list = [
+                # pass in elem's path instead of the list's path
+                self.preprocess(v, evaluated_config, self._get_path_for_list_item(path, index))
+                for index, v in enumerate(value)
+            ]
+            # Add the list's element to the evaluated config so they can be referenced
+            for index, elem in enumerate(evaluated_list):
+                evaluated_config[self._get_path_for_list_item(path, index)] = elem
             return evaluated_list
         else:
             return value
+
+    def _get_path_for_list_item(self, path, index):
+        # An elem's path is {path_to_list}[{index}]
+        if len(path) > 1:
+            return path[:-1], f"{path[-1]}[{index}]"
+        else:
+            return (f"{path[-1]}[{index}]",)

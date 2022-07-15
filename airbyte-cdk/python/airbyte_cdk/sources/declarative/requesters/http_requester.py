@@ -2,19 +2,21 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod, Requester
-from airbyte_cdk.sources.declarative.requesters.retriers.default_retrier import DefaultRetrier
-from airbyte_cdk.sources.declarative.requesters.retriers.retrier import Retrier
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 
 
 class HttpRequester(Requester):
@@ -22,12 +24,12 @@ class HttpRequester(Requester):
         self,
         *,
         name: str,
-        url_base: [str, InterpolatedString],
-        path: [str, InterpolatedString],
+        url_base: InterpolatedString,
+        path: InterpolatedString,
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
-        authenticator: HttpAuthenticator,
-        retrier: Optional[Retrier] = None,
+        authenticator: HttpAuthenticator = None,
+        error_handler: Optional[ErrorHandler] = None,
         config: Config,
     ):
         if request_options_provider is None:
@@ -35,18 +37,14 @@ class HttpRequester(Requester):
         elif isinstance(request_options_provider, dict):
             request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
         self._name = name
-        self._authenticator = authenticator
-        if type(url_base) == str:
-            url_base = InterpolatedString(url_base)
+        self._authenticator = authenticator or NoAuth()
         self._url_base = url_base
-        if type(path) == str:
-            path = InterpolatedString(path)
         self._path: InterpolatedString = path
         if type(http_method) == str:
             http_method = HttpMethod[http_method]
         self._method = http_method
         self._request_options_provider = request_options_provider
-        self._retrier = retrier or DefaultRetrier()
+        self._error_handler = error_handler or DefaultErrorHandler()
         self._config = config
 
     def get_authenticator(self):
@@ -63,24 +61,12 @@ class HttpRequester(Requester):
     def get_method(self):
         return self._method
 
-    @property
-    def raise_on_http_errors(self) -> bool:
-        # TODO this should be declarative
-        return True
-
-    @property
-    def max_retries(self) -> Union[int, None]:
-        return self._retrier.max_retries
-
-    @property
-    def retry_factor(self) -> float:
-        return self._retrier.retry_factor
-
-    def should_retry(self, response: requests.Response) -> bool:
-        return self._retrier.should_retry(response)
-
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return self._retrier.backoff_time(response)
+    # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
+    # only care about the status of the last response received
+    @lru_cache(maxsize=10)
+    def should_retry(self, response: requests.Response) -> ResponseStatus:
+        # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
+        return self._error_handler.should_retry(response)
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
