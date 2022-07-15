@@ -39,6 +39,7 @@ class GoogleSheetsWriter(WriteBufferMixin):
         3) cleans-up the records_buffer belonging to input stream
         """
         # get the size of records_buffer for target stream in Kb
+        # TODO unit test flush triggers
         records_buffer_size_in_kb = self.records_buffer[stream_name].__sizeof__() / 1024
         if len(self.records_buffer[stream_name]) == self.flush_interval or records_buffer_size_in_kb > self.flush_interval_size_in_kb:
             self.write_from_queue(stream_name)
