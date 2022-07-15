@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "genson==1.2.2",
     "google-cloud-storage==1.35.0",
     "pandas==1.4.3",
-    "paramiko==2.7.2",
+    "paramiko==2.10.1",
     "s3fs==0.4.2",
     "smart-open[all]==4.1.2",
     "lxml==4.6.5",
