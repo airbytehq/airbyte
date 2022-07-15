@@ -214,7 +214,6 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
     last_slice = None
     current_slice = None
-    first_run = True
     initial_state = None
     max_state = None
 
@@ -238,43 +237,27 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         if stream_slices:
             self.last_slice = stream_slices[-1]
 
-        self.logger.info(f"{self.name}: stream_slices:{stream_slices}")
+        self.logger.info(f"{self.name} stream slices: {stream_slices}")
 
         return stream_slices
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        I see you have a lot of questions to this function. I will try to explain.
-        The problem that it solves is next: records from the streams that used nested ids logic (see the get_parent_ids function comments below)
-        can have different, non ordered timestamp in update_at cursor_field and because of they are extracted with slices
-        it is a messy task to make the stream works as incremental. To understand it better the read of nested stream data can be next:
-
-        # Reading the data subset for the ad_account_id_1 - first slice
-        {"updated_at": "2021-07-22T10:32:05.719Z", other_fields}
-        {"updated_at": "2021-07-22T10:47:05.780Z", other_fields}
-        {"updated_at": "2021-07-22T10:42:03.830Z", other_fields}
-        {"updated_at": "2021-07-21T12:20:34.927Z", other_fields}
-        # Reading the data subset for the ad_account_id_2 - second slice
-        {"updated_at": "2021-07-07T07:40:09.531Z", other_fields}
-        {"updated_at": "2021-06-11T08:04:42.202Z", other_fields}
-        {"updated_at": "2021-06-09T13:12:56.350Z", other_fields}
-
-        As you can see the cursor_field (updated_at) values are not ordered and even more - they are descending in some kind
-        The standard logic for incremental cannot be done, because in this case after the first slice
-        the stream_state will be 2021-07-22T10:42:03.830Z, but the second slice data is less then this value, so it will not be yield
-
-        So the next approach was implemented: Until the last slice is processed the stream state remains initial (whenever it is a start_date
-        or the saved stream_state from the state.json), but the maximum value is calculated and saved in class max_state value.
-        When the last slice is processed (we write the class last_slice value while getting the slices) the max_state value is written to stream_state
-        Thus all the slices data are compared to the initial state, but only on the last one we write it to the stream state.
-        This approach gives us the maximum state value of all the records and we exclude the state updates between slice processing
+        Handle state value for streams with random order of cursor_field values.
+        State with max value should be release only in last slice otherwise records
+        from intermediate slices can be filtered out in 'read_records'
         """
-        if self.first_run:
-            self.first_run = False
-            return {self.cursor_field: self.initial_state}
+
+        # store max state value across all records of all slices (parent ids) because
+        # cursor_field values are random (not sorted) even within one slice (parent id)
+        self.max_state = max(self.max_state, latest_record[self.cursor_field])
+
+        if self.current_slice == self.last_slice:
+            # return max found state for last slice only
+            return {self.cursor_field: self.max_state}
         else:
-            self.max_state = max(self.max_state, latest_record[self.cursor_field])
-            return {self.cursor_field: self.max_state if self.current_slice == self.last_slice else self.initial_state}
+            # return release initial state until last slice is processed
+            return {self.cursor_field: self.initial_state}
 
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
@@ -446,7 +429,7 @@ class StatsIncremental(Stats, IncrementalMixin):
             date_slices.append({"start_time": slice_start_date.to_date_string(), "end_time": slice_end_date.to_date_string()})
             slice_start_date = slice_end_date
 
-        self.logger.info(f"{self.name} date_slices: {date_slices}.")
+        self.logger.info(f"{self.name} stream date slices: {date_slices}.")
 
         return date_slices
 
@@ -466,7 +449,7 @@ class StatsIncremental(Stats, IncrementalMixin):
             for parent_id in parent_ids:
                 stream_slices.append({**date_slice, **parent_id})
 
-        self.logger.info(f"{self.name} stream_slices:{stream_slices}")
+        self.logger.info(f"{self.name} stream slices: {stream_slices}")
 
         return stream_slices
 
