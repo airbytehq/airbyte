@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "GET_FBA_INVENTORY_PLANNING_DATA",
+        "name": "currencylayer_live",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },

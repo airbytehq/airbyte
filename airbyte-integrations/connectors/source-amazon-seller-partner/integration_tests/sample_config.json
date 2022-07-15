@@ -1,5 +1,5 @@
 {
-  "replication_start_date": "2022-06-01T00:00:00Z",
+  "replication_start_date": "2022-01-01T00:00:00Z",
   "refresh_token": "Atzr|IwEBILk3Okhbr9U8yaihj6nKmq_LvgzWbFGhvwXS7sBo_U0fLEBn1f-qgtbZMSQFkxKljcHLkgvepsB_JIxUs4kaHhw_PV-SiYkIYjBNArdfLY7Z-WW3MZ8r34YREaXEBx63icKSKpxShkD5QwqmMFBj7h_n-rIGyN7FE4DkXY4r5IAuPriGoAbtyXc1L3q5uDfpZiYOpfjOG-lYuyVVXI_FCA7DO_5BlIw38U4lJN-MlQvAw-ym2e7DBxNspnUGoGOzmYMi4PxwvS50ohShIxDIjydZGEFT7ElVcm67y96XXxr1AGd4mjYeXA14mCqXzyp2vmg",
   "app_id": "amzn1.application-oa2-client.8b33dc8ae27b43d59a4b43a864da967f",
   "source_name": "niubi plus",
@@ -9,5 +9,5 @@
   "aws_secret_key": "xeK9OqfkTjy4Sqym+O6NR/d5s0ro/oSptCZixcfR",
   "role_arn": "arn:aws:iam::673574066875:user/it_sictecinfotech",
   "aws_environment": "PRODUCTION",
-  "region": "CA"
+  "region": "MX"
 }

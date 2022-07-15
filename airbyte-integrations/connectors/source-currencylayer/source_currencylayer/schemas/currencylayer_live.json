@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "quotes": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "timestamp": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "source": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
