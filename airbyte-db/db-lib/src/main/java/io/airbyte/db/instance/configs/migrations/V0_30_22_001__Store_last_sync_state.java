@@ -4,9 +4,7 @@
 
 package io.airbyte.db.instance.configs.migrations;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.EnvConfigs;
@@ -38,7 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
-  private static final ObjectMapper MAPPER = MoreMappers.initMapper();
   private static final String MIGRATION_NAME = "Configs db migration 0.30.22.001";
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_30_22_001__Store_last_sync_state.class);
 

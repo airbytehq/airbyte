@@ -15,12 +15,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataTypeUtils {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataTypeUtils.class);
 
   public static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 

@@ -16,7 +16,6 @@ import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.WorkerEnvConstants;
 import io.airbyte.workers.WorkerConfigs;
@@ -57,8 +56,6 @@ class AirbyteIntegrationLauncherTest {
   @Mock
   private ProcessFactory processFactory;
   private AirbyteIntegrationLauncher launcher;
-  @Mock
-  private FeatureFlags featureFlags;
 
   @BeforeEach
   void setUp() {

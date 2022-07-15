@@ -19,8 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
@@ -62,7 +60,6 @@ import org.junit.jupiter.api.Timeout;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTest {
 
-  private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
   private static final OffsetDateTime TIMESTAMP = OffsetDateTime.now();
 
   private static final Table<?> JOBS_TABLE = table("jobs");

@@ -26,7 +26,6 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -65,7 +64,6 @@ class SourceHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
-  private String imageName;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -88,8 +86,6 @@ class SourceHandlerTest {
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
         .withSpec(connectorSpecification);
-
-    imageName = DockerUtils.getTaggedImageName(standardSourceDefinition.getDockerRepository(), standardSourceDefinition.getDockerImageTag());
 
     sourceDefinitionSpecificationRead = new SourceDefinitionSpecificationRead()
         .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())

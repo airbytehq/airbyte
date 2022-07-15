@@ -39,8 +39,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
 
   private final JobRunConfig jobRunConfig;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
@@ -85,8 +83,6 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final Supplier<String> workflowIdProvider,
                            final String airbyteVersion) {
     this.jobRunConfig = jobRunConfig;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
 
     this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
