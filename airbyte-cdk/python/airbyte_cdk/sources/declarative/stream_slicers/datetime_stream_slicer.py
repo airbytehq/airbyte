@@ -62,7 +62,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._end_time_option = end_time_option
         self._stream_state_field = stream_state_field or cursor_field
         self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
-        self._cursor = self.stream_slices(SyncMode.full_refresh, None)[0]["start_date"]
+        self._cursor = None  # self.stream_slices(SyncMode.full_refresh, None)[0]["start_date"]
 
     def set_state(self, stream_state: Mapping[str, Any]):
         self._cursor = stream_state.get(self._stream_state_field.eval(self._config))
@@ -102,7 +102,11 @@ class DatetimeStreamSlicer(StreamSlicer):
         if not self._is_start_date_valid(start_datetime, end_datetime):
             end_datetime = start_datetime
 
-        return self._partition_daterange(start_datetime, end_datetime, self._step)
+        dates = self._partition_daterange(start_datetime, end_datetime, self._step)
+        state_date = stream_state.get(self._stream_state_field.eval(self._config))
+        dates_later_than_state = [d for d in dates if d["start_date"] > state_date]
+        print(f"dates_later_than_state: {dates_later_than_state}")
+        return dates_later_than_state
 
     def _format_datetime(self, dt: datetime.datetime):
         if self._datetime_format == "timestamp":
