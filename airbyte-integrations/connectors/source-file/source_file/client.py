@@ -117,7 +117,7 @@ class URLFile:
             return smart_open.open(uri, transport_params=transport_params, mode=mode)
         elif storage in ("https://", "http://"):
             transport_params = None
-            if self._provider["user_agent"]:
+            if "user_agent" in self._provider and self._provider["user_agent"]:
                 airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
                 transport_params = {"headers": {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}}
             logger.info(f"TransportParams: {transport_params}")
