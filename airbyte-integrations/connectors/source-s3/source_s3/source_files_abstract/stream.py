@@ -20,7 +20,7 @@ from .file_info import FileInfo
 from .formats.abstract_file_parser import AbstractFileParser
 from .formats.avro_parser import AvroParser
 from .formats.csv_parser import CsvParser
-from .formats.json_parser import JsonParser
+from .formats.jsonl_parser import JsonlParser
 from .formats.parquet_parser import ParquetParser
 from .storagefile import StorageFile
 
@@ -41,7 +41,7 @@ class FileStream(Stream, ABC):
             "csv": CsvParser,
             "parquet": ParquetParser,
             "avro": AvroParser,
-            "json": JsonParser,
+            "jsonl": JsonlParser,
         }
 
     # TODO: make these user configurable in spec.json

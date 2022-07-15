@@ -18,6 +18,8 @@ tests:
         # for JSON format
     - config_path: "secrets/jsonl_config.json"
       status: "succeed"
+    - config_path: "secrets/jsonl_newlines_config.json"
+      status: "succeed"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       status: "succeed"
@@ -28,10 +30,11 @@ tests:
     - config_path: "secrets/config.json"
     # for Parquet format
     - config_path: "secrets/parquet_config.json"
-    # # for Avro format
+    # for Avro format
     - config_path: "secrets/avro_config.json"
     # for JSON format
     - config_path: "secrets/jsonl_config.json"
+    - config_path: "secrets/jsonl_newlines_config.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
   basic_read:
@@ -59,6 +62,11 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
       expect_records:
         path: "integration_tests/expected_records/jsonl.txt"
+    - config_path: "secrets/jsonl_newlines_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
+      expect_records:
+        path: "integration_tests/expected_records/jsonl_newlines.txt"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -98,6 +106,12 @@ tests:
       cursor_paths:
         test: ["_ab_source_file_last_modified"]
       future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/jsonl_newlines_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
+      cursor_paths:
+        test: ["_ab_source_file_last_modified"]
+      future_state_path: "integration_tests/abnormal_state.json"
     # for custom server
     - config_path: "integration_tests/config_minio.json"
       timeout_seconds: 1800
@@ -121,6 +135,9 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalogs/avro.json"
     # for JSON format
     - config_path: "secrets/jsonl_config.json"
+      timeout_seconds: 1800
+      configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
+    - config_path: "secrets/jsonl_newlines_config.json"
       timeout_seconds: 1800
       configured_catalog_path: "integration_tests/configured_catalogs/jsonl.json"
     # for custom server

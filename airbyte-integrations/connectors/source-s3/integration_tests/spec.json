@@ -162,16 +162,16 @@
             }
           },
           {
-            "title": "Json",
-            "description": "This connector utilises <a href=\"https://pandas.pydata.org/docs/reference/api/pandas.io.json.read_json.html\" target=\"_blank\">Pandas</a> for JSON parsing.",
+            "title": "jsonl",
+            "description": "This connector uses <a href=\"https://arrow.apache.org/docs/python/json.html\" target=\"_blank\">PyArrow</a> for JSON Lines (jsonl) file parsing.",
             "type": "object",
             "properties": {
               "filetype": {
                 "title": "Filetype",
-                "const": "json",
+                "const": "jsonl",
                 "type": "string"
               },
-               "newlines_in_values": {
+              "newlines_in_values": {
                 "title": "Allow newlines in values",
                 "description": "Whether newline characters are allowed in JSON values. Turning this on may affect performance. Leave blank to default to False.",
                 "default": false,
@@ -179,11 +179,19 @@
                 "type": "boolean"
               },
               "unexpected_field_behavior": {
-                "title": "Unexpected Json Fields",
-                "description": "How JSON fields outside of explicit_schema (if given) are treated.",
+                "title": "Unexpected field behavior",
+                "description": "How JSON fields outside of explicit_schema (if given) are treated. Check <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.json.ParseOptions.html\" target=\"_blank\">PyArrow documentation</a> for details",
                 "default": "infer",
+                "examples": ["ignore", "infer", "error"],
                 "order": 1,
-                "type": "string"
+                "allOf": [
+                  {
+                    "title": "UnexpectedFieldBehaviorEnum",
+                    "description": "An enumeration.",
+                    "enum": ["ignore", "infer", "error"],
+                    "type": "string"
+                  }
+                ]
               },
               "block_size": {
                 "title": "Block Size",
