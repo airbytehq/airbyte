@@ -50,7 +50,7 @@ class AirbyteIntegrationLauncherTest {
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
       WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
-      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(false));
+      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(new EnvVariableFeatureFlags().useStreamCapableState()));
 
   private WorkerConfigs workerConfigs;
   @Mock
