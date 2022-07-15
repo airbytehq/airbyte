@@ -65,7 +65,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._cursor = self.stream_slices(SyncMode.full_refresh, None)[0]["start_date"]
 
     def set_state(self, stream_state: Mapping[str, Any]):
-        self._cursor = stream_state.get(self._stream_state_field)
+        self._cursor = stream_state.get(self._stream_state_field.eval(self._config))
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         return {self._stream_state_field.eval(self._config): self._cursor} if self._cursor else None
