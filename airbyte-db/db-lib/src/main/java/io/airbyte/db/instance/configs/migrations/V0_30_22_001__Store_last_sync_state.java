@@ -136,7 +136,6 @@ public class V0_30_22_001__Store_last_sync_state extends BaseJavaMigration {
 
     final Table<?> attemptsTable = DSL.table("attempts");
     final Field<Long> attemptJobId = DSL.field("attempts.job_id", SQLDataType.BIGINT);
-    final Field<Integer> attemptNumber = DSL.field("attempts.attempt_number", SQLDataType.INTEGER);
     final Field<OffsetDateTime> attemptCreatedAt = DSL.field("attempts.created_at", SQLDataType.TIMESTAMPWITHTIMEZONE);
 
     // output schema: JobOutput.yaml

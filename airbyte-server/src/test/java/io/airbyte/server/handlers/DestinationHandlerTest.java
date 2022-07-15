@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.DestinationCloneConfiguration;
 import io.airbyte.api.model.generated.DestinationCloneRequestBody;
 import io.airbyte.api.model.generated.DestinationCreate;
-import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
@@ -80,9 +79,6 @@ class DestinationHandlerTest {
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
         .withSpec(connectorSpecification);
-
-    final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody().destinationDefinitionId(
-        standardDestinationDefinition.getDestinationDefinitionId());
 
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())

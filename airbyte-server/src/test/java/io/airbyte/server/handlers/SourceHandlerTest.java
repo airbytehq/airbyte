@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
@@ -344,8 +343,6 @@ class SourceHandlerTest {
 
     verify(secretsRepositoryWriter).writeSourceConnection(expectedSourceConnection, connectorSpecification);
     verify(connectionsHandler).listConnectionsForWorkspace(workspaceIdRequestBody);
-    final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
-        .connectionId(connectionRead.getConnectionId());
     verify(connectionsHandler).deleteConnection(connectionRead.getConnectionId());
   }
 

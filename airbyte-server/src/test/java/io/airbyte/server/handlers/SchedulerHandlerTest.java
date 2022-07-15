@@ -239,7 +239,6 @@ class SchedulerHandlerTest {
     final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId =
         new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
 
-    final SynchronousResponse<ConnectorSpecification> specResponse = (SynchronousResponse<ConnectorSpecification>) jobResponse;
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("name")
         .withDockerRepository(SOURCE_DOCKER_REPO)
