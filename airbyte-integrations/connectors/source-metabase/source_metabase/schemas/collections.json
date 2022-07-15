@@ -1,0 +1,38 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "authority_level": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "archived": {
+      "type": ["null", "boolean"]
+    },
+    "slug": {
+      "type": ["null", "string"]
+    },
+    "color": {
+      "type": ["null", "string"]
+    },
+    "can_write": {
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "personal_owner_id": {
+      "type": ["null", "integer"]
+    },
+    "id": {
+      "type": ["null", "integer", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "namespace": {
+      "type": ["null", "string"]
+    }
+  }
+}

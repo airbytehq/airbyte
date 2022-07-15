@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -27,9 +28,13 @@ class DelightedStream(HttpStream, ABC):
     # Define primary key to all streams as primary key
     primary_key = "id"
 
-    def __init__(self, since: int, **kwargs):
+    def __init__(self, since: pendulum.datetime, **kwargs):
         super().__init__(**kwargs)
         self.since = since
+
+    @property
+    def since_ts(self) -> int:
+        return int(self.since.timestamp())
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_data = response.json()
@@ -40,7 +45,7 @@ class DelightedStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"per_page": self.limit, "since": self.since}
+        params = {"per_page": self.limit, "since": self.since_ts}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -157,8 +162,7 @@ class SourceDelighted(AbstractSource):
 
         try:
             auth = self._get_authenticator(config)
-            args = {"authenticator": auth, "since": config["since"]}
-            stream = SurveyResponses(**args)
+            stream = SurveyResponses(authenticator=auth, since=pendulum.parse(config["since"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -167,10 +171,10 @@ class SourceDelighted(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
-        args = {"authenticator": auth, "since": config["since"]}
+        stream_kwargs = {"authenticator": auth, "since": pendulum.parse(config["since"])}
         return [
-            Bounces(**args),
-            People(**args),
-            SurveyResponses(**args),
-            Unsubscribes(**args),
+            Bounces(**stream_kwargs),
+            People(**stream_kwargs),
+            SurveyResponses(**stream_kwargs),
+            Unsubscribes(**stream_kwargs),
         ]

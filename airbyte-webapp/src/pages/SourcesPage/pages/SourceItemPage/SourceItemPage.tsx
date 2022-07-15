@@ -1,31 +1,33 @@
-import React, { Suspense, useMemo, useState } from "react";
+import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { Route, Routes } from "react-router-dom";
 
-import { DropDownRow, ImageBlock } from "components";
-import PageTitle from "components/PageTitle";
+import { DropDownRow } from "components";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { ItemTabs, StepsTypes, TableItemTitle } from "components/ConnectorBlocks";
-import LoadingPage from "components/LoadingPage";
-import MainPageWithScroll from "components/MainPageWithScroll";
+import { ConnectorIcon } from "components/ConnectorIcon";
 import HeadTitle from "components/HeadTitle";
+import LoadingPage from "components/LoadingPage";
+import PageTitle from "components/PageTitle";
 import Placeholder, { ResourceTypes } from "components/Placeholder";
 
-import { getIcon } from "utils/imageUtils";
-import useRouter from "hooks/useRouter";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useGetSource } from "hooks/services/useSourceHook";
+import useRouter from "hooks/useRouter";
+import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { getIcon } from "utils/imageUtils";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import { RoutePaths } from "../../../routePaths";
 import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
-import SourceSettings from "./components/SourceSettings";
+import { RoutePaths } from "../../../routePaths";
 import SourceConnectionTable from "./components/SourceConnectionTable";
+import SourceSettings from "./components/SourceSettings";
 
 const SourceItemPage: React.FC = () => {
-  const { query, push } = useRouter<{ id: string }>();
-  const [currentStep, setCurrentStep] = useState<string>(StepsTypes.OVERVIEW);
-  const onSelectStep = (id: string) => setCurrentStep(id);
+  const { query, params, push } = useRouter<{ id: string }, { id: string; "*": string }>();
+  const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { destinations } = useDestinationList();
 
@@ -55,11 +57,16 @@ const SourceItemPage: React.FC = () => {
         return {
           label: item.name,
           value: item.destinationId,
-          img: <ImageBlock img={destinationDef?.icon} />,
+          img: <ConnectorIcon icon={destinationDef?.icon} />,
         };
       }),
     [destinations, destinationDefinitions]
   );
+
+  const onSelectStep = (id: string) => {
+    const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
+    push(path);
+  };
 
   const onSelect = (data: DropDownRow.IDataItem) => {
     const path = `../${RoutePaths.ConnectionNew}`;
@@ -74,44 +81,46 @@ const SourceItemPage: React.FC = () => {
     push(path, { state });
   };
 
-  const renderContent = () => {
-    if (currentStep === StepsTypes.SETTINGS) {
-      return <SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />;
-    }
-
-    return (
-      <>
-        <TableItemTitle
-          type="destination"
-          dropDownData={destinationsDropDownData}
-          onSelect={onSelect}
-          entity={source.sourceName}
-          entityName={source.name}
-          entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
-          releaseStage={sourceDefinition.releaseStage}
-        />
-        {connectionsWithSource.length ? (
-          <SourceConnectionTable connections={connectionsWithSource} />
-        ) : (
-          <Placeholder resource={ResourceTypes.Destinations} />
-        )}
-      </>
-    );
-  };
-
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />}
-      pageTitle={
-        <PageTitle
-          title={<Breadcrumbs data={breadcrumbsData} />}
-          middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
-          withLine
-        />
-      }
-    >
-      <Suspense fallback={<LoadingPage />}>{renderContent()}</Suspense>
-    </MainPageWithScroll>
+    <ConnectorDocumentationWrapper>
+      <HeadTitle titles={[{ id: "admin.sources" }, { title: source.name }]} />
+      <PageTitle
+        title={<Breadcrumbs data={breadcrumbsData} />}
+        middleComponent={<ItemTabs currentStep={currentStep} setCurrentStep={onSelectStep} />}
+      />
+
+      <Suspense fallback={<LoadingPage />}>
+        <ApiErrorBoundary>
+          <Routes>
+            <Route
+              path="/settings"
+              element={<SourceSettings currentSource={source} connectionsWithSource={connectionsWithSource} />}
+            />
+            <Route
+              index
+              element={
+                <>
+                  <TableItemTitle
+                    type="destination"
+                    dropDownData={destinationsDropDownData}
+                    onSelect={onSelect}
+                    entity={source.sourceName}
+                    entityName={source.name}
+                    entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
+                    releaseStage={sourceDefinition.releaseStage}
+                  />
+                  {connectionsWithSource.length ? (
+                    <SourceConnectionTable connections={connectionsWithSource} />
+                  ) : (
+                    <Placeholder resource={ResourceTypes.Destinations} />
+                  )}
+                </>
+              }
+            />
+          </Routes>
+        </ApiErrorBoundary>
+      </Suspense>
+    </ConnectorDocumentationWrapper>
   );
 };
 

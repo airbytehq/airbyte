@@ -2,7 +2,7 @@
 
 ## Overview
 
-The goal of this article is to make the `AirbyteCatalog` approachable to someone contributing to Airbyte for the first time. If you are looking to get deeper into the details of the catalog, you can read our technical specification on it [here](catalog.md).
+The goal of this article is to make the `AirbyteCatalog` approachable to someone contributing to Airbyte for the first time. If you are looking to get deeper into the details of the catalog, you can read our technical specification on it [here](airbyte-protocol.md#catalog).
 
 The goal of the `AirbyteCatalog` is to describe _what_ data is available in a source. The goal of the `ConfiguredAirbyteCatalog` is to, based on an `AirbyteCatalog`, specify _how_ data from the source is replicated.
 

@@ -1,13 +1,13 @@
+import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, FieldProps, Form, Formik } from "formik";
 
-import { LabeledInput } from "components/LabeledInput";
 import { LoadingButton } from "components";
+import { LabeledInput } from "components/LabeledInput";
 
-import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 import { FieldItem } from "packages/cloud/views/auth/components/FormComponents";
 import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
+import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import { usePassword } from "./hooks";
 import { FormValues } from "./typings";
@@ -36,7 +36,7 @@ const PasswordSection: React.FC = () => {
                       {...field}
                       label={<FormattedMessage id="settings.accountSettings.currentPassword" />}
                       disabled={isSubmitting}
-                      required={true}
+                      required
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}
@@ -51,7 +51,7 @@ const PasswordSection: React.FC = () => {
                       {...field}
                       label={<FormattedMessage id="settings.accountSettings.newPassword" />}
                       disabled={isSubmitting || values.currentPassword.length === 0}
-                      required={true}
+                      required
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}
@@ -66,7 +66,7 @@ const PasswordSection: React.FC = () => {
                       {...field}
                       label={<FormattedMessage id="settings.accountSettings.newPasswordConfirmation" />}
                       disabled={isSubmitting || values.currentPassword.length === 0}
-                      required={true}
+                      required
                       type="password"
                       error={!!meta.error && meta.touched}
                       message={meta.touched && meta.error && formatMessage({ id: meta.error })}

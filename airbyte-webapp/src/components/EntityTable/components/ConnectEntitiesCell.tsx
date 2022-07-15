@@ -1,17 +1,17 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import ImageBlock from "components/ImageBlock";
 
-type IProps = {
-  values: {
+interface IProps {
+  values: Array<{
     name: string;
     connector: string;
-  }[];
+  }>;
   enabled?: boolean;
   entity: "source" | "destination";
-};
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;

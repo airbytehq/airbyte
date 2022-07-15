@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
@@ -56,14 +56,6 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
-    ORACLE_DB.start();
-  }
-
-  @BeforeEach
-  public void setup() throws Exception {
-
     SCHEMA_NAME = "JDBC_INTEGRATION_TEST1";
     SCHEMA_NAME2 = "JDBC_INTEGRATION_TEST2";
     TEST_SCHEMAS = ImmutableSet.of(SCHEMA_NAME, SCHEMA_NAME2);
@@ -84,6 +76,14 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
 
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
+        .withEnv("RELAX_SECURITY", "1");
+    ORACLE_DB.start();
+  }
+
+  @BeforeEach
+  public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", ORACLE_DB.getHost())
         .put("port", ORACLE_DB.getFirstMappedPort())
@@ -116,6 +116,17 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     Thread.sleep(1000);
   }
 
+  protected void incrementalDateCheck() throws Exception {
+    // https://stackoverflow.com/questions/47712930/resultset-meta-data-return-timestamp-instead-of-date-oracle-jdbc
+    // Oracle DATE is a java.sql.Timestamp (java.sql.Types.TIMESTAMP) as far as JDBC (and the SQL
+    // standard) is concerned as it has both a date and time component.
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
+  }
+
   void cleanUpTables() throws SQLException {
     final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
@@ -126,9 +137,8 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
           conn.createStatement().executeQuery(String.format("SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '%s'", schemaName));
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
-        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations
-            .enquoteIdentifier(conn, tableName) : tableName;
-        conn.createStatement().executeQuery(String.format("DROP TABLE %s.%s", schemaName, tableNameProcessed));
+        final String tableNameProcessed = tableName.contains(" ") ? sourceOperations.enquoteIdentifier(conn, tableName) : tableName;
+        conn.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }
     }
     if (!conn.isClosed())
@@ -180,7 +190,12 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     }
   }
 
-  public void executeOracleStatement(final String query) throws SQLException {
+  @Override
+  protected String getJdbcParameterDelimiter() {
+    return ";";
+  }
+
+  public void executeOracleStatement(final String query) {
     try (final Connection conn = DriverManager.getConnection(
         ORACLE_DB.getJdbcUrl(),
         ORACLE_DB.getUsername(),
@@ -194,8 +209,8 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
   public static void logSQLException(final SQLException ex) {
     for (final Throwable e : ex) {
-      if (e instanceof SQLException) {
-        if (ignoreSQLException(((SQLException) e).getSQLState()) == false) {
+      if (e instanceof final SQLException sqlException) {
+        if (!ignoreSQLException(sqlException.getSQLState())) {
           LOGGER.info("SQLState: " + ((SQLException) e).getSQLState());
           LOGGER.info("Error Code: " + ((SQLException) e).getErrorCode());
           LOGGER.info("Message: " + e.getMessage());

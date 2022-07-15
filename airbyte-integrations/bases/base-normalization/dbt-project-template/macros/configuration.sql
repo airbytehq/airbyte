@@ -3,11 +3,10 @@
         {{ return("") }}
     {%- endif -%}
 
-    {%- set schemaname, _, tablename = var("models_to_source")[this.identifier].partition(".") -%}
+    {%- set table_schema, _, table_name = var("models_to_source")[this.identifier].partition(".") -%}
 
     {%- call statement("get_column_type", fetch_result=True) -%}
-        set search_path to '$user', public, {{ schemaname }};
-        select type from pg_table_def where tablename = '{{ tablename }}' and "column" = '{{ var("json_column") }}' and schemaname = '{{ schemaname }}';
+        select data_type from SVV_COLUMNS where table_name = '{{ table_name }}' and column_name = '{{ var("json_column") }}' and table_schema = '{{ table_schema }}';
     {%- endcall -%}
 
     {%- set column_type = load_result("get_column_type")["data"][0][0] -%}

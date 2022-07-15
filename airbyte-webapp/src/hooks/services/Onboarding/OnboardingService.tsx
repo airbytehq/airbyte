@@ -1,16 +1,16 @@
 import React, { useContext, useMemo } from "react";
 import { useLocalStorage } from "react-use";
 
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import casesConfig from "config/casesConfig.json";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
-type Context = {
+interface Context {
   feedbackPassed?: boolean;
   passFeedback: () => void;
   visibleUseCases?: string[];
   useCaseLinks: Record<string, string>;
   skipCase: (skipId: string) => void;
-};
+}
 
 export const OnboardingServiceContext = React.createContext<Context | null>(null);
 

@@ -1,8 +1,8 @@
+import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { LoadingButton } from "components";
 
@@ -33,12 +33,12 @@ const ErrorBlock = styled.div`
   left: -46px;
 `;
 
-type UpdateAllButtonProps = {
+interface UpdateAllButtonProps {
   onUpdate: () => void;
   isLoading: boolean;
   hasError: boolean;
   hasSuccess: boolean;
-};
+}
 
 const UpgradeAllButton: React.FC<UpdateAllButtonProps> = ({ onUpdate, isLoading, hasError, hasSuccess }) => {
   return (

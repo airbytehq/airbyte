@@ -19,6 +19,9 @@ spec:
       {{- end }}
     spec:
       serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+      {{- if .Values.imagePullSecrets }}
+        {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
       automountServiceAccountToken: true
       {{- if .Values.worker.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.worker.nodeSelector "context" $) | nindent 8 }}
@@ -112,21 +115,34 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        {{- if $.Values.jobs.kube.annotations }}
         - name: JOB_KUBE_ANNOTATIONS
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: JOB_KUBE_ANNOTATIONS
+        {{- end }}
+        {{- if $.Values.jobs.kube.nodeSelector }}
         - name: JOB_KUBE_NODE_SELECTORS
           valueFrom:
             configMapKeyRef:
               name: airbyte-env
               key: JOB_KUBE_NODE_SELECTORS
-        - name: SUBMITTER_NUM_THREADS
+        {{- end }}
+        {{- if $.Values.jobs.kube.tolerations }}
+        - name: JOB_KUBE_TOLERATIONS
           valueFrom:
             configMapKeyRef:
-              name: {{ include "common.names.fullname" . }}-env
-              key: SUBMITTER_NUM_THREADS
+              name: airbyte-env
+              key: JOB_KUBE_TOLERATIONS
+        {{- end }}
+        {{- if $.Values.jobs.kube.main_container_image_pull_secret }}
+        - name: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+          valueFrom:
+            configMapKeyRef:
+              name: airbyte-env
+              key: JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET
+        {{- end }}
         - name: JOB_MAIN_CONTAINER_CPU_REQUEST
           valueFrom:
             configMapKeyRef:
@@ -157,32 +173,16 @@ spec:
             configMapKeyRef:
               name: {{ include "common.names.fullname" . }}-env
               key: S3_LOG_BUCKET_REGION
-        {{- if and .Values.logs.accessKey.existingSecret .Values.logs.accessKey.existingSecretKey }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
               name: {{ .Values.logs.accessKey.existingSecret }}
               key: {{ .Values.logs.accessKey.existingSecretKey }}
-        {{- else }}
-        - name: AWS_ACCESS_KEY_ID
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "common.names.fullname" . }}-secrets
-              key: AWS_ACCESS_KEY_ID
-        {{- end }}
-        {{- if and .Values.logs.secretKey.existingSecret .Values.logs.secretKey.existingSecretKey }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: {{ .Values.logs.secretKey.existingSecret }}
               key: {{ .Values.logs.secretKey.existingSecretKey }}
-        {{- else }}
-        - name: AWS_SECRET_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: {{ include "common.names.fullname" . }}-secrets
-              key: AWS_SECRET_ACCESS_KEY
-        {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
@@ -211,13 +211,13 @@ spec:
         - name: STATE_STORAGE_MINIO_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ include "common.names.fullname" . }}-secrets
-              key: STATE_STORAGE_MINIO_ACCESS_KEY
+              name: {{ .Values.logs.accessKey.existingSecret }}
+              key: {{ .Values.logs.accessKey.existingSecretKey }}
         - name: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ include "common.names.fullname" . }}-secrets
-              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+              name: {{ .Values.logs.secretKey.existingSecret }}
+              key: {{ .Values.logs.secretKey.existingSecretKey }}
         - name: STATE_STORAGE_MINIO_ENDPOINT
           valueFrom:
             configMapKeyRef:
@@ -228,6 +228,51 @@ spec:
             configMapKeyRef:
               name: {{ include "common.names.fullname" . }}-env
               key: INTERNAL_API_HOST
+        - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+        - name: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+        - name: METRIC_CLIENT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: METRIC_CLIENT
+        - name: OTEL_COLLECTOR_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: OTEL_COLLECTOR_ENDPOINT
+        - name: ACTIVITY_MAX_ATTEMPT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: ACTIVITY_MAX_ATTEMPT
+        - name: ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: ACTIVITY_INITIAL_DELAY_BETWEEN_ATTEMPTS_SECONDS
+        - name: ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: ACTIVITY_MAX_DELAY_BETWEEN_ATTEMPTS_SECONDS
+        - name: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+        - name: USE_STREAM_CAPABLE_STATE
+            valueFrom:
+              configMapKeyRef:
+                name: { { include "common.names.fullname" . } }-env
+                key: USE_STREAM_CAPABLE_STATE
         {{- if .Values.worker.extraEnv }}
         {{ .Values.worker.extraEnv | toYaml | nindent 8 }}
         {{- end }}

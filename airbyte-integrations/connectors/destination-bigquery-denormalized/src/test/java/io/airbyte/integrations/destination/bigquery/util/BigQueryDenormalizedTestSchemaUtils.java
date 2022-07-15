@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.util;
@@ -24,6 +24,10 @@ public class BigQueryDenormalizedTestSchemaUtils {
 
   public static JsonNode getSchemaWithDateTime() {
     return getTestDataFromResourceJson("schemaWithDateTime.json");
+  }
+
+  public static JsonNode getSchemaWithBigInteger() {
+    return getTestDataFromResourceJson("schemaWithBigInteger.json");
   }
 
   public static JsonNode getSchemaWithInvalidArrayType() {

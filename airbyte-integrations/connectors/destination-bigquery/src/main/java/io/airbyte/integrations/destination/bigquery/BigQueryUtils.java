@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -143,8 +143,7 @@ public class BigQueryUtils {
         .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"CSV\",\n"
-            + "  \"flattening\": \"No flattening\",\n"
-            + "  \"part_size_mb\": \"" + loadingMethod.get(BigQueryConsts.PART_SIZE) + "\"\n"
+            + "  \"flattening\": \"No flattening\"\n"
             + "}"))
         .build());
 
@@ -165,8 +164,7 @@ public class BigQueryUtils {
         .put(BigQueryConsts.CREDENTIAL, loadingMethod.get(BigQueryConsts.CREDENTIAL))
         .put(BigQueryConsts.FORMAT, Jsons.deserialize("{\n"
             + "  \"format_type\": \"AVRO\",\n"
-            + "  \"flattening\": \"No flattening\",\n"
-            + "  \"part_size_mb\": \"" + loadingMethod.get(BigQueryConsts.PART_SIZE) + "\"\n"
+            + "  \"flattening\": \"No flattening\"\n"
             + "}"))
         .build());
 
@@ -272,7 +270,15 @@ public class BigQueryUtils {
   }
 
   public static boolean isUsingJsonCredentials(final JsonNode config) {
-    return config.has(BigQueryConsts.CONFIG_CREDS) && !config.get(BigQueryConsts.CONFIG_CREDS).asText().isEmpty();
+    if (!config.has(BigQueryConsts.CONFIG_CREDS)) {
+      return false;
+    }
+    final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
+    if (json.isTextual()) {
+      return !json.asText().isEmpty();
+    } else {
+      return !Jsons.serialize(json).isEmpty();
+    }
   }
 
   // https://googleapis.dev/python/bigquery/latest/generated/google.cloud.bigquery.client.Client.html

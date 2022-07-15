@@ -1,7 +1,7 @@
 import type { Auth } from "firebase/auth";
 
-import * as React from "react";
 import { FirebaseApp } from "firebase/app";
+import * as React from "react";
 import { useAsync } from "react-use";
 import { AsyncState } from "react-use/lib/useAsyncFn";
 
@@ -12,12 +12,16 @@ const AuthSdkContext = React.createContext<Auth | undefined>(undefined);
 type FirebaseSdks = Auth;
 
 function getSdkProvider<Sdk extends FirebaseSdks>(SdkContext: React.Context<Sdk | undefined>) {
-  return function SdkProvider(props: React.PropsWithChildren<{ sdk: Sdk }>) {
-    if (!props.sdk) throw new Error("no sdk provided");
+  return (props: React.PropsWithChildren<{ sdk: Sdk }>) => {
+    if (!props.sdk) {
+      throw new Error("no sdk provided");
+    }
 
     const contextualAppName = useFirebaseApp().name;
     const sdkAppName = props?.sdk?.app?.name;
-    if (sdkAppName !== contextualAppName) throw new Error("sdk was initialized with a different firebase app");
+    if (sdkAppName !== contextualAppName) {
+      throw new Error("sdk was initialized with a different firebase app");
+    }
 
     return <SdkContext.Provider value={props.sdk} {...props} />;
   };

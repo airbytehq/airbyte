@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -31,6 +31,7 @@ def check_read(config, expected_columns=10, expected_rows=42):
         ("excel", "xlsx", 8, 50, "demo"),
         ("feather", "feather", 9, 3, "demo"),
         ("parquet", "parquet", 9, 3, "demo"),
+        ("yaml", "yaml", 8, 3, "demo"),
     ],
 )
 def test_local_file_read(file_format, extension, expected_columns, expected_rows, filename):

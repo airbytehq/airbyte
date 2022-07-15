@@ -1,21 +1,20 @@
-import React, { Suspense, useMemo } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
-import { faRedoAlt } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import { Button, ContentCard } from "components";
-import LoadingSchema from "components/LoadingSchema";
-import JobItem from "components/JobItem";
+import { ContentCard } from "components";
 import { IDataItem } from "components/base/DropDown/components/Option";
+import { JobItem } from "components/JobItem/JobItem";
+import LoadingSchema from "components/LoadingSchema";
 
-import ConnectionForm from "views/Connection/ConnectionForm";
-import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { Destination, Source } from "core/domain/connector";
-import { Connection } from "core/domain/connection";
+import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
+import ConnectionForm from "views/Connection/ConnectionForm";
+import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
+import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
+import { DestinationRead, SourceRead, WebBackendConnectionRead } from "../../core/request/AirbyteClient";
 import { useDiscoverSchema } from "../../hooks/services/useSourceHook";
 import TryAfterErrorBlock from "./components/TryAfterErrorBlock";
 
@@ -28,20 +27,15 @@ const SkipButton = styled.div`
   }
 `;
 
-const TryArrow = styled(FontAwesomeIcon)`
-  margin: 0 10px -1px 0;
-  font-size: 14px;
-`;
-
-type IProps = {
+interface CreateConnectionContentProps {
   additionBottomControls?: React.ReactNode;
-  source: Source;
-  destination: Destination;
-  afterSubmitConnection?: (connection: Connection) => void;
+  source: SourceRead;
+  destination: DestinationRead;
+  afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
   noTitles?: boolean;
-};
+}
 
-const CreateConnectionContent: React.FC<IProps> = ({
+const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   source,
   destination,
   afterSubmitConnection,
@@ -49,59 +43,77 @@ const CreateConnectionContent: React.FC<IProps> = ({
   noTitles,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
-  const analyticsService = useAnalyticsService();
+  const trackNewConnectionAction = useTrackAction(
+    TrackActionNamespace.CONNECTION,
+    TrackActionLegacyType.NEW_CONNECTION
+  );
 
-  const { schema, isLoading, schemaErrorStatus, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
+  const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
-  const connection = useMemo(
+  const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
+
+  const connection = useMemo<ConnectionFormProps["connection"]>(
     () => ({
+      name: connectionFormValues?.name ?? "",
+      namespaceDefinition: connectionFormValues?.namespaceDefinition,
+      namespaceFormat: connectionFormValues?.namespaceFormat,
+      prefix: connectionFormValues?.prefix,
+      schedule: connectionFormValues?.schedule ?? undefined,
       syncCatalog: schema,
       destination,
       source,
+      catalogId,
     }),
-    [schema, destination, source]
+    [connectionFormValues, schema, destination, source, catalogId]
   );
 
   const onSubmitConnectionStep = async (values: ValuesProps) => {
     const connection = await createConnection({
       values,
-      source: source,
-      destination: destination,
+      source,
+      destination,
       sourceDefinition: {
-        name: source?.name ?? "",
         sourceDefinitionId: source?.sourceDefinitionId ?? "",
       },
       destinationDefinition: {
         name: destination?.name ?? "",
         destinationDefinitionId: destination?.destinationDefinitionId ?? "",
       },
+      sourceCatalogId: catalogId,
     });
 
-    if (afterSubmitConnection) {
-      afterSubmitConnection(connection);
-    }
+    return {
+      onSubmitComplete: () => {
+        afterSubmitConnection?.(connection);
+      },
+    };
   };
 
   const onSelectFrequency = (item: IDataItem | null) => {
-    analyticsService.track("New Connection - Action", {
-      action: "Select a frequency",
-      frequency: item?.label,
-      connector_source_definition: source?.sourceName,
-      connector_source_definition_id: source?.sourceDefinitionId,
-      connector_destination_definition: destination?.destinationName,
-      connector_destination_definition_id: destination?.destinationDefinitionId,
-    });
+    const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
+
+    if (item) {
+      trackNewConnectionAction("Select a frequency", TrackActionType.FREQUENCY, {
+        frequency: item.label,
+        connector_source_definition: source?.sourceName,
+        connector_source_definition_id: source?.sourceDefinitionId,
+        connector_destination_definition: destination?.destinationName,
+        connector_destination_definition_id: destination?.destinationDefinitionId,
+        available_streams: connection.syncCatalog.streams.length,
+        enabled_streams: enabledStreams,
+      });
+    }
   };
 
   if (schemaErrorStatus) {
-    const jobInfo = LogsRequestError.extractJobInfo(schemaErrorStatus);
+    const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
       <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
         />
-        {jobInfo && <JobItem jobInfo={jobInfo} />}
+        {job && <JobItem job={job} />}
       </ContentCard>
     );
   }
@@ -113,16 +125,12 @@ const CreateConnectionContent: React.FC<IProps> = ({
       ) : (
         <Suspense fallback={<LoadingSchema />}>
           <ConnectionForm
+            mode="create"
             connection={connection}
             additionBottomControls={additionBottomControls}
             onDropDownSelect={onSelectFrequency}
-            additionalSchemaControl={
-              <Button onClick={onDiscoverSchema} type="button">
-                <TryArrow icon={faRedoAlt} />
-                <FormattedMessage id="connection.refreshSchema" />
-              </Button>
-            }
             onSubmit={onSubmitConnectionStep}
+            onChangeValues={setConnectionFormValues}
           />
         </Suspense>
       )}

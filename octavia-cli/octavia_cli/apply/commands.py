@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from glob import glob
@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple
 
 import airbyte_api_client
 import click
+from octavia_cli.base_commands import OctaviaCommand
 from octavia_cli.check_context import REQUIRED_PROJECT_DIRECTORIES, requires_init
 
 from .diff_helpers import display_diff_line
@@ -14,7 +15,7 @@ from .resources import BaseResource
 from .resources import factory as resource_factory
 
 
-@click.command(name="apply", help="Create or update Airbyte remote resources according local YAML configurations.")
+@click.command(cls=OctaviaCommand, name="apply", help="Create or update Airbyte remote resources according local YAML configurations.")
 @click.option("--file", "-f", "configurations_files", type=click.Path(), multiple=True)
 @click.option("--force", is_flag=True, default=False, help="Does not display the diff and updates without user prompt.")
 @click.pass_context
@@ -54,7 +55,10 @@ def apply_single_resource(resource: BaseResource, force: bool) -> None:
     """
     if resource.was_created:
         click.echo(
-            click.style(f"🐙 - {resource.resource_name} exists on your Airbyte instance, let's check if we need to update it!", fg="yellow")
+            click.style(
+                f"🐙 - {resource.resource_name} exists on your Airbyte instance according to your state file, let's check if we need to update it!",
+                fg="yellow",
+            )
         )
         messages = update_resource(resource, force)
     else:

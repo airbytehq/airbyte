@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -303,7 +303,7 @@ class Transaction(IncrementalChargebeeStream):
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
-        params["sort_by[asc]"] = "created_at"
+        params["sort_by[asc]"] = "date"
         return params
 
 

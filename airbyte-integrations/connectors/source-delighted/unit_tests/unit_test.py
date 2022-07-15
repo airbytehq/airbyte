@@ -1,7 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import pendulum
 import pytest
 import responses
 from airbyte_cdk.models import SyncMode
@@ -12,7 +13,7 @@ from source_delighted.source import Bounces, People, SourceDelighted, SurveyResp
 def test_config():
     return {
         "api_key": "test_api_key",
-        "since": "1641289584",
+        "since": "2022-01-01 00:00:00",
     }
 
 
@@ -74,7 +75,7 @@ def test_not_output_records_where_cursor_field_equals_state(state, test_config, 
         status=200,
     )
 
-    stream = stream_class(test_config["since"], authenticator=SourceDelighted()._get_authenticator(config=test_config))
+    stream = stream_class(pendulum.parse(test_config["since"]), authenticator=SourceDelighted()._get_authenticator(config=test_config))
     records = [r for r in stream.read_records(SyncMode.incremental, stream_state=state[stream.name])]
     assert not records
 

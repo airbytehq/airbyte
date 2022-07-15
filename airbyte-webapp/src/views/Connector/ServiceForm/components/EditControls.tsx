@@ -1,13 +1,13 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button } from "components";
 
 import { useServiceForm } from "../serviceFormContext";
+import { TestingConnectionError } from "./TestingConnectionError";
 import TestingConnectionSpinner from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
-import { TestingConnectionError } from "./TestingConnectionError";
 
 const Controls = styled.div`
   margin-top: 34px;
@@ -20,7 +20,7 @@ const ButtonContainer = styled.span`
   margin-left: 10px;
 `;
 
-type IProps = {
+interface IProps {
   formType: "source" | "destination";
   isSubmitting: boolean;
   isValid: boolean;
@@ -31,7 +31,7 @@ type IProps = {
   isTestConnectionInProgress?: boolean;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const EditControls: React.FC<IProps> = ({
   isSubmitting,

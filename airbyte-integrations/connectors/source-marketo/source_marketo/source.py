@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import csv
@@ -99,7 +99,7 @@ class IncrementalMarketoStream(MarketoStream):
             )
         }
 
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         """
         Override default stream_slices CDK method to provide date_slices as page chunks for data fetch.
         Returns list of dict, example: [{
@@ -172,7 +172,9 @@ class MarketoExportBase(IncrementalMarketoStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"bulk/v1/{self.stream_name}/export/{stream_slice['id']}/file.json"
 
-    def stream_slices(self, sync_mode, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+    def stream_slices(
+        self, sync_mode, stream_state: MutableMapping[str, Any] = None, **kwargs
+    ) -> Iterable[Optional[MutableMapping[str, any]]]:
         date_slices = super().stream_slices(sync_mode, stream_state, **kwargs)
 
         for date_slice in date_slices:
@@ -182,8 +184,12 @@ class MarketoExportBase(IncrementalMarketoStream):
 
             export = self.create_export(param)
 
-            date_slice["id"] = export["exportId"]
-        return date_slices
+            status, export_id = export.get("status", "").lower(), export.get("exportId")
+            if status != "created" or not export_id:
+                self.logger.warning(f"Failed to create export job for data slice {date_slice}!")
+                continue
+            date_slice["id"] = export_id
+            yield date_slice
 
     def sleep_till_export_completed(self, stream_slice: Mapping[str, Any]) -> bool:
         while True:

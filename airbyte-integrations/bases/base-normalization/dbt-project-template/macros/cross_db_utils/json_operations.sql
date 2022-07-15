@@ -21,12 +21,33 @@
   {{ '\'$."' ~ json_path_list|join('."') ~ '"\'' }}
 {%- endmacro %}
 
+{#
+    BigQuery has different JSONPath syntax depending on which function you call.
+    Most of our macros use the "legacy" JSON functions, so this function uses
+    the legacy syntax.
+
+    These paths look like: "$['foo']['bar']"
+#}
 {% macro bigquery__format_json_path(json_path_list) -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
         {%- if str_list.append(json_path.replace('"', '\\"')) -%} {%- endif -%}
     {%- endfor -%}
     {{ '"$[\'' ~ str_list|join('\'][\'') ~ '\']"' }}
+{%- endmacro %}
+
+{#
+    For macros which use the newer JSON functions, define a new_format_json_path
+    macro which generates the correct path syntax.
+
+    These paths look like: '$."foo"."bar"'
+#}
+{% macro bigquery_new_format_json_path(json_path_list) -%}
+    {%- set str_list = [] -%}
+    {%- for json_path in json_path_list -%}
+        {%- if str_list.append(json_path.replace('\'', '\\\'')) -%} {%- endif -%}
+    {%- endfor -%}
+    {{ '\'$."' ~ str_list|join('"."') ~ '"\'' }}
 {%- endmacro %}
 
 {% macro postgres__format_json_path(json_path_list) -%}
@@ -168,7 +189,7 @@
 {%- endmacro %}
 
 {% macro mysql__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+    json_value({{ json_column }}, {{ format_json_path(normalized_json_path) }} RETURNING CHAR)
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
@@ -235,4 +256,26 @@
 
 {% macro clickhouse__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
     JSONExtractArrayRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
+{%- endmacro %}
+
+{# json_extract_string_array -------------------------------------------------     #}
+
+{% macro json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    {{ adapter.dispatch('json_extract_string_array')(json_column, json_path_list, normalized_json_path) }}
+{%- endmacro %}
+
+{% macro default__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    {{ json_extract_array(json_column, json_path_list, normalized_json_path) }}
+{%- endmacro %}
+
+{#
+See https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
+
+BigQuery does not allow NULL entries in REPEATED fields, so we replace those with literal "NULL" strings.
+#}
+{% macro bigquery__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    array(
+        select ifnull(x, "NULL")
+        from unnest(json_value_array({{ json_column }}, {{ bigquery_new_format_json_path(normalized_json_path) }})) as x
+    )
 {%- endmacro %}

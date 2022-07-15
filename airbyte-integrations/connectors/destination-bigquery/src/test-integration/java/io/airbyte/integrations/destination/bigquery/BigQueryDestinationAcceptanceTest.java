@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -11,37 +11,37 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.DatasetInfo;
-import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.FieldValue;
-import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.bigquery.BigQueryResultSet;
+import io.airbyte.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +101,26 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
   }
 
   @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new BigQueryTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
+  @Override
   protected Optional<NamingConventionTransformer> getNameTransformer() {
     return Optional.of(NAME_TRANSFORMER);
   }
@@ -145,52 +165,24 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .collect(Collectors.toList());
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    result.add(identifier);
-    result.add(namingResolver.getIdentifier(identifier));
-    return result;
-  }
-
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+
     final QueryJobConfiguration queryConfig =
         QueryJobConfiguration
             .newBuilder(
                 String.format("SELECT * FROM `%s`.`%s` order by %s asc;", schema, tableName,
                     JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
-            .setUseLegacySql(false).build();
+            .setUseLegacySql(false)
+            .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
+            .build();
 
     final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
+    BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
-    return StreamSupport
-        .stream(queryResults.iterateAll().spliterator(), false)
-        .map(row -> {
-          final Map<String, Object> jsonMap = Maps.newHashMap();
-          for (final Field field : fields) {
-            final Object value = getTypedFieldValue(row, field);
-            jsonMap.put(field.getName(), value);
-          }
-          return jsonMap;
-        })
-        .map(Jsons::jsonNode)
-        .collect(Collectors.toList());
-  }
-
-  private Object getTypedFieldValue(final FieldValueList row, final Field field) {
-    final FieldValue fieldValue = row.get(field.getName());
-    if (fieldValue.getValue() != null) {
-      return switch (field.getType().getStandardType()) {
-        case FLOAT64, NUMERIC -> fieldValue.getDoubleValue();
-        case INT64 -> fieldValue.getNumericValue().intValue();
-        case STRING -> fieldValue.getStringValue();
-        case BOOL -> fieldValue.getBooleanValue();
-        default -> fieldValue.getValue();
-      };
-    } else {
-      return null;
-    }
+    return Streams.stream(queryResults.iterateAll())
+        .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
   @Override

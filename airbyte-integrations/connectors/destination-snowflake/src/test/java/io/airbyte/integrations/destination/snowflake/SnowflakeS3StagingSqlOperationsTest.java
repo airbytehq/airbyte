@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.s3.AmazonS3;
+import io.airbyte.integrations.destination.s3.NoEncryption;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
 import java.util.List;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.Test;
 class SnowflakeS3StagingSqlOperationsTest {
 
   private static final String SCHEMA_NAME = "schemaName";
-  private static final String STAGE_NAME = "stageName";
   private static final String STAGE_PATH = "stagePath/2022/";
   private static final String TABLE_NAME = "tableName";
   private static final String BUCKET_NAME = "bucket_name";
@@ -27,7 +27,7 @@ class SnowflakeS3StagingSqlOperationsTest {
   private final S3AccessKeyCredentialConfig credentialConfig = mock(S3AccessKeyCredentialConfig.class);
 
   private final SnowflakeS3StagingSqlOperations snowflakeStagingSqlOperations =
-      new SnowflakeS3StagingSqlOperations(new SnowflakeSQLNameTransformer(), s3Client, s3Config);
+      new SnowflakeS3StagingSqlOperations(new SnowflakeSQLNameTransformer(), s3Client, s3Config, new NoEncryption());
 
   @Test
   void copyIntoTmpTableFromStage() {
@@ -39,7 +39,7 @@ class SnowflakeS3StagingSqlOperationsTest {
     when(credentialConfig.getAccessKeyId()).thenReturn("aws_access_key_id");
     when(credentialConfig.getSecretAccessKey()).thenReturn("aws_secret_access_key");
     final String actualCopyQuery =
-        snowflakeStagingSqlOperations.getCopyQuery(STAGE_NAME, STAGE_PATH, List.of("filename1", "filename2"), TABLE_NAME, SCHEMA_NAME);
+        snowflakeStagingSqlOperations.getCopyQuery(STAGE_PATH, List.of("filename1", "filename2"), TABLE_NAME, SCHEMA_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
 

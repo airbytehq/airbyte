@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -373,6 +373,7 @@ class Issues(IncrementalJiraStream):
             "parent",
             "priority",
             "project",
+            "resolutiondate",
             "security",
             "status",
             "subtasks",
@@ -529,6 +530,8 @@ class IssueProperties(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-propertykey-get
     """
+
+    primary_key = "key"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]

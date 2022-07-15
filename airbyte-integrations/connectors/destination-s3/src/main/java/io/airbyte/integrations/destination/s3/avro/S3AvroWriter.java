@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -10,7 +10,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.util.StreamTransferManagerHelper;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
+import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -47,15 +48,23 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
       throws IOException {
     super(config, s3Client, configuredStream);
 
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, S3Format.AVRO);
+    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .timestamp(uploadTimestamp)
+        .s3Format(S3Format.AVRO)
+        .fileExtension(S3Format.AVRO.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .build());
+
     objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(), objectKey);
     gcsFileLocation = String.format("gs://%s/%s", config.getBucketName(), objectKey);
 
     this.avroRecordFactory = new AvroRecordFactory(schema, converter);
-    this.uploadManager = StreamTransferManagerHelper.getDefault(
-        config.getBucketName(), objectKey, s3Client, config.getFormatConfig().getPartSize());
+    this.uploadManager = StreamTransferManagerFactory
+        .create(config.getBucketName(), objectKey, s3Client)
+        .get();
     // We only need one output stream as we only have one input stream. This is reasonably performant.
     this.outputStream = uploadManager.getMultiPartOutputStreams().get(0);
 

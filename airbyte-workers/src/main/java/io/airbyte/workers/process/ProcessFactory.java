@@ -1,19 +1,27 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
 
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.lang3.RandomStringUtils;
 
 public interface ProcessFactory {
+
+  String VERSION_DELIMITER = ":";
+  String DOCKER_DELIMITER = "/";
+  Pattern ALPHABETIC = Pattern.compile("[a-zA-Z]+");
 
   /**
    * Creates a ProcessBuilder to run a program in a new Process.
    *
+   * @param jobType type of job to add to name for easier operational processes.
    * @param jobId job Id
    * @param attempt attempt Id
    * @param jobPath Workspace directory to run the process from.
@@ -30,7 +38,8 @@ public interface ProcessFactory {
    * @return ProcessBuilder object to run the process.
    * @throws WorkerException
    */
-  Process create(String jobId,
+  Process create(String jobType,
+                 String jobId,
                  int attempt,
                  final Path jobPath,
                  final String imageName,
@@ -43,5 +52,40 @@ public interface ProcessFactory {
                  final Map<Integer, Integer> portMapping,
                  final String... args)
       throws WorkerException;
+
+  /**
+   * Docker image names are by convention separated by slashes. The last portion is the image's name.
+   * This is followed by a colon and a version number. e.g. airbyte/scheduler:v1 or
+   * gcr.io/my-project/image-name:v2.
+   *
+   * With these two facts, attempt to construct a unique process name with the image name present that
+   * can be used by the factories implementing this interface for easier operations.
+   */
+  static String createProcessName(final String fullImagePath, final String jobType, final String jobId, final int attempt, final int lenLimit) {
+    final var noVersion = fullImagePath.split(VERSION_DELIMITER)[0];
+
+    final var nameParts = noVersion.split(DOCKER_DELIMITER);
+    var imageName = nameParts[nameParts.length - 1];
+
+    final var randSuffix = RandomStringUtils.randomAlphabetic(5).toLowerCase();
+    final String suffix = jobType + "-" + jobId + "-" + attempt + "-" + randSuffix;
+
+    var processName = imageName + "-" + suffix;
+    if (processName.length() > lenLimit) {
+      final var extra = processName.length() - lenLimit;
+      imageName = imageName.substring(extra);
+      processName = imageName + "-" + suffix;
+    }
+
+    // Kubernetes pod names must start with an alphabetic character while Docker names accept
+    // alphanumeric.
+    // Use the stricter convention for simplicity.
+    final Matcher m = ALPHABETIC.matcher(processName);
+    // Since we add sync-UUID as a suffix a couple of lines up, there will always be a substring
+    // starting with an alphabetic character.
+    // If the image name is a no-op, this function should always return `sync-UUID` at the minimum.
+    m.find();
+    return processName.substring(m.start());
+  }
 
 }

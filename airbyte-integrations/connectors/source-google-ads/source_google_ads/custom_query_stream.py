@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -34,7 +34,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
         return self.insert_segments_date_expr(self.user_defined_query, start_date, end_date)
 
     # IncrementalGoogleAdsStream uses get_json_schema a lot while parsing
-    # responses, caching plaing crucial role for performance here.
+    # responses, caching playing crucial role for performance here.
     @lru_cache()
     def get_json_schema(self) -> Dict[str, Any]:
         """
@@ -72,7 +72,7 @@ class CustomQuery(IncrementalGoogleAdsStream):
                 # Represents protobuf message and could be anything, set custom
                 # attribute "protobuf_message" to convert it to a string (or
                 # array of strings) later.
-                # https://developers.google.com/google-ads/api/reference/rpc/v8/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
+                # https://developers.google.com/google-ads/api/reference/rpc/v11/GoogleAdsFieldDataTypeEnum.GoogleAdsFieldDataType?hl=en#message
                 if node.is_repeated:
                     output_type = ["array", "null"]
                 else:
@@ -95,7 +95,8 @@ class CustomQuery(IncrementalGoogleAdsStream):
     WHERE_EXPR = re.compile("where.*", flags=RE_FLAGS)
     # list of keywords that can come after WHERE clause,
     # according to https://developers.google.com/google-ads/api/docs/query/grammar
-    KEYWORDS_EXPR = re.compile("(order by|limit|parameters)", flags=RE_FLAGS)
+    # each whitespace matters!
+    KEYWORDS_EXPR = re.compile("(order by| limit | parameters )", flags=RE_FLAGS)
 
     @staticmethod
     def get_query_fields(query: str) -> List[str]:

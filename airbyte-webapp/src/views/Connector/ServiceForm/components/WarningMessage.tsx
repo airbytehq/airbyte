@@ -2,8 +2,8 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ReleaseStage } from "core/domain/connector";
 import { useConfig } from "config";
+import { ReleaseStage } from "core/request/AirbyteClient";
 
 const Content = styled.div`
   padding: 13px 16px;
@@ -23,19 +23,20 @@ const Link = styled.a`
   }
 `;
 
-type WarningMessageProps = {
-  stage: ReleaseStage.ALPHA | ReleaseStage.BETA;
-};
+interface WarningMessageProps {
+  stage: typeof ReleaseStage.alpha | typeof ReleaseStage.beta;
+}
 
 const WarningMessage: React.FC<WarningMessageProps> = ({ stage }) => {
   const config = useConfig();
   return (
     <Content>
+      <FormattedMessage id={`connector.releaseStage.${stage}.description`} />{" "}
       <FormattedMessage
-        id={`connector.connectorsInDevelopment.${stage}`}
+        id="connector.connectorsInDevelopment.docLink"
         values={{
           lnk: (node: React.ReactNode) => (
-            <Link href={config.ui.productReleaseStages} target="_blank" rel="noreferrer">
+            <Link href={config.links.productReleaseStages} target="_blank" rel="noreferrer">
               {node}
             </Link>
           ),

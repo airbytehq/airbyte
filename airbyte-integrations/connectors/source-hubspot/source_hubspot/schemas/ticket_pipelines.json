@@ -37,10 +37,12 @@
             "type": ["null", "string"]
           },
           "createdAt": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "updatedAt": {
-            "type": ["null", "integer"]
+            "type": ["null", "string"],
+            "format": "date-time"
           },
           "active": {
             "type": ["null", "boolean"]
@@ -49,10 +51,12 @@
       }
     },
     "createdAt": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updatedAt": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"],
+      "format": "date-time"
     }
   }
 }

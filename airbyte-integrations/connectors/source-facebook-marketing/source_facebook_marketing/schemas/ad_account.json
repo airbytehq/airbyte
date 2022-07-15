@@ -191,7 +191,7 @@
       "type": ["null", "string"]
     },
     "tax_id": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "tax_id_status": {
       "type": ["null", "number"]
@@ -223,7 +223,12 @@
       }
     },
     "user_tos_accepted": {
-      "type": ["null", "number"]
+      "type": ["null", "object"],
+      "properties": {
+        "web_custom_audience_tos": {
+          "type": ["null", "integer"]
+        }
+      }
     }
   }
 }

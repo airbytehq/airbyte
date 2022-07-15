@@ -1,6 +1,6 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled from "styled-components";
 
 import { Button, ProgressBar } from "components";
 
@@ -18,10 +18,10 @@ const StyledButton = styled(Button)`
 // Progress Bar runs 2min for checking connections
 const PROGRESS_BAR_TIME = 60 * 2;
 
-type TestingConnectionSpinnerProps = {
+interface TestingConnectionSpinnerProps {
   isCancellable?: boolean;
   onCancelTesting?: () => void;
-};
+}
 
 const TestingConnectionSpinner: React.FC<TestingConnectionSpinnerProps> = (props) => {
   return (

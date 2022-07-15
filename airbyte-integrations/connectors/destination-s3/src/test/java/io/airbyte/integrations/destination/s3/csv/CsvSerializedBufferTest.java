@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.csv;
@@ -57,25 +57,25 @@ public class CsvSerializedBufferTest {
 
   @Test
   public void testUncompressedDefaultCsvFormatWriter() throws Exception {
-    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), CSVFormat.DEFAULT, false, 355L, 365L, null,
+    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), CSVFormat.DEFAULT, false, 350L, 365L, null,
         getExpectedString(CSVFormat.DEFAULT));
   }
 
   @Test
   public void testUncompressedCsvWriter() throws Exception {
-    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), csvFormat, false, 325L, 335L, null,
+    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), csvFormat, false, 320L, 335L, null,
         getExpectedString(csvFormat));
   }
 
   @Test
   public void testCompressedCsvWriter() throws Exception {
-    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), csvFormat, true, 175L, 190L, null,
+    runTest(new InMemoryBuffer(CSV_FILE_EXTENSION), csvFormat, true, 170L, 190L, null,
         getExpectedString(csvFormat));
   }
 
   @Test
   public void testCompressedCsvFileWriter() throws Exception {
-    runTest(new FileBuffer(CSV_FILE_EXTENSION), csvFormat, true, 175L, 190L, null,
+    runTest(new FileBuffer(CSV_FILE_EXTENSION), csvFormat, true, 170L, 190L, null,
         getExpectedString(csvFormat));
   }
 

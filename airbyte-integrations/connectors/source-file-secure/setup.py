@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -10,14 +10,14 @@ MAIN_REQUIREMENTS = [
     "gcsfs==0.7.1",
     "genson==1.2.2",
     "google-cloud-storage==1.35.0",
-    "pandas==1.2.0",
+    "pandas==1.4.3",
     "paramiko==2.7.2",
     "s3fs==0.4.2",
     "smart-open[all]==4.1.2",
     "lxml==4.6.5",
     "html5lib==1.1",
     "beautifulsoup4==4.9.3",
-    "pyarrow==3.0.0",
+    "pyarrow==8.0.0",
     "xlrd==2.0.1",
     "openpyxl==3.0.6",
     "pyxlsb==1.0.8",

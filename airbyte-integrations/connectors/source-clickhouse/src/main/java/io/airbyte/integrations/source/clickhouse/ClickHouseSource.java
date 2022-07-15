@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.clickhouse;
@@ -7,9 +7,10 @@ package io.airbyte.integrations.source.clickhouse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.NoOpJdbcStreamingQueryConfiguration;
+import io.airbyte.db.jdbc.streaming.NoOpStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -46,18 +47,16 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
                                                           final List<TableInfo<CommonField<JDBCType>>> tableInfos) {
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> sourceOperations
-                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> sourceOperations.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
               try {
-                return database.unsafeResultSetQuery(connection -> {
+                return database.queryStrings(connection -> {
                   final String sql = "SELECT name FROM system.columns WHERE database = ? AND table = ? AND is_in_primary_key = 1";
                   final PreparedStatement preparedStatement = connection.prepareStatement(sql);
                   preparedStatement.setString(1, tableInfo.getNameSpace());
                   preparedStatement.setString(2, tableInfo.getName());
                   return preparedStatement.executeQuery();
-
-                }, resultSet -> resultSet.getString("name")).collect(Collectors.toList());
+                }, resultSet -> resultSet.getString("name"));
               } catch (final SQLException e) {
                 throw new RuntimeException(e);
               }
@@ -65,20 +64,20 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   }
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickHouseSource.class);
-  public static final String DRIVER_CLASS = "ru.yandex.clickhouse.ClickHouseDriver";
+  public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static Source getWrappedSource() {
     return new SshWrappedSource(new ClickHouseSource(), List.of("host"), List.of("port"));
   }
 
   /**
-   * The reason we use NoOpJdbcStreamingQueryConfiguration(not setting auto commit to false and not
-   * setting fetch size to 1000) for ClickHouse is cause method
+   * The reason we use NoOpStreamingQueryConfig(not setting auto commit to false and not setting fetch
+   * size to 1000) for ClickHouse is cause method
    * {@link ru.yandex.clickhouse.ClickHouseConnectionImpl#setAutoCommit} is empty and method
    * {@link ru.yandex.clickhouse.ClickHouseStatementImpl#setFetchSize} is empty
    */
   public ClickHouseSource() {
-    super(DRIVER_CLASS, new NoOpJdbcStreamingQueryConfiguration(), JdbcUtils.getDefaultSourceOperations());
+    super(DRIVER_CLASS, NoOpStreamingQueryConfig::new, JdbcUtils.getDefaultSourceOperations());
   }
 
   @Override
@@ -93,7 +92,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
     }
 
-    ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
+    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl.toString());
 

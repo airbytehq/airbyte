@@ -1,30 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { ContentCard } from "components";
-import JobItem from "components/JobItem";
+import { JobItem } from "components/JobItem/JobItem";
 
-import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
-import { JobInfo } from "core/domain/job/Job";
-import { LogsRequestError } from "core/request/LogsRequestError";
-import { Connector, ConnectorT, Scheduler } from "core/domain/connector";
+import { Connector, ConnectorT } from "core/domain/connector";
+import { CheckConnectionRead } from "core/request/AirbyteClient";
+import { LogsRequestError, SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
-import { useAnalytics } from "hooks/services/Analytics";
+import { ServiceForm, ServiceFormProps, ServiceFormValues } from "views/Connector/ServiceForm";
 
 import { useTestConnector } from "./useTestConnector";
 
-export type ConnectorCardProvidedProps = {
+export interface ConnectorCardProvidedProps {
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
-};
+  testConnector: (v?: ServiceFormValues) => Promise<CheckConnectionRead>;
+}
 
-const ConnectorCard: React.FC<
+export const ConnectorCard: React.FC<
   {
     title?: React.ReactNode;
     full?: boolean;
-    jobInfo?: JobInfo | null;
+    jobInfo?: SynchronousJobReadWithStatus | null;
   } & Omit<ServiceFormProps, keyof ConnectorCardProvidedProps> &
     (
       | {
@@ -37,42 +37,64 @@ const ConnectorCard: React.FC<
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
 
-  const { testConnector, isTestConnectionInProgress, onStopTesting, error } = useTestConnector(props);
+  const { testConnector, isTestConnectionInProgress, onStopTesting, error, reset } = useTestConnector(props);
 
-  const analyticsService = useAnalytics().service;
+  useEffect(() => {
+    // Whenever the selected connector changed, reset the check connection call and other errors
+    reset();
+    setErrorStatusRequest(null);
+  }, [props.selectedConnectorDefinitionSpecification, reset]);
+
+  const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.NEW_SOURCE);
+  const trackNewDestinationAction = useTrackAction(
+    TrackActionNamespace.DESTINATION,
+    TrackActionLegacyType.NEW_DESTINATION
+  );
 
   const onHandleSubmit = async (values: ServiceFormValues) => {
     setErrorStatusRequest(null);
 
     const connector = props.availableServices.find((item) => Connector.id(item) === values.serviceType);
 
-    try {
-      if (connector) {
-        if (props.formType === "source") {
-          analyticsService.track("New Source - Action", {
-            action: "Test a connector",
-            connector_source: connector?.name,
-            connector_source_definition_id: Connector.id(connector),
-          });
-        } else {
-          analyticsService.track("New Destination - Action", {
-            action: "Test a connector",
-            connector_destination: connector?.name,
-            connector_destination_definition_id: Connector.id(connector),
-          });
-        }
+    const trackAction = (action: string, actionType: TrackActionType) => {
+      if (!connector) {
+        return;
       }
 
-      await testConnector(values);
-      await onSubmit(values);
+      if (props.formType === "source") {
+        trackNewSourceAction(action, actionType, {
+          connector_source: connector?.name,
+          connector_source_definition_id: Connector.id(connector),
+        });
+      } else {
+        trackNewDestinationAction(action, actionType, {
+          connector_destination: connector?.name,
+          connector_destination_definition_id: Connector.id(connector),
+        });
+      }
+    };
 
+    const testConnectorWithTracking = async () => {
+      trackAction("Test a connector", TrackActionType.TEST);
+      try {
+        await testConnector(values);
+        trackAction("Tested connector - success", TrackActionType.SUCCESS);
+      } catch (e) {
+        trackAction("Tested connector - failure", TrackActionType.FAILURE);
+        throw e;
+      }
+    };
+
+    try {
+      await testConnectorWithTracking();
+      await onSubmit(values);
       setSaved(true);
     } catch (e) {
       setErrorStatusRequest(e);
     }
   };
 
-  const jobInfoMapped = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
+  const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
   return (
     <ContentCard title={title} full={full}>
@@ -87,9 +109,7 @@ const ConnectorCard: React.FC<
           props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
         }
       />
-      {jobInfoMapped && <JobItem jobInfo={jobInfoMapped} />}
+      {job && <JobItem job={job} />}
     </ContentCard>
   );
 };
-
-export { ConnectorCard };

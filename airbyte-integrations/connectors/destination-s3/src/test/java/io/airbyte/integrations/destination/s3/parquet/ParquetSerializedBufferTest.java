@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.parquet;
@@ -39,7 +39,8 @@ public class ParquetSerializedBufferTest {
       "field1", 10000,
       "column2", "string value",
       "another field", true,
-      "nested_column", Map.of("array_column", List.of(1, 2, 3))));
+      "nested_column", Map.of("array_column", List.of(1, 2, 3)),
+      "datetime_with_timezone", "2022-05-12T15:35:44.192950Z"));
   private static final String STREAM = "stream1";
   private static final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM, null);
   private static final AirbyteRecordMessage message = new AirbyteRecordMessage()
@@ -50,7 +51,8 @@ public class ParquetSerializedBufferTest {
       Field.of("field1", JsonSchemaType.NUMBER),
       Field.of("column2", JsonSchemaType.STRING),
       Field.of("another field", JsonSchemaType.BOOLEAN),
-      Field.of("nested_column", JsonSchemaType.OBJECT));
+      Field.of("nested_column", JsonSchemaType.OBJECT),
+      Field.of("datetime_with_timezone", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE));
   private static final ConfiguredAirbyteCatalog catalog = CatalogHelpers.createConfiguredAirbyteCatalog(STREAM, null, FIELDS);
 
   @Test
@@ -60,7 +62,7 @@ public class ParquetSerializedBufferTest {
             "format_type", "parquet"),
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
-    runTest(195L, 205L, config, getExpectedString());
+    runTest(195L, 215L, config, getExpectedString());
   }
 
   @Test
@@ -72,7 +74,7 @@ public class ParquetSerializedBufferTest {
         "s3_bucket_name", "test",
         "s3_bucket_region", "us-east-2")));
     // TODO: Compressed parquet is the same size as uncompressed??
-    runTest(195L, 205L, config, getExpectedString());
+    runTest(195L, 215L, config, getExpectedString());
   }
 
   private static String getExpectedString() {
@@ -80,6 +82,7 @@ public class ParquetSerializedBufferTest {
         + "\"field1\": 10000.0, \"another_field\": true, "
         + "\"nested_column\": {\"_airbyte_additional_properties\": {\"array_column\": \"[1,2,3]\"}}, "
         + "\"column2\": \"string value\", "
+        + "\"datetime_with_timezone\": 1652369744192000, "
         + "\"_airbyte_additional_properties\": null}";
   }
 

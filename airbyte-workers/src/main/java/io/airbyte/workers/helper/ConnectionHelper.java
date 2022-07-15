@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.helper;
@@ -68,7 +68,8 @@ public class ConnectionHelper {
         .withPrefix(update.getPrefix())
         .withOperationIds(update.getOperationIds())
         .withCatalog(update.getCatalog())
-        .withStatus(update.getStatus());
+        .withStatus(update.getStatus())
+        .withSourceCatalogId(update.getSourceCatalogId());
 
     // update name
     if (update.getName() != null) {

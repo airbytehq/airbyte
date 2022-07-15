@@ -1,11 +1,11 @@
 import React from "react";
-import styled, { keyframes } from "styled-components";
 import { FormattedMessage } from "react-intl";
+import styled, { keyframes } from "styled-components";
 
-type ProgressBarProps = {
+interface ProgressBarProps {
   runTime?: number;
   text?: React.ReactNode;
-};
+}
 
 export const GrowAnimation = keyframes`
   0% {

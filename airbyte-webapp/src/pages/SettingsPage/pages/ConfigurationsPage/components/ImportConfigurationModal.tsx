@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import Modal from "components/Modal";
 import { Button } from "components";
 import FileDropZone from "components/FileDropZone";
+import Modal from "components/Modal";
 
-export type IProps = {
+export interface IProps {
   onClose: () => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSubmit: (data: any) => void;
@@ -14,7 +14,7 @@ export type IProps = {
   isLoading?: boolean;
   error?: Error | null | boolean;
   cleanError?: () => void;
-};
+}
 
 const Content = styled.div`
   padding: 18px 37px 28px;

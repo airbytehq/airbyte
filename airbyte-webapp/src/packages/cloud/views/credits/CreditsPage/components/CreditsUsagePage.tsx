@@ -2,8 +2,8 @@ import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import ContentCard from "components/ContentCard";
 import BarChart from "components/BarChart";
+import ContentCard from "components/ContentCard";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetUsage } from "packages/cloud/services/workspaces/WorkspacesService";
