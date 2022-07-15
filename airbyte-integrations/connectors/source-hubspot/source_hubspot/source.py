@@ -47,7 +47,7 @@ from source_hubspot.streams import (
     Workflows,
 )
 
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS, API_KEY_CREDENTIALS
 
 
 class SourceHubspot(AbstractSource):
@@ -127,7 +127,7 @@ class SourceHubspot(AbstractSource):
         ]
 
         credentials_title = credentials.get("credentials_title")
-        if credentials_title == "API Key Credentials":
+        if credentials_title == API_KEY_CREDENTIALS:
             streams.append(Quotes(**common_params))
 
         api = API(credentials=credentials)

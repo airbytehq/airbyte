@@ -21,7 +21,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS, API_KEY_CREDENTIALS
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -139,7 +139,7 @@ class API:
 
         if self.is_oauth2() or self.is_private_app():
             self._session.auth = self.get_authenticator()
-        elif credentials_title == "API Key Credentials":
+        elif credentials_title == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
@@ -250,7 +250,7 @@ class Stream(HttpStream, ABC):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
 
-        if credentials["credentials_title"] == "API Key Credentials":
+        if credentials["credentials_title"] == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
