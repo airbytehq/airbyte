@@ -1,0 +1,18 @@
+{
+  "type": "object",
+  "properties": {
+    "id": ["null", "integer"],
+    "name": ["null", "string"],
+    "is_open": ["null", "boolean"],
+    "is_declined": ["null", "boolean"],
+    "is_cancelled": ["null", "boolean"],
+    "is_shipped": ["null", "boolean"],
+    "color": ["null", "string"],
+    "email_template_id": ["null", "integer"],
+    "updated_at": ["null", "string"],
+    "created_at": ["null", "string"],
+    "is_fully_refunded": ["null", "boolean"],
+    "is_partially_refunded": ["null", "boolean"],
+    "is_quote_status": ["null", "boolean"]
+  }
+}

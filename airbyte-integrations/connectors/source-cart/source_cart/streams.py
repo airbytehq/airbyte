@@ -134,6 +134,14 @@ class OrderItems(IncrementalCartStream):
     data_field = "items"
 
 
+class OrderStatuses(IncrementalCartStream):
+    """
+    Docs: https://developers.cart.com/docs/rest-api/ff5ada86bc8a0-get-order-statuses
+    """
+
+    data_field = "order_statuses"
+
+
 class Products(IncrementalCartStream):
     """
     Docs: https://developers.cart.com/docs/rest-api/restapi.json/paths/~1products/get
