@@ -4,6 +4,8 @@
 
 package io.airbyte.workers.temporal;
 
+import static io.micrometer.core.instrument.config.validate.PropertyValidator.getUrlString;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
@@ -14,9 +16,8 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.statsd.StatsdConfig;
-import io.micrometer.statsd.StatsdFlavor;
-import io.micrometer.statsd.StatsdMeterRegistry;
+import io.micrometer.registry.otlp.OtlpConfig;
+import io.micrometer.registry.otlp.OtlpMeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -100,21 +101,42 @@ public class TemporalUtils {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
     try {
-      StatsdConfig config = new StatsdConfig() {
 
+      OtlpConfig config = new OtlpConfig() {
+
+        /**
+         * @param key Key to lookup in the config.
+         * @return
+         */
         @Override
-        public String get(String k) {
+        public String get(String key) {
           return null;
         }
 
         @Override
-        public StatsdFlavor flavor() {
-          return StatsdFlavor.DATADOG;
+        public String url() {
+          return getUrlString(this, "url").orElse(String.format("http://%s:4317", configs.getDDAgentHost()));
+        }
+
+        /**
+         * @return
+         */
+        @Override
+        public Duration step() {
+          return Duration.ofSeconds(10);
+        }
+
+        /**
+         * @return
+         */
+        @Override
+        public boolean enabled() {
+          return true;
         }
 
       };
 
-      MeterRegistry registry = new StatsdMeterRegistry(config, Clock.SYSTEM);
+      MeterRegistry registry = new OtlpMeterRegistry(config, Clock.SYSTEM);
 
       StatsReporter reporter = new MicrometerClientStatsReporter(registry);
       Scope scope = new RootScopeBuilder()
