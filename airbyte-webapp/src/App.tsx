@@ -6,7 +6,7 @@ import { ApiServices } from "core/ApiServices";
 import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureService } from "hooks/services/Feature";
+import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import NotificationService from "hooks/services/Notification";
 import { AnalyticsProvider } from "views/common/AnalyticsProvider";
@@ -41,7 +41,7 @@ const Services: React.FC = ({ children }) => (
   <AnalyticsProvider>
     <ApiErrorBoundary>
       <WorkspaceServiceProvider>
-        <FeatureService>
+        <FeatureService features={defaultFeatures}>
           <NotificationService>
             <ConfirmationModalService>
               <FormChangeTrackerService>

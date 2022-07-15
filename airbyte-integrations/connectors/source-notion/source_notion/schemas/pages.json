@@ -48,9 +48,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "title"
-                    ]
+                    "enum": ["title"]
                   },
                   "title": { "$ref": "title.json" }
                 }
@@ -63,11 +61,9 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "rich_text"
-                    ]
+                    "enum": ["rich_text"]
                   },
-                  "rich_text": { "$ref": "rich_text.json" } 
+                  "rich_text": { "$ref": "rich_text.json" }
                 }
               },
               {
@@ -105,7 +101,9 @@
                   "formula": {
                     "type": ["null", "object"],
                     "properties": {
-                      "type": { "enum": ["string", "number", "boolean", "date"] },
+                      "type": {
+                        "enum": ["string", "number", "boolean", "date"]
+                      },
                       "string": { "type": ["null", "string"] },
                       "number": { "type": ["null", "number"] },
                       "boolean": { "type": ["null", "boolean"] },
@@ -253,7 +251,7 @@
                 }
               }
             ]
-          } 
+          }
         }
       }
     }
