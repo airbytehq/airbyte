@@ -5,7 +5,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
-import { Button, Card, LabeledSwitch } from "components";
+import { Button, Card, LabeledSwitch, ModalBody, ModalFooter } from "components";
 import LoadingSchema from "components/LoadingSchema";
 
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
@@ -21,8 +21,6 @@ import { equal } from "utils/objects";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { ConnectionFormSubmitResult } from "views/Connection/ConnectionForm/ConnectionForm";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
-
-import styles from "./ReplicationView.module.scss";
 
 interface ReplicationViewProps {
   onAfterSaveSchema: () => void;
@@ -40,30 +38,34 @@ const ResetWarningModal: React.FC<ResetWarningModalProps> = ({ onCancel, onClose
   const [withReset, setWithReset] = useState(true);
   const requireFullReset = stateType === ConnectionStateType.legacy;
   return (
-    <div className={styles.resetWarningModal} data-testid={`resetModal-${requireFullReset ? "full" : "partial"}`}>
-      {/* 
+    <>
+      <ModalBody>
+        {/* 
         TODO: This should use proper text stylings once we have them available.
         See https://github.com/airbytehq/airbyte/issues/14478
       */}
-      <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
-      <p>
-        <LabeledSwitch
-          checked={withReset}
-          onChange={(ev) => setWithReset(ev.target.checked)}
-          label={formatMessage({ id: requireFullReset ? "connection.saveWithFullReset" : "connection.saveWithReset" })}
-          checkbox
-          data-testid="resetModal-reset-checkbox"
-        />
-      </p>
-      <div className={styles.resetWarningModalButtons}>
+        <FormattedMessage id={requireFullReset ? "connection.streamFullResetHint" : "connection.streamResetHint"} />
+        <p>
+          <LabeledSwitch
+            checked={withReset}
+            onChange={(ev) => setWithReset(ev.target.checked)}
+            label={formatMessage({
+              id: requireFullReset ? "connection.saveWithFullReset" : "connection.saveWithReset",
+            })}
+            checkbox
+            data-testid="resetModal-reset-checkbox"
+          />
+        </p>
+      </ModalBody>
+      <ModalFooter>
         <Button onClick={onCancel} secondary data-testid="resetModal-cancel">
           <FormattedMessage id="form.cancel" />
         </Button>
         <Button onClick={() => onClose(withReset)} data-testid="resetModal-save">
           <FormattedMessage id="connection.save" />
         </Button>
-      </div>
-    </div>
+      </ModalFooter>
+    </>
   );
 };
 
