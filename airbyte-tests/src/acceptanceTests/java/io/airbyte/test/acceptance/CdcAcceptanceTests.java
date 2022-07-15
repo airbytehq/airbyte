@@ -63,6 +63,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -154,11 +155,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testIncrementalCdcSync() throws Exception {
-    LOGGER.info("Starting incremental cdc sync test");
+  public void testIncrementalCdcSync(TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting incremental cdc sync 1");
+    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -209,7 +210,7 @@ public class CdcAcceptanceTests {
         beforeFirstUpdate,
         Optional.empty()));
 
-    LOGGER.info("Starting incremental cdc sync 2");
+    LOGGER.info("Starting {} sync 2", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
@@ -221,7 +222,7 @@ public class CdcAcceptanceTests {
 
     // reset back to no data.
 
-    LOGGER.info("Starting incremental cdc reset");
+    LOGGER.info("Starting {} reset", testInfo.getDisplayName());
     final JobInfoRead jobInfoRead = apiClient.getConnectionApi().resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), jobInfoRead.getJob());
 
@@ -232,7 +233,7 @@ public class CdcAcceptanceTests {
     assertNoState(connectionId);
 
     // sync one more time. verify it is the equivalent of a full refresh.
-    LOGGER.info("Starting incremental cdc sync 3");
+    LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead3.getJob());
@@ -250,8 +251,8 @@ public class CdcAcceptanceTests {
   // tests that incremental syncs still work properly even when using a destination connector that was
   // built on the old protocol that did not have any per-stream state fields
   @Test
-  public void testIncrementalCdcSyncWithLegacyDestinationConnector() throws Exception {
-    LOGGER.info("Starting testIncrementalCdcSyncWithLegacyDestinationConnector()");
+  public void testIncrementalCdcSyncWithLegacyDestinationConnector(TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
     final UUID postgresDestDefId = testHarness.getPostgresDestinationDefinitionId();
     // Fetch the current/most recent source definition version
     final DestinationDefinitionRead destinationDefinitionRead = apiClient.getDestinationDefinitionApi().getDestinationDefinition(
@@ -262,7 +263,7 @@ public class CdcAcceptanceTests {
       LOGGER.info("Setting postgres destination definition to version {}", POSTGRES_DESTINATION_LEGACY_CONNECTOR_VERSION);
       testHarness.updateDestinationDefinitionVersion(postgresDestDefId, POSTGRES_DESTINATION_LEGACY_CONNECTOR_VERSION);
 
-      testIncrementalCdcSync();
+      testIncrementalCdcSync(testInfo);
     } finally {
       // set postgres destination definition back to latest version for other tests
       LOGGER.info("Setting postgres destination definition back to version {}", destinationDefinitionRead.getDockerImageTag());
@@ -271,11 +272,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testDeleteRecordCdcSync() throws Exception {
-    LOGGER.info("Starting delete record cdc sync test");
+  public void testDeleteRecordCdcSync(TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting delete record cdc sync 1");
+    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -300,7 +301,7 @@ public class CdcAcceptanceTests {
         beforeDelete,
         Optional.of(beforeDelete)));
 
-    LOGGER.info("Starting delete record cdc sync 2");
+    LOGGER.info("Starting {} sync 2", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
@@ -310,11 +311,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromSchemaUpdate() throws Exception {
-    LOGGER.info("Starting partial reset cdc test");
+  public void testPartialResetFromSchemaUpdate(TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting sync 1");
+    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -353,11 +354,11 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromStreamSelection() throws Exception {
-    LOGGER.info("Starting partial reset cdc test");
+  public void testPartialResetFromStreamSelection(TestInfo testInfo) throws Exception {
+    LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
-    LOGGER.info("Starting sync 1");
+    LOGGER.info("Starting {} sync 1", testInfo.getDisplayName());
 
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -436,7 +437,7 @@ public class CdcAcceptanceTests {
         beforeInsert,
         Optional.empty()));
 
-    LOGGER.info("Starting sync after insert");
+    LOGGER.info("Starting {} sync after insert", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead2 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead2.getJob());
