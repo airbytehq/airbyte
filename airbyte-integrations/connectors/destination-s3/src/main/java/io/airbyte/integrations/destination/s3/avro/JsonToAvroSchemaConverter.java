@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.s3.avro;
 
+import static java.util.Collections.singletonList;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.Preconditions;
@@ -59,7 +61,7 @@ public class JsonToAvroSchemaConverter {
   static List<JsonSchemaType> getTypes(final String fieldName, final JsonNode fieldDefinition) {
     final Optional<JsonNode> combinedRestriction = getCombinedRestriction(fieldDefinition);
     if (combinedRestriction.isPresent()) {
-      return Collections.singletonList(JsonSchemaType.COMBINED);
+      return singletonList(JsonSchemaType.COMBINED);
     }
 
     final JsonNode typeProperty = fieldDefinition.get(TYPE);
@@ -67,7 +69,7 @@ public class JsonToAvroSchemaConverter {
     final String airbyteType = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     if (typeProperty == null || typeProperty.isNull()) {
       LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
-      return Collections.singletonList(JsonSchemaType.STRING);
+      return singletonList(JsonSchemaType.STRING);
     }
 
     if (typeProperty.isArray()) {
@@ -77,11 +79,11 @@ public class JsonToAvroSchemaConverter {
     }
 
     if (typeProperty.isTextual()) {
-      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteType));
+      return singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteType));
     }
 
     LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
-    return Collections.singletonList(JsonSchemaType.STRING);
+    return singletonList(JsonSchemaType.STRING);
   }
 
   static Optional<JsonNode> getCombinedRestriction(final JsonNode fieldDefinition) {
@@ -255,6 +257,8 @@ public class JsonToAvroSchemaConverter {
         } else if (items.isArray()) {
           final List<Schema> arrayElementTypes =
               parseJsonTypeUnion(fieldName, fieldNamespace, (ArrayNode) items, appendExtraProps, addStringToLogicalTypes);
+          // If any of the array elements were already null, remove them so that we can reinsert it at position 0
+          arrayElementTypes.removeAll(singletonList(NULL_SCHEMA));
           arrayElementTypes.add(0, NULL_SCHEMA);
           fieldSchema = Schema.createArray(Schema.createUnion(arrayElementTypes));
         } else {
@@ -404,6 +408,11 @@ public class JsonToAvroSchemaConverter {
             .type(AdditionalPropertyField.FIELD_SCHEMA).withDefault(null);
       }
       mergedSchemas.add(assembler.endRecord());
+    }
+
+    // If the schema is nullable, make sure that it's the first item in the list
+    if (mergedSchemas.removeAll(singletonList(NULL_SCHEMA))) {
+      mergedSchemas.add(0, NULL_SCHEMA);
     }
 
     return mergedSchemas;
