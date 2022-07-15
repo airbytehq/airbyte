@@ -1,0 +1,22 @@
+<TODO>_stream:
+  options:
+    name: "<TODO>"
+    primary_key: "<TODO>"
+    url_base: "<TODO>"
+    schema_loader:
+      file_path: "./source_exchange_rates_tutorial/schemas/{{name}}.json"
+    retriever:
+      requester:
+        path: "<TODO>"
+        authenticator:
+          type: "TokenAuthenticator"
+          token: "<TODO>"
+      record_selector:
+        extractor:
+          transform: "<TODO>"
+
+streams:
+  - "*ref(<TODO>_stream)"
+check:
+  stream_names:
+    - "<TODO>>"
