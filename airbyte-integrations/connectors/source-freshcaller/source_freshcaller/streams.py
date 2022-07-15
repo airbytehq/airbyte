@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -11,15 +11,14 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class FreshcallerStream(HttpStream, ABC):
-    """Abstract class curated for Freshcaller
-    """
+    """Abstract class curated for Freshcaller"""
 
     primary_key = "id"
     data_field = ""
     start = 1
     page_limit = 1000
     api_version = 2
-    curr_page_param = 'page'
+    curr_page_param = "page"
 
     def __init__(self, config: Dict, **kwargs):
         super().__init__(**kwargs)
@@ -45,15 +44,9 @@ class FreshcallerStream(HttpStream, ABC):
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {
-            "Accept": "application/json",
-            "User-Agent": "PostmanRuntime/7.28.0",
-            "Content-Type": "application/json"
-        }
+        return {"Accept": "application/json", "User-Agent": "PostmanRuntime/7.28.0", "Content-Type": "application/json"}
 
-    def next_page_token(
-        self, response: requests.Response
-    ) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
         meta_data = decoded_response.get("meta")
         if meta_data:
@@ -64,15 +57,14 @@ class FreshcallerStream(HttpStream, ABC):
                 return {self.curr_page_param: current_page}
         return None
 
-    def parse_response(
-        self, response: requests.Response, **kwargs
-    ) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
         yield from response_json.get(self.data_field, [])
 
     @property
     def max_retries(self) -> Union[int, None]:
         return 10
+
 
 class APIIncrementalFreshcallerStream(FreshcallerStream):
     """
@@ -109,12 +101,7 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
         """
         last_synced_at = current_stream_state.get(self.cursor_field, self.start_date)
         last_synced_at = pendulum.parse(last_synced_at) if isinstance(last_synced_at, str) else last_synced_at
-        return {
-            self.cursor_field: max(
-                pendulum.parse(latest_record.get(self.cursor_field)).in_tz('UTC'),
-                last_synced_at
-            )
-        }
+        return {self.cursor_field: max(pendulum.parse(latest_record.get(self.cursor_field)).in_tz("UTC"), last_synced_at)}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -138,14 +125,14 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
             },
             ...]
         """
-        start_date = pendulum.parse(self.start_date).in_timezone('UTC')
-        end_date = pendulum.utcnow().subtract(minutes=self.sync_lag_minutes)   # have a safe lag
+        start_date = pendulum.parse(self.start_date).in_timezone("UTC")
+        end_date = pendulum.utcnow().subtract(minutes=self.sync_lag_minutes)  # have a safe lag
 
         # Determine stream_state, if no stream_state we use start_date
         if stream_state:
             start_date = stream_state.get(self.cursor_field)
             start_date = pendulum.parse(start_date) if isinstance(start_date, str) else start_date
-            start_date = start_date.in_tz('UTC')
+            start_date = start_date.in_tz("UTC")
         # use the lowest date between start_date and self.end_date, otherwise API fails if start_date is in future
         start_date: pendulum.Pendulum = min(start_date, end_date)
         date_slices = []
@@ -155,12 +142,13 @@ class APIIncrementalFreshcallerStream(FreshcallerStream):
             # add 1 second for start next slice to not duplicate data from previous slice end date.
             stream_slice = {
                 self.start_param: start_date.add(seconds=1).to_datetime_string(),
-                self.end_param: min(end_date_slice, end_date).to_datetime_string()
+                self.end_param: min(end_date_slice, end_date).to_datetime_string(),
             }
             date_slices.append(stream_slice)
             start_date = end_date_slice
 
         return date_slices
+
 
 class Users(FreshcallerStream):
     """
@@ -183,6 +171,7 @@ class Teams(FreshcallerStream):
     def path(self, **kwargs) -> str:
         return "teams"
 
+
 class Calls(APIIncrementalFreshcallerStream):
     """
     API docs: https://developers.freshcaller.com/api/#calls
@@ -197,8 +186,9 @@ class Calls(APIIncrementalFreshcallerStream):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {**super().request_params(stream_state, stream_slice, next_page_token), 'has_ancestry': 'true'}
+        params = {**super().request_params(stream_state, stream_slice, next_page_token), "has_ancestry": "true"}
         return params
+
 
 class CallMetrics(APIIncrementalFreshcallerStream):
     """
@@ -210,4 +200,3 @@ class CallMetrics(APIIncrementalFreshcallerStream):
 
     def path(self, **kwargs) -> str:
         return "call_metrics"
-

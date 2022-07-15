@@ -9,218 +9,116 @@
           "additionalProperties": true,
           "properties": {
             "id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "call_id": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "ivr_time": {
-              "type": [
-                "integer",
-                "null"
-              ]
+              "type": ["integer", "null"]
             },
             "ivr_time_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "hold_duration": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "hold_duration_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "call_work_time": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "call_work_time_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "total_ringing_time": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "total_ringing_time_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "talk_time": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "talk_time_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "answering_speed": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "answering_speed_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "recording_duration": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "recording_duration_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "bill_duration": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "bill_duration_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "cost": {
-              "type": [
-                "number",
-                "null"
-              ]
+              "type": ["number", "null"]
             },
             "cost_unit": {
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "csat": {
               "properties": {
                 "transfer_made": {
-                  "type": [
-                    "boolean",
-                    "null"
-                  ]
+                  "type": ["boolean", "null"]
                 },
                 "outcome": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 },
                 "time": {
-                  "type": [
-                    "number",
-                    "null"
-                  ]
+                  "type": ["number", "null"]
                 },
                 "time_unit": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": ["string", "null"]
                 }
               },
-              "type": [
-                "object",
-                "null"
-              ]
+              "type": ["object", "null"]
             },
             "created_time": {
               "format": "date-time",
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "updated_time": {
               "format": "date-time",
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": ["string", "null"]
             },
             "tags": {
               "items": {
                 "properties": {
                   "id": {
-                    "type": [
-                      "integer",
-                      "null"
-                    ]
+                    "type": ["integer", "null"]
                   },
                   "name": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
+                    "type": ["string", "null"]
                   },
                   "default": {
-                    "type": [
-                      "boolean",
-                      "null"
-                    ]
+                    "type": ["boolean", "null"]
                   }
                 },
                 "type": "object"
               },
-              "type": [
-                "array",
-                "null"
-              ]
+              "type": ["array", "null"]
             }
           }
         }
       },
-    "supported_sync_modes": [
-        "full_refresh",
-        "incremental"
-    ],
-    "source_defined_cursor": true,
-    "default_cursor_field": [
-        "updated_time"
-    ],
-    "source_defined_primary_key": [
-        [
-            "id"
-        ]
-    ],
-    "destination_sync_mode": "overwrite",
-    "sync_mode": "incremental"
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["updated_time"],
+      "source_defined_primary_key": [["id"]],
+      "destination_sync_mode": "overwrite",
+      "sync_mode": "incremental"
     }
   ]
 }

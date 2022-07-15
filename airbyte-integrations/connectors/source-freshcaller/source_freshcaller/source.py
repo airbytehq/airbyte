@@ -1,17 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Mapping, Tuple
 import logging
+from typing import Any, Dict, List, Mapping, Tuple
 
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-
-from source_freshcaller.streams import Users, Teams, Calls, CallMetrics
+from source_freshcaller.streams import CallMetrics, Calls, Teams, Users
 
 logger = logging.getLogger("airbyte")
 
@@ -22,9 +21,7 @@ class FreshcallerTokenAuthenticator(TokenAuthenticator):
 
 
 class SourceFreshcaller(AbstractSource):
-    def check_connection(
-        self, logger: AirbyteLogger, config: Mapping[str, Any]
-    ) -> Tuple[bool, Any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         api_url = f"https://{config['domain']}.freshcaller.com/api/v1/"
         auth = FreshcallerTokenAuthenticator(token=config["api_key"]).get_auth_header()
         url = "{api_url}/users".format(api_url=api_url)
@@ -40,10 +37,7 @@ class SourceFreshcaller(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = FreshcallerTokenAuthenticator(token=config["api_key"])
-        args = {
-            "authenticator": authenticator,
-            "config": config
-        }
+        args = {"authenticator": authenticator, "config": config}
         return [
             Users(**args),
             Teams(**args),

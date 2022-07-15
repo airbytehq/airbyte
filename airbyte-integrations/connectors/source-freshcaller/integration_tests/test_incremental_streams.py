@@ -1,12 +1,13 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from unittest.mock import MagicMock
+
 import pendulum
-from airbyte_cdk.models import SyncMode
 import pytest
-from source_freshcaller.streams import Calls, CallMetrics, APIIncrementalFreshcallerStream
+from airbyte_cdk.models import SyncMode
+from source_freshcaller.streams import APIIncrementalFreshcallerStream, CallMetrics, Calls
 
 
 @pytest.fixture
@@ -30,25 +31,24 @@ def stream(patch_incremental_base_class, args):
 def call_metrics_stream(args):
     return CallMetrics(**args)
 
+
 @pytest.fixture
 def calls_stream(args):
     return Calls(**args)
 
+
 @pytest.fixture
 def streams_dict(calls_stream, call_metrics_stream):
-    return {
-      'calls_stream': calls_stream,
-      'call_metrics_stream': call_metrics_stream
-    }
+    return {"calls_stream": calls_stream, "call_metrics_stream": call_metrics_stream}
 
 
-@pytest.mark.parametrize('fixture_name, expected', [('calls_stream', 'created_time'), ('call_metrics_stream', 'created_time')])
+@pytest.mark.parametrize("fixture_name, expected", [("calls_stream", "created_time"), ("call_metrics_stream", "created_time")])
 def test_cursor_field(streams_dict, fixture_name, expected):
     stream = streams_dict[fixture_name]
     assert stream.cursor_field == expected
 
 
-@pytest.mark.parametrize('fixture_name', [('calls_stream'), ('call_metrics_stream')])
+@pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
 def test_get_updated_state(streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     inputs = {
@@ -63,7 +63,7 @@ def test_get_updated_state(streams_dict, fixture_name):
     assert state["created_time"] == pendulum.parse("2021-10-30T00:00:00.00Z")
 
 
-@pytest.mark.parametrize('fixture_name', [('calls_stream'), ('call_metrics_stream')])
+@pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
 def test_get_updated_state(streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     current_stream_state = {"created_time": pendulum.now().add(days=-40)}
@@ -92,25 +92,27 @@ def test_end_of_stream_state(calls_stream, requests_mock):
     assert last_state == pendulum.parse("2021-10-30T00:00:00.00Z")
 
 
-@pytest.mark.parametrize('fixture_name', [('calls_stream'), ('call_metrics_stream')])
+@pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
 def test_supports_incremental(mocker, streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     mocker.patch.object(APIIncrementalFreshcallerStream, "cursor_field", "dummy_field")
     assert stream.supports_incremental
 
 
-@pytest.mark.parametrize('fixture_name', [('calls_stream'), ('call_metrics_stream')])
+@pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
 def test_source_defined_cursor(mocker, streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     assert stream.source_defined_cursor
 
-@pytest.mark.parametrize('fixture_name', [('calls_stream'), ('call_metrics_stream')])
+
+@pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
 def test_stream_checkpoint_interval(mocker, streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
 
-@pytest.mark.parametrize('fixture_name', [('calls_stream'), ('call_metrics_stream')])
+
+@pytest.mark.parametrize("fixture_name", [("calls_stream"), ("call_metrics_stream")])
 def test_request_params(mocker, streams_dict, fixture_name):
     stream = streams_dict[fixture_name]
     inputs = {
@@ -119,6 +121,6 @@ def test_request_params(mocker, streams_dict, fixture_name):
         "stream_slice": {"by_time[from]": "2022-03-04 18:27:40", "by_time[to]": "2022-03-09 18:27:39"},
     }
     expected_request_params = {"per_page": 1000, "page": "5", "by_time[from]": "2022-03-04 18:27:40", "by_time[to]": "2022-03-09 18:27:39"}
-    if stream.path() == 'calls':
-      expected_request_params.update({'has_ancestry': 'true'})
+    if stream.path() == "calls":
+        expected_request_params.update({"has_ancestry": "true"})
     assert stream.request_params(**inputs) == expected_request_params

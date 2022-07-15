@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pendulum
-
 from source_freshcaller.source import FreshcallerTokenAuthenticator, SourceFreshcaller
 
 now_dt = pendulum.now()
+
 
 def test_authenticator(requests_mock):
     URL = "https://example.com/"
@@ -19,6 +19,7 @@ def test_authenticator(requests_mock):
     a = FreshcallerTokenAuthenticator(config["api_key"])
     auth_headers = a.get_auth_header()
     assert auth_headers["X-Api-Auth"] == TOKEN
+
 
 def test_count_streams(mocker):
     source = SourceFreshcaller()
