@@ -167,7 +167,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (PostgresUtils.isCdc(config)) {
       final List<AirbyteStream> streams = catalog.getStreams().stream()
-          .map(PostgresSource::overrideSyncModes)
+          .map(PostgresCdcCatalogHelper::overrideSyncModes)
           .map(PostgresCdcCatalogHelper::removeIncrementalWithoutPk)
           .map(PostgresCdcCatalogHelper::setIncrementalToSourceDefined)
           .map(PostgresCdcCatalogHelper::addCdcMetadataColumns)
@@ -355,10 +355,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .tableName(e.get("table_name").asText())
             .build())
         .collect(toSet());
-  }
-
-  private static AirbyteStream overrideSyncModes(final AirbyteStream stream) {
-    return stream.withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
   }
 
   @VisibleForTesting
