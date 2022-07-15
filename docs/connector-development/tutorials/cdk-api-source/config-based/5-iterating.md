@@ -81,6 +81,7 @@ rates_stream:
     name: "rates"
     primary_key: ""
     url_base: "https://api.exchangeratesapi.io/v1/"
+    cursor_field: "date"
     schema_loader:
       file_path: "./source_exchange_rates_tutorial/schemas/{{name}}.json"
     retriever:
@@ -111,6 +112,8 @@ check:
   stream_names:
     - "rates"
 ```
+
+### FIXME: remove duplicated cursor_field from stream!
 
 Running the `read` operation will now read all data for all days between start_date and now:
 ```
