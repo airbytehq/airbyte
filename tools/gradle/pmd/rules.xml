@@ -16,11 +16,6 @@
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
         <!-- to be applied eventually -->
-        <exclude name="AvoidPrintStackTrace"/>
-        <exclude name="AvoidReassigningLoopVariables"/>
-        <exclude name="AvoidReassigningParameters"/>
-        <exclude name="AvoidUsingHardCodedIP"/>
-        <exclude name="CheckResultSet"/>
         <exclude name="DoubleBraceInitialization"/>
         <exclude name="ForLoopCanBeForeach"/>
         <exclude name="JUnit4TestShouldUseTestAnnotation"/>

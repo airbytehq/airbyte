@@ -11,6 +11,7 @@ import java.util.Optional;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 class MigrationDevHelperTest {
 
   @Test

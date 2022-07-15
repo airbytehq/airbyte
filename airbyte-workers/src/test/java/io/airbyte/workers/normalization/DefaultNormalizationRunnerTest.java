@@ -39,6 +39,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 class DefaultNormalizationRunnerTest {
 
   private static final String JOB_ID = "0";

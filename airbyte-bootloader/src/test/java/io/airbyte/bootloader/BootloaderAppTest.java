@@ -52,6 +52,7 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 @ExtendWith(SystemStubsExtension.class)
 public class BootloaderAppTest {
 

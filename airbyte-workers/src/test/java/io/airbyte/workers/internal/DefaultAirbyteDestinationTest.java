@@ -47,6 +47,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 class DefaultAirbyteDestinationTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");

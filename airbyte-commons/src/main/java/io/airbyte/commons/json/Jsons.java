@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.AvoidReassigningParameters")
 public class Jsons {
 
   // Object Mapper is thread-safe

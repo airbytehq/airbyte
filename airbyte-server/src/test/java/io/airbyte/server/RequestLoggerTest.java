@@ -36,6 +36,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 
+@SuppressWarnings("PMD.AvoidPrintStackTrace")
 @ExtendWith(MockitoExtension.class)
 public class RequestLoggerTest {
 
