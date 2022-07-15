@@ -20,7 +20,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs;
 import io.airbyte.config.JobOutput;
@@ -29,9 +28,7 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
-import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.db.instance.configs.AbstractConfigsDatabaseTest;
 import io.airbyte.db.instance.jobs.JobsDatabaseTestProvider;
 import java.io.IOException;
@@ -286,10 +283,4 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
       }
     }
   }
-
-  private void initializeJobsDatabase(final DSLContext dslContext) throws DatabaseInitializationException, IOException {
-    final String initialSchema = MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH);
-    DatabaseCheckFactory.createJobsDatabaseInitializer(dslContext, DatabaseConstants.DEFAULT_CONNECTION_TIMEOUT_MS, initialSchema).initialize();
-  }
-
 }
