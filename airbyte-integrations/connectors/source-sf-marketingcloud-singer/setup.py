@@ -6,14 +6,12 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk~=0.1",
-    "Salesforce-FuelSDK==1.3.0",
-    "suds-py3==1.4.4.1",
-    "tap-exacttarget==1.6.1",
+    "Salesforce-FuelSDK-Sans",
+    "tap-exacttarget-remove-sud==1.7.4",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
-    "source-acceptance-test",
 ]
 
 setup(
