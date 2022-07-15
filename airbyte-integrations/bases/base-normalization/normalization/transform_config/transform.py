@@ -8,6 +8,7 @@ import json
 import os
 import pkgutil
 import socket
+import subprocess
 from typing import Any, Dict
 
 import yaml
@@ -167,11 +168,33 @@ class TransformConfig:
             "threads": 8,
         }
 
-        # if unset, we assume true.
-        if config.get("ssl", True):
-            config["sslmode"] = "require"
+        ssl = config.get("ssl")
+        print("====> SSL")
+        if ssl:
+            ssl_mode = config.get("ssl_mode", "allow")
+            dbt_config["sslmode"] = ssl_mode.get("mode")
+            if ssl_mode["mode"] == "verify-ca":
+                print("====> CA")
+                TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslrootcert"] = "ca.crt"
+            elif ssl_mode["mode"] == "verify-full":
+                print("====> FULL")
+                TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
+                TransformConfig.create_file("client.key", ssl_mode["client_key"])
+                dbt_config["sslrootcert"] = "ca.crt"
+                dbt_config["sslcert"] = "client.crt"
+                subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
+                subprocess.call("rm client.key", shell=True)
+                dbt_config["sslkey"] = "client.pk8"
 
         return dbt_config
+
+    @staticmethod
+    def create_file(name, content):
+        f = open(name, "x")
+        f.write(content)
+        f.close()
 
     @staticmethod
     def transform_redshift(config: Dict[str, Any]):

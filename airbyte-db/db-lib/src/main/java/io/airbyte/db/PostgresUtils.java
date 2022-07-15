@@ -33,7 +33,7 @@ public class PostgresUtils {
     container.execInContainer("su", "-c", "psql -U test -c \"ALTER USER postgres WITH SUPERUSER;\"");
 
     container.execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out ca.key");
-    container.execInContainer("su", "-c", "openssl req -new -x509 -sha256 -key ca.key -out ca.crt -subj \"/CN=localhost\"");
+    container.execInContainer("su", "-c", "openssl req -new -x509 -sha256 -key ca.key -out ca.crt -subj \"/CN=127.0.0.1\"");
     container.execInContainer("su", "-c", "openssl ecparam -name prime256v1 -genkey -noout -out server.key");
     container.execInContainer("su", "-c", "openssl req -new -sha256 -key server.key -out server.csr -subj \"/CN=localhost\"");
     container.execInContainer("su", "-c",
@@ -49,7 +49,7 @@ public class PostgresUtils {
     container.execInContainer("su", "-c", "echo \"ssl_ca_file = '/etc/ssl/private/ca.crt'\" >> /var/lib/postgresql/data/postgresql.conf");
     container.execInContainer("su", "-c", "mkdir root/.postgresql");
     container.execInContainer("su", "-c",
-        "echo \"hostssl    all    all    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf");
+        "echo \"hostssl    all    postgres    127.0.0.1/32    cert clientcert=verify-full\" >> /var/lib/postgresql/data/pg_hba.conf");
 
     var caCert = container.execInContainer("su", "-c", "cat ca.crt").getStdout().trim();
 
