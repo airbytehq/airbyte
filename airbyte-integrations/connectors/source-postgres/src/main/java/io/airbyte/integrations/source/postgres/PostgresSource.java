@@ -13,6 +13,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -30,6 +32,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -65,13 +68,16 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   private List<String> schemas;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
     return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
   }
 
   PostgresSource() {
+
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
+    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   @Override
@@ -269,7 +275,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(), postgresCdcStateHandler, emittedAt);
-      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -350,6 +357,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   // state
   @Override
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.LEGACY)
+          .withData(Jsons.jsonNode(new DbState())));
+    }
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
@@ -364,6 +376,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return AirbyteStateType.LEGACY;
+    }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 

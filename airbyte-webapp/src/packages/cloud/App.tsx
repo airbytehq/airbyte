@@ -8,7 +8,7 @@ import LoadingPage from "components/LoadingPage";
 
 import { I18nProvider } from "core/i18n";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureService } from "hooks/services/Feature";
+import { FeatureItem, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationServiceProvider from "hooks/services/Notification";
@@ -40,7 +40,9 @@ const Services: React.FC = ({ children }) => (
         <ConfirmationModalService>
           <ModalServiceProvider>
             <FormChangeTrackerService>
-              <FeatureService>
+              <FeatureService
+                features={[FeatureItem.AllowOAuthConnector, FeatureItem.AllowCreateConnection, FeatureItem.AllowSync]}
+              >
                 <AppServicesProvider>
                   <AuthenticationProvider>
                     <IntercomProvider>{children}</IntercomProvider>
