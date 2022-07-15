@@ -80,9 +80,9 @@ class XeroPaginatedData(XeroHttpStream):
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
-            return {"filters": {"page": str(next_page_token)}}
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
         else:
-            return {"filters": {"page": "1"}}
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
 
     def parse_response(self,
                        response: requests.Response, **kwargs) -> Iterable[Mapping]:
@@ -192,12 +192,10 @@ class Accounts(XeroHttpStream):
         return "/xero/accounts"
 
 
-class Invoices(XeroPaginatedData):
+class DoleadInvoices(XeroPaginatedData):
     def path(self, **kwargs) -> str:
         return "/xero/all_invoices"
 
-
-class DoleadInvoices(Invoices):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
@@ -205,10 +203,7 @@ class DoleadInvoices(Invoices):
             return {"tenant_id": self.dolead_id, "page": "1"}
 
 
-class DoleadIncInvoices(Invoices):
-    def path(self, **kwargs) -> str:
-        return "/xero/all_invoices"
-
+class DoleadIncInvoices(DoleadInvoices):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
@@ -216,7 +211,7 @@ class DoleadIncInvoices(Invoices):
             return {"tenant_id": self.dolead_inc_id, "page": "1"}
 
 
-class DoleadUkInvoices(Invoices):
+class DoleadUkInvoices(DoleadInvoices):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
@@ -224,7 +219,7 @@ class DoleadUkInvoices(Invoices):
             return {"tenant_id": self.dolead_uk_id, "page": "1"}
 
 
-class DoleadDdsInvoices(Invoices):
+class DoleadDdsInvoices(DoleadInvoices):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
@@ -260,6 +255,41 @@ class DoleadUkCreditNotes(DoleadCreditNotes):
 
 
 class DoleadDdsCreditNotes(DoleadCreditNotes):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_dds_id, "page": "1"}
+
+
+class DoleadBankTransactions(XeroPaginatedData):
+    def path(self, **kwargs) -> str:
+        return "/xero/bank_transactions"
+
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_id, "page": "1"}
+
+
+class DoleadIncBankTransactions(XeroPaginatedData):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_inc_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_inc_id, "page": "1"}
+
+
+class DoleadUkBankTransactions(XeroPaginatedData):
+    def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
+        if next_page_token:
+            return {"tenant_id": self.dolead_uk_id, "page": str(next_page_token)}
+        else:
+            return {"tenant_id": self.dolead_uk_id, "page": "1"}
+
+
+class DoleadDdsBankTransactions(XeroPaginatedData):
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
             return {"tenant_id": self.dolead_dds_id, "page": str(next_page_token)}

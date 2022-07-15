@@ -40,7 +40,12 @@ class SourceXero(AbstractSource):
             return False, f"The API endpoint is unreachable. Please check your API."
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [Accounts(), DoleadJournals(), DoleadManualJournals(), DoleadIncJournals(), DoleadIncManualJournals(),
-                DoleadUkManualJournals(), DoleadDdsManualJournals(), DoleadUkJournals(), DoleadDdsJournals(), Contacts(),
-                Invoices(), DoleadInvoices(), DoleadIncInvoices(), DoleadUkInvoices(), DoleadDdsInvoices(),
-                TrackingCategories(), Tenants(), DoleadCreditNotes(), DoleadIncCreditNotes(), DoleadUkCreditNotes(), DoleadDdsCreditNotes()]
+        return [Accounts(),
+                DoleadManualJournals(), DoleadIncManualJournals(), DoleadUkManualJournals(), DoleadDdsManualJournals(),
+                DoleadJournals(), DoleadIncJournals(), DoleadUkJournals(), DoleadDdsJournals(),
+                Contacts(),
+                DoleadInvoices(), DoleadIncInvoices(), DoleadUkInvoices(), DoleadDdsInvoices(),
+                TrackingCategories(),
+                Tenants(),
+                DoleadCreditNotes(), DoleadIncCreditNotes(), DoleadUkCreditNotes(), DoleadDdsCreditNotes(),
+                DoleadBankTransactions(), DoleadIncBankTransactions(), DoleadUkBankTransactions(), DoleadDdsBankTransactions()]

@@ -2,6 +2,94 @@
   "streams": [
     {
       "stream": {
+        "name": "dolead_bank_dds_transactions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_bank_uk_transactions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_inc_bank_transactions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_bank_transactions",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_invoices",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_dds_invoices",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_uk_invoices",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_inc_invoices",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "dolead_dds_credit_notes",
         "json_schema": {},
         "supported_sync_modes": [
@@ -134,61 +222,6 @@
     },
     {
       "stream": {
-        "name": "dolead_invoices",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "dolead_inc_invoices",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "dolead_uk_invoices",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "dolead_dds_invoices",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "dolead_journals",
-        "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "dolead_inc_journals",
         "json_schema": {},
         "supported_sync_modes": [
@@ -212,6 +245,17 @@
     {
       "stream": {
         "name": "dolead_dds_journals",
+        "json_schema": {},
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dolead_journals",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh"
