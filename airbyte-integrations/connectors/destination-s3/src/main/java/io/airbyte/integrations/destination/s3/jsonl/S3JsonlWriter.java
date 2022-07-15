@@ -50,6 +50,7 @@ public class S3JsonlWriter extends BaseS3Writer implements DestinationFileWriter
 
     final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
         .builder()
+        .timestamp(uploadTimestamp)
         .s3Format(S3Format.JSONL)
         .fileExtension(S3Format.JSONL.getFileExtension())
         .fileNamePattern(config.getFileNamePattern())
