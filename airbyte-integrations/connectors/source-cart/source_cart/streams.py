@@ -61,7 +61,7 @@ class CartStream(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        params = {"count": 100}
+        params = {"count": 1000}
         if next_page_token:
             params.update(next_page_token)
         return params
