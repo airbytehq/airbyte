@@ -20,7 +20,7 @@
 The Postgres source does not alter the schema present in your database. Depending on the destination connected to this source, however, the schema may be altered. See the destination's documentation for more details.
 
 
-Note, Postgres source currently does not handle schemas larger than 4MB.
+Note, Airbyte currently cannot handle schemas larger than 4MB. While a 4MB schema does not translate into a specific number of tables and columns, it is an equivalent of roughly 2,500 integer columns, or 1,750 VARCHAR columns per schema.
 
 ## Getting Started \(Airbyte Cloud\)
 
@@ -327,6 +327,7 @@ One optimization on the Airbyte side is to break one large and long sync into mu
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
+| 0.4.31  | 2022-07-07 | [14694](https://github.com/airbytehq/airbyte/pull/14694) | Force to produce LEGACY state if the use stream capable feature flag is set to false |
 | 0.4.31  | 2022-07-07 | [14447](https://github.com/airbytehq/airbyte/pull/14447) | Under CDC mode, retrieve only those tables included in the publications |
 | 0.4.30  | 2022-06-30 | [14251](https://github.com/airbytehq/airbyte/pull/14251) | Use more simple and comprehensive query to get selectable tables                                                |
 | 0.4.29  | 2022-06-29 | [14265](https://github.com/airbytehq/airbyte/pull/14265) | Upgrade postgresql JDBC version to 42.3.5                                                                       |

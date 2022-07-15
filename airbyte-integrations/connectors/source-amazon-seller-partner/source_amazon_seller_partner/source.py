@@ -18,6 +18,7 @@ from source_amazon_seller_partner.streams import (
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
+    FbaCustomerReturnsReports,
     FbaInventoryReports,
     FbaOrdersReports,
     FbaReplacementsReports,
@@ -26,6 +27,7 @@ from source_amazon_seller_partner.streams import (
     FlatFileOpenListingsReports,
     FlatFileOrdersReports,
     FlatFileOrdersReportsByLastUpdate,
+    FlatFileSettlementV2Reports,
     FulfilledShipmentsReports,
     GetXmlBrowseTreeData,
     ListFinancialEventGroups,
@@ -118,6 +120,7 @@ class SourceAmazonSellerPartner(AbstractSource):
         stream_kwargs = self._get_stream_kwargs(config)
 
         return [
+            FbaCustomerReturnsReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
             FbaOrdersReports(**stream_kwargs),
             FbaShipmentsReports(**stream_kwargs),
@@ -126,6 +129,7 @@ class SourceAmazonSellerPartner(AbstractSource):
             FlatFileOpenListingsReports(**stream_kwargs),
             FlatFileOrdersReports(**stream_kwargs),
             FlatFileOrdersReportsByLastUpdate(**stream_kwargs),
+            FlatFileSettlementV2Reports(**stream_kwargs),
             FulfilledShipmentsReports(**stream_kwargs),
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),

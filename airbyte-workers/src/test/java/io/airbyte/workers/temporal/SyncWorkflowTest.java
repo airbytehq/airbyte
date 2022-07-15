@@ -20,6 +20,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
@@ -138,7 +139,7 @@ class SyncWorkflowTest {
     final StandardSyncOutput actualOutput = execute();
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(), operatorDbtInput);
     assertEquals(replicationSuccessOutput.withNormalizationSummary(normalizationSummary), actualOutput);
@@ -176,7 +177,7 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
   }
@@ -219,7 +220,7 @@ class SyncWorkflowTest {
     assertThrows(WorkflowFailedException.class, this::execute);
 
     verifyReplication(replicationActivity, syncInput, sync.getConnectionId());
-    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput);
+    verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyNoInteractions(dbtTransformationActivity);
   }
@@ -251,10 +252,12 @@ class SyncWorkflowTest {
 
   private static void verifyPersistState(final PersistStateActivity persistStateActivity,
                                          final StandardSync sync,
-                                         final StandardSyncOutput syncOutput) {
+                                         final StandardSyncOutput syncOutput,
+                                         final ConfiguredAirbyteCatalog configuredCatalog) {
     verify(persistStateActivity).persist(
         sync.getConnectionId(),
-        syncOutput);
+        syncOutput,
+        configuredCatalog);
   }
 
   private static void verifyNormalize(final NormalizationActivity normalizationActivity, final NormalizationInput normalizationInput) {
