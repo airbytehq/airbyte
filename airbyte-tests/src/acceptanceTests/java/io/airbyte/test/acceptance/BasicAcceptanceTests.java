@@ -973,6 +973,8 @@ public class BasicAcceptanceTests {
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
     destDb.query(ctx -> {
       prettyPrintTables(ctx, outputPrefix + sourceTable1, outputPrefix + sourceTable2);
+      Assertions.assertEquals(0, ctx.fetchCount(DSL.table(outputPrefix + sourceTable1)));
+      Assertions.assertEquals(0, ctx.fetchCount(DSL.table(outputPrefix + sourceTable2)));
       return null;
     });
     final ConnectionState postResetState =
