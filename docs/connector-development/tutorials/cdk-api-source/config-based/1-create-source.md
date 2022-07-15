@@ -40,9 +40,6 @@ paste the content to the files
     retriever:
       requester:
         path: "<TODO>"
-        authenticator:
-          type: "TokenAuthenticator"
-          token: "<TODO>"
       record_selector:
         extractor:
           transform: "<TODO>"
