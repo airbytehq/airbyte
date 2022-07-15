@@ -8,7 +8,7 @@ import ConnectorCard from "components/ConnectorCard";
 
 import { getFrequencyConfig } from "config/utils";
 import { ConnectionStatus, SourceRead, DestinationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
@@ -48,12 +48,10 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
   source,
   destination,
 }) => {
-  const { hasFeature } = useFeatureService();
-
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
 
-  const allowSync = hasFeature(FeatureItem.AllowSync);
+  const allowSync = useFeature(FeatureItem.AllowSync);
   const frequency = getFrequencyConfig(connection.schedule);
 
   const sourceConnectionPath = `../../${RoutePaths.Source}/${source.sourceId}`;
