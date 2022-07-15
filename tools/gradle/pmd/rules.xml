@@ -34,7 +34,6 @@
         <exclude name="PreserveStackTrace"/>
         <exclude name="SwitchStmtsShouldHaveDefault"/>
         <exclude name="SystemPrintln"/>
-        <exclude name="UnusedFormalParameter"/>
         <exclude name="UnusedLocalVariable"/>
         <exclude name="UseCollectionIsEmpty"/>
         <exclude name="UseVarargs"/>

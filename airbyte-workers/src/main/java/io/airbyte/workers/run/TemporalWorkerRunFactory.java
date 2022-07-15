@@ -96,4 +96,5 @@ public class TemporalWorkerRunFactory {
     }
     return new OutputAndStatus<>(status, new JobOutput().withSync(response.getOutput().orElse(null)));
   }
+
 }

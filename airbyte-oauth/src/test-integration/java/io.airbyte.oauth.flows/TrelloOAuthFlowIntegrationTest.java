@@ -55,7 +55,7 @@ public class TrelloOAuthFlowIntegrationTest {
     }
     configRepository = mock(ConfigRepository.class);
     httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    trelloOAuthFlow = new TrelloOAuthFlow(configRepository, httpClient);
+    trelloOAuthFlow = new TrelloOAuthFlow(configRepository);
 
     server = HttpServer.create(new InetSocketAddress(8000), 0);
     server.setExecutor(null); // creates a default executor

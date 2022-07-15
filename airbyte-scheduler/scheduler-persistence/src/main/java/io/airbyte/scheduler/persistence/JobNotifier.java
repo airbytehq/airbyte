@@ -181,4 +181,5 @@ public class JobNotifier {
   protected NotificationClient getNotificationClient(final Notification notification) {
     return NotificationClient.createNotificationClient(notification);
   }
+
 }

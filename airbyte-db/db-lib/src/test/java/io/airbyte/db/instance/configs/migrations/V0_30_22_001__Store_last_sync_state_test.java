@@ -283,4 +283,5 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
       }
     }
   }
+
 }
