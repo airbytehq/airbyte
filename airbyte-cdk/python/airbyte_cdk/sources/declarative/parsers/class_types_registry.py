@@ -21,9 +21,11 @@ from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_sli
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
+    "AddFields": AddFields,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "CompositeErrorHandler": CompositeErrorHandler,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
