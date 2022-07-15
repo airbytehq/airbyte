@@ -35,12 +35,14 @@ interface ApiErrorBoundaryProps {
   onError?: (errorId?: string) => void;
 }
 
+const RETRY_DELAY = 2500;
+
 class ApiErrorBoundary extends React.Component<
   ApiErrorBoundaryHookProps & ApiErrorBoundaryProps,
   ApiErrorBoundaryState
 > {
   state: ApiErrorBoundaryState = {
-    retryDelay: 2500,
+    retryDelay: RETRY_DELAY,
   };
 
   static getDerivedStateFromError(error: { message: string; status?: number; __type?: string }): ApiErrorBoundaryState {
@@ -70,28 +72,25 @@ class ApiErrorBoundary extends React.Component<
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  componentDidCatch(): void {}
+  retry = () => {
+    this.setState((state) => ({
+      didRetry: true,
+      errorId: undefined,
+      retryDelay: Math.round((state?.retryDelay || RETRY_DELAY) * 1.2),
+    }));
+    this.props.onRetry?.();
+  };
 
   render(): React.ReactNode {
+    const { navigate, children } = this.props;
     const { errorId, didRetry, message, retryDelay } = this.state;
-    const { onRetry, navigate, children } = this.props;
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
     }
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
-      return (
-        <ServerUnavailableView
-          retryDelay={retryDelay}
-          onRetryClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.setState({ didRetry: true, errorId: undefined, retryDelay: Math.round(retryDelay! * 1.2) });
-            onRetry?.();
-          }}
-        />
-      );
+      return <ServerUnavailableView retryDelay={retryDelay || RETRY_DELAY} onRetryClick={this.retry} />;
     }
 
     return !errorId ? (

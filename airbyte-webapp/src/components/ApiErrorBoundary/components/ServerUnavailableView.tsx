@@ -5,7 +5,7 @@ import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 
 interface ErrorOccurredWithRetryHookProps {
   onRetryClick: () => void;
-  retryDelay?: number;
+  retryDelay: number;
 }
 
 const ServerUnavailableView: React.FC<ErrorOccurredWithRetryHookProps> = ({ onRetryClick, retryDelay }) => {
