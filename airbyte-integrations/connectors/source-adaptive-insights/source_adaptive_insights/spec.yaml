@@ -4,10 +4,20 @@ connectionSpecification:
   title: Adaptive Insights Spec
   type: object
   required:
-    - TODO
+    - username
+    - password
   additionalProperties: false
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    username:
       type: string
-      description: describe me
+      title: Username
+      description: >-
+        Your Adaptive Insights username
+      order: 0
+    password:
+      type: string
+      title: Password
+      description: >-
+        Your Adaptive Insights password
+      airbyte_secret: true
+      order: 1
