@@ -56,6 +56,7 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
     final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
         .builder()
         .customSuffix(fileSuffix)
+        .s3Format(S3Format.CSV)
         .fileExtension(S3Format.CSV.getFileExtension())
         .fileNamePattern(config.getFileNamePattern())
         .timestamp(uploadTimestamp)

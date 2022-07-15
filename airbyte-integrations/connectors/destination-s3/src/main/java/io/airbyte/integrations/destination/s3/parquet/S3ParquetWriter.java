@@ -55,6 +55,7 @@ public class S3ParquetWriter extends BaseS3Writer implements DestinationFileWrit
 
     outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
         .builder()
+        .s3Format(S3Format.PARQUET)
         .fileExtension(S3Format.PARQUET.getFileExtension())
         .fileNamePattern(config.getFileNamePattern())
         .build());

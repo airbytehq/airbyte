@@ -50,6 +50,7 @@ public class S3AvroWriter extends BaseS3Writer implements DestinationFileWriter 
 
     final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
         .builder()
+        .s3Format(S3Format.AVRO)
         .fileExtension(S3Format.AVRO.getFileExtension())
         .fileNamePattern(config.getFileNamePattern())
         .build());
