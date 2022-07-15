@@ -27,7 +27,6 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from Crypto.Cipher import AES
 from source_amazon_seller_partner.auth import AWSSignature
 
-
 REPORTS_API_VERSION = "2020-09-04"
 ORDERS_API_VERSION = "v0"
 VENDORS_API_VERSION = "v1"
