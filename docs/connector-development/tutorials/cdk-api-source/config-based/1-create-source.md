@@ -4,8 +4,10 @@
 Airbyte provides a code generator which bootstraps the scaffolding for our connector.
 
 Let's start by cloning the Airbyte repository
+### FIXME: remove the git checkout once stream slicer refactor is in master
 ```
-git clone ...
+git@github.com:airbytehq/airbyte.git
+git checkout alex/tutorialIncremental
 ```
 
 Next we'll run the code generator
