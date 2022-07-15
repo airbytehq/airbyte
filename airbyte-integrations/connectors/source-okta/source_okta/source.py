@@ -9,6 +9,7 @@ from urllib import parse
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -112,6 +113,42 @@ class Groups(IncrementalOktaStream):
         return "groups"
 
 
+class GroupMembers(IncrementalOktaStream):
+    cursor_field = "id"
+    primary_key = "id"
+    min_user_id = "00u00000000000000000"
+    use_cache = True
+
+    def stream_slices(self, **kwargs):
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"group_id": group["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        group_id = stream_slice["group_id"]
+        return f"groups/{group_id}/users"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
+        latest_entry = stream_state.get(self.cursor_field)
+        if latest_entry:
+            params["after"] = latest_entry
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, self.min_user_id),
+                current_stream_state.get(self.cursor_field, self.min_user_id),
+            )
+        }
+
+
 class Logs(IncrementalOktaStream):
 
     cursor_field = "published"
@@ -129,13 +166,19 @@ class Logs(IncrementalOktaStream):
         # The log stream use a different params to get data
         # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
         stream_state = stream_state or {}
-        params = {
-            "limit": self.page_size,
-            **(next_page_token or {}),
-        }
+        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["since"] = latest_entry
+            # [Test-driven Development] Set until When the cursor value from the stream state
+            #   is abnormally large, otherwise the server side that sets now to until
+            #   will throw an error: The "until" date must be later than the "since" date
+            # https://developer.okta.com/docs/reference/api/system-log/#request-parameters
+            parsed = pendulum.parse(latest_entry)
+            utc_now = pendulum.utcnow()
+            if parsed > utc_now:
+                params["until"] = latest_entry
+
         return params
 
 
@@ -145,6 +188,20 @@ class Users(IncrementalOktaStream):
 
     def path(self, **kwargs) -> str:
         return "users"
+
+
+class CustomRoles(OktaStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "iam/roles"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["roles"]
 
 
 class SourceOkta(AbstractSource):
@@ -186,4 +243,6 @@ class SourceOkta(AbstractSource):
             Groups(**initialization_params),
             Logs(**initialization_params),
             Users(**initialization_params),
+            GroupMembers(**initialization_params),
+            CustomRoles(**initialization_params),
         ]
