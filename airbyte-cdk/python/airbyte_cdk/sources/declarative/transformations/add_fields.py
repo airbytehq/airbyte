@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from dataclasses import dataclass
 from typing import Any, List, Mapping, Union
 

@@ -121,6 +121,15 @@
                   "me-south-1"
                 ]
               },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern (Optional)",
+                "examples": [
+                  "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"
+                ],
+                "order": 8
+              },
               "access_key_id": {
                 "type": "string",
                 "description": "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key.",
