@@ -966,7 +966,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-databricks:0.2.4"
+- dockerImage: "airbyte/destination-databricks:0.2.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/databricks"
     connectionSpecification:
@@ -1116,6 +1116,18 @@
                 - "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY"
                 airbyte_secret: true
                 order: 6
+              file_name_pattern:
+                type: "string"
+                description: "The pattern allows you to set the file-name format for\
+                  \ the S3 staging file(s)"
+                title: "S3 Filename pattern (Optional)"
+                examples:
+                - "{date}"
+                - "{date:yyyy_MM}"
+                - "{timestamp}"
+                - "{part_number}"
+                - "{sync_id}"
+                order: 7
           order: 7
         purge_staging_data:
           title: "Purge Staging Files and Tables"
@@ -3058,7 +3070,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-oracle:0.1.16"
+- dockerImage: "airbyte/destination-oracle:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/oracle"
     connectionSpecification:
@@ -3070,7 +3082,6 @@
       - "port"
       - "username"
       - "sid"
-      additionalProperties: true
       properties:
         host:
           title: "Host"
@@ -3125,7 +3136,6 @@
           order: 6
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "encryption_method"
@@ -3137,7 +3147,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "Native Network Encryption (NNE)"
-            additionalProperties: false
             description: "The native network encryption gives you the ability to encrypt\
               \ database connections, without the configuration overhead of TCP/IP\
               \ and SSL/TLS and without the need to open and listen on different ports."
@@ -3160,7 +3169,6 @@
                 - "RC4_56"
                 - "3DES168"
           - title: "TLS Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the certificate provided by the server."
             required:
             - "encryption_method"
@@ -3708,7 +3716,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-redshift:0.3.46"
+- dockerImage: "airbyte/destination-redshift:0.3.47"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -3833,6 +3841,18 @@
                 - "eu-west-3"
                 - "sa-east-1"
                 - "me-south-1"
+              file_name_pattern:
+                type: "string"
+                description: "The pattern allows you to set the file-name format for\
+                  \ the S3 staging file(s)"
+                title: "S3 Filename pattern (Optional)"
+                examples:
+                - "{date}"
+                - "{date:yyyy_MM}"
+                - "{timestamp}"
+                - "{part_number}"
+                - "{sync_id}"
+                order: 8
               access_key_id:
                 type: "string"
                 description: "This ID grants access to the above S3 staging bucket.\
@@ -3946,7 +3966,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.10"
+- dockerImage: "airbyte/destination-s3:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -4305,6 +4325,18 @@
           examples:
           - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
           order: 7
+        file_name_pattern:
+          type: "string"
+          description: "The pattern allows you to set the file-name format for the\
+            \ S3 staging file(s)"
+          title: "S3 Filename pattern (Optional)"
+          examples:
+          - "{date}"
+          - "{date:yyyy_MM}"
+          - "{timestamp}"
+          - "{part_number}"
+          - "{sync_id}"
+          order: 8
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
@@ -4364,7 +4396,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.32"
+- dockerImage: "airbyte/destination-snowflake:0.4.33"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4635,6 +4667,18 @@
                         \ or 256 bits. Leave blank to have Airbyte generate an ephemeral\
                         \ key for each sync."
                       airbyte_secret: true
+              file_name_pattern:
+                type: "string"
+                description: "The pattern allows you to set the file-name format for\
+                  \ the S3 staging file(s)"
+                title: "S3 Filename pattern (Optional)"
+                examples:
+                - "{date}"
+                - "{date:yyyy_MM}"
+                - "{timestamp}"
+                - "{part_number}"
+                - "{sync_id}"
+                order: 7
           - title: "Google Cloud Storage Staging"
             description: "Recommended for large production workloads for better speed\
               \ and scalability."
