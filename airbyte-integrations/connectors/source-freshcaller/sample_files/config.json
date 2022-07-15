@@ -1,0 +1,5 @@
+{
+  "api_key": "YOUR_FRESHCALLER_API_KEY",
+  "start_date": "2021-08-02T00:00:00Z",
+  "domain": "FRESHCALLER_ACCOUNT_DOMAIN_NAME"
+}
