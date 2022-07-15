@@ -3958,7 +3958,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-s3:0.3.10"
+- dockerImage: "airbyte/destination-s3:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/s3"
     connectionSpecification:
@@ -4317,6 +4317,18 @@
           examples:
           - "${NAMESPACE}/${STREAM_NAME}/${YEAR}_${MONTH}_${DAY}_${EPOCH}_"
           order: 7
+        file_name_pattern:
+          type: "string"
+          description: "The pattern allows you to set the file-name format for the\
+            \ S3 staging file(s)"
+          title: "S3 Filename pattern (Optional)"
+          examples:
+          - "{date}"
+          - "{date:yyyy_MM}"
+          - "{timestamp}"
+          - "{part_number}"
+          - "{sync_id}"
+          order: 8
     supportsIncremental: true
     supportsNormalization: false
     supportsDBT: false
