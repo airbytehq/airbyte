@@ -62,7 +62,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
         .put("sid", db.getSid())
         .put(JdbcUtils.SCHEMAS_KEY, List.of("JDBC_SPACE"))
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()));
   }

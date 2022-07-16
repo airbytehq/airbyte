@@ -16,6 +16,7 @@ public class JdbcUtils {
   // config parameters in alphabetical order
   public static final String CONNECTION_PROPERTIES_KEY = "connection_properties";
   public static final String DATABASE_KEY = "database";
+  public static final String ENCRYPTION_KEY = "encryption";
   public static final String HOST_KEY = "host";
   public static final List<String> HOST_LIST_KEY = List.of("host");
   public static final String JDBC_URL_KEY = "jdbc_url";

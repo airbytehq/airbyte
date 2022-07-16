@@ -66,7 +66,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
         .build());
 
     // assume ssl if not explicitly mentioned.
-    final var additionalParams = obtainConnectionOptions(config.get("encryption"));
+    final var additionalParams = obtainConnectionOptions(config.get(JdbcUtils.ENCRYPTION_KEY));
     if (!additionalParams.isEmpty()) {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");

@@ -109,7 +109,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "encrypted_verify_certificate")
             .put("ssl_certificate", certificate)
             .put("key_store_password", TEST_KEY_STORE_PASS)

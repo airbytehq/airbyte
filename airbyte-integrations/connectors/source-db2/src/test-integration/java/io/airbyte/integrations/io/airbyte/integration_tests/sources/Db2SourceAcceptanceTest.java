@@ -72,7 +72,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, userName)
         .put(JdbcUtils.PASSWORD_KEY, password)
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()))
         .build());

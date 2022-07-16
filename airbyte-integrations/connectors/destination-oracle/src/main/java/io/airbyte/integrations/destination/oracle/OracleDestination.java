@@ -39,7 +39,6 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
   protected static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
-  public static final String ENCRYPTION_KEY = "encryption";
   public static final String ENCRYPTION_METHOD_KEY = "encryption_method";
 
   enum Protocol {
@@ -59,8 +58,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     final HashMap<String, String> properties = new HashMap<>();
-    if (config.has(ENCRYPTION_KEY)) {
-      final JsonNode encryption = config.get(ENCRYPTION_KEY);
+    if (config.has(JdbcUtils.ENCRYPTION_KEY)) {
+      final JsonNode encryption = config.get(JdbcUtils.ENCRYPTION_KEY);
       final String encryptionMethod = encryption.get(ENCRYPTION_METHOD_KEY).asText();
       switch (encryptionMethod) {
         case "unencrypted" -> {
@@ -106,10 +105,10 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   protected Protocol obtainConnectionProtocol(final JsonNode config) {
-    if (!config.has(ENCRYPTION_KEY)) {
+    if (!config.has(JdbcUtils.ENCRYPTION_KEY)) {
       return Protocol.TCP;
     }
-    final JsonNode encryption = config.get(ENCRYPTION_KEY);
+    final JsonNode encryption = config.get(JdbcUtils.ENCRYPTION_KEY);
     final String encryptionMethod = encryption.get(ENCRYPTION_METHOD_KEY).asText();
     switch (encryptionMethod) {
       case "unencrypted", "client_nne" -> {

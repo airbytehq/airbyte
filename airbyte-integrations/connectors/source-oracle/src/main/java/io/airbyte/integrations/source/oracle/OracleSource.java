@@ -67,8 +67,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
      */
     additionalParameters.add("oracle.jdbc.useFetchSizeWithLongColumn=true");
 
-    final Protocol protocol = config.has("encryption")
-        ? obtainConnectionProtocol(config.get("encryption"), additionalParameters)
+    final Protocol protocol = config.has(JdbcUtils.ENCRYPTION_KEY)
+        ? obtainConnectionProtocol(config.get(JdbcUtils.ENCRYPTION_KEY), additionalParameters)
         : Protocol.TCP;
     final String connectionString = String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",

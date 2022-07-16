@@ -201,7 +201,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   public void testCheckProtocol() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final DataSource dataSource =

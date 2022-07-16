@@ -25,12 +25,12 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
   @Test
   public void testEncrytion() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    ((ObjectNode) clone).put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "3DES168")
         .build()));
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
@@ -76,12 +76,12 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
   @Test
   public void testCheckProtocol() throws SQLException {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    ((ObjectNode) clone).put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "AES256")
         .build()));
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
