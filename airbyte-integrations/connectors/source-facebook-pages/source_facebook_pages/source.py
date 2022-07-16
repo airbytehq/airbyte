@@ -17,6 +17,9 @@ from .streams import Page, PageInsights, Post, PostInsights
 
 class SourceFacebookPages(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        if "access_token" not in config or "page_id" not in config:
+            return False, "You must provide both Access token and Page ID"
+
         ok = False
         error_msg = None
 
@@ -27,7 +30,7 @@ class SourceFacebookPages(AbstractSource):
             ok = True
         except Exception as e:
             logger.info(f'Error:{e}')
-            error_msg = repr(e)
+            error_msg = str(e)
 
         return ok, error_msg
 

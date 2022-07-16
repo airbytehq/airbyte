@@ -46,7 +46,7 @@ def test_check_connection_empty_config():
     ok, error_msg = SourceFacebookPages().check_connection(logger, config={})
 
     assert not ok
-    assert error_msg
+    assert error_msg == 'You must provide both Access token and Page ID'
 
 
 def test_check_connection_invalid_config(config):
@@ -54,14 +54,17 @@ def test_check_connection_invalid_config(config):
     ok, error_msg = SourceFacebookPages().check_connection(logger, config=config)
 
     assert not ok
-    assert error_msg
+    assert error_msg == 'You must provide both Access token and Page ID'
 
 
 def test_check_connection_exception(config):
-    ok, error_msg = SourceFacebookPages().check_connection(logger, config=config)
+    with requests_mock.Mocker() as m:
+        m.get(f"https://graph.facebook.com/{config['page_id']}", json={"error": {"message": "Invalid access token"}}, status_code=400)
+        
+        ok, error_msg = SourceFacebookPages().check_connection(logger, config=config)
 
-    assert not ok
-    assert error_msg
+        assert not ok
+        assert error_msg == 'Invalid access token'
 
 
 @pytest.mark.parametrize(
