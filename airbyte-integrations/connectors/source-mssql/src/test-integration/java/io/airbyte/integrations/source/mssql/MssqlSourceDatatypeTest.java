@@ -40,7 +40,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
     });
 
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", DB_NAME);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DB_NAME);
 
     return database;
   }

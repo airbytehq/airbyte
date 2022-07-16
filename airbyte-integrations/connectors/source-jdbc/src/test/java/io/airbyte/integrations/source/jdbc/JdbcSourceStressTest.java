@@ -53,7 +53,7 @@ class JdbcSourceStressTest extends JdbcStressTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", schemaName)
+        .put(JdbcUtils.DATABASE_KEY, schemaName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .build());
@@ -107,7 +107,7 @@ class JdbcSourceStressTest extends JdbcStressTest {
           .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get("host").asText(),
               config.get("port").asInt(),
-              config.get("database").asText()));
+              config.get(JdbcUtils.DATABASE_KEY).asText()));
 
       if (config.has(JdbcUtils.PASSWORD_KEY)) {
         configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());

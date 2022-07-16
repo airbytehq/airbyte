@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.oracle.OracleDestination.Protocol;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,9 +36,9 @@ public class OracleDestinationTest {
     return ImmutableMap.<String, Object>builder()
         .put("host", "localhost")
         .put("port", "1773")
-        .put("database", "db")
-        .put("username", "username")
-        .put("password", "verysecure")
+        .put(JdbcUtils.DATABASE_KEY, "db")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
         .build();
   }
 

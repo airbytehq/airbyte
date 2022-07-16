@@ -38,11 +38,11 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "public")
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
         .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .build());
   }
 
@@ -50,12 +50,12 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("schema", "public")
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+        .put(JdbcUtils.SCHEMA_KEY, "public")
         .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("ssl", false)
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 

@@ -46,7 +46,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "your_host")
         .put("port", 1433)
-        .put("database", dbName) // set your db name
+        .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
         .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication", replicationMethod)

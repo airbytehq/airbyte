@@ -104,7 +104,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", DB_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication", replicationConfig)

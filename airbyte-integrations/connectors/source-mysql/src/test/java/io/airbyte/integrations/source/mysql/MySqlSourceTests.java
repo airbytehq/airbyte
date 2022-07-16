@@ -49,7 +49,7 @@ public class MySqlSourceTests {
 
       try (final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), properties)) {
         connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
-        connection.createStatement().execute("CREATE DATABASE " + config.get("database").asText());
+        connection.createStatement().execute("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       }
       final AirbyteConnectionStatus check = new MySqlSource().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
@@ -60,8 +60,8 @@ public class MySqlSourceTests {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())
-        .put("database", dbName)
-        .put("username", TEST_USER)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER)
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)
         .put("jdbc_url_params", jdbcParams)
         .build());

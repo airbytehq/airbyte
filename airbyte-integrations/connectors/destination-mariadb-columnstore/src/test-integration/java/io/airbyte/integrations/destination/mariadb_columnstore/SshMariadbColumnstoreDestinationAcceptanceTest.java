@@ -71,10 +71,10 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -107,13 +107,13 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MARIADB.getDriverClassName(),
         String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MARIADB);
     return new Database(dslContext);
   }

@@ -31,7 +31,7 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", ReplicationMethod.STANDARD)
@@ -45,7 +45,7 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
             Map.of("zeroDateTimeBehavior", "convertToNull")));
 

@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -47,7 +48,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
-      final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
+      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
 
       final VersionCompatibility compatibility = mariadbColumnstoreSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
@@ -89,14 +90,14 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     final String jdbcUrl = String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
         config.get("host").asText(),
         config.get("port").asInt(),
-        config.get("database").asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", jdbcUrl);
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

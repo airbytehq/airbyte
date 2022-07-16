@@ -74,11 +74,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");

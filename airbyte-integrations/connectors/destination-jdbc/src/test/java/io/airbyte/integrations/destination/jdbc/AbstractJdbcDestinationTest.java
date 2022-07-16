@@ -23,7 +23,7 @@ public class AbstractJdbcDestinationTest {
         "host", "localhost",
         "port", 1337,
         JdbcUtils.USERNAME_KEY, "user",
-        "database", "db"));
+        JdbcUtils.DATABASE_KEY, "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
@@ -31,7 +31,7 @@ public class AbstractJdbcDestinationTest {
         "host", "localhost",
         "port", 1337,
         JdbcUtils.USERNAME_KEY, "user",
-        "database", "db",
+        JdbcUtils.DATABASE_KEY, "db",
         "jdbc_url_params", extraParam));
   }
 

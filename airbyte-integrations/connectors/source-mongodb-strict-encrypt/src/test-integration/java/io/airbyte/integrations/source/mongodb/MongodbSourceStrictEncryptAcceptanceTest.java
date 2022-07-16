@@ -13,6 +13,7 @@ import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -72,18 +73,18 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("user", credentialsJson.get("user").asText())
-        .put("password", credentialsJson.get("password").asText())
+        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
         .put("instance_type", instanceConfig)
-        .put("database", DATABASE_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
 
     final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&directConnection=false&ssl=true",
         config.get("user").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get("instance_type").get("host").asText(),
         config.get("instance_type").get("port").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 

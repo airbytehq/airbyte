@@ -11,6 +11,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -82,10 +83,10 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -149,13 +150,13 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.has("password") ? config.get("password").asText() : null,
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
   }
 
   @Override

@@ -33,6 +33,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -127,11 +128,11 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", replicationMethod)
         .build());
   }
@@ -142,13 +143,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -197,13 +198,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   protected CdcTargetPosition cdcLatestTargetPosition() {
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     return PostgresCdcTargetPosition.targetPosition(database);
   }

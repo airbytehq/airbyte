@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -51,22 +52,22 @@ public class CdcPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
-        .put("ssl", false)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 

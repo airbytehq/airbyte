@@ -14,6 +14,7 @@ public class JdbcUtils {
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String DATABASE_KEY = "database";
   public static final String PASSWORD_KEY = "password";
+  public static final String SCHEMA_KEY = "schema";
   public static final String SSL_KEY = "ssl";
   public static final String USERNAME_KEY = "username";
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();

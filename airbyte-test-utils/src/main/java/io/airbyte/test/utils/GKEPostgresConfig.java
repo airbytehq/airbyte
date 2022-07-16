@@ -39,7 +39,7 @@ public class GKEPostgresConfig {
     dbConfig.put(JdbcUtils.USERNAME_KEY, USERNAME);
 
     if (withSchema) {
-      dbConfig.put("schema", "public");
+      dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
     }
 
     return dbConfig;

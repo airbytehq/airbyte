@@ -57,7 +57,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
+        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
         .build());
@@ -73,7 +73,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     database = new Database(dslContext);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       return null;
     });
 

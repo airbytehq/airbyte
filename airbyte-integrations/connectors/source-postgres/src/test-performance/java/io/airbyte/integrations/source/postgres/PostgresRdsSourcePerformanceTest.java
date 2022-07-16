@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.List;
@@ -36,11 +37,11 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
-        .put("database", dbName)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(dbName))
-        .put("username", plainConfig.get("username"))
-        .put("password", plainConfig.get("password"))
-        .put("ssl", true)
+        .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
+        .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
+        .put(JdbcUtils.SSL_KEY, true)
         .put("replication_method", replicationMethod)
         .build());
   }

@@ -55,16 +55,16 @@ public class PostgresDestinationTest {
     return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
-        "username", "user",
-        "database", "db"));
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
-        "username", "user",
-        "database", "db",
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
         "jdbc_url_params", extraParam));
   }
 
@@ -72,9 +72,9 @@ public class PostgresDestinationTest {
     return Jsons.jsonNode(ImmutableMap.of(
         "host", "localhost",
         "port", 1337,
-        "username", "user",
-        "database", "db",
-        "ssl", false));
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.SSL_KEY, false));
   }
 
   @BeforeAll

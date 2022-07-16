@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -45,7 +46,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   @Override
   protected JsonNode getConfig() {
     final var config = getConfigFromSecretsFile();
-    ((ObjectNode) config).put("database", schemaName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, schemaName);
     return config;
   }
 

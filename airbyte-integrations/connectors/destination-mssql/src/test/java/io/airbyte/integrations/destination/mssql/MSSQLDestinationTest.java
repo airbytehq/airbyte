@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -34,9 +35,9 @@ public class MSSQLDestinationTest {
         .put("ssl_method", sslMethod)
         .put("host", "localhost")
         .put("port", "1773")
-        .put("database", "db")
-        .put("username", "username")
-        .put("password", "verysecure")
+        .put(JdbcUtils.DATABASE_KEY, "db")
+        .put(JdbcUtils.USERNAME_KEY, "username")
+        .put(JdbcUtils.PASSWORD_KEY, "verysecure")
         .build();
   }
 
@@ -194,9 +195,9 @@ public class MSSQLDestinationTest {
         "ssl_method", "ssl_method",
         "host", "localhost",
         "port", "1773",
-        "database", "db",
-        "username", "username",
-        "password", "verysecure"));
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.USERNAME_KEY, "username",
+        JdbcUtils.PASSWORD_KEY, "verysecure"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
@@ -205,9 +206,9 @@ public class MSSQLDestinationTest {
         "ssl_method", "ssl_method",
         "host", "localhost",
         "port", "1773",
-        "database", "db",
-        "username", "username",
-        "password", "verysecure",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.USERNAME_KEY, "username",
+        JdbcUtils.PASSWORD_KEY, "verysecure",
         "jdbc_url_params", extraParam));
   }
 

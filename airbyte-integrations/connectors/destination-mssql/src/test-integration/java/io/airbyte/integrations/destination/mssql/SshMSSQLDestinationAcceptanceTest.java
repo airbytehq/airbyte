@@ -48,7 +48,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   @Override
   protected JsonNode getConfig() throws Exception {
-    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put("schema", schemaName));
+    return bastion.getTunnelConfig(getTunnelMethod(), bastion.getBasicDbConfigBuider(db, database).put(JdbcUtils.SCHEMA_KEY, schemaName));
   }
 
   @Override

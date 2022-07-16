@@ -24,7 +24,6 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   public static final String USERNAME = "username";
   public static final String PASSWORD = "password";
   public static final String JDBC_URL = "jdbc_url";
-  private static final String SCHEMA = "schema";
 
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       JdbcUtils.SSL_KEY, "true",
@@ -61,15 +60,15 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
-    final String schema = Optional.ofNullable(redshiftConfig.get(SCHEMA)).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(redshiftConfig.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JDBC_URL, String.format("jdbc:redshift://%s:%s/%s",
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),
-            redshiftConfig.get("database").asText()))
-        .put(SCHEMA, schema)
+            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()))
+        .put(JdbcUtils.SCHEMA_KEY, schema)
         .build());
   }
 

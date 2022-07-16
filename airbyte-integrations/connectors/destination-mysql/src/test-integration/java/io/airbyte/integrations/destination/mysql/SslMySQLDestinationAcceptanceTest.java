@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.sql.SQLException;
@@ -29,11 +30,11 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("database", db.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
-        .put("ssl", true)
+        .put(JdbcUtils.SSL_KEY, true)
         .build());
   }
 
@@ -41,11 +42,11 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("database", db.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 

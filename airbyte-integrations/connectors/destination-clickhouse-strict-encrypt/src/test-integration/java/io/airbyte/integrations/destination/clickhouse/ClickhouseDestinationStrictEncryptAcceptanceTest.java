@@ -62,10 +62,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -76,10 +76,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
         .put("port", db.getMappedPort(HTTPS_PORT))
-        .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", DB_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, DB_NAME)
         .build());
   }
 
@@ -133,10 +133,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     final String jdbcStr = String.format("jdbc:clickhouse://%s:%s/%s?ssl=true&sslmode=none",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
     return new DefaultJdbcDatabase(DataSourceFactory.create(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         ClickhouseDestination.DRIVER_CLASS,
         jdbcStr));
   }

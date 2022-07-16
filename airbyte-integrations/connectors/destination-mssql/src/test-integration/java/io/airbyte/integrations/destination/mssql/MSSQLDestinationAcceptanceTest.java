@@ -12,6 +12,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
@@ -67,12 +68,12 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("database", "test")
-        .put("schema", "public")
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+        .put(JdbcUtils.DATABASE_KEY, "test")
+        .put(JdbcUtils.SCHEMA_KEY, "public")
         .put("port", db.getFirstMappedPort())
-        .put("ssl", false)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
@@ -104,7 +105,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     try (final DSLContext dslContext = DatabaseConnectionHelper.createDslContext(db, null)) {
       return getDatabase(dslContext).query(
           ctx -> {
-            ctx.fetch(String.format("USE %s;", config.get("database")));
+            ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
             return ctx
                 .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                 .stream()
@@ -154,7 +155,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     });
 
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   @Override

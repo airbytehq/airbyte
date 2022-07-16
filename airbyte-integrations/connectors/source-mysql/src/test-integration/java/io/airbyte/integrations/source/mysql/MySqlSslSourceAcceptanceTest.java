@@ -28,10 +28,10 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("ssl", true)
+        .put(JdbcUtils.SSL_KEY, true)
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
@@ -42,7 +42,7 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         String.format("jdbc:mysql://%s:%s/%s?%s",
             config.get("host").asText(),
             config.get("port").asText(),
-            config.get("database").asText(),
+            config.get(JdbcUtils.DATABASE_KEY).asText(),
             String.join("&", SSL_PARAMETERS)),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);

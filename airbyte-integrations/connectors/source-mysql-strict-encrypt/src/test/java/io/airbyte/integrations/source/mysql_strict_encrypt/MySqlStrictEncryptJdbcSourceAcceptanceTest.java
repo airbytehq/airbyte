@@ -15,6 +15,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -58,9 +59,9 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .build());
 
     dslContext = DSLContextFactory.create(
@@ -75,7 +76,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     database = new Database(dslContext);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       return null;
     });
 

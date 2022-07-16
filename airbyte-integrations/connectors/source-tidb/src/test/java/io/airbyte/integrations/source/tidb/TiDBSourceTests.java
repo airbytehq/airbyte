@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -29,8 +30,8 @@ public class TiDBSourceTests {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "127.0.0.1")
         .put("port", container.getFirstMappedPort())
-        .put("username", "root")
-        .put("database", "test")
+        .put(JdbcUtils.USERNAME_KEY, "root")
+        .put(JdbcUtils.DATABASE_KEY, "test")
         .build());
 
     AirbyteConnectionStatus check = new TiDBSource().check(config);

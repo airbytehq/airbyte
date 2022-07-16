@@ -162,7 +162,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
           ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
       database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-      ((ObjectNode) config).put("schema", dbName);
+      ((ObjectNode) config).put(JdbcUtils.SCHEMA_KEY, dbName);
     }
   }
 

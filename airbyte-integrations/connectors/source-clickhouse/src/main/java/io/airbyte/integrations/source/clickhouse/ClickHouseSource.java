@@ -85,7 +85,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {

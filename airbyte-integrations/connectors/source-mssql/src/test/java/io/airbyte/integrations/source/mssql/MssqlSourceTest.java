@@ -75,7 +75,7 @@ class MssqlSourceTest {
     }
 
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   @AfterAll
@@ -92,7 +92,7 @@ class MssqlSourceTest {
     try (final DSLContext dslContext = getDslContext(configWithoutDbName)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
-        ctx.fetch(String.format("USE %s;", config.get("database")));
+        ctx.fetch(String.format("USE %s;", config.get(JdbcUtils.DATABASE_KEY)));
         ctx.execute("ALTER TABLE id_and_name ADD CONSTRAINT i3pk PRIMARY KEY CLUSTERED (id);");
         ctx.execute("CREATE INDEX i1 ON id_and_name (id);");
         return null;

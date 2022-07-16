@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -115,13 +116,13 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   private static Database getDatabaseFromConfig(final JsonNode config) {
     return new Database(
         DSLContextFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.POSTGRES));
   }
 

@@ -69,7 +69,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME),
-                String.format("%s", config.get("database").asText()),
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -81,7 +81,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 String.format("%s", STREAM_NAME2),
-                String.format("%s", config.get("database").asText()),
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSourceDefinedCursor(true)
@@ -103,7 +103,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", ReplicationMethod.CDC)

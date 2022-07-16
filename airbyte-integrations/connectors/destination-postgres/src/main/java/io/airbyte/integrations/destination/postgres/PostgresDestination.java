@@ -29,7 +29,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final List<String> PORT_KEY = List.of("port");
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final String SCHEMA_KEY = "schema";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       JdbcUtils.SSL_KEY, "true",
@@ -55,7 +54,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
 
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
@@ -65,7 +64,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JDBC_URL_KEY, jdbcUrl)
-        .put(SCHEMA_KEY, schema);
+        .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());

@@ -40,7 +40,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     }
 
     config = Jsons.clone(baseConfig);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   public JsonNode getStaticConfig() {
@@ -71,7 +71,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    final String database = config.get("database").asText();
+    final String database = config.get(JdbcUtils.DATABASE_KEY).asText();
     try (final DSLContext dslContext = getDslContext(baseConfig)) {
       getDatabase(dslContext).query(ctx -> {
         ctx.fetch(String.format("ALTER DATABASE %s SET single_user with rollback immediate;", database));

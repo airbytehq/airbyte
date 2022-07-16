@@ -56,7 +56,7 @@ public class PostgreSQLContainerHelper {
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
-        .put("schema", "public")
+        .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -67,7 +68,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     final String jdbcUrl = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("jdbc_url", jdbcUrl)

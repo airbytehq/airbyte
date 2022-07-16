@@ -56,8 +56,8 @@ class MySqlStressTest extends JdbcStressTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
+        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER)
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
         .build());
 
@@ -72,7 +72,7 @@ class MySqlStressTest extends JdbcStressTest {
     database = new Database(dslContext);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
+      ctx.fetch("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
       return null;
     });
 
@@ -92,7 +92,7 @@ class MySqlStressTest extends JdbcStressTest {
   // MySql does not support schemas in the way most dbs do. Instead we namespace by db name.
   @Override
   public Optional<String> getDefaultSchemaName() {
-    return Optional.of(config.get("database").asText());
+    return Optional.of(config.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
   @Override

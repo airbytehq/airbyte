@@ -115,7 +115,7 @@ class SqlOperationsUtilsTest {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("schema", SCHEMA_NAME)
+        .put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME)
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),

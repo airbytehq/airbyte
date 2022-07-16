@@ -63,7 +63,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put("port", db.getExposedPorts().get(0))
-        .put("database", dbName);
+        .put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {

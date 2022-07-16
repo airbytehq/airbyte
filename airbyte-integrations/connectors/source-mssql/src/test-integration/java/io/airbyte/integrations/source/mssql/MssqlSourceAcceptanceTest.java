@@ -61,7 +61,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
     }
 
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
   @Override

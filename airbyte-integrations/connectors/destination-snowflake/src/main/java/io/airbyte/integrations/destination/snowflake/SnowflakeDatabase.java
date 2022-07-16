@@ -11,6 +11,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -97,13 +98,13 @@ public class SnowflakeDatabase {
           "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
       // case to keep the backward compatibility
       dataSource.setUsername(username);
-      dataSource.setPassword(config.get("password").asText());
+      dataSource.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     properties.put("warehouse", config.get("warehouse").asText());
-    properties.put("database", config.get("database").asText());
+    properties.put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText());
     properties.put("role", config.get("role").asText());
-    properties.put("schema", nameTransformer.getIdentifier(config.get("schema").asText()));
+    properties.put(JdbcUtils.SCHEMA_KEY, nameTransformer.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText()));
 
     properties.put("networkTimeout", Math.toIntExact(NETWORK_TIMEOUT.toSeconds()));
     properties.put("queryTimeout", Math.toIntExact(QUERY_TIMEOUT.toSeconds()));

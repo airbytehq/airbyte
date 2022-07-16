@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import org.junit.jupiter.api.*;
@@ -33,8 +34,8 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("host", "127.0.0.1")
         .put("port", container.getFirstMappedPort())
         .put("username", USER)
-        .put("database", DATABASE)
-        // .put("ssl", true)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE)
+        // .put(JdbcUtils.SSL_KEY, true)
         .build());
 
     super.setup();

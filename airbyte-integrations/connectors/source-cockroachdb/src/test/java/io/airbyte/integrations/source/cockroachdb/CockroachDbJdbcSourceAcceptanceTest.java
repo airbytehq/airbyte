@@ -79,10 +79,10 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 .findFirst()
                 .get().getValue().getIpAddress()))
         .put("port", PSQL_DB.getExposedPorts().get(1))
-        .put("database", dbName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final JsonNode clone = Jsons.clone(config);
@@ -91,8 +91,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            jdbcConfig.get("username").asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             getDriverClass(),
             jdbcConfig.get("jdbc_url").asText(),
             JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties")));

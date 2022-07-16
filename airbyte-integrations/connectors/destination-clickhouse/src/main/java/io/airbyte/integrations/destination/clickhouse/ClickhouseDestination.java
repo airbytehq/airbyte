@@ -51,10 +51,10 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     final String jdbcUrl = String.format("jdbc:clickhouse://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
@@ -70,7 +70,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
-      final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
+      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {

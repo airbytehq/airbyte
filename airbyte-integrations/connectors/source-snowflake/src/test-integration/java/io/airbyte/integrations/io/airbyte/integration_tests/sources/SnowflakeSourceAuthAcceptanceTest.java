@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,8 +29,8 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
         "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
         config.get("role").asText(),
         config.get("warehouse").asText(),
-        config.get("database").asText(),
-        config.get("schema").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText(),
+        config.get(JdbcUtils.SCHEMA_KEY).asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",

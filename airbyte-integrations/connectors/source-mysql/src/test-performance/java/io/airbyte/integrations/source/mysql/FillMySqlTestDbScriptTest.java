@@ -41,7 +41,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "your_host")
         .put("port", 3306)
-        .put("database", dbName) // set your db name
+        .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
         .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication_method", ReplicationMethod.STANDARD)
@@ -55,7 +55,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
             Map.of("zeroDateTimeBehavior", "convertToNull")));
 

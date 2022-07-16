@@ -36,7 +36,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", plainConfig.get("host"))
         .put("port", plainConfig.get("port"))
-        .put("database", dbName)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
         .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .put("replication_method", plainConfig.get("replication_method"))
@@ -49,7 +49,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL,
         Map.of("zeroDateTimeBehavior", "convertToNull"))) {
 

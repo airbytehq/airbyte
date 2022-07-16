@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
@@ -24,7 +25,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   private static final String DOCKER_IMAGE_NAME = "mongo:4.0.10";
   private static final String HOST = "host";
   private static final String PORT = "port";
-  private static final String DATABASE = "database";
   private static final String DATABASE_NAME = "admin";
   private static final String DATABASE_FAIL_NAME = "fail_db";
   private static final String AUTH_TYPE = "auth_type";
@@ -43,7 +43,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(HOST, container.getHost())
         .put(PORT, container.getFirstMappedPort())
-        .put(DATABASE, DATABASE_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, getAuthTypeConfig())
         .build());
   }
@@ -53,7 +53,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(HOST, container.getHost())
         .put(PORT, container.getFirstMappedPort())
-        .put(DATABASE, DATABASE_FAIL_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_FAIL_NAME)
         .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
             .put("authorization", "login/password")
             .put("username", "user")

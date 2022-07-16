@@ -59,7 +59,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
       config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put("database", dbName);
+      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
       super.setup();
     } finally {

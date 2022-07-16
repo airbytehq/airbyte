@@ -608,12 +608,12 @@ public class AirbyteAcceptanceTestHarness {
     }
 
     dbConfig.put("port", psql.getFirstMappedPort());
-    dbConfig.put("database", psql.getDatabaseName());
-    dbConfig.put("username", psql.getUsername());
-    dbConfig.put("ssl", false);
+    dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
+    dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
+    dbConfig.put(JdbcUtils.SSL_KEY, false);
 
     if (withSchema) {
-      dbConfig.put("schema", "public");
+      dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
     }
     return dbConfig;
   }

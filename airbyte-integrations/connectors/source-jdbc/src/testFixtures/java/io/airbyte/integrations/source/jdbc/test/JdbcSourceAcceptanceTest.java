@@ -990,7 +990,7 @@ public abstract class JdbcSourceAcceptanceTest {
   protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
     if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
-      return config.get("database").asText();
+      return config.get(JdbcUtils.DATABASE_KEY).asText();
     } else {
       return SCHEMA_NAME;
     }

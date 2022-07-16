@@ -13,6 +13,7 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
@@ -51,7 +52,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String HOST = "host";
   private static final String PORT = "port";
   private static final String CLUSTER_URL = "cluster_url";
-  private static final String DATABASE = "database";
   private static final String SERVER_ADDRESSES = "server_addresses";
   private static final String REPLICA_SET = "replica_set";
   private static final String AUTH_SOURCE = "auth_source";
@@ -73,7 +73,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("connectionString", buildConnectionString(config, credentials))
-        .put("database", config.get(DATABASE).asText())
+        .put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText())
         .build());
   }
 
@@ -81,7 +81,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   protected MongoDatabase createDatabase(final JsonNode config) throws Exception {
     final var dbConfig = toDatabaseConfig(config);
     return new MongoDatabase(dbConfig.get("connectionString").asText(),
-        dbConfig.get("database").asText());
+        dbConfig.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
   @Override
@@ -216,11 +216,11 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         final var tls = config.has(TLS) ? config.get(TLS).asBoolean() : (instanceConfig.has(TLS) ? instanceConfig.get(TLS).asBoolean() : true);
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
-                config.get(DATABASE).asText(), config.get(AUTH_SOURCE).asText(), tls));
+                config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tls));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(DATABASE).asText(),
+            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
                 config.get(AUTH_SOURCE).asText()));
         if (instanceConfig.has(REPLICA_SET)) {
           connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
@@ -228,7 +228,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
       }
       case ATLAS -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(DATABASE).asText(),
+            String.format(MONGODB_CLUSTER_URL, credentials, instanceConfig.get(CLUSTER_URL).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(),
                 config.get(AUTH_SOURCE).asText()));
       }
       default -> throw new IllegalArgumentException("Unsupported instance type: " + instance);

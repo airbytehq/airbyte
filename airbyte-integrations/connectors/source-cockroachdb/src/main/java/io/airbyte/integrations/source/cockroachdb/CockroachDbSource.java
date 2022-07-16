@@ -60,7 +60,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean() || !config.has(JdbcUtils.SSL_KEY)) {
       additionalParameters.add("ssl=true");
@@ -70,13 +70,13 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", jdbcUrl.toString());
 
     LOGGER.warn(jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
