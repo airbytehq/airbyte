@@ -29,6 +29,7 @@ import java.util.Objects;
 
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.jooq.meta.jaxb.Jdbc;
 import org.testcontainers.containers.CockroachContainer;
 
 public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -52,7 +53,7 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
                 .findFirst()
                 .get().getValue().getIpAddress()))
         // by some reason it return not a port number as exposed and mentioned in logs
-        .put("port", container.getExposedPorts().get(1))
+        .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -65,7 +66,7 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);

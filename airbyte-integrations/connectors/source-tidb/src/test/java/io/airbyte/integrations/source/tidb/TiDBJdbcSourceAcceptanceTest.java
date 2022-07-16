@@ -32,7 +32,7 @@ class TiDBJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "127.0.0.1")
-        .put("port", container.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, USER)
         .put(JdbcUtils.DATABASE_KEY, DATABASE)
         // .put(JdbcUtils.SSL_KEY, true)

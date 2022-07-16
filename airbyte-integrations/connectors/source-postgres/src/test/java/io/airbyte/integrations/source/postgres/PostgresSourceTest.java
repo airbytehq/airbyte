@@ -159,7 +159,7 @@ class PostgresSourceTest {
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
@@ -175,7 +175,7 @@ class PostgresSourceTest {
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
@@ -183,7 +183,7 @@ class PostgresSourceTest {
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(SCHEMA_NAME))
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
@@ -207,7 +207,7 @@ class PostgresSourceTest {
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(SCHEMA_NAME))
         .put(JdbcUtils.USERNAME_KEY, user)

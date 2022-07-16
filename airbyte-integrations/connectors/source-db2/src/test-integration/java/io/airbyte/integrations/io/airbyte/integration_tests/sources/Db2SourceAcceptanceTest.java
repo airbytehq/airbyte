@@ -68,7 +68,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   private JsonNode getConfig(final String userName, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, userName)
         .put(JdbcUtils.PASSWORD_KEY, password)
@@ -120,7 +120,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         Db2Source.DRIVER_CLASS,
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("db").asText()));
 
     try {

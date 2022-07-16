@@ -57,7 +57,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
@@ -116,7 +116,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
               config.get(JdbcUtils.HOST_KEY).asText(),
-              config.get("port").asInt(),
+              config.get(JdbcUtils.PORT_KEY).asInt(),
               config.get(JdbcUtils.DATABASE_KEY).asText()));
 
       if (config.has(JdbcUtils.PASSWORD_KEY)) {

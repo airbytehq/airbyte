@@ -91,7 +91,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
         protocol,
         config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get("port").asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
         config.get("sid").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

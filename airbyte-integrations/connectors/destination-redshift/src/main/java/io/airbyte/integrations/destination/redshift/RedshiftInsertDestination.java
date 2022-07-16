@@ -62,7 +62,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:redshift://%s:%s/%s",
             redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
-            redshiftConfig.get("port").asText(),
+            redshiftConfig.get(JdbcUtils.PORT_KEY).asText(),
             redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()))
         .put(JdbcUtils.SCHEMA_KEY, schema)
         .build());

@@ -48,7 +48,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String USER = "user";
   private static final String INSTANCE_TYPE = "instance_type";
   private static final String INSTANCE = "instance";
-  private static final String PORT = "port";
   private static final String CLUSTER_URL = "cluster_url";
   private static final String SERVER_ADDRESSES = "server_addresses";
   private static final String REPLICA_SET = "replica_set";
@@ -213,7 +212,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         // supports backward compatibility and secure only connector
         final var tls = config.has(TLS) ? config.get(TLS).asBoolean() : (instanceConfig.has(TLS) ? instanceConfig.get(TLS).asBoolean() : true);
         connectionStrBuilder.append(
-            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(PORT).asText(),
+            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tls));
       }
       case REPLICA -> {

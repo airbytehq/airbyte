@@ -38,7 +38,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -51,7 +51,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
     final Database database = new Database(dslContext);
 
@@ -70,7 +70,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
             container.getDriverClassName(),
             String.format("jdbc:sqlserver://%s:%d;",
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt())),
+                config.get(JdbcUtils.PORT_KEY).asInt())),
         null)) {
       final Database database = new Database(dslContext);
       database.query(

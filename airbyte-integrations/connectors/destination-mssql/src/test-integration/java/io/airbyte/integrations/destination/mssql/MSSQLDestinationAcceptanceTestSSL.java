@@ -56,7 +56,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-        .put("port", HostPortResolver.resolvePort(db))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.SCHEMA_KEY, "test_schema")
@@ -77,7 +77,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, "test")
         .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
@@ -153,7 +153,7 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
   }
 

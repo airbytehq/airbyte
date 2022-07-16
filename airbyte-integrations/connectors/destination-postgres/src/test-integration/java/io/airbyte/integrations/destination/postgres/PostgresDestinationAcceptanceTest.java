@@ -39,7 +39,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put(JdbcUtils.SSL_KEY, false)
         .build());
@@ -52,7 +52,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.SCHEMA_KEY, "public")
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put(JdbcUtils.SSL_KEY, false)
         .build());

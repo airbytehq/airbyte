@@ -607,7 +607,7 @@ public class AirbyteAcceptanceTestHarness {
       dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put("port", psql.getFirstMappedPort());
+    dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
     dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
     dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
     dbConfig.put(JdbcUtils.SSL_KEY, false);

@@ -40,7 +40,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
@@ -107,7 +107,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
   }
 

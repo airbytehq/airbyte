@@ -29,7 +29,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final String PORT_KEY = "port";
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
 
@@ -104,7 +103,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String jdbcUrl = String.format("jdbc:mysql://%s:%s/%s",
         config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(PORT_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

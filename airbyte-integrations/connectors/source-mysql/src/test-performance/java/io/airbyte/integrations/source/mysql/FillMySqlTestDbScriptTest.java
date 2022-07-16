@@ -40,7 +40,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   protected Database setupDatabase(final String dbName) throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "your_host")
-        .put("port", 3306)
+        .put(JdbcUtils.PORT_KEY, 3306)
         .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
         .put(JdbcUtils.PASSWORD_KEY, "your_pass")
@@ -54,7 +54,7 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
             DatabaseDriver.MYSQL.getDriverClassName(),
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.MYSQL,
             Map.of("zeroDateTimeBehavior", "convertToNull")));

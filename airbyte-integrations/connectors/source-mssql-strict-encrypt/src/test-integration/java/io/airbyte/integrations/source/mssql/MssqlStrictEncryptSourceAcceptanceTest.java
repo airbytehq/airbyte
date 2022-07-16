@@ -45,7 +45,7 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
@@ -57,7 +57,7 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get("port").asInt()),
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
         null)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {

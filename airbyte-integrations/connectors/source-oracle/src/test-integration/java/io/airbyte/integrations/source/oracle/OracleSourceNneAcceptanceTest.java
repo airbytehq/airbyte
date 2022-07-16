@@ -40,7 +40,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format("jdbc:oracle:thin:@//%s:%d/%s",
                 clone.get(JdbcUtils.HOST_KEY).asText(),
-                clone.get("port").asInt(),
+                clone.get(JdbcUtils.PORT_KEY).asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
@@ -63,7 +63,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText())));
 
     final String networkServiceBanner =
@@ -91,7 +91,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "

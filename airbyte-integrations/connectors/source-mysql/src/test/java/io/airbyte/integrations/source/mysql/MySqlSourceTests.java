@@ -59,7 +59,7 @@ public class MySqlSourceTests {
   private static JsonNode getConfig(final MySQLContainer dbContainer, final String dbName, final String jdbcParams) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)

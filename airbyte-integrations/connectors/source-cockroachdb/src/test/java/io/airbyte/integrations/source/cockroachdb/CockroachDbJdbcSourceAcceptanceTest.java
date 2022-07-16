@@ -78,7 +78,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 .entrySet().stream()
                 .findFirst()
                 .get().getValue().getIpAddress()))
-        .put("port", PSQL_DB.getExposedPorts().get(1))
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())

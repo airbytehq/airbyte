@@ -26,7 +26,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .build());
@@ -52,7 +52,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
   }
 

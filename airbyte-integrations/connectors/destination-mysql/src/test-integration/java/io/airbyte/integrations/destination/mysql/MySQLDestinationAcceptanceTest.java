@@ -86,7 +86,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
@@ -98,7 +98,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }

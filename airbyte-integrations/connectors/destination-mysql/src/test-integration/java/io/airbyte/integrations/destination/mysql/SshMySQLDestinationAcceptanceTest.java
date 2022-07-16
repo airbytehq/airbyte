@@ -32,7 +32,6 @@ import org.jooq.SQLDialect;
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
-  private final List<String> PORT_KEY = List.of(MySQLDestination.PORT_KEY);
   private String schemaName;
 
   public abstract Path getConfigFilePath();
@@ -124,7 +123,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asText()),
+            config.get(JdbcUtils.PORT_KEY).asText()),
         SQLDialect.MYSQL);
     return new Database(dslContext);
   }
@@ -134,7 +133,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     return SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -152,7 +151,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
-        PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
         });
@@ -163,7 +162,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
         });

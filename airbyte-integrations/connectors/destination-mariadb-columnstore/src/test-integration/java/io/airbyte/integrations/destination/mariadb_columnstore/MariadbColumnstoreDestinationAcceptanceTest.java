@@ -43,7 +43,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
@@ -111,7 +111,7 @@ public class MariadbColumnstoreDestinationAcceptanceTest extends DestinationAcce
             MariadbColumnstoreDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
   }
 

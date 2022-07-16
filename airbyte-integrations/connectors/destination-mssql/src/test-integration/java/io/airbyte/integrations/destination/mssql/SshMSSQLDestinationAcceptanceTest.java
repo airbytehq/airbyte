@@ -112,7 +112,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
     return new Database(dslContext);
   }

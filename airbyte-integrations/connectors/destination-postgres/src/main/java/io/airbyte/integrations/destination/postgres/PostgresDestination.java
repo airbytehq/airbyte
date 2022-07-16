@@ -55,7 +55,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
         config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get("port").asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

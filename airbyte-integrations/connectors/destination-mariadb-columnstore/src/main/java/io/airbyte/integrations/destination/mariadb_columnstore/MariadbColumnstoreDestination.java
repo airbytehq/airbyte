@@ -86,7 +86,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String jdbcUrl = String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
         config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get("port").asInt(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

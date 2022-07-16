@@ -159,7 +159,7 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
                 baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-                baseConfig.get("port").asInt(),
+                baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
                 baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
             null,
             RedshiftInsertDestination.SSL_JDBC_PARAMETERS));

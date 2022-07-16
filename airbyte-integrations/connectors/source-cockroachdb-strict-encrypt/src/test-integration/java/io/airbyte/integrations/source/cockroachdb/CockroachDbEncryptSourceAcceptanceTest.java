@@ -42,8 +42,8 @@ public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getCockroachSslDbContainer().getHost())
-        .put("port", container.getCockroachSslDbContainer().getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, container.getCockroachSslDbContainer().getHost())
+        .put(JdbcUtils.PORT_KEY, container.getCockroachSslDbContainer().getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, "defaultdb")
         .put(JdbcUtils.USERNAME_KEY, "test_user")
         .put(JdbcUtils.PASSWORD_KEY, "test_user")
@@ -54,8 +54,8 @@ public class CockroachDbEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);

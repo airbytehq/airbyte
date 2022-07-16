@@ -50,7 +50,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put("sid", db.getSid())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
@@ -140,7 +140,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
         null);
   }
@@ -183,7 +183,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
                 "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));
@@ -209,7 +209,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
                 "oracle.net.encryption_types_client=( " + algorithm + " )", ";"));

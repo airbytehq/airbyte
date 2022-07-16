@@ -46,7 +46,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put("port", container.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put("sid", container.getSid())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -63,7 +63,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
             "oracle.net.encryption_types_client=( 3DES168 )", ";"));

@@ -63,7 +63,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText()),
             SQLDialect.POSTGRES));
   }

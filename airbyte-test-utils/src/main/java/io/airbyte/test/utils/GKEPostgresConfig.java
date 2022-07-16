@@ -34,7 +34,7 @@ public class GKEPostgresConfig {
     dbConfig.put(JdbcUtils.HOST_KEY, connectorType == Type.SOURCE ? SOURCE_HOST : DESTINATION_HOST);
     dbConfig.put(JdbcUtils.PASSWORD_KEY, hiddenPassword ? "**********" : PASSWORD);
 
-    dbConfig.put("port", PORT);
+    dbConfig.put(JdbcUtils.PORT_KEY, PORT);
     dbConfig.put(JdbcUtils.DATABASE_KEY, DB);
     dbConfig.put(JdbcUtils.USERNAME_KEY, USERNAME);
 

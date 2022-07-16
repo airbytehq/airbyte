@@ -68,7 +68,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", STANDALONE.getType())
         .put(JdbcUtils.HOST_KEY, credentialsJson.get(JdbcUtils.HOST_KEY).asText())
-        .put("port", credentialsJson.get("port").asInt())
+        .put(JdbcUtils.PORT_KEY, credentialsJson.get(JdbcUtils.PORT_KEY).asInt())
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -83,7 +83,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
         config.get("user").asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get("instance_type").get(JdbcUtils.HOST_KEY).asText(),
-        config.get("instance_type").get("port").asText(),
+        config.get("instance_type").get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);

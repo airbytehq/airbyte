@@ -141,7 +141,7 @@ class CockroachDbSourceTest {
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
@@ -158,7 +158,7 @@ class CockroachDbSourceTest {
                 .entrySet().stream()
                 .findFirst()
                 .get().getValue().getIpAddress()))
-        .put("port", psqlDb.getExposedPorts().get(1))
+        .put(JdbcUtils.PORT_KEY, psqlDb.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, dbName == null ? psqlDb.getDatabaseName() : dbName)
         .put(JdbcUtils.USERNAME_KEY, username)
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())

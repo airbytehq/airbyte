@@ -40,7 +40,7 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 clone.get(JdbcUtils.HOST_KEY).asText(),
-                clone.get("port").asInt(),
+                clone.get(JdbcUtils.PORT_KEY).asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
@@ -72,7 +72,7 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 clone.get(JdbcUtils.HOST_KEY).asText(),
-                clone.get("port").asInt(),
+                clone.get(JdbcUtils.PORT_KEY).asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
                 "oracle.net.encryption_types_client=( " + algorithm + " )", ";")));

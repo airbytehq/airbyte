@@ -59,7 +59,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
             .getIpAddress()))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
+        .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
         .put("sid", db.getSid())
         .put("schemas", List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
@@ -163,7 +163,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
         config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(), DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get("sid").asText()),
         null);
     return new Database(dslContext);

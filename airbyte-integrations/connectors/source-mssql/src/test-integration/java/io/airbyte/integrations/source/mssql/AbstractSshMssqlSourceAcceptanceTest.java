@@ -62,7 +62,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .getIpAddress()))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put("port", db.getExposedPorts().get(0))
+        .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
         .put(JdbcUtils.DATABASE_KEY, dbName);
   }
 
@@ -73,7 +73,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt()),
+            config.get(JdbcUtils.PORT_KEY).asInt()),
         null);
     return new Database(dslContext);
   }

@@ -46,7 +46,7 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put("port", HostPortResolver.resolvePort(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
         .put(JdbcUtils.USERNAME_KEY, "root")
         .put(JdbcUtils.DATABASE_KEY, "test")
         .build());
@@ -57,7 +57,7 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);

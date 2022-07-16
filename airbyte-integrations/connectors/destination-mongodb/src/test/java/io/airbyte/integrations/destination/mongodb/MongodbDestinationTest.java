@@ -22,13 +22,13 @@ class MongodbDestinationTest {
   private static final JsonNode standaloneConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("instance", "standalone")
       .put(JdbcUtils.HOST_KEY, "localhost")
-      .put("port", 27017)
+      .put(JdbcUtils.PORT_KEY, 27017)
       .put("tls", false)
       .build());
   private static final JsonNode standaloneTlsConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("instance", "standalone")
       .put(JdbcUtils.HOST_KEY, "localhost")
-      .put("port", 27017)
+      .put(JdbcUtils.PORT_KEY, 27017)
       .put("tls", true)
       .build());
   private static final JsonNode replicaWithNameConfig = Jsons.jsonNode(ImmutableMap.builder()
@@ -103,13 +103,13 @@ class MongodbDestinationTest {
         // older versions support
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put(JdbcUtils.HOST_KEY, "localhost")
-            .put("port", "27017")
+            .put(JdbcUtils.PORT_KEY, "27017")
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", authConfig).build()),
             "mongodb://user:pass@localhost:27017/dbName?authSource=admin&ssl=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put(JdbcUtils.HOST_KEY, "localhost")
-            .put("port", "27017")
+            .put(JdbcUtils.PORT_KEY, "27017")
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", noneAuthConfig).build()),
             "mongodb://localhost:27017/dbName?authSource=admin&ssl=false"));

@@ -31,7 +31,7 @@ class ScaffoldJavaJdbcJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest 
   @BeforeEach
   public void setup() throws Exception {
     // TODO init config. Ex: "config = Jsons.jsonNode(ImmutableMap.builder().put(JdbcUtils.HOST_KEY,
-    // host).put("port", port)....build());
+    // host).put(JdbcUtils.PORT_KEY, port)....build());
     super.setup();
   }
 

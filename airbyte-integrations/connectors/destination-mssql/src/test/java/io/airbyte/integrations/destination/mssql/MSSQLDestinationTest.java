@@ -34,7 +34,7 @@ public class MSSQLDestinationTest {
     return ImmutableMap.<String, String>builder()
         .put("ssl_method", sslMethod)
         .put(JdbcUtils.HOST_KEY, "localhost")
-        .put("port", "1773")
+        .put(JdbcUtils.PORT_KEY, "1773")
         .put(JdbcUtils.DATABASE_KEY, "db")
         .put(JdbcUtils.USERNAME_KEY, "username")
         .put(JdbcUtils.PASSWORD_KEY, "verysecure")
@@ -174,7 +174,7 @@ public class MSSQLDestinationTest {
   @Test
   void testEmptyExtraParams() {
     final String extraParam = "";
-    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
     assertNotNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
     assertEquals(extraParam, jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
@@ -183,7 +183,7 @@ public class MSSQLDestinationTest {
   @Test
   void testExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
-    JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
+    final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
     assertNotNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
     assertEquals(extraParam, jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
@@ -194,18 +194,18 @@ public class MSSQLDestinationTest {
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
         "ssl_method", "ssl_method",
         JdbcUtils.HOST_KEY, "localhost",
-        "port", "1773",
+        JdbcUtils.PORT_KEY, "1773",
         JdbcUtils.DATABASE_KEY, "db",
         JdbcUtils.USERNAME_KEY, "username",
         JdbcUtils.PASSWORD_KEY, "verysecure"));
   }
 
-  private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
+  private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
         "ssl_method", "ssl_method",
         JdbcUtils.HOST_KEY, "localhost",
-        "port", "1773",
+        JdbcUtils.PORT_KEY, "1773",
         JdbcUtils.DATABASE_KEY, "db",
         JdbcUtils.USERNAME_KEY, "username",
         JdbcUtils.PASSWORD_KEY, "verysecure",

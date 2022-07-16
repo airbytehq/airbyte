@@ -134,7 +134,7 @@ class PostgresSourceSSLTest {
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get("port").asInt(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
   }
@@ -142,7 +142,7 @@ class PostgresSourceSSLTest {
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of("public"))
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())

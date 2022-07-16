@@ -49,7 +49,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", MongoInstanceType.STANDALONE.getType())
         .put(JdbcUtils.HOST_KEY, credentialsJson.get(JdbcUtils.HOST_KEY).asText())
-        .put("port", credentialsJson.get("port").asInt())
+        .put(JdbcUtils.PORT_KEY, credentialsJson.get(JdbcUtils.PORT_KEY).asInt())
         .build());
 
     final JsonNode authConfig = Jsons.jsonNode(ImmutableMap.builder()
@@ -106,7 +106,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
         config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get(INSTANCE_TYPE).get(JdbcUtils.HOST_KEY).asText(),
-        config.get(INSTANCE_TYPE).get("port").asText(),
+        config.get(INSTANCE_TYPE).get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     mongoDatabase = new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());

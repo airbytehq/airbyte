@@ -21,7 +21,7 @@ public class AbstractJdbcDestinationTest {
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",
-        "port", 1337,
+        JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db"));
   }
@@ -29,7 +29,7 @@ public class AbstractJdbcDestinationTest {
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",
-        "port", 1337,
+        JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",
         "jdbc_url_params", extraParam));

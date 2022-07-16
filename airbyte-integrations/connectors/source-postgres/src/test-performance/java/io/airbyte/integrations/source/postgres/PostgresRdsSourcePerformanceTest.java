@@ -36,7 +36,7 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
-        .put("port", plainConfig.get("port"))
+        .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(dbName))
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))

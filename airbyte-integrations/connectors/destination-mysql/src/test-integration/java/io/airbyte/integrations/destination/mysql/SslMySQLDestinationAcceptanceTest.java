@@ -33,7 +33,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.SSL_KEY, true)
         .build());
   }
@@ -45,7 +45,7 @@ public class SslMySQLDestinationAcceptanceTest extends MySQLDestinationAcceptanc
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.SSL_KEY, false)
         .build());
   }

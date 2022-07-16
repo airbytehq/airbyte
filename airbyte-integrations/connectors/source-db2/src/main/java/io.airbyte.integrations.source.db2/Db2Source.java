@@ -56,7 +56,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
         config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get("port").asInt(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get("db").asText()));
 
     var result = Jsons.jsonNode(ImmutableMap.builder()

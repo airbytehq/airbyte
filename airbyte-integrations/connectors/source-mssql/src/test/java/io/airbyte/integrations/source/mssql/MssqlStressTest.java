@@ -41,7 +41,7 @@ public class MssqlStressTest extends JdbcStressTest {
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
         .build());
@@ -52,7 +52,7 @@ public class MssqlStressTest extends JdbcStressTest {
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
             configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get("port").asInt()));
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

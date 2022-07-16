@@ -29,12 +29,12 @@ public class TiDBSourceTests {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, "127.0.0.1")
-        .put("port", container.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, "root")
         .put(JdbcUtils.DATABASE_KEY, "test")
         .build());
 
-    AirbyteConnectionStatus check = new TiDBSource().check(config);
+    final AirbyteConnectionStatus check = new TiDBSource().check(config);
 
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     container.close();

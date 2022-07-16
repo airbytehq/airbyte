@@ -86,7 +86,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .build());
   }
 
@@ -97,7 +97,7 @@ public class MySQLStrictEncryptDestinationAcceptanceTest extends JdbcDestination
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .build());
   }
 
