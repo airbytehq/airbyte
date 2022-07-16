@@ -13,10 +13,16 @@ repos:
       - id: black
         args: ["--config", "pyproject.toml"]
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.6.4
+    rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--settings-file", "pyproject.toml"]
+        args:
+          [
+            "--settings-file",
+            "pyproject.toml",
+            "--dont-follow-links",
+            "--jobs=-1",
+          ]
         additional_dependencies: ["colorama"]
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v2.5.0
