@@ -52,7 +52,6 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String SERVER_ADDRESSES = "server_addresses";
   private static final String REPLICA_SET = "replica_set";
   private static final String AUTH_SOURCE = "auth_source";
-  private static final String TLS = "tls";
   private static final String PRIMARY_KEY = "_id";
 
   public static void main(final String[] args) throws Exception {
@@ -210,7 +209,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     switch (instance) {
       case STANDALONE -> {
         // supports backward compatibility and secure only connector
-        final var tls = config.has(TLS) ? config.get(TLS).asBoolean() : (instanceConfig.has(TLS) ? instanceConfig.get(TLS).asBoolean() : true);
+        final var tls = config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean() : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tls));

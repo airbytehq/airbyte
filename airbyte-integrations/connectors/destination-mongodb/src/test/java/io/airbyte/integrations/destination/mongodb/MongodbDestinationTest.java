@@ -23,13 +23,13 @@ class MongodbDestinationTest {
       .put("instance", "standalone")
       .put(JdbcUtils.HOST_KEY, "localhost")
       .put(JdbcUtils.PORT_KEY, 27017)
-      .put("tls", false)
+      .put(JdbcUtils.TLS_KEY, false)
       .build());
   private static final JsonNode standaloneTlsConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("instance", "standalone")
       .put(JdbcUtils.HOST_KEY, "localhost")
       .put(JdbcUtils.PORT_KEY, 27017)
-      .put("tls", true)
+      .put(JdbcUtils.TLS_KEY, true)
       .build());
   private static final JsonNode replicaWithNameConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("instance", "replica")

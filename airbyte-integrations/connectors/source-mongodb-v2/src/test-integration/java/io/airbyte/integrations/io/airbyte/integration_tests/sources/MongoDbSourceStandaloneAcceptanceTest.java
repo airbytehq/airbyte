@@ -58,7 +58,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
         .put("instance", STANDALONE.getType())
         .put(JdbcUtils.HOST_KEY, mongoDBContainer.getHost())
         .put(JdbcUtils.PORT_KEY, mongoDBContainer.getFirstMappedPort())
-        .put("tls", false)
+        .put(JdbcUtils.TLS_KEY, false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()

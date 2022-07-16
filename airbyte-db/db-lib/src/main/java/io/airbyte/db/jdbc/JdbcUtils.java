@@ -24,6 +24,7 @@ public class JdbcUtils {
   public static final List<String> PORT_LIST_KEY = List.of("port");
   public static final String SCHEMA_KEY = "schema";
   public static final String SSL_KEY = "ssl";
+  public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 

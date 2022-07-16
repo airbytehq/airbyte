@@ -48,7 +48,6 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private static final String CLUSTER_URL = "cluster_url";
   private static final String SERVER_ADDRESSES = "server_addresses";
   private static final String REPLICA_SET = "replica_set";
-  private static final String TLS = "tls";
   private static final String AUTH_TYPE = "auth_type";
   private static final String AUTHORIZATION = "authorization";
   private static final String LOGIN_AND_PASSWORD = "login/password";
@@ -147,7 +146,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
     switch (instance) {
       case STANDALONE -> {
         // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
-        final var tls = !instanceConfig.has(TLS) || instanceConfig.get(TLS).asBoolean();
+        final var tls = !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
         connectionStrBuilder.append(
             String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), tls));
