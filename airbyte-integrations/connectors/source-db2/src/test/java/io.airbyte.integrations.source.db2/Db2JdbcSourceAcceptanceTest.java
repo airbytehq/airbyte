@@ -59,7 +59,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())

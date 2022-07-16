@@ -46,10 +46,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?authSource=%s&retryWrites=true&w=majority&tls=true";
   private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=%s&directConnection=false&ssl=true";
   private static final String USER = "user";
-  private static final String PASSWORD = "password";
   private static final String INSTANCE_TYPE = "instance_type";
   private static final String INSTANCE = "instance";
-  private static final String HOST = "host";
   private static final String PORT = "port";
   private static final String CLUSTER_URL = "cluster_url";
   private static final String SERVER_ADDRESSES = "server_addresses";
@@ -67,8 +65,8 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final var credentials = config.has(USER) && config.has(PASSWORD)
-        ? String.format("%s:%s@", config.get(USER).asText(), config.get(PASSWORD).asText())
+    final var credentials = config.has(USER) && config.has(JdbcUtils.PASSWORD_KEY)
+        ? String.format("%s:%s@", config.get(USER).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -215,7 +213,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
         // supports backward compatibility and secure only connector
         final var tls = config.has(TLS) ? config.get(TLS).asBoolean() : (instanceConfig.has(TLS) ? instanceConfig.get(TLS).asBoolean() : true);
         connectionStrBuilder.append(
-            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
+            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(PORT).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), config.get(AUTH_SOURCE).asText(), tls));
       }
       case REPLICA -> {

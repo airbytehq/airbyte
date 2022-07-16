@@ -110,7 +110,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
 

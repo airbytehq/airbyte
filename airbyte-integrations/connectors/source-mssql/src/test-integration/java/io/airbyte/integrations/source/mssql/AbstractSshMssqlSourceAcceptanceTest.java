@@ -56,7 +56,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   public ImmutableMap.Builder<Object, Object> getMSSQLDbConfigBuilder(final JdbcDatabaseContainer<?> db) {
     dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     return ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
             .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
@@ -72,7 +72,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt()),
         null);
     return new Database(dslContext);

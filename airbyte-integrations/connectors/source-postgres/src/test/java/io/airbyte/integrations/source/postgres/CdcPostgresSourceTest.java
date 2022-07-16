@@ -126,7 +126,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
@@ -147,7 +147,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
@@ -202,7 +202,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
 

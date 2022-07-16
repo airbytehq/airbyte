@@ -37,7 +37,7 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())

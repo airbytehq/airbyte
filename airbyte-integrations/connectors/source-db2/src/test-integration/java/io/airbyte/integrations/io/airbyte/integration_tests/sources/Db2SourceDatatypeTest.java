@@ -51,7 +51,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("db", container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
@@ -66,7 +66,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         Db2Source.DRIVER_CLASS,
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get("db").asText()),
         SQLDialect.DEFAULT);

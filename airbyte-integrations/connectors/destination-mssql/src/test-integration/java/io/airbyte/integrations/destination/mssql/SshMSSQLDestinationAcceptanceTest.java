@@ -107,11 +107,11 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt()),
         null);
     return new Database(dslContext);

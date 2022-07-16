@@ -28,7 +28,7 @@ public class TiDBSourceTests {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "127.0.0.1")
+        .put(JdbcUtils.HOST_KEY, "127.0.0.1")
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, "root")
         .put(JdbcUtils.DATABASE_KEY, "test")

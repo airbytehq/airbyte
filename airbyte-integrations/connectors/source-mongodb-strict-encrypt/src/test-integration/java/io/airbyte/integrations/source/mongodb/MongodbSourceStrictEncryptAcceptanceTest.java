@@ -67,7 +67,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", STANDALONE.getType())
-        .put("host", credentialsJson.get("host").asText())
+        .put(JdbcUtils.HOST_KEY, credentialsJson.get(JdbcUtils.HOST_KEY).asText())
         .put("port", credentialsJson.get("port").asInt())
         .build());
 
@@ -82,7 +82,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&directConnection=false&ssl=true",
         config.get("user").asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
-        config.get("instance_type").get("host").asText(),
+        config.get("instance_type").get(JdbcUtils.HOST_KEY).asText(),
         config.get("instance_type").get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 

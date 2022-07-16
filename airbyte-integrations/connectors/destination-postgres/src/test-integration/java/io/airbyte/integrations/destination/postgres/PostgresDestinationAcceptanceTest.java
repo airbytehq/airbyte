@@ -35,7 +35,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put(JdbcUtils.SCHEMA_KEY, "public")
@@ -48,7 +48,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.SCHEMA_KEY, "public")

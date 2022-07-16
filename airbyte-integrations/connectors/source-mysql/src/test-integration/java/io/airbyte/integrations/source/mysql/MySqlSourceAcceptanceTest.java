@@ -43,7 +43,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
@@ -56,7 +56,7 @@ public class MySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL)) {

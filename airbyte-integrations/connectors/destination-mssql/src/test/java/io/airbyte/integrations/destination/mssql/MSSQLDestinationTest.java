@@ -33,7 +33,7 @@ public class MSSQLDestinationTest {
   private Map<String, String> baseParameters(final String sslMethod) {
     return ImmutableMap.<String, String>builder()
         .put("ssl_method", sslMethod)
-        .put("host", "localhost")
+        .put(JdbcUtils.HOST_KEY, "localhost")
         .put("port", "1773")
         .put(JdbcUtils.DATABASE_KEY, "db")
         .put(JdbcUtils.USERNAME_KEY, "username")
@@ -193,7 +193,7 @@ public class MSSQLDestinationTest {
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
         "ssl_method", "ssl_method",
-        "host", "localhost",
+        JdbcUtils.HOST_KEY, "localhost",
         "port", "1773",
         JdbcUtils.DATABASE_KEY, "db",
         JdbcUtils.USERNAME_KEY, "username",
@@ -204,7 +204,7 @@ public class MSSQLDestinationTest {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
         "ssl_method", "ssl_method",
-        "host", "localhost",
+        JdbcUtils.HOST_KEY, "localhost",
         "port", "1773",
         JdbcUtils.DATABASE_KEY, "db",
         JdbcUtils.USERNAME_KEY, "username",

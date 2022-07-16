@@ -54,8 +54,8 @@ public class SnowflakeDatabase {
     final HikariDataSource dataSource = new HikariDataSource();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText()));
-    final String username = config.get("username").asText();
+        config.get(JdbcUtils.HOST_KEY).asText()));
+    final String username = config.get(JdbcUtils.USERNAME_KEY).asText();
 
     final Properties properties = new Properties();
 
@@ -68,7 +68,7 @@ public class SnowflakeDatabase {
       try {
         // accessToken is only valid for 10 minutes. So we need to get a new one before processing new
         // stream
-        accessToken = getAccessTokenUsingRefreshToken(config.get("host").asText(),
+        accessToken = getAccessTokenUsingRefreshToken(config.get(JdbcUtils.HOST_KEY).asText(),
             credentials.get("client_id").asText(),
             credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
       } catch (final IOException e) {
@@ -77,21 +77,21 @@ public class SnowflakeDatabase {
       properties.put("client_id", credentials.get("client_id").asText());
       properties.put("client_secret", credentials.get("client_secret").asText());
       properties.put("refresh_token", credentials.get("refresh_token").asText());
-      properties.put("host", config.get("host").asText());
+      properties.put(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
       // the username is required for DBT normalization in OAuth connection
-      properties.put("username", username);
+      properties.put(JdbcUtils.USERNAME_KEY, username);
 
       // thread to keep the refresh token up to date
       SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(dataSource),
           PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
 
-    } else if (credentials != null && credentials.has("password")) {
+    } else if (credentials != null && credentials.has(JdbcUtils.PASSWORD_KEY)) {
       LOGGER.debug("User/password login mode is used");
       // Username and pass login option is selected on UI
       dataSource.setUsername(username);
-      dataSource.setPassword(credentials.get("password").asText());
+      dataSource.setPassword(credentials.get(JdbcUtils.PASSWORD_KEY).asText());
 
     } else {
       LOGGER.warn(
@@ -179,7 +179,7 @@ public class SnowflakeDatabase {
       LOGGER.info("Refresh token process started");
       final var props = dataSource.getDataSourceProperties();
       try {
-        final var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+        final var token = getAccessTokenUsingRefreshToken(props.getProperty(JdbcUtils.HOST_KEY),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);

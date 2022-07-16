@@ -13,8 +13,10 @@ import org.jooq.JSONFormat;
 
 public class JdbcUtils {
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  // config parameters in alphabetical order
   public static final String CONNECTION_PROPERTIES_KEY = "connection_properties";
   public static final String DATABASE_KEY = "database";
+  public static final String HOST_KEY = "host";
   public static final List<String> HOST_LIST_KEY = List.of("host");
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String PASSWORD_KEY = "password";

@@ -41,7 +41,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s?",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 

@@ -62,7 +62,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.DATABASE_KEY, "test")
@@ -79,7 +79,7 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, "test")
@@ -142,11 +142,11 @@ public class MssqlStrictEncryptDestinationAcceptanceTest extends DestinationAcce
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt()),
         null);
   }

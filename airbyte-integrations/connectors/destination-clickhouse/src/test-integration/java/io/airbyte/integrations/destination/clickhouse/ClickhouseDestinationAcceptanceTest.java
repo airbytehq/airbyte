@@ -86,7 +86,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put("port", HostPortResolver.resolvePort(db))
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -136,7 +136,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
             config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
   }

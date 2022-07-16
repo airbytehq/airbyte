@@ -53,7 +53,7 @@ class OracleStressTest extends JdbcStressTest {
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", ORACLE_DB.getHost())
+        .put(JdbcUtils.HOST_KEY, ORACLE_DB.getHost())
         .put("port", ORACLE_DB.getFirstMappedPort())
         .put("sid", ORACLE_DB.getSid())
         .put(JdbcUtils.USERNAME_KEY, ORACLE_DB.getUsername())
@@ -102,7 +102,7 @@ class OracleStressTest extends JdbcStressTest {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:oracle:thin:@//%s:%s/xe",
-              config.get("host").asText(),
+              config.get(JdbcUtils.HOST_KEY).asText(),
               config.get("port").asText(),
               config.get("sid").asText()));
 

@@ -73,7 +73,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     final String connectionString = String.format(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=%s)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))",
         protocol,
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asText(),
         config.get("sid").asText());
 

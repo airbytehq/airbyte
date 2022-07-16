@@ -45,7 +45,7 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "your_host")
+        .put(JdbcUtils.HOST_KEY, "your_host")
         .put("port", 5432)
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, "your_username")
@@ -58,7 +58,7 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);

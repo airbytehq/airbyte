@@ -111,7 +111,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MARIADB.getDriverClassName(),
         String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MARIADB);

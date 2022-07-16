@@ -49,11 +49,11 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
   private JsonNode getConfig(final OracleContainer db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("sid", db.getSid())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
         .build());
   }
@@ -135,11 +135,11 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get("sid").asText()),
         null);
@@ -178,11 +178,11 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
     final JsonNode config = getConfig();
     final DataSource dataSource =
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
@@ -205,10 +205,10 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
         .get("encryption_algorithm").asText();
 
     final DataSource dataSource =
-        DataSourceFactory.create(config.get("username").asText(), config.get("password").asText(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +

@@ -49,11 +49,8 @@ public class MongodbDestination extends BaseConnector implements Destination {
   private static final String SERVER_ADDRESSES = "server_addresses";
   private static final String REPLICA_SET = "replica_set";
   private static final String TLS = "tls";
-  private static final String HOST = "host";
   private static final String PORT = "port";
   private static final String AUTH_TYPE = "auth_type";
-  private static final String USERNAME = "username";
-  private static final String PASSWORD = "password";
   private static final String AUTHORIZATION = "authorization";
   private static final String LOGIN_AND_PASSWORD = "login/password";
   private static final String AIRBYTE_DATA_HASH = "_airbyte_data_hash";
@@ -128,7 +125,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
   @VisibleForTesting
   String getConnectionString(final JsonNode config) {
     final var credentials = config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
-        ? String.format("%s:%s@", config.get(AUTH_TYPE).get(USERNAME).asText(), config.get(AUTH_TYPE).get(PASSWORD).asText())
+        ? String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(), config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     // backward compatibility check
@@ -137,7 +134,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
     if (config.has(INSTANCE_TYPE)) {
       return buildConnectionString(config, credentials);
     } else {
-      return String.format(MONGODB_SERVER_URL, credentials, config.get(HOST).asText(),
+      return String.format(MONGODB_SERVER_URL, credentials, config.get(JdbcUtils.HOST_KEY).asText(),
           config.get(PORT).asText(), config.get(JdbcUtils.DATABASE_KEY).asText(), false);
     }
   }
@@ -153,7 +150,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
         // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
         final var tls = !instanceConfig.has(TLS) || instanceConfig.get(TLS).asBoolean();
         connectionStrBuilder.append(
-            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(HOST).asText(), instanceConfig.get(PORT).asText(),
+            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(PORT).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), tls));
       }
       case REPLICA -> {

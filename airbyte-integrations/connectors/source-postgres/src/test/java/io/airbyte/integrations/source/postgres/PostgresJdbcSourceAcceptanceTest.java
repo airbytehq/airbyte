@@ -72,7 +72,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))

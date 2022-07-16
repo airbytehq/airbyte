@@ -21,13 +21,13 @@ class MongodbDestinationTest {
 
   private static final JsonNode standaloneConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("instance", "standalone")
-      .put("host", "localhost")
+      .put(JdbcUtils.HOST_KEY, "localhost")
       .put("port", 27017)
       .put("tls", false)
       .build());
   private static final JsonNode standaloneTlsConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("instance", "standalone")
-      .put("host", "localhost")
+      .put(JdbcUtils.HOST_KEY, "localhost")
       .put("port", 27017)
       .put("tls", true)
       .build());
@@ -47,8 +47,8 @@ class MongodbDestinationTest {
 
   private static final JsonNode authConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("authorization", "login/password")
-      .put("username", "user")
-      .put("password", "pass")
+      .put(JdbcUtils.USERNAME_KEY, "user")
+      .put(JdbcUtils.PASSWORD_KEY, "pass")
       .build());
   private static final JsonNode noneAuthConfig = Jsons.jsonNode(ImmutableMap.builder()
       .put("authorization", "none")
@@ -102,13 +102,13 @@ class MongodbDestinationTest {
             "mongodb+srv://cluster.shard.url/dbName?retryWrites=true&w=majority&tls=true"),
         // older versions support
         arguments(Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", "localhost")
+            .put(JdbcUtils.HOST_KEY, "localhost")
             .put("port", "27017")
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", authConfig).build()),
             "mongodb://user:pass@localhost:27017/dbName?authSource=admin&ssl=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
-            .put("host", "localhost")
+            .put(JdbcUtils.HOST_KEY, "localhost")
             .put("port", "27017")
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", noneAuthConfig).build()),

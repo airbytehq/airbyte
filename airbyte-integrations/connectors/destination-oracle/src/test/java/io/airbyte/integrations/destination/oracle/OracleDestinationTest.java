@@ -34,7 +34,7 @@ public class OracleDestinationTest {
 
   private Map<String, Object> baseParameters() {
     return ImmutableMap.<String, Object>builder()
-        .put("host", "localhost")
+        .put(JdbcUtils.HOST_KEY, "localhost")
         .put("port", "1773")
         .put(JdbcUtils.DATABASE_KEY, "db")
         .put(JdbcUtils.USERNAME_KEY, "username")

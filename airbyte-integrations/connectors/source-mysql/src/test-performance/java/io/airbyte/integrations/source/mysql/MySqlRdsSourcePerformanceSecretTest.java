@@ -34,7 +34,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", plainConfig.get("host"))
+        .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
         .put("port", plainConfig.get("port"))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
@@ -47,7 +47,7 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL,

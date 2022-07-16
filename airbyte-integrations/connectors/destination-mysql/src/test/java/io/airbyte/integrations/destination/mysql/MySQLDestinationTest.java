@@ -19,7 +19,7 @@ public class MySQLDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
+        JdbcUtils.HOST_KEY, "localhost",
         "port", 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db"));
@@ -27,7 +27,7 @@ public class MySQLDestinationTest {
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
+        JdbcUtils.HOST_KEY, "localhost",
         "port", 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",
@@ -36,7 +36,7 @@ public class MySQLDestinationTest {
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
+        JdbcUtils.HOST_KEY, "localhost",
         "port", 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",

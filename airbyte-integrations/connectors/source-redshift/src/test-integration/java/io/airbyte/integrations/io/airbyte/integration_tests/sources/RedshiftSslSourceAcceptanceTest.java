@@ -21,7 +21,7 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText()),
             JdbcUtils.parseJdbcParameters("ssl=true&" +

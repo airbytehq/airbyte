@@ -85,7 +85,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String jdbcUrl = String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 

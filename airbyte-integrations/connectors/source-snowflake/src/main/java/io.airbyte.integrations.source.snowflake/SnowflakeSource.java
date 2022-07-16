@@ -92,7 +92,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     final var credentials = config.get("credentials");
     try {
       accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
-          config.get("host").asText(), credentials.get("client_id").asText(),
+          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
     } catch (final IOException e) {
       throw new RuntimeException(e);

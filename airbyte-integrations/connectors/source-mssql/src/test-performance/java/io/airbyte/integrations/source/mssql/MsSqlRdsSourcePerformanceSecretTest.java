@@ -28,7 +28,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", plainConfig.get("host"))
+        .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
         .put("port", plainConfig.get("port"))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))

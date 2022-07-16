@@ -83,7 +83,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:clickhouse://%s:%s/%s",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 

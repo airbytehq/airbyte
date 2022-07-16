@@ -113,7 +113,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 

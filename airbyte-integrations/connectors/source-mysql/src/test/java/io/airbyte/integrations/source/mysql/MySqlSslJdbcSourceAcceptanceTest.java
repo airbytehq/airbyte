@@ -21,7 +21,7 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
@@ -34,7 +34,7 @@ class MySqlSslJdbcSourceAcceptanceTest extends MySqlJdbcSourceAcceptanceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asText(),
             String.join("&", SSL_PARAMETERS)),
         SQLDialect.MYSQL);

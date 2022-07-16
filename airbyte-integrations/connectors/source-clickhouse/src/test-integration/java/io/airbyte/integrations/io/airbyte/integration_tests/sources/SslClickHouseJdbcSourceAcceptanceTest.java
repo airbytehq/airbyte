@@ -69,20 +69,20 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("username", "default")
-        .put("password", "")
+        .put(JdbcUtils.USERNAME_KEY, "default")
+        .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
 
     config = Jsons.clone(configWithoutDbName);
 
     dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt()));
 
     jdbcDatabase = new DefaultJdbcDatabase(dataSource);

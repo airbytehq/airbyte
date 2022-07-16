@@ -88,7 +88,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         "data_to_sync", "Existing and New",
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
@@ -347,7 +347,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DRIVER_CLASS,
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 dbName)),
         new MssqlSourceOperations(),

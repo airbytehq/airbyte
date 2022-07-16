@@ -63,7 +63,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
     final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
 
     final String jdbcUrl = String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 

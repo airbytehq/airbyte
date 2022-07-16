@@ -104,7 +104,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     }
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -117,7 +117,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .build());
 
     final String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         db.getMappedPort(50000),
         config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
         ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";

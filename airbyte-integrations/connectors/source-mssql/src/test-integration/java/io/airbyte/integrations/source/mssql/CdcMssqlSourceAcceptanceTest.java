@@ -102,7 +102,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         "snapshot_isolation", "Snapshot"));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
@@ -115,7 +115,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         container.getPassword(),
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt()),
         null);
     database = new Database(dslContext);

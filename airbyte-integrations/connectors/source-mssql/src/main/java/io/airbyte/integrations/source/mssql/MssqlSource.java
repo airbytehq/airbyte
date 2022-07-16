@@ -179,7 +179,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
 
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            mssqlConfig.get("host").asText(),
+            mssqlConfig.get(JdbcUtils.HOST_KEY).asText(),
             mssqlConfig.get("port").asText(),
             mssqlConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 

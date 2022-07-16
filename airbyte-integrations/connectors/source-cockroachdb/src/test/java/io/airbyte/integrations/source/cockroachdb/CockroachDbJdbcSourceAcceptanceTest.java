@@ -72,7 +72,7 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", Objects.requireNonNull(PSQL_DB.getContainerInfo()
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(PSQL_DB.getContainerInfo()
                 .getNetworkSettings()
                 .getNetworks()
                 .entrySet().stream()
@@ -191,8 +191,8 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config).put("password", "fake");
-    ((ObjectNode) config).put("username", "fake");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }

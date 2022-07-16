@@ -23,7 +23,6 @@ import org.testcontainers.containers.MongoDBContainer;
 public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String DOCKER_IMAGE_NAME = "mongo:4.0.10";
-  private static final String HOST = "host";
   private static final String PORT = "port";
   private static final String DATABASE_NAME = "admin";
   private static final String DATABASE_FAIL_NAME = "fail_db";
@@ -41,7 +40,7 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(HOST, container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(PORT, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, getAuthTypeConfig())
@@ -51,13 +50,13 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(HOST, container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(PORT, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, DATABASE_FAIL_NAME)
         .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
             .put("authorization", "login/password")
-            .put("username", "user")
-            .put("password", "pass")
+            .put(JdbcUtils.USERNAME_KEY, "user")
+            .put(JdbcUtils.PASSWORD_KEY, "pass")
             .build()))
         .build());
   }

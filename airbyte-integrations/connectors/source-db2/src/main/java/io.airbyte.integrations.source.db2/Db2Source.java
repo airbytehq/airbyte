@@ -55,7 +55,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asInt(),
         config.get("db").asText()));
 

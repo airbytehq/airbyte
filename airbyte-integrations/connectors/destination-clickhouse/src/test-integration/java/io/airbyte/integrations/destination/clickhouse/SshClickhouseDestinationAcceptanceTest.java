@@ -154,7 +154,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
             config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
   }

@@ -59,7 +59,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
         baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;%s",
-            baseConfig.get("host").asText(),
+            baseConfig.get(JdbcUtils.HOST_KEY).asText(),
             baseConfig.get("port").asInt(),
             additionalParameter),
         null);

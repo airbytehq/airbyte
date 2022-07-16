@@ -48,14 +48,14 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", MongoInstanceType.STANDALONE.getType())
-        .put("host", credentialsJson.get("host").asText())
+        .put(JdbcUtils.HOST_KEY, credentialsJson.get(JdbcUtils.HOST_KEY).asText())
         .put("port", credentialsJson.get("port").asInt())
         .build());
 
     final JsonNode authConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("authorization", "login/password")
-        .put("username", credentialsJson.get("user").asText())
-        .put("password", credentialsJson.get("password").asText())
+        .put(JdbcUtils.USERNAME_KEY, credentialsJson.get("user").asText())
+        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -103,9 +103,9 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
     final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=true",
-        config.get(AUTH_TYPE).get("username").asText(),
-        config.get(AUTH_TYPE).get("password").asText(),
-        config.get(INSTANCE_TYPE).get("host").asText(),
+        config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get(INSTANCE_TYPE).get(JdbcUtils.HOST_KEY).asText(),
         config.get(INSTANCE_TYPE).get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 

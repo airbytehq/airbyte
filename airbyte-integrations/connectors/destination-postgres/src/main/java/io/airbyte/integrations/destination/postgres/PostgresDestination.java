@@ -54,7 +54,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
 
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 

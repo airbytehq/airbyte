@@ -39,7 +39,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format("jdbc:oracle:thin:@//%s:%d/%s",
-                clone.get("host").asText(),
+                clone.get(JdbcUtils.HOST_KEY).asText(),
                 clone.get("port").asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
@@ -62,7 +62,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get("sid").asText())));
 
@@ -90,7 +90,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asInt(),
                 config.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +

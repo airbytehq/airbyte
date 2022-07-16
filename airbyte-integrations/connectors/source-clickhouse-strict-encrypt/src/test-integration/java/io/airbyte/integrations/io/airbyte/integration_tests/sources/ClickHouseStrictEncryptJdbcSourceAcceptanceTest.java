@@ -75,10 +75,10 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
-        .put("username", "default")
-        .put("password", "")
+        .put(JdbcUtils.USERNAME_KEY, "default")
+        .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
 
     db = new DefaultJdbcDatabase(
@@ -87,7 +87,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
             configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickHouseSource.DRIVER_CLASS,
             String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
-                configWithoutDbName.get("host").asText(),
+                configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
                 configWithoutDbName.get("port").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();

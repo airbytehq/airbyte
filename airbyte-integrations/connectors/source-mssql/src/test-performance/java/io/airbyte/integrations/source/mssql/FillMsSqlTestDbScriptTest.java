@@ -44,7 +44,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "your_host")
+        .put(JdbcUtils.HOST_KEY, "your_host")
         .put("port", 1433)
         .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
@@ -57,7 +57,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             dbName),
         null);

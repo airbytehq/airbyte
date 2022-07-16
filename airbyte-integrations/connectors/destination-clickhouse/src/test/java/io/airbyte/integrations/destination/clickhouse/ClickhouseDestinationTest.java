@@ -48,7 +48,7 @@ public class ClickhouseDestinationTest {
   private static JsonNode config;
 
   private static final Map<String, String> CONFIG_WITH_SSL = ImmutableMap.of(
-      "host", "localhost",
+      JdbcUtils.HOST_KEY, "localhost",
       "port", "1337",
       JdbcUtils.USERNAME_KEY, "user",
       JdbcUtils.DATABASE_KEY, "db");
@@ -75,7 +75,7 @@ public class ClickhouseDestinationTest {
             Field.of("name", JsonSchemaType.STRING))));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -132,7 +132,7 @@ public class ClickhouseDestinationTest {
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickhouseDestination.DRIVER_CLASS,
             String.format("jdbc:clickhouse://%s:%s/%s",
-                config.get("host").asText(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get("port").asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
 

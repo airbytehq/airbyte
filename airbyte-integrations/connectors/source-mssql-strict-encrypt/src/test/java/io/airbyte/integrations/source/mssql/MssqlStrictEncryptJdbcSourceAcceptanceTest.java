@@ -45,18 +45,18 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
+        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
         .build());
 
     dataSource = DataSourceFactory.create(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get("port").asInt()));
 
     try {

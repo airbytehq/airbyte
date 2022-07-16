@@ -35,11 +35,11 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            clone.get("username").asText(),
-            clone.get("password").asText(),
+            clone.get(JdbcUtils.USERNAME_KEY).asText(),
+            clone.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                clone.get("host").asText(),
+                clone.get(JdbcUtils.HOST_KEY).asText(),
                 clone.get("port").asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
@@ -67,11 +67,11 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            clone.get("username").asText(),
-            clone.get("password").asText(),
+            clone.get(JdbcUtils.USERNAME_KEY).asText(),
+            clone.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                clone.get("host").asText(),
+                clone.get(JdbcUtils.HOST_KEY).asText(),
                 clone.get("port").asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +

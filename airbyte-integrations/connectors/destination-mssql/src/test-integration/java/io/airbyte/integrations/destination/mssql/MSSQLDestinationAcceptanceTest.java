@@ -51,11 +51,11 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put("port", HostPortResolver.resolvePort(db))
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "test_schema")
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "test_schema")
         .build());
   }
 
@@ -67,7 +67,7 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, "wrong password")
         .put(JdbcUtils.DATABASE_KEY, "test")
@@ -123,11 +123,11 @@ public class MSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt()),
         null);
   }

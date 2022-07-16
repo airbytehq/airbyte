@@ -31,7 +31,7 @@ public class GKEPostgresConfig {
 
   public static Map<Object, Object> dbConfig(final Type connectorType, final boolean hiddenPassword, final boolean withSchema) {
     final Map<Object, Object> dbConfig = new HashMap<>();
-    dbConfig.put("host", connectorType == Type.SOURCE ? SOURCE_HOST : DESTINATION_HOST);
+    dbConfig.put(JdbcUtils.HOST_KEY, connectorType == Type.SOURCE ? SOURCE_HOST : DESTINATION_HOST);
     dbConfig.put(JdbcUtils.PASSWORD_KEY, hiddenPassword ? "**********" : PASSWORD);
 
     dbConfig.put("port", PORT);

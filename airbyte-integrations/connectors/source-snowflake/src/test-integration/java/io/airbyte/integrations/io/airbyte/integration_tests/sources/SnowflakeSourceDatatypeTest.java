@@ -47,10 +47,10 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
 
     dslContext = DSLContextFactory.create(
-        config.get("credentials").get("username").asText(),
-        config.get("credentials").get("password").asText(),
+        config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),
         SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText()),
         SQLDialect.DEFAULT,
         Map.of(
             "role", config.get("role").asText(),

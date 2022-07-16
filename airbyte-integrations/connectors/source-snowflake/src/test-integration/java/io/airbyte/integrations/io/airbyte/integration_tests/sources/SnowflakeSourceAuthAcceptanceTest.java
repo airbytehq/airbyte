@@ -24,7 +24,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     config = getStaticConfig();
 
     final StringBuilder jdbcUrl = new StringBuilder(
-        String.format("jdbc:snowflake://%s/?", config.get("host").asText()));
+        String.format("jdbc:snowflake://%s/?", config.get(JdbcUtils.HOST_KEY).asText()));
     jdbcUrl.append(String.format(
         "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
         config.get("role").asText(),
@@ -44,9 +44,9 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
       properties.setProperty("client_id", credentials.get("client_id").asText());
       properties.setProperty("client_secret", credentials.get("client_secret").asText());
       properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
-      properties.setProperty("host", config.get("host").asText());
+      properties.setProperty(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       final var accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
-          config.get("host").asText(), credentials.get("client_id").asText(),
+          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
@@ -55,7 +55,7 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
     }
 
     properties.put("warehouse", config.get("warehouse").asText());
-    properties.put("account", config.get("host").asText());
+    properties.put("account", config.get(JdbcUtils.HOST_KEY).asText());
     properties.put("role", config.get("role").asText());
     // allows queries to contain any number of statements
     properties.put("MULTI_STATEMENT_COUNT", "0");

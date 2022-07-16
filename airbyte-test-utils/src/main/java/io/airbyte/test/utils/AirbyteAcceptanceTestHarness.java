@@ -590,15 +590,15 @@ public class AirbyteAcceptanceTestHarness {
     if (isKube) {
       if (isMinikube) {
         // used with minikube driver=none instance
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+        dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put("host", "host.docker.internal");
+        dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
       }
     } else if (isMac) {
-      dbConfig.put("host", "host.docker.internal");
+      dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
     } else {
-      dbConfig.put("host", "localhost");
+      dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
     }
 
     if (hiddenPassword) {

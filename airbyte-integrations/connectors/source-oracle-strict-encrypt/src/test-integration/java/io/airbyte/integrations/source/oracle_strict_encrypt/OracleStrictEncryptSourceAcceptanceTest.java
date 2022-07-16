@@ -45,11 +45,11 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("sid", container.getSid())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("schemas", List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "client_nne")
@@ -58,11 +58,11 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
         .build());
 
     final DataSource dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get("sid").asText()),
         JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +

@@ -86,7 +86,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
@@ -99,7 +99,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
 

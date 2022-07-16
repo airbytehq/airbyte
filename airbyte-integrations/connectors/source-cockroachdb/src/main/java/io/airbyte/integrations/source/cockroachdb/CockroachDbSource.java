@@ -55,7 +55,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         config.get("port").asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
@@ -140,7 +140,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
           "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
               + "FROM   information_schema.table_privileges\n"
               + "WHERE  (grantee  = ? AND privilege_type in ('SELECT', 'ALL')) OR (table_schema = 'public')");
-      ps.setString(1, database.getDatabaseConfig().get("username").asText());
+      ps.setString(1, database.getDatabaseConfig().get(JdbcUtils.USERNAME_KEY).asText());
       return ps;
     };
   }

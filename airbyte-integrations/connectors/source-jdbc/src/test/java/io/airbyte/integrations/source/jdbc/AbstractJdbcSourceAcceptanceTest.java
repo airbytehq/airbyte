@@ -56,7 +56,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
@@ -115,7 +115,7 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-              config.get("host").asText(),
+              config.get(JdbcUtils.HOST_KEY).asText(),
               config.get("port").asInt(),
               config.get(JdbcUtils.DATABASE_KEY).asText()));
 

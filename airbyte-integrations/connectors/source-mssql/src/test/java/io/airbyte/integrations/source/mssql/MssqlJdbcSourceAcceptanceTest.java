@@ -37,7 +37,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
+        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
@@ -48,7 +48,7 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get("port").asInt()));
 
     try {

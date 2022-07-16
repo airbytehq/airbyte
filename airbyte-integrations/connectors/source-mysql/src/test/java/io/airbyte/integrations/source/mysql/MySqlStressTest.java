@@ -54,7 +54,7 @@ class MySqlStressTest extends JdbcStressTest {
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
@@ -62,11 +62,11 @@ class MySqlStressTest extends JdbcStressTest {
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asText()),
         SQLDialect.MYSQL);
     database = new Database(dslContext);

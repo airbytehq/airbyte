@@ -130,7 +130,7 @@ public class SnowflakeDataSourceUtils {
 
   public static String buildJDBCUrl(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText()));
 
     // Add required properties
     jdbcUrl.append(String.format(
@@ -156,7 +156,7 @@ public class SnowflakeDataSourceUtils {
       LOGGER.info("Refresh token process started");
       final var props = dataSource.getDataSourceProperties();
       try {
-        final var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+        final var token = getAccessTokenUsingRefreshToken(props.getProperty(JdbcUtils.HOST_KEY),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
@@ -175,12 +175,12 @@ public class SnowflakeDataSourceUtils {
       properties.setProperty("client_id", credentials.get("client_id").asText());
       properties.setProperty("client_secret", credentials.get("client_secret").asText());
       properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
-      properties.setProperty("host", config.get("host").asText());
+      properties.setProperty(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       properties.put("authenticator", "oauth");
-      properties.put("account", config.get("host").asText());
+      properties.put("account", config.get(JdbcUtils.HOST_KEY).asText());
 
       final String accessToken = getAccessTokenUsingRefreshToken(
-          config.get("host").asText(), credentials.get("client_id").asText(),
+          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
 
       properties.put("token", accessToken);
@@ -191,8 +191,8 @@ public class SnowflakeDataSourceUtils {
   }
 
   private static void populateUsernamePasswordConfig(final HikariConfig hikariConfig, final JsonNode config) {
-    hikariConfig.setUsername(config.get("username").asText());
-    hikariConfig.setPassword(config.get("password").asText());
+    hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
+    hikariConfig.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
   }
 
 }

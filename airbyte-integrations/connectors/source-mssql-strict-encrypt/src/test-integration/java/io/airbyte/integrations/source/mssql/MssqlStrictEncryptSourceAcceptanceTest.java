@@ -44,19 +44,19 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     db.start();
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
         .put("port", db.getFirstMappedPort())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
     try (final DSLContext dslContext = DSLContextFactory.create(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
-            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
             configWithoutDbName.get("port").asInt()),
         null)) {
       final Database database = getDatabase(dslContext);

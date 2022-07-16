@@ -32,7 +32,6 @@ import org.jooq.SQLDialect;
 public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
-  private final List<String> HOST_KEY = List.of(MySQLDestination.HOST_KEY);
   private final List<String> PORT_KEY = List.of(MySQLDestination.PORT_KEY);
   private String schemaName;
 
@@ -120,11 +119,11 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
-            config.get("host").asText(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
             config.get("port").asText()),
         SQLDialect.MYSQL);
     return new Database(dslContext);
@@ -134,7 +133,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     final var schema = schemaName == null ? this.schemaName : schemaName;
     return SshTunnel.sshWrap(
         getConfig(),
-        HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
@@ -152,7 +151,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
     final var config = getConfig();
     SshTunnel.sshWrap(
         config,
-        HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE DATABASE %s;", schemaName)));
@@ -163,7 +162,7 @@ public abstract class SshMySQLDestinationAcceptanceTest extends JdbcDestinationA
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP DATABASE %s", schemaName)));
