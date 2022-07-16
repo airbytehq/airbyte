@@ -53,7 +53,7 @@ class SqlOperationsUtilsTest {
             config.get(JdbcUtils.USERNAME_KEY).asText(),
             config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
-            config.get("jdbc_url").asText()));
+            config.get(JdbcUtils.JDBC_URL_KEY).asText()));
 
     uuidSupplier = mock(Supplier.class);
   }
@@ -116,7 +116,7 @@ class SqlOperationsUtilsTest {
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SCHEMA_KEY, SCHEMA_NAME)
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()))

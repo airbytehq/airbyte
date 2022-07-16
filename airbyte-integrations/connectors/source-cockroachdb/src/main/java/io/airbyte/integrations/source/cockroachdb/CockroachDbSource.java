@@ -71,7 +71,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     LOGGER.warn(jdbcUrl.toString());
 
@@ -120,10 +120,10 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
     dataSources.add(dataSource);
     return dataSource;

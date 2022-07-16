@@ -153,9 +153,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
-    final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
-        .put(JDBC_URL_KEY, jdbcUrl.toString());
+    final Builder<Object, Object> configBuilder = ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
@@ -366,7 +366,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @VisibleForTesting
   static String getUsername(final JsonNode databaseConfig) {
-    final String jdbcUrl = databaseConfig.get("jdbc_url").asText();
+    final String jdbcUrl = databaseConfig.get(JdbcUtils.JDBC_URL_KEY).asText();
     final String username = databaseConfig.get(JdbcUtils.USERNAME_KEY).asText();
 
     // Azure Postgres server has this username pattern: <username>@<host>.

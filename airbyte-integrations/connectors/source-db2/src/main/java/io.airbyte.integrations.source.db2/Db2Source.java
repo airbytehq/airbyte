@@ -60,7 +60,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
         config.get("db").asText()));
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl.toString())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
         .build());
@@ -71,7 +71,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
-          .put("jdbc_url", jdbcUrl.toString())
+          .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
           .put("connection_properties", additionalParams)

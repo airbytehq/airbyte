@@ -120,7 +120,7 @@ public abstract class JdbcStressTest {
             jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
             jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             getDriverClass(),
-            jdbcConfig.get("jdbc_url").asText()));
+            jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText()));
 
     database.execute(connection -> connection.createStatement().execute(
         createTableQuery("id_and_name", String.format("id %s, name VARCHAR(200)", COL_ID_TYPE))));

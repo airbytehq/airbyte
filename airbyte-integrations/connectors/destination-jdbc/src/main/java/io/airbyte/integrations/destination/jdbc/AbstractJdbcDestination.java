@@ -92,7 +92,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         getConnectionProperties(config));
   }
 

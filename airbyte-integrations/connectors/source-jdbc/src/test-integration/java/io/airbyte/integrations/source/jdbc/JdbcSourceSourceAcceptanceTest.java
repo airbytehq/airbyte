@@ -45,7 +45,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
+        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),
             container.getDatabaseName()))
@@ -55,7 +55,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        config.get("jdbc_url").asText(),
+        config.get(JdbcUtils.JDBC_URL_KEY).asText(),
         SQLDialect.POSTGRES)) {
       final Database database = new Database(dslContext);
 

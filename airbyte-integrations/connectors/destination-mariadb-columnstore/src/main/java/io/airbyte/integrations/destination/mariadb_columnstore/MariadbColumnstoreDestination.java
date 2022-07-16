@@ -94,7 +94,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put("jdbc_url", jdbcUrl);
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());

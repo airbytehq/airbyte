@@ -96,20 +96,20 @@ public class PostgresDestinationTest {
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigNoJdbcParameters());
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test

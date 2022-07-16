@@ -71,10 +71,10 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("jdbc_url", jdbcUrl)
-        .put("username", config.get("username").asText())
-        .put("password", config.get("password").asText())
-        .put("schema", schema);
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (config.has(JDBC_URL_PARAMS_KEY)) {
       // configBuilder.put("connection_properties", config.get(JDBC_URL_PARAMS_KEY));

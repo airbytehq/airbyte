@@ -46,7 +46,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put("jdbc_url", String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asInt(),
             redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));

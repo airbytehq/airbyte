@@ -47,20 +47,20 @@ public class MySQLDestinationTest {
   void testNoExtraParams() {
     final JsonNode config = buildConfigNoJdbcParameters();
     final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(config);
-    assertEquals(JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testEmptyExtraParams() {
     final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
-    assertEquals(JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = new MySQLDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
-    assertEquals(JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test

@@ -21,10 +21,6 @@ import javax.sql.DataSource;
 public class RedshiftInsertDestination extends AbstractJdbcDestination {
 
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
-  public static final String USERNAME = "username";
-  public static final String PASSWORD = "password";
-  public static final String JDBC_URL = "jdbc_url";
-
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       JdbcUtils.SSL_KEY, "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
@@ -45,7 +41,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         RedshiftInsertDestination.DRIVER_CLASS,
-        jdbcConfig.get(JDBC_URL).asText(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         SSL_JDBC_PARAMETERS);
   }
 
@@ -64,7 +60,7 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JDBC_URL, String.format("jdbc:redshift://%s:%s/%s",
+        .put(JdbcUtils.JDBC_URL_KEY, String.format("jdbc:redshift://%s:%s/%s",
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),
             redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()))

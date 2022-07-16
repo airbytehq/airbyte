@@ -30,7 +30,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
 
   public static final String HOST_KEY = "host";
-  public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PORT_KEY = "port";
 
@@ -112,7 +111,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JDBC_URL_KEY, jdbcUrl);
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());

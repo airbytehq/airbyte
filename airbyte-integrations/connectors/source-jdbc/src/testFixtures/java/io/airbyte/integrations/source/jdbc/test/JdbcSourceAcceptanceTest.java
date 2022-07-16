@@ -208,7 +208,7 @@ public abstract class JdbcSourceAcceptanceTest {
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
