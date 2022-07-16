@@ -130,7 +130,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        PostgresDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         PostgresDestination.PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
@@ -149,7 +149,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     // do everything in a randomly generated schema so that we can wipe it out at the end.
     SshTunnel.sshWrap(
         getConfig(),
-        PostgresDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         PostgresDestination.PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
@@ -172,7 +172,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     // blow away the test schema at the end.
     SshTunnel.sshWrap(
         getConfig(),
-        PostgresDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         PostgresDestination.PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));

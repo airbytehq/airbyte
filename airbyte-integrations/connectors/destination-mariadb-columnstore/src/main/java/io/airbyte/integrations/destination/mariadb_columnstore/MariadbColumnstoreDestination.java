@@ -28,14 +28,13 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestination.class);
   public static final String DRIVER_CLASS = DatabaseDriver.MARIADB.getDriverClassName();
-  public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
       "allowLoadLocalInfile", "true");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new MariadbColumnstoreDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new MariadbColumnstoreDestination(), JdbcUtils.HOST_LIST_KEY, PORT_KEY);
   }
 
   public MariadbColumnstoreDestination() {

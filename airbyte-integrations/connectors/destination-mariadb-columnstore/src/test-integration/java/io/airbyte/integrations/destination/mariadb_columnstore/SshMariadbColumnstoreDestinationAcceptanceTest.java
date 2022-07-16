@@ -93,7 +93,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MariadbColumnstoreDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         MariadbColumnstoreDestination.PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(

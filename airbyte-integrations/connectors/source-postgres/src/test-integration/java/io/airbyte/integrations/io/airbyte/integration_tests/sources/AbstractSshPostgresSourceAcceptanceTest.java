@@ -43,7 +43,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   private static void populateDatabaseTestData() throws Exception {
     SshTunnel.sshWrap(
         config,
-        List.of("host"),
+        JdbcUtils.HOST_LIST_KEY,
         List.of("port"),
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {

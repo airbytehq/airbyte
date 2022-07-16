@@ -7,6 +7,7 @@ package io.airbyte.db.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jooq.JSONFormat;
 
@@ -14,6 +15,7 @@ public class JdbcUtils {
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String CONNECTION_PROPERTIES_KEY = "connection_properties";
   public static final String DATABASE_KEY = "database";
+  public static final List<String> HOST_LIST_KEY = List.of("host");
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String PASSWORD_KEY = "password";
   public static final String SCHEMA_KEY = "schema";

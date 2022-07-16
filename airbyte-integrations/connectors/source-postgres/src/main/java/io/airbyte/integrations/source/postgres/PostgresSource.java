@@ -90,7 +90,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
+    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, List.of("port"));
   }
 
   PostgresSource() {

@@ -61,12 +61,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
   private static final String HIERARCHYID = "hierarchyid";
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MssqlSource(), HOST_KEY, PORT_KEY);
+    return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, PORT_KEY);
   }
 
   MssqlSource() {

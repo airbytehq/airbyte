@@ -30,7 +30,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
-  public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
@@ -39,7 +38,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       "sslmode", "none");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ClickhouseDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, PORT_KEY);
   }
 
   public ClickhouseDestination() {

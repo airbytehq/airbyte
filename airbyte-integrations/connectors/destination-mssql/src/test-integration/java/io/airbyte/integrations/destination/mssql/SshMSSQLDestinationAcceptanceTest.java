@@ -122,7 +122,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MSSQLDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         MSSQLDestination.PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
@@ -143,7 +143,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
 
     SshTunnel.sshWrap(
         getConfig(),
-        MSSQLDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         MSSQLDestination.PORT_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {

@@ -93,7 +93,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   private void populateDatabaseTestData() throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        List.of("host"),
+        JdbcUtils.HOST_LIST_KEY,
         List.of("port"),
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {

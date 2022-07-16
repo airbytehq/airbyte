@@ -25,7 +25,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
@@ -34,7 +33,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
       "sslmode", "require");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, PORT_KEY);
   }
 
   public PostgresDestination() {

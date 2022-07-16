@@ -41,7 +41,6 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
@@ -49,7 +48,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new CockroachDbSource(), HOST_KEY, PORT_KEY);
+    return new SshWrappedSource(new CockroachDbSource(), JdbcUtils.HOST_LIST_KEY, PORT_KEY);
   }
 
   @Override

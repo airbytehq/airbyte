@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 public class OracleDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleDestination.class);
-  public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
   public static final String DRIVER_CLASS = DatabaseDriver.ORACLE.getDriverClassName();
@@ -56,7 +55,7 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new OracleDestination(), List.of("host"), List.of("port"));
+    return new SshWrappedDestination(new OracleDestination(), JdbcUtils.HOST_LIST_KEY, List.of("port"));
   }
 
   @Override

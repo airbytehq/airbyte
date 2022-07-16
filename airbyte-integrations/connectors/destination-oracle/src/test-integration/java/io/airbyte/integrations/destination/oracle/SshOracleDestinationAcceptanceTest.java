@@ -118,7 +118,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        OracleDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         OracleDestination.PORT_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
@@ -135,7 +135,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     startTestContainers();
     SshTunnel.sshWrap(
         getConfig(),
-        OracleDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         OracleDestination.PORT_KEY,
         mangledConfig -> {
           final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
@@ -173,7 +173,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     SshTunnel.sshWrap(
         getConfig(),
-        OracleDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         OracleDestination.PORT_KEY,
         mangledConfig -> {
           final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);

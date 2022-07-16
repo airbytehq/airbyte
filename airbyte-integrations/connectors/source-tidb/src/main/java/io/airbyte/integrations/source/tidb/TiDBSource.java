@@ -31,7 +31,7 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
       "verifyServerCertificate=false");
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new TiDBSource(), List.of("host"), List.of("port"));
+    return new SshWrappedSource(new TiDBSource(), JdbcUtils.HOST_LIST_KEY, List.of("port"));
   }
 
   public TiDBSource() {

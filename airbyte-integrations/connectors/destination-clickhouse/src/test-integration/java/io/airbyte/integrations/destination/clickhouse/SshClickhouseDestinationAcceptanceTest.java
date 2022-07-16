@@ -125,7 +125,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
     return SshTunnel.sshWrap(
         getConfig(),
-        ClickhouseDestination.HOST_KEY,
+        JdbcUtils.HOST_LIST_KEY,
         ClickhouseDestination.PORT_KEY,
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
