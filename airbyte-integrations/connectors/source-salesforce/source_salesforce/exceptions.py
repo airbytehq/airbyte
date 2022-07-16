@@ -3,14 +3,14 @@
 #
 
 
-from airbyte_cdk.logger import AirbyteLogger
+import logging
 
 
 class Error(Exception):
     """Base Error class for other exceptions"""
 
     # Define the instance of the Native Airbyte Logger
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
 
 class SalesforceException(Exception):

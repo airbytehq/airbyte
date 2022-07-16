@@ -3,9 +3,9 @@
 #
 
 import copy
+from logging import Logger
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -24,7 +24,7 @@ class SourceSalesforce(AbstractSource):
         sf.login()
         return sf
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[str]]:
         try:
             _ = self._get_sf_object(config)
         except exceptions.HTTPError as error:
@@ -84,7 +84,7 @@ class SourceSalesforce(AbstractSource):
 
     def read(
         self,
-        logger: AirbyteLogger,
+        logger: Logger,
         config: Mapping[str, Any],
         catalog: ConfiguredAirbyteCatalog,
         state: Optional[MutableMapping[str, Any]] = None,

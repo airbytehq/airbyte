@@ -3,10 +3,10 @@
 #
 
 
+import logging
 import sys
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests import codes, exceptions  # type: ignore[import]
 
@@ -18,7 +18,7 @@ TRANSIENT_EXCEPTIONS = (
     exceptions.HTTPError,
 )
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def default_backoff_handler(max_tries: int, factor: int, **kwargs):

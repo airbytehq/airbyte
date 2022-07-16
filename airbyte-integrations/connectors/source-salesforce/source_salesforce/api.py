@@ -3,10 +3,10 @@
 #
 
 import concurrent.futures
+import logging
 from typing import Any, List, Mapping, Optional, Tuple
 
 import requests  # type: ignore[import]
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from requests import adapters as request_adapters
 from requests.exceptions import HTTPError, RequestException  # type: ignore[import]
@@ -173,7 +173,7 @@ UNSUPPORTED_FILTERING_STREAMS = [
 
 
 class Salesforce:
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
     version = "v52.0"
     parallel_tasks_size = 100
 
