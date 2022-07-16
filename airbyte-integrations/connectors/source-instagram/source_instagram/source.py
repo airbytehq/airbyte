@@ -3,9 +3,9 @@
 #
 
 from datetime import datetime
+from logging import Logger
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AuthSpecification,
@@ -59,7 +59,7 @@ class SourceInstagram(AbstractSource):
         return ok, error_msg
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         for stream in self.streams(config):
             state_key = str(stream.name)
