@@ -145,8 +145,8 @@ public class SnowflakeDataSourceUtils {
         true));
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      jdbcUrl.append("&").append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
     return jdbcUrl.toString();
   }

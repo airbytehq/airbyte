@@ -32,7 +32,7 @@ public class AbstractJdbcDestinationTest {
         JdbcUtils.PORT_KEY, 1337,
         JdbcUtils.USERNAME_KEY, "user",
         JdbcUtils.DATABASE_KEY, "db",
-        "jdbc_url_params", extraParam));
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
   @Test

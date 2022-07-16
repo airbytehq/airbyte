@@ -125,7 +125,7 @@ public class PostgresSpecTest {
   @Test
   void testJdbcAdditionalProperty() throws Exception {
     final ConnectorSpecification spec = new PostgresSource().spec();
-    assertNotNull(spec.getConnectionSpecification().get("properties").get("jdbc_url_params"));
+    assertNotNull(spec.getConnectionSpecification().get("properties").get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
 }

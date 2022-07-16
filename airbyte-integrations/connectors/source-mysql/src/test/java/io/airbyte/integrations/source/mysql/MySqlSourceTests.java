@@ -63,7 +63,7 @@ public class MySqlSourceTests {
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)
-        .put("jdbc_url_params", jdbcParams)
+        .put(JdbcUtils.JDBC_URL_PARAMS_KEY, jdbcParams)
         .build());
   }
 

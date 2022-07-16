@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory;
 public class MySQLDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDestination.class);
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
 
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
@@ -113,8 +111,8 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());

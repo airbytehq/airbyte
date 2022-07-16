@@ -72,7 +72,7 @@ class PostgresUtilsTest {
         .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY", psqlDb.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .build());
   }
 

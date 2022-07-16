@@ -45,9 +45,9 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
         config.get(JdbcUtils.PORT_KEY).asInt(),
         config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (config.get("jdbc_url_params") != null
-        && !config.get("jdbc_url_params").asText().isEmpty()) {
-      jdbcUrl.append(config.get("jdbc_url_params").asText()).append("&");
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null
+        && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append("&");
     }
 
     // only if config ssl and ssl == true, use ssl to connect db

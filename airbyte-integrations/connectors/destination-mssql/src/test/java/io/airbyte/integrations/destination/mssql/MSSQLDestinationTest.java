@@ -168,7 +168,7 @@ public class MSSQLDestinationTest {
   void testNoExtraParams() {
     final JsonNode config = buildConfigNoJdbcParameters();
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
-    assertNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY));
+    assertNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
   }
 
   @Test
@@ -176,8 +176,8 @@ public class MSSQLDestinationTest {
     final String extraParam = "";
     final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
-    assertNotNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
-    assertEquals(extraParam, jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
   }
 
   @Test
@@ -185,8 +185,8 @@ public class MSSQLDestinationTest {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode config = buildConfigWithExtraJdbcParameters(extraParam);
     final JsonNode jdbcConfig = new MSSQLDestination().toJdbcConfig(config);
-    assertNotNull(jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
-    assertEquals(extraParam, jdbcConfig.get(MSSQLDestination.JDBC_URL_PARAMS_KEY).asText());
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+    assertEquals(extraParam, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
 
   }
 
@@ -209,7 +209,7 @@ public class MSSQLDestinationTest {
         JdbcUtils.DATABASE_KEY, "db",
         JdbcUtils.USERNAME_KEY, "username",
         JdbcUtils.PASSWORD_KEY, "verysecure",
-        "jdbc_url_params", extraParam));
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
 }

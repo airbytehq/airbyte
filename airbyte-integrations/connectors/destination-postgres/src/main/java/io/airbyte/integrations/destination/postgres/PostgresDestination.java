@@ -25,7 +25,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       JdbcUtils.SSL_KEY, "true",

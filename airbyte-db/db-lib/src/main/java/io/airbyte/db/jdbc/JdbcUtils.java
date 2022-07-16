@@ -12,7 +12,7 @@ import java.util.Map;
 import org.jooq.JSONFormat;
 
 public class JdbcUtils {
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+
   // config parameters in alphabetical order
   public static final String CONNECTION_PROPERTIES_KEY = "connection_properties";
   public static final String DATABASE_KEY = "database";
@@ -20,6 +20,7 @@ public class JdbcUtils {
   public static final String HOST_KEY = "host";
   public static final List<String> HOST_LIST_KEY = List.of("host");
   public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String PASSWORD_KEY = "password";
   public static final String PORT_KEY = "port";
   public static final List<String> PORT_LIST_KEY = List.of("port");

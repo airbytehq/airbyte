@@ -60,7 +60,6 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   private static final String HIERARCHYID = "hierarchyid";
 
   public static Source sshWrappedSource() {
@@ -196,8 +195,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .put(JdbcUtils.PASSWORD_KEY, mssqlConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
-    if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JDBC_URL_PARAMS_KEY));
+    if (mssqlConfig.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());

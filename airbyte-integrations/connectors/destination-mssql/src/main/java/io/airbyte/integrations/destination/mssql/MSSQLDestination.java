@@ -26,7 +26,6 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
   }
@@ -73,9 +72,9 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JdbcUtils.SCHEMA_KEY, schema);
 
-    if (config.has(JDBC_URL_PARAMS_KEY)) {
-      // configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, config.get(JDBC_URL_PARAMS_KEY));
-      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      // configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+      configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());

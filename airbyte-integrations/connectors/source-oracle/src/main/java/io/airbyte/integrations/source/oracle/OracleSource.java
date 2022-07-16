@@ -94,8 +94,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
       }
     }
 
-    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
-      additionalParameters.addAll(List.of(config.get("jdbc_url_params").asText().split("&")));
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      additionalParameters.addAll(List.of(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().split("&")));
     }
 
     if (!additionalParameters.isEmpty()) {

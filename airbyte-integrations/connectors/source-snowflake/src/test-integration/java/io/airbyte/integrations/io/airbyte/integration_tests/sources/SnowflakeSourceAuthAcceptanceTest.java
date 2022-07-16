@@ -35,8 +35,8 @@ public class SnowflakeSourceAuthAcceptanceTest extends SnowflakeSourceAcceptance
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
         true));
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append(config.get("jdbc_url_params").asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     final var credentials = config.get("credentials");
