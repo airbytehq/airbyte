@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -41,7 +42,7 @@ public class MySqlSourceTests {
       container.start();
 
       final Properties properties = new Properties();
-      properties.putAll(ImmutableMap.of("user", "root", "password", TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
+      properties.putAll(ImmutableMap.of("user", "root", JdbcUtils.PASSWORD_KEY, TEST_PASSWORD, "serverTimezone", "Europe/Moscow"));
       DriverManager.getConnection(container.getJdbcUrl(), properties);
       final String dbName = Strings.addRandomSuffix("db", "_", 10);
       final JsonNode config = getConfig(container, dbName, "serverTimezone=Europe/Moscow");
@@ -61,7 +62,7 @@ public class MySqlSourceTests {
         .put("port", dbContainer.getFirstMappedPort())
         .put("database", dbName)
         .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)
         .put("jdbc_url_params", jdbcParams)
         .build());
   }

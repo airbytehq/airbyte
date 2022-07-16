@@ -33,8 +33,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
 
-  private static final String PASSWORD = "password";
-
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "socket_timeout", "3000000",
       JdbcUtils.SSL_KEY, "true",
@@ -59,8 +57,8 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
         .put("username", config.get("username").asText())
         .put("jdbc_url", jdbcUrl);
 
-    if (config.has(PASSWORD)) {
-      configBuilder.put(PASSWORD, config.get(PASSWORD).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

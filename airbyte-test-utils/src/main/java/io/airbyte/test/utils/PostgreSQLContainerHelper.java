@@ -55,7 +55,7 @@ public class PostgreSQLContainerHelper {
         .put("port", psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put("schema", "public")
         .put(JdbcUtils.SSL_KEY, false)
         .build());
@@ -64,7 +64,7 @@ public class PostgreSQLContainerHelper {
   public static DataSource getDataSourceFromConfig(final JsonNode config) {
     return DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),

@@ -27,6 +27,7 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
@@ -55,8 +56,8 @@ class DefaultSynchronousSchedulerClientTest {
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
   private static final JsonNode CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
-      .put("username", "airbyte")
-      .put("password", "abc")
+      .put(JdbcUtils.USERNAME_KEY, "airbyte")
+      .put(JdbcUtils.PASSWORD_KEY, "abc")
       .build());
   private static final SourceConnection SOURCE_CONNECTION = new SourceConnection()
       .withSourceId(UUID1)

@@ -69,7 +69,7 @@ class TestStreamingJdbcDatabase {
 
     final DataSource connectionPool = DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
@@ -158,7 +158,7 @@ class TestStreamingJdbcDatabase {
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .build());
   }
 

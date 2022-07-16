@@ -206,7 +206,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
     dataSource = DataSourceFactory.create(
         jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
         jdbcConfig.get("jdbc_url").asText(),
         JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
@@ -294,7 +294,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config).put("password", "fake");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }

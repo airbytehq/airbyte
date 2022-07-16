@@ -43,12 +43,12 @@ public class MssqlStressTest extends JdbcStressTest {
         .put("host", dbContainer.getHost())
         .put("port", dbContainer.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
         .build());
 
     final DataSource dataSource = DataSourceFactory.create(
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-        configWithoutDbName.get("password").asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
             configWithoutDbName.get("host").asText(),

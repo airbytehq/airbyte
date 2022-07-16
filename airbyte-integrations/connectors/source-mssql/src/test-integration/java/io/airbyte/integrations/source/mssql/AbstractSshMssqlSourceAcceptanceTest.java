@@ -61,7 +61,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
             .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put("port", db.getExposedPorts().get(0))
         .put("database", dbName);
   }
@@ -69,7 +69,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),

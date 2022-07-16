@@ -118,7 +118,7 @@ public abstract class JdbcStressTest {
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
             jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-            jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+            jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             getDriverClass(),
             jdbcConfig.get("jdbc_url").asText()));
 

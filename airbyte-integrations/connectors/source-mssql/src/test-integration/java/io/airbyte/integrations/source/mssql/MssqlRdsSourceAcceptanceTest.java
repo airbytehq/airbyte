@@ -56,7 +56,7 @@ public class MssqlRdsSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
     }
     return DSLContextFactory.create(
         baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        baseConfig.get("password").asText(),
+        baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;%s",
             baseConfig.get("host").asText(),

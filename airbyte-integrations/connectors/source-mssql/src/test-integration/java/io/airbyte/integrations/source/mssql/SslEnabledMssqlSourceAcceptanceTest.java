@@ -33,7 +33,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
     final String dbName = "db_" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
 
@@ -59,7 +59,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
   private static DSLContext getDslContext(final JsonNode baseConfig) {
     return DSLContextFactory.create(
         baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        baseConfig.get("password").asText(),
+        baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
             baseConfig.get("host").asText(),

@@ -45,7 +45,6 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
   private static final String STREAM_NAME3 = "ID_AND_NAME3";
-  public static final String PASSWORD = "password";
 
   private Db2Container db;
   private JsonNode config;
@@ -72,7 +71,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, userName)
-        .put("password", password)
+        .put(JdbcUtils.PASSWORD_KEY, password)
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()))
@@ -117,7 +116,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
     dataSource = DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         Db2Source.DRIVER_CLASS,
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
             config.get("host").asText(),
@@ -168,7 +167,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   public void testCheckPrivilegesForUserWithLessPerm() throws Exception {
     createUser(LESS_PERMITTED_USER);
-    final JsonNode config = getConfig(LESS_PERMITTED_USER, PASSWORD);
+    final JsonNode config = getConfig(LESS_PERMITTED_USER, JdbcUtils.PASSWORD_KEY);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
     final List<String> expected = List.of(STREAM_NAME3, STREAM_NAME1);
@@ -180,7 +179,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   public void testCheckPrivilegesForUserWithoutPerm() throws Exception {
     createUser(USER_WITH_OUT_PERMISSIONS);
 
-    final JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, PASSWORD);
+    final JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, JdbcUtils.PASSWORD_KEY);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
     final List<String> expected = Collections.emptyList();
@@ -189,7 +188,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   private void createUser(final String lessPermittedUser) throws IOException, InterruptedException {
-    final String encryptedPassword = db.execInContainer("openssl", "passwd", PASSWORD).getStdout().replaceAll("\n", "");
+    final String encryptedPassword = db.execInContainer("openssl", "passwd", JdbcUtils.PASSWORD_KEY).getStdout().replaceAll("\n", "");
     db.execInContainer("useradd", lessPermittedUser, "-p", encryptedPassword);
   }
 

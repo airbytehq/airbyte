@@ -33,14 +33,14 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
     final Database database = new Database(
         DSLContextFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.MYSQL.getDriverClassName(),
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
                 config.get("host").asText(),

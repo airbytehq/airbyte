@@ -296,7 +296,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
     final JsonNode jdbcConfig = toDatabaseConfig(config);
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get("jdbc_url").asText(),
         getConnectionProperties(config));

@@ -28,7 +28,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
   public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String PASSWORD_KEY = "password";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
   public static final String SCHEMA_KEY = "schema";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
@@ -67,8 +67,8 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
         .put(JDBC_URL_KEY, jdbcUrl)
         .put(SCHEMA_KEY, schema);
 
-    if (config.has(PASSWORD_KEY)) {
-      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {

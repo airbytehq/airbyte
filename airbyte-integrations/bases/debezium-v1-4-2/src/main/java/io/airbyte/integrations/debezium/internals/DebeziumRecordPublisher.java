@@ -158,8 +158,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
     props.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    if (config.has("password")) {
-      props.setProperty("database.password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      props.setProperty("database.password", config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.

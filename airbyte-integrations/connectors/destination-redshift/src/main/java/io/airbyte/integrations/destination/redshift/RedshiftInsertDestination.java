@@ -43,8 +43,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   public DataSource getDataSource(final JsonNode config) {
     final var jdbcConfig = getJdbcConfig(config);
     return DataSourceFactory.create(
-        jdbcConfig.get(USERNAME).asText(),
-        jdbcConfig.has(PASSWORD) ? jdbcConfig.get(PASSWORD).asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         RedshiftInsertDestination.DRIVER_CLASS,
         jdbcConfig.get(JDBC_URL).asText(),
         SSL_JDBC_PARAMETERS);
@@ -63,8 +63,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   public static JsonNode getJdbcConfig(final JsonNode redshiftConfig) {
     final String schema = Optional.ofNullable(redshiftConfig.get(SCHEMA)).map(JsonNode::asText).orElse("public");
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(USERNAME, redshiftConfig.get(USERNAME).asText())
-        .put(PASSWORD, redshiftConfig.get(PASSWORD).asText())
+        .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         .put(JDBC_URL, String.format("jdbc:redshift://%s:%s/%s",
             redshiftConfig.get("host").asText(),
             redshiftConfig.get("port").asText(),

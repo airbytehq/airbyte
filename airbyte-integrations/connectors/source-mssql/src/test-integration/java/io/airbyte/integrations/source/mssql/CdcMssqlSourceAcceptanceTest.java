@@ -106,7 +106,7 @@ public class CdcMssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication", replicationConfig)
         .build());
 

@@ -101,7 +101,7 @@ class TestDefaultJdbcDatabase {
   private DataSource getDataSourceFromConfig(final JsonNode config) {
     return DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
             config.get("host").asText(),
@@ -114,8 +114,8 @@ class TestDefaultJdbcDatabase {
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .build());
   }
 

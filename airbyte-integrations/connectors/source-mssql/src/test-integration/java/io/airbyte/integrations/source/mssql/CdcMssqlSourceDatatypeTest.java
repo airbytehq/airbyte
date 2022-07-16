@@ -41,7 +41,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put("port", container.getFirstMappedPort())
         .put("database", DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication", replicationConfig)
         .build());
 

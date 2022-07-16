@@ -30,14 +30,14 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("ssl", true)
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s?%s",
             config.get("host").asText(),

@@ -59,12 +59,12 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put("port", container.getFirstMappedPort())
         .put("database", Strings.addRandomSuffix("db", "_", 10))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER)
-        .put("password", TEST_PASSWORD.call())
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
         .build());
 
     dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),

@@ -108,7 +108,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "encrypted_verify_certificate")
             .put("ssl_certificate", certificate)
@@ -124,7 +124,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
     dataSource = DataSourceFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         Db2Source.DRIVER_CLASS,
         jdbcUrl);
 

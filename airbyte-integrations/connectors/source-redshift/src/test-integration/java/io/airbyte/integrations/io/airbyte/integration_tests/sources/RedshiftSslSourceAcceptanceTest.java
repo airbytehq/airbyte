@@ -18,7 +18,7 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
                 config.get("host").asText(),

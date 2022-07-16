@@ -28,7 +28,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .build());
 
     dslContext = getDslContext(configWithoutDbName);
@@ -48,7 +48,7 @@ public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),

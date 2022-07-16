@@ -43,14 +43,14 @@ public class FillMySqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("port", 3306)
         .put("database", dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
-        .put("password", "your_pass")
+        .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication_method", ReplicationMethod.STANDARD)
         .build());
 
     final Database database = new Database(
         DSLContextFactory.create(
             config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.MYSQL.getDriverClassName(),
             String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
                 config.get("host").asText(),

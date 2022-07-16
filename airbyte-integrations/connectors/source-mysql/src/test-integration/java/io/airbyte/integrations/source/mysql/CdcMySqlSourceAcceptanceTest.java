@@ -105,7 +105,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", ReplicationMethod.CDC)
         .build());
 

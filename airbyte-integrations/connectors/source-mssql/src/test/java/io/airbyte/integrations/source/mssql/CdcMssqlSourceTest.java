@@ -93,7 +93,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put("database", dbName)
         .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication", replicationConfig)
         .build());
 
@@ -344,7 +344,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
         DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DRIVER_CLASS,
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
                 config.get("host").asText(),

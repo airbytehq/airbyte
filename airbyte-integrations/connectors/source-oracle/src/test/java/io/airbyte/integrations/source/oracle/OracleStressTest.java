@@ -56,8 +56,8 @@ class OracleStressTest extends JdbcStressTest {
         .put("host", ORACLE_DB.getHost())
         .put("port", ORACLE_DB.getFirstMappedPort())
         .put("sid", ORACLE_DB.getSid())
-        .put("username", ORACLE_DB.getUsername())
-        .put("password", ORACLE_DB.getPassword())
+        .put(JdbcUtils.USERNAME_KEY, ORACLE_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, ORACLE_DB.getPassword())
         .build());
     super.setup();
   }
@@ -106,8 +106,8 @@ class OracleStressTest extends JdbcStressTest {
               config.get("port").asText(),
               config.get("sid").asText()));
 
-      if (config.has("password")) {
-        configBuilder.put("password", config.get("password").asText());
+      if (config.has(JdbcUtils.PASSWORD_KEY)) {
+        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());

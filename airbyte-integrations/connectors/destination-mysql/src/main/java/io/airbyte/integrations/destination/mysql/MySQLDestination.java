@@ -32,7 +32,6 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   public static final String HOST_KEY = "host";
   public static final String JDBC_URL_KEY = "jdbc_url";
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final String PASSWORD_KEY = "password";
   public static final String PORT_KEY = "port";
 
   public static final String DRIVER_CLASS = DatabaseDriver.MYSQL.getDriverClassName();
@@ -115,8 +114,8 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put(JDBC_URL_KEY, jdbcUrl);
 
-    if (config.has(PASSWORD_KEY)) {
-      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
     if (config.has(JDBC_URL_PARAMS_KEY)) {
       configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));

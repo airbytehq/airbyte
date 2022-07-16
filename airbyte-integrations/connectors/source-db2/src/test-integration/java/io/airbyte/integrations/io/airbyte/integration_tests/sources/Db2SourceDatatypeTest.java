@@ -55,7 +55,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("port", container.getFirstMappedPort())
         .put("db", container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()))
@@ -63,7 +63,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
     dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         Db2Source.DRIVER_CLASS,
         String.format(DatabaseDriver.DB2.getUrlFormatString(),
             config.get("host").asText(),

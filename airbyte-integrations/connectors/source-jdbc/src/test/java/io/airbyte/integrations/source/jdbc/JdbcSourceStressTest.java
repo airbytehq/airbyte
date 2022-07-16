@@ -55,7 +55,7 @@ class JdbcSourceStressTest extends JdbcStressTest {
         .put("port", PSQL_DB.getFirstMappedPort())
         .put("database", schemaName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .build());
 
     final String initScriptName = "init_" + schemaName.concat(".sql");
@@ -109,8 +109,8 @@ class JdbcSourceStressTest extends JdbcStressTest {
               config.get("port").asInt(),
               config.get("database").asText()));
 
-      if (config.has("password")) {
-        configBuilder.put("password", config.get("password").asText());
+      if (config.has(JdbcUtils.PASSWORD_KEY)) {
+        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());

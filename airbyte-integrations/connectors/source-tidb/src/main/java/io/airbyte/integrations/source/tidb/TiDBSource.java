@@ -59,8 +59,8 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

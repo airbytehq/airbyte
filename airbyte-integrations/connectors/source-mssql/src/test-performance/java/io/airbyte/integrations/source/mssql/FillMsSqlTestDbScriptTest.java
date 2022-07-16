@@ -48,13 +48,13 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put("port", 1433)
         .put("database", dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
-        .put("password", "your_pass")
+        .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
             config.get("host").asText(),

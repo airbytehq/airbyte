@@ -44,7 +44,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("jdbc_url", String.format("jdbc:postgresql://%s:%s/%s",
             container.getHost(),
             container.getFirstMappedPort(),
@@ -53,7 +53,7 @@ public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         config.get("jdbc_url").asText(),
         SQLDialect.POSTGRES)) {

@@ -42,7 +42,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("host", db.getHost())
         .put("port", db.getFirstMappedPort())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put("password", db.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
@@ -103,7 +103,7 @@ public class MssqlSourceAcceptanceTest extends SourceAcceptanceTest {
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d;",
             config.get("host").asText(),

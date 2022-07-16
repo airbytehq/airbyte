@@ -12,6 +12,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import java.sql.Connection;
@@ -57,12 +58,12 @@ class MySqlStressTest extends JdbcStressTest {
         .put("port", container.getFirstMappedPort())
         .put("database", Strings.addRandomSuffix("db", "_", 10))
         .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD.call())
+        .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD.call())
         .build());
 
     dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s",
             config.get("host").asText(),

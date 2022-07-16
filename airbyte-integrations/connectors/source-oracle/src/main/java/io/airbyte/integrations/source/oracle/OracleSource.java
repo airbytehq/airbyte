@@ -81,8 +81,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
         .put("jdbc_url", connectionString);
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     // Use the upper-cased username by default.

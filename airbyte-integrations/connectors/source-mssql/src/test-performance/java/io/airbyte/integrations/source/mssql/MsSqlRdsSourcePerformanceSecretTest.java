@@ -32,7 +32,7 @@ public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         .put("port", plainConfig.get("port"))
         .put("database", dbName)
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
-        .put("password", plainConfig.get("password"))
+        .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .build());
   }
 

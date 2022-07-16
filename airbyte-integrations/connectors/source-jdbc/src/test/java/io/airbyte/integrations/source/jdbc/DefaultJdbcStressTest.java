@@ -50,14 +50,14 @@ class DefaultJdbcStressTest extends JdbcStressTest {
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10);
 
-    config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", JdbcUtils.USERNAME_KEY, "postgres", "password", ""));
+    config = Jsons.jsonNode(ImmutableMap.of("host", "localhost", "port", 5432, "database", "charles", JdbcUtils.USERNAME_KEY, "postgres", JdbcUtils.PASSWORD_KEY, ""));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", PSQL_DB.getHost())
         .put("port", PSQL_DB.getFirstMappedPort())
         .put("database", dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -111,8 +111,8 @@ class DefaultJdbcStressTest extends JdbcStressTest {
               config.get("port").asInt(),
               config.get("database").asText()));
 
-      if (config.has("password")) {
-        configBuilder.put("password", config.get("password").asText());
+      if (config.has(JdbcUtils.PASSWORD_KEY)) {
+        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());

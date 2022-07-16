@@ -58,6 +58,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -601,9 +602,9 @@ public class AirbyteAcceptanceTestHarness {
     }
 
     if (hiddenPassword) {
-      dbConfig.put("password", "**********");
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, "**********");
     } else {
-      dbConfig.put("password", psql.getPassword());
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
     dbConfig.put("port", psql.getFirstMappedPort());

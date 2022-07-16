@@ -38,13 +38,13 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
         .put("port", plainConfig.get("port"))
         .put("database", dbName)
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
-        .put("password", plainConfig.get("password"))
+        .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .put("replication_method", plainConfig.get("replication_method"))
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
             config.get("host").asText(),
