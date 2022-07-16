@@ -1,14 +1,13 @@
 # Step  1: Create the Source
 
-
-Airbyte provides a code generator which bootstraps the scaffolding for our connector.
-
 Let's start by cloning the Airbyte repository
+
 ```
 git clone git@github.com:airbytehq/airbyte.git
 ```
 
-Next we'll run the code generator
+Airbyte provides a code generator which bootstraps the scaffolding for our connector.
+
 ```
 cd airbyte-integrations/connector-templates/generator
 ./generate.sh
@@ -21,13 +20,21 @@ Python HTTP API Source
 Source name: exchange-rates-tutorial
 ```
 
-For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`. The complete source code for this tutorial can be found here #FIXME: there should be a link to the complete tutorial...
-
+For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`. The complete source code for this tutorial can be found here <FIXME: there should be a link to the complete tutorial?
 
 ## Temporary instructions
-`git checkout alex/tutorialIncremental`
-paste the content to the files
+
+These are temporary instructions to run the tutorial until the generator and the refactored stream slicers are in master:
+
+```
+git checkout alex/tutorialIncremental
+pip install -e airbyte-cdk/python/
+```
+
+Then paste the content to the files
+
 1. `airbyte-integrations/connectors/source-exchange-rates-tutorial/source_exchange_rates_tutorial/connector_definition.yaml`
+
 ```
 <TODO>_stream:
   options:
@@ -49,7 +56,9 @@ check:
   stream_names:
     - "<TODO>>"
 ```
+
 2. `airbyte-integrations/connectors/source-exchange-rates-tutorial/source_exchange_rates_tutorial/source.py`
+
 ```
 
 #
@@ -66,4 +75,5 @@ class SourceExchangeRatesTutorial(YamlDeclarativeSource):
 ```
 
 ## Next steps
-Next, [we'll install dependencies](./2-install-dependencies.md)
+
+Next, [we'll install dependencies required to run the connector](./2-install-dependencies.md)
