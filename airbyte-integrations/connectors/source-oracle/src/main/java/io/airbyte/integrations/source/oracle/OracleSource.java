@@ -87,9 +87,9 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
     // Use the upper-cased username by default.
     schemas = List.of(config.get(JdbcUtils.USERNAME_KEY).asText().toUpperCase(Locale.ROOT));
-    if (config.has("schemas") && config.get("schemas").isArray()) {
+    if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : config.get("schemas")) {
+      for (final JsonNode schema : config.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
     }

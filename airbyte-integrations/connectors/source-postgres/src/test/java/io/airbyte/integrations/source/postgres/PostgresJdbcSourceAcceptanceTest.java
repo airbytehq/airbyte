@@ -75,7 +75,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
         .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME, SCHEMA_NAME2))
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .put(JdbcUtils.SSL_KEY, false)

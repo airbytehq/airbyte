@@ -91,7 +91,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
         .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
         .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
         .put("replication", replicationConfig)

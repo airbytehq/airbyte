@@ -50,7 +50,7 @@ public class OracleStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTes
         .put("sid", container.getSid())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("JDBC_SPACE"))
         .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "client_nne")
             .put("encryption_algorithm", "3DES168")

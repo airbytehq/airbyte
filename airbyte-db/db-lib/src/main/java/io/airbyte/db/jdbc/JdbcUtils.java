@@ -23,6 +23,8 @@ public class JdbcUtils {
   public static final String PORT_KEY = "port";
   public static final List<String> PORT_LIST_KEY = List.of("port");
   public static final String SCHEMA_KEY = "schema";
+  // NOTE: this is the plural version of SCHEMA_KEY
+  public static final String SCHEMAS_KEY = "schemas";
   public static final String SSL_KEY = "ssl";
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";

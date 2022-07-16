@@ -140,9 +140,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       }
     }
 
-    if (config.has(SCHEMAS_KEY) && config.get(SCHEMAS_KEY).isArray()) {
+    if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : config.get(SCHEMAS_KEY)) {
+      for (final JsonNode schema : config.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
     }

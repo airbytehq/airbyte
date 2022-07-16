@@ -38,7 +38,7 @@ public class PostgresRdsSourcePerformanceTest extends AbstractSourcePerformanceT
         .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
         .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
         .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put("schemas", List.of(dbName))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(dbName))
         .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
         .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .put(JdbcUtils.SSL_KEY, true)

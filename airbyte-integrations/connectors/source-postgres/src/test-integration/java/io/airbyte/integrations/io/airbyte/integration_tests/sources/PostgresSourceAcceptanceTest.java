@@ -49,7 +49,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put("schemas", Jsons.jsonNode(List.of("public")))
+        .put(JdbcUtils.SCHEMAS_KEY, Jsons.jsonNode(List.of("public")))
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, false)

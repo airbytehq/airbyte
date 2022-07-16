@@ -54,7 +54,7 @@ public class OracleStrictEncryptDestinationAcceptanceTest extends DestinationAcc
         .put("sid", db.getSid())
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put("schemas", List.of("JDBC_SPACE"))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("JDBC_SPACE"))
         .build());
   }
 

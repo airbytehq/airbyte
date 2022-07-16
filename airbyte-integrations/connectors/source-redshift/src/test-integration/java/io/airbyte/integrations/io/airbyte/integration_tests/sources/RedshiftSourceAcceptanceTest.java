@@ -65,7 +65,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     streamName = "customer";
 
     // limit the connection to one schema only
-    config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
+    config = config.set(JdbcUtils.SCHEMAS_KEY, Jsons.jsonNode(List.of(schemaName)));
 
     // use test user user
     config = config.set(JdbcUtils.USERNAME_KEY, Jsons.jsonNode(testUserName));

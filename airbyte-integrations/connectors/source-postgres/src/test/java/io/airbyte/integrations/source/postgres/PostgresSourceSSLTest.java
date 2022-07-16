@@ -144,7 +144,7 @@ class PostgresSourceSSLTest {
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
         .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put("schemas", List.of("public"))
+        .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, true)
