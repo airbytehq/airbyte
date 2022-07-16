@@ -44,7 +44,7 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
     SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
-        List.of("port"),
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");

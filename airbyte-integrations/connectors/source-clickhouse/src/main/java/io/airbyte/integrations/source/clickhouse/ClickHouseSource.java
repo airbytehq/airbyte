@@ -67,7 +67,7 @@ public class ClickHouseSource extends AbstractJdbcSource<JDBCType> implements So
   public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
   public static Source getWrappedSource() {
-    return new SshWrappedSource(new ClickHouseSource(), JdbcUtils.HOST_LIST_KEY, List.of("port"));
+    return new SshWrappedSource(new ClickHouseSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   /**

@@ -94,7 +94,7 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
     return SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
-        MariadbColumnstoreDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx

@@ -51,7 +51,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new OracleSource(), JdbcUtils.HOST_LIST_KEY, List.of("port"));
+    return new SshWrappedSource(new OracleSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   @Override

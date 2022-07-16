@@ -119,7 +119,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     return SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
-        OracleDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -136,7 +136,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        OracleDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
@@ -174,7 +174,7 @@ public abstract class SshOracleDestinationAcceptanceTest extends DestinationAcce
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        OracleDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final Database databaseFromConfig = getDatabaseFromConfig(mangledConfig);
           databaseFromConfig.query(ctx -> ctx.fetch(String.format("DROP USER %s CASCADE", schemaName)));

@@ -27,8 +27,6 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
 
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-  public static final List<String> PORT_KEY = List.of("port");
-
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
   }
@@ -96,7 +94,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new MSSQLDestination(), JdbcUtils.HOST_LIST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new MSSQLDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public static void main(final String[] args) throws Exception {

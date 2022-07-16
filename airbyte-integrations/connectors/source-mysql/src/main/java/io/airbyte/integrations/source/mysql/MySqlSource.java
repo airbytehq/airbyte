@@ -60,7 +60,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
       "verifyServerCertificate=false");
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, List.of("port"));
+    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MySqlSource() {

@@ -131,7 +131,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     return SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.execute("set time zone 'UTC';");
@@ -150,7 +150,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("CREATE SCHEMA %s;", schemaName)));
         });
@@ -173,7 +173,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        PostgresDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> ctx.fetch(String.format("DROP SCHEMA %s CASCADE;", schemaName)));
         });

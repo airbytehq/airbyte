@@ -123,7 +123,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     return SshTunnel.sshWrap(
         config,
         JdbcUtils.HOST_LIST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -144,7 +144,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        MSSQLDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {
             ctx.fetch(String.format("CREATE DATABASE %s;", database));

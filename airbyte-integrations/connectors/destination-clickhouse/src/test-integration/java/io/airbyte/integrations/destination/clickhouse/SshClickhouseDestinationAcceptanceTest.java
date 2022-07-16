@@ -126,7 +126,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
     return SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        ClickhouseDestination.PORT_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
           final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);

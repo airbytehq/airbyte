@@ -94,7 +94,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     SshTunnel.sshWrap(
         getConfig(),
         JdbcUtils.HOST_LIST_KEY,
-        List.of("port"),
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           getDatabaseFromConfig(mangledConfig).query(ctx -> {
             ctx.fetch(String.format("CREATE DATABASE %s;", dbName));
