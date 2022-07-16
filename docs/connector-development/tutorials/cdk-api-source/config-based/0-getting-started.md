@@ -17,8 +17,6 @@ This can be done by signing up for the Free tier plan on [Exchange Rates API](ht
 - Docker
 - NodeJS
 
-All the commands below assume that `python` points to a version of python &gt;=3.9.0. On some systems, `python` points to a Python2 installation and `python3` points to Python3. If this is the case on your machine, substitute all `python` commands in this guide with `python3`.
-
 ## Next Steps
 
 Next, we'll [create a Source using the connector generator.](./1-create-source.md)
