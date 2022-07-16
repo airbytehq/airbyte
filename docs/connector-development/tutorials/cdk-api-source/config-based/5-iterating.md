@@ -44,7 +44,7 @@ connectionSpecification:
 Then we'll update our connection config
 echo '{"access_key": "<your-access-key>", "start_date": "2022-01-01", "base": "USD"}'  > secrets/config.json
 
-Then we'll update the path in the connector definition:
+Then we'll update the `path` in the connector definition:
 ```
 rates_stream:
   options:
@@ -71,10 +71,14 @@ check:
     - "rates"
 ```
 
+#TODO: add a `read` operation her?
+
 We're now always reading data for the start date, which is not exactly what we want.
+
+
 Instead, we would like to iterate over all the dates between the start_date and today and read data for each day.
 
-We can do this by adding a DatetimeStreamSlicer to the connector definition, and update the path to point to the stream_slice's start_date:
+We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
 ```
 rates_stream:
   options:
