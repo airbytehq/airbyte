@@ -64,7 +64,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     addSsl(additionalProperties);
 
-    builder.put("connection_properties", String.join("&", additionalProperties));
+    builder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());

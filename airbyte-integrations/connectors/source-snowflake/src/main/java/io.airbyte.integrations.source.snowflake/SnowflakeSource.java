@@ -98,7 +98,7 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
       throw new RuntimeException(e);
     }
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("connection_properties",
+        .put(JdbcUtils.CONNECTION_PROPERTIES_KEY,
             String.join(";", "authenticator=oauth", "token=" + accessToken))
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());

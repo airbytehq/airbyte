@@ -199,7 +199,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
     if (mssqlConfig.has(JDBC_URL_PARAMS_KEY)) {
-      configBuilder.put("connection_properties", mssqlConfig.get(JDBC_URL_PARAMS_KEY));
+      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, mssqlConfig.get(JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());

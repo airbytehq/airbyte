@@ -74,7 +74,7 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
           .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
           .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
           .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
-          .put("connection_properties", additionalParams)
+          .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParams)
           .build());
     }
 

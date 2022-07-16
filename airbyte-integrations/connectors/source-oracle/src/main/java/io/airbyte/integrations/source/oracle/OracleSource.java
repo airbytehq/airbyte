@@ -100,7 +100,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
 
     if (!additionalParameters.isEmpty()) {
       final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
-      configBuilder.put("connection_properties", connectionParams);
+      configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionParams);
     }
 
     return Jsons.jsonNode(configBuilder.build());
