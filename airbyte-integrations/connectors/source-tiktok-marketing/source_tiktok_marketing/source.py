@@ -2,9 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification, SyncMode
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -111,7 +111,7 @@ class SourceTiktokMarketing(AbstractSource):
             "access_token": access_token,
         }
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """
