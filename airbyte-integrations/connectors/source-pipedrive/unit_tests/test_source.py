@@ -2,7 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.logger import AirbyteLogger
+import logging
+
 from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -13,7 +14,7 @@ from airbyte_cdk.models import (
 )
 from source_pipedrive.source import SourcePipedrive
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 PIPEDRIVE_URL_BASE = "https://api.pipedrive.com/v1/"
 

@@ -3,10 +3,10 @@
 #
 
 
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -28,7 +28,7 @@ from source_pipedrive.streams import (
 
 
 class SourcePipedrive(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             stream_kwargs = self.get_stream_kwargs(config)
             deals = Deals(**stream_kwargs)
