@@ -3,18 +3,18 @@
 #
 
 
+import logging
 import sys
 from typing import Any
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 
 
 class Error(Exception):
     """Base Error class for other exceptions"""
 
     # Define the instance of the Native Airbyte Logger
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
 
 class QueryWindowError(Error):

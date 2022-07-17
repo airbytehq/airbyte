@@ -3,11 +3,11 @@
 #
 
 import json
+import logging
 from typing import Any, Dict, Mapping
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from source_zuora.source import (
     SourceZuora,
     ZuoraDescribeObject,
@@ -96,7 +96,7 @@ class TestZuora:
         """
         Test checks the connection to the Zuora API.
         """
-        connection = SourceZuora.check_connection(self, logger=AirbyteLogger, config=self.config)
+        connection = SourceZuora.check_connection(self, logger=logging.getLogger("airbyte"), config=self.config)
         assert connection == (True, None)
 
     @pytest.mark.parametrize("config", [(config)], ids=["LIVE"])
