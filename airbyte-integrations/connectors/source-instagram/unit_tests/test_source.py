@@ -1,9 +1,8 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+import logging
 
-
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -14,7 +13,7 @@ from airbyte_cdk.models import (
 )
 from source_instagram.source import SourceInstagram
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def test_check_connection_ok(api, some_config):
