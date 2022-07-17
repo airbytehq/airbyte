@@ -3,12 +3,13 @@
 #
 
 import base64
+import logging
 from datetime import datetime, timedelta
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -24,7 +25,7 @@ class TokenAuthenticatorBase64(TokenAuthenticator):
 
 
 class SourceMixpanel(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -74,7 +75,7 @@ class SourceMixpanel(AbstractSource):
             end_date = pendulum.parse(end_date).date()
         config["end_date"] = end_date or now  # set to now by default
 
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
+        logging.getLogger("airbyte").info(f"Using start_date: {config['start_date']}, end_date: {config['end_date']}")
 
         auth = TokenAuthenticatorBase64(token=config["api_secret"])
         return [

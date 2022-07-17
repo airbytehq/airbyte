@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime, timedelta
 from functools import wraps
 
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 
 from .streams import Funnels
 
@@ -37,7 +37,7 @@ def adapt_streams_if_testing(func):
         if not is_testing:
             return func(self, config)
 
-        AirbyteLogger().log("INFO", "SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
+        logging.getLogger("airbyte").info("SOURCE IN TESTING MODE, DO NOT USE IN PRODUCTION!")
         tzone = pendulum.timezone(config.get("project_timezone", "US/Pacific"))
         now = datetime.now(tzone).date()
         # 1. Take time range in only 1 month

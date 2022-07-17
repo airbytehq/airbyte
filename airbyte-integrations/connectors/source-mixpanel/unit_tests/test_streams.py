@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import timedelta
 from unittest.mock import MagicMock
 
 import pendulum
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from source_mixpanel.streams import (
     Annotations,
@@ -26,7 +26,7 @@ from source_mixpanel.streams import (
 
 from .utils import get_url_to_mock, setup_response
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 MIXPANEL_BASE_URL = "https://mixpanel.com/api/2.0/"
 
