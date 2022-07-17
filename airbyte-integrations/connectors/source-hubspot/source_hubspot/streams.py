@@ -19,9 +19,9 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
+from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS, API_KEY_CREDENTIALS
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
