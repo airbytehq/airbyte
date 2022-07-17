@@ -7,7 +7,6 @@ import logging
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
@@ -49,7 +48,7 @@ from source_hubspot.streams import (
 
 
 class SourceHubspot(AbstractSource):
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """Check connection"""
