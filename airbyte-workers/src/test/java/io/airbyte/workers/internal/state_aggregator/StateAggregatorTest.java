@@ -28,10 +28,12 @@ import org.junit.jupiter.params.provider.EnumSource;
 public class StateAggregatorTest {
 
   StateAggregator stateAggregator;
+  boolean USE_STREAM_CAPABLE_STATE = true;
+  boolean DONT_USE_STREAM_CAPABLE_STATE = false;
 
   @BeforeEach
   public void init() {
-    stateAggregator = new DefaultStateAggregator();
+    stateAggregator = new DefaultStateAggregator(DONT_USE_STREAM_CAPABLE_STATE);
   }
 
   @ParameterizedTest
@@ -99,10 +101,31 @@ public class StateAggregatorTest {
   }
 
   @Test
-  public void testStreamState() {
+  public void testStreamStateWithFeatureFlagOff() {
     final AirbyteStateMessage state1 = getStreamMessage("a", 1);
     final AirbyteStateMessage state2 = getStreamMessage("b", 2);
     final AirbyteStateMessage state3 = getStreamMessage("b", 3);
+
+    stateAggregator.ingest(state1);
+    Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
+        .withState(Jsons.jsonNode(List.of(state1))));
+
+    stateAggregator.ingest(state2);
+    Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
+        .withState(Jsons.jsonNode(List.of(state2))));
+
+    stateAggregator.ingest(state3);
+    Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()
+        .withState(Jsons.jsonNode(List.of(state3))));
+  }
+
+  @Test
+  public void testStreamStateWithFeatureFlagOn() {
+    final AirbyteStateMessage state1 = getStreamMessage("a", 1);
+    final AirbyteStateMessage state2 = getStreamMessage("b", 2);
+    final AirbyteStateMessage state3 = getStreamMessage("b", 3);
+
+    stateAggregator = new DefaultStateAggregator(USE_STREAM_CAPABLE_STATE);
 
     stateAggregator.ingest(state1);
     Assertions.assertThat(stateAggregator.getAggregated()).isEqualTo(new State()

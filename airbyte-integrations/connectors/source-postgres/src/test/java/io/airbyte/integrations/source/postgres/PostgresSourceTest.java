@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -187,6 +188,18 @@ class PostgresSourceTest {
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("ssl", false)
+        .build());
+  }
+
+  private JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", psqlDb.getHost())
+        .put("port", psqlDb.getFirstMappedPort())
+        .put("database", dbName)
+        .put("schemas", List.of(SCHEMA_NAME))
+        .put("username", psqlDb.getUsername())
+        .put("password", psqlDb.getPassword())
+        .put("ssl", true)
         .build());
   }
 
@@ -410,9 +423,9 @@ class PostgresSourceTest {
         });
       }
 
-      AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
-      Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
-      Set<String> expectedVisibleNames = Sets.newHashSet(
+      final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      final Set<String> expectedVisibleNames = Sets.newHashSet(
           "table_granted_by_role",
           "table_granted_by_role_with_options",
           "test_table_granted_directly",
@@ -447,13 +460,30 @@ class PostgresSourceTest {
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
+    assertTrue(PostgresUtils.isCdc(config));
   }
+
+  @Test
+  void testGetDefaultConnectionPropertiesWithoutSsl() {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
+    assertEquals(defaultConnectionProperties, Collections.emptyMap());
+  };
+
+  @Test
+  void testGetDefaultConnectionPropertiesWithSsl() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName);
+    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
+    assertEquals(defaultConnectionProperties, ImmutableMap.of(
+        "ssl", "true",
+        "sslmode", "require"
+    ));
+  };
 
   @Test
   void testGetUsername() {

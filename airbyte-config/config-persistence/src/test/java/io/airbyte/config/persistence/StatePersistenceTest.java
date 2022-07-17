@@ -579,7 +579,7 @@ public class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     };
   }
 
-  private void assertEquals(StateWrapper lhs, StateWrapper rhs) {
+  private void assertEquals(final StateWrapper lhs, final StateWrapper rhs) {
     Assertions.assertEquals(Jsons.serialize(lhs), Jsons.serialize(rhs));
   }
 
