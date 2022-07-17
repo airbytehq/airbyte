@@ -3,12 +3,13 @@
 #
 
 import copy
+import logging
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -174,7 +175,7 @@ class IncrementalMessageStream(ChanneledStream, ABC):
             for index, value in enumerate(self.primary_key):
                 setattr(self, f"sub_primary_key_{index + 1}", value)
         else:
-            logger = AirbyteLogger()
+            logger = logging.getLogger("airbyte")
             logger.error("Failed during setting sub primary keys. Primary key should be list.")
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
@@ -325,7 +326,7 @@ class SourceSlack(AbstractSource):
         else:
             raise Exception(f"No supported option_title: {credentials_title} specified. See spec.json for references")
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         try:
             authenticator = self._get_authenticator(config)
             users_stream = Users(authenticator=authenticator)
@@ -358,7 +359,7 @@ class SourceSlack(AbstractSource):
 
         # To sync data from channels, the bot backed by this token needs to join all those channels. This operation is idempotent.
         if config["join_channels"]:
-            logger = AirbyteLogger()
+            logger = logging.getLogger("airbyte")
             logger.info("joining Slack channels")
             join_channels_stream = JoinChannelsStream(authenticator=authenticator)
             for stream_slice in join_channels_stream.stream_slices():
