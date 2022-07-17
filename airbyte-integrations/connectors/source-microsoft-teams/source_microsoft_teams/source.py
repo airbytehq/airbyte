@@ -5,9 +5,9 @@
 
 import json
 from datetime import datetime
+from logging import Logger
 from typing import Dict, Generator
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteCatalog, AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.deprecated.base_source import BaseSource
 
@@ -25,12 +25,12 @@ class SourceMicrosoftTeams(BaseSource):
         client = self.client_class(config=config)
         return client
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: Logger, config: json) -> AirbyteCatalog:
         client = self._get_client(config)
         return AirbyteCatalog(streams=client.get_streams())
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: Logger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         client = self._get_client(config)
 

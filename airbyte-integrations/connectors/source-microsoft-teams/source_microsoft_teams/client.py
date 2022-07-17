@@ -6,6 +6,7 @@
 import csv
 import io
 import json
+import logging
 import pkgutil
 import sys
 import time
@@ -15,11 +16,10 @@ from typing import Dict, List, Optional, Tuple, Union
 import backoff
 import msal
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream
 from msal.exceptions import MsalServiceError
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 def log_backoff_attempt(details):
