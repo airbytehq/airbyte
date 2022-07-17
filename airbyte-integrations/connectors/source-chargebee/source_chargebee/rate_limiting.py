@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import sys
 from typing import Union
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from chargebee.api_error import InvalidRequestError, OperationFailedError
 from requests import codes
 
@@ -15,7 +15,7 @@ TRANSIENT_EXCEPTIONS = (
     InvalidRequestError,
 )
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def default_backoff_handler(max_tries: int, factor: int, **kwargs):
