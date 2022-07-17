@@ -16,6 +16,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_confi
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
+from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -46,8 +47,6 @@ from source_hubspot.streams import (
     Tickets,
     Workflows,
 )
-
-from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS, API_KEY_CREDENTIALS
 
 
 class SourceHubspot(AbstractSource):
