@@ -2,16 +2,17 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
-from airbyte_cdk.logger import AirbyteLogger
 from source_s3.source_files_abstract.file_info import FileInfo
 
 
 class AbstractFileParser(ABC):
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def __init__(self, format: dict, master_schema: dict = None):
         """
@@ -53,13 +54,13 @@ class AbstractFileParser(ABC):
         """
 
     @staticmethod
-    def json_type_to_pyarrow_type(typ: str, reverse: bool = False, logger: AirbyteLogger = AirbyteLogger()) -> str:
+    def json_type_to_pyarrow_type(typ: str, reverse: bool = False, logger: Logger = logging.getLogger("airbyte")) -> str:
         """
         Converts Json Type to PyArrow types to (or the other way around if reverse=True)
 
         :param typ: Json type if reverse is False, else PyArrow type
         :param reverse: switch to True for PyArrow type -> Json type, defaults to False
-        :param logger: defaults to AirbyteLogger()
+        :param logger: defaults to logging.getLogger("airbyte")
         :return: PyArrow type if reverse is False, else Json type
         """
         str_typ = str(typ)

@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import os
 import shutil
 import time
@@ -11,7 +12,6 @@ from typing import Any, Dict, Iterator, List, Mapping
 
 import boto3
 import pytest
-from airbyte_cdk import AirbyteLogger
 from botocore.errorfactory import ClientError
 from source_s3.source import SourceS3
 from source_s3.stream import IncrementalFileStreamS3
@@ -24,7 +24,7 @@ TMP_FOLDER = "/tmp/test_minio_source_s3"
 if not os.path.exists(TMP_FOLDER):
     os.makedirs(TMP_FOLDER)
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
@@ -104,7 +104,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
 
 
 class TestIntegrationCsvFiles:
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     @memory_limit(150)  # max used memory should be less than 150Mb
     def read_source(self, credentials: Dict[str, Any], catalog: Dict[str, Any]) -> int:

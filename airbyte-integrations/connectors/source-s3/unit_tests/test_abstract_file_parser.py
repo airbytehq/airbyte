@@ -2,14 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Mapping, Tuple
 
 import pyarrow as pa
 import pytest
-from airbyte_cdk import AirbyteLogger
 from source_s3.source_files_abstract.formats.abstract_file_parser import AbstractFileParser
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 class TestAbstractFileParserStatics:

@@ -3,6 +3,7 @@
 #
 
 import linecache
+import logging
 import os
 import random
 import sys
@@ -13,7 +14,6 @@ from functools import lru_cache, wraps
 from typing import Any, Callable, List, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from smart_open import open as smart_open
 from source_s3.source_files_abstract.file_info import FileInfo
 
@@ -64,7 +64,7 @@ def create_by_local_file(filepath: str) -> FileInfo:
 class AbstractTestParser(ABC):
     """Prefix this class with Abstract so the tests don't run here but only in the children"""
 
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
     record_types: Mapping[str, Any] = {}
 
     @classmethod

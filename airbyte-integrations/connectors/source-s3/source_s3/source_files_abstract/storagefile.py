@@ -2,18 +2,17 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from datetime import datetime
 from typing import BinaryIO, Iterator, TextIO, Union
 
-from airbyte_cdk.logger import AirbyteLogger
-
 from .file_info import FileInfo
 
 
 class StorageFile(ABC):
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def __init__(self, file_info: FileInfo, provider: dict):
         """

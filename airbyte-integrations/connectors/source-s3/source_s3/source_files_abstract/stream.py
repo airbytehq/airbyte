@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -11,7 +12,6 @@ from functools import lru_cache
 from traceback import format_exc
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from wcmatch.glob import GLOBSTAR, SPLIT, globmatch
@@ -25,7 +25,7 @@ from .storagefile import StorageFile
 
 JSON_TYPES = ["string", "number", "integer", "object", "array", "boolean", "null"]
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 class ConfigurationError(Exception):

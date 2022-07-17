@@ -3,6 +3,7 @@
 #
 
 
+import logging
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -10,14 +11,13 @@ from typing import Any, Iterator, List, Mapping
 from uuid import uuid4
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 from source_s3.source_files_abstract.stream import FileStream
 
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE.joinpath("sample_files/")
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 JSONTYPE_TO_PYTHONTYPE = {"string": str, "number": float, "integer": int, "object": dict, "array": list, "boolean": bool, "null": None}
 
 

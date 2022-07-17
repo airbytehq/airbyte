@@ -3,15 +3,15 @@
 #
 
 
+import logging
 from typing import Mapping
 from unittest.mock import MagicMock
 
 import pytest
 import smart_open
-from airbyte_cdk import AirbyteLogger
 from source_s3.s3file import S3File
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 class TestS3File:

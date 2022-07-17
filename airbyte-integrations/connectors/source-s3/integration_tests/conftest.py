@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import time
 from pathlib import Path
 from typing import Any, Iterable, List, Mapping
@@ -11,14 +12,13 @@ from zipfile import ZipFile
 import docker
 import pytest
 import requests  # type: ignore[import]
-from airbyte_cdk import AirbyteLogger
 from docker.errors import APIError
 from netifaces import AF_INET, ifaddresses, interfaces
 from requests.exceptions import ConnectionError  # type: ignore[import]
 
 from .integration_test import TMP_FOLDER, TestIncrementalFileStreamS3
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 def get_local_ip() -> str:

@@ -3,15 +3,15 @@
 #
 
 import json
+import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 from source_s3 import SourceS3
 from source_s3.source_files_abstract.spec import SourceFilesAbstractSpec
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def test_transform_backslash_t_to_tab(tmp_path):

@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 import os
 import shutil
 import tempfile
@@ -10,13 +11,12 @@ from pathlib import Path
 from typing import Any, List, Mapping
 
 import requests  # noqa
-from airbyte_cdk import AirbyteLogger
 from netifaces import AF_INET, ifaddresses, interfaces
 from pytest import fixture
 from requests.exceptions import ConnectionError  # noqa
 from source_s3 import SourceS3
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 TMP_FOLDER = os.path.join(tempfile.gettempdir(), "test_generated")
 

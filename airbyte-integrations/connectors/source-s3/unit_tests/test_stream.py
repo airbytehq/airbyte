@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime
 from typing import Any, Dict, List, Mapping
 from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.storagefile import StorageFile
@@ -16,7 +16,7 @@ from source_s3.stream import IncrementalFileStreamS3
 
 from .abstract_test_parser import create_by_local_file, memory_limit
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 
 
 def mock_big_size_object():
