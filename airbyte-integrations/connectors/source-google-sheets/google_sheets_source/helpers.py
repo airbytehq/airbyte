@@ -179,7 +179,7 @@ class Helpers(object):
                 non_grid_sheets.append(sheet_title)
 
         if non_grid_sheets:
-            logger.log("WARN", "Skip non-grid sheets: " + "".join(non_grid_sheets))
+            logger.warning("Skip non-grid sheets: " + "".join(non_grid_sheets))
 
         return grid_sheets
 
