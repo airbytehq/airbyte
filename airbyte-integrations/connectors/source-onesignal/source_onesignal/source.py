@@ -3,10 +3,10 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -27,7 +27,7 @@ class SourceOnesignal(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
+        logging.getLogger("airbyte").info(f"Using start_date: {config['start_date']}")
 
         authenticator = TokenAuthenticator(config["user_auth_key"], "Basic")
         args = {"authenticator": authenticator, "config": config}
