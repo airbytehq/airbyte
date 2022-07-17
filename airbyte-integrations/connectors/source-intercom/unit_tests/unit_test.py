@@ -3,9 +3,10 @@
 #
 
 
+import logging
+
 import pytest
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from source_intercom.source import (
@@ -24,7 +25,7 @@ from source_intercom.source import (
     Teams,
 )
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 test_data = [

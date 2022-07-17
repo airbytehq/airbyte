@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC
 from datetime import datetime
 from enum import Enum
@@ -11,7 +12,6 @@ from urllib.parse import parse_qsl, urljoin, urlparse
 import requests
 import vcr
 import vcr.cassette as Cassette
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -519,7 +519,7 @@ class SourceIntercom(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config["start_date"] = datetime.strptime(config["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
+        logging.getLogger("airbyte").info(f"Using start_date: {config['start_date']}")
 
         auth = VersionApiAuthenticator(token=config["access_token"])
         return [

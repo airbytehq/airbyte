@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import time
 from copy import deepcopy
 from datetime import datetime
@@ -12,12 +13,11 @@ from typing import Mapping
 from unittest.mock import patch
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
 from source_intercom.source import Companies, ConversationParts, SourceIntercom, VersionApiAuthenticator
 
-LOGGER = AirbyteLogger()
+LOGGER = logging.getLogger("airbyte")
 # from unittest.mock import Mock
 
 HERE = Path(__file__).resolve().parent
