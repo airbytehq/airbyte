@@ -6,10 +6,12 @@ package io.airbyte.workers.temporal.scheduling;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.StandardCheckConnectionInput;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
@@ -89,6 +91,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private static final String CHECK_BEFORE_SYNC_TAG = "check_before_sync";
   private static final int CHECK_BEFORE_SYNC_CURRENT_VERSION = 1;
+
+  private static final String CHECK_JOB_OUTPUT_TAG = "check_job_output";
+  private static final int CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION = 1;
 
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
@@ -324,6 +329,18 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     }
   }
 
+  private ConnectorJobOutput getCheckResponse(final CheckConnectionInput checkInput) {
+    final int attemptCreationVersion =
+        Workflow.getVersion(CHECK_JOB_OUTPUT_TAG, Workflow.DEFAULT_VERSION, CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION);
+
+    if (attemptCreationVersion < CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION) {
+      final StandardCheckConnectionOutput checkOutput = runMandatoryActivityWithOutput(checkActivity::run, checkInput);
+      return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(checkOutput);
+    }
+
+    return runMandatoryActivityWithOutput(checkActivity::runWithJobOutput, checkInput);
+  }
+
   private SyncCheckConnectionFailure checkConnections(final GenerateInputActivity.GeneratedJobInput jobInputs) {
     final JobRunConfig jobRunConfig = jobInputs.getJobRunConfig();
     final StandardSyncInput syncInput = jobInputs.getSyncInput();
@@ -349,7 +366,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       log.info("SOURCE CHECK: Skipped");
     } else {
       log.info("SOURCE CHECK: Starting");
-      final ConnectorJobOutput sourceCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkSourceInput);
+      final ConnectorJobOutput sourceCheckResponse = getCheckResponse(checkSourceInput);
       if (SyncCheckConnectionFailure.isOutputFailed(sourceCheckResponse)) {
         checkFailure.setFailureOrigin(FailureReason.FailureOrigin.SOURCE);
         checkFailure.setFailureOutput(sourceCheckResponse);
@@ -366,7 +383,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       log.info("DESTINATION CHECK: Skipped");
     } else {
       log.info("DESTINATION CHECK: Starting");
-      final ConnectorJobOutput destinationCheckResponse = runMandatoryActivityWithOutput(checkActivity::run, checkDestinationInput);
+      final ConnectorJobOutput destinationCheckResponse = getCheckResponse(checkDestinationInput);
       if (SyncCheckConnectionFailure.isOutputFailed(destinationCheckResponse)) {
         checkFailure.setFailureOrigin(FailureReason.FailureOrigin.DESTINATION);
         checkFailure.setFailureOutput(destinationCheckResponse);
