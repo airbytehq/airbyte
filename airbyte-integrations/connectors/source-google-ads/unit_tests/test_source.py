@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from collections import namedtuple
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
@@ -420,7 +420,7 @@ def test_check_connection_should_pass_when_config_valid(mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockGoogleAdsClient)
     source = SourceGoogleAds()
     check_successful, message = source.check_connection(
-        AirbyteLogger(),
+        logging.getLogger("airbyte"),
         {
             "credentials": {
                 "developer_token": "fake_developer_token",
@@ -463,7 +463,7 @@ def test_check_connection_should_fail_when_api_call_fails(mocker):
     mocker.patch("source_google_ads.source.GoogleAds", MockErroringGoogleAdsClient)
     source = SourceGoogleAds()
     check_successful, message = source.check_connection(
-        AirbyteLogger(),
+        logging.getLogger("airbyte"),
         {
             "credentials": {
                 "developer_token": "fake_developer_token",
@@ -517,7 +517,7 @@ def test_invalid_custom_query_handled(mocked_gads_api, config):
         error_type="request_error",
     )
     source = SourceGoogleAds()
-    status_ok, error = source.check_connection(AirbyteLogger(), config)
+    status_ok, error = source.check_connection(logging.getLogger("airbyte"), config)
     assert not status_ok
     assert error == (
         "Unable to connect to Google Ads API with the provided configuration - Unrecognized field in the query: "
