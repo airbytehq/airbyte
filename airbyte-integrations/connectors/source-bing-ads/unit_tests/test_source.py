@@ -3,7 +3,7 @@
 #
 
 import json
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 import source_bing_ads
@@ -22,7 +22,7 @@ def config_fixture():
 
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
-    return patch("source_bing_ads.source.AirbyteLogger")
+    return MagicMock()
 
 
 @patch.object(source_bing_ads.source, "Client")

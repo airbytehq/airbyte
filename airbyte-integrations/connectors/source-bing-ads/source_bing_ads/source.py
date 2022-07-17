@@ -4,9 +4,9 @@
 
 
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -568,7 +568,7 @@ class SourceBingAds(AbstractSource):
     Source implementation of Bing Ads API. Fetches advertising data from accounts
     """
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             client = Client(**config)
             account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
