@@ -4,11 +4,11 @@
 
 
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import parse_qsl, urlparse
 
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -484,7 +484,7 @@ class Shop(ShopifyStream):
 
 
 class SourceShopify(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """

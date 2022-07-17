@@ -3,14 +3,15 @@
 #
 
 
+import logging
+
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 @pytest.fixture
 def logger():
-    return AirbyteLogger()
+    return logging.getLogger("airbyte")
 
 
 @pytest.fixture
