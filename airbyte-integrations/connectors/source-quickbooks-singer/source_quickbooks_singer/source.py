@@ -4,8 +4,9 @@
 
 
 import json
+import logging
+from logging import Logger
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from airbyte_cdk.sources.singer import SingerSource
 from requests_oauthlib import OAuth2Session
@@ -16,10 +17,10 @@ class SourceQuickbooksSinger(SingerSource):
     TAP_CMD = "tap-quickbooks"
 
     def _write_config(self, token):
-        logger = AirbyteLogger()
+        logger = logging.getLogger("airbyte")
         logger.info("Credentials Refreshed")
 
-    def check_config(self, logger: AirbyteLogger, config_path: str, config: json) -> AirbyteConnectionStatus:
+    def check_config(self, logger: Logger, config_path: str, config: json) -> AirbyteConnectionStatus:
         token = {"refresh_token": config["refresh_token"], "token_type": "Bearer", "access_token": "wrong", "expires_in": "-30"}
         extra = {"client_id": config["client_id"], "client_secret": config["client_secret"]}
 
@@ -50,10 +51,10 @@ class SourceQuickbooksSinger(SingerSource):
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {str(e)}")
 
-    def discover_cmd(self, logger: AirbyteLogger, config_path: str) -> str:
+    def discover_cmd(self, logger: Logger, config_path: str) -> str:
         return f"{self.TAP_CMD} --config {config_path} --discover"
 
-    def read_cmd(self, logger: AirbyteLogger, config_path: str, catalog_path: str, state_path: str = None) -> str:
+    def read_cmd(self, logger: Logger, config_path: str, catalog_path: str, state_path: str = None) -> str:
         config_option = f"--config {config_path}"
         properties_option = f"--catalog {catalog_path}"
         state_option = f"--state {state_path}" if state_path else ""
