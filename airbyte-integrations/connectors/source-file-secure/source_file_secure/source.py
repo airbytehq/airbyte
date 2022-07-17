@@ -5,11 +5,11 @@
 import json
 import os
 import sys
+from logging import Logger
 
 # some integration tests doesn't setup dependences from
 # requirements.txt file and Python can return a exception.
 # Thus we should to import this parent module manually
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification
 
 try:
@@ -57,7 +57,7 @@ class SourceFileSecure(ParentSourceFile):
 
         return ClientSecure
 
-    def spec(self, logger: AirbyteLogger) -> ConnectorSpecification:
+    def spec(self, logger: Logger) -> ConnectorSpecification:
         """Tries to find and remove a spec data about local storage settings"""
 
         parent_code_dir = os.path.dirname(source_file.source.__file__)
