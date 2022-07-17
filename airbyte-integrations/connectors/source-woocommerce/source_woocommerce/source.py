@@ -3,15 +3,16 @@
 #
 
 
+import logging
 from abc import ABC
 from base64 import b64encode
 from datetime import datetime
+from logging import Logger
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -108,7 +109,7 @@ class IncrementalWoocommerceStream(WoocommerceStream, ABC):
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
-        AirbyteLogger().log("INFO", f"using params: {params}")
+        logging.getLogger("airbyte").info(f"using params: {params}")
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
             params["orderby"] = self.order_field
@@ -176,7 +177,7 @@ class SourceWoocommerce(AbstractSource):
         token = b64encode(b":".join((username, password))).strip().decode("ascii")
         return token
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         Testing connection availability for the connector.
         """
