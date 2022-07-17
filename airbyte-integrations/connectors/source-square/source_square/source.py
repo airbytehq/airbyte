@@ -4,11 +4,11 @@
 
 import json
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -429,7 +429,7 @@ class SourceSquare(AbstractSource):
 
         return auth
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
 
         headers = {
             "Square-Version": self.api_version,
