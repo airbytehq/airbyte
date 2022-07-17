@@ -2,13 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import re
 
-from airbyte_cdk import AirbyteLogger
 from source_typeform import SourceTypeform
 from source_typeform.source import TypeformStream
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 TYPEFORM_BASE_URL = TypeformStream.url_base
 

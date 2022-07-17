@@ -5,12 +5,12 @@
 
 import urllib.parse as urlparse
 from abc import ABC, abstractmethod
+from logging import Logger
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs
 
 import pendulum
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -237,7 +237,7 @@ class Themes(PaginatedStream):
 
 
 class SourceTypeform(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             form_ids = config.get("form_ids", []).copy()
             # verify if form inputted by user is valid
