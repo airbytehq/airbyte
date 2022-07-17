@@ -2,16 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 import sys
 import urllib.parse as urlparse
 
 import backoff
-from airbyte_cdk.logger import AirbyteLogger
 from facebook_business.exceptions import FacebookRequestError
 from requests.status_codes import codes as status_codes
-
-logger = AirbyteLogger()
 
 
 class InstagramAPIException(Exception):
@@ -22,7 +18,7 @@ class InstagramExpectedError(InstagramAPIException):
     """Error that we expect to happen, we should continue reading without retrying failed query"""
 
 
-def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
+def retry_pattern(logger, backoff_type, exception, **wait_gen_kwargs):
     def log_retry_attempt(details):
         _, exc, _ = sys.exc_info()
         logger.info(str(exc))

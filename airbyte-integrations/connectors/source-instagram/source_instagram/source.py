@@ -2,10 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from datetime import datetime
 from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AuthSpecification,
@@ -38,7 +38,7 @@ class ConnectorConfig(BaseModel):
 
 
 class SourceInstagram(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """Connection check to validate that the user-provided config can be used to connect to the underlying API
 
         :param config:  the user-input config object conforming to the connector's spec.json
@@ -59,7 +59,7 @@ class SourceInstagram(AbstractSource):
         return ok, error_msg
 
     def read(
-        self, logger: AirbyteLogger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
+        self, logger: logging.Logger, config: Mapping[str, Any], catalog: ConfiguredAirbyteCatalog, state: MutableMapping[str, Any] = None
     ) -> Iterator[AirbyteMessage]:
         for stream in self.streams(config):
             state_key = str(stream.name)
