@@ -14,14 +14,21 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.ContainerState;
 
@@ -145,7 +152,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get("database").asText())), new ClickhouseTestSourceOperations());
   }
 
   @Override
@@ -168,25 +175,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
    *
    * @throws Exception
    */
-  @Disabled
-  public void testCustomDbtTransformations() throws Exception {
-    super.testCustomDbtTransformations();
-  }
+//  @Disabled
+//  public void testCustomDbtTransformations() throws Exception {
+//    super.testCustomDbtTransformations();
+//  }
 
-  @Disabled
-  public void testCustomDbtTransformationsFailure() throws Exception {}
-
-  /**
-   * The normalization container needs native port, while destination container needs HTTP port, we
-   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
-   * test, so we skip it.
-   *
-   * @throws Exception
-   */
-  @Disabled
-  public void testIncrementalDedupeSync() throws Exception {
-    super.testIncrementalDedupeSync();
-  }
+//  @Disabled
+//  public void testCustomDbtTransformationsFailure() throws Exception {}
 
   /**
    * The normalization container needs native port, while destination container needs HTTP port, we
@@ -195,14 +190,43 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
    *
    * @throws Exception
    */
-  @Disabled
-  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
-    super.testSyncWithNormalization(messagesFilename, catalogFilename);
-  }
+//  @Disabled
+//  public void testIncrementalDedupeSync() throws Exception {
+//    super.testIncrementalDedupeSync();
+//  }
 
-  @Disabled
-  public void specNormalizationValueShouldBeCorrect() throws Exception {
-    super.specNormalizationValueShouldBeCorrect();
+  /**
+   * The normalization container needs native port, while destination container needs HTTP port, we
+   * can't inject the port switch statement into DestinationAcceptanceTest.runSync() method for this
+   * test, so we skip it.
+   *
+   * @throws Exception
+//   */
+//  @Disabled
+//  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
+//    super.testSyncWithNormalization(messagesFilename, catalogFilename);
+//  }
+
+//  @Disabled
+//  public void specNormalizationValueShouldBeCorrect() throws Exception {
+//    super.specNormalizationValueShouldBeCorrect();
+//  }
+
+
+  @ParameterizedTest
+  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+      final String catalogFilename,
+      final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
+
+    // arrays are not fully supported yet in jdbc driver
+    // https://github.com/ClickHouse/clickhouse-jdbc/blob/master/clickhouse-jdbc/src/main/java/ru/yandex/clickhouse/ClickHouseArray.java
+    if (messagesFilename.contains("array")){
+      return;
+    }
+
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
 }

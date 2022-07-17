@@ -185,5 +185,5 @@
 {%- endmacro -%}
 
 {% macro clickhouse__type_date() %}
-    Date
+    Date32
 {% endmacro %}

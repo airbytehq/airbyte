@@ -15,12 +15,15 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.Network;
 
@@ -47,7 +50,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected boolean supportsNormalization() {
-    return false;
+    return true;
   }
 
   @Override
@@ -155,7 +158,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 config.get("host").asText(),
                 config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get("database").asText())), new ClickhouseTestSourceOperations());
   }
 
   @Override
@@ -213,6 +216,23 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   @Disabled
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     super.specNormalizationValueShouldBeCorrect();
+  }
+
+  @Disabled
+  @ParameterizedTest
+  @ArgumentsSource(DataTypeTestArgumentProvider.class)
+  public void testDataTypeTestWithNormalization(final String messagesFilename,
+      final String catalogFilename,
+      final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
+      throws Exception {
+
+    // arrays are not fully supported yet in jdbc driver
+    // https://github.com/ClickHouse/clickhouse-jdbc/blob/master/clickhouse-jdbc/src/main/java/ru/yandex/clickhouse/ClickHouseArray.java
+    if (messagesFilename.contains("array")){
+      return;
+    }
+
+    super.testDataTypeTestWithNormalization(messagesFilename, catalogFilename, testCompatibility);
   }
 
 }
