@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -18,7 +18,7 @@ DEFAULT_BASE_URL = "https://app.posthog.com"
 
 
 class SourcePosthog(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             _ = pendulum.parse(config["start_date"])
             authenticator = TokenAuthenticator(token=config["api_key"])
