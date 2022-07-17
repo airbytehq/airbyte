@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import timedelta
@@ -16,7 +17,6 @@ import backoff
 import pendulum
 import pytz
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from pendulum import DateTime
@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 class RecordType(str, Enum):

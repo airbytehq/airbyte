@@ -3,9 +3,9 @@
 #
 
 
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
@@ -38,7 +38,7 @@ TOKEN_URL = "https://api.amazon.com/auth/o2/token"
 
 
 class SourceAmazonAds(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
