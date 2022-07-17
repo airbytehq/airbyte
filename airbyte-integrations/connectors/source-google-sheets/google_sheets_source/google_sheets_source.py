@@ -5,9 +5,9 @@
 
 import json
 import socket
+from logging import Logger
 from typing import Dict, Generator
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models.airbyte_protocol import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -41,7 +41,7 @@ class GoogleSheetsSource(Source):
     def __init__(self):
         super().__init__()
 
-    def check(self, logger: AirbyteLogger, config: json) -> AirbyteConnectionStatus:
+    def check(self, logger: Logger, config: json) -> AirbyteConnectionStatus:
         # Check involves verifying that the specified spreadsheet is reachable with our credentials.
         try:
             client = GoogleSheetsClient(self.get_credentials(config))
@@ -98,7 +98,7 @@ class GoogleSheetsSource(Source):
 
         return AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
-    def discover(self, logger: AirbyteLogger, config: json) -> AirbyteCatalog:
+    def discover(self, logger: Logger, config: json) -> AirbyteCatalog:
         client = GoogleSheetsClient(self.get_credentials(config))
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
         try:
@@ -125,7 +125,7 @@ class GoogleSheetsSource(Source):
             raise Exception(f"Could not run discovery: {reason}")
 
     def read(
-        self, logger: AirbyteLogger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
+        self, logger: Logger, config: json, catalog: ConfiguredAirbyteCatalog, state: Dict[str, any]
     ) -> Generator[AirbyteMessage, None, None]:
         client = GoogleSheetsClient(self.get_credentials(config))
 
