@@ -3,10 +3,11 @@
 #
 
 
+import logging
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -33,7 +34,7 @@ class NotionAuthenticator:
 
 
 class SourceNotion(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             authenticator = NotionAuthenticator(config).get_access_token()
             stream = Users(authenticator=authenticator, config=config)
@@ -44,7 +45,7 @@ class SourceNotion(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
+        logging.getLogger("airbyte").info(f"Using start_date: {config['start_date']}")
         authenticator = NotionAuthenticator(config).get_access_token()
         args = {"authenticator": authenticator, "config": config}
         pages = Pages(**args)
