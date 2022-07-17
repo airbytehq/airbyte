@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import MagicMock
 
 import pytest
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from source_sendgrid.source import SourceSendgrid
 from source_sendgrid.streams import SendgridStream
 
@@ -28,5 +28,5 @@ def test_parse_response_gracefully_handles_nulls(mocker, sendgrid_stream: Sendgr
 
 def test_source_wrong_credentials():
     source = SourceSendgrid()
-    status, error = source.check_connection(logger=AirbyteLogger(), config={"apikey": "wrong.api.key123"})
+    status, error = source.check_connection(logger=logging.getLogger("airbyte"), config={"apikey": "wrong.api.key123"})
     assert not status
