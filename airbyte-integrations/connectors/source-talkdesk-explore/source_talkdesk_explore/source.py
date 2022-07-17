@@ -4,17 +4,17 @@
 
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from logger import Logger
 
 from .streams import Calls, Contacts, RingAttempts, StudioFlowExecution, UserStatus
 from .talkdesk_auth import TalkdeskAuth
 
 
 class SourceTalkdeskExplore(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         talkdesk_auth = TalkdeskAuth(config)
         token_request = talkdesk_auth.request_bearer_token()
 
