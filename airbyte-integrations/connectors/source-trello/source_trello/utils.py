@@ -3,11 +3,11 @@
 #
 
 
+import logging
 from functools import wraps
 from time import sleep
 
 import requests
-from airbyte_cdk import AirbyteLogger
 
 
 class TrelloRequestRateLimits:
@@ -68,7 +68,7 @@ class TrelloRequestRateLimits:
 
                 # sleep based on load conditions
                 sleep(sleep_time)
-                AirbyteLogger().info(f"Sleep {sleep_time} seconds based on load conditions.")
+                logging.getLogger("airbyte").info(f"Sleep {sleep_time} seconds based on load conditions.")
 
                 return func(*args, **kwargs)
 
