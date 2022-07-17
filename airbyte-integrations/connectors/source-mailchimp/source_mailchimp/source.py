@@ -4,10 +4,10 @@
 
 
 import base64
+from logging import Logger
 from typing import Any, List, Mapping, Tuple
 
 import requests
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -53,7 +53,7 @@ class MailChimpAuthenticator:
 
 
 class SourceMailchimp(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_connection(self, logger: Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = MailChimpAuthenticator().get_auth(config)
             requests.get(f"https://{authenticator.data_center}.api.mailchimp.com/3.0/ping", headers=authenticator.get_auth_header())

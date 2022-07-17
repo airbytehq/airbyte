@@ -2,12 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+
 import pytest
 import requests
-from airbyte_cdk.logger import AirbyteLogger
 from source_mailchimp.source import MailChimpAuthenticator, SourceMailchimp
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 def test_check_connection_ok(requests_mock, config, data_center):
