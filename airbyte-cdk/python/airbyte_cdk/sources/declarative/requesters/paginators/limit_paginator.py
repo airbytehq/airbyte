@@ -76,7 +76,7 @@ class LimitPaginator(ConditionalPaginator):
 
     def __init__(
         self,
-        limit_value: int,
+        page_size: int,
         limit_option: RequestOption,
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
@@ -86,7 +86,7 @@ class LimitPaginator(ConditionalPaginator):
     ):
         """
 
-        :param limit_value: the number of records to request
+        :param page_size: the number of records to request
         :param limit_option: the request option to set the limit
         :param page_token_option: the request option to set the page token
         :param pagination_strategy: Strategy defining how to get the next page token
@@ -95,10 +95,10 @@ class LimitPaginator(ConditionalPaginator):
         :param decoder: decoder to decode the response
         """
         self._config = config
-        self._limit = limit_value
+        self._page_size = page_size
 
         super().__init__(
-            self._create_request_options_provider(limit_value, limit_option),
+            self._create_request_options_provider(page_size, limit_option),
             page_token_option,
             pagination_strategy,
             config,
@@ -107,7 +107,7 @@ class LimitPaginator(ConditionalPaginator):
         )
 
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
-        return len(last_records) < self._limit
+        return len(last_records) < self._page_size
 
     def _create_request_options_provider(self, limit_value, limit_option: RequestOption):
         if limit_option.option_type == RequestOptionType.path:

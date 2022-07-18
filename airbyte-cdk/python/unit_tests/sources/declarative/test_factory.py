@@ -371,7 +371,7 @@ def test_config_with_defaults():
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._limit == 10
+    assert stream._retriever._paginator._page_size == 10
 
 
 class TestCreateTransformations:
