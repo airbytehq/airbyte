@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
-config = {"start_date": "2021-01-01T00:00:00.000000+0000"}
+config = {"start_date": "2021-01-01T00:00:00.000000+0000", "start_date_ymd": "2021-01-01"}
 end_date_now = InterpolatedString(
     "{{ today_utc() }}",
 )
@@ -30,7 +30,7 @@ def mock_datetime_now(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "test_name, stream_state, start, end, step, cursor_field, lookback_window, expected_slices",
+    "test_name, stream_state, start, end, step, cursor_field, lookback_window, datetime_format, expected_slices",
     [
         (
             "test_1_day",
@@ -40,6 +40,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
                 {"start_date": "2021-01-02T00:00:00.000000+0000", "end_date": "2021-01-02T00:00:00.000000+0000"},
@@ -61,6 +62,7 @@ def mock_datetime_now(monkeypatch):
             "2d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-02T00:00:00.000000+0000"},
                 {"start_date": "2021-01-03T00:00:00.000000+0000", "end_date": "2021-01-04T00:00:00.000000+0000"},
@@ -77,6 +79,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
                 {"start_date": "2021-01-06T00:00:00.000000+0000", "end_date": "2021-01-06T00:00:00.000000+0000"},
@@ -94,6 +97,7 @@ def mock_datetime_now(monkeypatch):
             "12d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-10T00:00:00.000000+0000"},
             ],
@@ -106,6 +110,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-12-28T00:00:00.000000+0000", "end_date": "2021-12-28T00:00:00.000000+0000"},
                 {"start_date": "2021-12-29T00:00:00.000000+0000", "end_date": "2021-12-29T00:00:00.000000+0000"},
@@ -122,6 +127,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
             ],
@@ -134,6 +140,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             InterpolatedString("{{ stream_state['date'] }}"),
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
                 {"start_date": "2021-01-06T00:00:00.000000+0000", "end_date": "2021-01-06T00:00:00.000000+0000"},
@@ -151,6 +158,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             InterpolatedString("{{ stream_state['date'] }}"),
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
                 {"start_date": "2021-01-06T00:00:00.000000+0000", "end_date": "2021-01-06T00:00:00.000000+0000"},
@@ -168,6 +176,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             None,
+            datetime_format,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
                 {"start_date": "2021-01-02T00:00:00.000000+0000", "end_date": "2021-01-02T00:00:00.000000+0000"},
@@ -178,12 +187,13 @@ def mock_datetime_now(monkeypatch):
         ),
         (
             "test_start_end_min_max_inherits_datetime_format_from_stream_slicer",
-            {"date": "2021-01-05T00:00:00.000000+0000"},
-            MinMaxDatetime("{{ config['start_date'] }}"),
-            MinMaxDatetime("2021-01-10T00:00:00.000000+0000", max_datetime="{{ stream_state['date'] }}"),
+            {"date": "2021-01-05"},
+            MinMaxDatetime("{{ config['start_date_ymd'] }}"),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
             "1d",
             cursor_field,
             None,
+            "%Y-%m-%d",
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-01"},
                 {"start_date": "2021-01-02", "end_date": "2021-01-02"},
@@ -200,6 +210,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             "3d",
+            datetime_format,
             [
                 {"start_date": "2020-12-29T00:00:00.000000+0000", "end_date": "2020-12-29T00:00:00.000000+0000"},
                 {"start_date": "2020-12-30T00:00:00.000000+0000", "end_date": "2020-12-30T00:00:00.000000+0000"},
@@ -219,6 +230,7 @@ def mock_datetime_now(monkeypatch):
             "1d",
             cursor_field,
             "{{ config['does_not_exist'] }}",
+            datetime_format,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
                 {"start_date": "2021-01-02T00:00:00.000000+0000", "end_date": "2021-01-02T00:00:00.000000+0000"},
@@ -229,7 +241,9 @@ def mock_datetime_now(monkeypatch):
         ),
     ],
 )
-def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, step, cursor_field, lookback_window, expected_slices):
+def test_stream_slices(
+    mock_datetime_now, test_name, stream_state, start, end, step, cursor_field, lookback_window, datetime_format, expected_slices
+):
     lookback_window = InterpolatedString(lookback_window) if lookback_window else None
     slicer = DatetimeStreamSlicer(
         start_datetime=start,
