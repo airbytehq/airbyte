@@ -52,7 +52,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.converters.ProtocolConverters;
@@ -62,6 +61,7 @@ import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -384,39 +384,41 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = updateOperations(webBackendConnectionUpdate);
     final ConnectionUpdate connectionUpdate = toConnectionUpdate(webBackendConnectionUpdate, operationIds);
-
     final UUID connectionId = webBackendConnectionUpdate.getConnectionId();
-
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
-    final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
-    final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
-    final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
-    final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
-
-    final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
-    List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
-        apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
-
     ConnectionRead connectionRead;
     connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-    if (!streamsToReset.isEmpty()) {
-      final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
-      final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+    final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
+    if (!skipReset) {
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingConfiguredCatalog);
+      final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
+      final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
+      final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+      final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
+      final Set<StreamDescriptor> allStreamToReset = new HashSet<>();
+      allStreamToReset.addAll(apiStreamsToReset);
+      allStreamToReset.addAll(changedConfigStreamDescriptors);
+      List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
+          allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
-      if (stateType == ConnectionStateType.LEGACY || stateType == ConnectionStateType.NOT_SET || stateType == ConnectionStateType.GLOBAL) {
-        streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+      if (!streamsToReset.isEmpty()) {
+        final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
+        final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
+
+        if (stateType == ConnectionStateType.LEGACY) {
+          streamsToReset = configRepository.getAllStreamsForConnection(connectionId);
+        }
+        ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
+            webBackendConnectionUpdate.getConnectionId(),
+            streamsToReset);
+        verifyManualOperationResult(manualOperationResult);
+        manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
+        verifyManualOperationResult(manualOperationResult);
+        connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
-      ManualOperationResult manualOperationResult = eventRunner.synchronousResetConnection(
-          webBackendConnectionUpdate.getConnectionId(),
-          streamsToReset);
-      verifyManualOperationResult(manualOperationResult);
-      manualOperationResult = eventRunner.startNewManualSync(webBackendConnectionUpdate.getConnectionId());
-      verifyManualOperationResult(manualOperationResult);
-      connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
     }
-
     return buildWebBackendConnectionRead(connectionRead);
   }
 

@@ -1,8 +1,10 @@
 import React, { Suspense } from "react";
+import { useIntl } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoadingPage } from "components";
 
+import { useExperiment } from "hooks/services/Experiment";
 import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -15,9 +17,29 @@ import { LoginPage } from "./LoginPage";
 import { ResetPasswordPage } from "./ResetPasswordPage";
 import { SignupPage } from "./SignupPage";
 
+const hasValidRightSideUrl = (url?: string): boolean => {
+  if (url) {
+    try {
+      const parsedUrl = new URL(url);
+      const isValid = parsedUrl.protocol === "https:" && parsedUrl.hostname.endsWith("airbyte.com");
+      if (!isValid) {
+        console.warn(`${parsedUrl} is not valid.`);
+      }
+      return isValid;
+    } catch (e) {
+      console.warn(e);
+    }
+  }
+
+  return false;
+};
+
 const Auth: React.FC = () => {
   const { pathname, location } = useRouter();
+  const { formatMessage } = useIntl();
   const { loggedOut } = useAuthService();
+  const rightSideUrl = useExperiment("authPage.rightSideUrl", undefined);
+
   const toLogin = pathname === CloudRoutes.Signup || pathname === CloudRoutes.FirebaseAction;
 
   return (
@@ -39,7 +61,16 @@ const Auth: React.FC = () => {
         </FormContent>
       </div>
       <div className={styles.rightSide}>
-        <PersonQuoteCover />
+        {hasValidRightSideUrl(rightSideUrl) ? (
+          <iframe
+            className={styles.rightSideFrame}
+            src={rightSideUrl}
+            scrolling="no"
+            title={formatMessage({ id: "login.rightSideFrameTitle" })}
+          />
+        ) : (
+          <PersonQuoteCover />
+        )}
       </div>
     </div>
   );

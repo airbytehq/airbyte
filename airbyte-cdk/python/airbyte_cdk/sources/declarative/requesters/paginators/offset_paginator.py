@@ -17,7 +17,7 @@ class OffsetPaginator(Paginator):
         self._update_state_with_offset(0)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        if len(last_records) < self._limit:
+        if not last_records or len(last_records) < self._limit:
             return None
         offset = self._get_offset() + self._limit
         token_map = {self._offsetKey: offset}

@@ -11,6 +11,7 @@
 from .transformation import RecordTransformation
 
 # isort: split
+from .add_fields import AddFields
 from .remove_fields import RemoveFields
 
-__all__ = ["RecordTransformation", "RemoveFields"]
+__all__ = ["AddFields", "RecordTransformation", "RemoveFields"]
