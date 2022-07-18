@@ -50,7 +50,7 @@ export const withProviders = (getStory) => (
                   providers={[]}
                   >
                   <DocumentationPanelProvider>
-                    <FeatureService>
+                    <FeatureService features={[]}>
                       <GlobalStyle />
                       {getStory()}
                     </FeatureService>
