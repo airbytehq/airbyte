@@ -24,6 +24,7 @@ from normalization.transform_catalog.utils import (
     is_datetime_with_timezone,
     is_datetime_without_timezone,
     is_integer,
+    is_long,
     is_number,
     is_object,
     is_simple_property,
@@ -513,6 +514,8 @@ where 1 = 1
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_integer(definition):
+            sql_type = jinja_call("dbt_utils.type_int()")
+        elif is_long(definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
