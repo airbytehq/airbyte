@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffectOnce } from "react-use";
 
@@ -45,39 +45,33 @@ describe("ModalService", () => {
   });
 
   it("should close the modal with escape and emit a cancel result", async () => {
-    const user = userEvent.setup();
-
     const resultCallback = jest.fn();
 
     const rendered = renderModal(resultCallback);
 
-    await user.keyboard("{Escape}");
+    await waitFor(() => userEvent.keyboard("{Escape}"));
 
     expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "canceled" });
   });
 
   it("should allow cancelling the modal from inside", async () => {
-    const user = userEvent.setup();
-
     const resultCallback = jest.fn();
 
     const rendered = renderModal(resultCallback);
 
-    await user.click(rendered.getByTestId("cancel"));
+    await waitFor(() => userEvent.click(rendered.getByTestId("cancel")));
 
     expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "canceled" });
   });
 
   it("should allow closing the button with a reason and return that reason", async () => {
-    const user = userEvent.setup();
-
     const resultCallback = jest.fn();
 
     let rendered = renderModal(resultCallback);
 
-    await user.click(rendered.getByTestId("close-reason1"));
+    await waitFor(() => userEvent.click(rendered.getByTestId("close-reason1")));
 
     expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "closed", reason: "reason1" });
@@ -85,7 +79,7 @@ describe("ModalService", () => {
     resultCallback.mockReset();
     rendered = renderModal(resultCallback);
 
-    await user.click(rendered.getByTestId("close-reason2"));
+    await waitFor(() => userEvent.click(rendered.getByTestId("close-reason2")));
 
     expect(rendered.queryByTestId("testModalContent")).toBeFalsy();
     expect(resultCallback).toHaveBeenCalledWith({ type: "closed", reason: "reason2" });
