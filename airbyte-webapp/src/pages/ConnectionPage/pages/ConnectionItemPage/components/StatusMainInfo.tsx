@@ -1,7 +1,7 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { Link as ReactLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import ConnectorCard from "components/ConnectorCard";
 
@@ -41,23 +41,23 @@ export const StatusMainInfo: React.FC<StatusMainInfoProps> = ({
 
   return (
     <div className={styles.container}>
-      <ReactLink to={sourceConnectionPath} className={styles.connectorLink}>
+      <Link to={sourceConnectionPath} className={styles.connectorLink}>
         <ConnectorCard
           connectionName={source.sourceName}
           icon={sourceDefinition?.icon}
           connectorName={source.name}
           releaseStage={sourceDefinition?.releaseStage}
         />
-      </ReactLink>
+      </Link>
       <FontAwesomeIcon icon={faArrowRight} />
-      <ReactLink to={destinationConnectionPath} className={styles.connectorLink}>
+      <Link to={destinationConnectionPath} className={styles.connectorLink}>
         <ConnectorCard
           connectionName={destination.destinationName}
           icon={destinationDefinition?.icon}
           connectorName={destination.name}
           releaseStage={destinationDefinition?.releaseStage}
         />
-      </ReactLink>
+      </Link>
       {connection.status !== ConnectionStatus.deprecated && (
         <EnabledControl
           onStatusUpdating={onStatusUpdating}
