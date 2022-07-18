@@ -115,7 +115,7 @@ public class TemporalUtils {
 
         @Override
         public String url() {
-          return getUrlString(this, "url").orElse(String.format("http://%s:4317", configs.getDDAgentHost()));
+          return getUrlString(this, "url").orElse(String.format("http://%s:4318", configs.getDDAgentHost()));
         }
 
         /**
