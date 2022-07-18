@@ -44,9 +44,7 @@ class AdaptiveInsightsStream(HttpStream, ABC):
         return {'Content-Type': 'text/xml; charset=UTF-8'}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = xmltodict.parse(response.content)
-        
-        yield from handle_export_dimensions(json_response)
+        pass
 
 
 class ExportDimensions(AdaptiveInsightsStream):
