@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import ToolTip from "./ToolTip";
+import { ToolTip } from "./ToolTip";
 
 export default {
   title: "Ui/ToolTip",

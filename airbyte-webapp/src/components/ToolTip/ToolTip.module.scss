@@ -1,0 +1,34 @@
+@use "../../scss/colors";
+@use "../../scss/variables";
+
+.container {
+  display: inline;
+  position: relative;
+}
+
+.toolTip {
+  display: none;
+  font-size: 14px;
+  line-height: initial;
+  position: absolute;
+  padding: 9px 8px 8px;
+  box-shadow: 0 24px 38px rgba(53, 53, 66, 0.14), 0 9px 46px rgba(53, 53, 66, 0.12), 0 11px 15px rgba(53, 53, 66, 0.2);
+  border-radius: 4px;
+  background: rgba(26, 26, 33, 0.9);
+  color: colors.$white;
+  top: calc(100% + 10px);
+  left: -50px;
+  min-width: 100px;
+  width: max-content;
+  max-width: 380px;
+  z-index: variables.$z-tooltip;
+
+  div:hover > &,
+  &:hover {
+    display: block;
+
+    &.disabled {
+      display: none;
+    }
+  }
+}
