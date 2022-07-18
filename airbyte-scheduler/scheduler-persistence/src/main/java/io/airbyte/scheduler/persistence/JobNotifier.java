@@ -182,14 +182,4 @@ public class JobNotifier {
     return NotificationClient.createNotificationClient(notification);
   }
 
-  private static String formatDurationPart(final long durationPart, final String timeUnit) {
-    if (durationPart == 1) {
-      return String.format(" %s %s", durationPart, timeUnit);
-    } else if (durationPart > 1) {
-      // Use plural timeUnit
-      return String.format(" %s %ss", durationPart, timeUnit);
-    }
-    return "";
-  }
-
 }
