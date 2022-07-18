@@ -3,12 +3,12 @@ import { FormattedMessage } from "react-intl";
 
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 
-interface ErrorOccurredWithRetryHookProps {
+interface ServerUnavailableViewProps {
   onRetryClick: () => void;
   retryDelay: number;
 }
 
-const ServerUnavailableView: React.FC<ErrorOccurredWithRetryHookProps> = ({ onRetryClick, retryDelay }) => {
+const ServerUnavailableView: React.FC<ServerUnavailableViewProps> = ({ onRetryClick, retryDelay }) => {
   useEffect(() => {
     const timer: ReturnType<typeof setTimeout> = setTimeout(() => {
       onRetryClick();
