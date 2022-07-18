@@ -22,7 +22,6 @@
         <exclude name="JUnitTestsShouldIncludeAssert"/>
         <exclude name="LiteralsFirstInComparisons"/>
         <exclude name="LooseCoupling"/>
-        <exclude name="MissingOverride"/>
         <exclude name="PreserveStackTrace"/>
         <exclude name="SwitchStmtsShouldHaveDefault"/>
         <exclude name="SystemPrintln"/>

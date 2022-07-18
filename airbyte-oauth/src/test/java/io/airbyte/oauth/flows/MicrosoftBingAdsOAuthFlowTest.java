@@ -33,15 +33,19 @@ public class MicrosoftBingAdsOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Test
+  @Override
   public void testEmptyInputCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testDeprecatedCompleteSourceOAuth() {}
 
   @Test
+  @Override
   public void testEmptyInputCompleteSourceOAuth() {}
 
 }

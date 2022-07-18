@@ -190,7 +190,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
@@ -231,7 +231,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      ActivityExecutionContext context = Activity.getExecutionContext();
+      final ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           new AtomicReference<>(() -> {}),
@@ -311,6 +311,7 @@ class TemporalUtilsTest {
         this.callable = callable;
       }
 
+      @Override
       public void activity() {
         LOGGER.info("before: {}", ACTIVITY1);
         try {
@@ -377,9 +378,10 @@ class TemporalUtilsTest {
         this.timesReachedEnd = timesReachedEnd;
       }
 
-      public void activity(String arg) {
+      @Override
+      public void activity(final String arg) {
         LOGGER.info("before: {}", ACTIVITY1);
-        ActivityExecutionContext context = Activity.getExecutionContext();
+        final ActivityExecutionContext context = Activity.getExecutionContext();
         TemporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {

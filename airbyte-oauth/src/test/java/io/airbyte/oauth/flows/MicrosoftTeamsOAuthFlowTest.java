@@ -33,9 +33,11 @@ public class MicrosoftTeamsOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Test
+  @Override
   public void testEmptyInputCompleteSourceOAuth() {}
 
   @Test
+  @Override
   public void testEmptyInputCompleteDestinationOAuth() {}
 
 }

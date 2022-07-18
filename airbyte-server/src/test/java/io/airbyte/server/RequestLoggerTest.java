@@ -212,6 +212,7 @@ public class RequestLoggerTest {
       private final ContainerRequestContext mRequestContext;
       private final ContainerResponseContext mResponseContext;
 
+      @Override
       public void run() {
         try {
           requestLogger.filter(mRequestContext);

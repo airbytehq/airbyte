@@ -104,6 +104,7 @@ public class ArchiveHandlerTest {
       super(1L, TimeUnit.MINUTES, 1L);
     }
 
+    @Override
     public void register(final Path path) {}
 
   }

@@ -34,36 +34,47 @@ public class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Test
+  @Override
   public void testEmptyOutputCompleteSourceOAuth() {}
 
   @Test
+  @Override
   public void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
+  @Override
   public void testValidateOAuthOutputFailure() {}
 
   @Test
+  @Override
   public void testCompleteSourceOAuth() {}
 
   @Test
+  @Override
   public void testEmptyInputCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testDeprecatedCompleteSourceOAuth() {}
 
   @Test
+  @Override
   public void testEmptyOutputCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testCompleteDestinationOAuth() {}
 
   @Test
+  @Override
   public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
+  @Override
   public void testEmptyInputCompleteSourceOAuth() {}
 
   @Override
