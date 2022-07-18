@@ -590,7 +590,7 @@ class ExternalAccountBankAccounts(ExternalAccount):
 
 class ExternalAccountCards(ExternalAccount):
     """
-    https://stripe.com/docs/api/external_account_bank_accounts/list
+    https://stripe.com/docs/api/external_account_cards/list
     """
 
     object = "card"
