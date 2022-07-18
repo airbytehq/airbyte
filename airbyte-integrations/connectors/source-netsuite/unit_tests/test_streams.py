@@ -67,12 +67,12 @@ def test_fetch_record(patch_base_class, requests_mock):
 
 def test_parse_response(patch_base_class):
     stream = make_stream()
+    stream.fetch_record = MagicMock(return_value={"id": 1})
     response = MagicMock()
     response.json = MagicMock(return_value={"items": [{"id": 1}]})
     inputs = {"response": response, "stream_state": {}}
     expected_parsed_object = {"id": 1}
-    with patch.object(Pool, "starmap", return_value=[{"id": 1}]):
-        assert next(stream.parse_response(**inputs)) == expected_parsed_object
+    assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_http_method(patch_base_class):
