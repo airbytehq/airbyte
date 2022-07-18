@@ -13,6 +13,6 @@ interface ToolTipProps {
 export const ToolTip: React.FC<ToolTipProps> = ({ children, control, className, disabled, cursor }) => (
   <div className={styles.container} style={disabled ? undefined : { cursor }}>
     {control}
-    <div className={classNames(styles.toolTip, className, { disabled })}>{children}</div>
+    <div className={classNames(styles.toolTip, className, { disabled: styles.disabled })}>{children}</div>
   </div>
 );
