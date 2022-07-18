@@ -48,10 +48,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
         {
             "json": {
                 stream.data_field: [
-                    {
-                        "id": "test_id",
-                        "createdAt": created_at
-                    },
+                    {"id": "test_id", "createdAt": created_at},
                 ],
             }
         }
