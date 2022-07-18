@@ -52,14 +52,12 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
         .flatMap(line -> {
           final Optional<JsonNode> jsonLine = Jsons.tryDeserialize(line);
           if (jsonLine.isEmpty()) {
-            // we log as info all the lines that are not valid json
-            // since dbt logs its process on stdout, we want to make
-            // sure this info is available in the logs.
+            // we log as info all the lines that are not valid json.
             try (final var mdcScope = containerLogMdcBuilder.build()) {
               logger.info(line);
-              // this is really hacky and vulnerable to picking up lines we don't want
-              // TODO: when we have dbt v1+ on every destination, activate JSON logging
-              // and use that to pull out errors instead
+              // this is really hacky and vulnerable to picking up lines we don't want,
+              // however it is only for destinations that are using dbt version < 1.0.
+              // For v1 + we switch on JSON logging and parse those in the next block.
               if (line.contains("[error]")) {
                 dbtErrors.add(line);
               }
@@ -70,9 +68,21 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
         .flatMap(jsonLine -> {
           final Optional<AirbyteMessage> m = Jsons.tryObject(jsonLine, AirbyteMessage.class);
           if (m.isEmpty()) {
-            // TODO: when we have dbt v1+ on every destination, activate JSON logging
-            // and build a dbt json log parser to use here.
-            logger.error("Deserialization failed: {}", Jsons.serialize(jsonLine));
+            // valid JSON but not an AirbyteMessage, so we assume this is a dbt json log
+            try {
+              final String logLevel = jsonLine.get("level").isNull() ? "" : jsonLine.get("level").asText();
+              final String logMsg = jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
+              try (final var mdcScope = containerLogMdcBuilder.build()) {
+                switch (logLevel) {
+                  case "debug" -> logger.debug(logMsg);
+                  case "info" -> logger.info(logMsg);
+                  case "warn" -> logger.warn(logMsg);
+                  case "error" -> dbtErrors.add(logMsg);
+                }
+              }
+            } catch (final Exception e) {
+              logger.info(jsonLine.asText());
+            }
           }
           return m.stream();
         })
