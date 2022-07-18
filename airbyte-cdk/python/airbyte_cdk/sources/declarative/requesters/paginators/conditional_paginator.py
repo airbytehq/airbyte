@@ -101,6 +101,9 @@ class ConditionalPaginator(Paginator, ABC):
         }
 
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
+        body_data = self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None)
+        print(f"body_data: {body_data}")
+        print(f"type: {type(body_data)}")
         return {
             **self._get_request_options(RequestOptionType.body_data),
             **self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None),
