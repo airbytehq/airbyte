@@ -17,7 +17,7 @@ public enum JsonSchemaType {
 
   STRING("string", true, null, Schema.Type.STRING),
   NUMBER_INT("number", true, "integer", Schema.Type.LONG),
-  NUMBER_BIGINT("number", true, "big_integer", Schema.Type.STRING),
+  NUMBER_LONG("number", true, "long", Schema.Type.STRING),
   NUMBER_FLOAT("number", true, "float", Schema.Type.FLOAT),
   NUMBER("number", true, null, Schema.Type.DOUBLE),
   INTEGER("integer", true, null, Schema.Type.INT),

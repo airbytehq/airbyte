@@ -17,7 +17,7 @@ public class JsonSchemaTypeTest {
 
   @ParameterizedTest
   @ArgumentsSource(JsonSchemaTypeProvider.class)
-  public void testFromJsonSchemaType(final String type, final String airbyteType, final JsonSchemaType expectedJsonSchemaType) {
+  public void testFromJsonSchemaType(String type, String airbyteType, JsonSchemaType expectedJsonSchemaType) {
     assertEquals(
         expectedJsonSchemaType,
         JsonSchemaType.fromJsonSchemaType(type, airbyteType));
@@ -26,10 +26,10 @@ public class JsonSchemaTypeTest {
   public static class JsonSchemaTypeProvider implements ArgumentsProvider {
 
     @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
       return Stream.of(
           Arguments.of("number", "integer", JsonSchemaType.NUMBER_INT),
-          Arguments.of("number", "big_integer", JsonSchemaType.NUMBER_BIGINT),
+          Arguments.of("number", "big_integer", JsonSchemaType.NUMBER_LONG),
           Arguments.of("number", "float", JsonSchemaType.NUMBER_FLOAT),
           Arguments.of("number", null, JsonSchemaType.NUMBER),
           Arguments.of("string", null, JsonSchemaType.STRING),
