@@ -42,7 +42,6 @@ import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -88,7 +87,6 @@ public class AdvancedAcceptanceTests {
   private static AirbyteAcceptanceTestHarness testHarness;
   private static AirbyteApiClient apiClient;
   private static UUID workspaceId;
-  private static KubernetesClient kubernetesClient;
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
@@ -113,7 +111,6 @@ public class AdvancedAcceptanceTests {
     LOGGER.info("pg destination definition: {}", destinationDef.getDockerImageTag());
 
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId);
-    kubernetesClient = testHarness.getKubernetesClient();
   }
 
   @AfterAll

@@ -797,7 +797,7 @@ public class BasicAcceptanceTests {
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final String expectedState =
-        "{\"cdc\":false,\"streams\":[{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\"}]}";
+        "{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\"}";
     LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -806,7 +806,11 @@ public class BasicAcceptanceTests {
     LOGGER.info("state after sync 3: {}", state);
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
-    assertEquals(Jsons.deserialize(expectedState), state.getState());
+    assertNotNull(state.getStreamState());
+    assertEquals(1, state.getStreamState().size());
+    final StreamState idAndNameState = state.getStreamState().get(0);
+    assertEquals(new StreamDescriptor().namespace("public").name(STREAM_NAME), idAndNameState.getStreamDescriptor());
+    assertEquals(Jsons.deserialize(expectedState), idAndNameState.getStreamState());
   }
 
   @Test
@@ -965,7 +969,7 @@ public class BasicAcceptanceTests {
         .status(connection.getStatus())
         .resourceRequirements(connection.getResourceRequirements())
         .withRefreshedCatalog(true);
-    final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
     destDb.query(ctx -> {
