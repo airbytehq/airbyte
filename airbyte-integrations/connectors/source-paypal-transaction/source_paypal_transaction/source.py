@@ -7,15 +7,15 @@ import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Dict
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from dateutil.parser import isoparse
 
 from .utils import middle_date_slices
@@ -365,7 +365,7 @@ class Transactions(PaypalTransactionStream):
             "page_size": self.page_size,
             "page": page_number,
         }
-    
+
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         if isinstance(original_value, str) and field_schema["type"] == "number":
