@@ -595,7 +595,7 @@ public class CdcAcceptanceTests {
   }
 
   // can be helpful for debugging
-  @SuppressWarnings("PMD")
+  @SuppressWarnings("PMD.UnusedPrivateMethod")
   private void printDbs() throws SQLException {
     final Database sourceDb = testHarness.getSourceDatabase();
     Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
