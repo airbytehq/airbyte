@@ -7,12 +7,17 @@ interface ToolTipProps {
   control: React.ReactNode;
   className?: string;
   disabled?: boolean;
-  cursor?: "pointer" | "help" | "not-allowed";
+  cursor?: "pointer" | "help" | "not-allowed" | "initial";
+  mode?: "dark" | "light";
 }
 
-export const ToolTip: React.FC<ToolTipProps> = ({ children, control, className, disabled, cursor }) => (
+export const ToolTip: React.FC<ToolTipProps> = ({ children, control, className, disabled, mode = "dark", cursor }) => (
   <div className={styles.container} style={disabled ? undefined : { cursor }}>
     {control}
-    <div className={classNames(styles.toolTip, className, { disabled: styles.disabled })}>{children}</div>
+    <div
+      className={classNames(styles.toolTip, mode === "light" && styles.light, disabled && styles.disabled, className)}
+    >
+      {children}
+    </div>
   </div>
 );
