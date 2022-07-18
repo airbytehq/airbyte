@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -117,6 +118,12 @@ public class PostgresDestinationSSLFullCertificateAcceptanceTest extends JdbcDes
   @Override
   protected boolean supportObjectDataTypeTest() {
     return true;
+  }
+
+  @Override
+  @Disabled
+  public void testCustomDbtTransformations() throws Exception {
+    super.testCustomDbtTransformations();
   }
 
   @Override

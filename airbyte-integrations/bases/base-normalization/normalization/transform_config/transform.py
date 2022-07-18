@@ -169,16 +169,13 @@ class TransformConfig:
         }
 
         ssl = config.get("ssl")
-        print("====> SSL")
         if ssl:
             ssl_mode = config.get("ssl_mode", "allow")
             dbt_config["sslmode"] = ssl_mode.get("mode")
             if ssl_mode["mode"] == "verify-ca":
-                print("====> CA")
                 TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
                 dbt_config["sslrootcert"] = "ca.crt"
             elif ssl_mode["mode"] == "verify-full":
-                print("====> FULL")
                 TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
                 TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
                 TransformConfig.create_file("client.key", ssl_mode["client_key"])
