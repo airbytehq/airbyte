@@ -333,7 +333,7 @@ public abstract class JdbcSourceAcceptanceTest {
     AirbyteStream stream =
         actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
     assertNotNull(stream);
-    assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD, stream.getName().toLowerCase());
+    assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD.toLowerCase(), stream.getName().toLowerCase());
     assertEquals(1, stream.getSupportedSyncModes().size());
     assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
   }

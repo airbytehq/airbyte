@@ -39,6 +39,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
+    TABLE_NAME_WITHOUT_CURSOR_FIELD = "TABLE_WITHOUT_CURSOR";
     TEST_TABLES = ImmutableSet
         .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
     COL_ID = "ID";
@@ -130,7 +131,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected void createTableWithoutCursorFields() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s.%s (bitfield boolean)", SCHEMA_NAME, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (bitfield boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
       connection.createStatement().execute(String.format("INSERT INTO %s VALUES(true)",
           getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
     });
