@@ -7,18 +7,14 @@
 }
 
 .toolTip {
-  position: absolute;
   font-size: 14px;
   line-height: initial;
   padding: variables.$spacing-md;
+  margin: variables.$spacing-md;
   border-radius: 4px;
-  top: calc(100% + 10px);
-  left: -50px;
   min-width: 100px;
-  width: max-content;
   max-width: 380px;
   z-index: variables.$z-tooltip;
-  display: none;
 
   box-shadow: 0px 2px 4px rgba(colors.$dark-blue, 0.12);
   background: rgba(colors.$dark-blue, 0.9);
@@ -27,14 +23,5 @@
   &.light {
     background: rgba(colors.$white, 0.9);
     color: colors.$dark-blue;
-  }
-
-  div:hover > &,
-  &:hover {
-    display: block;
-
-    &.disabled {
-      display: none;
-    }
   }
 }
