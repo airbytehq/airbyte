@@ -16,7 +16,6 @@ import org.apache.avro.Schema;
 public enum JsonSchemaType {
 
   STRING("string", true, null, Schema.Type.STRING),
-  // We currently don't distinguish between int and long
   NUMBER_INT("number", true, "integer", Schema.Type.LONG),
   NUMBER_BIGINT("number", true, "big_integer", Schema.Type.STRING),
   NUMBER_FLOAT("number", true, "float", Schema.Type.FLOAT),

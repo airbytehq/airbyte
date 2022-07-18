@@ -12,7 +12,7 @@
       "type": "number",
       "airbyte_type": "integer"
     },
-    "avroFieldType": ["null", "long"]
+    "avroFieldType": ["null", "int"]
   },
   {
     "fieldName": "big_integer_field",
@@ -20,7 +20,7 @@
       "type": "number",
       "airbyte_type": "big_integer"
     },
-    "avroFieldType": ["null", "string"]
+    "avroFieldType": ["null", "long"]
   },
   {
     "fieldName": "float_field",
@@ -81,7 +81,7 @@
       "null",
       {
         "type": "array",
-        "items": ["null", "string", "double"]
+        "items": ["null", "string", "double", "long"]
       }
     ]
   },
@@ -115,7 +115,7 @@
           },
           {
             "name": "long_id",
-            "type": ["null", "string"],
+            "type": ["null", "long"],
             "default": null
           },
           {
@@ -197,7 +197,7 @@
         { "type": "number", "airbyte_type": "big_integer" }
       ]
     },
-    "avroFieldType": ["null", "string", "int"]
+    "avroFieldType": ["null", "string", "int", "long"]
   },
   {
     "fieldName": "logical_type_date_time",
