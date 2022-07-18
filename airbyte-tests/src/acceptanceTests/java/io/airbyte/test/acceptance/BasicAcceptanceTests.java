@@ -1164,7 +1164,7 @@ class BasicAcceptanceTests {
   }
 
   @Test
-  public void testMultipleSchemasAndTablesSyncAndReset() throws Exception {
+  void testMultipleSchemasAndTablesSyncAndReset() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
