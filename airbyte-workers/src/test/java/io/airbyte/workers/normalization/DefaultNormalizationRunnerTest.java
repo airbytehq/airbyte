@@ -94,7 +94,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  void tearDown() throws IOException {
     // The log file needs to be present and empty
     final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     if (Files.exists(logFile)) {
@@ -137,7 +137,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testClose() throws Exception {
+  void testClose() throws Exception {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner =
@@ -150,7 +150,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testFailure() {
+  void testFailure() {
     doThrow(new RuntimeException()).when(process).exitValue();
 
     final NormalizationRunner runner =

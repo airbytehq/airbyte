@@ -12,7 +12,8 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -67,18 +68,18 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Test
   @Override
-  public void testGetSourceConsentUrlEmptyOAuthSpec() {}
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteSourceOAuth() {}
+  void testDeprecatedCompleteSourceOAuth() {}
 
 }

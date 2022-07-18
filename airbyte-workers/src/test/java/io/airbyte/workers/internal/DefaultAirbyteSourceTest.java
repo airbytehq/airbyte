@@ -50,7 +50,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.AvoidPrintStackTrace")
+@SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.JUnitTestsShouldIncludeAssert"})
 class DefaultAirbyteSourceTest {
 
   private static final String NAMESPACE = "unused";
@@ -95,7 +95,7 @@ class DefaultAirbyteSourceTest {
   private HeartbeatMonitor heartbeatMonitor;
 
   @BeforeEach
-  public void setup() throws IOException, WorkerException {
+  void setup() throws IOException, WorkerException {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
 
@@ -121,7 +121,7 @@ class DefaultAirbyteSourceTest {
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  void tearDown() throws IOException {
     // The log file needs to be present and empty
     final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     if (Files.exists(logFile)) {
@@ -132,7 +132,7 @@ class DefaultAirbyteSourceTest {
 
   @SuppressWarnings({"OptionalGetWithoutIsPresent", "BusyWait"})
   @Test
-  public void testSuccessfulLifecycle() throws Exception {
+  void testSuccessfulLifecycle() throws Exception {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
     when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
@@ -166,7 +166,7 @@ class DefaultAirbyteSourceTest {
   }
 
   @Test
-  public void testTaggedLogs() throws Exception {
+  void testTaggedLogs() throws Exception {
 
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(("rewq").getBytes(StandardCharsets.UTF_8)));
 
@@ -197,7 +197,7 @@ class DefaultAirbyteSourceTest {
   }
 
   @Test
-  public void testNonzeroExitCodeThrows() throws Exception {
+  void testNonzeroExitCodeThrows() throws Exception {
     final AirbyteSource tap = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
     tap.start(SOURCE_CONFIG, jobRoot);
 
@@ -207,7 +207,7 @@ class DefaultAirbyteSourceTest {
   }
 
   @Test
-  public void testGetExitValue() throws Exception {
+  void testGetExitValue() throws Exception {
     final AirbyteSource source = new DefaultAirbyteSource(workerConfigs, integrationLauncher, streamFactory, heartbeatMonitor);
     source.start(SOURCE_CONFIG, jobRoot);
 

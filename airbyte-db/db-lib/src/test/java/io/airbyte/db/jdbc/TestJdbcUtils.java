@@ -42,7 +42,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 @SuppressWarnings("PMD.CheckResultSet")
-public class TestJdbcUtils {
+class TestJdbcUtils {
 
   private String dbName;
 

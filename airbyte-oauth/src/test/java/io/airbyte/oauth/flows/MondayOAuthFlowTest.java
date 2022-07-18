@@ -11,7 +11,8 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class MondayOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class MondayOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -35,19 +36,19 @@ public class MondayOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Test
   @Override
-  public void testGetSourceConsentUrlEmptyOAuthSpec() {}
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteSourceOAuth() {}
+  void testDeprecatedCompleteSourceOAuth() {}
 
   @Override
   protected Map<String, String> getExpectedOutput() {

@@ -10,7 +10,8 @@ import io.airbyte.oauth.BaseOAuthFlow;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class MicrosoftBingAdsOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class MicrosoftBingAdsOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -34,18 +35,18 @@ public class MicrosoftBingAdsOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Test
   @Override
-  public void testEmptyInputCompleteDestinationOAuth() {}
+  void testEmptyInputCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteSourceOAuth() {}
+  void testDeprecatedCompleteSourceOAuth() {}
 
   @Test
   @Override
-  public void testEmptyInputCompleteSourceOAuth() {}
+  void testEmptyInputCompleteSourceOAuth() {}
 
 }

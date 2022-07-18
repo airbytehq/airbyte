@@ -11,20 +11,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
 
-public class MdcScopeTest {
+class MdcScopeTest {
 
   private static final Map<String, String> originalMap = Map.of("test", "entry", "testOverride", "should be overrided");
 
   private static final Map<String, String> modificationInMDC = Map.of("new", "will be added", "testOverride", "will override");
 
   @BeforeEach
-  public void init() {
+  void init() {
     MDC.setContextMap(originalMap);
   }
 
   @Test
   @DisplayName("The MDC context is properly overrided")
-  public void testMDCModified() {
+  void testMDCModified() {
     try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
@@ -35,7 +35,7 @@ public class MdcScopeTest {
 
   @Test
   @DisplayName("The MDC context is properly restored")
-  public void testMDCRestore() {
+  void testMDCRestore() {
     try (final MdcScope mdcScope = new MdcScope(modificationInMDC)) {}
 
     final Map<String, String> mdcState = MDC.getCopyOfContextMap();

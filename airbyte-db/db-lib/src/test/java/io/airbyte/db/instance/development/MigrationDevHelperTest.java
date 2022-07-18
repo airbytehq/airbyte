@@ -11,36 +11,36 @@ import java.util.Optional;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.AvoidUsingHardCodedIP")
+@SuppressWarnings({"PMD.AvoidUsingHardCodedIP", "PMD.JUnitTestsShouldIncludeAssert"})
 class MigrationDevHelperTest {
 
   @Test
-  public void testGetCurrentAirbyteVersion() {
+  void testGetCurrentAirbyteVersion() {
     // Test that this method will not throw any exception.
     MigrationDevHelper.getCurrentAirbyteVersion();
   }
 
   @Test
-  public void testGetAirbyteVersion() {
+  void testGetAirbyteVersion() {
     final MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
     final AirbyteVersion airbyteVersion = MigrationDevHelper.getAirbyteVersion(migrationVersion);
     assertEquals("0.11.3", airbyteVersion.serialize());
   }
 
   @Test
-  public void testFormatAirbyteVersion() {
+  void testFormatAirbyteVersion() {
     final AirbyteVersion airbyteVersion = new AirbyteVersion("0.11.3-alpha");
     assertEquals("0_11_3", MigrationDevHelper.formatAirbyteVersion(airbyteVersion));
   }
 
   @Test
-  public void testGetMigrationId() {
+  void testGetMigrationId() {
     final MigrationVersion migrationVersion = MigrationVersion.fromVersion("0.11.3.010");
     assertEquals("010", MigrationDevHelper.getMigrationId(migrationVersion));
   }
 
   @Test
-  public void testGetNextMigrationVersion() {
+  void testGetNextMigrationVersion() {
     // Migration version does not exist
     assertEquals("0.11.3.001", MigrationDevHelper.getNextMigrationVersion(
         new AirbyteVersion("0.11.3-alpha"),

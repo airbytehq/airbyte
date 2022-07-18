@@ -54,7 +54,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @SuppressWarnings("PMD.AvoidUsingHardCodedIP")
 @ExtendWith(SystemStubsExtension.class)
-public class BootloaderAppTest {
+class BootloaderAppTest {
 
   private PostgreSQLContainer container;
   private DataSource configsDataSource;

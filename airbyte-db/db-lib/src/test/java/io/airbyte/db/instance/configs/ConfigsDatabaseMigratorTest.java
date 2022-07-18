@@ -11,12 +11,13 @@ import java.io.IOException;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
-public class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class ConfigsDatabaseMigratorTest extends AbstractConfigsDatabaseTest {
 
   private static final String SCHEMA_DUMP_FILE = "src/main/resources/configs_database/schema_dump.txt";
 
   @Test
-  public void dumpSchema() throws IOException {
+  void dumpSchema() throws IOException {
     final Flyway flyway = FlywayFactory.create(getDataSource(), getClass().getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
         ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
     final DatabaseMigrator migrator = new ConfigsDatabaseMigrator(database, flyway);

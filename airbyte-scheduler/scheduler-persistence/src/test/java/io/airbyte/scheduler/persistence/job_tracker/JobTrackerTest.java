@@ -64,6 +64,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JobTrackerTest {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

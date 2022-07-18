@@ -11,7 +11,8 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -35,47 +36,47 @@ public class ZendeskSunshineOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Test
   @Override
-  public void testEmptyOutputCompleteSourceOAuth() {}
+  void testEmptyOutputCompleteSourceOAuth() {}
 
   @Test
   @Override
-  public void testGetSourceConsentUrlEmptyOAuthSpec() {}
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testValidateOAuthOutputFailure() {}
+  void testValidateOAuthOutputFailure() {}
 
   @Test
   @Override
-  public void testCompleteSourceOAuth() {}
+  void testCompleteSourceOAuth() {}
 
   @Test
   @Override
-  public void testEmptyInputCompleteDestinationOAuth() {}
+  void testEmptyInputCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteSourceOAuth() {}
+  void testDeprecatedCompleteSourceOAuth() {}
 
   @Test
   @Override
-  public void testEmptyOutputCompleteDestinationOAuth() {}
+  void testEmptyOutputCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testCompleteDestinationOAuth() {}
+  void testCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testEmptyInputCompleteSourceOAuth() {}
+  void testEmptyInputCompleteSourceOAuth() {}
 
   @Override
   protected Map<String, String> getExpectedOutput() {

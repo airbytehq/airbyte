@@ -78,7 +78,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
 
-public class ArchiveHandlerTest {
+class ArchiveHandlerTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ArchiveHandlerTest.class);
 
@@ -110,7 +110,7 @@ public class ArchiveHandlerTest {
   }
 
   @BeforeAll
-  public static void dbSetup() {
+  static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
@@ -119,12 +119,12 @@ public class ArchiveHandlerTest {
   }
 
   @AfterAll
-  public static void dbDown() {
+  static void dbDown() {
     container.close();
   }
 
   @BeforeEach
-  public void setup() throws Exception {
+  void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
