@@ -332,6 +332,7 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "campaign_performance_report"
+    primary_key = ["TimePeriod", "Network", "DeviceType", "CampaignId"]
 
     report_columns = [
         "AccountName",
@@ -379,6 +380,7 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "ad_performance_report"
+    primary_key = ["TimePeriod", "Network", "DeviceType", "AdId"]
 
     report_columns = [
         "AccountName",
