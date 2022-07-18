@@ -49,6 +49,7 @@ checkConnectorImages() {
       else
           printf "\tERROR: not found!\n" && exit 1
       fi
+      sleep 1
   done <<< "${CONNECTOR_DEFINITIONS}"
 
   echo "Success! All connector images exist!"
