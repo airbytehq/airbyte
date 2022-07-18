@@ -650,6 +650,10 @@ class IncrementalStream(Stream, IncrementalMixin):
         return self.updated_at_field
 
     @property
+    def is_incremental_sync(self):
+        return self._sync_mode == SyncMode.incremental
+
+    @property
     @abstractmethod
     def updated_at_field(self):
         """Name of the field associated with the state"""
@@ -698,7 +702,7 @@ class IncrementalStream(Stream, IncrementalMixin):
         self._sync_mode = None
 
     def _update_state(self, latest_cursor):
-        if latest_cursor:
+        if latest_cursor and self.is_incremental_sync:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
@@ -748,7 +752,7 @@ class CRMSearchStream(IncrementalStream, ABC):
 
     @property
     def url(self):
-        return f"/crm/v3/objects/{self.entity}/search" if self.state else f"/crm/v3/objects/{self.entity}"
+        return f"/crm/v3/objects/{self.entity}/search" if self.is_incremental_sync else f"/crm/v3/objects/{self.entity}"
 
     def __init__(
         self,
@@ -786,7 +790,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                 "properties": properties_list,
                 "limit": 100,
             }
-            if self.state
+            if self.is_incremental_sync
             else {}
         )
         if next_page_token:
@@ -812,7 +816,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         # state is updated frequently, we need it frozen
         since_ts = int(self._state.timestamp() * 1000) if self._state else None
         while not pagination_complete:
-            if self.state:
+            if self.is_incremental_sync:
                 records, raw_response = self._process_search(
                     since=since_ts,
                     next_page_token=next_page_token,
@@ -837,7 +841,7 @@ class CRMSearchStream(IncrementalStream, ABC):
             next_page_token = self.next_page_token(raw_response)
             if not next_page_token:
                 pagination_complete = True
-            elif self.state and next_page_token["payload"]["after"] >= 10000:
+            elif self.is_incremental_sync and next_page_token["payload"]["after"] >= 10000:
                 # Hubspot documentation states that the search endpoints are limited to 10,000 total results
                 # for any given query. Attempting to page beyond 10,000 will result in a 400 error.
                 # https://developers.hubspot.com/docs/api/crm/search. We stop getting data at 10,000 and
@@ -1112,7 +1116,7 @@ class Engagements(IncrementalStream):
 
     @property
     def url(self):
-        if self.state:
+        if self.is_incremental_sync:
             return "/engagements/v1/engagements/recent/modified"
         return "/engagements/v1/engagements/paged"
 
@@ -1128,15 +1132,15 @@ class Engagements(IncrementalStream):
         params = {"count": 250}
         if next_page_token:
             params["offset"] = next_page_token["offset"]
-        if self.state:
-            params.update({"since": int(self._state.timestamp() * 1000), "count": 100})
+        if self.is_incremental_sync:
+            params.update({"since": stream_slice, "count": 100})
         return params
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
+    ) -> Iterable[int]:
         self.set_sync(sync_mode)
-        return [None]
+        return [int((self._state or self._start_date).timestamp() * 1000)]
 
     def read_records(
         self,
@@ -1163,7 +1167,7 @@ class Engagements(IncrementalStream):
                 yield record
 
             next_page_token = self.next_page_token(response)
-            if self.state and next_page_token and next_page_token["offset"] >= 10000:
+            if self.is_incremental_sync and next_page_token and next_page_token["offset"] >= 10000:
                 # As per Hubspot documentation, the recent engagements endpoint will only return the 10K
                 # most recently updated engagements. Since they are returned sorted by `lastUpdated` in
                 # descending order, we stop getting records if we have already reached 10,000. Attempting

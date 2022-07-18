@@ -486,7 +486,6 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
-    assert test_stream.state["lastUpdated"] == 1641234595251
 
     records, _ = read_incremental(test_stream, {})
     # The stream should handle pagination correctly and output 600 records.
