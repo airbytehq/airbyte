@@ -69,7 +69,10 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
         failed = true;
       }
     } catch (final Exception e) {
-      throw new WorkerException("Normalization Failed.", e);
+      normalizationRunner.getTraceMessages()
+          .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
+      failed = true;
+      // throw new WorkerException("Normalization Failed.", e);
     }
 
     if (cancelled.get()) {

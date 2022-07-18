@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,7 +97,7 @@ class DefaultNormalizationWorkerTest {
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
         normalizationInput.getCatalog(), workerConfigs.getResourceRequirements()))
-        .thenReturn(false);
+            .thenReturn(false);
 
     final DefaultNormalizationWorker normalizationWorker =
         new DefaultNormalizationWorker(JOB_ID, JOB_ATTEMPT, normalizationRunner, WorkerEnvironment.DOCKER);
@@ -108,8 +107,9 @@ class DefaultNormalizationWorkerTest {
     verify(normalizationRunner).start();
   }
 
-  // This test verifies failure behaviour when we have TRACE messages
-  // instead of throwing an exception, we return the summary with a non-empty FailureReasons array
+  // This test verifies failure behaviour when we have TRACE messages emitted from normalization
+  // instead of throwing an exception, we should return the summary with a non-empty FailureReasons
+  // array
   @Test
   void testFailureWithTraceMessage() throws Exception {
     when(normalizationRunner.normalize(JOB_ID,
@@ -117,7 +117,7 @@ class DefaultNormalizationWorkerTest {
         normalizationRoot,
         normalizationInput.getDestinationConfiguration(),
         normalizationInput.getCatalog(), workerConfigs.getResourceRequirements()))
-        .thenReturn(false);
+            .thenReturn(false);
 
     when(normalizationRunner.getTraceMessages()).thenReturn(Stream.of(ERROR_TRACE_MESSAGE));
 

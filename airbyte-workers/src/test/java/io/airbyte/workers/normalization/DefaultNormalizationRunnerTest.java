@@ -168,11 +168,11 @@ class DefaultNormalizationRunnerTest {
     when(process.exitValue()).thenReturn(1);
 
     String errorTraceString = """
-      {"type": "TRACE", "trace": {
-        "type": "ERROR", "emitted_at": 123.0, "error": {
-          "message": "Something went wrong in normalization.", "internal_message": "internal msg",
-          "stack_trace": "abc.xyz", "failure_type": "system_error"}}}
-      """.replace("\n", "");
+                              {"type": "TRACE", "trace": {
+                                "type": "ERROR", "emitted_at": 123.0, "error": {
+                                  "message": "Something went wrong in normalization.", "internal_message": "internal msg",
+                                  "stack_trace": "abc.xyz", "failure_type": "system_error"}}}
+                              """.replace("\n", "");
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(errorTraceString.getBytes(StandardCharsets.UTF_8)));
 
     final NormalizationRunner runner =
@@ -181,6 +181,34 @@ class DefaultNormalizationRunnerTest {
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
+
+    verify(process).waitFor();
+
+    assertThrows(WorkerException.class, runner::close);
+  }
+
+  @Test
+  public void testFailureWithDbtError() throws Exception {
+    when(process.exitValue()).thenReturn(1);
+
+    String dbtErrorString = """
+                            [info ] [MainThread]: Completed with 1 error and 0 warnings:
+                            [info ] [MainThread]:
+                            [error] [MainThread]: Database Error in model xyz (models/generated/airbyte_incremental/abc/xyz.sql)
+                            [error] [MainThread]:   1292 (22007): Truncated incorrect DOUBLE value: 'ABC'
+                            [error] [MainThread]:   compiled SQL at ../build/run/airbyte_utils/models/generated/airbyte_incremental/abc/xyz.sql
+                            [info ] [MainThread]:
+                            [info ] [MainThread]: Done. PASS=1 WARN=0 ERROR=1 SKIP=0 TOTAL=2
+                            """;
+    when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
+
+    final NormalizationRunner runner =
+        new DefaultNormalizationRunner(workerConfigs, DestinationType.BIGQUERY, processFactory,
+            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME);
+    assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
+
+    assertEquals(1, runner.getTraceMessages().count());
+    // System.out.println(runner.getTraceMessages().findFirst()); // debug
 
     verify(process).waitFor();
 
