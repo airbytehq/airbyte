@@ -91,7 +91,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         lookback_delta = self._parse_timedelta(self._lookback_window.eval(self._config, **kwargs) if self._lookback_window else "0d")
         start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
-        if self._stream_state_field in stream_state:
+        if self._stream_state_field.eval(self._config) in stream_state:
             cursor_datetime = self.parse_date(stream_state[self._stream_state_field])
         else:
             cursor_datetime = start_datetime
