@@ -31,10 +31,5 @@ class CursorPaginationStrategy(PaginationStrategy):
         self._decoder = decoder or JsonDecoder()
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        token = self._cursor_value.eval(
-            config=self._config,
-            last_records=last_records,
-            decoded_response=self._decoder.decode(response),
-            response_meta={"links": response.links},
-        )
+        token = self._cursor_value.eval(config=self._config, last_records=last_records, decoded_response=self._decoder.decode(response))
         return token if token else None
