@@ -4,6 +4,7 @@
 title: ConnectorJobOutput
 description: connector command job output
 type: object
+additionalProperties: true
 required:
   - outputType
 properties:
