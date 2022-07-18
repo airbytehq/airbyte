@@ -148,11 +148,6 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           Collections.emptyMap(),
           args);
 
-      // LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
-      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
-
-      WorkerUtils.wait(process);
-
       try (final InputStream stdout = process.getInputStream()) {
         // finds and collects any AirbyteMessages from stdout
         // also builds a list of raw dbt errors and stores in streamFactory
@@ -176,8 +171,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
           airbyteMessagesByType.putIfAbsent(Type.TRACE, List.of(dbtTraceMessage));
         }
-
       }
+      LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
+
+      WorkerUtils.wait(process);
 
       return process.exitValue() == 0;
     } catch (final Exception e) {
@@ -204,7 +201,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   @Override
   public Stream<AirbyteTraceMessage> getTraceMessages() {
-    return airbyteMessagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream().map(AirbyteMessage::getTrace);
+    if (airbyteMessagesByType != null) {
+      return airbyteMessagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream().map(AirbyteMessage::getTrace);
+    }
+    return Stream.of();
   }
 
   @VisibleForTesting
