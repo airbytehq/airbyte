@@ -33,7 +33,7 @@ class ConditionalPaginator(Paginator, ABC):
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
-        url_base: str,
+        url_base: Union[InterpolatedString, str],
         decoder: Decoder = None,
     ):
         """
@@ -49,6 +49,8 @@ class ConditionalPaginator(Paginator, ABC):
         self._page_token_option = page_token_option
         self._pagination_strategy = pagination_strategy
         self._token = None
+        if isinstance(url_base, str):
+            url_base = InterpolatedString(url_base)
         self._url_base = url_base
         self._decoder = decoder or JsonDecoder()
 
@@ -82,9 +84,8 @@ class ConditionalPaginator(Paginator, ABC):
     def path(self):
         # Replace url base to only return the path
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
-            return InterpolatedString(self._page_token_option.path).eval(
-                self._token.replace(self._url_base, ""), next_page_token=self._token
-            )
+            # Replace url base to only return the path
+            return self._token.replace(self._url_base.eval(self._config), "")
         else:
             return None
 
