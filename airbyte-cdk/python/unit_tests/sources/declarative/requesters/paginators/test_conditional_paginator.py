@@ -84,7 +84,18 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     strategy = CursorPaginationStrategy(cursor_value, decoder=decoder, config=config)
     url_base = "https://airbyte.io"
 
-    request_options_provider = InterpolatedRequestOptionsProvider(config=config)
+    pass_by_to_kwargs = {
+        RequestOptionType.request_parameter: {"param": "param"},
+        RequestOptionType.header: {"header": "header"},
+        RequestOptionType.body_data: {"data": "data"},
+    }
+
+    request_options_provider = InterpolatedRequestOptionsProvider(
+        config=config,
+        request_headers=pass_by_to_kwargs.get(RequestOptionType.header),
+        request_parameters=pass_by_to_kwargs.get(RequestOptionType.request_parameter),
+        request_body_data=pass_by_to_kwargs.get(RequestOptionType.body_data),
+    )
     if pass_by == RequestOptionType.path:
         page_token = RequestOption(pass_by)
     else:
@@ -114,9 +125,9 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
             if option_type == RequestOptionType.path:
                 assert mapping == "99"
             else:
-                assert mapping == {"from": 99}
+                assert mapping == {**{"from": 99}, **pass_by_to_kwargs.get(option_type, {})}
         else:
             if option_type == RequestOptionType.path:
                 assert mapping is None
             else:
-                assert mapping == {}
+                assert mapping == pass_by_to_kwargs.get(option_type, {})

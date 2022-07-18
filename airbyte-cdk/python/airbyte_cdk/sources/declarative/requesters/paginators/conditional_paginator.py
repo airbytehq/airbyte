@@ -84,7 +84,7 @@ class ConditionalPaginator(Paginator, ABC):
     def path(self):
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
             # Replace url base to only return the path
-            return self._token.replace(self._url_base.eval(self._config), "")
+            return str(self._token).replace(self._url_base.eval(self._config), "")
         else:
             return None
 
@@ -103,7 +103,7 @@ class ConditionalPaginator(Paginator, ABC):
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
         return {
             **self._get_request_options(RequestOptionType.body_data),
-            **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
+            **self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
     def request_body_json(self) -> Mapping[str, Any]:
