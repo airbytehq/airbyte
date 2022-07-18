@@ -710,7 +710,7 @@ class IncrementalStream(Stream, IncrementalMixin):
         self._sync_mode = None
 
     def _update_state(self, latest_cursor):
-        if latest_cursor and self.is_incremental_sync:
+        if latest_cursor:
             new_state = max(latest_cursor, self._state) if self._state else latest_cursor
             if new_state != self._state:
                 logger.info(f"Advancing bookmark for {self.name} stream from {self._state} to {latest_cursor}")
