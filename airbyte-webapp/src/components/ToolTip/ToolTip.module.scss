@@ -19,9 +19,16 @@
   box-shadow: 0px 2px 4px rgba(colors.$dark-blue, 0.12);
   background: rgba(colors.$dark-blue, 0.9);
   color: colors.$white;
+  a {
+    color: rgba(colors.$white, 0.5);
+  }
 
   &.light {
     background: rgba(colors.$white, 0.9);
     color: colors.$dark-blue;
+
+    a {
+      color: colors.$blue;
+    }
   }
 }

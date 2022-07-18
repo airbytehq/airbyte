@@ -11,10 +11,21 @@ export default {
   },
 } as ComponentMeta<typeof ToolTip>;
 
-const Template: ComponentStory<typeof ToolTip> = (args) => <ToolTip {...args} />;
+const Template: ComponentStory<typeof ToolTip> = (args) => (
+  <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center" }}>
+    <ToolTip {...args} />
+  </div>
+);
 
 export const Primary = Template.bind({});
 Primary.args = {
-  control: "Hover to see ToolTip",
-  children: "Here's a tip for you!",
+  control: "Hover to see Tooltip",
+  children: (
+    <>
+      Looking for a job?{" "}
+      <a href="https://www.airbyte.com/careers" target="_blank" rel="noreferrer">
+        Apply at Airbyte!
+      </a>
+    </>
+  ),
 };
