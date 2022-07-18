@@ -1,5 +1,5 @@
 import { useFormikContext, setIn } from "formik";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 
 import { Label, DropDown } from "components";
@@ -8,6 +8,7 @@ import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
+import { equal } from "utils/objects";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { ServiceFormValues } from "../../types";
@@ -38,6 +39,7 @@ interface ConditionSectionProps {
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
   const { values, setValues } = useFormikContext<ServiceFormValues>();
+  const newValuesRef = useRef<typeof values>();
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
@@ -56,12 +58,18 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             )
           : values;
 
+      if (equal(values, newValues)) {
+        return;
+      }
+
+      // Wait until widgetsInfo is updated first so that the form is validated with the updated validation schema
+      newValuesRef.current = newValues;
+
       setUiWidgetsInfo(formField.path, {
         selectedItem: selectedItem.value,
       });
-      setValues(newValues);
     },
-    [values, formField.conditions, setValues, setUiWidgetsInfo, formField.path]
+    [formField.conditions, formField.path, values, setUiWidgetsInfo]
   );
 
   const options = useMemo(
@@ -72,7 +80,16 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       })),
     [formField.conditions]
   );
+
+  useEffect(() => {
+    if (newValuesRef.current) {
+      setValues(newValuesRef.current);
+      newValuesRef.current = undefined;
+    }
+  }, [setValues, widgetsInfo]);
+
   const label = formField.title || formField.fieldKey;
+  const blocks = formField.conditions[currentlySelectedCondition];
 
   return (
     <GroupControls
@@ -92,12 +109,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       }
     >
       <ConditionControls>
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          disabled={disabled}
-          skipAppend
-        />
+        <FormSection blocks={blocks} path={path} disabled={disabled} skipAppend />
       </ConditionControls>
     </GroupControls>
   );
