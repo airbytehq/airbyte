@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import heapq
+import itertools
 
 import sgqlc.operation
 
@@ -9,6 +11,17 @@ from . import github_schema
 
 _schema = github_schema
 _schema_root = _schema.github_schema
+
+
+def select_user_fields(user):
+    user.__fields__(
+        id="node_id",
+        database_id="id",
+        login=True,
+        avatar_url="avatar_url",
+        url="html_url",
+        is_site_admin="site_admin",
+    )
 
 
 def get_query_pull_requests(owner, name, first, after, direction):
@@ -41,14 +54,7 @@ def get_query_pull_requests(owner, name, first, after, direction):
     reviews.total_count()
     reviews.nodes.comments.__fields__(total_count=True)
     user = pull_requests.nodes.merged_by(__alias__="merged_by").__as__(_schema_root.User)
-    user.__fields__(
-        id="node_id",
-        database_id="id",
-        login=True,
-        avatar_url="avatar_url",
-        url="html_url",
-        is_site_admin="site_admin",
-    )
+    select_user_fields(user)
     pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)
 
@@ -87,12 +93,115 @@ def get_query_reviews(owner, name, first, after, number=None):
     )
     reviews.nodes.commit.oid()
     user = reviews.nodes.author(__alias__="user").__as__(_schema_root.User)
-    user.__fields__(
-        id="node_id",
-        database_id="id",
-        login=True,
-        avatar_url="avatar_url",
-        url="html_url",
-        is_site_admin="site_admin",
-    )
+    select_user_fields(user)
     return str(op)
+
+
+class QueryReactions:
+
+    AVERAGE_REVIEWS = 5
+    AVERAGE_COMMENTS = 2
+    AVERAGE_REACTIONS = 2
+
+    def get_query_root_repository(self, owner, name, first, after=None):
+        op = sgqlc.operation.Operation(_schema_root.query_type)
+        repository = op.repository(owner=owner, name=name)
+        repository.name()
+        repository.owner.login()
+
+        kwargs = {"first": first}
+        if after:
+            kwargs["after"] = after
+        pull_requests = repository.pull_requests(**kwargs)
+        pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
+        pull_requests.total_count()
+        pull_requests.nodes.id(__alias__="node_id")
+
+        reviews = self._select_reviews(pull_requests.nodes, first=self.AVERAGE_REVIEWS)
+        comments = self._select_comments(reviews.nodes, first=self.AVERAGE_COMMENTS)
+        self._select_reactions(comments.nodes, first=self.AVERAGE_REACTIONS)
+        return str(op)
+
+    def get_query_root_pull_request(self, node_id, first, after):
+        op = sgqlc.operation.Operation(_schema_root.query_type)
+        pull_request = op.node(id=node_id).__as__(_schema_root.PullRequest)
+        pull_request.id(__alias__="node_id")
+        pull_request.repository.name()
+        pull_request.repository.owner.login()
+
+        reviews = self._select_reviews(pull_request, first, after)
+        comments = self._select_comments(reviews.nodes, first=self.AVERAGE_COMMENTS)
+        self._select_reactions(comments.nodes, first=self.AVERAGE_REACTIONS)
+        return str(op)
+
+    def get_query_root_review(self, node_id, first, after):
+        op = sgqlc.operation.Operation(_schema_root.query_type)
+        review = op.node(id=node_id).__as__(_schema_root.PullRequestReview)
+        review.id(__alias__="node_id")
+        review.repository.name()
+        review.repository.owner.login()
+
+        comments = self._select_comments(review, first, after)
+        self._select_reactions(comments.nodes, first=self.AVERAGE_REACTIONS)
+        return str(op)
+
+    def get_query_root_comment(self, node_id, first, after):
+        op = sgqlc.operation.Operation(_schema_root.query_type)
+        comment = op.node(id=node_id).__as__(_schema_root.PullRequestReviewComment)
+        comment.id(__alias__="node_id")
+        comment.database_id(__alias__="id")
+        comment.repository.name()
+        comment.repository.owner.login()
+        self._select_reactions(comment, first, after)
+        return str(op)
+
+    def _select_reactions(self, comment, first, after=None):
+        kwargs = {"first": first}
+        if after:
+            kwargs["after"] = after
+        reactions = comment.reactions(**kwargs)
+        reactions.page_info.__fields__(has_next_page=True, end_cursor=True)
+        reactions.total_count()
+        reactions.nodes.__fields__(id="node_id", database_id="id", content=True, created_at="created_at")
+        select_user_fields(reactions.nodes.user())
+        return reactions
+
+    def _select_comments(self, review, first, after=None):
+        kwargs = {"first": first}
+        if after:
+            kwargs["after"] = after
+        comments = review.comments(**kwargs)
+        comments.page_info.__fields__(has_next_page=True, end_cursor=True)
+        comments.total_count()
+        comments.nodes.id(__alias__="node_id")
+        comments.nodes.database_id(__alias__="id")
+        return comments
+
+    def _select_reviews(self, pull_request, first, after=None):
+        kwargs = {"first": first}
+        if after:
+            kwargs["after"] = after
+        reviews = pull_request.reviews(**kwargs)
+        reviews.page_info.__fields__(has_next_page=True, end_cursor=True)
+        reviews.total_count()
+        reviews.nodes.id(__alias__="node_id")
+        reviews.nodes.database_id(__alias__="id")
+        return reviews
+
+
+class CursorStorage:
+    Objects = ["PullRequest", "PullRequestReview", "PullRequestReviewComment", "Reaction"]
+
+    def __init__(self):
+        self.typename_to_prio = {o: prio for prio, o in enumerate(reversed(self.Objects))}
+        self.count = itertools.count()
+        self.storage = []
+
+    def add_cursor(self, typename, cursor, total_count, parent_id=None):
+        priority = self.typename_to_prio[typename]
+        heapq.heappush(self.storage, (priority, next(self.count), (typename, cursor, total_count, parent_id)))
+
+    def get_cursor(self):
+        if self.storage:
+            _, _, c = heapq.heappop(self.storage)
+            return {"typename": c[0], "cursor": c[1], "total_count": c[2], "parent_id": c[3]}

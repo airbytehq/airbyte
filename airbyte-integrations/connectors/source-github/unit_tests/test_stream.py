@@ -52,14 +52,14 @@ DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
 @responses.activate
 @patch("time.sleep")
 def test_internal_server_error_retry(time_mock):
-    args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
-    stream = PullRequestCommentReactions(**args)
-    stream_slice = {"repository": "test_repo", "comment_id": "id"}
+    args = {"authenticator": None, "repositories": ["airbytehq/airbyte"], "start_date": "start_date", "page_size_for_large_streams": 30}
+    stream = CommitCommentReactions(**args)
+    stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
     time_mock.reset_mock()
     responses.add(
         "GET",
-        "https://api.github.com/repos/test_repo/pulls/comments/id/reactions",
+        "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions",
         status=HTTPStatus.INTERNAL_SERVER_ERROR,
         json={"message": "Server Error"},
     )
