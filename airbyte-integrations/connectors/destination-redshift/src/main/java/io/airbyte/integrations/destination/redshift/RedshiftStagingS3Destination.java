@@ -59,15 +59,16 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
-    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
-        EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
+    final EncryptionConfig encryptionConfig =
+        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
     if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
           .withMessage(
               "You cannot use ephemeral keys and disable purging your staging data. This would produce S3 objects that you cannot decrypt.");
     }
-    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, s3Config.getBucketPath());
+    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(new RedshiftSQLNameTransformer(), s3Config.getS3Client(), s3Config), s3Config,
+        s3Config.getBucketPath());
 
     final NamingConventionTransformer nameTransformer = getNamingResolver();
     final RedshiftS3StagingSqlOperations redshiftS3StagingSqlOperations =
@@ -124,8 +125,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
-        EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
+    final EncryptionConfig encryptionConfig =
+        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get("encryption")) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     return new StagingConsumerFactory().create(

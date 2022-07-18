@@ -797,7 +797,7 @@ public class BasicAcceptanceTests {
 
     // sync one more time. verify it is the equivalent of a full refresh.
     final String expectedState =
-        "{\"cdc\":false,\"streams\":[{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\"}]}";
+        "{\"cursor\":\"6\",\"stream_name\":\"id_and_name\",\"cursor_field\":[\"id\"],\"stream_namespace\":\"public\"}";
     LOGGER.info("Starting {} sync 3", testInfo.getDisplayName());
     final JobInfoRead connectionSyncRead3 =
         apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -806,7 +806,11 @@ public class BasicAcceptanceTests {
     LOGGER.info("state after sync 3: {}", state);
 
     testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
-    assertEquals(Jsons.deserialize(expectedState), state.getState());
+    assertNotNull(state.getStreamState());
+    assertEquals(1, state.getStreamState().size());
+    final StreamState idAndNameState = state.getStreamState().get(0);
+    assertEquals(new StreamDescriptor().namespace("public").name(STREAM_NAME), idAndNameState.getStreamDescriptor());
+    assertEquals(Jsons.deserialize(expectedState), idAndNameState.getStreamState());
   }
 
   @Test
@@ -965,7 +969,7 @@ public class BasicAcceptanceTests {
         .status(connection.getStatus())
         .resourceRequirements(connection.getResourceRequirements())
         .withRefreshedCatalog(true);
-    final WebBackendConnectionRead connectionUpdateRead = webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnection(update);
 
     LOGGER.info("Inspecting Destination DB after the update request, tables should be empty");
     destDb.query(ctx -> {
@@ -977,7 +981,7 @@ public class BasicAcceptanceTests {
     LOGGER.info("ConnectionState after the update request: {}", postResetState.toString());
 
     // Wait until the sync from the UpdateConnection is finished
-    final JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
+    final JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connection.getConnectionId());
     LOGGER.info("Generated SyncJob config: {}", syncFromTheUpdate.toString());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
@@ -1008,27 +1012,6 @@ public class BasicAcceptanceTests {
     }
   }
 
-  private JobRead getMostRecentSyncJobId(UUID connectionId) throws Exception {
-    return apiClient.getJobsApi()
-        .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
-        .getJobs()
-        .stream().findFirst().map(JobWithAttemptsRead::getJob).orElseThrow();
-  }
-
-  private JobRead waitUntilTheNextJobIsStarted(final UUID connectionId) throws Exception {
-    final JobRead lastJob = getMostRecentSyncJobId(connectionId);
-    if (lastJob.getStatus() != JobStatus.SUCCEEDED) {
-      return lastJob;
-    }
-
-    JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
-      Thread.sleep(Duration.ofSeconds(1).toMillis());
-      mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    }
-    return mostRecentSyncJob;
-  }
-
   @Test
   public void testIncrementalSyncMultipleStreams() throws Exception {
     LOGGER.info("Starting testIncrementalSyncMultipleStreams()");
@@ -1041,7 +1024,7 @@ public class BasicAcceptanceTests {
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
-    for (AirbyteStreamAndConfiguration streamAndConfig : catalog.getStreams()) {
+    for (final AirbyteStreamAndConfiguration streamAndConfig : catalog.getStreams()) {
       final AirbyteStream stream = streamAndConfig.getStream();
       assertEquals(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL), stream.getSupportedSyncModes());
       // instead of assertFalse to avoid NPE from unboxed.

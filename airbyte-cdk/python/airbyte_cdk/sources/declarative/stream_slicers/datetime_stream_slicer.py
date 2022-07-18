@@ -4,7 +4,7 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping, Union
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -32,17 +32,13 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_datetime: MinMaxDatetime,
         end_datetime: MinMaxDatetime,
         step: str,
-        cursor_value: Union[InterpolatedString, str],
+        cursor_value: InterpolatedString,
         datetime_format: str,
         config: Config,
-        lookback_window: Union[InterpolatedString, str] = None,
+        lookback_window: Optional[InterpolatedString] = None,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
-        if isinstance(cursor_value, str):
-            cursor_value = InterpolatedString(cursor_value)
-        if isinstance(lookback_window, str):
-            lookback_window = InterpolatedString(lookback_window)
         self._datetime_format = datetime_format
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime

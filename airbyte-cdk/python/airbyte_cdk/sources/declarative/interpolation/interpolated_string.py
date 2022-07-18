@@ -15,3 +15,8 @@ class InterpolatedString:
 
     def eval(self, config, **kwargs):
         return self._interpolation.eval(self._string, config, self._default, **kwargs)
+
+    def __eq__(self, other):
+        if not isinstance(other, InterpolatedString):
+            return False
+        return self._string == other._string and self._default == other._default

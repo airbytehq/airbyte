@@ -10,14 +10,14 @@
             "$schema": "http://json-schema.org/schema#",
             "type": "object",
             "properties": {
-              "name": {"type":  "string"},
-              "sourceDefinitionId": {"type":  "string"},
-              "dockerRepository": {"type":  "string"},
-              "dockerImageTag": {"type":  "string"},
-              "documentationUrl": {"type":  "string"},
-              "icon": {"type":  "string"},
-              "sourceType": {"type":  "string"},
-              "releaseStage": {"type":  "string"}
+              "name": { "type": "string" },
+              "sourceDefinitionId": { "type": "string" },
+              "dockerRepository": { "type": "string" },
+              "dockerImageTag": { "type": "string" },
+              "documentationUrl": { "type": "string" },
+              "icon": { "type": "string" },
+              "sourceType": { "type": "string" },
+              "releaseStage": { "type": "string" }
             }
           }
         }

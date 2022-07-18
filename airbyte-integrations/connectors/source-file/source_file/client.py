@@ -5,6 +5,7 @@
 
 import json
 import traceback
+from os import environ
 from typing import Iterable
 from urllib.parse import urlparse
 
@@ -114,6 +115,17 @@ class URLFile:
             else:
                 uri = f"{storage}{user}@{host}:{port}/{url}"
             return smart_open.open(uri, transport_params=transport_params, mode=mode)
+        elif storage in ("https://", "http://"):
+            transport_params = None
+            if "user_agent" in self._provider and self._provider["user_agent"]:
+                airbyte_version = environ.get("AIRBYTE_VERSION", "0.0")
+                transport_params = {"headers": {"Accept-Encoding": "identity", "User-Agent": f"Airbyte/{airbyte_version}"}}
+            logger.info(f"TransportParams: {transport_params}")
+            return smart_open.open(
+                self.full_url,
+                mode=mode,
+                transport_params=transport_params,
+            )
         return smart_open.open(self.full_url, mode=mode)
 
     @property
