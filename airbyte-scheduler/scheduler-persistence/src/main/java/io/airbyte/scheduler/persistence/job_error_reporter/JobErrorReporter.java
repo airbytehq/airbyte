@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.AttemptFailureSummary;
@@ -160,8 +161,7 @@ public class JobErrorReporter {
 
   public void reportSpecJobFailure(final FailureReason failureReason, final JobGetSpecConfig jobSpecConfig) {
     Exceptions.swallow(() -> {
-      // TODO allow reporting job failures without a workspace id
-//      reportJobFailureReason(null, failureReason, jobSpecConfig.getDockerImage(), Map.of(CONNECTOR_COMMAND_META_KEY, "spec"));
+      reportJobFailureReason(null, failureReason, jobSpecConfig.getDockerImage(), Map.of(CONNECTOR_COMMAND_META_KEY, "spec"));
     });
   }
 
@@ -190,14 +190,17 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
   }
 
-  void reportJobFailureReason(final StandardWorkspace workspace,
+  void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
                               final FailureReason failureReason,
                               final String dockerImage,
                               final Map<String, String> metadata) {
     final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
-        Map.entry(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString()),
         Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
         Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
+
+    if(workspace != null) {
+      commonMetadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
+    }
 
     if (failureReason.getFailureOrigin() != null) {
       commonMetadata.put(FAILURE_ORIGIN_META_KEY, failureReason.getFailureOrigin().value());
