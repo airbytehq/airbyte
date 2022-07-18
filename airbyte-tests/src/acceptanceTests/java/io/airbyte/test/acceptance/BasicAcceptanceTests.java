@@ -67,7 +67,6 @@ import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.api.client.model.generated.StreamState;
 import io.airbyte.api.client.model.generated.SyncMode;
-import io.airbyte.api.client.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
@@ -89,8 +88,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.AfterAll;
@@ -1232,7 +1229,7 @@ public class BasicAcceptanceTests {
     // Update with refreshed catalog
     AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchemaWithoutCache(sourceId);
     WebBackendConnectionUpdate update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
-    webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnectionNew(update);
 
     // Wait until the sync from the UpdateConnection is finished
     JobRead syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
@@ -1259,14 +1256,14 @@ public class BasicAcceptanceTests {
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
-    webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnectionNew(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
     // remove that
-    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
@@ -1288,37 +1285,18 @@ public class BasicAcceptanceTests {
     sourceId = testHarness.createPostgresSource().getSourceId();
     refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     update = testHarness.getUpdateInput(connection, refreshedCatalog, operation);
-    webBackendApi.webBackendUpdateConnection(update);
+    webBackendApi.webBackendUpdateConnectionNew(update);
 
     syncFromTheUpdate = waitUntilTheNextJobIsStarted(connection.getConnectionId());
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
     // remove that
-    testHarness.assertSourceAndDestinationDbInSync(WITH_SCD_TABLE);
+    testHarness.assertSourceAndDestinationDbInSync(WITHOUT_SCD_TABLE);
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
-  }
-
-  // can be helpful for debugging
-  private void printDbs() throws SQLException {
-    final Database sourceDb = testHarness.getSourceDatabase();
-    Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
-    LOGGER.info("Printing source tables");
-    for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
-    }
-
-    final Database destDb = testHarness.getDestinationDatabase();
-    pairs = testHarness.listAllTables(destDb);
-    LOGGER.info("Printing destination tables");
-    for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
-    }
   }
 
   private void assertStreamStateContainsStream(final UUID connectionId, final List<StreamDescriptor> expectedStreamDescriptors) throws ApiException {

@@ -52,6 +52,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.converters.ProtocolConverters;
@@ -388,10 +389,12 @@ public class WebBackendConnectionsHandler {
     final ConfiguredAirbyteCatalog existingConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
     ConnectionRead connectionRead;
+    connectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
     final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
     if (!skipReset) {
-      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingConfiguredCatalog);
+      final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
       final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
       final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
@@ -402,7 +405,6 @@ public class WebBackendConnectionsHandler {
       List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
           allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
       if (!streamsToReset.isEmpty()) {
         final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
         final ConnectionStateType stateType = getStateType(connectionIdRequestBody);
@@ -418,8 +420,6 @@ public class WebBackendConnectionsHandler {
         verifyManualOperationResult(manualOperationResult);
         connectionRead = connectionsHandler.getConnection(connectionUpdate.getConnectionId());
       }
-    } else {
-      connectionRead = connectionsHandler.updateConnection(connectionUpdate);
     }
     return buildWebBackendConnectionRead(connectionRead);
   }

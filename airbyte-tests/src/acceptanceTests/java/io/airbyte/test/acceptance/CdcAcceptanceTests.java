@@ -53,10 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -499,7 +496,8 @@ public class CdcAcceptanceTests {
         Jsons.jsonNode(sourceDbConfigMap));
   }
 
-  private void assertDestinationMatches(final String streamName, final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
+  private void assertDestinationMatches(final String streamName, final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers)
+      throws Exception {
     final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, streamName));
     if (destRecords.size() != expectedDestRecordMatchers.size()) {
       final String errorMessage = String.format(
@@ -566,23 +564,19 @@ public class CdcAcceptanceTests {
     assertNull(state.getGlobalState());
   }
 
-  // can be helpful for debugging
-  private void printDbs() throws SQLException {
-    final Database sourceDb = testHarness.getSourceDatabase();
-    Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
-    LOGGER.info("Printing source tables");
-    for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
-    }
-
-    final Database destDb = testHarness.getDestinationDatabase();
-    pairs = testHarness.listAllTables(destDb);
-    LOGGER.info("Printing destination tables");
-    for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
-    }
-  }
+  /*
+   * // can be helpful for debugging private void printDbs() throws SQLException { final Database
+   * sourceDb = testHarness.getSourceDatabase(); Set<SchemaTableNamePair> pairs =
+   * testHarness.listAllTables(sourceDb); LOGGER.info("Printing source tables"); for (final
+   * SchemaTableNamePair pair : pairs) { final Result<Record> result = sourceDb.query(context ->
+   * context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
+   * LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result); }
+   *
+   * final Database destDb = testHarness.getDestinationDatabase(); pairs =
+   * testHarness.listAllTables(destDb); LOGGER.info("Printing destination tables"); for (final
+   * SchemaTableNamePair pair : pairs) { final Result<Record> result = destDb.query(context ->
+   * context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
+   * LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result); } }
+   */
 
 }
