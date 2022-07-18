@@ -7,9 +7,10 @@ import json
 import pytest
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import InterpolatedConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.cursor_pagination_strategy import CursorPaginationStrategy
-from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -38,7 +39,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     strategy = CursorPaginationStrategy(cursor_value, decoder=decoder, config=config)
 
     request_options_provider = InterpolatedRequestOptionsProvider(config=config)
-    page_token = RequestOption(option_type=RequestOptionType.body_json, field_name="from")
+    page_token = RequestOption(pass_by=RequestOptionType.body_json, field_name="from")
     response = requests.Response()
     response.headers = {"has_more": True}
     response_body = {"_metadata": {"content": "stop_if_you_see_me"}, "accounts": [], "end": 99, "total": 200, "characters": {}}
@@ -46,7 +47,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
 
     paginator = InterpolatedConditionalPaginator(
-        stop_condition_template, request_options_provider, page_token, strategy, config, None, decoder
+        InterpolatedBoolean(stop_condition_template), request_options_provider, page_token, strategy, config, None, decoder
     )
     next_page_token = paginator.next_page_token(response, last_records)
 

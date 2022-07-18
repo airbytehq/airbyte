@@ -15,7 +15,7 @@ class NoPagination(Paginator):
     def request_params(self) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self) -> Mapping[str, str]:
         return {}
 
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
@@ -24,5 +24,5 @@ class NoPagination(Paginator):
     def request_body_json(self) -> Mapping[str, Any]:
         return {}
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        return None
+    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Mapping[str, Any]:
+        return {}

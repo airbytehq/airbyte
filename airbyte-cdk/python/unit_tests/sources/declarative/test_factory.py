@@ -24,7 +24,8 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
-from airbyte_cdk.sources.declarative.transformations import RemoveFields
+from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
@@ -115,7 +116,12 @@ def test_datetime_stream_slicer():
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
         step: "10d"
+<<<<<<< HEAD
         cursor_field: "created"
+=======
+        cursor_value: "created"
+        lookback_window: "5d"
+>>>>>>> alex/paginatorRefactor
     """
 
     config = parser.parse(content)
@@ -131,6 +137,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer._cursor_field == "created"
+    assert stream_slicer._lookback_window._string == "5d"
 
 
 def test_full_config():
@@ -149,10 +156,10 @@ metadata_paginator:
     type: "LimitPaginator"
     limit_value: 10
     limit_option:
-      option_type: request_parameter
+      pass_by: request_parameter
       field_name: page_size
     page_token_option:
-      option_type: path
+      pass_by: path
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ decoded_response._metadata.next }}"
@@ -332,10 +339,10 @@ def test_config_with_defaults():
             type: "LimitPaginator"
             limit_value: 10
             limit_option:
-              option_type: request_parameter
+              pass_by: request_parameter
               field_name: page_size
             page_token_option:
-              option_type: path
+              pass_by: path
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ decoded_response._metadata.next }}"
@@ -365,12 +372,11 @@ def test_config_with_defaults():
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
 
-    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
     assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._limit == 10
+    assert stream._retriever._paginator._page_size == 10
 
 
 class TestCreateTransformations:
@@ -419,4 +425,22 @@ class TestCreateTransformations:
         component = factory.create_component(config["the_stream"], input_config)()
         assert isinstance(component, DeclarativeStream)
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]])]
+        assert expected == component._transformations
+
+    def test_add_fields(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [AddFields([AddedFieldDefinition(["field1"], "static_value")])]
         assert expected == component._transformations

@@ -16,26 +16,30 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.cursor_pagination_strategy import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
+    "AddFields": AddFields,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "CompositeErrorHandler": CompositeErrorHandler,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
+    "CursorPagination": CursorPaginationStrategy,
     "DatetimeStreamSlicer": DatetimeStreamSlicer,
     "DeclarativeStream": DeclarativeStream,
     "DefaultErrorHandler": DefaultErrorHandler,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
     "JelloExtractor": JelloExtractor,
+    "LimitPaginator": LimitPaginator,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
+    "OffsetIncrement": OffsetIncrement,
     "RemoveFields": RemoveFields,
     "TokenAuthenticator": TokenAuthenticator,
-    "LimitPaginator": LimitPaginator,
-    "CursorPagination": CursorPaginationStrategy,
 }

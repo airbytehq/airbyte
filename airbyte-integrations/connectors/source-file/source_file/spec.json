@@ -44,6 +44,12 @@
               "storage": {
                 "type": "string",
                 "const": "HTTPS"
+              },
+              "user_agent": {
+                "type": "boolean",
+                "title": "User-Agent",
+                "default": false,
+                "description": "Add User-Agent to request"
               }
             }
           },

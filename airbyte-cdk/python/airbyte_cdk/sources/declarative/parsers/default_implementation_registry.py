@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.checks.check_stream import CheckStream
@@ -10,8 +11,8 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
-from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
@@ -23,6 +24,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -35,21 +37,22 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 from airbyte_cdk.sources.streams.core import Stream
 
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
+    ConnectionChecker: CheckStream,
+    Decoder: JsonDecoder,
+    ErrorHandler: DefaultErrorHandler,
+    HttpResponseFilter: HttpResponseFilter,
+    HttpSelector: RecordSelector,
+    InterpolatedBoolean: InterpolatedBoolean,
+    InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
+    InterpolatedString: InterpolatedString,
+    MinMaxDatetime: MinMaxDatetime,
+    Paginator: NoPagination,
+    RequestOption: RequestOption,
+    RequestOptionsProvider: InterpolatedRequestOptionsProvider,
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
-    HttpSelector: RecordSelector,
-    ConnectionChecker: CheckStream,
-    ErrorHandler: DefaultErrorHandler,
-    Decoder: JsonDecoder,
-    JelloExtractor: JelloExtractor,
     State: DictState,
-    StreamSlicer: SingleSlice,
-    Paginator: NoPagination,
-    HttpResponseFilter: HttpResponseFilter,
     Stream: DeclarativeStream,
-    RequestOption: RequestOption,
-    InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
-    MinMaxDatetime: MinMaxDatetime,
-    InterpolatedString: InterpolatedString,
+    StreamSlicer: SingleSlice,
 }

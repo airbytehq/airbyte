@@ -83,7 +83,9 @@ class DeclarativeComponentFactory:
         elif isinstance(definition, dict):
             # Try to infer object type
             expected_type = self.get_default_type(key, parent_class)
-            if expected_type:
+            # if there is an expected type, and it's not a builtin type, then instantiate it
+            # We don't have to instantiate builtin types (eg string and dict) because definition is already going to be of that type
+            if expected_type and not self._is_builtin_type(expected_type):
                 definition["class_name"] = expected_type
                 definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
                 return self.create_component(definition, config)()
@@ -100,6 +102,7 @@ class DeclarativeComponentFactory:
             expected_type = self.get_default_type(key, parent_class)
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
+                # for instance, to turn a string into an InterpolatedString
                 return expected_type(definition)
             else:
                 return definition
@@ -126,8 +129,13 @@ class DeclarativeComponentFactory:
                 interface = args[0]
             else:
                 break
+
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
-        return expected_type
+
+        if expected_type:
+            return expected_type
+        else:
+            return interface
 
     @staticmethod
     def _get_subcomponent_options(sub: Any):
@@ -135,3 +143,9 @@ class DeclarativeComponentFactory:
             return sub.get("options", {})
         else:
             return {}
+
+    @staticmethod
+    def _is_builtin_type(cls) -> bool:
+        if not cls:
+            return False
+        return cls.__module__ == "builtins"

@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -44,6 +44,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_time_option: Optional[RequestOption] = None,
         end_time_option: Optional[RequestOption] = None,
         stream_state_field: Optional[str] = None,
+        lookback_window: Optional[InterpolatedString] = None,
     ):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
@@ -59,6 +60,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._stream_state_field = stream_state_field or cursor_field
         self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         self._cursor = None
+        self._lookback_window = lookback_window
 
     def set_state(self, stream_state: Mapping[str, Any]):
         self._cursor = stream_state.get(self._stream_state_field)
@@ -86,9 +88,9 @@ class DatetimeStreamSlicer(StreamSlicer):
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self._end_datetime.get_datetime(self._config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
-        start_datetime = min(self._start_datetime.get_datetime(self._config, **kwargs), end_datetime)
-        print(f"start_datetime: {start_datetime} ({type(start_datetime)})")
-        print(f"end_datetime: {end_datetime} ({type(end_datetime)})")
+        lookback_delta = self._parse_timedelta(self._lookback_window.eval(self._config, **kwargs) if self._lookback_window else "0d")
+        start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
+        start_datetime = min(start_datetime, end_datetime)
         if self._stream_state_field in stream_state:
             cursor_datetime = self.parse_date(stream_state[self._stream_state_field])
         else:

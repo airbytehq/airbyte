@@ -9,9 +9,14 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 class InterpolatedString:
     def __init__(self, string: str, default: Optional[str] = None):
-        self._string = str(string)
+        self._string = string
         self._default = default or string
         self._interpolation = JinjaInterpolation()
 
     def eval(self, config, **kwargs):
         return self._interpolation.eval(self._string, config, self._default, **kwargs)
+
+    def __eq__(self, other):
+        if not isinstance(other, InterpolatedString):
+            return False
+        return self._string == other._string and self._default == other._default

@@ -5,6 +5,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Mapping
 
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+
 
 class RecordTransformation(ABC):
     """
@@ -12,7 +14,9 @@ class RecordTransformation(ABC):
     """
 
     @abstractmethod
-    def transform(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
+    def transform(
+        self, record: Mapping[str, Any], config: Config = None, state: StreamState = None, slice: StreamSlice = None
+    ) -> Mapping[str, Any]:
         """
         :param record: the input record to be transformed
         :return: the transformed record

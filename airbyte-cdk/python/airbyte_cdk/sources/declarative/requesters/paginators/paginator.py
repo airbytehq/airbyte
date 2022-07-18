@@ -35,7 +35,7 @@ class Paginator(ABC):
         pass
 
     @abstractmethod
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self) -> Mapping[str, str]:
         """
 
         :return: the request headers to set to fetch the next page

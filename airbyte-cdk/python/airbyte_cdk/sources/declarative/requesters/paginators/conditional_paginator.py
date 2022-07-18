@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import I
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -22,6 +22,9 @@ from airbyte_cdk.sources.declarative.types import Config
 class ConditionalPaginator(Paginator, ABC):
     """
     A paginator that performs pagination by incrementing a page number and stops based on a provided stop condition.
+
+    next_page_token() updates self._token with the token, and returns {"next_page_token: token}
+    path, request_params, request_headers, request_body_data, and request_body_json return the request options to set using self._token set by next_page_token
     """
 
     def __init__(
@@ -30,7 +33,7 @@ class ConditionalPaginator(Paginator, ABC):
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
-        url_base: str = "",
+        url_base: str,
         decoder: Decoder = None,
     ):
         """
@@ -77,6 +80,7 @@ class ConditionalPaginator(Paginator, ABC):
         """
 
     def path(self):
+        # Replace url base to only return the path
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
             return InterpolatedString(self._page_token_option.path).eval(
                 self._token.replace(self._url_base, ""), next_page_token=self._token
@@ -90,19 +94,19 @@ class ConditionalPaginator(Paginator, ABC):
             **self._request_options_provider.request_params(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self) -> Mapping[str, str]:
         return {
             **self._get_request_options(RequestOptionType.header),
             **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Union[Mapping[str, Any], str]:
         return {
             **self._get_request_options(RequestOptionType.body_data),
             **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         return {
             **self._get_request_options(RequestOptionType.body_json),
             **self._request_options_provider.request_body_json(stream_state=None, stream_slice=None, next_page_token=None),
@@ -140,7 +144,7 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
 
     def __init__(
         self,
-        stop_condition: str,
+        stop_condition: InterpolatedBoolean,
         request_options_provider: InterpolatedRequestOptionsProvider,
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
@@ -159,7 +163,7 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
         :param decoder: decoder to decode the response
         """
         self._decoder = decoder
-        self._stop_condition_interpolator = InterpolatedBoolean(stop_condition)
+        self._stop_condition_interpolator = stop_condition
         super().__init__(request_options_provider, page_token_option, pagination_strategy, config, url_base, decoder)
 
     def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
