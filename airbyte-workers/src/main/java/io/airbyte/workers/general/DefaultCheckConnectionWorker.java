@@ -10,19 +10,16 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -96,20 +93,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
         LOGGER.error(message);
 
-        final Optional<AirbyteTraceMessage> traceMessage =
-            messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
-                .map(AirbyteMessage::getTrace)
-                .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
-                .findFirst();
-
-        if (traceMessage.isPresent()) {
-          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
-          return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withFailureReason(failureReason);
-        }
-
-        return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(new StandardCheckConnectionOutput()
-            .withStatus(Status.FAILED)
-            .withMessage(message));
+        return WorkerUtils.getJobFailureOutputOrThrow(OutputType.CHECK_CONNECTION, messagesByType, message);
       }
 
     } catch (final Exception e) {

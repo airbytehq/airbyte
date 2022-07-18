@@ -116,17 +116,11 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFail() throws WorkerException {
+  public void testProcessFail() {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    final ConnectorJobOutput output = worker.run(input, jobRoot);
-
-    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertNull(output.getFailureReason());
-
-    final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
-    assertEquals(Status.FAILED, checkOutput.getStatus());
+    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
   }
 
   @Test

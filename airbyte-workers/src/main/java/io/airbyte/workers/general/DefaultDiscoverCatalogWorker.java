@@ -9,15 +9,12 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.*;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -93,19 +90,10 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
         return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withDiscoverCatalog(catalog.get());
       } else {
-        final Optional<AirbyteTraceMessage> traceMessage =
-            messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
-                .map(AirbyteMessage::getTrace)
-                .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
-                .findFirst();
-
-        if (traceMessage.isPresent()) {
-          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
-          return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG).withFailureReason(failureReason);
-        }
-
-        throw new WorkerException(String.format("Discover job subprocess finished with exit code %s", exitCode));
-
+        return WorkerUtils.getJobFailureOutputOrThrow(
+            OutputType.DISCOVER_CATALOG,
+            messagesByType,
+            String.format("Discover job subprocess finished with exit code %s", exitCode));
       }
     } catch (final WorkerException e) {
       throw e;

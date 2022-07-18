@@ -8,16 +8,13 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
@@ -85,20 +82,11 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         }
 
         return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withSpec(spec.get());
-
       } else {
-        final Optional<AirbyteTraceMessage> traceMessage =
-            messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
-                .map(AirbyteMessage::getTrace)
-                .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
-                .findFirst();
-
-        if (traceMessage.isPresent()) {
-          final FailureReason failureReason = FailureHelper.genericFailure(traceMessage.get(), null, null);
-          return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withFailureReason(failureReason);
-        }
-
-        throw new WorkerException(String.format("Spec job subprocess finished with exit code %s", exitCode));
+        return WorkerUtils.getJobFailureOutputOrThrow(
+            OutputType.SPEC,
+            messagesByType,
+            String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
     } catch (final Exception e) {
       throw new WorkerException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
