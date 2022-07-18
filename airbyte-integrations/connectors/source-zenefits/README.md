@@ -1,3 +1,10 @@
+# *How to access the token from Zenefits*
+
+Login into the Zenefits portal. <br>
+Follow the steps in the given link [Here](https://developers.zenefits.com/docs/sync-with-zenefits-button), This will generate and Bearer token for the user which can be used to interact with the API using the source-zenefits connector.
+
+
+
 # Zenefits Source
 
 This is the repository for the Zenefits source connector, written in Python.
