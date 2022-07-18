@@ -116,12 +116,8 @@ def test_datetime_stream_slicer():
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
         step: "10d"
-<<<<<<< HEAD
         cursor_field: "created"
-=======
-        cursor_value: "created"
         lookback_window: "5d"
->>>>>>> alex/paginatorRefactor
     """
 
     config = parser.parse(content)
@@ -136,7 +132,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer._cursor_field == "created"
+    assert stream_slicer._cursor_field._string == "created"
     assert stream_slicer._lookback_window._string == "5d"
 
 
