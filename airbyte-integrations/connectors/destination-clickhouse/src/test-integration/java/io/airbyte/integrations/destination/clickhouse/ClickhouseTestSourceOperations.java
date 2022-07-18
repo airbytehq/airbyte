@@ -4,14 +4,11 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,12 +17,10 @@ public class ClickhouseTestSourceOperations extends JdbcSourceOperations {
 
   public static final DateTimeFormatter CLICKHOUSE_DATETIME_WITH_TZ_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX");
 
-
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DateTimeFormatter.ISO_DATE.format(resultSet.getTimestamp(index).toLocalDateTime()));
   }
-
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
