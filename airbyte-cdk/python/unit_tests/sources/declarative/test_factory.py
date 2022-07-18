@@ -150,7 +150,7 @@ selector:
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
     type: "LimitPaginator"
-    limit_value: 10
+    page_size: 10
     limit_option:
       pass_by: request_parameter
       field_name: page_size
@@ -333,7 +333,7 @@ def test_config_with_defaults():
         retriever:
           paginator:
             type: "LimitPaginator"
-            limit_value: 10
+            page_size: 10
             limit_option:
               pass_by: request_parameter
               field_name: page_size
@@ -370,7 +370,7 @@ def test_config_with_defaults():
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
-    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
     assert stream._retriever._paginator._page_size == 10
 
 

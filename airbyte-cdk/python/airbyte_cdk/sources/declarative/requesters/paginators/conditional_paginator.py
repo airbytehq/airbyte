@@ -9,6 +9,7 @@ import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -32,7 +33,7 @@ class ConditionalPaginator(Paginator, ABC):
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
         config: Config,
-        url_base: str,
+        url_base: Union[InterpolatedString, str],
         decoder: Decoder = None,
     ):
         """
@@ -48,6 +49,8 @@ class ConditionalPaginator(Paginator, ABC):
         self._page_token_option = page_token_option
         self._pagination_strategy = pagination_strategy
         self._token = None
+        if isinstance(url_base, str):
+            url_base = InterpolatedString(url_base)
         self._url_base = url_base
         self._decoder = decoder or JsonDecoder()
 
@@ -81,7 +84,7 @@ class ConditionalPaginator(Paginator, ABC):
     def path(self):
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
             # Replace url base to only return the path
-            return self._token.replace(self._url_base, "")
+            return self._token.replace(self._url_base.eval(self._config), "")
         else:
             return None
 
