@@ -20,7 +20,6 @@ class LimitPaginator(ConditionalPaginator):
     Limit paginator.
     Requests pages of results with a maximum number of records defined by limit_value.
 
-
     Examples:
         1.
         * fetches up to 10 records at a time by setting the "limit" request param to 10
@@ -85,7 +84,6 @@ class LimitPaginator(ConditionalPaginator):
         decoder: Decoder = None,
     ):
         """
-
         :param page_size: the number of records to request
         :param limit_option: the request option to set the limit
         :param page_token_option: the request option to set the page token

@@ -122,7 +122,6 @@ class ConditionalPaginator(Paginator, ABC):
 
 class InterpolatedConditionalPaginator(ConditionalPaginator):
     """
-
     example:
     * stops paginating when "{{ decoded_response._metadata.self == decoded_response._metadata.next }}"
     * sets "page_size" request param to 10
@@ -153,7 +152,6 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
         decoder: Decoder = None,
     ):
         """
-
         :param stop_condition: Interpolated string to evaluate defining when to stop paginating
         :param request_options_provider: additional request options to set
         :param page_token_option: request option to set the the next_page_token
