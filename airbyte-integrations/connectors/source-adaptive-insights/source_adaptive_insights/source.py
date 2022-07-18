@@ -19,13 +19,15 @@ import xmltodict
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from .helper import handle_export_dimensions
+from source_adaptive_insights.serializers import (
+    handle_export_dimensions,
+    handle_export_levels
+)
 
 
 # Basic full refresh stream
 class AdaptiveInsightsStream(HttpStream, ABC):
 
-    # TODO: Fill in the url base. Required.
     url_base = "https://api.adaptiveinsights.com/api/"
     method = None
 
@@ -34,9 +36,30 @@ class AdaptiveInsightsStream(HttpStream, ABC):
         self.username = username
         self.password = password
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pass
+
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
 
         return {'Content-Type': 'text/xml; charset=UTF-8'}
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = xmltodict.parse(response.content)
+        
+        yield from handle_export_dimensions(json_response)
+
+
+class ExportDimensions(AdaptiveInsightsStream):
+
+    primary_key = "id"
+    http_method = "POST"
+    method = "exportDimensions"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "v32"
 
     def request_body_data(
         self,
@@ -55,22 +78,43 @@ class AdaptiveInsightsStream(HttpStream, ABC):
         return body
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = xmltodict.parse(response.contenct)
+        json_response = xmltodict.parse(response.content)
         
         yield from handle_export_dimensions(json_response)
 
 
-class ExportDimensions(AdaptiveInsightsStream):
+class ExportLevels(AdaptiveInsightsStream):
 
     primary_key = "id"
     http_method = "POST"
-    method = "exportDimension"
+    method = "exportLevels"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
 
         return "v32"
+
+    def request_body_data(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Mapping, str]]:
+
+        body = f"""<?xml version='1.0' encoding='UTF-8'?>
+        <call method="{self.method}" callerName="Airbyte - auto">
+        <credentials login="{self.username}" password="{self.password}"/>
+        <include versionName="Current LBE" inaccessibleValues="true"/>
+        </call>
+        """.encode("utf-8")
+
+        return body
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = xmltodict.parse(response.content)
+        
+        yield from handle_export_levels(json_response)
 
 
 # Basic incremental stream
@@ -146,17 +190,29 @@ class ExportDimensions(AdaptiveInsightsStream):
 # Source
 class SourceAdaptiveInsights(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
+        username = config["username"]
+        password = config["password"]
 
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
+        BASE_URL = "https://api.adaptiveinsights.com/api/v32"
 
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+        headers = {'Content-Type': 'text/xml; charset=UTF-8'}
+
+        xml_string = f"""<?xml version='1.0' encoding='UTF-8'?>
+        <call method="exportDimensions" callerName="Airbyte - check">
+        <credentials login="{username}" password="{password}"/>
+        <include versionName="Current LBE" dimensionValues="true"/>
+        </call>
+        """.encode("utf-8")
+
+        response = requests.post(
+            BASE_URL,
+            data=xml_string,
+            headers=headers
+        )
+
+        content = xmltodict.parse(response.content)
+
+        return content.get("response").get("@success") == 'true', None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         username = config["username"]
@@ -167,6 +223,7 @@ class SourceAdaptiveInsights(AbstractSource):
         }
 
         return [
-            ExportDimensions(**args)
+            ExportDimensions(**args),
+            ExportLevels(**args)
             # Employees(authenticator=auth)
         ]
