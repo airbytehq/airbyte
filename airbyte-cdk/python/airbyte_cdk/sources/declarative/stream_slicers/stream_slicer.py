@@ -10,7 +10,7 @@ from airbyte_cdk.models import SyncMode
 
 class StreamSlicer(ABC):
     @abstractmethod
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         pass
 
     @abstractmethod
@@ -31,10 +31,6 @@ class StreamSlicer(ABC):
 
     @abstractmethod
     def request_body_json(self) -> Optional[Mapping]:
-        pass
-
-    @abstractmethod
-    def set_state(self, stream_state: Mapping[str, Any]):
         pass
 
     @abstractmethod

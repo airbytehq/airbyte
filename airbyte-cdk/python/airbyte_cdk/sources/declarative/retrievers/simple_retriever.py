@@ -300,4 +300,4 @@ class SimpleRetriever(Retriever, HttpStream):
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._iterator.set_state(value)
+        self._iterator.update_cursor(value)

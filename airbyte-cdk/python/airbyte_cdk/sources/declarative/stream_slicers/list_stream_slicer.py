@@ -18,10 +18,7 @@ class ListStreamSlicer(StreamSlicer):
     If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list
     """
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
-        pass
-
-    def set_state(self, stream_state: Mapping[str, Any]):
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         pass
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:

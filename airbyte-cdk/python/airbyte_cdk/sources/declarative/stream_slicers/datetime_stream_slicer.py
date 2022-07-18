@@ -67,13 +67,11 @@ class DatetimeStreamSlicer(StreamSlicer):
         if not self._end_datetime.datetime_format:
             self._end_datetime.datetime_format = self._datetime_format
 
-    def set_state(self, stream_state: Mapping[str, Any]):
-        self._cursor = stream_state.get(self._stream_state_field)
-
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         return {self._stream_state_field: self._cursor} if self._cursor else None
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
+        raise Exception()
         stream_slice_value = stream_slice.get(self._cursor_field)
         last_record_value = last_record.get(self._cursor_field) if last_record else None
         cursor = None
@@ -97,6 +95,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
         if self._stream_state_field.eval(self._config) in stream_state:
+            raise Exception()
             cursor_datetime = self.parse_date(stream_state[self._stream_state_field])
         else:
             cursor_datetime = start_datetime

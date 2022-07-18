@@ -26,7 +26,7 @@ class SubstreamSlicer(StreamSlicer):
         self._parent_stream_name_to_stream_slice_key = parent_stream_name_to_stream_slice_key  # or "parent_id" FIXME: needs a default!
         self._cursor = None
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         # FIXME
         print(f"update_cursor. stream_slice: {stream_slice}")
 
@@ -45,10 +45,6 @@ class SubstreamSlicer(StreamSlicer):
     def request_body_json(self) -> Optional[Mapping]:
         # FIXME
         return {}
-
-    def set_state(self, stream_state: Mapping[str, Any]):
-        # FIXME
-        self._cursor = stream_state.get(self._stream_state_field)
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         # FIXME

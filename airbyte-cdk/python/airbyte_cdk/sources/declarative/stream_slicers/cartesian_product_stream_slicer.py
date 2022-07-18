@@ -27,7 +27,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
     ]
     """
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
+    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         pass
 
     def request_params(self) -> Mapping[str, Any]:
@@ -40,9 +40,6 @@ class CartesianProductStreamSlicer(StreamSlicer):
         pass
 
     def request_body_json(self) -> Optional[Mapping]:
-        pass
-
-    def set_state(self, stream_state: Mapping[str, Any]):
         pass
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
