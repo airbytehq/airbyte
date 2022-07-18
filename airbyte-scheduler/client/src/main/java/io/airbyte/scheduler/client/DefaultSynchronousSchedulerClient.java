@@ -16,6 +16,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -32,13 +33,16 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
+  private final JobErrorReporter jobErrorReporter;
   private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public DefaultSynchronousSchedulerClient(final TemporalClient temporalClient,
                                            final JobTracker jobTracker,
+                                           final JobErrorReporter jobErrorReporter,
                                            final OAuthConfigSupplier oAuthConfigSupplier) {
     this.temporalClient = temporalClient;
     this.jobTracker = jobTracker;
+    this.jobErrorReporter = jobErrorReporter;
     this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
@@ -55,6 +59,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
+        jobCheckConnectionConfig,
         source.getSourceDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         ConnectorJobOutput::getCheckConnection,
@@ -75,6 +80,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
+        jobCheckConnectionConfig,
         destination.getDestinationDefinitionId(),
         jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         ConnectorJobOutput::getCheckConnection,
@@ -94,6 +100,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.DISCOVER_SCHEMA,
+        jobDiscoverCatalogConfig,
         source.getSourceDefinitionId(),
         jobId -> temporalClient.submitDiscoverSchema(UUID.randomUUID(), 0, jobDiscoverCatalogConfig),
         ConnectorJobOutput::getDiscoverCatalog,
@@ -106,6 +113,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
 
     return execute(
         ConfigType.GET_SPEC,
+        jobSpecConfig,
         null,
         jobId -> temporalClient.submitGetSpec(UUID.randomUUID(), 0, jobSpecConfig),
         ConnectorJobOutput::getSpec,
@@ -113,11 +121,12 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   @VisibleForTesting
-  <T, U> SynchronousResponse<T> execute(final ConfigType configType,
-                                        @Nullable final UUID connectorDefinitionId,
-                                        final Function<UUID, TemporalResponse<U>> executor,
-                                        final Function<U, T> outputMapper,
-                                        final UUID workspaceId) {
+  <T, U, V> SynchronousResponse<T> execute(final ConfigType configType,
+                                           final V jobConfig,
+                                           @Nullable final UUID connectorDefinitionId,
+                                           final Function<UUID, TemporalResponse<U>> executor,
+                                           final Function<U, T> outputMapper,
+                                           final UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
     final UUID jobId = UUID.randomUUID();
     try {
@@ -128,7 +137,10 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
 
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
-      // TODO(pedro): report ConnectorJobOutput's failureReason to the JobErrorReporter, like the above
+
+      if (outputState == JobState.FAILED && jobOutput.isPresent()) {
+        reportError(configType, jobConfig, jobOutput.get(), connectorDefinitionId, workspaceId);
+      }
 
       final long endedAt = Instant.now().toEpochMilli();
       return SynchronousResponse.fromTemporalResponse(
@@ -175,6 +187,36 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
           String.format("Jobs of type %s cannot be processed here. They should be consumed in the JobSubmitter.", configType));
     }
 
+  }
+
+  private <S, T> void reportError(final ConfigType configType,
+                                  final S jobConfig,
+                                  final T jobOutput,
+                                  final UUID connectorDefinitionId,
+                                  final UUID workspaceId) {
+
+    switch (configType) {
+      case CHECK_CONNECTION_SOURCE -> jobErrorReporter.reportSourceCheckJobFailure(
+          connectorDefinitionId,
+          workspaceId,
+          ((ConnectorJobOutput) jobOutput).getFailureReason(),
+          (JobCheckConnectionConfig) jobConfig);
+      case CHECK_CONNECTION_DESTINATION -> jobErrorReporter.reportDestinationCheckJobFailure(
+          connectorDefinitionId,
+          workspaceId,
+          ((ConnectorJobOutput) jobOutput).getFailureReason(),
+          (JobCheckConnectionConfig) jobConfig);
+      case DISCOVER_SCHEMA -> jobErrorReporter.reportDiscoverJobFailure(
+          connectorDefinitionId,
+          workspaceId,
+          ((ConnectorJobOutput) jobOutput).getFailureReason(),
+          (JobDiscoverCatalogConfig) jobConfig);
+      case GET_SPEC -> jobErrorReporter.reportSpecJobFailure(
+          ((ConnectorJobOutput) jobOutput).getFailureReason(),
+          (JobGetSpecConfig) jobConfig);
+      default -> throw new IllegalArgumentException(
+          String.format("Jobs of type %s cannot be processed here.", configType));
+    }
   }
 
 }

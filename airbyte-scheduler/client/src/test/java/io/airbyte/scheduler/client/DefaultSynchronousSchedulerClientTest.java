@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,6 +30,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -69,6 +71,7 @@ class DefaultSynchronousSchedulerClientTest {
 
   private TemporalClient temporalClient;
   private JobTracker jobTracker;
+  private JobErrorReporter jobErrorReporter;
   private OAuthConfigSupplier oAuthConfigSupplier;
   private DefaultSynchronousSchedulerClient schedulerClient;
 
@@ -76,8 +79,9 @@ class DefaultSynchronousSchedulerClientTest {
   void setup() throws IOException {
     temporalClient = mock(TemporalClient.class);
     jobTracker = mock(JobTracker.class);
+    jobErrorReporter = mock(JobErrorReporter.class);
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
 
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
@@ -102,7 +106,7 @@ class DefaultSynchronousSchedulerClientTest {
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, mock(JobDiscoverCatalogConfig.class), sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
@@ -114,6 +118,7 @@ class DefaultSynchronousSchedulerClientTest {
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
+      verifyNoInteractions(jobErrorReporter);
     }
 
     @SuppressWarnings("unchecked")
@@ -125,7 +130,7 @@ class DefaultSynchronousSchedulerClientTest {
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
 
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, mock(JobDiscoverCatalogConfig.class), sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("42", response.getOutput());
@@ -145,7 +150,7 @@ class DefaultSynchronousSchedulerClientTest {
       when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, mock(JobDiscoverCatalogConfig.class), sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertNull(response.getOutput());
@@ -157,6 +162,7 @@ class DefaultSynchronousSchedulerClientTest {
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verifyNoInteractions(jobErrorReporter);
     }
 
     @SuppressWarnings("unchecked")
@@ -169,10 +175,12 @@ class DefaultSynchronousSchedulerClientTest {
 
       assertThrows(
           RuntimeException.class,
-          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID));
+          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, mock(JobDiscoverCatalogConfig.class), sourceDefinitionId, function,
+              mapperFunction, WORKSPACE_ID));
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verifyNoInteractions(jobErrorReporter);
     }
 
   }
