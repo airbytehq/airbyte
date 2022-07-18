@@ -1,8 +1,8 @@
 apiVersion: v2
-name: airbyte
-description: Helm chart to deploy airbyte
+name: temporal
+description: Helm chart to deploy airbyte-temporal
 
-
+# lolXD
 # A chart can be either an 'application' or a 'library' chart.
 #
 # Application charts are a collection of templates that can be packaged into versioned archives
@@ -16,7 +16,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.39.36
+version: "0.39.36"
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -30,35 +30,3 @@ dependencies:
     tags:
       - bitnami-common
     version: 1.x.x
-  - condition: postgresql.enabled
-    name: postgresql
-    version: 10.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - condition: logs.minio.enabled
-    name: minio
-    version: 11.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - condition: airbyte-bootloader.enabled
-    name: airbyte-bootloader
-    repository: "https://xpuska513.github.io/aribyte-oss/"
-    version: 0.43.3
-  - condition: temporal.enabled
-    name: temporal
-    repository: "https://xpuska513.github.io/aribyte-oss/"
-    version: 0.43.3
-  - condition: webapp.enabled
-    name: webapp
-    repository: "https://xpuska513.github.io/aribyte-oss/"
-    version: 0.43.3
-  - condition: server.enabled
-    name: server
-    repository: "https://xpuska513.github.io/aribyte-oss/"
-    version: 0.43.3
-  - condition: worker.enabled
-    name: worker
-    repository: "https://xpuska513.github.io/aribyte-oss/"
-    version: 0.43.3
-  - condition: pod-sweeper.enabled
-    name: pod-sweeper
-    repository: "https://xpuska513.github.io/aribyte-oss/"
-    version: 0.43.3
