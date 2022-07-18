@@ -206,7 +206,6 @@ public class MetricsQueriesTest {
       configDb.transaction(
           ctx -> ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(5L, inactiveConnectionId.toString(), JobStatus.running).execute());
 
-      final var res = configDb.query(MetricQueries::numberOfRunningJobs);
       assertEquals(2, configDb.query(MetricQueries::numberOfRunningJobs));
       assertEquals(1, configDb.query(MetricQueries::numberOfOrphanRunningJobs));
     }

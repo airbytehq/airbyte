@@ -16,6 +16,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,8 +85,8 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(db))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("database", DB_NAME)
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -141,7 +142,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    db = new ClickHouseContainer("yandex/clickhouse-server");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
   }
 
