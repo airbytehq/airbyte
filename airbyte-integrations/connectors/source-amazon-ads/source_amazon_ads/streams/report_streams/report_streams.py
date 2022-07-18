@@ -3,7 +3,6 @@
 #
 
 import json
-import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import timedelta
@@ -23,8 +22,6 @@ from pendulum import DateTime
 from pydantic import BaseModel
 from source_amazon_ads.schemas import CatalogModel, MetricsReport, Profile
 from source_amazon_ads.streams.common import BasicAmazonAdsStream
-
-logger = logging.getLogger("airbyte")
 
 
 class RecordType(str, Enum):
@@ -168,14 +165,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     @backoff_max_tries
     def _init_and_try_read_records(self, report_date):
         report_infos = self._init_reports(report_date)
-        logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
+        self.logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
         self._try_read_records(report_infos)
         return report_infos
 
     @backoff_max_time
     def _try_read_records(self, report_infos):
         incomplete_report_infos = self._incomplete_report_infos(report_infos)
-        logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
+        self.logger.info(f"Checking report status, {len(incomplete_report_infos)} report(s) remaining")
         for report_info in incomplete_report_infos:
             report_status, download_url = self._check_status(report_info)
             report_info.status = report_status
@@ -340,7 +337,9 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 # subtypes have mutualy excluded parameters so we requesting
                 # different metric list for each record.
                 record_type = record_type.split("_")[0]
-                logger.info(f"Initiating report generation for {profile.profileId} profile with {record_type} type for {metric_date} date")
+                self.logger.info(
+                    f"Initiating report generation for {profile.profileId} profile with {record_type} type for {metric_date} date"
+                )
                 response = self._send_http_request(
                     urljoin(self._url, self.report_init_endpoint(record_type)),
                     profile.profileId,
@@ -361,7 +360,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                         metric_objects=[],
                     )
                 )
-                logger.info("Initiated successfully")
+                self.logger.info("Initiated successfully")
 
         return report_infos
 

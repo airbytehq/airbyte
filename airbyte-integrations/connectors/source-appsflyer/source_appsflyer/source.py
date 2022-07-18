@@ -113,7 +113,7 @@ class AppsflyerStream(HttpStream, ABC):
         else:
             return super().backoff_time(response)
 
-        logging.getLogger("airbyte").info(f"Rate limit exceded. Retry in {wait_time} seconds.")
+        self.logger.info(f"Rate limit exceded. Retry in {wait_time} seconds.")
         return wait_time
 
     @transformer.registerCustomTransform
