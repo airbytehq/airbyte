@@ -1,3 +1,4 @@
 -e ../../bases/source-acceptance-test
 -e .
-xmltodict
+xmltodict==0.13.0
+requests-mock==1.9.3

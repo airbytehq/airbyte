@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response success="true">
+  <output>
+    <levels seqNo="1">
+      <level id="2" name="A" currency="USD" shortName="" isElimination="0" isLinked="0" workflowStatus="I" isImportable="1" hasChildren="true">
+        <level id="3" name="B" currency="USD" shortName="" isElimination="0" isLinked="0" workflowStatus="I" isImportable="1" hasChildren="true">
+          <level id="4" name="C" currency="USD" shortName="" isElimination="0" isLinked="0" workflowStatus="I" isImportable="1" hasChildren="true">
+            <level id="5" name="D" currency="USD" shortName="" isElimination="0" isLinked="0" workflowStatus="I" isImportable="1">
+              <attributes>
+                <attribute attributeId="6" name="E" valueId="11" value="F" />
+                <attribute attributeId="7" name="G" valueId="12" value="H" />
+              </attributes>
+            </level>
+            <level id="8" name="I" currency="USD" shortName="" isElimination="0" isLinked="0" workflowStatus="I" isImportable="1">
+              <attributes>
+                <attribute attributeId="9" name="J" valueId="13" value="K" />
+                <attribute attributeId="10" name="L" valueId="14" value="M" />
+              </attributes>
+            </level>
+          </level>
+        </level>
+      </level>
+    </levels>
+  </output>
+</response>
