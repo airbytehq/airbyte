@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from cached_property import cached_property
 from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.adobjects.adaccount import AdAccount as FBAdAccount
+from facebook_business.adobjects.user import User
 
 from .base_insight_streams import AdsInsights
 from .base_streams import FBMarketingIncrementalStream, FBMarketingReversedIncrementalStream, FBMarketingStream
@@ -148,6 +149,24 @@ class AdAccount(FBMarketingStream):
 
     use_batch = False
     enable_deleted = False
+
+    def check_task_permission(self, name: str) -> bool:
+        me = User(fbid="me", api=self._api.api)
+        for business in me.get_businesses():
+            assigned_users = self._api.account.get_assigned_users(params={"business": business.get_id()})
+            for assigned_user in assigned_users:
+                if name in assigned_user["tasks"]:
+                    return True
+        return False
+
+    @cached_property
+    def fields(self) -> List[str]:
+        """List of fields that we want to query, for now just all properties from stream's schema"""
+
+        properties = list(self.get_json_schema().get("properties", {}).keys())
+        if "funding_source_details" in properties and not self.check_task_permission("MANAGE"):
+            properties.remove("funding_source_details")
+        return properties
 
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
