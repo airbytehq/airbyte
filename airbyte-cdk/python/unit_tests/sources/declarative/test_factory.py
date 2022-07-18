@@ -152,10 +152,10 @@ metadata_paginator:
     type: "LimitPaginator"
     limit_value: 10
     limit_option:
-      option_type: request_parameter
+      pass_by: request_parameter
       field_name: page_size
     page_token_option:
-      option_type: path
+      pass_by: path
     pagination_strategy:
       type: "CursorPagination"
       cursor_value: "{{ decoded_response._metadata.next }}"
@@ -335,10 +335,10 @@ def test_config_with_defaults():
             type: "LimitPaginator"
             limit_value: 10
             limit_option:
-              option_type: request_parameter
+              pass_by: request_parameter
               field_name: page_size
             page_token_option:
-              option_type: path
+              pass_by: path
             pagination_strategy:
               type: "CursorPagination"
               cursor_value: "{{ decoded_response._metadata.next }}"

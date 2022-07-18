@@ -39,7 +39,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     strategy = CursorPaginationStrategy(cursor_value, decoder=decoder, config=config)
 
     request_options_provider = InterpolatedRequestOptionsProvider(config=config)
-    page_token = RequestOption(option_type=RequestOptionType.body_json, field_name="from")
+    page_token = RequestOption(pass_by=RequestOptionType.body_json, field_name="from")
     response = requests.Response()
     response.headers = {"has_more": True}
     response_body = {"_metadata": {"content": "stop_if_you_see_me"}, "accounts": [], "end": 99, "total": 200, "characters": {}}
