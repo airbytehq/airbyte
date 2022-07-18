@@ -101,40 +101,7 @@ public class TemporalUtils {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
     try {
-
-      OtlpConfig config = new OtlpConfig() {
-
-        /**
-         * @param key Key to lookup in the config.
-         * @return
-         */
-        @Override
-        public String get(String key) {
-          return null;
-        }
-
-        @Override
-        public String url() {
-          return getUrlString(this, "url").orElse(String.format("http://%s:4318", configs.getDDAgentHost()));
-        }
-
-        /**
-         * @return
-         */
-        @Override
-        public Duration step() {
-          return Duration.ofSeconds(10);
-        }
-
-        /**
-         * @return
-         */
-        @Override
-        public boolean enabled() {
-          return true;
-        }
-
-      };
+      OtlpConfig config = getTemporalOtlpConfig();
 
       MeterRegistry registry = new OtlpMeterRegistry(config, Clock.SYSTEM);
 
@@ -151,6 +118,43 @@ public class TemporalUtils {
       log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
       throw new RuntimeException(e);
     }
+  }
+
+  private static OtlpConfig getTemporalOtlpConfig() {
+    return new OtlpConfig() {
+
+      /**
+       * @param key Key to lookup in the config.
+       * @return
+       */
+      @Override
+      public String get(String key) {
+        return null;
+      }
+
+      @Override
+      public String url() {
+        // Otlp config uses http receiver port, which defaults to 4318.
+        return getUrlString(this, "url").orElse(
+            String.format("http://%s:4318", configs.getDDAgentHost()));
+      }
+
+      /**
+       * @return
+       */
+      @Override
+      public Duration step() {
+        return Duration.ofSeconds(10);
+      }
+
+      /**
+       * @return
+       */
+      @Override
+      public boolean enabled() {
+        return true;
+      }
+    };
   }
 
   @VisibleForTesting
