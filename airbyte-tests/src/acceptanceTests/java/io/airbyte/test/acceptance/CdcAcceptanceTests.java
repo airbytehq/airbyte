@@ -54,10 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -594,22 +591,24 @@ public class CdcAcceptanceTests {
   }
 
   // can be helpful for debugging
-  private void printDbs() throws SQLException {
-    final Database sourceDb = testHarness.getSourceDatabase();
-    Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
-    LOGGER.info("Printing source tables");
-    for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
-    }
-
-    final Database destDb = testHarness.getDestinationDatabase();
-    pairs = testHarness.listAllTables(destDb);
-    LOGGER.info("Printing destination tables");
-    for (final SchemaTableNamePair pair : pairs) {
-      final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM %s.%s", pair.schemaName, pair.tableName)));
-      LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
-    }
-  }
+  // private void printDbs() throws SQLException {
+  // final Database sourceDb = testHarness.getSourceDatabase();
+  // Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
+  // LOGGER.info("Printing source tables");
+  // for (final SchemaTableNamePair pair : pairs) {
+  // final Result<Record> result = sourceDb.query(context -> context.fetch(String.format("SELECT *
+  // FROM %s.%s", pair.schemaName, pair.tableName)));
+  // LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+  // }
+  //
+  // final Database destDb = testHarness.getDestinationDatabase();
+  // pairs = testHarness.listAllTables(destDb);
+  // LOGGER.info("Printing destination tables");
+  // for (final SchemaTableNamePair pair : pairs) {
+  // final Result<Record> result = destDb.query(context -> context.fetch(String.format("SELECT * FROM
+  // %s.%s", pair.schemaName, pair.tableName)));
+  // LOGGER.info("{}.{} contents:\n{}", pair.schemaName, pair.tableName, result);
+  // }
+  // }
 
 }
