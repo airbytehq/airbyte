@@ -23,11 +23,10 @@ schema_headers = {"Accept": "application/schema+json"}
 
 # Basic full refresh stream
 class NetsuiteStream(HttpStream, ABC):
-    def __init__(self, auth: OAuth1, obj_name: str, base_url: str, start_datetime: str, concurrency_limit: int = 1):
+    def __init__(self, auth: OAuth1, obj_name: str, base_url: str, start_datetime: str):
         self.obj_name = obj_name
         self.base_url = base_url
         self.start_datetime = start_datetime
-        self.concurrency_limit = concurrency_limit
         self.schemas = {}  # stores subschemas to reduce API calls
         super().__init__(authenticator=auth)
 
@@ -248,7 +247,6 @@ class SourceNetsuite(AbstractSource):
         base_url = self.base_url(config)
         auth = self.auth(config)
         start_datetime = config["start_datetime"]
-        concurrency_limit = config.get("concurrency_limit")
 
         session = self.get_session(auth)
 
@@ -266,12 +264,12 @@ class SourceNetsuite(AbstractSource):
         custom_incremental_record_names = [n for n in record_names if schemas[n]["properties"].get("lastmodified")]
         standard_record_names = [n for n in record_names if n not in incremental_record_names]
 
-        streams = [NetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in standard_record_names]
+        streams = [NetsuiteStream(auth, name, base_url, start_datetime) for name in standard_record_names]
         incremental_streams = [
-            IncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit) for name in incremental_record_names
+            IncrementalNetsuiteStream(auth, name, base_url, start_datetime) for name in incremental_record_names
         ]
         custom_incremental_streams = [
-            CustomIncrementalNetsuiteStream(auth, name, base_url, start_datetime, concurrency_limit)
+            CustomIncrementalNetsuiteStream(auth, name, base_url, start_datetime)
             for name in custom_incremental_record_names
         ]
 

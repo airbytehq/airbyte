@@ -32,9 +32,6 @@ connectionSpecification:
       type: string
       description: Access token secret
       airbyte_secret: true
-    concurrency_limit:
-      type: integer
-      description: Maximum conccurent requests to be made to Netsuite. The default is for there to be no concurrency, but it is recommended as it speeds up the syncs significantly.
     start_datetime:
       type: string
       description: Only get records updated after this date
