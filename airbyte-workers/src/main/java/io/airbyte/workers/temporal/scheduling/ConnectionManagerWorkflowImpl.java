@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureType;
+import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -719,6 +720,15 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (standardSyncSummary != null && standardSyncSummary.getStatus() == ReplicationStatus.FAILED) {
       workflowInternalState.getFailures().addAll(standardSyncOutput.getFailures());
       workflowInternalState.setPartialSuccess(standardSyncSummary.getTotalStats().getRecordsCommitted() > 0);
+      return true;
+    }
+
+    // catch normalization failure reasons
+    final NormalizationSummary normalizationSummary = standardSyncOutput.getNormalizationSummary();
+    if (normalizationSummary != null && normalizationSummary.getFailures() != null &&
+        !normalizationSummary.getFailures().isEmpty()) {
+      workflowInternalState.getFailures().addAll(normalizationSummary.getFailures());
+      workflowInternalState.setPartialSuccess(true); // fail at normalization means replication successful (?)
       return true;
     }
 
