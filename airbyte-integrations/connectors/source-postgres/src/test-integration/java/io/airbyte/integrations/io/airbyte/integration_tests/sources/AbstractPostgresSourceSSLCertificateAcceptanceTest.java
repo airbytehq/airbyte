@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -27,26 +26,20 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
+import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-/**
- * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
- * completely once the migration of multi-variant connector is done.
- */
-@SetEnvironmentVariable(key = "DEPLOYMENT_MODE",
-                        value = "CLOUD")
-public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
+public abstract class AbstractPostgresSourceSSLCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "public.id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
+  private static final String STREAM_NAME_MATERIALIZED_VIEW = "public.testview";
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
-
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
 
@@ -63,16 +56,12 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", container.getDatabaseName())
+        .put("schemas", Jsons.jsonNode(List.of("public")))
         .put("username", container.getUsername())
         .put("password", container.getPassword())
+        .put("ssl", true)
         .put("replication_method", replicationMethod)
-        .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build())
+        .put("ssl_mode", getCertificateConfiguration())
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
@@ -91,10 +80,13 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
         ctx.fetch("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
         ctx.fetch("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
         ctx.fetch("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
         return null;
       });
     }
   }
+
+  public abstract ImmutableMap getCertificateConfiguration();
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
@@ -108,7 +100,7 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
 
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
-    return SshHelpers.injectSshIntoSpec(Jsons.deserialize(MoreResources.readResource("expected_spec.json"), ConnectorSpecification.class));
+    return SshHelpers.getSpecAndInjectSsh();
   }
 
   @Override
@@ -134,6 +126,15 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME_MATERIALIZED_VIEW,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));

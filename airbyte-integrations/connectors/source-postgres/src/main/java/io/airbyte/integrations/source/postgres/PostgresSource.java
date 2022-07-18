@@ -5,6 +5,13 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -66,6 +73,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String DATABASE_KEY = "database";
   public static final String HOST_KEY = "host";
@@ -114,9 +122,22 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=require");
+    if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
+      if (config.has(PARAM_SSL_MODE)) {
+        if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
+          additionalParameters.add("sslmode=disable");
+        } else {
+          var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
+              .entrySet()
+              .stream()
+              .map(e -> e.getKey() + "=" + e.getValue())
+              .toList();
+          additionalParameters.addAll(parametersList);
+        }
+      } else {
+        additionalParameters.add("ssl=true");
+        additionalParameters.add("sslmode=require");
+      }
     }
 
     if (config.has(SCHEMAS_KEY) && config.get(SCHEMAS_KEY).isArray()) {
