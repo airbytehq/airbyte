@@ -9,9 +9,6 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 
 
 class SingleSlice(StreamSlicer):
-    def path(self) -> Optional[str]:
-        pass
-
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
         pass
 

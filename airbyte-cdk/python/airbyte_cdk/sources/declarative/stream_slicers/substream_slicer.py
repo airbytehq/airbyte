@@ -5,8 +5,7 @@
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -17,15 +16,18 @@ class SubstreamSlicer(StreamSlicer):
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
     """
 
-    def path(self) -> Optional[str]:
-        if self._cursor and self._parent_option and self._parent_option.option_type == RequestOptionType.path:
-            return (
-                InterpolatedString(self._parent_option.path)
-                .eval(self._cursor, **{self._stream_state_field: self._cursor})
-                .replace(self._url_base, "")
-            )
-        else:
-            return None
+    def __init__(
+        self,
+        parent_streams: List[Stream],
+        parent_field: str,  # FIXME: should this be a map?
+        parent_option: Optional[RequestOption] = None,
+        stream_state_field: Optional[str] = None,
+    ):
+        self._parent_streams = parent_streams
+        self._parent_field = parent_field
+        self._stream_state_field = stream_state_field or "parent_id"
+        self._cursor = None
+        self._parent_option = parent_option
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
         print(f"update_cursor. stream_slice: {stream_slice}")
@@ -47,21 +49,6 @@ class SubstreamSlicer(StreamSlicer):
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         return {self._stream_state_field: self._cursor} if self._cursor else None
-
-    def __init__(
-        self,
-        url_base: str,
-        parent_streams: List[Stream],
-        parent_field: str,
-        parent_option: Optional[RequestOption] = None,
-        stream_state_field: Optional[str] = None,
-    ):
-        self._parent_streams = parent_streams
-        self._parent_field = parent_field
-        self._stream_state_field = stream_state_field or "parent_id"
-        self._cursor = None
-        self._url_base = url_base
-        self._parent_option = parent_option
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """

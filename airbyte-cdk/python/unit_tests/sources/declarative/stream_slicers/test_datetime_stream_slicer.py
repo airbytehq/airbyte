@@ -18,7 +18,7 @@ config = {"start_date": "2021-01-01T00:00:00.000000+0000"}
 end_date_now = InterpolatedString(
     "{{ today_utc() }}",
 )
-cursor_value = InterpolatedString("{{ stream_state['date'] }}")
+cursor_field = "created"
 timezone = datetime.timezone.utc
 
 
@@ -30,7 +30,7 @@ def mock_datetime_now(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "test_name, stream_state, start, end, step, cursor, lookback_window, expected_slices",
+    "test_name, stream_state, start, end, step, cursor_field, lookback_window, expected_slices",
     [
         (
             "test_1_day",
@@ -38,7 +38,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ config['start_date'] }}"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
             "1d",
-            cursor_value,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
@@ -59,7 +59,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ config['start_date'] }}"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
             "2d",
-            cursor_value,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-02T00:00:00.000000+0000"},
@@ -75,7 +75,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ stream_state['date'] }}"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
             "1d",
-            cursor_value,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
@@ -92,7 +92,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ config['start_date'] }}"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
             "12d",
-            cursor_value,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-10T00:00:00.000000+0000"},
@@ -104,7 +104,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-12-28T00:00:00.000000+0000"),
             MinMaxDatetime(f"{(FAKE_NOW + datetime.timedelta(days=1)).strftime(datetime_format)}"),
             "1d",
-            cursor_value,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-12-28T00:00:00.000000+0000", "end_date": "2021-12-28T00:00:00.000000+0000"},
@@ -120,7 +120,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
             MinMaxDatetime("{{ stream_state['date'] }}"),
             "1d",
-            cursor_value,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
@@ -166,7 +166,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ config['start_date'] }}"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000", max_datetime="{{ stream_state['date'] }}"),
             "1d",
-            None,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
@@ -182,7 +182,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ config['start_date'] }}"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000", max_datetime="{{ stream_state['date'] }}"),
             "1d",
-            None,
+            cursor_field,
             None,
             [
                 {"start_date": "2021-01-01", "end_date": "2021-01-01"},
@@ -196,28 +196,28 @@ def mock_datetime_now(monkeypatch):
             "test_with_lookback_window_from_start_date",
             {"date": "2021-01-05"},
             MinMaxDatetime("{{ config['start_date'] }}"),
-            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format="%Y-%m-%d"),
             "1d",
-            None,
+            cursor_field,
             "3d",
             [
-                {"start_date": "2020-12-29", "end_date": "2020-12-29"},
-                {"start_date": "2020-12-30", "end_date": "2020-12-30"},
-                {"start_date": "2020-12-31", "end_date": "2020-12-31"},
-                {"start_date": "2021-01-01", "end_date": "2021-01-01"},
-                {"start_date": "2021-01-02", "end_date": "2021-01-02"},
-                {"start_date": "2021-01-03", "end_date": "2021-01-03"},
-                {"start_date": "2021-01-04", "end_date": "2021-01-04"},
-                {"start_date": "2021-01-05", "end_date": "2021-01-05"},
+                {"start_date": "2020-12-29T00:00:00.000000+0000", "end_date": "2020-12-29T00:00:00.000000+0000"},
+                {"start_date": "2020-12-30T00:00:00.000000+0000", "end_date": "2020-12-30T00:00:00.000000+0000"},
+                {"start_date": "2020-12-31T00:00:00.000000+0000", "end_date": "2020-12-31T00:00:00.000000+0000"},
+                {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
+                {"start_date": "2021-01-02T00:00:00.000000+0000", "end_date": "2021-01-02T00:00:00.000000+0000"},
+                {"start_date": "2021-01-03T00:00:00.000000+0000", "end_date": "2021-01-03T00:00:00.000000+0000"},
+                {"start_date": "2021-01-04T00:00:00.000000+0000", "end_date": "2021-01-04T00:00:00.000000+0000"},
+                {"start_date": "2021-01-05T00:00:00.000000+0000", "end_date": "2021-01-05T00:00:00.000000+0000"},
             ],
         ),
         (
             "test_with_lookback_window_defaults_to_0d",
             {"date": "2021-01-05"},
             MinMaxDatetime("{{ config['start_date'] }}"),
-            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}"),
+            MinMaxDatetime("2021-01-10", max_datetime="{{ stream_state['date'] }}", datetime_format="%Y-%m-%d"),
             "1d",
-            None,
+            cursor_field,
             "{{ config['does_not_exist'] }}",
             [
                 {"start_date": "2021-01-01T00:00:00.000000+0000", "end_date": "2021-01-01T00:00:00.000000+0000"},
@@ -229,13 +229,13 @@ def mock_datetime_now(monkeypatch):
         ),
     ],
 )
-def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, cursor, step, lookback_window, expected_slices):
+def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, step, cursor_field, lookback_window, expected_slices):
     lookback_window = InterpolatedString(lookback_window) if lookback_window else None
     slicer = DatetimeStreamSlicer(
         start_datetime=start,
         end_datetime=end,
         step=step,
-        cursor_value=cursor,
+        cursor_field=cursor_field,
         datetime_format=datetime_format,
         lookback_window=lookback_window,
         config=config,

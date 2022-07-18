@@ -20,9 +20,6 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 class DatetimeStreamSlicer(StreamSlicer):
-    def path(self) -> Optional[str]:
-        pass
-
     timedelta_regex = re.compile(
         r"((?P<weeks>[\.\d]+?)w)?"
         r"((?P<days>[\.\d]+?)d)?"
@@ -46,6 +43,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         stream_state_field: Optional[str] = None,
         lookback_window: Optional[InterpolatedString] = None,
     ):
+        print(f"cursor_field: {cursor_field}")
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
@@ -58,6 +56,11 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._start_time_option = start_time_option
         self._end_time_option = end_time_option
         self._stream_state_field = stream_state_field or cursor_field
+        if isinstance(self._stream_state_field, str):
+            self._stream_state_field = InterpolatedString(string=self._stream_state_field)
+        print(f"stream_state_field: {stream_state_field}")
+        print(f"cursor_field: {cursor_field}")
+        print(f"self._stream_state_field: {self._stream_state_field}")
         self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         self._cursor = None
         self._lookback_window = lookback_window
