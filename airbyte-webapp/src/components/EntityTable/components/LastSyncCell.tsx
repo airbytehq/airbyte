@@ -3,7 +3,7 @@ import { FormattedRelativeTime } from "react-intl";
 import styled from "styled-components";
 
 const Content = styled.div<{ enabled?: boolean }>`
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inheret")};
+  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 `;
 
 interface IProps {
