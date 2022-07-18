@@ -16,7 +16,6 @@
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
         <!-- to be applied eventually -->
-        <exclude name="DoubleBraceInitialization"/>
         <exclude name="ForLoopCanBeForeach"/>
         <exclude name="JUnit4TestShouldUseTestAnnotation"/>
         <exclude name="JUnit5TestShouldBePackagePrivate"/>

@@ -4,7 +4,6 @@
 
 package io.airbyte.commons.logging;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,23 +13,9 @@ import org.slf4j.MDC;
 
 public class MdcScopeTest {
 
-  private static final Map<String, String> originalMap = new HashMap<>() {
+  private static final Map<String, String> originalMap = Map.of("test", "entry", "testOverride", "should be overrided");
 
-    {
-      put("test", "entry");
-      put("testOverride", "should be overrided");
-    }
-
-  };
-
-  private static final Map<String, String> modificationInMDC = new HashMap<>() {
-
-    {
-      put("new", "will be added");
-      put("testOverride", "will override");
-    }
-
-  };
+  private static final Map<String, String> modificationInMDC = Map.of("new", "will be added", "testOverride", "will override");
 
   @BeforeEach
   public void init() {
@@ -44,16 +29,7 @@ public class MdcScopeTest {
       final Map<String, String> mdcState = MDC.getCopyOfContextMap();
 
       Assertions.assertThat(mdcState).containsExactlyInAnyOrderEntriesOf(
-          new HashMap<String, String>() {
-
-            {
-              put("test", "entry");
-              put("new", "will be added");
-              put("testOverride", "will override");
-            }
-
-          });
-
+          Map.of("test", "entry", "new", "will be added", "testOverride", "will override"));
     }
   }
 
