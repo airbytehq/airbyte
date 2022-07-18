@@ -114,10 +114,7 @@
       ]
     },
     "metadata": {
-      "type": [
-        "object",
-        "null"
-      ]
+      "type": ["object", "null"]
     },
     "name": {
       "type": [

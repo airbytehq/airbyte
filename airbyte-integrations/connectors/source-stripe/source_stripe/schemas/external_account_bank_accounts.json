@@ -33,7 +33,7 @@
       "type": ["string", "null"]
     },
     "metadata": {
-      "type": "object"
+      "type": ["object", "null"]
     },
     "routing_number": {
       "type": ["string", "null"]
