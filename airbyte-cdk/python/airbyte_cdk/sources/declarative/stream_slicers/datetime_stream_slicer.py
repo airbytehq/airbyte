@@ -43,12 +43,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         stream_state_field: Optional[str] = None,
         lookback_window: Optional[InterpolatedString] = None,
     ):
-        print(f"cursor_field: {cursor_field}")
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
         self._datetime_format = datetime_format
-        print(f"slicer.datetime_format: {self._datetime_format}")
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
         self._step = self._parse_timedelta(step)
@@ -59,9 +57,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._stream_state_field = stream_state_field or cursor_field
         if isinstance(self._stream_state_field, str):
             self._stream_state_field = InterpolatedString(string=self._stream_state_field)
-        print(f"stream_state_field: {stream_state_field}")
-        print(f"cursor_field: {cursor_field}")
-        print(f"self._stream_state_field: {self._stream_state_field}")
         self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         self._cursor = None
         self._lookback_window = lookback_window
@@ -119,7 +114,6 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         dates = []
-        print(f"format: {self._datetime_format}")
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
             dates.append({"start_date": self._format_datetime(start), "end_date": self._format_datetime(end_date)})
