@@ -17,7 +17,7 @@ interface ToolTipProps {
   align?: ToolTipAlignment;
 }
 
-const MOUSE_OUT_TIMEOUT_MS: Readonly<number> = 250;
+const MOUSE_OUT_TIMEOUT_MS: Readonly<number> = 50;
 
 const TETHER_ATTACHMENT_BY_ALIGNMENT: Readonly<Record<ToolTipAlignment, string>> = {
   top: "bottom center",
