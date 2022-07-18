@@ -24,7 +24,8 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
-from airbyte_cdk.sources.declarative.transformations import RemoveFields
+from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
@@ -405,4 +406,22 @@ class TestCreateTransformations:
         component = factory.create_component(config["the_stream"], input_config)()
         assert isinstance(component, DeclarativeStream)
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]])]
+        assert expected == component._transformations
+
+    def test_add_fields(self):
+        content = f"""
+        the_stream:
+            class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
+            options:
+                {self.base_options}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+        """
+        config = parser.parse(content)
+        component = factory.create_component(config["the_stream"], input_config)()
+        assert isinstance(component, DeclarativeStream)
+        expected = [AddFields([AddedFieldDefinition(["field1"], "static_value")])]
         assert expected == component._transformations

@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Add the ability to remove & add records in YAML-based sources
+
 ## 0.1.65
 - Allow for detailed debug messages to be enabled using the --debug command.
 
