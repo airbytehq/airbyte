@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-import ToolTip, { InfoIcon } from "components/ToolTip";
+import { InfoIcon } from "components/icons/InfoIcon";
+import ToolTip from "components/ToolTip";
 
 const ToolTipBlock = styled(ToolTip)`
   top: calc(100%);
