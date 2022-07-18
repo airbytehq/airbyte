@@ -136,7 +136,7 @@ public class TemporalUtils {
       public String url() {
         // Otlp config uses http receiver port, which defaults to 4318.
         return getUrlString(this, "url").orElse(
-            String.format("http://%s:4318", configs.getDDAgentHost()));
+            String.format("http://%s:4318/v1/metrics", configs.getDDAgentHost()));
       }
 
       /**
