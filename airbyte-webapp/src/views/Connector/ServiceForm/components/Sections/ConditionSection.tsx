@@ -8,7 +8,6 @@ import GroupControls from "components/GroupControls";
 
 import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
-import { equal } from "utils/objects";
 
 import { useServiceForm } from "../../serviceFormContext";
 import { ServiceFormValues } from "../../types";
@@ -38,8 +37,8 @@ interface ConditionSectionProps {
  */
 export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
-  const { values, setValues } = useFormikContext<ServiceFormValues>();
-  const newValuesRef = useRef<typeof values>();
+  const { values, setValues, validateForm } = useFormikContext<ServiceFormValues>();
+  const shouldValidateRef = useRef<boolean>(false);
 
   const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
 
@@ -58,18 +57,15 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             )
           : values;
 
-      if (equal(values, newValues)) {
-        return;
-      }
+      // Wait until the form state updates to run validation with the updated schema
+      shouldValidateRef.current = true;
 
-      // Wait until widgetsInfo is updated first so that the form is validated with the updated validation schema
-      newValuesRef.current = newValues;
-
+      setValues(newValues, false);
       setUiWidgetsInfo(formField.path, {
         selectedItem: selectedItem.value,
       });
     },
-    [formField.conditions, formField.path, values, setUiWidgetsInfo]
+    [formField.conditions, formField.path, values, setValues, setUiWidgetsInfo]
   );
 
   const options = useMemo(
@@ -82,11 +78,11 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
   );
 
   useEffect(() => {
-    if (newValuesRef.current) {
-      setValues(newValuesRef.current);
-      newValuesRef.current = undefined;
+    if (shouldValidateRef.current) {
+      validateForm();
+      shouldValidateRef.current = false;
     }
-  }, [setValues, widgetsInfo]);
+  }, [validateForm, widgetsInfo]);
 
   const label = formField.title || formField.fieldKey;
   const blocks = formField.conditions[currentlySelectedCondition];
