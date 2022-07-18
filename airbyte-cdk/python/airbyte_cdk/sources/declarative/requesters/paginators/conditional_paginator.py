@@ -82,7 +82,6 @@ class ConditionalPaginator(Paginator, ABC):
         """
 
     def path(self):
-        # Replace url base to only return the path
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
             # Replace url base to only return the path
             return self._token.replace(self._url_base.eval(self._config), "")
