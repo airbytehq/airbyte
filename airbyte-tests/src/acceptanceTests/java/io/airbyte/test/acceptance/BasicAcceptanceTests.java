@@ -1187,7 +1187,9 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetResetAllWhenSchemaIsModified() throws Exception {
+  public void testPartialResetResetAllWhenSchemaIsModified(final TestInfo testInfo) throws Exception {
+    LOGGER.info("Running: " + testInfo.getDisplayName());
+
     // Add Table
     final String additionalTable = "additional_table";
     final Database sourceDb = testHarness.getSourceDatabase();
@@ -1221,6 +1223,8 @@ public class BasicAcceptanceTests {
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
 
+    LOGGER.info("Initial sync ran, now running an update with a stream being removed.");
+
     /**
      * Remove stream
      */
@@ -1239,6 +1243,8 @@ public class BasicAcceptanceTests {
     // remove that
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public")));
+
+    LOGGER.info("Remove done, now running an update with a stream being added.");
 
     /**
      * Add a stream -- the value of in the table are different than the initial import to ensure that it
@@ -1267,6 +1273,8 @@ public class BasicAcceptanceTests {
     assertStreamStateContainsStream(connection.getConnectionId(), List.of(
         new StreamDescriptor().name("id_and_name").namespace("public"),
         new StreamDescriptor().name(additionalTable).namespace("public")));
+
+    LOGGER.info("Addition done, now running an update with a stream being updated.");
 
     // Update
     sourceDb.query(ctx -> {
