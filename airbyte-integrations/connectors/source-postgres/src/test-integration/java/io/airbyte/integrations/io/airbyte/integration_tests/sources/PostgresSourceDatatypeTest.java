@@ -417,7 +417,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "-32768", "32767")
               .addExpectedValues(null, "-32768", "32767")
               .build());
@@ -427,7 +427,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "32767", "0", "-32767")
               .addExpectedValues("1", "32767", "0", "-32767")
               .build());
@@ -437,7 +437,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "2147483647", "0", "-2147483647")
               .addExpectedValues("1", "2147483647", "0", "-2147483647")
               .build());
