@@ -33,7 +33,6 @@ class ConfigurationUpdateTest {
 
   private static final String IMAGE_REPOSITORY = "foo";
   private static final String IMAGE_TAG = "bar";
-  private static final String IMAGE_NAME = IMAGE_REPOSITORY + ":" + IMAGE_TAG;
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
   private static final JsonNode SPEC = CatalogHelpers.fieldsToJsonSchema(

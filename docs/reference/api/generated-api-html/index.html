@@ -369,6 +369,7 @@ font-style: italic;
   <li><a href="#webBackendListConnectionsForWorkspace"><code><span class="http-method">post</span> /v1/web_backend/connections/list</code></a></li>
   <li><a href="#webBackendSearchConnections"><code><span class="http-method">post</span> /v1/web_backend/connections/search</code></a></li>
   <li><a href="#webBackendUpdateConnection"><code><span class="http-method">post</span> /v1/web_backend/connections/update</code></a></li>
+  <li><a href="#webBackendUpdateConnectionNew"><code><span class="http-method">post</span> /v1/web_backend/connections/updateNew</code></a></li>
   </ul>
   <h4><a href="#Workspace">Workspace</a></h4>
   <ul>
@@ -2267,7 +2268,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">DestinationIdRequestBody <a href="#DestinationIdRequestBody">DestinationIdRequestBody</a> (required)</div>
+      <div class="param">DestinationCloneRequestBody <a href="#DestinationCloneRequestBody">DestinationCloneRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -6136,7 +6137,7 @@ font-style: italic;
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">SourceIdRequestBody <a href="#SourceIdRequestBody">SourceIdRequestBody</a> (required)</div>
+      <div class="param">SourceCloneRequestBody <a href="#SourceCloneRequestBody">SourceCloneRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -9661,6 +9662,205 @@ font-style: italic;
         <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
   </div> <!-- method -->
   <hr/>
+  <div class="method"><a name="webBackendUpdateConnectionNew"/>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="post"><code class="huge"><span class="http-method">post</span> /v1/web_backend/connections/updateNew</code></pre></div>
+    <div class="method-summary">Update a connection (<span class="nickname">webBackendUpdateConnectionNew</span>)</div>
+    <div class="method-notes"></div>
+
+
+    <h3 class="field-label">Consumes</h3>
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Request body</h3>
+    <div class="field-items">
+      <div class="param">WebBackendConnectionUpdate <a href="#WebBackendConnectionUpdate">WebBackendConnectionUpdate</a> (required)</div>
+
+      <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
+
+    </div>  <!-- field-items -->
+
+
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "latestSyncJobCreatedAt" : 0,
+  "prefix" : "prefix",
+  "destination" : {
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "destinationName" : "destinationName",
+    "name" : "name",
+    "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "isSyncing" : true,
+  "source" : {
+    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "connectionConfiguration" : {
+      "user" : "charles"
+    },
+    "name" : "name",
+    "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "sourceName" : "sourceName",
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  },
+  "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "catalogDiff" : {
+    "transforms" : [ {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { }
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { }
+      } ]
+    }, {
+      "streamDescriptor" : {
+        "name" : "name",
+        "namespace" : "namespace"
+      },
+      "transformType" : "add_stream",
+      "updateStream" : [ {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { }
+      }, {
+        "updateFieldSchema" : { },
+        "fieldName" : [ "fieldName", "fieldName" ],
+        "addField" : { },
+        "transformType" : "add_field",
+        "removeField" : { }
+      } ]
+    } ]
+  },
+  "resourceRequirements" : {
+    "cpu_limit" : "cpu_limit",
+    "memory_request" : "memory_request",
+    "memory_limit" : "memory_limit",
+    "cpu_request" : "cpu_request"
+  },
+  "schedule" : {
+    "units" : 0,
+    "timeUnit" : "minutes"
+  },
+  "operations" : [ {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
+      }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  }, {
+    "name" : "name",
+    "operationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+    "operatorConfiguration" : {
+      "normalization" : {
+        "option" : "basic"
+      },
+      "dbt" : {
+        "gitRepoBranch" : "gitRepoBranch",
+        "dockerImage" : "dockerImage",
+        "dbtArguments" : "dbtArguments",
+        "gitRepoUrl" : "gitRepoUrl"
+      }
+    },
+    "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+  } ],
+  "catalogId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "name" : "name",
+  "syncCatalog" : {
+    "streams" : [ {
+      "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
+        "name" : "name",
+        "namespace" : "namespace",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+      }
+    }, {
+      "stream" : {
+        "sourceDefinedPrimaryKey" : [ [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ], [ "sourceDefinedPrimaryKey", "sourceDefinedPrimaryKey" ] ],
+        "supportedSyncModes" : [ null, null ],
+        "sourceDefinedCursor" : true,
+        "name" : "name",
+        "namespace" : "namespace",
+        "defaultCursorField" : [ "defaultCursorField", "defaultCursorField" ]
+      },
+      "config" : {
+        "aliasName" : "aliasName",
+        "cursorField" : [ "cursorField", "cursorField" ],
+        "selected" : true,
+        "primaryKey" : [ [ "primaryKey", "primaryKey" ], [ "primaryKey", "primaryKey" ] ]
+      }
+    } ]
+  },
+  "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
+  "namespaceFormat" : "${SOURCE_NAMESPACE}",
+  "operationIds" : [ null, null ]
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    Successful operation
+        <a href="#WebBackendConnectionRead">WebBackendConnectionRead</a>
+    <h4 class="field-label">422</h4>
+    Input failed validation
+        <a href="#InvalidInputExceptionInfo">InvalidInputExceptionInfo</a>
+  </div> <!-- method -->
+  <hr/>
   <h1><a name="Workspace">Workspace</a></h1>
   <div class="method"><a name="createWorkspace"/>
     <div class="method-path">
@@ -10315,6 +10515,8 @@ font-style: italic;
     <li><a href="#DbMigrationReadList"><code>DbMigrationReadList</code> - </a></li>
     <li><a href="#DbMigrationRequestBody"><code>DbMigrationRequestBody</code> - </a></li>
     <li><a href="#DbMigrationState"><code>DbMigrationState</code> - </a></li>
+    <li><a href="#DestinationCloneConfiguration"><code>DestinationCloneConfiguration</code> - </a></li>
+    <li><a href="#DestinationCloneRequestBody"><code>DestinationCloneRequestBody</code> - </a></li>
     <li><a href="#DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a></li>
     <li><a href="#DestinationCreate"><code>DestinationCreate</code> - </a></li>
     <li><a href="#DestinationDefinitionCreate"><code>DestinationDefinitionCreate</code> - </a></li>
@@ -10386,6 +10588,8 @@ font-style: italic;
     <li><a href="#SetInstancewideSourceOauthParamsRequestBody"><code>SetInstancewideSourceOauthParamsRequestBody</code> - </a></li>
     <li><a href="#SlackNotificationConfiguration"><code>SlackNotificationConfiguration</code> - </a></li>
     <li><a href="#SlugRequestBody"><code>SlugRequestBody</code> - </a></li>
+    <li><a href="#SourceCloneConfiguration"><code>SourceCloneConfiguration</code> - </a></li>
+    <li><a href="#SourceCloneRequestBody"><code>SourceCloneRequestBody</code> - </a></li>
     <li><a href="#SourceCoreConfig"><code>SourceCoreConfig</code> - </a></li>
     <li><a href="#SourceCreate"><code>SourceCreate</code> - </a></li>
     <li><a href="#SourceDefinitionCreate"><code>SourceDefinitionCreate</code> - </a></li>
@@ -10825,6 +11029,22 @@ font-style: italic;
     <div class='model-description'></div>
     <div class="field-items">
           </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationCloneConfiguration"><code>DestinationCloneConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationCloneRequestBody"><code>DestinationCloneRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.</div>
+    <div class="field-items">
+      <div class="param">destinationCloneId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationCloneConfiguration">DestinationCloneConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="DestinationCoreConfig"><code>DestinationCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
@@ -11438,6 +11658,22 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceCloneConfiguration"><code>SourceCloneConfiguration</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceConfiguration">SourceConfiguration</a></span>  </div>
+<div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="SourceCloneRequestBody"><code>SourceCloneRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'>The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.</div>
+    <div class="field-items">
+      <div class="param">sourceCloneId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#SourceCloneConfiguration">SourceCloneConfiguration</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceCoreConfig"><code>SourceCoreConfig</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11747,6 +11983,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
 <div class="param">resourceRequirements (optional)</div><div class="param-desc"><span class="param-type"><a href="#ResourceRequirements">ResourceRequirements</a></span>  </div>
 <div class="param">withRefreshedCatalog (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
+<div class="param">skipReset (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">operations (optional)</div><div class="param-desc"><span class="param-type"><a href="#WebBackendOperationCreateOrUpdate">array[WebBackendOperationCreateOrUpdate]</a></span>  </div>
 <div class="param">sourceCatalogId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->

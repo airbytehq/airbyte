@@ -13,6 +13,9 @@ metadata:
     {{- end }}
 spec:
   serviceAccountName: {{ include "airbyte.serviceAccountName" . }}
+  {{- if .Values.imagePullSecrets }}
+    {{- include "common.imagePullSecrets" . | nindent 2 }}
+  {{- end }}
   restartPolicy: Never
   {{- if .Values.bootloader.nodeSelector }}
   nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.bootloader.nodeSelector "context" $) | nindent 8 }}

@@ -12,6 +12,7 @@ import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import CheckBoxControl from "../../components/CheckBoxControl";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
+import styles from "./SignupForm.module.scss";
 
 interface FormValues {
   name: string;
@@ -173,6 +174,26 @@ export const SecurityField: React.FC = () => {
   );
 };
 
+interface SignupButtonProps {
+  isLoading: boolean;
+  disabled: boolean;
+  buttonMessageId?: string;
+}
+
+export const SignupButton: React.FC<SignupButtonProps> = ({
+  isLoading,
+  disabled,
+  buttonMessageId = "login.signup.submitButton",
+}) => (
+  <LoadingButton className={styles.signUpButton} type="submit" isLoading={isLoading} disabled={disabled}>
+    <FormattedMessage id={buttonMessageId} />
+  </LoadingButton>
+);
+
+export const SignupFormStatusMessage: React.FC = ({ children }) => (
+  <div className={styles.statusMessage}>{children}</div>
+);
+
 export const SignupForm: React.FC = () => {
   const { signUp } = useAuthService();
 
@@ -197,9 +218,9 @@ export const SignupForm: React.FC = () => {
         })
       }
       validateOnBlur
-      validateOnChange
+      validateOnChange={false}
     >
-      {({ isValid, isSubmitting, values }) => (
+      {({ isValid, isSubmitting, values, status }) => (
         <Form>
           <RowFieldItem>
             <NameField />
@@ -217,12 +238,8 @@ export const SignupForm: React.FC = () => {
             <SecurityField />
           </FieldItem>
           <BottomBlock>
-            <>
-              <div />
-              <LoadingButton type="submit" isLoading={isSubmitting} disabled={!isValid || !values.security}>
-                <FormattedMessage id="login.signup" />
-              </LoadingButton>
-            </>
+            <SignupButton isLoading={isSubmitting} disabled={!isValid || !values.security} />
+            {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
           </BottomBlock>
         </Form>
       )}

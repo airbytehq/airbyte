@@ -6,8 +6,8 @@ import styled from "styled-components";
 import { Switch } from "components";
 
 import { buildConnectionUpdate } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
@@ -37,7 +37,7 @@ interface EnabledControlProps {
 
 const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
-  const analyticsService = useAnalyticsService();
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
 
   const onChangeStatus = async () => {
     await updateConnection(
@@ -46,10 +46,14 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       })
     );
 
-    analyticsService.track("Source - Action", {
-      action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
+    const trackableAction =
+      connection.status === ConnectionStatus.active ? TrackActionType.DISABLE : TrackActionType.REENABLE;
+
+    const trackableActionString = `${trackableAction} connection`;
+
+    trackSourceAction(trackableActionString, trackableAction, {
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyType,
