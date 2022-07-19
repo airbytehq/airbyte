@@ -17,7 +17,6 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.registry.otlp.OtlpConfig;
-import io.micrometer.registry.otlp.OtlpMeterRegistry;
 import io.micrometer.statsd.StatsdConfig;
 import io.micrometer.statsd.StatsdMeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
@@ -130,7 +129,7 @@ public class TemporalUtils {
        */
       @Override
       public String host() {
-        return configs.getDDAgentHost()
+        return configs.getDDAgentHost();
       }
 
       /**
@@ -141,6 +140,7 @@ public class TemporalUtils {
       public String get(String key) {
         return null;
       }
+
     };
   }
 
@@ -178,6 +178,7 @@ public class TemporalUtils {
       public boolean enabled() {
         return true;
       }
+
     };
   }
 
