@@ -46,7 +46,6 @@ class DeclarativeComponentFactory:
             kwargs["options"] = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs["options"].items()}
 
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs.items()}
-
         return create(class_, config=config, **updated_kwargs)
 
     @staticmethod
