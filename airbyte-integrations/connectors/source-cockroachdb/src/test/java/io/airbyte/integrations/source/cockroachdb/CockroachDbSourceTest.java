@@ -104,26 +104,30 @@ class CockroachDbSourceTest {
   void setup() throws Exception {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
-    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final JsonNode config = getConfig(PSQL_DB, null);
     try (final DSLContext dslContext = getDslContext(config)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
         ctx.fetch("CREATE DATABASE " + dbName + ";");
         ctx.fetch(
-            "CREATE TABLE id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
-        ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
+            "CREATE TABLE " + dbName + ".id_and_name(id NUMERIC(20, 10), name VARCHAR(200), power double precision, PRIMARY KEY (id));");
+        ctx.fetch("CREATE INDEX i1 ON  " + dbName + ".id_and_name (id);");
         ctx.fetch(
-            "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+            "INSERT INTO  " + dbName
+                + ".id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch(
-            "CREATE TABLE id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
+            "CREATE TABLE  " + dbName + ".id_and_name2(id NUMERIC(20, 10), name VARCHAR(200), power double precision);");
         ctx.fetch(
-            "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
+            "INSERT INTO  " + dbName
+                + ".id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
         ctx.fetch(
-            "CREATE TABLE names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
+            "CREATE TABLE  " + dbName
+                + ".names(first_name VARCHAR(200), last_name VARCHAR(200), power double precision, PRIMARY KEY (first_name, last_name));");
         ctx.fetch(
-            "INSERT INTO names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
+            "INSERT INTO  " + dbName
+                + ".names (first_name, last_name, power) VALUES ('san', 'goku', 'Infinity'),  ('prince', 'vegeta', 9000.1), ('piccolo', 'junior', '-Infinity');");
         return null;
       });
     }
@@ -153,7 +157,7 @@ class CockroachDbSourceTest {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", HostPortResolver.resolveHost(psqlDb))
         .put("port", psqlDb.getExposedPorts().get(1))
-        .put("database", dbName)
+        .put("database", dbName == null ? psqlDb.getDatabaseName() : dbName)
         .put("username", username)
         .put("password", psqlDb.getPassword())
         .put("ssl", false)
