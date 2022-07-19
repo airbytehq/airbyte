@@ -63,7 +63,7 @@ function useWebConnectionService() {
   );
 }
 
-function useConnectionService() {
+export function useConnectionService() {
   const config = useConfig();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(() => new ConnectionService(config.apiUrl, middlewares), [config.apiUrl, middlewares]);
@@ -190,20 +190,11 @@ const useUpdateConnection = () => {
   const service = useWebConnectionService();
   const queryClient = useQueryClient();
 
-  return useMutation(
-    (connectionUpdate: WebBackendConnectionUpdate) => {
-      const withRefreshedCatalogCleaned = connectionUpdate.withRefreshedCatalog
-        ? { withRefreshedCatalog: connectionUpdate.withRefreshedCatalog }
-        : null;
-
-      return service.update({ ...connectionUpdate, ...withRefreshedCatalogCleaned });
+  return useMutation((connectionUpdate: WebBackendConnectionUpdate) => service.update(connectionUpdate), {
+    onSuccess: (connection) => {
+      queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
     },
-    {
-      onSuccess: (connection) => {
-        queryClient.setQueryData(connectionsKeys.detail(connection.connectionId), connection);
-      },
-    }
-  );
+  });
 };
 
 const useConnectionList = (): ListConnection => {
