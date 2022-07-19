@@ -726,7 +726,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-azure-table:0.1.1"
+- dockerImage: "airbyte/source-azure-table:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
