@@ -6,8 +6,7 @@ import ast
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config
 
@@ -19,10 +18,12 @@ class ListStreamSlicer(StreamSlicer):
     """
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
-        pass
+        slice_value = stream_slice.get(self._cursor_field.eval(self._config))
+        if slice_value and slice_value in self._slice_values:
+            self._cursor = slice_value
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        pass
+        return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
     def request_params(self) -> Mapping[str, Any]:
         pass
@@ -36,13 +37,15 @@ class ListStreamSlicer(StreamSlicer):
     def request_body_json(self) -> Optional[Mapping]:
         pass
 
-    def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
+    def __init__(self, slice_values: Union[str, List[str]], cursor_field: Union[InterpolatedString, str], config: Config):
         if isinstance(slice_values, str):
             slice_values = ast.literal_eval(slice_values)
-        assert isinstance(slice_values, list)
-        self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
+        if isinstance(cursor_field, str):
+            cursor_field = InterpolatedString(cursor_field)
+        self._cursor_field = cursor_field
         self._slice_values = slice_values
         self._config = config
+        self._cursor = None
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        return [self._interpolation.eval(self._config, slice_value=slice_value) for slice_value in self._slice_values]
+        return [{self._cursor_field.eval(self._config): slice_value} for slice_value in self._slice_values]

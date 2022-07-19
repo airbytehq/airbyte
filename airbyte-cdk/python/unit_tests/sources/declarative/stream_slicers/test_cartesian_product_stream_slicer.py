@@ -16,14 +16,14 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
     [
         (
             "test_single_stream_slicer",
-            [ListStreamSlicer(["customer", "store", "subscription"], {"owner_resource": "{{ slice_value }}"}, None)],
+            [ListStreamSlicer(["customer", "store", "subscription"], "owner_resource", None)],
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
         (
             "test_two_stream_slicers",
             [
-                ListStreamSlicer(["customer", "store", "subscription"], {"owner_resource": "{{ slice_value }}"}, None),
-                ListStreamSlicer(["A", "B"], {"letter": "{{ slice_value }}"}, None),
+                ListStreamSlicer(["customer", "store", "subscription"], "owner_resource", None),
+                ListStreamSlicer(["A", "B"], "letter", None),
             ],
             [
                 {"owner_resource": "customer", "letter": "A"},
@@ -37,7 +37,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
         (
             "test_list_and_datetime",
             [
-                ListStreamSlicer(["customer", "store", "subscription"], {"owner_resource": "{{ slice_value }}"}, None),
+                ListStreamSlicer(["customer", "store", "subscription"], "owner_resource", None),
                 DatetimeStreamSlicer(
                     MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d"),
                     MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d"),

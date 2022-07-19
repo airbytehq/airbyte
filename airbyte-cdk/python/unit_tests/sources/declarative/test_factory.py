@@ -83,8 +83,7 @@ def test_list_based_stream_slicer_with_values_refd():
     stream_slicer:
       class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
       slice_values: "*ref(repositories)"
-      slice_definition:
-        repository: "{{ slice_value }}"
+      cursor_field: repository
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
@@ -96,8 +95,7 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     stream_slicer:
       class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
       slice_values: "{{config['repos']}}"
-      slice_definition:
-        repository: "{{ slice_value }}"
+      cursor_field: repository
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
