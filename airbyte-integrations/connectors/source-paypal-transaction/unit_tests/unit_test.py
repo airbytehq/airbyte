@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import json
 import pathlib
 from datetime import datetime, timedelta
@@ -20,7 +21,7 @@ def time_sleep_mock(mocker):
 @fixture(autouse=True)
 def transactions(request):
     file = pathlib.Path(request.node.fspath.strpath)
-    transaction = file.with_name('transaction.json')
+    transaction = file.with_name("transaction.json")
     with transaction.open() as fp:
         return json.load(fp)
 
@@ -148,11 +149,11 @@ def test_transactions_stream_slices():
     transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
     assert [
-               {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
-               {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
-               {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
-               {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
-           ] == stream_slices
+        {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
+        {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
+    ] == stream_slices
 
     # tests with specified end_date and stream_state
     transactions = Transactions(
@@ -164,10 +165,10 @@ def test_transactions_stream_slices():
     transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
-               {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
-               {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
-               {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
-           ] == stream_slices
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-04T10:00:00+00:00"},
+        {"start_date": "2021-06-04T10:00:00+00:00", "end_date": "2021-06-04T12:00:00+00:00"},
+    ] == stream_slices
 
     transactions = Transactions(
         authenticator=NoAuth(),
@@ -232,10 +233,10 @@ def test_balances_stream_slices():
     balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any")
     assert [
-               {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
-               {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
-               {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"},
-           ] == stream_slices
+        {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"},
+    ] == stream_slices
 
     # Test with stream state
     balance = Balances(
@@ -247,9 +248,9 @@ def test_balances_stream_slices():
     balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
-               {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
-               {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"},
-           ] == stream_slices
+        {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
+        {"start_date": "2021-06-03T10:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"},
+    ] == stream_slices
 
     balance = Balances(
         authenticator=NoAuth(),
@@ -278,21 +279,33 @@ def test_max_records_in_response_reached(transactions, requests_mock):
         start_date=isoparse("2021-07-01T10:00:00+00:00"),
         end_date=isoparse("2021-07-29T12:00:00+00:00"),
     )
-    error_message = {"name": "RESULTSET_TOO_LARGE", "message": "Result set size is greater than the maximum limit. Change the filter "
-                                                               "criteria and try again."}
+    error_message = {
+        "name": "RESULTSET_TOO_LARGE",
+        "message": "Result set size is greater than the maximum limit. Change the filter " "criteria and try again.",
+    }
     url = "https://api-m.paypal.com/v1/reporting/transactions"
 
-    requests_mock.register_uri('GET', url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00",
-                               json=error_message, status_code=400)
-    requests_mock.register_uri('GET', url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-15T12%3A00%3A00%2B00%3A00",
-                               json=transactions)
-    requests_mock.register_uri('GET', url + "?start_date=2021-07-15T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00",
-                               json=transactions)
+    requests_mock.register_uri(
+        "GET",
+        url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00",
+        json=error_message,
+        status_code=400,
+    )
+    requests_mock.register_uri(
+        "GET", url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-15T12%3A00%3A00%2B00%3A00", json=transactions
+    )
+    requests_mock.register_uri(
+        "GET", url + "?start_date=2021-07-15T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00", json=transactions
+    )
     month_date_slice = {"start_date": "2021-07-01T12:00:00+00:00", "end_date": "2021-07-29T12:00:00+00:00"}
     assert len(list(balance.read_records(sync_mode="any", stream_slice=month_date_slice))) == 2
 
-    requests_mock.register_uri('GET', url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-01T12%3A00%3A00%2B00%3A00",
-                               json=error_message, status_code=400)
+    requests_mock.register_uri(
+        "GET",
+        url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-01T12%3A00%3A00%2B00%3A00",
+        json=error_message,
+        status_code=400,
+    )
     one_day_slice = {"start_date": "2021-07-01T12:00:00+00:00", "end_date": "2021-07-01T12:00:00+00:00"}
     with raises(Exception):
         assert next(balance.read_records(sync_mode="any", stream_slice=one_day_slice))

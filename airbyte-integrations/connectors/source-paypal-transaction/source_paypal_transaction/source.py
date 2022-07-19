@@ -7,15 +7,15 @@ import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Dict
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from dateutil.parser import isoparse
 
 from .utils import middle_date_slices
@@ -266,10 +266,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         return slices
 
     def _prepared_request(
-            self,
-            stream_slice: Mapping[str, Any] = None,
-            stream_state: Mapping[str, Any] = None,
-            next_page_token: Optional[dict] = None
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Optional[dict] = None
     ):
         request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         request = self._create_prepared_request(
@@ -294,7 +291,9 @@ class PaypalTransactionStream(HttpStream, ABC):
         pagination_complete = False
         next_page_token = None
         while not pagination_complete:
-            request, request_kwargs = self._prepared_request(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            request, request_kwargs = self._prepared_request(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            )
 
             try:
                 response = self._send_request(request, request_kwargs)
@@ -303,7 +302,9 @@ class PaypalTransactionStream(HttpStream, ABC):
                     date_slices = middle_date_slices(stream_slice)
                     if date_slices:
                         for date_slice in date_slices:
-                            yield from self.read_records(sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state)
+                            yield from self.read_records(
+                                sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
+                            )
                         break
                     else:
                         raise exception
@@ -365,7 +366,7 @@ class Transactions(PaypalTransactionStream):
             "page_size": self.page_size,
             "page": page_number,
         }
-    
+
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         if isinstance(original_value, str) and field_schema["type"] == "number":

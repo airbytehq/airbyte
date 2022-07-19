@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from datetime import datetime
 
 
@@ -14,11 +18,13 @@ def middle_date_slices(stream_slice):
     start_date, end_date = to_datetime_str(stream_slice["start_date"]), to_datetime_str(stream_slice["end_date"])
     if start_date < end_date:
         middle_date = start_date + (end_date - start_date) / 2
-        return [{
-            "start_date": start_date.isoformat(),
-            "end_date": middle_date.isoformat(),
-        },
+        return [
+            {
+                "start_date": start_date.isoformat(),
+                "end_date": middle_date.isoformat(),
+            },
             {
                 "start_date": middle_date.isoformat(),
                 "end_date": end_date.isoformat(),
-            }]
+            },
+        ]
