@@ -5,7 +5,7 @@ import { Button } from "components";
 
 import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 
-import { Modal, ModalFooter } from "../../../components/Modal";
+import { Modal, ModalBody, ModalFooter } from "../../../components/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";
@@ -25,11 +25,13 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
 
   return (
     <Modal title={<FormattedMessage id="connection.updateSchema.completed" />} onClose={() => null}>
-      <div className={styles.modalContent}>
-        {removedItems.length > 0 && <DiffSection streams={removedItems} diffVerb="removed" catalog={catalog} />}
-        {newItems.length > 0 && <DiffSection streams={newItems} diffVerb="new" />}
-        {changedItems.length > 0 && <FieldSection streams={changedItems} diffVerb="changed" />}
-      </div>
+      <ModalBody maxHeight={400}>
+        <div className={styles.modalContent}>
+          {removedItems.length > 0 && <DiffSection streams={removedItems} diffVerb="removed" catalog={catalog} />}
+          {newItems.length > 0 && <DiffSection streams={newItems} diffVerb="new" />}
+          {changedItems.length > 0 && <FieldSection streams={changedItems} diffVerb="changed" />}
+        </div>
+      </ModalBody>
       <ModalFooter>
         <Button onClick={() => setDiffAcknowledged(true)}>
           <FormattedMessage id="connection.updateSchema.confirm" />
