@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components";
@@ -18,7 +18,10 @@ interface CatalogDiffModalProps {
 }
 
 export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff, catalog, setDiffAcknowledged }) => {
-  const { newItems, removedItems, changedItems } = getSortedDiff(catalogDiff.transforms);
+  const { newItems, removedItems, changedItems } = useMemo(
+    () => getSortedDiff(catalogDiff.transforms),
+    [catalogDiff.transforms]
+  );
 
   return (
     <Modal title={<FormattedMessage id="connection.updateSchema.completed" />} onClose={() => null}>

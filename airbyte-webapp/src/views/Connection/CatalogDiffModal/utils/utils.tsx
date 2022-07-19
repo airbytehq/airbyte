@@ -1,11 +1,12 @@
-import { createMemo } from "react-use";
-
 import { FieldTransform, StreamTransform } from "core/request/AirbyteClient";
 
 import { SortedDiff } from "./types";
 
-const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffArray: T[]): SortedDiff<T> => {
+export const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffArray?: T[]): SortedDiff<T> => {
   const sortedDiff: SortedDiff<T> = { newItems: [], removedItems: [], changedItems: [] };
+  if (!diffArray) {
+    return sortedDiff;
+  }
 
   diffArray.reduce((sortedDiff, transform) => {
     if (transform.transformType.includes("add")) {
@@ -24,5 +25,3 @@ const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffArray: T[
   }, sortedDiff);
   return sortedDiff;
 };
-
-export const useMemoSortedDiff = createMemo(getSortedDiff);

@@ -2,6 +2,7 @@ import { faAngleDown, faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Disclosure } from "@headlessui/react";
 import classnames from "classnames";
+import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
 import { ImageBlock } from "components";
@@ -9,7 +10,7 @@ import { ImageBlock } from "components";
 import { StreamTransform } from "core/request/AirbyteClient";
 
 import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
-import { diffReducer } from "../CatalogDiffModal";
+import { getSortedDiff } from "../utils/utils";
 import styles from "./DiffAccordion.module.scss";
 import { DiffFieldTable } from "./DiffFieldTable";
 
@@ -20,11 +21,10 @@ interface DiffAccordionProps {
 export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform }) => {
   const { formatMessage } = useIntl();
 
-  if (!streamTransform.updateStream) {
-    return null;
-  }
-
-  const { newItems, removedItems, changedItems } = diffReducer(streamTransform.updateStream);
+  const { newItems, removedItems, changedItems } = useMemo(
+    () => getSortedDiff(streamTransform.updateStream),
+    [streamTransform.updateStream]
+  );
 
   // eslint-disable-next-line css-modules/no-undef-class
   const nameCellStyle = classnames(styles.nameCell, styles.row);
@@ -100,21 +100,9 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
               </div>
             </Disclosure.Button>
             <Disclosure.Panel>
-              {removedItems.length > 0 && (
-                <div>
-                  <DiffFieldTable fieldTransforms={removedItems} diffVerb="removed" />
-                </div>
-              )}
-              {newItems.length > 0 && (
-                <div>
-                  <DiffFieldTable fieldTransforms={newItems} diffVerb="new" />
-                </div>
-              )}
-              {changedItems.length > 0 && (
-                <div>
-                  <DiffFieldTable fieldTransforms={changedItems} diffVerb="changed" />
-                </div>
-              )}
+              {removedItems.length > 0 && <DiffFieldTable fieldTransforms={removedItems} diffVerb="removed" />}
+              {newItems.length > 0 && <DiffFieldTable fieldTransforms={newItems} diffVerb="new" />}
+              {changedItems.length > 0 && <DiffFieldTable fieldTransforms={changedItems} diffVerb="changed" />}
             </Disclosure.Panel>
           </>
         )}
