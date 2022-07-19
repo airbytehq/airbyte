@@ -121,9 +121,9 @@ def mock_datetime_now(monkeypatch):
         ),
         (
             "test_start_date_greater_than_end_date",
-            {"date": "2021-01-05T00:00:00.000000+0000"},
+            None,
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
-            MinMaxDatetime("{{ stream_state['date'] }}"),
+            MinMaxDatetime("2021-01-05T00:00:00.000000+0000"),
             "1d",
             cursor_field,
             None,
@@ -241,7 +241,7 @@ def mock_datetime_now(monkeypatch):
         ),
         (
             "test_start_is_after_stream_state",
-            {"created": "2021-01-05T00:00:00.000000+0000"},
+            {"date": "2021-01-05T00:00:00.000000+0000"},
             MinMaxDatetime("2021-01-01T00:00:00.000000+0000"),
             MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
             "1d",

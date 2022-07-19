@@ -99,8 +99,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         else:
             cursor_datetime = start_datetime
         start_datetime = max(cursor_datetime, start_datetime)
-        if not self._is_start_date_valid(start_datetime, end_datetime):
-            end_datetime = start_datetime
 
         dates = self._partition_daterange(start_datetime, end_datetime, self._step)
         state_date = stream_state.get(self._stream_state_field.eval(self._config))
