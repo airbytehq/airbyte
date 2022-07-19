@@ -28,7 +28,8 @@ class CartesianProductStreamSlicer(StreamSlicer):
     """
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
-        pass
+        for slicer in self._stream_slicers:
+            slicer.update_cursor(stream_slice, last_record)
 
     def request_params(self) -> Mapping[str, Any]:
         pass
@@ -43,7 +44,11 @@ class CartesianProductStreamSlicer(StreamSlicer):
         pass
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        pass
+        states = list(filter(lambda s: s, [slicer.get_stream_state() for slicer in self._stream_slicers]))
+        if states:
+            return dict(ChainMap(*states))
+        else:
+            return None
 
     def __init__(self, stream_slicers: List[StreamSlicer]):
         self._stream_slicers = stream_slicers

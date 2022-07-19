@@ -65,3 +65,33 @@ def test_substream_slicer(test_name, stream_slicers, expected_slices):
     slicer = CartesianProductStreamSlicer(stream_slicers)
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
+
+
+@pytest.mark.parametrize(
+    "test_name, stream_slice, expected_state",
+    [
+        ("test_update_cursor_no_state_no_record", {}, None),
+        ("test_update_cursor_partial_state", {"owner_resource": "customer"}, {"owner_resource": "customer"}),
+        (
+            "test_update_cursor_full_state",
+            {"owner_resource": "customer", "date": "2021-01-01"},
+            {"owner_resource": "customer", "date": "2021-01-01"},
+        ),
+    ],
+)
+def test_update_cursor(test_name, stream_slice, expected_state):
+    stream_slicers = [
+        ListStreamSlicer(["customer", "store", "subscription"], "owner_resource", None),
+        DatetimeStreamSlicer(
+            MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d"),
+            MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d"),
+            "1d",
+            InterpolatedString("date"),
+            "%Y-%m-%d",
+            None,
+        ),
+    ]
+    slicer = CartesianProductStreamSlicer(stream_slicers)
+    slicer.update_cursor(stream_slice, None)
+    updated_state = slicer.get_stream_state()
+    assert expected_state == updated_state
