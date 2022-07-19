@@ -38,7 +38,6 @@ import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.api.client.model.generated.StreamState;
 import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
-import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
@@ -341,7 +340,7 @@ public class CdcAcceptanceTests {
     final UUID sourceId = createCdcSource().getSourceId();
     final AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Refreshed catalog: {}", refreshedCatalog);
-    final WebBackendConnectionUpdate update = getUpdateInput(connectionRead, refreshedCatalog, operationRead);
+    final WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, refreshedCatalog, operationRead);
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
@@ -388,7 +387,7 @@ public class CdcAcceptanceTests {
         .toList();
     catalog.setStreams(updatedStreams);
     LOGGER.info("Updated catalog: {}", catalog);
-    WebBackendConnectionUpdate update = getUpdateInput(connectionRead, catalog, operationRead);
+    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
@@ -403,7 +402,7 @@ public class CdcAcceptanceTests {
     LOGGER.info("Adding color palette stream back to configured catalog");
     catalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Updated catalog: {}", catalog);
-    update = getUpdateInput(connectionRead, catalog, operationRead);
+    update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
@@ -568,34 +567,8 @@ public class CdcAcceptanceTests {
     assertNull(state.getGlobalState());
   }
 
-  private WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
-
-    return new WebBackendConnectionUpdate()
-        .connectionId(connection.getConnectionId())
-        .name(connection.getName())
-        .operationIds(connection.getOperationIds())
-        .operations(List.of(new WebBackendOperationCreateOrUpdate()
-            .name(operation.getName())
-            .operationId(operation.getOperationId())
-            .workspaceId(operation.getWorkspaceId())
-            .operatorConfiguration(operation.getOperatorConfiguration())))
-        .namespaceDefinition(connection.getNamespaceDefinition())
-        .namespaceFormat(connection.getNamespaceFormat())
-        .syncCatalog(catalog)
-        .schedule(connection.getSchedule())
-        .sourceCatalogId(connection.getSourceCatalogId())
-        .status(connection.getStatus())
-        .prefix(connection.getPrefix());
-  }
-
   // can be helpful for debugging
-  @SuppressWarnings("PMD")
+  @SuppressWarnings("PMD.UnusedPrivateMethod")
   private void printDbs() throws SQLException {
     final Database sourceDb = testHarness.getSourceDatabase();
     Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);
