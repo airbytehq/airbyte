@@ -1,4 +1,5 @@
 {
+  "$id": "shared-users.json",
   "properties": {
     "_links": {
       "additionalProperties": {

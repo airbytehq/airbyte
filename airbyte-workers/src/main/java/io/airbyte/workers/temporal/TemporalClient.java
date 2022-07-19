@@ -450,10 +450,6 @@ public class TemporalClient {
     return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptions(jobType));
   }
 
-  private <T> T getWorkflowOptionsWithWorkflowId(final Class<T> workflowClass, final TemporalJobType jobType, final String name) {
-    return client.newWorkflowStub(workflowClass, TemporalUtils.getWorkflowOptionsWithWorkflowId(jobType, name));
-  }
-
   @VisibleForTesting
   <T> TemporalResponse<T> execute(final JobRunConfig jobRunConfig, final Supplier<T> executor) {
     final Path jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig);
