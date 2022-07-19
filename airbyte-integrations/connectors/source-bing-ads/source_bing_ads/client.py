@@ -6,10 +6,10 @@ import sys
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any, Iterator, Mapping, Optional
+import logging
 
 import backoff
 import pendulum
-from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
@@ -20,7 +20,7 @@ from suds import WebFault, sudsobject
 class Client:
     api_version: int = 13
     refresh_token_safe_delta: int = 10  # in seconds
-    logger: AirbyteLogger = AirbyteLogger()
+    logger: logging.Logger = logging.getLogger('airbyte')
     # retry on: rate limit errors, auth token expiration, internal errors
     # https://docs.microsoft.com/en-us/advertising/guides/services-protocol?view=bingads-13#throttling
     # https://docs.microsoft.com/en-us/advertising/guides/operation-error-codes?view=bingads-13

@@ -521,35 +521,56 @@ class KeywordPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "keyword_performance_report"
+    primary_key = [
+        "AccountId",
+        "CampaignId",
+        "AdGroupId",
+        "KeywordId",
+        "AdId",
+        "TimePeriod",
+        "CurrencyCode",
+        "DeliveredMatchType",
+        "AdDistribution",
+        "DeviceType",
+        "Language",
+        "Network",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+    ]
 
     report_columns = [
-        "AccountName",
-        "AccountNumber",
-        "AccountId",
-        "TimePeriod",
-        "CampaignId",
-        "CampaignName",
-        "DeviceType",
-        "Network",
+        *primary_key,
+        "KeywordStatus",
         "Impressions",
         "Clicks",
         "Ctr",
-        "AverageCpc",
+        "CurrentMaxCpc",
         "Spend",
-        "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "Conversions",
         "CostPerConversion",
-        "AdGroupName",
-        "AdGroupId",
-        "AdId",
-        "AdType",
-        "Keyword",
-        "KeywordId",
         "QualityScore",
-        "BidMatchType",
-        "AbsoluteTopImpressionRatePercent",
+        "ExpectedCtr",
+        "AdRelevance",
+        "LandingPageExperience",
+        "QualityImpact",
+        "Assists",
+        "ReturnOnAdSpend",
+        "CostPerAssist",
+        "CustomParameters",
+        "FinalAppUrl",
+        "Mainline1Bid",
+        "MainlineBid",
+        "FirstPageBid",
+        "FinalUrlSuffix",
+        "ViewThroughConversions",
+        "ViewThroughConversionsQualified",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *CONVERSION_FIELDS,
+        *AVERAGE_FIELDS,
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *REVENUE_FIELDS,
     ]
 
 
@@ -559,6 +580,10 @@ class KeywordPerformanceReportHourly(KeywordPerformanceReport):
 
 class KeywordPerformanceReportDaily(KeywordPerformanceReport):
     report_aggregation = "Daily"
+    report_columns = [
+        *KeywordPerformanceReport.report_columns,
+        *HISTORICAL_FIELDS,
+    ]
 
 
 class KeywordPerformanceReportWeekly(KeywordPerformanceReport):
@@ -577,24 +602,36 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "account_performance_report"
-
-    report_columns = [
-        "AccountName",
-        "AccountNumber",
+    primary_key = [
         "AccountId",
         "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
         "DeviceType",
         "Network",
-        "Impressions",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+    ]
+
+    report_columns = [
+        *primary_key,
+        "PhoneImpressions",
+        "PhoneCalls",
         "Clicks",
-        "Spend",
         "Ctr",
-        "AverageCpc",
+        "Spend",
+        "Impressions",
+        "CostPerConversion",
+        "Ptr",
+        "Assists",
         "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "Conversions",
-        "CostPerConversion"
+        "CostPerAssist",
+        *AVERAGE_FIELDS,
+        *CONVERSION_FIELDS,
+        *LOW_QUALITY_FIELDS,
+        *REVENUE_FIELDS
     ]
 
 

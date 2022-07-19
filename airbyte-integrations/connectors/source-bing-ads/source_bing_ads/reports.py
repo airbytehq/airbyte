@@ -27,6 +27,7 @@ AVERAGE_FIELDS = list(AVERAGE_FIELD_TYPES.keys())
 CONVERSION_FIELD_TYPES = {
     "Conversions": "number",
     "ConversionRate": "number",
+    "ConversionsQualified": "number",
 }
 CONVERSION_FIELDS = list(CONVERSION_FIELD_TYPES.keys())
 
@@ -125,6 +126,10 @@ REPORT_FIELD_TYPES = {
     "MonthToDateSpend": "number",
     "AbsoluteTopImpressionRatePercent": "number",
     "ViewThroughConversions": "integer",
+    "ViewThroughConversionsQualified": "number",
+    "MainlineBid": "number",
+    "Mainline1Bid": "number",
+    "FirstPageBid": "number",
     **AVERAGE_FIELD_TYPES,
     **CONVERSION_FIELD_TYPES,
     **ALL_CONVERSION_FIELD_TYPES,
