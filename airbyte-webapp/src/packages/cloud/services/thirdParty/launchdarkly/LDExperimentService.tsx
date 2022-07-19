@@ -11,6 +11,7 @@ import { useI18nContext } from "core/i18n";
 import { useAnalytics } from "hooks/services/Analytics";
 import { ExperimentProvider, ExperimentService } from "hooks/services/Experiment";
 import type { Experiments } from "hooks/services/Experiment/experiments";
+import { FeatureSet, useFeatureService } from "hooks/services/Feature";
 import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { rejectAfter } from "utils/promises";
@@ -20,6 +21,8 @@ import { rejectAfter } from "utils/promises";
  * before running disabling it.
  */
 const INITIALIZATION_TIMEOUT = 1500;
+
+const FEATURE_FLAG_EXPERIMENT = "featureService.overwrites";
 
 type LDInitState = "initializing" | "failed" | "initialized";
 
@@ -39,6 +42,7 @@ function mapUserToLDUser(user: User | null, locale: string): LDClient.LDUser {
 }
 
 const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKey }) => {
+  const { setFeatureOverwrites } = useFeatureService();
   const ldClient = useRef<LDClient.LDClient>();
   const [state, setState] = useState<LDInitState>("initializing");
   const { user } = useAuthService();
@@ -61,6 +65,23 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
     setMessageOverwrite(Object.fromEntries(messageOverwrites));
   };
 
+  /**
+   * Update the feature overwrites based on the LaunchDarkly value.
+   * It's expected to be a comma separated list of features (the values
+   * of the enum) that should be enabled. Each can be prefixed with "-"
+   * to disable the feature instead.
+   */
+  const updateFeatureOverwrites = (featureOverwriteString: string) => {
+    const featureSet = featureOverwriteString.split(",").reduce((featureSet, featureString) => {
+      const [key, enabled] = featureString.startsWith("-") ? [featureString.slice(1), false] : [featureString, true];
+      return {
+        ...featureSet,
+        [key]: enabled,
+      };
+    }, {} as FeatureSet);
+    setFeatureOverwrites(featureSet);
+  };
+
   if (!ldClient.current) {
     ldClient.current = LDClient.initialize(apiKey, mapUserToLDUser(user, locale));
     // Wait for either LaunchDarkly to initialize or a specific timeout to pass first
@@ -75,6 +96,7 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
         addAnalyticsContext({ experiments: ldClient.current?.allFlags() });
         // Check for overwritten i18n messages
         updateI18nMessages();
+        updateFeatureOverwrites(ldClient.current?.variation(FEATURE_FLAG_EXPERIMENT, ""));
       })
       .catch((reason) => {
         // If the promise fails, either because LaunchDarkly service fails to initialize, or
@@ -84,6 +106,14 @@ const LDInitializationWrapper: React.FC<{ apiKey: string }> = ({ children, apiKe
         setState("failed");
       });
   }
+
+  useEffectOnce(() => {
+    const onFeatureServiceCange = (newOverwrites: string) => {
+      updateFeatureOverwrites(newOverwrites);
+    };
+    ldClient.current?.on(`change:${FEATURE_FLAG_EXPERIMENT}`, onFeatureServiceCange);
+    return () => ldClient.current?.off(`change:${FEATURE_FLAG_EXPERIMENT}`, onFeatureServiceCange);
+  });
 
   useEffectOnce(() => {
     const onFeatureFlagsChanged = () => {

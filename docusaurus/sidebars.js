@@ -39,11 +39,17 @@ module.exports = {
           {
             type: 'category',
             label: 'Sources',
+            link: {
+              type: 'generated-index',
+            },
             items: getSourceConnectors()
           },
           {
             type: 'category',
             label: 'Destinations',
+            link: {
+              type: 'generated-index',
+            },
             items: getDestinationConnectors()
           },
           {
