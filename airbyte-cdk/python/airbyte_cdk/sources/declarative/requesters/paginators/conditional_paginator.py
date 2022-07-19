@@ -84,7 +84,7 @@ class ConditionalPaginator(Paginator, ABC):
     def path(self):
         if self._token and self._page_token_option.option_type == RequestOptionType.path:
             # Replace url base to only return the path
-            return self._token.replace(self._url_base.eval(self._config), "")
+            return str(self._token).replace(self._url_base.eval(self._config), "")
         else:
             return None
 
@@ -101,10 +101,17 @@ class ConditionalPaginator(Paginator, ABC):
         }
 
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
-        return {
-            **self._get_request_options(RequestOptionType.body_data),
-            **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
-        }
+        # the request body data coming from the provider can be a string of the form
+        # "k1=v1&k2=v2"
+        request_options = self._get_request_options(RequestOptionType.body_data)
+        request_options_from_provider = (
+            self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None) or {}
+        )
+        if request_options_from_provider and isinstance(request_options_from_provider, str):
+            # convert request_options to "k1=v1&k2=v2" string then join the request options
+            return "&".join([*[f"{k}={v}" for k, v in request_options.items()], request_options_from_provider])
+        else:
+            return {**request_options, **request_options_from_provider}
 
     def request_body_json(self) -> Mapping[str, Any]:
         return {
@@ -112,7 +119,7 @@ class ConditionalPaginator(Paginator, ABC):
             **self._request_options_provider.request_body_json(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def _get_request_options(self, option_type):
+    def _get_request_options(self, option_type) -> Mapping[str, Any]:
         options = {}
         if self._page_token_option.option_type == option_type:
             if option_type != RequestOptionType.path and self._token:
@@ -122,7 +129,6 @@ class ConditionalPaginator(Paginator, ABC):
 
 class InterpolatedConditionalPaginator(ConditionalPaginator):
     """
-
     example:
     * stops paginating when "{{ decoded_response._metadata.self == decoded_response._metadata.next }}"
     * sets "page_size" request param to 10
@@ -153,7 +159,6 @@ class InterpolatedConditionalPaginator(ConditionalPaginator):
         decoder: Decoder = None,
     ):
         """
-
         :param stop_condition: Interpolated string to evaluate defining when to stop paginating
         :param request_options_provider: additional request options to set
         :param page_token_option: request option to set the the next_page_token

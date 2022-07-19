@@ -5,7 +5,7 @@
 import json
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.paginators.page_increment import PageIncrement
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
 
 def test_page_increment_paginator_strategy():

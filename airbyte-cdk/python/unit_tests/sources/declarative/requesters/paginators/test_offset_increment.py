@@ -5,7 +5,7 @@
 import json
 
 import requests
-from airbyte_cdk.sources.declarative.requesters.paginators.offset_increment import OffsetIncrement
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 
 
 def test_offset_increment_paginator_strategy():

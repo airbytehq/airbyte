@@ -19,7 +19,6 @@ class CursorPaginationStrategy(PaginationStrategy):
 
     def __init__(self, cursor_value: Union[InterpolatedString, str], config: Config, decoder: Decoder = None):
         """
-
         :param cursor_value: template string evaluating to the cursor value
         :param config: connection config
         :param decoder: decoder to decode the response

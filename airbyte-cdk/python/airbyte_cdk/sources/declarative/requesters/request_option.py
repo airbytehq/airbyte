@@ -25,7 +25,6 @@ class RequestOption:
 
     def __init__(self, pass_by: Union[RequestOptionType, str], field_name: Optional[str] = None):
         """
-
         :param pass_by: where to set the value
         :param field_name: field name to set. None if option_type == path. Required otherwise.
         """

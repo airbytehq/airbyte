@@ -43,14 +43,12 @@ def time_sleep_mock(mocker):
 def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_properties_list):
     stream = ContactLists(**common_params)
 
+    created_at = "2022-03-25T16:43:11Z"
     responses = [
         {
             "json": {
                 stream.data_field: [
-                    {
-                        "id": "test_id",
-                        "createdAt": "2022-03-25T16:43:11Z",
-                    },
+                    {"id": "test_id", "createdAt": created_at},
                 ],
             }
         }
@@ -70,7 +68,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, common_params, fake_p
 
     _, stream_state = read_incremental(stream, {})
 
-    expected = int(pendulum.parse(common_params["start_date"]).timestamp() * 1000)
+    expected = int(pendulum.parse(created_at).timestamp() * 1000)
 
     assert stream_state[stream.updated_at_field] == expected
 
