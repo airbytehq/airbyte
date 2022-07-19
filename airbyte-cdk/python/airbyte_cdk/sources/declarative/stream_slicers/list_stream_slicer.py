@@ -36,7 +36,7 @@ class ListStreamSlicer(StreamSlicer):
         self._request_option = request_option
 
         if request_option and request_option.pass_by == RequestOptionType.path:
-            pass
+            raise ValueError("Slice value cannot be passed by path")
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         slice_value = stream_slice.get(self._cursor_field.eval(self._config))

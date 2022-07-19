@@ -77,9 +77,23 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
             {},
             {"owner_resource": "customer"},
         ),
+        (
+            "test_pass_by_path",
+            RequestOption(RequestOptionType.path),
+            {},
+            {},
+            {},
+            {"owner_resource": "customer"},
+        ),
     ],
 )
 def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
+    if request_option.pass_by == RequestOptionType.path:
+        try:
+            ListStreamSlicer(slice_values, cursor_field, {}, request_option)
+            assert False
+        except ValueError:
+            return
     slicer = ListStreamSlicer(slice_values, cursor_field, {}, request_option)
     stream_slice = {cursor_field: "customer"}
 
