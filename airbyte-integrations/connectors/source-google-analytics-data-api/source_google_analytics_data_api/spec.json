@@ -5,8 +5,12 @@
     "title": "Google Analytics Data API Spec",
     "type": "object",
     "required": [
-      "property_id", "json_credentials", "report_name",
-      "dimensions", "metrics", "date_ranges_start_date",
+      "property_id",
+      "json_credentials",
+      "report_name",
+      "dimensions",
+      "metrics",
+      "date_ranges_start_date",
       "date_ranges_end_date"
     ],
     "additionalProperties": false,

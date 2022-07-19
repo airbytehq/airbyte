@@ -7,7 +7,7 @@ import { Popout } from "components/base/Popout/Popout";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 interface TableItemTitleProps {
   type: "source" | "destination";
@@ -55,8 +55,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   entityIcon,
   releaseStage,
 }) => {
-  const { hasFeature } = useFeatureService();
-  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
+  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
   const { formatMessage } = useIntl();
   const options = [
     {

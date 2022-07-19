@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.postgres.PostgresSource.CDC_LSN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -36,8 +36,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -65,6 +63,7 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -85,7 +84,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   protected abstract String getPluginName();
 
   @AfterEach
-  void tearDown() throws Exception {
+  void tearDown() {
     dslContext.close();
     container.close();
   }
@@ -343,12 +342,11 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     createAndPopulateTimestampTable();
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING),
-                Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING),
+            Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
-            .withSourceDefinedPrimaryKey(List.of(List.of("id")))
-    ));
+            .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
         .toDefaultConfiguredCatalog(catalog);
 
@@ -370,23 +368,24 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private void createAndPopulateTimestampTable() {
     createTable(MODELS_SCHEMA, "time_stamp_table",
-        columnClause(ImmutableMap.of("id", "INTEGER", "name", "VARCHAR(200)", "created_at", "TIMESTAMPTZ NOT NULL DEFAULT NOW()"), Optional.of("id")));
+        columnClause(ImmutableMap.of("id", "INTEGER", "name", "VARCHAR(200)", "created_at", "TIMESTAMPTZ NOT NULL DEFAULT NOW()"),
+            Optional.of("id")));
     final List<JsonNode> timestampRecords = ImmutableList.of(
         Jsons
             .jsonNode(ImmutableMap
-                .of("id", 11000, "name" , "blah1")),
+                .of("id", 11000, "name", "blah1")),
         Jsons.jsonNode(ImmutableMap
-            .of("id", 12000, "name" , "blah2")),
+            .of("id", 12000, "name", "blah2")),
         Jsons
             .jsonNode(ImmutableMap
-                .of("id", 13000, "name" , "blah3")),
+                .of("id", 13000, "name", "blah3")),
         Jsons.jsonNode(ImmutableMap
-            .of("id", 14000, "name" , "blah4")),
+            .of("id", 14000, "name", "blah4")),
         Jsons.jsonNode(ImmutableMap
-            .of("id", 15000, "name" , "blah5")),
+            .of("id", 15000, "name", "blah5")),
         Jsons
             .jsonNode(ImmutableMap
-                .of("id", 16000, "name" , "blah6")));
+                .of("id", 16000, "name", "blah6")));
     for (final JsonNode recordJson : timestampRecords) {
       executeQuery(
           String.format("INSERT INTO %s.%s (%s, %s) VALUES (%s, '%s');", MODELS_SCHEMA, "time_stamp_table",
@@ -395,8 +394,9 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     }
   }
 
-  //TODO (Subodh): This should be a generic test
+  // TODO (Subodh): This should be a generic test
   @Test
+  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global state for this test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
@@ -426,11 +426,11 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final ConfiguredAirbyteCatalog newTables = CatalogHelpers
         .toDefaultConfiguredCatalog(new AirbyteCatalog().withStreams(List.of(
             CatalogHelpers.createAirbyteStream(
-                    MODELS_STREAM_NAME + "_random",
-                    MODELS_SCHEMA + "_random",
-                    Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
-                    Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
-                    Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
+                MODELS_STREAM_NAME + "_random",
+                MODELS_SCHEMA + "_random",
+                Field.of(COL_ID + "_random", JsonSchemaType.NUMBER),
+                Field.of(COL_MAKE_ID + "_random", JsonSchemaType.NUMBER),
+                Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                 .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID + "_random"))))));
 
@@ -464,7 +464,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final AirbyteStateMessage stateMessageEmittedAfterSnapshotCompletionInSecondSync = stateAfterSecondBatch.get(0);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSnapshotCompletionInSecondSync.getType());
-    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getSharedState());
+    assertEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSnapshotState = stateMessageEmittedAfterSnapshotCompletionInSecondSync.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
@@ -477,7 +478,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final AirbyteStateMessage stateMessageEmittedAfterSecondSyncCompletion = stateAfterSecondBatch.get(1);
     assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessageEmittedAfterSecondSyncCompletion.getType());
-    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(), stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
+    assertNotEquals(stateMessageEmittedAfterFirstSyncCompletion.getGlobal().getSharedState(),
+        stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getSharedState());
     final Set<StreamDescriptor> streamsInSyncCompletionState = stateMessageEmittedAfterSecondSyncCompletion.getGlobal().getStreamStates()
         .stream()
         .map(AirbyteStreamState::getStreamDescriptor)
@@ -500,7 +502,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(20, recordsForModelsStreamFromSecondBatch.size());
     assertExpectedRecords(new HashSet<>(MODEL_RECORDS_RANDOM), recordsForModelsRandomStreamFromSecondBatch,
         recordsForModelsRandomStreamFromSecondBatch.stream().map(AirbyteRecordMessage::getStream).collect(
-            Collectors.toSet()), Sets
+            Collectors.toSet()),
+        Sets
             .newHashSet(MODELS_STREAM_NAME + "_random"),
         MODELS_SCHEMA + "_random");
     assertExpectedRecords(recordsWritten, recordsForModelsStreamFromSecondBatch);
