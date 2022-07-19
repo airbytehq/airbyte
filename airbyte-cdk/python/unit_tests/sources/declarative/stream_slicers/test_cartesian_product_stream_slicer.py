@@ -6,6 +6,7 @@ import pytest as pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
@@ -95,3 +96,40 @@ def test_update_cursor(test_name, stream_slice, expected_state):
     slicer.update_cursor(stream_slice, None)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
+
+
+@pytest.mark.parametrize(
+    "test_name, stream_1_request_option, stream_2_request_option, expected_req_params, expected_headers,expected_body_json, expected_body_data",
+    [
+        (
+            "test_param_header",
+            RequestOption(RequestOptionType.request_parameter, "owner"),
+            RequestOption(RequestOptionType.header, "repo"),
+            {"owner": "customer"},
+            {"repo": "airbyte"},
+            {},
+            {},
+        )
+    ],
+)
+def test_request_option(
+    test_name,
+    stream_1_request_option,
+    stream_2_request_option,
+    expected_req_params,
+    expected_headers,
+    expected_body_json,
+    expected_body_data,
+):
+    slicer = CartesianProductStreamSlicer(
+        [
+            ListStreamSlicer(["customer", "store", "subscription"], "owner_resource", None, stream_1_request_option),
+            ListStreamSlicer(["airbyte", "airbyte-cloud"], "repository", None, stream_2_request_option),
+        ]
+    )
+    slicer.update_cursor({"owner_resource": "customer", "repository": "airbyte"}, None)
+
+    assert expected_req_params == slicer.request_params()
+    assert expected_headers == slicer.request_headers()
+    assert expected_body_json == slicer.request_body_json()
+    assert expected_body_data == slicer.request_body_data()
