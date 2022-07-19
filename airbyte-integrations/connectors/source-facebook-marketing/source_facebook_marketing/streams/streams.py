@@ -151,12 +151,15 @@ class AdAccount(FBMarketingStream):
     enable_deleted = False
 
     def get_task_permissions(self) -> Set[str]:
+        """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
         res = set()
         me = User(fbid="me", api=self._api.api)
-        for business in me.get_businesses():
-            assigned_users = self._api.account.get_assigned_users(params={"business": business.get_id()})
+        business_users = me.get_business_users()
+        for business_user in business_users:
+            assigned_users = self._api.account.get_assigned_users(params={"business": business_user["business"].get_id()})
             for assigned_user in assigned_users:
-                res.update(set(assigned_user["tasks"]))
+                if business_user.get_id() == assigned_user.get_id():
+                    res.update(set(assigned_user["tasks"]))
         return res
 
     @cached_property
