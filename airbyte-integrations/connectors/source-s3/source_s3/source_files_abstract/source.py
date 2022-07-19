@@ -59,16 +59,11 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            progress_count = 0
             for file_info in self.stream_class(**config).filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
                 globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
                 # just need first file here to test connection and valid patterns
-                progress_count = progress_count + 1
-                if progress_count % 10000 == 0:
-                    # adding progress details to user
-                    logger.info("Total number of files listed : " + str(progress_count))
                 return True, None
 
         except Exception as e:
