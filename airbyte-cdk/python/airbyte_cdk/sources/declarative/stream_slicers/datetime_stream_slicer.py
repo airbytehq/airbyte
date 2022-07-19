@@ -12,9 +12,6 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config
 
@@ -174,17 +171,3 @@ class DatetimeStreamSlicer(StreamSlicer):
             if option_type != RequestOptionType.path and self._cursor:
                 options[self._start_time_option.field_name] = self._cursor
         return options
-
-    def _create_request_options_provider(self, limit_value, limit_option: RequestOption):
-        if limit_option.option_type == RequestOptionType.path:
-            raise ValueError("Limit parameter cannot be a path")
-        elif limit_option.option_type == RequestOptionType.request_parameter:
-            return InterpolatedRequestOptionsProvider(request_parameters={limit_option.field_name: limit_value}, config=self._config)
-        elif limit_option.option_type == RequestOptionType.header:
-            return InterpolatedRequestOptionsProvider(request_headers={limit_option.field_name: limit_value}, config=self._config)
-        elif limit_option.option_type == RequestOptionType.body_json:
-            return InterpolatedRequestOptionsProvider(request_body_json={limit_option.field_name: limit_value}, config=self._config)
-        elif limit_option.option_type == RequestOptionType.body_data:
-            return InterpolatedRequestOptionsProvider(request_body_data={limit_option.field_name: limit_value}, config=self._config)
-        else:
-            raise ValueError(f"Unexpected request option type. Got :{limit_option}")
