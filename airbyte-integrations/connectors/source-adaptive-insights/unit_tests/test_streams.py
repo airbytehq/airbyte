@@ -7,7 +7,12 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_adaptive_insights.source import AdaptiveInsightsStream, ExportDimensions, ExportLevels
+from source_adaptive_insights.source import (
+    AdaptiveInsightsStream,
+    ExportDimensions,
+    ExportLevels,
+    ExportAccounts
+)
 
 dimensions_expected = {
     'attribute_id': None,
@@ -48,6 +53,50 @@ levels_expected = {
     ]
 }
 
+accounts_expected = {
+    'id': 6, 
+    'code': 'E', 
+    'name': 'QQ', 
+    'description': '', 
+    'time_stratum': 'month', 
+    'display_as': 'CURRENCY', 
+    'account_type_code': 'B', 
+    'decimal_precision': '0', 
+    'is_assumption': None, 
+    'suppress_zeroes': '1', 
+    'is_default_root': '0', 
+    'short_name': '', 
+    'is_intercompany': '0', 
+    'balance_type': 'DEBIT', 
+    'is_linked': '0', 
+    'owning_sheet_id': '', 
+    'is_system': '0', 
+    'is_importable': None, 
+    'data_entry_type': 
+    'STANDARD', 'plan_by': 
+    'DELTA', 'actuals_by': 
+    'BALANCE', 'time_rollup': 
+    'LAST', 'time_weight_acct_id': '', 
+    'level_dim_rollup': 'SUM', 
+    'level_dim_weight_acct_id': '', 
+    'rollup_text': '', 
+    'start_expanded': None, 
+    'has_salary_detail': '0', 
+    'data_privacy': 'PUBLIC_ALL', 
+    'is_breakback_eligible': '', 
+    'sub_type': 'CUMULATIVE', 
+    'enable_actuals': '1', 
+    'is_group': '0', 
+    'has_formula': '0', 
+    'attributes': [
+        {
+            'name': 'FF', 
+            'value': 'ghjk', 
+            'attributeId': '22', 
+            'valueId': '11'
+        }
+    ]
+}
 
 @pytest.fixture
 def patch_base_class(mocker):
@@ -88,8 +137,8 @@ def test_method_export_dimensions(patch_base_class):
 
 def test_request_body_data_export_dimensions(patch_base_class):
     stream = ExportDimensions(username="a", password="b")
-    expected_data = """<?xml version='1.0' encoding='UTF-8'?>
-        <call method="exportDimensions" callerName="Airbyte - auto">
+    expected_data = f"""<?xml version='1.0' encoding='UTF-8'?>
+        <call method="{stream.method}" callerName="Airbyte - auto">
         <credentials login="a" password="b"/>
         <include versionName="Current LBE" dimensionValues="true"/>
         </call>
@@ -122,8 +171,43 @@ def test_method_export_levels(patch_base_class):
 
 def test_request_body_data_export_levels(patch_base_class):
     stream = ExportLevels(username="a", password="b")
-    expected_data = """<?xml version='1.0' encoding='UTF-8'?>
-        <call method="exportLevels" callerName="Airbyte - auto">
+    expected_data = f"""<?xml version='1.0' encoding='UTF-8'?>
+        <call method="{stream.method}" callerName="Airbyte - auto">
+        <credentials login="a" password="b"/>
+        <include versionName="Current LBE" inaccessibleValues="true"/>
+        </call>
+        """.encode('utf-8')
+    inputs = {"stream_state": {}}
+    assert stream.request_body_data(**inputs) == expected_data
+
+
+def test_parse_response_export_accounts(patch_base_class, requests_mock):
+    stream = ExportAccounts(username="a", password="b")
+    with open("unit_tests/sample_data/accounts_output.xml", "r") as fp:
+        requests_data = fp.read()
+    requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
+    resp = requests.post("https://api.adaptiveinsights.com/api/v32")
+    inputs = {"response": resp}
+    print(next(stream.parse_response(**inputs)))
+    assert next(stream.parse_response(**inputs)) == accounts_expected
+
+
+def test_http_method_export_accounts(patch_base_class):
+    stream = ExportAccounts(username="a", password="b")
+    expected_method = "POST"
+    assert stream.http_method == expected_method
+
+
+def test_method_export_accounts(patch_base_class):
+    stream = ExportAccounts(username="a", password="b")
+    expected_method = "exportAccounts"
+    assert stream.method == expected_method
+
+
+def test_request_body_data_export_accounts(patch_base_class):
+    stream = ExportAccounts(username="a", password="b")
+    expected_data = f"""<?xml version='1.0' encoding='UTF-8'?>
+        <call method="{stream.method}" callerName="Airbyte - auto">
         <credentials login="a" password="b"/>
         <include versionName="Current LBE" inaccessibleValues="true"/>
         </call>
