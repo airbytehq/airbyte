@@ -2406,7 +2406,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mqtt:0.1.1"
+- dockerImage: "airbyte/destination-mqtt:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mqtt"
     connectionSpecification:
@@ -5063,7 +5063,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-google-sheets:0.1.0"
+- dockerImage: "airbyte/destination-google-sheets:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/google-sheets"
     connectionSpecification:

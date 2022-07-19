@@ -20,6 +20,9 @@ If you are implementing a connector to pull data from an API which publishes an 
 
 We also provide a tool for generating schemas using a connector's `read` command output. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/schema_generator/).
 
+### Backwards Compatibility
+
+Because statically defined schemas explicitly define how data is represented in a destination, updates to a schema must be backwards compatible with prior versions. More information about breaking changes can be found [here](../best-practices.md#schema-breaking-changes)
 
 ## Dynamic schemas
 

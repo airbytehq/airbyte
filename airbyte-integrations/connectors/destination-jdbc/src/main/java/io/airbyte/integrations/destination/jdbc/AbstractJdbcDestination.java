@@ -31,8 +31,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
@@ -105,7 +103,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);
