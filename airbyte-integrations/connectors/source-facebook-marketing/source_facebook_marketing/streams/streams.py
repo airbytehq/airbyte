@@ -4,7 +4,7 @@
 
 import base64
 import logging
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
 import requests
@@ -150,21 +150,22 @@ class AdAccount(FBMarketingStream):
     use_batch = False
     enable_deleted = False
 
-    def check_task_permission(self, name: str) -> bool:
+    def get_task_permissions(self) -> Set[str]:
+        res = set()
         me = User(fbid="me", api=self._api.api)
         for business in me.get_businesses():
             assigned_users = self._api.account.get_assigned_users(params={"business": business.get_id()})
             for assigned_user in assigned_users:
-                if name in assigned_user["tasks"]:
-                    return True
-        return False
+                res.update(set(assigned_user["tasks"]))
+        return res
 
     @cached_property
     def fields(self) -> List[str]:
-        """List of fields that we want to query, for now just all properties from stream's schema"""
-
-        properties = list(self.get_json_schema().get("properties", {}).keys())
-        if "funding_source_details" in properties and not self.check_task_permission("MANAGE"):
+        properties = super().fields
+        # https://developers.facebook.com/docs/marketing-apis/guides/javascript-ads-dialog-for-payments/
+        # To access "funding_source_details", the user making the API call must have a MANAGE task permission for
+        # that specific ad account.
+        if "funding_source_details" in properties and "MANAGE" not in self.get_task_permissions():
             properties.remove("funding_source_details")
         return properties
 
