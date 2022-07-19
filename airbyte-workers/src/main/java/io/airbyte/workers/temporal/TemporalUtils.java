@@ -18,6 +18,8 @@ import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.registry.otlp.OtlpConfig;
 import io.micrometer.registry.otlp.OtlpMeterRegistry;
+import io.micrometer.statsd.StatsdConfig;
+import io.micrometer.statsd.StatsdMeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -101,9 +103,9 @@ public class TemporalUtils {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
     try {
-      OtlpConfig config = getTemporalOtlpConfig();
+      StatsdConfig config = getDatadogStatsDConfig();
 
-      MeterRegistry registry = new OtlpMeterRegistry(config, Clock.SYSTEM);
+      MeterRegistry registry = new StatsdMeterRegistry(config, Clock.SYSTEM);
 
       StatsReporter reporter = new MicrometerClientStatsReporter(registry);
       Scope scope = new RootScopeBuilder()
@@ -118,6 +120,28 @@ public class TemporalUtils {
       log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
       throw new RuntimeException(e);
     }
+  }
+
+  private static StatsdConfig getDatadogStatsDConfig() {
+    return new StatsdConfig() {
+
+      /**
+       * @return
+       */
+      @Override
+      public String host() {
+        return configs.getDDAgentHost()
+      }
+
+      /**
+       * @param key Key to lookup in the config.
+       * @return
+       */
+      @Override
+      public String get(String key) {
+        return null;
+      }
+    };
   }
 
   private static OtlpConfig getTemporalOtlpConfig() {
