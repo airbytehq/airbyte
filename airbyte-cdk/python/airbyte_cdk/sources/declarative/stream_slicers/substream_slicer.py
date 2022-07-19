@@ -27,8 +27,12 @@ class SubstreamSlicer(StreamSlicer):
         self._cursor = None
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
-        # FIXME
-        print(f"update_cursor. stream_slice: {stream_slice}")
+        cursor = {}
+        for parent_stream_slice_key in self._parent_stream_name_to_stream_slice_key.values():
+            slice_value = stream_slice.get(parent_stream_slice_key)
+            if slice_value:
+                cursor.update({parent_stream_slice_key: slice_value})
+        self._cursor = cursor
 
     def request_params(self) -> Mapping[str, Any]:
         # FIXME
@@ -47,8 +51,7 @@ class SubstreamSlicer(StreamSlicer):
         return {}
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        # FIXME
-        return {self._stream_state_field: self._cursor} if self._cursor else None
+        return self._cursor if self._cursor else None
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
@@ -78,9 +81,9 @@ class SubstreamSlicer(StreamSlicer):
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
                         empty_parent_slice = False
-                        self._cursor = parent_record.get(parent_field)
-                        yield {stream_state_field: self._cursor, "parent_slice": parent_slice}
+                        stream_state_value = parent_record.get(parent_field)
+                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
                     # If the parent slice contains no records,
                     if empty_parent_slice:
-                        self._cursor = parent_stream_slice.get(parent_field)
-                        yield {stream_state_field: self._cursor, "parent_slice": parent_slice}
+                        stream_state_value = parent_stream_slice.get(parent_field)
+                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
