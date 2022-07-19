@@ -6,6 +6,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
@@ -20,6 +21,8 @@ parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
 second_parent_stream_slice = [{"slice": "second_parent"}]
 
 slice_definition = {"{{ parent_stream_name }}_id": "{{ parent_record['id'] }}", "parent_slice": "{{ parent_stream_slice['slice'] }}"}
+parent_stream_name_to_slice_key = {"first_stream": "id", "second_stream": "id"}
+parent_stream_name_to_stream_slice_key = {"first_stream": "first_stream_id", "second_stream": "second_stream_id"}
 
 
 class MockStream(Stream):
@@ -129,9 +132,93 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
         MockStream(second_parent_stream_slice, more_records, "second_stream"),
     ]
-    parent_stream_name_to_slice_key = {"first_stream": "id", "second_stream": "id"}
-    parent_stream_name_to_stream_slice_key = {"first_stream": "first_stream_id", "second_stream": "second_stream_id"}
+
     slicer = SubstreamSlicer(parent_streams, parent_stream_name_to_slice_key, parent_stream_name_to_stream_slice_key)
     slicer.update_cursor(stream_slice, None)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
+
+
+@pytest.mark.parametrize(
+    "test_name, parent_stream_name_to_request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    [
+        (
+            "test_request_option_in_request_param",
+            {
+                "first_stream": RequestOption(RequestOptionType.request_parameter, "first_stream"),
+                "second_stream": RequestOption(RequestOptionType.request_parameter, "second_stream"),
+            },
+            {"first_stream_id": "1234", "second_stream_id": "4567"},
+            {},
+            {},
+            {},
+        ),
+        (
+            "test_request_option_in_header",
+            {
+                "first_stream": RequestOption(RequestOptionType.header, "first_stream"),
+                "second_stream": RequestOption(RequestOptionType.header, "second_stream"),
+            },
+            {},
+            {"first_stream_id": "1234", "second_stream_id": "4567"},
+            {},
+            {},
+        ),
+        (
+            "test_request_option_in_param_and_header",
+            {
+                "first_stream": RequestOption(RequestOptionType.request_parameter, "first_stream"),
+                "second_stream": RequestOption(RequestOptionType.header, "second_stream"),
+            },
+            {"first_stream_id": "1234"},
+            {"second_stream_id": "4567"},
+            {},
+            {},
+        ),
+        (
+            "test_request_option_in_body_json",
+            {
+                "first_stream": RequestOption(RequestOptionType.body_json, "first_stream"),
+                "second_stream": RequestOption(RequestOptionType.body_json, "second_stream"),
+            },
+            {},
+            {},
+            {"first_stream_id": "1234", "second_stream_id": "4567"},
+            {},
+        ),
+        (
+            "test_request_option_in_body_data",
+            {
+                "first_stream": RequestOption(RequestOptionType.body_data, "first_stream"),
+                "second_stream": RequestOption(RequestOptionType.body_data, "second_stream"),
+            },
+            {},
+            {},
+            {},
+            {"first_stream_id": "1234", "second_stream_id": "4567"},
+        ),
+    ],
+)
+def test_request_option(
+    test_name,
+    parent_stream_name_to_request_option,
+    expected_req_params,
+    expected_headers,
+    expected_body_json,
+    expected_body_data,
+):
+    slicer = SubstreamSlicer(
+        [
+            MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
+            MockStream(second_parent_stream_slice, more_records, "second_stream"),
+        ],
+        parent_stream_name_to_slice_key,
+        parent_stream_name_to_stream_slice_key,
+        parent_stream_name_to_request_option,
+    )
+    slicer.update_cursor({"first_stream_id": "1234", "second_stream_id": "4567"}, None)
+
+    assert expected_req_params == slicer.request_params()
+    assert expected_headers == slicer.request_headers()
+    assert expected_body_json == slicer.request_body_json()
+    assert expected_body_data == slicer.request_body_data()

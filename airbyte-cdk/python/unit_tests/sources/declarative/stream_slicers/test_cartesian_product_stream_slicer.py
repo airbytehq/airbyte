@@ -109,7 +109,34 @@ def test_update_cursor(test_name, stream_slice, expected_state):
             {"repo": "airbyte"},
             {},
             {},
-        )
+        ),
+        (
+            "test_header_header",
+            RequestOption(RequestOptionType.header, "owner"),
+            RequestOption(RequestOptionType.header, "repo"),
+            {},
+            {"owner": "customer", "repo": "airbyte"},
+            {},
+            {},
+        ),
+        (
+            "test_body_data",
+            RequestOption(RequestOptionType.body_data, "owner"),
+            RequestOption(RequestOptionType.body_data, "repo"),
+            {},
+            {},
+            {},
+            {"owner": "customer", "repo": "airbyte"},
+        ),
+        (
+            "test_body_json",
+            RequestOption(RequestOptionType.body_json, "owner"),
+            RequestOption(RequestOptionType.body_json, "repo"),
+            {},
+            {},
+            {"owner": "customer", "repo": "airbyte"},
+            {},
+        ),
     ],
 )
 def test_request_option(

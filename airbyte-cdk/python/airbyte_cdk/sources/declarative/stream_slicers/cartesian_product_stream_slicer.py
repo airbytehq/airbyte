@@ -32,16 +32,16 @@ class CartesianProductStreamSlicer(StreamSlicer):
             slicer.update_cursor(stream_slice, last_record)
 
     def request_params(self) -> Mapping[str, Any]:
-        return ChainMap(*[s.request_params() for s in self._stream_slicers])
+        return dict(ChainMap(*[s.request_params() for s in self._stream_slicers]))
 
     def request_headers(self) -> Mapping[str, Any]:
-        return ChainMap(*[s.request_headers() for s in self._stream_slicers])
+        return dict(ChainMap(*[s.request_headers() for s in self._stream_slicers]))
 
     def request_body_data(self) -> Optional[Union[Mapping, str]]:
-        return ChainMap(*[s.request_body_data() for s in self._stream_slicers])
+        return dict(ChainMap(*[s.request_body_data() for s in self._stream_slicers]))
 
     def request_body_json(self) -> Optional[Mapping]:
-        return ChainMap(*[s.request_body_json() for s in self._stream_slicers])
+        return dict(ChainMap(*[s.request_body_json() for s in self._stream_slicers]))
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         states = list(filter(lambda s: s, [slicer.get_stream_state() for slicer in self._stream_slicers]))
