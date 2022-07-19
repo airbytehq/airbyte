@@ -116,7 +116,7 @@ public class JobErrorReporter {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
       final Map<String, String> metadata = MoreMaps.merge(getSourceMetadata(sourceDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "check"));
-      reportJobFailureReason(workspace, failureReason, jobCheckConfig.getDockerImage(), metadata);
+      reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.SOURCE), jobCheckConfig.getDockerImage(), metadata);
     });
   }
 
@@ -136,7 +136,7 @@ public class JobErrorReporter {
       final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
       final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
       final Map<String, String> metadata = MoreMaps.merge(getDestinationMetadata(destinationDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "check"));
-      reportJobFailureReason(workspace, failureReason, jobCheckConfig.getDockerImage(), metadata);
+      reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.DESTINATION), jobCheckConfig.getDockerImage(), metadata);
     });
   }
 
@@ -198,7 +198,7 @@ public class JobErrorReporter {
         Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
         Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
 
-    if(workspace != null) {
+    if (workspace != null) {
       commonMetadata.put(WORKSPACE_ID_META_KEY, workspace.getWorkspaceId().toString());
     }
 

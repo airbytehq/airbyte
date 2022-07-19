@@ -17,6 +17,9 @@ public interface JobErrorReportingClient {
   /**
    * Report a job failure reason
    */
-  void reportJobFailureReason(@Nullable StandardWorkspace workspace, final FailureReason reason, final String dockerImage, Map<String, String> metadata);
+  void reportJobFailureReason(@Nullable StandardWorkspace workspace,
+                              final FailureReason reason,
+                              final String dockerImage,
+                              Map<String, String> metadata);
 
 }

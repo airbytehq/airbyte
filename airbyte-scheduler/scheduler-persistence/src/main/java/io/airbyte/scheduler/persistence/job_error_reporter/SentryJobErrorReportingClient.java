@@ -76,7 +76,7 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
     }
 
     // set workspace as the user in sentry to get impact and priority
-    if(workspace != null) {
+    if (workspace != null) {
       final User sentryUser = new User();
       sentryUser.setId(String.valueOf(workspace.getWorkspaceId()));
       sentryUser.setUsername(workspace.getName());
