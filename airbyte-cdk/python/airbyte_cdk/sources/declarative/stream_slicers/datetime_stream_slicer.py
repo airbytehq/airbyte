@@ -41,6 +41,20 @@ class DatetimeStreamSlicer(StreamSlicer):
         stream_state_field_end: Optional[str] = None,  # end time
         lookback_window: Optional[InterpolatedString] = None,
     ):
+        """
+
+        :param start_datetime:
+        :param end_datetime:
+        :param step:
+        :param cursor_field: record's cursor field
+        :param datetime_format:
+        :param config:
+        :param start_time_option: request option for start time
+        :param end_time_option: request option for end time
+        :param stream_state_field_start: stream slice start time field
+        :param stream_state_field_end: stream slice end time field
+        :param lookback_window:
+        """
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
@@ -54,15 +68,15 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._cursor_field = InterpolatedString(self._cursor_field)
         self._start_time_option = start_time_option
         self._end_time_option = end_time_option
-        self._stream_state_field_start = stream_state_field_start or "start_date"
-        if isinstance(self._stream_state_field_start, str):
-            self._stream_state_field_start = InterpolatedString(string=self._stream_state_field_start)
+        self._stream_slice_field_start = stream_state_field_start or "start_date"
+        if isinstance(self._stream_slice_field_start, str):
+            self._stream_slice_field_start = InterpolatedString(string=self._stream_slice_field_start)
         if stream_state_field_end and isinstance(stream_state_field_end, str):
-            self._stream_state_field_end = InterpolatedString(stream_state_field_end)
+            self._stream_slice_field_end = InterpolatedString(stream_state_field_end)
         elif stream_state_field_end:
-            self._stream_state_field_end = stream_state_field_end
+            self._stream_slice_field_end = stream_state_field_end
         else:
-            self._stream_state_field_end = InterpolatedString("end_date")
+            self._stream_slice_field_end = InterpolatedString("end_date")
         self._cursor = None
         self._cursor_end = None
         self._lookback_window = lookback_window
@@ -74,13 +88,11 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._end_datetime.datetime_format = self._datetime_format
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        print(f"self._cursor: {self._cursor}")
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         stream_slice_value = stream_slice.get(self._cursor_field.eval(self._config))
-        print(f"stream_slice_value: {stream_slice_value}")
-        stream_slice_value_end = stream_slice.get(self._stream_state_field_end.eval(self._config))
+        stream_slice_value_end = stream_slice.get(self._stream_slice_field_end.eval(self._config))
         last_record_value = last_record.get(self._cursor_field.eval(self._config)) if last_record else None
         cursor = None
         if stream_slice_value and last_record_value:
@@ -89,12 +101,11 @@ class DatetimeStreamSlicer(StreamSlicer):
             cursor = stream_slice_value
         else:
             cursor = last_record_value
-        print(f"update cursor -> {cursor}")
         if self._cursor and cursor:
             self._cursor = max(cursor, self._cursor)
         elif cursor:
             self._cursor = cursor
-        if self._stream_state_field_end:
+        if self._stream_slice_field_end:
             self._cursor_end = stream_slice_value_end
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
@@ -107,18 +118,14 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_datetime = min(start_datetime, end_datetime)
         if self._cursor_field.eval(self._config) in stream_state:
             cursor_datetime = self.parse_date(stream_state[self._cursor_field.eval(self._config)])
-            print(f"found cursor datetime: {cursor_datetime}")
         else:
             cursor_datetime = start_datetime
-            print(f"did not find cursor datetime. stream_state: {stream_state}")
         start_datetime = max(cursor_datetime, start_datetime)
 
         dates = self._partition_daterange(start_datetime, end_datetime, self._step)
         state_date = stream_state.get(self._cursor_field.eval(self._config))
-        print(f"dates: {dates}")
-        print(f"state_date: {state_date}")
         if state_date:
-            dates_later_than_state = [d for d in dates if d[self._stream_state_field_start.eval(self._config)] > state_date]
+            dates_later_than_state = [d for d in dates if d[self._stream_slice_field_start.eval(self._config)] > state_date]
         else:
             dates_later_than_state = dates
         return dates_later_than_state
@@ -130,8 +137,8 @@ class DatetimeStreamSlicer(StreamSlicer):
             return dt.strftime(self._datetime_format)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
-        start_field = self._stream_state_field_start.eval(self._config) or "start_time"
-        end_field = self._stream_state_field_end.eval(self._config) or "end_time"
+        start_field = self._stream_slice_field_start.eval(self._config) or "start_time"
+        end_field = self._stream_slice_field_end.eval(self._config) or "end_time"
         dates = []
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
@@ -195,5 +202,4 @@ class DatetimeStreamSlicer(StreamSlicer):
         if self._end_time_option and self._end_time_option.option_type == option_type:
             if option_type != RequestOptionType.path:
                 options[self._end_time_option.field_name] = self._cursor_end
-        print(f"options: {options}")
         return options
