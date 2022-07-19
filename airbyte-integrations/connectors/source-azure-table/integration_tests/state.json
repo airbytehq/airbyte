@@ -1,5 +1,5 @@
 {
-    "AirbyteTest": {
-        "PartitionKey": "1"
-    }
+  "Test": {
+    "PartitionKey": "1"
+  }
 }
