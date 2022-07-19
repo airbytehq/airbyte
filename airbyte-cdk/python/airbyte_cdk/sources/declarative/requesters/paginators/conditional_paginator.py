@@ -101,17 +101,13 @@ class ConditionalPaginator(Paginator, ABC):
         }
 
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
+        # the request body data coming from the provider can be a string of the form
+        # "k1=v1&k2=v2"
         request_options = self._get_request_options(RequestOptionType.body_data)
-        request_options_from_provider = self._request_options_provider.request_body_data(
-            stream_state=None, stream_slice=None, next_page_token=None
+        request_options_from_provider = (
+            self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None) or {}
         )
-        if not request_options and not request_options_from_provider:
-            return {}
-        if request_options and not request_options_from_provider:
-            return request_options
-        elif request_options_from_provider and not request_options:
-            return request_options_from_provider
-        elif isinstance(request_options_from_provider, str):
+        if request_options_from_provider and isinstance(request_options_from_provider, str):
             # convert request_options to "k1=v1&k2=v2" string then join the request options
             return "&".join([*[f"{k}={v}" for k, v in request_options.items()], request_options_from_provider])
         else:
