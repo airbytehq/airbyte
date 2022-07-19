@@ -62,6 +62,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-okta", new OktaOAuthFlow(configRepository, httpClient))
         .build();
   }
 
