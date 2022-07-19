@@ -4,7 +4,11 @@
 
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
+
+slice_values = ["customer", "store", "subscription"]
+cursor_field = "owner_resource"
 
 
 @pytest.mark.parametrize(
@@ -39,9 +43,48 @@ def test_list_slicer(test_name, slice_values, cursor_field, expected_slices):
     ],
 )
 def test_update_cursor(test_name, stream_slice, last_record, expected_state):
-    slice_values = ["customer", "store", "subscription"]
-    cursor_field = "owner_resource"
     slicer = ListStreamSlicer(slice_values, cursor_field, config={})
     slicer.update_cursor(stream_slice, last_record)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
+
+
+@pytest.mark.parametrize(
+    "test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    [
+        (
+            "test_pass_by_req_param",
+            RequestOption(RequestOptionType.request_parameter, "owner_resource"),
+            {"owner_resource": "customer"},
+            {},
+            {},
+            {},
+        ),
+        ("test_pass_by_header", RequestOption(RequestOptionType.header, "owner_resource"), {}, {"owner_resource": "customer"}, {}, {}),
+        (
+            "test_pass_by_body_json",
+            RequestOption(RequestOptionType.body_json, "owner_resource"),
+            {},
+            {},
+            {"owner_resource": "customer"},
+            {},
+        ),
+        (
+            "test_pass_by_body_data",
+            RequestOption(RequestOptionType.body_data, "owner_resource"),
+            {},
+            {},
+            {},
+            {"owner_resource": "customer"},
+        ),
+    ],
+)
+def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
+    slicer = ListStreamSlicer(slice_values, cursor_field, {}, request_option)
+    stream_slice = {cursor_field: "customer"}
+
+    slicer.update_cursor(stream_slice)
+    assert expected_req_params == slicer.request_params()
+    assert expected_headers == slicer.request_headers()
+    assert expected_body_json == slicer.request_body_json()
+    assert expected_body_data == slicer.request_body_data()
