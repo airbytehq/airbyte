@@ -13,7 +13,7 @@ public class CheckConnectionWorkflowTest {
   public void replayOldWorkflow() throws Exception {
     // This test ensures that a new version of the workflow doesn't break an in-progress execution
     // This JSON file is exported from Temporal directly (e.g.
-    // `http://${temporal-ui}/namespaces/default/workflows/connec${uuid}/${uuid}/history`) and export
+    // `http://${temporal-ui}/namespaces/default/workflows/${uuid}/${uuid}/history`) and export
 
     WorkflowReplayer.replayWorkflowExecutionFromResource("checkWorkflowHistory.json", CheckConnectionWorkflowImpl.class);
   }
