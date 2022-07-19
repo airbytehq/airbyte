@@ -46,16 +46,38 @@ properties:
       - active
       - inactive
       - deprecated
-  # Ideally schedule and manual should be a union, but java
-  # codegen does not handle the union type properly.
-  # When schedule is defined, manual should be false.
+  # This should be populated when scheduleType is BasicSchedule.
   schedule:
     type: object
-    required:
-      - timeUnit
-      - units
     additionalProperties: false
     properties:
+      basicSchedule:
+        type: object
+        required:
+          - timeUnit
+          - units
+        properties:
+          timeUnit:
+            type: string
+            enum:
+              - minutes
+              - hours
+              - days
+              - weeks
+              - months
+          units:
+            type: integer
+      cron:
+        type: object
+        required:
+          - cronExpression
+          - cronTimeZone
+        properties:
+          cronExpression:
+            type: string
+          cronTimeZone:
+            type: string
+      # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove. Prefer the basicSchedule property.
       timeUnit:
         type: string
         enum:
@@ -64,11 +86,20 @@ properties:
           - days
           - weeks
           - months
+      # TODO(https://github.com/airbytehq/airbyte/issues/11432): remove. Prefer the basicSchedule property.
       units:
         type: integer
+  # This should be populated when scheduleType is Cron
   # When manual is true, schedule should be null, and will be ignored.
   manual:
     type: boolean
+  # TODO: deprecate/remove `manual`.
+  scheduleType:
+    type: string
+    enum:
+      - Manual
+      - BasicSchedule
+      - Cron
   source_catalog_id:
     type: string
     format: uuid
