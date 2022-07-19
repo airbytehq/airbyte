@@ -16,6 +16,12 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
             "owner_resource",
             [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
         ),
+        (
+            "test_input_list_is_string",
+            '["customer", "store", "subscription"]',
+            "owner_resource",
+            [{"owner_resource": "customer"}, {"owner_resource": "store"}, {"owner_resource": "subscription"}],
+        ),
     ],
 )
 def test_list_slicer(test_name, slice_values, cursor_field, expected_slices):
