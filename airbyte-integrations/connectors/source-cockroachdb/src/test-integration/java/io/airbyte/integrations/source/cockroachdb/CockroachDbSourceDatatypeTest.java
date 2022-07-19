@@ -13,6 +13,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import org.jooq.DSLContext;
@@ -35,9 +36,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        // by some reason it return not a port number as exposed and mentioned in logs
-        .put("port", container.getFirstMappedPort() - 1)
+        .put("host", HostPortResolver.resolveHost(container))
+        .put("port", container.getExposedPorts().get(1))
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())

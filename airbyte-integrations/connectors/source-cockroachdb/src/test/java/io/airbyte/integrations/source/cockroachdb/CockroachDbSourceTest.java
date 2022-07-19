@@ -17,6 +17,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
@@ -150,8 +151,8 @@ class CockroachDbSourceTest {
 
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName, final String username) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort() - 1)
+        .put("host", HostPortResolver.resolveHost(psqlDb))
+        .put("port", psqlDb.getExposedPorts().get(1))
         .put("database", dbName)
         .put("username", username)
         .put("password", psqlDb.getPassword())
