@@ -29,7 +29,7 @@ export const Icon = styled.div`
 `;
 
 const SidebarPopout: React.FC<{
-  children: (props: { onOpen: () => void }) => React.ReactNode;
+  children: (props: { onOpen: () => void; isOpen?: boolean }) => React.ReactNode;
   options: Array<{ value: string; label?: React.ReactNode }>;
 }> = ({ children, options }) => {
   const config = useConfig();
@@ -110,7 +110,12 @@ const SidebarPopout: React.FC<{
 
   return (
     <Popout
-      targetComponent={(targetProps) => children({ onOpen: targetProps.onOpen })}
+      targetComponent={(targetProps) =>
+        children({
+          onOpen: targetProps.onOpen,
+          isOpen: targetProps.isOpen,
+        })
+      }
       styles={{
         menuPortal: (base) => ({
           ...base,
