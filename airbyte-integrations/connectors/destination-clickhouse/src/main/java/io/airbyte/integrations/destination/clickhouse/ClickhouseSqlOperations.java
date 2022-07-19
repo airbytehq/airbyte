@@ -77,8 +77,8 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
-        ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
-        ClickHouseStatement sth = conn.createStatement();
+        final ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
+        final ClickHouseStatement sth = conn.createStatement();
         sth.write() // Write API entrypoint
             .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
             .format(ClickHouseFormat.CSV) // set a format
