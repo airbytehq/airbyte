@@ -852,7 +852,7 @@ class DefaultJobPersistenceTest {
 
       final Instant afterNow = NOW.plusSeconds(1000);
       when(timeSupplier.get()).thenReturn(afterNow);
-      final long jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
 
       final Optional<Job> actual = jobPersistence.getFirstReplicationJob(CONNECTION_ID);
       final Job expected = createJob(jobId1, SYNC_JOB_CONFIG, JobStatus.SUCCEEDED, attempts, NOW.getEpochSecond());
@@ -1190,9 +1190,9 @@ class DefaultJobPersistenceTest {
       final long desiredJobId4 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
 
       // right connection id and status, wrong config type
-      final long otherJobId1 = jobPersistence.enqueueJob(desiredConnectionId.toString(), SPEC_JOB_CONFIG).orElseThrow();
+      jobPersistence.enqueueJob(desiredConnectionId.toString(), SPEC_JOB_CONFIG).orElseThrow();
       // right config type and status, wrong connection id
-      final long otherJobId2 = jobPersistence.enqueueJob(otherConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
+      jobPersistence.enqueueJob(otherConnectionId.toString(), SYNC_JOB_CONFIG).orElseThrow();
       // right connection id and config type, wrong status
       final long otherJobId3 = jobPersistence.enqueueJob(desiredConnectionId.toString(), CHECK_JOB_CONFIG).orElseThrow();
       jobPersistence.failAttempt(otherJobId3, jobPersistence.createAttempt(otherJobId3, LOG_PATH));
@@ -1256,7 +1256,6 @@ class DefaultJobPersistenceTest {
 
     private Job persistJobForJobHistoryTesting(final String scope, final JobConfig jobConfig, final JobStatus status, final LocalDateTime runDate)
         throws IOException, SQLException {
-      final String when = runDate.toString();
       final Optional<Long> id = jobDatabase.query(
           ctx -> ctx.fetch(
               "INSERT INTO jobs(config_type, scope, created_at, updated_at, status, config) " +
@@ -1286,7 +1285,7 @@ class DefaultJobPersistenceTest {
           + "  \"sync\": {\n"
           + "    \"output_catalog\": {"
           + "}}}";
-      final Integer attemptNumber = jobDatabase.query(ctx -> ctx.fetch(
+      jobDatabase.query(ctx -> ctx.fetch(
           "INSERT INTO attempts(job_id, attempt_number, log_path, status, created_at, updated_at, output) "
               + "VALUES(?, ?, ?, CAST(? AS ATTEMPT_STATUS), ?, ?, CAST(? as JSONB)) RETURNING attempt_number",
           job.getId(),
@@ -1393,7 +1392,7 @@ class DefaultJobPersistenceTest {
       addStateToJob(decoyJobs.get(lastStatePosition + 1));
 
       // An older job with state should also exist, so we ensure we picked the most-recent with queries.
-      final Job olderJobWithState = addStateToJob(allJobs.get(lastStatePosition + 1));
+      addStateToJob(allJobs.get(lastStatePosition + 1));
 
       // sanity check that the attempt does have saved state so the purge history sql detects it correctly
       assertTrue(lastJobWithState.getAttempts().get(0).getOutput() != null,

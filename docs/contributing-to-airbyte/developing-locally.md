@@ -108,7 +108,16 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-If you are working on an individual connectors run: `./gradlew :airbyte-integrations:<directory the connector is in e.g. source-postgres>:format`.
+To format an individual connector in python, run: 
+```
+ ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
+```
+For instance:
+```
+./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
+```
+
+To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
 
