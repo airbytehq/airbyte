@@ -41,13 +41,6 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
             {"next_page_token": 99},
         ),
         (
-            "test_continue_pagination_from_response_body_body_data_str",
-            "{{ decoded_response['end'] == decoded_response['total'] - 1 }}",
-            RequestOptionType.body_data,
-            "data=data",
-            {"next_page_token": 99},
-        ),
-        (
             "test_continue_pagination_from_response_headers",
             "{{ decoded_response['headers']['has_more'] }}",
             RequestOptionType.body_json,
