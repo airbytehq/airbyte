@@ -2,17 +2,16 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import re
-from typing import Dict, Iterable, List
+from typing import Iterable
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import AirbyteStream
+from azure.core.paging import ItemPaged
 from azure.data.tables import TableClient, TableServiceClient
 
 from . import constants
 
 
-class Reader:
+class AzureTableReader:
     """
     This reader reads data from given table
 
@@ -31,14 +30,17 @@ class Reader:
 
     Methods
     -------
-    get_table_service()
+    get_table_service_client()
         Returns azure table service client from connection string.
 
     get_table_client(table_name: str)
         Returns azure table client from connection string.
 
-    get_streams()
-        Fetches all tables from storage account and returns them in Airbyte stream.
+    get_tables()
+        Fetches all tables from storage account
+
+    read_table()
+        Reads data from an Azure table
 
     """
 
@@ -54,12 +56,11 @@ class Reader:
         self.account_name = config[constants.azure_storage_account_name_key_name]
         self.access_key = config[constants.azure_storage_access_key_key_name]
         self.endpoint_suffix = config[constants.azure_storage_endpoint_suffix_key_name]
-        self.endpoint = "{}.table.{}".format(self.account_name, self.endpoint_suffix)
         self.connection_string = "DefaultEndpointsProtocol=https;AccountName={};AccountKey={};EndpointSuffix={}".format(
             self.account_name, self.access_key, self.endpoint_suffix
         )
 
-    def get_table_service(self) -> TableServiceClient:
+    def get_table_service_client(self) -> TableServiceClient:
         """
         Returns azure table service client from connection string.
         Table service client facilitate interaction with tables. Please read more here - https://docs.microsoft.com/en-us/rest/api/storageservices/operations-on-tables
@@ -88,55 +89,30 @@ class Reader:
         except Exception as e:
             raise Exception(f"An exception occurred: {str(e)}")
 
-    def get_streams(self) -> List[AirbyteStream]:
+    def get_tables(self) -> ItemPaged:
         """
         Fetches all tables from storage account and returns them in Airbyte stream.
         """
         try:
-            streams = []
-            table_client = self.get_table_service()
-            tables_iterator = table_client.list_tables(results_per_page=constants.results_per_page)
-            for table in tables_iterator:
-                stream_name = table.name
-                stream = AirbyteStream(name=stream_name, json_schema=self.get_typed_schema)
-                stream.supported_sync_modes = ["full_refresh"]
-                streams.append(stream)
-            self.logger.info(f"Total {streams.count} streams found.")
-            return streams
+            table_service_client = self.get_table_service_client()
+            tables_iterator = table_service_client.list_tables(results_per_page=constants.results_per_page)
+            return tables_iterator
         except Exception as e:
             raise Exception(f"An exception occurred: {str(e)}")
 
-    @property
-    def get_typed_schema(self) -> object:
-        """Static schema for tables"""
-        return {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {"data": {"type": "object"}, "additionalProperties": {"type": "boolean"}},
-        }
+    def read_table(self, table_client: TableClient, filter_query: str = None) -> Iterable:
+        """
+        Reads data from an Azure table.
 
-    @property
-    def stream_name(self) -> str:
-        return str(self._client.table_name)
+        Parameters
+        ----------
+        table_client : TableClient
+            table client object to be able to access querying methods.
 
-    @property
-    def stream_url(self) -> str:
-        return str(self._client.url)
-
-    def read(self, client: TableClient, filter_query=None, parameters=None) -> Iterable:
+        filter_query : str
+            either None or a query to pull data from table storage (based on the PartitionKey)
+        """
         if filter_query is None:
-            return client.list_entities()
+            return table_client.list_entities()
         else:
-            return client.query_entities(filter=filter_query, results_per_page=constants.results_per_page)
-
-    def get_filter_query(self, stream_name: str, state: Dict[str, any]) -> str:
-        watermark = state["stream_name"]
-        if watermark is None or watermark is dict:
-            return None
-        else:
-            return f"Timestamp gt datetime'{watermark}'"
-
-    @staticmethod
-    def is_table_name_valid(self, name: str) -> bool:
-        """Validates the tables name against regex - https://docs.microsoft.com/en-us/rest/api/storageservices/Understanding-the-Table-Service-Data-Model?redirectedfrom=MSDN#characters-disallowed-in-key-fields"""
-        return re.match(constants.table_name_regex, name)
+            return table_client.query_entities(query_filter=filter_query, results_per_page=constants.results_per_page)
