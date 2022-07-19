@@ -19,10 +19,9 @@ def test_check_connection(requests_mock):
 
 
 def test_streams(mocker):
-    # source = SourceAdaptiveInsights()
-    # config_mock = MagicMock()
-    # streams = source.streams(config_mock)
-    # # TODO: replace this with your streams number
-    # expected_streams_number = 2
-    # assert len(streams) == expected_streams_number
+    source = SourceAdaptiveInsights()
+    config_mock = MagicMock()
+    streams = source.streams(config_mock)
+    expected_streams_number = 3
+    assert len(streams) == expected_streams_number
     pass

@@ -21,7 +21,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_adaptive_insights.serializers import (
     handle_export_dimensions,
-    handle_export_levels
+    handle_export_levels,
+    handle_export_accounts
 )
 
 
@@ -113,6 +114,40 @@ class ExportLevels(AdaptiveInsightsStream):
         json_response = xmltodict.parse(response.content)
         
         yield from handle_export_levels(json_response)
+
+
+class ExportAccounts(AdaptiveInsightsStream):
+
+    primary_key = "id"
+    http_method = "POST"
+    method = "exportAccounts"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+
+        return "v32"
+
+    def request_body_data(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Mapping, str]]:
+
+        body = f"""<?xml version='1.0' encoding='UTF-8'?>
+        <call method="{self.method}" callerName="Airbyte - auto">
+        <credentials login="{self.username}" password="{self.password}"/>
+        <include versionName="Current LBE" inaccessibleValues="true"/>
+        </call>
+        """.encode("utf-8")
+
+        return body
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        json_response = xmltodict.parse(response.content)
+        
+        yield from handle_export_accounts(json_response)
 
 
 # Basic incremental stream
@@ -222,6 +257,7 @@ class SourceAdaptiveInsights(AbstractSource):
 
         return [
             ExportDimensions(**args),
-            ExportLevels(**args)
+            ExportLevels(**args),
+            ExportAccounts(**args)
             # Employees(authenticator=auth)
         ]
