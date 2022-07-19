@@ -59,8 +59,6 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._stream_state_field = InterpolatedString(string=self._stream_state_field)
         self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         self._cursor = None
-        if isinstance(lookback_window, str):
-            lookback_window = InterpolatedString(lookback_window)
         self._lookback_window = lookback_window
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
