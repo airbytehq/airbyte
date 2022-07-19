@@ -2,11 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
+import pathlib
 from datetime import datetime, timedelta
 
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from dateutil.parser import isoparse
-from pytest import fixture
+from pytest import fixture, raises
 from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions
 
 
@@ -16,8 +18,15 @@ def time_sleep_mock(mocker):
     yield time_mock
 
 
-def test_get_field():
+@fixture(autouse=True)
+def transactions(request):
+    file = pathlib.Path(request.node.fspath.strpath)
+    transaction = file.with_name("transaction.json")
+    with transaction.open() as fp:
+        return json.load(fp)
 
+
+def test_get_field():
     record = {"a": {"b": {"c": "d"}}}
     # Test expected result - field_path is a list
     assert "d" == PaypalTransactionStream.get_field(record, field_path=["a", "b", "c"])
@@ -67,7 +76,6 @@ def now():
 
 
 def test_transactions_stream_slices():
-
     start_date_max = {"hours": 0}
 
     # if start_date > now - **start_date_max then no slices
@@ -109,6 +117,7 @@ def test_transactions_stream_slices():
         start_date=now() - timedelta(**start_date_max) - timedelta(days=1),
     )
     transactions.get_last_refreshed_datetime = lambda x: None
+    transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
@@ -117,6 +126,7 @@ def test_transactions_stream_slices():
         start_date=now() - timedelta(**start_date_max) - timedelta(days=1, hours=2),
     )
     transactions.get_last_refreshed_datetime = lambda x: None
+    transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
@@ -125,6 +135,7 @@ def test_transactions_stream_slices():
         start_date=now() - timedelta(**start_date_max) - timedelta(days=30, minutes=1),
     )
     transactions.get_last_refreshed_datetime = lambda x: None
+    transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
     assert 31 == len(stream_slices)
 
@@ -135,6 +146,7 @@ def test_transactions_stream_slices():
         end_date=isoparse("2021-06-04T12:00:00+00:00"),
     )
     transactions.get_last_refreshed_datetime = lambda x: None
+    transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
@@ -150,6 +162,7 @@ def test_transactions_stream_slices():
         end_date=isoparse("2021-06-04T12:00:00+00:00"),
     )
     transactions.get_last_refreshed_datetime = lambda x: None
+    transactions.stream_slice_period = {"days": 1}
     stream_slices = transactions.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
         {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
@@ -197,6 +210,7 @@ def test_balances_stream_slices():
         start_date=now - timedelta(days=1),
     )
     balance.get_last_refreshed_datetime = lambda x: None
+    balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
@@ -205,6 +219,7 @@ def test_balances_stream_slices():
         start_date=now - timedelta(days=1, minutes=1),
     )
     balance.get_last_refreshed_datetime = lambda x: None
+    balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any")
     assert 2 == len(stream_slices)
 
@@ -215,6 +230,7 @@ def test_balances_stream_slices():
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
     )
     balance.get_last_refreshed_datetime = lambda x: None
+    balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any")
     assert [
         {"start_date": "2021-06-01T10:00:00+00:00", "end_date": "2021-06-02T10:00:00+00:00"},
@@ -229,6 +245,7 @@ def test_balances_stream_slices():
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
     )
     balance.get_last_refreshed_datetime = lambda x: None
+    balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-02T10:00:00+00:00"})
     assert [
         {"start_date": "2021-06-02T10:00:00+00:00", "end_date": "2021-06-03T10:00:00+00:00"},
@@ -241,6 +258,7 @@ def test_balances_stream_slices():
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
     )
     balance.get_last_refreshed_datetime = lambda x: None
+    balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T11:00:00+00:00"})
     assert [{"start_date": "2021-06-03T11:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"}] == stream_slices
 
@@ -250,5 +268,44 @@ def test_balances_stream_slices():
         end_date=isoparse("2021-06-03T12:00:00+00:00"),
     )
     balance.get_last_refreshed_datetime = lambda x: None
+    balance.stream_slice_period = {"days": 1}
     stream_slices = balance.stream_slices(sync_mode="any", stream_state={"date": "2021-06-03T12:00:00+00:00"})
     assert [{"start_date": "2021-06-03T12:00:00+00:00", "end_date": "2021-06-03T12:00:00+00:00"}] == stream_slices
+
+
+def test_max_records_in_response_reached(transactions, requests_mock):
+    balance = Transactions(
+        authenticator=NoAuth(),
+        start_date=isoparse("2021-07-01T10:00:00+00:00"),
+        end_date=isoparse("2021-07-29T12:00:00+00:00"),
+    )
+    error_message = {
+        "name": "RESULTSET_TOO_LARGE",
+        "message": "Result set size is greater than the maximum limit. Change the filter " "criteria and try again.",
+    }
+    url = "https://api-m.paypal.com/v1/reporting/transactions"
+
+    requests_mock.register_uri(
+        "GET",
+        url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00",
+        json=error_message,
+        status_code=400,
+    )
+    requests_mock.register_uri(
+        "GET", url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-15T12%3A00%3A00%2B00%3A00", json=transactions
+    )
+    requests_mock.register_uri(
+        "GET", url + "?start_date=2021-07-15T12%3A00%3A00%2B00%3A00&end_date=2021-07-29T12%3A00%3A00%2B00%3A00", json=transactions
+    )
+    month_date_slice = {"start_date": "2021-07-01T12:00:00+00:00", "end_date": "2021-07-29T12:00:00+00:00"}
+    assert len(list(balance.read_records(sync_mode="any", stream_slice=month_date_slice))) == 2
+
+    requests_mock.register_uri(
+        "GET",
+        url + "?start_date=2021-07-01T12%3A00%3A00%2B00%3A00&end_date=2021-07-01T12%3A00%3A00%2B00%3A00",
+        json=error_message,
+        status_code=400,
+    )
+    one_day_slice = {"start_date": "2021-07-01T12:00:00+00:00", "end_date": "2021-07-01T12:00:00+00:00"}
+    with raises(Exception):
+        assert next(balance.read_records(sync_mode="any", stream_slice=one_day_slice))
