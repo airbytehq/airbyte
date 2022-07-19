@@ -130,28 +130,28 @@ public abstract class AbstractSourceConnectorTest {
     return new DefaultGetSpecWorker(
         workerConfigs,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot);
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck() throws Exception {
     return new DefaultCheckConnectionWorker(
         workerConfigs,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot);
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(getConfig()), jobRoot).getCheckConnection();
   }
 
   protected String runCheckAndGetStatusAsString(JsonNode config) throws Exception {
     return new DefaultCheckConnectionWorker(
         workerConfigs,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getStatus().toString();
+            .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot).getCheckConnection().getStatus().toString();
   }
 
   protected AirbyteCatalog runDiscover() throws Exception {
     return new DefaultDiscoverCatalogWorker(
         workerConfigs,
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements()))
-            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot);
+            .run(new StandardDiscoverCatalogInput().withConnectionConfiguration(getConfig()), jobRoot).getDiscoverCatalog();
   }
 
   protected void checkEntrypointEnvVariable() throws Exception {
