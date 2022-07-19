@@ -154,8 +154,7 @@ class AdAccount(FBMarketingStream):
         """https://developers.facebook.com/docs/marketing-api/reference/ad-account/assigned_users/"""
         res = set()
         me = User(fbid="me", api=self._api.api)
-        business_users = me.get_business_users()
-        for business_user in business_users:
+        for business_user in me.get_business_users():
             assigned_users = self._api.account.get_assigned_users(params={"business": business_user["business"].get_id()})
             for assigned_user in assigned_users:
                 if business_user.get_id() == assigned_user.get_id():
