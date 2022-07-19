@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -140,6 +142,23 @@ class TemporalClientTest {
 
       assertNotNull(response);
       assertFalse(response.getOutput().isPresent());
+      assertFalse(response.getMetadata().isSucceeded());
+      assertEquals(logPath, response.getMetadata().getLogPath());
+    }
+
+    @Test
+    void testExecuteWithConnectorJobFailure() {
+      final Supplier<ConnectorJobOutput> supplier = mock(Supplier.class);
+      final FailureReason mockFailureReason = mock(FailureReason.class);
+      final ConnectorJobOutput connectorJobOutput = new ConnectorJobOutput()
+          .withFailureReason(mockFailureReason);
+      when(supplier.get()).thenReturn(connectorJobOutput);
+
+      final TemporalResponse<ConnectorJobOutput> response = temporalClient.execute(JOB_RUN_CONFIG, supplier);
+
+      assertNotNull(response);
+      assertTrue(response.getOutput().isPresent());
+      assertEquals(connectorJobOutput, response.getOutput().get());
       assertFalse(response.getMetadata().isSucceeded());
       assertEquals(logPath, response.getMetadata().getLogPath());
     }
