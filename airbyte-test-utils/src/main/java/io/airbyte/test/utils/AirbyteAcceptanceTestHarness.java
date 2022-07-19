@@ -27,11 +27,16 @@ import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
+import io.airbyte.api.client.model.generated.DestinationSyncMode;
+import io.airbyte.api.client.model.generated.JobConfigType;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.api.client.model.generated.JobListRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
+import io.airbyte.api.client.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.client.model.generated.NamespaceDefinitionType;
 import io.airbyte.api.client.model.generated.OperationCreate;
 import io.airbyte.api.client.model.generated.OperationIdRequestBody;
@@ -46,6 +51,9 @@ import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.SyncMode;
+import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
@@ -130,6 +138,12 @@ public class AirbyteAcceptanceTestHarness {
   private static final String COLUMN_NAME_DATA = "_airbyte_data";
   private static final String SOURCE_USERNAME = "sourceusername";
   public static final String SOURCE_PASSWORD = "hunter2";
+  public static final String PUBLIC_SCHEMA_NAME = "public";
+  public static final String STAGING_SCHEMA_NAME = "staging";
+  public static final String COOL_EMPLOYEES_TABLE_NAME = "cool_employees";
+  public static final String AWESOME_PEOPLE_TABLE_NAME = "awesome_people";
+
+  private static final String DEFAULT_POSTGRES_INIT_SQL_FILE = "postgres_init.sql";
 
   private static boolean isKube;
   private static boolean isMinikube;
@@ -147,6 +161,7 @@ public class AirbyteAcceptanceTestHarness {
   private AirbyteTestContainer airbyteTestContainer;
   private AirbyteApiClient apiClient;
   private final UUID defaultWorkspaceId;
+  private final String postgresSqlInitFile;
 
   private KubernetesClient kubernetesClient = null;
 
@@ -171,12 +186,13 @@ public class AirbyteAcceptanceTestHarness {
     this.apiClient = apiClient;
   }
 
-  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId, final String postgresSqlInitFile)
       throws URISyntaxException, IOException, InterruptedException {
     // reads env vars to assign static variables
     assignEnvVars();
     this.apiClient = apiClient;
     this.defaultWorkspaceId = defaultWorkspaceId;
+    this.postgresSqlInitFile = postgresSqlInitFile;
 
     if (isGke && !isKube) {
       throw new RuntimeException("KUBE Flag should also be enabled if GKE flag is enabled");
@@ -215,6 +231,11 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  public AirbyteAcceptanceTestHarness(final AirbyteApiClient apiClient, final UUID defaultWorkspaceId)
+      throws URISyntaxException, IOException, InterruptedException {
+    this(apiClient, defaultWorkspaceId, DEFAULT_POSTGRES_INIT_SQL_FILE);
+  }
+
   public void stopDbAndContainers() {
     if (!isGke) {
       sourcePsql.stop();
@@ -235,7 +256,7 @@ public class AirbyteAcceptanceTestHarness {
     if (isGke) {
       // seed database.
       final Database database = getSourceDatabase();
-      final Path path = Path.of(MoreResources.readResourceAsFile("postgres_init.sql").toURI());
+      final Path path = Path.of(MoreResources.readResourceAsFile(postgresSqlInitFile).toURI());
       final StringBuilder query = new StringBuilder();
       for (final String line : java.nio.file.Files.readAllLines(path, StandardCharsets.UTF_8)) {
         if (line != null && !line.isEmpty()) {
@@ -244,7 +265,7 @@ public class AirbyteAcceptanceTestHarness {
       }
       database.query(context -> context.execute(query.toString()));
     } else {
-      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_init.sql"), sourcePsql);
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource(postgresSqlInitFile), sourcePsql);
 
       destinationPsql = new PostgreSQLContainer("postgres:13-alpine");
       destinationPsql.start();
@@ -321,6 +342,11 @@ public class AirbyteAcceptanceTestHarness {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
+  public AirbyteCatalog discoverSourceSchemaWithoutCache(final UUID sourceId) throws ApiException {
+    return apiClient.getSourceApi().discoverSchemaForSource(
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true)).getCatalog();
+  }
+
   public void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
@@ -343,7 +369,7 @@ public class AirbyteAcceptanceTestHarness {
     return getDatabase(sourcePsql);
   }
 
-  private Database getDestinationDatabase() {
+  public Database getDestinationDatabase() {
     if (isKube && isGke) {
       return GKEPostgresConfig.getDestinationDatabase();
     }
@@ -523,7 +549,7 @@ public class AirbyteAcceptanceTestHarness {
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
+  public List<JsonNode> retrieveRawDestinationRecords(final SchemaTableNamePair pair) throws Exception {
     final Database destination = getDestinationDatabase();
     final Set<SchemaTableNamePair> namePairs = listAllTables(destination);
 
@@ -635,9 +661,23 @@ public class AirbyteAcceptanceTestHarness {
         .getSourceDefinitionId();
   }
 
+  public UUID getPostgresDestinationDefinitionId() throws ApiException {
+    return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
+        .stream()
+        .filter(destRead -> destRead.getName().equalsIgnoreCase("postgres"))
+        .findFirst()
+        .orElseThrow()
+        .getDestinationDefinitionId();
+  }
+
   public void updateSourceDefinitionVersion(final UUID sourceDefinitionId, final String dockerImageTag) throws ApiException {
     apiClient.getSourceDefinitionApi().updateSourceDefinition(new SourceDefinitionUpdate()
         .sourceDefinitionId(sourceDefinitionId).dockerImageTag(dockerImageTag));
+  }
+
+  public void updateDestinationDefinitionVersion(final UUID destDefinitionId, final String dockerImageTag) throws ApiException {
+    apiClient.getDestinationDefinitionApi().updateDestinationDefinition(new DestinationDefinitionUpdate()
+        .destinationDefinitionId(destDefinitionId).dockerImageTag(dockerImageTag));
   }
 
   private void clearSourceDbData() throws SQLException {
@@ -681,6 +721,13 @@ public class AirbyteAcceptanceTestHarness {
     apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
+  public JobRead getMostRecentSyncJobId(final UUID connectionId) throws Exception {
+    return apiClient.getJobsApi()
+        .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
+        .getJobs()
+        .stream().findFirst().map(JobWithAttemptsRead::getJob).orElseThrow();
+  }
+
   public static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
     final JobRead job = waitWhileJobHasStatus(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
 
@@ -694,6 +741,7 @@ public class AirbyteAcceptanceTestHarness {
       }
     }
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
+    Thread.sleep(200);
   }
 
   public static JobRead waitWhileJobHasStatus(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
@@ -736,9 +784,69 @@ public class AirbyteAcceptanceTestHarness {
     return connectionState;
   }
 
+  public JobRead waitUntilTheNextJobIsStarted(final UUID connectionId) throws Exception {
+    final JobRead lastJob = getMostRecentSyncJobId(connectionId);
+    if (lastJob.getStatus() != JobStatus.SUCCEEDED) {
+      return lastJob;
+    }
+
+    JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
+      Thread.sleep(Duration.ofSeconds(1).toMillis());
+      mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+    }
+    return mostRecentSyncJob;
+  }
+
   public enum Type {
     SOURCE,
     DESTINATION
+  }
+
+  public void assertDestinationDbEmpty(final boolean withScdTable) throws Exception {
+    final Database source = getSourceDatabase();
+    final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
+    final Database destination = getDestinationDatabase();
+    final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
+    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+
+    for (final SchemaTableNamePair pair : sourceTables) {
+      final List<JsonNode> sourceRecords = retrieveRawDestinationRecords(pair);
+      assertTrue(sourceRecords.isEmpty());
+    }
+  }
+
+  public void setIncrementalAppendSyncMode(final AirbyteCatalog airbyteCatalog, final List<String> cursorField) {
+    airbyteCatalog.getStreams().forEach(stream -> {
+      stream.getConfig().syncMode(SyncMode.INCREMENTAL)
+          .destinationSyncMode(DestinationSyncMode.APPEND)
+          .cursorField(cursorField);
+    });
+  }
+
+  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
+    setIncrementalAppendSyncMode(catalog, List.of(COLUMN_ID));
+
+    return new WebBackendConnectionUpdate()
+        .connectionId(connection.getConnectionId())
+        .name(connection.getName())
+        .operationIds(connection.getOperationIds())
+        .operations(List.of(new WebBackendOperationCreateOrUpdate()
+            .name(operation.getName())
+            .operationId(operation.getOperationId())
+            .workspaceId(operation.getWorkspaceId())
+            .operatorConfiguration(operation.getOperatorConfiguration())))
+        .namespaceDefinition(connection.getNamespaceDefinition())
+        .namespaceFormat(connection.getNamespaceFormat())
+        .syncCatalog(catalog)
+        .schedule(connection.getSchedule())
+        .sourceCatalogId(connection.getSourceCatalogId())
+        .status(connection.getStatus())
+        .prefix(connection.getPrefix())
+        .withRefreshedCatalog(true)
+        .skipReset(false);
   }
 
 }
