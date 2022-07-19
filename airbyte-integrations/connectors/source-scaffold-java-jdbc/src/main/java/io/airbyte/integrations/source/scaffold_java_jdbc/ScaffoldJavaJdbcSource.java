@@ -31,8 +31,8 @@ public class ScaffoldJavaJdbcSource extends AbstractJdbcSource<JDBCType> impleme
   // TODO The config is based on spec.json, update according to your DB
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put(JdbcUtils.USERNAME_KEY,
-    // userName).put(JdbcUtils.PASSWORD_KEY, pas)...build());
+    // TODO create DB config. Ex: "Jsons.jsonNode(ImmutableMap.builder().put("username",
+    // userName).put("password", pas)...build());
     return null;
   }
 
