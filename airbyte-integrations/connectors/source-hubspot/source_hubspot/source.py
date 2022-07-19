@@ -10,9 +10,8 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
@@ -187,26 +186,3 @@ class SourceHubspot(AbstractSource):
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
-
-    def _read_incremental(
-        self,
-        logger: logging.Logger,
-        stream_instance: Stream,
-        configured_stream: ConfiguredAirbyteStream,
-        connector_state: MutableMapping[str, Any],
-        internal_config: InternalConfig,
-    ) -> Iterator[AirbyteMessage]:
-        """
-        This method is overridden to checkpoint the latest actual state,
-        because stream state is refreshed after reading each batch of records (if need_chunk is True),
-        or reading all records in the stream.
-        """
-        yield from super()._read_incremental(
-            logger=logger,
-            stream_instance=stream_instance,
-            configured_stream=configured_stream,
-            connector_state=connector_state,
-            internal_config=internal_config,
-        )
-        stream_state = stream_instance.get_updated_state(current_stream_state={}, latest_record={})
-        yield self._checkpoint_state(stream_instance, stream_state, connector_state)
