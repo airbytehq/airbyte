@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from contextlib import contextmanager
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -21,6 +22,11 @@ from airbyte_cdk.models import (
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
+
+
+@contextmanager
+def does_not_raise():
+    yield
 
 
 @pytest.mark.parametrize(
@@ -115,6 +121,38 @@ def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
             t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
     else:
         t.test_defined_keyword_exist_in_schema(keyword, discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        ({"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}})}, pytest.raises(AssertionError)),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": []})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream": AirbyteStream.parse_obj(
+                    {"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]}
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]})},
+            does_not_raise(),
+        ),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["incremental"]})},
+            does_not_raise(),
+        ),
+    ],
+)
+def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
+    t = _TestDiscovery()
+    with expectation:
+        t.test_streams_has_sync_modes(discovered_catalog)
 
 
 @pytest.mark.parametrize(

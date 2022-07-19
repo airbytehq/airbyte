@@ -243,6 +243,12 @@ class TestDiscovery(BaseTest):
                 pk_field_location = dpath.util.search(schema["properties"], pk_path)
                 assert pk_field_location, f"One of the PKs ({pk}) is not specified in discover schema for {stream_name} stream"
 
+    def test_streams_has_sync_modes(self, discovered_catalog: Mapping[str, Any]):
+        """Checking that the supported_sync_modes is a not empty field in streams of the catalog."""
+        for _, stream in discovered_catalog.items():
+            assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
+            assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
+
 
 def primary_keys_for_records(streams, records):
     streams_with_primary_key = [stream for stream in streams if stream.stream.source_defined_primary_key]

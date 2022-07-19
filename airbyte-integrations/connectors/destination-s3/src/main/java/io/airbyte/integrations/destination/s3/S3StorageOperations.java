@@ -145,7 +145,7 @@ public class S3StorageOperations extends BlobStorageOperations {
     final String fullObjectKey;
     if (StringUtils.isNotBlank(s3Config.getFileNamePattern())) {
       fullObjectKey = s3FilenameTemplateManager
-          .adaptFilenameAccordingSpecificationPatternWithDefaultConfig(
+          .applyPatternToFilename(
               S3FilenameTemplateParameterObject
                   .builder()
                   .partId(partId)

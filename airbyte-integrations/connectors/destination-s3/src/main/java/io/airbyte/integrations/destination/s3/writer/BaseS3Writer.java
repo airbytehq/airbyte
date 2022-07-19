@@ -13,7 +13,6 @@ import com.amazonaws.services.s3.model.DeleteObjectsResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3DestinationConstants;
-import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateManager;
 import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.S3OutputPathHelper;
@@ -21,13 +20,11 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,7 +157,7 @@ public abstract class BaseS3Writer implements DestinationFileWriter {
   }
 
   private static String getOutputFilename(final S3FilenameTemplateParameterObject parameterObject) throws IOException {
-    return s3FilenameTemplateManager.adaptFilenameAccordingSpecificationPatternWithDefaultConfig(parameterObject);
+    return s3FilenameTemplateManager.applyPatternToFilename(parameterObject);
   }
 
 }

@@ -7,11 +7,12 @@ package io.airbyte.integrations.destination.s3.template;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.S3Format;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * This class is used as argument holder S3FilenameTemplateManager.class
  *
- * @see S3FilenameTemplateManager#adaptFilenameAccordingSpecificationPatternWithDefaultConfig(S3FilenameTemplateParameterObject)
+ * @see S3FilenameTemplateManager#applyPatternToFilename(S3FilenameTemplateParameterObject)
  */
 public class S3FilenameTemplateParameterObject {
 
@@ -135,5 +136,24 @@ public class S3FilenameTemplateParameterObject {
           + this.fileNamePattern + ", fileExtension=" + this.fileExtension + ", partId=" + this.partId + ", s3Format=" + this.s3Format + ", timestamp=" + this.timestamp + ", customSuffix="
           + this.customSuffix + ")";
     }
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    final S3FilenameTemplateParameterObject that = (S3FilenameTemplateParameterObject) o;
+    return Objects.equals(objectPath, that.objectPath) && Objects.equals(recordsData, that.recordsData) && Objects.equals(fileNamePattern, that.fileNamePattern)
+        && Objects.equals(fileExtension, that.fileExtension) && Objects.equals(partId, that.partId) && s3Format == that.s3Format && Objects.equals(timestamp,
+        that.timestamp) && Objects.equals(customSuffix, that.customSuffix);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(objectPath, recordsData, fileNamePattern, fileExtension, partId, s3Format, timestamp, customSuffix);
   }
 }
