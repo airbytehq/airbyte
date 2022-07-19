@@ -33,6 +33,33 @@ class TestJsonlParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": [],
             },
+            "master_schema_test": {
+                "AbstractFileParser": JsonlParser(
+                    format={"filetype": "jsonl"},
+                    master_schema={
+                        "id": "integer",
+                        "name": "string",
+                        "valid": "boolean",
+                        "code": "integer",
+                        "degrees": "number",
+                        "birthday": "string",
+                        "last_seen": "string",
+                    },
+                ),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_1.jsonl"),
+                "num_records": 8,
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {},
+                "fails": [],
+            },
             "encoding_Big5": {
                 "AbstractFileParser": JsonlParser(format={"filetype": "jsonl"}),
                 "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_2_enc_Big5.jsonl"),
