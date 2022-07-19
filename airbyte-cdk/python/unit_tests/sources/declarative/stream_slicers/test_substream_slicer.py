@@ -57,6 +57,7 @@ class MockStream(Stream):
 @pytest.mark.parametrize(
     "test_name, parent_streams, parent_stream_name_to_slice_key, parent_stream_name_to_stream_slice_key, expected_slices",
     [
+        ("test_no_parents", [], {}, {}, []),
         (
             "test_single_parent_slices_no_records",
             [MockStream([{}], [], "first_stream")],
