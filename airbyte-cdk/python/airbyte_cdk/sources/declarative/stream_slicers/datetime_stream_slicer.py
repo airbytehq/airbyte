@@ -95,15 +95,20 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
         if self._stream_state_field.eval(self._config) in stream_state:
-            raise Exception()
-            cursor_datetime = self.parse_date(stream_state[self._stream_state_field])
+            cursor_datetime = self.parse_date(stream_state[self._stream_state_field.eval(self._config)])
         else:
             cursor_datetime = start_datetime
         start_datetime = max(cursor_datetime, start_datetime)
         if not self._is_start_date_valid(start_datetime, end_datetime):
             end_datetime = start_datetime
 
-        return self._partition_daterange(start_datetime, end_datetime, self._step)
+        dates = self._partition_daterange(start_datetime, end_datetime, self._step)
+        state_date = stream_state.get(self._stream_state_field.eval(self._config))
+        if state_date:
+            dates_later_than_state = [d for d in dates if d["start_date"] > state_date]
+        else:
+            dates_later_than_state = dates
+        return dates_later_than_state
 
     def _format_datetime(self, dt: datetime.datetime):
         if self._datetime_format == "timestamp":
