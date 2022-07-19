@@ -462,6 +462,8 @@ public class TemporalClient {
       operationOutput = executor.get();
     } catch (final RuntimeException e) {
       exception = e;
+      System.out.println("Test - sxiaohan - temporal client");
+      System.out.println(e);
     }
 
     final JobMetadata metadata = new JobMetadata(exception == null, logPath);
