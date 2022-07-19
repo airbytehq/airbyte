@@ -510,12 +510,12 @@ where 1 = 1
         elif is_object(definition["type"]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif is_boolean(definition):
+        elif is_boolean(definition["type"], definition):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_integer(definition):
             sql_type = jinja_call("dbt_utils.type_int()")
-        elif is_long(definition):
+        elif is_long(definition["type"], definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
@@ -686,7 +686,7 @@ where 1 = 1
 
         if "type" not in definition:
             col = column_name
-        elif is_boolean(definition):
+        elif is_boolean(definition["type"], definition):
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
