@@ -49,7 +49,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-square", new SquareOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-strava", new StravaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
         .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-drift", new DriftOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-chat", new ZendeskChatOAuthFlow(configRepository, httpClient))
