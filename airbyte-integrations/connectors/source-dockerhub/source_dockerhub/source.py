@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 from urllib.parse import urlparse

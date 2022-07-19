@@ -91,7 +91,7 @@ const validationSchema = yup.object().shape({
 
 const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessage }) => {
   const config = useConfig();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <Modal onClose={onClose} title={<FormattedMessage id="admin.addNewConnector" />}>
@@ -115,8 +115,8 @@ const CreateConnectorModal: React.FC<IProps> = ({ onClose, onSubmit, errorMessag
             dockerImageTag: "",
             dockerRepository: "",
           }}
-          validateOnBlur={true}
-          validateOnChange={true}
+          validateOnBlur
+          validateOnChange
           validationSchema={validationSchema}
           onSubmit={async (values, { setSubmitting }) => {
             await onSubmit(values);

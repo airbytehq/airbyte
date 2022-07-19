@@ -22,7 +22,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   return (
     <Card $withPadding>
       <H5 bold>
-        <FormattedMessage id={"tables.connectionState.title"} />
+        <FormattedMessage id="tables.connectionState.title" />
       </H5>
       <pre style={{ maxHeight: 200, overflowY: "scroll" }}>{stateString}</pre>
     </Card>

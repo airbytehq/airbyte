@@ -41,7 +41,7 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
 
   @Override
   public void addState(final AirbyteMessage message) {
-    Preconditions.checkArgument(message.getState().getStateType() == AirbyteStateType.STREAM);
+    Preconditions.checkArgument(message.getState().getType() == AirbyteStateType.STREAM);
     streamToLastPendingState.put(message.getState().getStream().getStreamDescriptor(), message);
   }
 

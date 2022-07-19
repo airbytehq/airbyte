@@ -55,7 +55,6 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
-
   }
 
   public AirbyteCatalog run(final JobRunConfig jobRunConfig,

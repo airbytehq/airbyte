@@ -69,7 +69,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const config = useConfig();
 
   return (
@@ -80,7 +80,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
         news: preferencesValues?.news || false,
         securityUpdates: preferencesValues?.securityUpdates || false,
       }}
-      validateOnBlur={true}
+      validateOnBlur
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
       onSubmit={async (values) => {
@@ -122,7 +122,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           </Subtitle>
           <Text>
             <FormattedMessage
-              id={"preferences.collectData"}
+              id="preferences.collectData"
               values={{
                 docs: (docs: React.ReactNode) => (
                   <DocsLink target="_blank" href={config.links.docsLink}>
@@ -184,7 +184,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           ) : (
             <ButtonContainer>
               <BigButton type="submit" disabled={isSubmitting}>
-                <FormattedMessage id={"form.continue"} />
+                <FormattedMessage id="form.continue" />
               </BigButton>
             </ButtonContainer>
           )}

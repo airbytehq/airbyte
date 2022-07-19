@@ -12,7 +12,7 @@ const AuthSdkContext = React.createContext<Auth | undefined>(undefined);
 type FirebaseSdks = Auth;
 
 function getSdkProvider<Sdk extends FirebaseSdks>(SdkContext: React.Context<Sdk | undefined>) {
-  return function SdkProvider(props: React.PropsWithChildren<{ sdk: Sdk }>) {
+  return (props: React.PropsWithChildren<{ sdk: Sdk }>) => {
     if (!props.sdk) {
       throw new Error("no sdk provided");
     }

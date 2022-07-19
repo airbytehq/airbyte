@@ -59,13 +59,13 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .put("host", container.getHost())
         .put("port", container.getFirstMappedPort())
         .put("database", Strings.addRandomSuffix("db", "_", 10))
-        .put("username", TEST_USER)
-        .put("password", TEST_PASSWORD)
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .build());
 
     dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        "",
+        config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
             config.get("host").asText(),

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 from itertools import cycle
 from typing import Any, List, Mapping
 
@@ -37,3 +38,15 @@ class TokenAuthenticator(MultipleTokenAuthenticator):
 
     def __init__(self, token: str, auth_method: str = "Bearer", auth_header: str = "Authorization"):
         super().__init__([token], auth_method, auth_header)
+
+
+class BasicHttpAuthenticator(TokenAuthenticator):
+    """
+    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
+    """
+
+    def __init__(self, username: str, password: str, auth_method: str = "Basic", auth_header: str = "Authorization"):
+        auth_string = f"{username}:{password}".encode("utf8")
+        b64_encoded = base64.b64encode(auth_string).decode("utf8")
+        super().__init__(b64_encoded, auth_method, auth_header)

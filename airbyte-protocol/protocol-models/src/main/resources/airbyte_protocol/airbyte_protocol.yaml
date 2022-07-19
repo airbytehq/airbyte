@@ -72,7 +72,7 @@ definitions:
     type: object
     additionalProperties: true
     properties:
-      state_type:
+      type:
         "$ref": "#/definitions/AirbyteStateType"
       stream:
         "$ref": "#/definitions/AirbyteStreamState"

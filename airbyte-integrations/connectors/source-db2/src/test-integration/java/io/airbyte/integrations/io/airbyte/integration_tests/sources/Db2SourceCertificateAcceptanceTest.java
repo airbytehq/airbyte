@@ -104,7 +104,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("host", db.getHost())
-        .put("port", db.getMappedPort(50000))
+        .put("port", db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
         .put("username", db.getUsername())
         .put("password", db.getPassword())

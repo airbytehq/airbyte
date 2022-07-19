@@ -57,6 +57,7 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------|
+| 0.1.6   | 2022-06-10 | [13682](https://github.com/airbytehq/airbyte/pull/13682) | Update paypal transaction schema                                        |
 | 0.1.5   | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep |
 | 0.1.4   | 2021-12-22 | [9034](https://github.com/airbytehq/airbyte/pull/9034)   | Update connector fields title/description                               |
 | 0.1.3   | 2021-12-16 | [8580](https://github.com/airbytehq/airbyte/pull/8580)   | Added more logs during `check connection` stage                         |

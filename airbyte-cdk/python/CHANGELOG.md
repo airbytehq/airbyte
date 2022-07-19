@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+- Add the ability to remove & add records in YAML-based sources
+
+## 0.1.65
+- Allow for detailed debug messages to be enabled using the --debug command.
+
+## 0.1.64
+- Add support for configurable oauth request payload and declarative oauth authenticator.
+
+## 0.1.63
+- Define `namespace` property on the `Stream` class inside `core.py`.
+
+## 0.1.62
+Bugfix: Correctly obfuscate nested secrets and secrets specified inside oneOf blocks inside the connector's spec.
+ 
+## 0.1.61
+- Remove legacy sentry code
+
 ## 0.1.60
 - Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried
 

@@ -2,7 +2,6 @@ import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import styled from "styled-components";
 
 import Table from "components/Table";
 
@@ -14,11 +13,8 @@ import ConnectorCell from "./components/ConnectorCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
 import SortButton from "./components/SortButton";
+import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
-
-const Content = styled.div`
-  margin: 0 32px 0 27px;
-`;
 
 interface IProps {
   data: EntityTableDataItem[];
@@ -39,7 +35,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         search: queryString.stringify(
           {
             sortBy: field,
-            order: order,
+            order,
           },
           { skipNull: true }
         ),
@@ -137,9 +133,9 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
   );
 
   return (
-    <Content>
+    <div className={styles.content}>
       <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />
-    </Content>
+    </div>
   );
 };
 

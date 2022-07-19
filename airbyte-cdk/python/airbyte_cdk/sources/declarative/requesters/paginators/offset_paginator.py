@@ -10,14 +10,14 @@ from airbyte_cdk.sources.declarative.states.dict_state import DictState
 
 
 class OffsetPaginator(Paginator):
-    def __init__(self, page_size: int, state: DictState, offset_key: str = "offset"):
+    def __init__(self, page_size: int, state: Optional[DictState] = None, offset_key: str = "offset"):
         self._limit = page_size
-        self._state: DictState = state
+        self._state = state or DictState()
         self._offsetKey = offset_key
         self._update_state_with_offset(0)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        if len(last_records) < self._limit:
+        if not last_records or len(last_records) < self._limit:
             return None
         offset = self._get_offset() + self._limit
         token_map = {self._offsetKey: offset}

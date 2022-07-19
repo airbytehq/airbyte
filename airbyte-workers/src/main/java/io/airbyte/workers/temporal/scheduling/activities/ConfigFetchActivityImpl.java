@@ -35,7 +35,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     try {
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
 
-      if (standardSync.getSchedule() == null || standardSync.getStatus() == Status.INACTIVE) {
+      if (standardSync.getSchedule() == null || standardSync.getStatus() != Status.ACTIVE) {
         // Manual syncs wait for their first run
         return new ScheduleRetrieverOutput(Duration.ofDays(100 * 365));
       }

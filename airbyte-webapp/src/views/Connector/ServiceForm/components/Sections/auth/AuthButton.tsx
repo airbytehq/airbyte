@@ -39,17 +39,15 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
 function getButtonComponent(connectorDefinitionId: string) {
   if (isGoogleConnector(connectorDefinitionId)) {
     return GoogleAuthButton;
-  } else {
-    return Button;
   }
+  return Button;
 }
 
 function getAuthenticateMessageId(connectorDefinitionId: string): string {
   if (isGoogleConnector(connectorDefinitionId)) {
     return "connectorForm.signInWithGoogle";
-  } else {
-    return "connectorForm.authenticate";
   }
+  return "connectorForm.authenticate";
 }
 
 export const AuthButton: React.FC = () => {

@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
-import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
@@ -162,8 +161,6 @@ public class CopyConsumerFactory {
         }
       }
       if (!hasFailed) {
-        sqlOperations.onDestinationCloseOperations(db,
-            pairToCopier.keySet().stream().map(AirbyteStreamNameNamespacePair::getNamespace).collect(toSet()));
         sqlOperations.executeTransaction(db, queries);
       }
     } finally {

@@ -15,7 +15,6 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.StreamDescriptor;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -25,11 +24,13 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.models.Attempt;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.persistence.JobCreator;
 import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -61,6 +62,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final ConfigRepository configRepository;
   private final JobCreator jobCreator;
   private final StreamResetPersistence streamResetPersistence;
+  private final JobErrorReporter jobErrorReporter;
 
   @Override
   public JobCreationOutput createNewJob(final JobCreationInput input) {
@@ -72,8 +74,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       failNonTerminalJobs(input.getConnectionId());
 
       final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
-      if (input.isReset()) {
+      final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
+      log.info("Found the following streams to reset for connection {}: {}", input.getConnectionId(), streamsToReset);
 
+      if (!streamsToReset.isEmpty()) {
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
 
         final StandardDestinationDefinition destinationDef =
@@ -86,7 +90,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
           standardSyncOperations.add(standardSyncOperation);
         }
 
-        final List<StreamDescriptor> streamsToReset = streamResetPersistence.getStreamResets(input.getConnectionId());
         final Optional<Long> jobIdOptional =
             jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations, streamsToReset);
 
@@ -199,6 +202,10 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
+
+      final UUID connectionId = UUID.fromString(job.getScope());
+      job.getLastFailedAttempt().flatMap(Attempt::getFailureSummary)
+          .ifPresent(failureSummary -> jobErrorReporter.reportSyncJobFailure(connectionId, failureSummary, job.getConfig().getSync()));
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -224,6 +231,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
             MetricTags.getFailureOrigin(reason.getFailureOrigin()));
       }
+
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
