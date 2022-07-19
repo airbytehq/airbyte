@@ -32,6 +32,8 @@ import org.jooq.JSONFormat;
 
 public class JdbcUtils {
 
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String SSL_KEY = "ssl";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
       BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR);
 
@@ -83,6 +85,17 @@ public class JdbcUtils {
       }
     }
     return parameters;
+  }
+
+  /**
+   * Checks that SSL_KEY has not been set or that an SSL_KEY is set and value can be mapped to true
+   * (e.g. non-zero integers, string true, etc)
+   *
+   * @param config A configuration used to check Jdbc connection
+   * @return true: if ssl has not been set or it has been set with true, false: in all other cases
+   */
+  public static boolean useSsl(final JsonNode config) {
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
 }

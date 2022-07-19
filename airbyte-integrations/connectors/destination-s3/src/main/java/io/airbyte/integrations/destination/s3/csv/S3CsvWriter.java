@@ -10,6 +10,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3Format;
+import io.airbyte.integrations.destination.s3.template.S3FilenameTemplateParameterObject;
 import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
 import io.airbyte.integrations.destination.s3.writer.BaseS3Writer;
 import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
@@ -52,7 +53,14 @@ public class S3CsvWriter extends BaseS3Writer implements DestinationFileWriter {
     this.csvSheetGenerator = csvSheetGenerator;
 
     final String fileSuffix = "_" + UUID.randomUUID();
-    final String outputFilename = BaseS3Writer.getOutputFilename(uploadTimestamp, fileSuffix, S3Format.CSV);
+    final String outputFilename = determineOutputFilename(S3FilenameTemplateParameterObject
+        .builder()
+        .customSuffix(fileSuffix)
+        .s3Format(S3Format.CSV)
+        .fileExtension(S3Format.CSV.getFileExtension())
+        .fileNamePattern(config.getFileNamePattern())
+        .timestamp(uploadTimestamp)
+        .build());
     this.objectKey = String.join("/", outputPrefix, outputFilename);
 
     LOGGER.info("Full S3 path for stream '{}': s3://{}/{}", stream.getName(), config.getBucketName(),
