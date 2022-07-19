@@ -279,5 +279,50 @@ def test_stream_slices(
     assert expected_slices == stream_slices
 
 
+@pytest.mark.parametrize(
+    "test_name, stream_slice, last_record, expected_state",
+    [
+        ("test_update_cursor_no_state_no_record", {}, None, None),
+        (
+            "test_update_cursor_with_state_no_record",
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            None,
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+        ),
+        (
+            "test_update_cursor_with_state_equals_record",
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+        ),
+        (
+            "test_update_cursor_with_state_greater_than_record",
+            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+        ),
+        (
+            "test_update_cursor_with_state_less_than_record",
+            {cursor_field: "2021-01-02T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+            {cursor_field: "2021-01-03T00:00:00.000000+0000"},
+        ),
+    ],
+)
+def test_update_cursor(test_name, stream_slice, last_record, expected_state):
+    slicer = DatetimeStreamSlicer(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000"),
+        end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
+        step="1d",
+        cursor_field=InterpolatedString(cursor_field),
+        datetime_format=datetime_format,
+        lookback_window=InterpolatedString("0d"),
+        config=config,
+    )
+    slicer.update_cursor(stream_slice, last_record)
+    updated_state = slicer.get_stream_state()
+    assert expected_state == updated_state
+
+
 if __name__ == "__main__":
     unittest.main()

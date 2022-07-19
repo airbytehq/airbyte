@@ -59,6 +59,8 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._stream_state_field = InterpolatedString(string=self._stream_state_field)
         self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         self._cursor = None
+        if isinstance(lookback_window, str):
+            lookback_window = InterpolatedString(lookback_window)
         self._lookback_window = lookback_window
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
@@ -68,15 +70,14 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._end_datetime.datetime_format = self._datetime_format
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        return {self._stream_state_field: self._cursor} if self._cursor else None
+        return {self._stream_state_field.eval(self._config): self._cursor} if self._cursor else None
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
-        raise Exception()
-        stream_slice_value = stream_slice.get(self._cursor_field)
-        last_record_value = last_record.get(self._cursor_field) if last_record else None
+        stream_slice_value = stream_slice.get(self._cursor_field.eval(self._config))
+        last_record_value = last_record.get(self._cursor_field.eval(self._config)) if last_record else None
         cursor = None
         if stream_slice_value and last_record_value:
-            cursor = max(stream_slice_value, last_record_value, self._cursor)
+            cursor = max(stream_slice_value, last_record_value)
         elif stream_slice_value:
             cursor = stream_slice_value
         else:
