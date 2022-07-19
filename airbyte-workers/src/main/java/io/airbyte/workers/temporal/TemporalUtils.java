@@ -4,8 +4,6 @@
 
 package io.airbyte.workers.temporal;
 
-import static io.micrometer.core.instrument.config.validate.PropertyValidator.getUrlString;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.uber.m3.tally.RootScopeBuilder;
 import com.uber.m3.tally.Scope;
@@ -16,7 +14,6 @@ import io.airbyte.config.EnvConfigs;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.registry.otlp.OtlpConfig;
 import io.micrometer.statsd.StatsdConfig;
 import io.micrometer.statsd.StatsdMeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
@@ -139,44 +136,6 @@ public class TemporalUtils {
       @Override
       public String get(String key) {
         return null;
-      }
-
-    };
-  }
-
-  private static OtlpConfig getTemporalOtlpConfig() {
-    return new OtlpConfig() {
-
-      /**
-       * @param key Key to lookup in the config.
-       * @return
-       */
-      @Override
-      public String get(String key) {
-        return null;
-      }
-
-      @Override
-      public String url() {
-        // Otlp config uses http receiver port, which defaults to 4318.
-        return getUrlString(this, "url").orElse(
-            String.format("http://%s:4318/v1/metrics", configs.getDDAgentHost()));
-      }
-
-      /**
-       * @return
-       */
-      @Override
-      public Duration step() {
-        return Duration.ofSeconds(10);
-      }
-
-      /**
-       * @return
-       */
-      @Override
-      public boolean enabled() {
-        return true;
       }
 
     };
