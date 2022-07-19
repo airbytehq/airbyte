@@ -30,8 +30,6 @@ from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
-from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
@@ -52,7 +50,6 @@ DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
-    State: DictState,
     Stream: DeclarativeStream,
     StreamSlicer: SingleSlice,
 }

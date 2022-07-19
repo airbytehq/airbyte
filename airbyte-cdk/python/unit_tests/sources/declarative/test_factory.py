@@ -177,8 +177,6 @@ requester:
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
-  state:
-    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
