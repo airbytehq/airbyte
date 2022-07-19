@@ -24,6 +24,10 @@ on:
         description: "Switching this to true will spin up 5 build agents instead of 1 and allow multi connector publishes to run in parallel"
         required: true
         default: "false"
+      run-tests:
+        description: "Should run tests when publishing"
+        required: true
+        default: "true"
 
 jobs:
   find_valid_pat:
@@ -288,7 +292,7 @@ jobs:
       - name: Publish ${{ matrix.connector }}
         run: |
           echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} true --publish_spec_to_cache
+          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -339,7 +343,7 @@ jobs:
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
           git add -u
-          git commit -m "auto-bump connector version"
+          git commit -m "auto-bump connector version [ci skip]"
           git pull origin ${{ github.event.inputs.gitref }}
           git push origin ${{ github.event.inputs.gitref }}
         id: auto-bump

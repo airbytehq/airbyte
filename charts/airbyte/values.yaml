@@ -48,7 +48,7 @@ webapp:
   image:
     repository: airbyte/webapp
     pullPolicy: IfNotPresent
-    tag: 0.39.35-alpha
+    tag: 0.39.37-alpha
 
   ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
   ##
@@ -322,7 +322,7 @@ server:
   image:
     repository: airbyte/server
     pullPolicy: IfNotPresent
-    tag: 0.39.35-alpha
+    tag: 0.39.37-alpha
 
   ## @param server.podAnnotations [object] Add extra annotations to the server pod
   ##
@@ -449,7 +449,7 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.39.35-alpha
+    tag: 0.39.37-alpha
 
   ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -567,7 +567,7 @@ bootloader:
   image:
     repository: airbyte/bootloader
     pullPolicy: IfNotPresent
-    tag: 0.39.35-alpha
+    tag: 0.39.37-alpha
 
   ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
   ##
@@ -805,17 +805,26 @@ externalDatabase:
   database: db-airbyte
   port: 5432
 
+## @section Minio chart overwrites
+## @param minio.rootUser Minio User
+## @param minio.rootPassword Minio Password
+minio:
+  fullnameOverride: &airbyte-minio-name airbyte-minio
+  auth:
+    rootUser: airbyte-user
+    rootPassword: airbyte-password-123
+
 ## @section Logs parameters
 logs:
   ## @param logs.accessKey.existingSecret
   ## @param logs.accessKey.existingSecretKey
   accessKey:
-    existingSecret: "airbyte-minio"
+    existingSecret: *airbyte-minio-name
     existingSecretKey: "root-user"
   ## @param logs.secretKey.existingSecret
   ## @param logs.secretKey.existingSecretKey
   secretKey:
-    existingSecret: "airbyte-minio"
+    existingSecret: *airbyte-minio-name
     existingSecretKey: "root-password"
 
   ## @param logs.minio.enabled Switch to enable or disable the Minio helm chart
@@ -849,14 +858,6 @@ logs:
     credentials: ""
     # If credentialsJson is set then credentials auto resolves (to /secrets/gcs-log-creds/gcp.json)
     credentialsJson: ""
-
-## @section Minio chart overwrites
-## @param minio.rootUser Minio User
-## @param minio.rootPassword Minio Password
-minio:
-  rootUser: airbyte-user
-  rootPassword: airbyte-password-123
-
 
 jobs:
   ## Jobs resource requests and limits

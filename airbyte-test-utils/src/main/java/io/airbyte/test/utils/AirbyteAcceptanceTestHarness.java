@@ -30,9 +30,13 @@ import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
+import io.airbyte.api.client.model.generated.DestinationSyncMode;
+import io.airbyte.api.client.model.generated.JobConfigType;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
+import io.airbyte.api.client.model.generated.JobListRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
+import io.airbyte.api.client.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.client.model.generated.NamespaceDefinitionType;
 import io.airbyte.api.client.model.generated.OperationCreate;
 import io.airbyte.api.client.model.generated.OperationIdRequestBody;
@@ -47,6 +51,9 @@ import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.SyncMode;
+import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
@@ -335,6 +342,11 @@ public class AirbyteAcceptanceTestHarness {
     return apiClient.getSourceApi().discoverSchemaForSource(new SourceDiscoverSchemaRequestBody().sourceId(sourceId)).getCatalog();
   }
 
+  public AirbyteCatalog discoverSourceSchemaWithoutCache(final UUID sourceId) throws ApiException {
+    return apiClient.getSourceApi().discoverSchemaForSource(
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true)).getCatalog();
+  }
+
   public void assertSourceAndDestinationDbInSync(final boolean withScdTable) throws Exception {
     final Database source = getSourceDatabase();
     final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
@@ -357,7 +369,7 @@ public class AirbyteAcceptanceTestHarness {
     return getDatabase(sourcePsql);
   }
 
-  private Database getDestinationDatabase() {
+  public Database getDestinationDatabase() {
     if (isKube && isGke) {
       return GKEPostgresConfig.getDestinationDatabase();
     }
@@ -709,6 +721,13 @@ public class AirbyteAcceptanceTestHarness {
     apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
+  public JobRead getMostRecentSyncJobId(final UUID connectionId) throws Exception {
+    return apiClient.getJobsApi()
+        .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
+        .getJobs()
+        .stream().findFirst().map(JobWithAttemptsRead::getJob).orElseThrow();
+  }
+
   public static void waitForSuccessfulJob(final JobsApi jobsApi, final JobRead originalJob) throws InterruptedException, ApiException {
     final JobRead job = waitWhileJobHasStatus(jobsApi, originalJob, Sets.newHashSet(JobStatus.PENDING, JobStatus.RUNNING));
 
@@ -722,6 +741,7 @@ public class AirbyteAcceptanceTestHarness {
       }
     }
     assertEquals(JobStatus.SUCCEEDED, job.getStatus());
+    Thread.sleep(200);
   }
 
   public static JobRead waitWhileJobHasStatus(final JobsApi jobsApi, final JobRead originalJob, final Set<JobStatus> jobStatuses)
@@ -764,9 +784,69 @@ public class AirbyteAcceptanceTestHarness {
     return connectionState;
   }
 
+  public JobRead waitUntilTheNextJobIsStarted(final UUID connectionId) throws Exception {
+    final JobRead lastJob = getMostRecentSyncJobId(connectionId);
+    if (lastJob.getStatus() != JobStatus.SUCCEEDED) {
+      return lastJob;
+    }
+
+    JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
+      Thread.sleep(Duration.ofSeconds(1).toMillis());
+      mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+    }
+    return mostRecentSyncJob;
+  }
+
   public enum Type {
     SOURCE,
     DESTINATION
+  }
+
+  public void assertDestinationDbEmpty(final boolean withScdTable) throws Exception {
+    final Database source = getSourceDatabase();
+    final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
+    final Database destination = getDestinationDatabase();
+    final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
+    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+
+    for (final SchemaTableNamePair pair : sourceTables) {
+      final List<JsonNode> sourceRecords = retrieveRawDestinationRecords(pair);
+      assertTrue(sourceRecords.isEmpty());
+    }
+  }
+
+  public void setIncrementalAppendSyncMode(final AirbyteCatalog airbyteCatalog, final List<String> cursorField) {
+    airbyteCatalog.getStreams().forEach(stream -> {
+      stream.getConfig().syncMode(SyncMode.INCREMENTAL)
+          .destinationSyncMode(DestinationSyncMode.APPEND)
+          .cursorField(cursorField);
+    });
+  }
+
+  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
+    setIncrementalAppendSyncMode(catalog, List.of(COLUMN_ID));
+
+    return new WebBackendConnectionUpdate()
+        .connectionId(connection.getConnectionId())
+        .name(connection.getName())
+        .operationIds(connection.getOperationIds())
+        .operations(List.of(new WebBackendOperationCreateOrUpdate()
+            .name(operation.getName())
+            .operationId(operation.getOperationId())
+            .workspaceId(operation.getWorkspaceId())
+            .operatorConfiguration(operation.getOperatorConfiguration())))
+        .namespaceDefinition(connection.getNamespaceDefinition())
+        .namespaceFormat(connection.getNamespaceFormat())
+        .syncCatalog(catalog)
+        .schedule(connection.getSchedule())
+        .sourceCatalogId(connection.getSourceCatalogId())
+        .status(connection.getStatus())
+        .prefix(connection.getPrefix())
+        .withRefreshedCatalog(true)
+        .skipReset(false);
   }
 
 }

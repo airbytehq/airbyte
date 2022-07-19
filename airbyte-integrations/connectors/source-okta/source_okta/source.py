@@ -149,6 +149,20 @@ class GroupMembers(IncrementalOktaStream):
         }
 
 
+class GroupRoleAssignments(OktaStream):
+    primary_key = "id"
+    use_cache = True
+
+    def stream_slices(self, **kwargs):
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"group_id": group["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        group_id = stream_slice["group_id"]
+        return f"groups/{group_id}/roles"
+
+
 class Logs(IncrementalOktaStream):
 
     cursor_field = "published"
@@ -188,6 +202,34 @@ class Users(IncrementalOktaStream):
 
     def path(self, **kwargs) -> str:
         return "users"
+
+
+class CustomRoles(OktaStream):
+    primary_key = "id"
+
+    def path(self, **kwargs) -> str:
+        return "iam/roles"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["roles"]
+
+
+class UserRoleAssignments(OktaStream):
+    primary_key = "id"
+    use_cache = True
+
+    def stream_slices(self, **kwargs):
+        user_stream = Users(authenticator=self.authenticator, url_base=self.url_base)
+        for user in user_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"user_id": user["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        user_id = stream_slice["user_id"]
+        return f"users/{user_id}/roles"
 
 
 class SourceOkta(AbstractSource):
@@ -230,4 +272,7 @@ class SourceOkta(AbstractSource):
             Logs(**initialization_params),
             Users(**initialization_params),
             GroupMembers(**initialization_params),
+            CustomRoles(**initialization_params),
+            UserRoleAssignments(**initialization_params),
+            GroupRoleAssignments(**initialization_params),
         ]

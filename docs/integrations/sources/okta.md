@@ -8,27 +8,30 @@ This source can sync data for the [Okta API](https://developer.okta.com/docs/ref
 
 This Source is capable of syncing the following core Streams:
 
-* [Users](https://developer.okta.com/docs/reference/api/users/#list-users)
-* [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups)
-* [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members)
-* [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
+- [Users](https://developer.okta.com/docs/reference/api/users/#list-users)
+- [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user)
+- [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups)
+- [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members)
+- [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group)
+- [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
+- [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
 
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+| :--------------- | :----------- | :---- |
+| `string`         | `string`     |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes |  |
-| Namespaces | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | Yes                  |       |
+| Namespaces        | No                   |       |
 
 ### Performance considerations
 
@@ -38,7 +41,7 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 ### Requirements
 
-* Okta API Token 
+- Okta API Token
 
 ### Setup guide
 
@@ -60,12 +63,13 @@ Different Okta APIs require different admin privilege levels. API tokens inherit
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.5 | 2022-07-04 | [14380](https://github.com/airbytehq/airbyte/pull/14380) | add Group_Members stream to okta source |
-| 0.1.4 | 2021-11-02 | [7584](https://github.com/airbytehq/airbyte/pull/7584) | Fix incremental params for log stream |
-| 0.1.3 | 2021-09-08 | [5905](https://github.com/airbytehq/airbyte/pull/5905) | Fix incremental stream defect |
-| 0.1.2 | 2021-07-01 | [4456](https://github.com/airbytehq/airbyte/pull/4456) | Bugfix infinite pagination in logs stream |
-| 0.1.1 | 2021-06-09 | [3937](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support |
-| 0.1.0 | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563) | Initial Release |
-
+| Version | Date       | Pull Request                                             | Subject                                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 0.1.7   | 2022-07-13 | [14556](https://github.com/airbytehq/airbyte/pull/14556) | add User_Role_Assignments and Group_Role_Assignments streams (full fetch only) |
+| 0.1.6   | 2022-07-11 | [14610](https://github.com/airbytehq/airbyte/pull/14610) | add custom roles stream                                                        |
+| 0.1.5   | 2022-07-04 | [14380](https://github.com/airbytehq/airbyte/pull/14380) | add Group_Members stream to okta source                                        |
+| 0.1.4   | 2021-11-02 | [7584](https://github.com/airbytehq/airbyte/pull/7584)   | Fix incremental params for log stream                                          |
+| 0.1.3   | 2021-09-08 | [5905](https://github.com/airbytehq/airbyte/pull/5905)   | Fix incremental stream defect                                                  |
+| 0.1.2   | 2021-07-01 | [4456](https://github.com/airbytehq/airbyte/pull/4456)   | Bugfix infinite pagination in logs stream                                      |
+| 0.1.1   | 2021-06-09 | [3937](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                   |
+| 0.1.0   | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563)   | Initial Release                                                                |
