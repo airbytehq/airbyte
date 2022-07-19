@@ -306,15 +306,14 @@ public class CatalogHelpers {
           final AirbyteStream streamOld = descriptorToStreamOld.get(descriptor);
           final AirbyteStream streamNew = descriptorToStreamNew.get(descriptor);
           if (!streamOld.equals(streamNew)) {
-            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(descriptor, streamOld, streamNew)));
+            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(streamOld, streamNew)));
           }
         });
 
     return streamTransforms;
   }
 
-  private static UpdateStreamTransform getStreamDiff(final StreamDescriptor descriptor,
-                                                     final AirbyteStream streamOld,
+  private static UpdateStreamTransform getStreamDiff(final AirbyteStream streamOld,
                                                      final AirbyteStream streamNew) {
     final Set<FieldTransform> fieldTransforms = new HashSet<>();
     final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())

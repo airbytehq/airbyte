@@ -9,6 +9,24 @@ This page describes the step-by-step process of setting up the Snowflake destina
 - A Snowflake account with the [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html) role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake administrator to set one up for you.
 - (Optional) An AWS, Google Cloud Storage, or Azure account.
 
+### Network policies
+
+By default, Snowflake allows users to connect to the service from any computer or device IP address. A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network policy to allow or deny access to a single IP address or a list of addresses.
+
+If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses is on the allowed list
+
+To determine whether a network policy is set on your account or for a specific user, execute the _SHOW PARAMETERS_ command.
+
+**Account** 
+
+        SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+
+**User**
+
+        SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+
+To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+
 ## Step 1: Set up Airbyte-specific entities in Snowflake
 
 To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
@@ -167,15 +185,16 @@ Field | Description |
 
 To use AWS S3 as the cloud storage, enter the information for the S3 bucket you created in Step 2:
 
-| Field | Description |
-|---|---|
-| S3 Bucket Name | The name of the staging S3 bucket (Example: `airbyte.staging`). Airbyte will write files to this bucket and read them via statements on Snowflake.  |
-| S3 Bucket Region | The S3 staging bucket region used. |
-| S3 Key Id *  | The Access Key ID granting access to the S3 staging bucket. Airbyte requires Read and Write permissions for the bucket.  |
-| S3 Access Key *  | The corresponding secret to the S3 Key ID. |
-| Stream Part Size (Optional) | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. <br/>Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5)  |
-| Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after sync; if you want to keep them for other purposes, set `purge_staging_data` to false. |
-| Encryption | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Airbyte will automatically generate a new key for each sync, and nobody but Airbyte and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
+| Field                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| S3 Bucket Name                 | The name of the staging S3 bucket (Example: `airbyte.staging`). Airbyte will write files to this bucket and read them via statements on Snowflake.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| S3 Bucket Region               | The S3 staging bucket region used.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| S3 Key Id *                    | The Access Key ID granting access to the S3 staging bucket. Airbyte requires Read and Write permissions for the bucket.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| S3 Access Key *                | The corresponding secret to the S3 Key ID.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Stream Part Size (Optional)    | Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default limit of 100GB tables. <br/>Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care. (e.g. 5)                                                                    |
+| Purge Staging Files and Tables | Determines whether to delete the staging files from S3 after completing the sync. Specifically, the connector will create CSV files named `bucketPath/namespace/streamName/syncDate_epochMillis_randomUuid.csv` containing three columns (`ab_id`, `data`, `emitted_at`). Normally these files are deleted after sync; if you want to keep them for other purposes, set `purge_staging_data` to false.                                                                                                                                                  |
+| Encryption                     | Whether files on S3 are encrypted. You probably don't need to enable this, but it can provide an additional layer of security if you are sharing your data storage with other applications. If you do use encryption, you must choose between ephemeral keys (Airbyte will automatically generate a new key for each sync, and nobody but Airbyte and Snowflake will be able to read the data on S3) or providing your own key (if you have the "Purge staging files and tables" option disabled, and you want to be able to decrypt the data yourself) |
+| S3 Filename pattern (Optional) | The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.                                                                                                                                                                                             |
 
 To use a Google Cloud Storage bucket, enter the information for the bucket you created in Step 2:
 
@@ -231,10 +250,13 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.30  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
-| 0.4.29  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager  |
-| 0.4.28  | 2022-05-18 | [\#12952](https://github.com/airbytehq/airbyte/pull/12952) | Apply buffering strategy on GCS staging |
-| 0.4.27  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance |
+| 0.4.33  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                               |
+| 0.4.32  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                                                                |
+| 0.4.31  | 2022-07-07 | [\#13729](https://github.com/airbytehq/airbyte/pull/13729) | Improve configuration field description                                                                                                             |
+| 0.4.30  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging                                                                         |
+| 0.4.29  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager                                                             |
+| 0.4.28  | 2022-05-18 | [\#12952](https://github.com/airbytehq/airbyte/pull/12952) | Apply buffering strategy on GCS staging                                                                                                             |
+| 0.4.27  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                                                                              |
 | 0.4.26  | 2022-05-12 | [\#12805](https://github.com/airbytehq/airbyte/pull/12805) | Updated to latest base-java to emit AirbyteTraceMessages on error.                                                                                  |
 | 0.4.25  | 2022-05-03 | [\#12452](https://github.com/airbytehq/airbyte/pull/12452) | Add support for encrypted staging on S3; fix the purge_staging_files option                                                                         |
 | 0.4.24  | 2022-03-24 | [\#11093](https://github.com/airbytehq/airbyte/pull/11093) | Added OAuth support (Compatible with Airbyte Version 0.35.60+)                                                                                      |

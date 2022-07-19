@@ -3,7 +3,7 @@ kind: Kustomization
 
 namespace: default
 
-resources:
+bases:
   - ../../resources
 
 images:

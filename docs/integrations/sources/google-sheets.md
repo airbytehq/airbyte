@@ -70,6 +70,7 @@ The [Google API rate limit](https://developers.google.com/sheets/api/limits) is 
 
 | Version | Date       | Pull Request                                               | Subject                                                                       |
 |---------|------------|------------------------------------------------------------|-------------------------------------------------------------------------------|
+| 0.2.16  | 2022-07-07 | [13729](https://github.com/airbytehq/airbyte/pull/13729)   | Improve configuration field description |  
 | 0.2.15  | 2022-06-02 | [13446](https://github.com/airbytehq/airbyte/pull/13446)   | Retry requests resulting in a server error                                    |
 | 0.2.13  | 2022-05-06 | [12685](https://github.com/airbytehq/airbyte/pull/12685)   | Update CDK to v0.1.56 to emit an `AirbyeTraceMessage` on uncaught exceptions  |
 | 0.2.12  | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230)   | Update connector to use a `spec.yaml`                                         |

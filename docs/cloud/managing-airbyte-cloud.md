@@ -47,6 +47,22 @@ To delete a workspace:
 2. In the Workspace Settings sidebar, click **General Settings**.
 3. Click **Delete your workspace**.
 
+## Single Workspace vs. Multiple Workspaces
+ 
+You can use one or multiple workspaces with Airbyte Cloud. 
+ 
+### Access
+| Number of Workspaces | Benefits                                                                      | Considerations                                                                                                                              |
+|----------------------|-------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| Single               | All users in a workspace have access to the same data.                        | If you add a user to a workspace, you cannot limit their access to specific data within that workspace.                                     |
+| Multiple             | You can create multiple workspaces to allow certain users to access the data. | Since you have to manage user access for each workspace individually, it can get complicated if you have many users in multiple workspaces. | 
+ 
+### Billing
+| Number of Workspaces | Benefits                                                                                                                                                                                | Considerations                                                                                                                                                                                                                                              |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Single               | You can use the same payment method for all purchases.                                                                                                                                  | Credits pay for the use of resources in a workspace when you run a sync. Resource usage cannot be divided and paid for separately (for example, you cannot bill different departments in your organization for the usage of some credits in one workspace). |
+| Multiple             | Workspaces are independent of each other, so you can use a different payment method card for each workspace (for example,  different credit cards per department in your organization). | You can use the same payment method for different workspaces, but each workspace is billed separately. Managing billing for each workspace can become complicated if you have many workspaces.                                                         |
+
 ## Manage Airbyte Cloud notifications
 
 To set up Slack notifications:
