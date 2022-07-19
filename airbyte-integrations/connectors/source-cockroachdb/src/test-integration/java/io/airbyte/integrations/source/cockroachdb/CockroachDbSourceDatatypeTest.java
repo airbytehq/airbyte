@@ -16,6 +16,8 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
+import java.util.Objects;
+
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -36,7 +38,12 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(container))
+        .put("host", Objects.requireNonNull(container.getContainerInfo()
+                .getNetworkSettings()
+                .getNetworks()
+                .entrySet().stream()
+                .findFirst()
+                .get().getValue().getIpAddress()))
         .put("port", container.getExposedPorts().get(1))
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())

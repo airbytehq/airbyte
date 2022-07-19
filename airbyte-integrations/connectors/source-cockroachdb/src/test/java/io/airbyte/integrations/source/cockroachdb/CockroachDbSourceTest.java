@@ -29,11 +29,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -155,7 +151,12 @@ class CockroachDbSourceTest {
 
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName, final String username) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(psqlDb))
+        .put("host", Objects.requireNonNull(PSQL_DB.getContainerInfo()
+                .getNetworkSettings()
+                .getNetworks()
+                .entrySet().stream()
+                .findFirst()
+                .get().getValue().getIpAddress()))
         .put("port", psqlDb.getExposedPorts().get(1))
         .put("database", dbName == null ? psqlDb.getDatabaseName() : dbName)
         .put("username", username)

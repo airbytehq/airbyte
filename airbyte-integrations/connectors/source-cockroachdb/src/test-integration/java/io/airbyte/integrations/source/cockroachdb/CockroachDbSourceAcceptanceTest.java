@@ -24,6 +24,8 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
+import java.util.Objects;
+
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.CockroachContainer;
@@ -42,7 +44,12 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(container))
+        .put("host", Objects.requireNonNull(container.getContainerInfo()
+                .getNetworkSettings()
+                .getNetworks()
+                .entrySet().stream()
+                .findFirst()
+                .get().getValue().getIpAddress()))
         // by some reason it return not a port number as exposed and mentioned in logs
         .put("port", container.getExposedPorts().get(1))
         .put("database", container.getDatabaseName())

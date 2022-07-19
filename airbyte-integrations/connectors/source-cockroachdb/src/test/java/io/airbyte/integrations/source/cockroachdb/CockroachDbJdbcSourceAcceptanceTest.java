@@ -39,10 +39,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -75,7 +72,12 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(PSQL_DB))
+        .put("host", Objects.requireNonNull(PSQL_DB.getContainerInfo()
+                .getNetworkSettings()
+                .getNetworks()
+                .entrySet().stream()
+                .findFirst()
+                .get().getValue().getIpAddress()))
         .put("port", PSQL_DB.getExposedPorts().get(1))
         .put("database", dbName)
         .put("username", PSQL_DB.getUsername())
