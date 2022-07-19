@@ -9,6 +9,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 
 datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
@@ -334,6 +335,75 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
     slicer.update_cursor(stream_slice, last_record)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
+
+
+@pytest.mark.parametrize(
+    "test_name, pass_by, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    [
+        ("test_start_time_passed_by_none", None, None, {}, {}, {}, {}),
+        (
+            "test_start_time_passed_by_req_param",
+            RequestOptionType.request_parameter,
+            "start_time",
+            {"start_time": "2021-01-02T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
+            {},
+            {},
+            {},
+        ),
+        (
+            "test_start_time_passed_by_header",
+            RequestOptionType.header,
+            "start_time",
+            {},
+            {"start_time": "2021-01-02T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
+            {},
+            {},
+        ),
+        (
+            "test_start_time_passed_by_body_json",
+            RequestOptionType.body_json,
+            "start_time",
+            {},
+            {},
+            {"start_time": "2021-01-02T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
+            {},
+        ),
+        (
+            "test_start_time_passed_by_body_data",
+            RequestOptionType.body_data,
+            "start_time",
+            {},
+            {},
+            {},
+            {"start_time": "2021-01-02T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
+        ),
+    ],
+)
+def test_request_option(test_name, pass_by, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
+    start_request_option = RequestOption(pass_by, field_name) if pass_by else None
+    end_request_option = RequestOption(pass_by, "endtime") if pass_by else None
+    slicer = DatetimeStreamSlicer(
+        start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000"),
+        end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
+        step="1d",
+        cursor_field=InterpolatedString(cursor_field),
+        datetime_format=datetime_format,
+        lookback_window=InterpolatedString("0d"),
+        start_time_option=start_request_option,
+        end_time_option=end_request_option,
+        config=config,
+    )
+    stream_slice = {cursor_field: "2021-01-02T00:00:00.000000+0000", "end_date": "2021-01-04T00:00:00.000000+0000"}
+
+    stream_slices = slicer.stream_slices(SyncMode.incremental, None)
+    print(f"stream_slices: {stream_slices}")
+    slicer.update_cursor(stream_slice)
+    print(f"state: {slicer.get_stream_state()}")
+
+    assert expected_req_params == slicer.request_params()
+    assert expected_headers == slicer.request_headers()
+    assert expected_body_json == slicer.request_body_json()
+    assert expected_body_data == slicer.request_body_data()
 
 
 if __name__ == "__main__":
