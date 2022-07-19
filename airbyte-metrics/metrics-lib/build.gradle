@@ -11,11 +11,11 @@ dependencies {
     implementation libs.otel.semconv
     implementation libs.otel.sdk
     implementation libs.otel.sdk.testing
+    implementation libs.micrometer.statsd
     implementation platform(libs.otel.bom)
     implementation("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
-    implementation 'io.micrometer:micrometer-registry-statsd:1.9.2'
 
     implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
 
