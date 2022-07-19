@@ -13,7 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
 
 class OktaStream(HttpStream, ABC):
@@ -241,8 +241,12 @@ class OktaOauth2Authenticator(Oauth2Authenticator):
 
     def refresh_access_token(self) -> Tuple[str, int]:
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body(),
-                                        auth=(self.client_id, self.client_secret))
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=self.get_refresh_request_body(),
+                auth=(self.client_id, self.client_secret),
+            )
             response.raise_for_status()
             response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
