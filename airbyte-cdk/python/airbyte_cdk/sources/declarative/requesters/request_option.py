@@ -43,7 +43,7 @@ class RequestOption:
         return self._option_type
 
     @property
-    def field_name(self) -> Optional[RequestOptionType]:
+    def field_name(self) -> Optional[str]:
         return self._field_name
 
     def is_path(self):
