@@ -16,7 +16,7 @@ public class MetricClientFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetricClientFactory.class);
 
-  private static final String DATADOG_METRIC_CLIENT = "datadog";
+  static final String DATADOG_METRIC_CLIENT = "datadog";
   private static final String OTEL_METRIC_CLIENT = "otel";
 
   private static final Configs configs = new EnvConfigs();

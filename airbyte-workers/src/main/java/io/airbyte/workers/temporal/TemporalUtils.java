@@ -11,11 +11,9 @@ import com.uber.m3.tally.StatsReporter;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.metrics.lib.MicroMeterRegistryFactory;
 import io.airbyte.scheduler.models.JobRunConfig;
-import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.statsd.StatsdConfig;
-import io.micrometer.statsd.StatsdMeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
 import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.api.namespace.v1.NamespaceConfig;
@@ -98,47 +96,25 @@ public class TemporalUtils {
   private static WorkflowServiceStubsOptions getCloudTemporalOptions() {
     final InputStream clientCert = new ByteArrayInputStream(configs.getTemporalCloudClientCert().getBytes(StandardCharsets.UTF_8));
     final InputStream clientKey = new ByteArrayInputStream(configs.getTemporalCloudClientKey().getBytes(StandardCharsets.UTF_8));
+    WorkflowServiceStubsOptions.Builder optionBuilder;
     try {
-      StatsdConfig config = getDatadogStatsDConfig();
-
-      MeterRegistry registry = new StatsdMeterRegistry(config, Clock.SYSTEM);
-
-      StatsReporter reporter = new MicrometerClientStatsReporter(registry);
-      Scope scope = new RootScopeBuilder()
-          .reporter(reporter)
-          .reportEvery(com.uber.m3.util.Duration.ofSeconds(10));
-      return WorkflowServiceStubsOptions.newBuilder()
+      optionBuilder = WorkflowServiceStubsOptions.newBuilder()
           .setSslContext(SimpleSslContextBuilder.forPKCS8(clientCert, clientKey).build())
-          .setTarget(configs.getTemporalCloudHost())
-          .setMetricsScope(scope)
-          .build();
+          .setTarget(configs.getTemporalCloudHost());
     } catch (final SSLException e) {
       log.error("SSL Exception occurred attempting to establish Temporal Cloud options.");
       throw new RuntimeException(e);
     }
-  }
 
-  private static StatsdConfig getDatadogStatsDConfig() {
-    return new StatsdConfig() {
-
-      /**
-       * @return
-       */
-      @Override
-      public String host() {
-        return configs.getDDAgentHost();
-      }
-
-      /**
-       * @param key Key to lookup in the config.
-       * @return
-       */
-      @Override
-      public String get(String key) {
-        return null;
-      }
-
-    };
+    MeterRegistry registry = MicroMeterRegistryFactory.getMeterRegistry();
+    if (registry != null) {
+      StatsReporter reporter = new MicrometerClientStatsReporter(registry);
+      Scope scope = new RootScopeBuilder()
+          .reporter(reporter)
+          .reportEvery(com.uber.m3.util.Duration.ofSeconds(10));
+      optionBuilder.setMetricsScope(scope);
+    }
+    return optionBuilder.build();
   }
 
   @VisibleForTesting

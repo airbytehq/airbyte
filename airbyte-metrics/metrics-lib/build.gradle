@@ -15,6 +15,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-api")
     implementation("io.opentelemetry:opentelemetry-sdk")
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+    implementation 'io.micrometer:micrometer-registry-statsd:1.9.2'
 
     implementation 'com.datadoghq:java-dogstatsd-client:4.0.0'
 

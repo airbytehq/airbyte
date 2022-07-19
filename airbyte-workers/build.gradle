@@ -19,7 +19,6 @@ dependencies {
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
     implementation libs.flyway.core
-    implementation 'io.micrometer:micrometer-registry-otlp:1.9.2'
     implementation 'io.micrometer:micrometer-registry-statsd:1.9.2'
 
     implementation project(':airbyte-analytics')
