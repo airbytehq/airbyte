@@ -101,13 +101,21 @@ class ConditionalPaginator(Paginator, ABC):
         }
 
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
-        body_data = self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None)
-        print(f"body_data: {body_data}")
-        print(f"type: {type(body_data)}")
-        return {
-            **self._get_request_options(RequestOptionType.body_data),
-            **self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None),
-        }
+        request_options = self._get_request_options(RequestOptionType.body_data)
+        request_options_from_provider = self._request_options_provider.request_body_data(
+            stream_state=None, stream_slice=None, next_page_token=None
+        )
+        if not request_options and not request_options_from_provider:
+            return {}
+        if request_options and not request_options_from_provider:
+            return request_options
+        elif request_options_from_provider and not request_options:
+            return request_options_from_provider
+        elif isinstance(request_options_from_provider, str):
+            # convert request_options to "k1=v1&k2=v2" string then join the request options
+            return "&".join([*[f"{k}={v}" for k, v in request_options.items()], request_options_from_provider])
+        else:
+            return {**request_options, **request_options_from_provider}
 
     def request_body_json(self) -> Mapping[str, Any]:
         return {
@@ -115,7 +123,7 @@ class ConditionalPaginator(Paginator, ABC):
             **self._request_options_provider.request_body_json(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def _get_request_options(self, option_type):
+    def _get_request_options(self, option_type) -> Mapping[str, Any]:
         options = {}
         if self._page_token_option.option_type == option_type:
             if option_type != RequestOptionType.path and self._token:

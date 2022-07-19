@@ -17,66 +17,88 @@ from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_req
 
 
 @pytest.mark.parametrize(
-    "test_name, stop_condition_template, pass_by, expected_next_page_token",
+    "test_name, stop_condition_template, pass_by, body_data, expected_next_page_token",
     [
-        ("test_stop_pagination_from_response_body", "{{ not decoded_response['accounts'] }}", RequestOptionType.body_json, None),
+        (
+            "test_stop_pagination_from_response_body",
+            "{{ not decoded_response['accounts'] }}",
+            RequestOptionType.body_json,
+            {"data": "data"},
+            None,
+        ),
         (
             "test_stop_pagination_from_config",
             "{{ config['response_override'] == decoded_response['_metadata']['content'] }}",
             RequestOptionType.body_json,
+            {"data": "data"},
             None,
         ),
         (
             "test_continue_pagination_from_response_body",
             "{{ decoded_response['end'] == decoded_response['total'] - 1 }}",
             RequestOptionType.body_json,
+            {"data": "data"},
+            {"next_page_token": 99},
+        ),
+        (
+            "test_continue_pagination_from_response_body_body_data_str",
+            "{{ decoded_response['end'] == decoded_response['total'] - 1 }}",
+            RequestOptionType.body_data,
+            "data=data",
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_from_response_headers",
             "{{ decoded_response['headers']['has_more'] }}",
             RequestOptionType.body_json,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_from_last_records_body_json",
             "{{ last_records[-1]['more_records'] == False }}",
             RequestOptionType.body_json,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_from_last_records_body_data",
             "{{ last_records[-1]['more_records'] == False }}",
             RequestOptionType.body_data,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_from_last_records_params",
             "{{ last_records[-1]['more_records'] == False }}",
             RequestOptionType.request_parameter,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_from_last_records_header",
             "{{ last_records[-1]['more_records'] == False }}",
             RequestOptionType.header,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_from_last_records_path",
             "{{ last_records[-1]['more_records'] == False }}",
             RequestOptionType.path,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
         (
             "test_continue_pagination_for_empty_dict_evaluates_false",
             "{{ decoded_response['characters'] }}",
             RequestOptionType.body_json,
+            {"data": "data"},
             {"next_page_token": 99},
         ),
     ],
 )
-def test_interpolated_conditional_paginator(test_name, stop_condition_template, pass_by, expected_next_page_token):
+def test_interpolated_conditional_paginator(test_name, stop_condition_template, pass_by, body_data, expected_next_page_token):
     decoder = JsonDecoder()
     config = {"response_override": "stop_if_you_see_me"}
 
@@ -87,7 +109,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     pass_by_to_kwargs = {
         RequestOptionType.request_parameter: {"param": "param"},
         RequestOptionType.header: {"header": "header"},
-        RequestOptionType.body_data: {"data": "data"},
+        RequestOptionType.body_data: body_data,
     }
 
     request_options_provider = InterpolatedRequestOptionsProvider(
@@ -122,7 +144,9 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     assert next_page_token == expected_next_page_token
     for option_type, mapping in pass_by_to_mapping.items():
         if option_type == pass_by and expected_next_page_token:
-            if option_type == RequestOptionType.path:
+            if isinstance(body_data, str) and pass_by == RequestOptionType.body_data:
+                assert mapping == "from=99&data=data"
+            elif option_type == RequestOptionType.path:
                 assert mapping == "99"
             else:
                 assert mapping == {**{"from": 99}, **pass_by_to_kwargs.get(option_type, {})}
