@@ -11,7 +11,7 @@ const GroupTitle = styled.div`
   vertical-align: middle;
 
   & > div {
-    min-width: 250px;
+    min-width: 350px;
     display: inline-block;
   }
 `;
