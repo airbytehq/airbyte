@@ -17,7 +17,7 @@ class JsonlFormat(BaseModel):
     'This connector uses <a href="https://arrow.apache.org/docs/python/json.html" target="_blank">PyArrow</a> for JSON Lines (jsonl) file parsing.'
 
     class Config:
-        title = "jsonl"
+        title = "Jsonl"
 
     filetype: str = Field(
         "jsonl",

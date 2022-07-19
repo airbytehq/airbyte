@@ -162,7 +162,7 @@
             }
           },
           {
-            "title": "jsonl",
+            "title": "Jsonl",
             "description": "This connector uses <a href=\"https://arrow.apache.org/docs/python/json.html\" target=\"_blank\">PyArrow</a> for JSON Lines (jsonl) file parsing.",
             "type": "object",
             "properties": {
