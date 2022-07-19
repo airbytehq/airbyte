@@ -43,5 +43,3 @@ class JinjaInterpolation(Interpolation):
             # The string is a static value, not a jinja template
             # It can be returned as is
             return s
-        except UndefinedError:
-            return None

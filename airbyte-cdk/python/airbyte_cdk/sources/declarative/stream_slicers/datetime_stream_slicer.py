@@ -121,14 +121,14 @@ class DatetimeStreamSlicer(StreamSlicer):
         lookback_delta = self._parse_timedelta(self._lookback_window.eval(self._config, **kwargs) if self._lookback_window else "0d")
         start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
         start_datetime = min(start_datetime, end_datetime)
-        if self._cursor_field.eval(self._config) in stream_state:
+        if self._cursor_field.eval(self._config, stream_state=stream_state) in stream_state:
             cursor_datetime = self.parse_date(stream_state[self._cursor_field.eval(self._config)])
         else:
             cursor_datetime = start_datetime
         start_datetime = max(cursor_datetime, start_datetime)
 
         dates = self._partition_daterange(start_datetime, end_datetime, self._step)
-        state_date = stream_state.get(self._cursor_field.eval(self._config))
+        state_date = stream_state.get(self._cursor_field.eval(self._config, stream_state=stream_state))
         if state_date:
             dates_later_than_state = [d for d in dates if d[self._stream_slice_field_start.eval(self._config)] > state_date]
         else:
