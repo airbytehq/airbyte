@@ -40,25 +40,25 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
   - condition: airbyte-bootloader.enabled
     name: airbyte-bootloader
-    repository: "https://xpuska513.github.io/aribyte-oss/"
+    repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.43.3
   - condition: temporal.enabled
     name: temporal
-    repository: "https://xpuska513.github.io/aribyte-oss/"
+    repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.43.3
   - condition: webapp.enabled
     name: webapp
-    repository: "https://xpuska513.github.io/aribyte-oss/"
+    repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.43.3
   - condition: server.enabled
     name: server
-    repository: "https://xpuska513.github.io/aribyte-oss/"
+    repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.43.3
   - condition: worker.enabled
     name: worker
-    repository: "https://xpuska513.github.io/aribyte-oss/"
+    repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.43.3
   - condition: pod-sweeper.enabled
     name: pod-sweeper
-    repository: "https://xpuska513.github.io/aribyte-oss/"
+    repository: "https://airbytehq.github.io/helm-charts/"
     version: 0.43.3
