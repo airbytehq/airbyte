@@ -57,7 +57,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._stream_state_field = stream_state_field or cursor_field
         if isinstance(self._stream_state_field, str):
             self._stream_state_field = InterpolatedString(string=self._stream_state_field)
-        self._request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         self._cursor = None
         self._lookback_window = lookback_window
 
@@ -158,28 +157,16 @@ class DatetimeStreamSlicer(StreamSlicer):
         return datetime.timedelta(**time_params)
 
     def request_params(self) -> Mapping[str, Any]:
-        return {
-            **self._get_request_options(RequestOptionType.request_parameter),
-            **self._request_options_provider.request_params(stream_state=None, stream_slice=None, next_page_token=None),
-        }
+        return self._get_request_options(RequestOptionType.request_parameter)
 
     def request_headers(self) -> Mapping[str, Any]:
-        return {
-            **self._get_request_options(RequestOptionType.header),
-            **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
-        }
+        return self._get_request_options(RequestOptionType.header)
 
     def request_body_data(self) -> Optional[Union[Mapping, str]]:
-        return {
-            **self._get_request_options(RequestOptionType.body_data),
-            **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
-        }
+        return self._get_request_options(RequestOptionType.body_data)
 
     def request_body_json(self) -> Optional[Mapping]:
-        return {
-            **self._get_request_options(RequestOptionType.body_json),
-            **self._request_options_provider.request_body_json(stream_state=None, stream_slice=None, next_page_token=None),
-        }
+        return self._get_request_options(RequestOptionType.body_json)
 
     def _get_request_options(self, option_type):
         options = {}
