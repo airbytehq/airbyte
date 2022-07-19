@@ -157,10 +157,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
         return datetime.timedelta(**time_params)
 
-    @staticmethod
-    def _is_start_date_valid(start_date: datetime, end_date: datetime) -> bool:
-        return start_date <= end_date
-
     def request_params(self) -> Mapping[str, Any]:
         return {
             **self._get_request_options(RequestOptionType.request_parameter),
