@@ -52,11 +52,10 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
-    final StringBuilder appendedQueries = new StringBuilder();
+    // Note: ClickHouse does not support multi query
     for (final String query : queries) {
-      appendedQueries.append(query);
+      database.execute(query);
     }
-    database.execute(appendedQueries.toString());
   }
 
   @Override
