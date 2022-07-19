@@ -14,7 +14,17 @@ from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
-from source_bing_ads.reports import ReportsMixin
+from source_bing_ads.reports import (
+    ReportsMixin, 
+    ALL_CONVERSION_FIELDS, 
+    ALL_REVENUE_FIELDS,
+    AVERAGE_FIELDS, 
+    CONVERSION_FIELDS, 
+    LOW_QUALITY_FIELDS, 
+    HISTORICAL_FIELDS,
+    REVENUE_FIELDS,
+    BUDGET_FIELDS
+)
 from suds import sudsobject
 
 CACHE: VcrCache = VcrCache()
@@ -332,29 +342,50 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "campaign_performance_report"
-    primary_key = ["TimePeriod", "Network", "DeviceType", "CampaignId"]
-
-    report_columns = [
-        "AccountName",
-        "AccountNumber",
+    primary_key = [
         "AccountId",
-        "TimePeriod",
         "CampaignId",
-        "CampaignName",
+        "TimePeriod", 
+        "CurrencyCode",
+        "AdDistribution",
         "DeviceType",
-        "Network",
+        "Network", 
+        "DeliveredMatchType",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType"
+    ]
+    
+    report_columns = [
+        *primary_key,
+        "CampaignStatus",
         "Impressions",
         "Clicks",
         "Ctr",
-        "AverageCpc",
         "Spend",
+        "CostPerConversion",
+        "QualityScore",
+        "AdRelevance",
+        "LandingPageExperience",
+        "PhoneImpressions",
+        "PhoneCalls",
+        "Ptr",
+        "Assists",
         "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "Conversions",
-        "CostPerConversion"
+        "CostPerAssist",
+        "CustomParameters",
+        "ViewThroughConversions",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *AVERAGE_FIELDS, 
+        *CONVERSION_FIELDS, 
+        *LOW_QUALITY_FIELDS, 
+        *HISTORICAL_FIELDS,
+        *REVENUE_FIELDS,
+        *BUDGET_FIELDS,
     ]
-
 
 class CampaignPerformanceReportHourly(CampaignPerformanceReport):
     report_aggregation = "Hourly"
