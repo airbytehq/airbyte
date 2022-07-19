@@ -330,10 +330,10 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   private ConnectorJobOutput getCheckResponse(final CheckConnectionInput checkInput) {
-    final int attemptCreationVersion =
+    final int checkJobOutputVersion =
         Workflow.getVersion(CHECK_JOB_OUTPUT_TAG, Workflow.DEFAULT_VERSION, CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION);
 
-    if (attemptCreationVersion < CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION) {
+    if (checkJobOutputVersion < CHECK_JOB_OUTPUT_TAG_CURRENT_VERSION) {
       final StandardCheckConnectionOutput checkOutput = runMandatoryActivityWithOutput(checkActivity::run, checkInput);
       return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(checkOutput);
     }
