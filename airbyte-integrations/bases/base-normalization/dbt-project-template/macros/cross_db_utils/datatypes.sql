@@ -148,6 +148,10 @@
     TIMESTAMPTZ
 {% endmacro %}
 
+{% macro clickhouse__type_timestamp_with_timezone() %}
+    DateTime64
+{% endmacro %}
+
 
 {# timestamp without time zone  -------------------------------------------------     #}
 
@@ -259,5 +263,5 @@
 {%- endmacro -%}
 
 {% macro clickhouse__type_date() %}
-    Date
+    Date32
 {% endmacro %}
