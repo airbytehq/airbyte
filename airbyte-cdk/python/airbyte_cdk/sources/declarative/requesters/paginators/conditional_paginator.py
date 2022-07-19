@@ -82,7 +82,7 @@ class ConditionalPaginator(Paginator, ABC):
         """
 
     def path(self):
-        if self._token and self._page_token_option.option_type == RequestOptionType.path:
+        if self._token and self._page_token_option.pass_by == RequestOptionType.path:
             # Replace url base to only return the path
             return str(self._token).replace(self._url_base.eval(self._config), "")
         else:
@@ -121,7 +121,7 @@ class ConditionalPaginator(Paginator, ABC):
 
     def _get_request_options(self, option_type) -> Mapping[str, Any]:
         options = {}
-        if self._page_token_option.option_type == option_type:
+        if self._page_token_option.pass_by == option_type:
             if option_type != RequestOptionType.path and self._token:
                 options[self._page_token_option.field_name] = self._token
         return options

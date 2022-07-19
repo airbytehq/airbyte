@@ -32,13 +32,13 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_datetime: MinMaxDatetime,
         end_datetime: MinMaxDatetime,
         step: str,
-        cursor_field: InterpolatedString,  # from record
+        cursor_field: InterpolatedString,
         datetime_format: str,
         config: Config,
         start_time_option: Optional[RequestOption] = None,
         end_time_option: Optional[RequestOption] = None,
-        stream_state_field_start: Optional[str] = None,  # start time
-        stream_state_field_end: Optional[str] = None,  # end time
+        stream_state_field_start: Optional[str] = None,
+        stream_state_field_end: Optional[str] = None,
         lookback_window: Optional[InterpolatedString] = None,
     ):
         """
@@ -86,6 +86,11 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._start_datetime.datetime_format = self._datetime_format
         if not self._end_datetime.datetime_format:
             self._end_datetime.datetime_format = self._datetime_format
+
+        if self._start_time_option and self._start_time_option.pass_by == RequestOptionType.path:
+            raise ValueError("Start time cannot be passed by path")
+        if self._end_time_option and self._end_time_option.pass_by == RequestOptionType.path:
+            raise ValueError("End time cannot be passed by path")
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
@@ -196,10 +201,9 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def _get_request_options(self, option_type):
         options = {}
-        if self._start_time_option and self._start_time_option.option_type == option_type:
-            if option_type != RequestOptionType.path and self._cursor:
+        if self._start_time_option and self._start_time_option.pass_by == option_type:
+            if self._cursor:
                 options[self._start_time_option.field_name] = self._cursor
-        if self._end_time_option and self._end_time_option.option_type == option_type:
-            if option_type != RequestOptionType.path:
-                options[self._end_time_option.field_name] = self._cursor_end
+        if self._end_time_option and self._end_time_option.pass_by == option_type:
+            options[self._end_time_option.field_name] = self._cursor_end
         return options

@@ -108,15 +108,15 @@ class LimitPaginator(ConditionalPaginator):
         return len(last_records) < self._page_size
 
     def _create_request_options_provider(self, limit_value, limit_option: RequestOption):
-        if limit_option.option_type == RequestOptionType.path:
+        if limit_option.pass_by == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
-        elif limit_option.option_type == RequestOptionType.request_parameter:
+        elif limit_option.pass_by == RequestOptionType.request_parameter:
             return InterpolatedRequestOptionsProvider(request_parameters={limit_option.field_name: limit_value}, config=self._config)
-        elif limit_option.option_type == RequestOptionType.header:
+        elif limit_option.pass_by == RequestOptionType.header:
             return InterpolatedRequestOptionsProvider(request_headers={limit_option.field_name: limit_value}, config=self._config)
-        elif limit_option.option_type == RequestOptionType.body_json:
+        elif limit_option.pass_by == RequestOptionType.body_json:
             return InterpolatedRequestOptionsProvider(request_body_json={limit_option.field_name: limit_value}, config=self._config)
-        elif limit_option.option_type == RequestOptionType.body_data:
+        elif limit_option.pass_by == RequestOptionType.body_data:
             return InterpolatedRequestOptionsProvider(request_body_data={limit_option.field_name: limit_value}, config=self._config)
         else:
             raise ValueError(f"Unexpected request option type. Got :{limit_option}")
