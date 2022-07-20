@@ -113,7 +113,6 @@ replicaCount: 1
 image:
   repository: airbyte/worker
   pullPolicy: IfNotPresent
-  tag: 0.39.23-alpha
 
 ## @param worker.podAnnotations [object] Add extra annotations to the worker pod(s)
 ##

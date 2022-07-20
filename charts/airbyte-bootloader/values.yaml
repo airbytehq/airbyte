@@ -15,7 +15,6 @@ enabled: true
 image:
   repository: airbyte/bootloader
   pullPolicy: IfNotPresent
-  tag: 0.39.23-alpha
 
 ## @param bootloader.podAnnotations [object] Add extra annotations to the bootloader pod
 ##

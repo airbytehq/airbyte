@@ -21,7 +21,6 @@ replicaCount: 1
 image:
   repository: airbyte/webapp
   pullPolicy: IfNotPresent
-  tag: 0.39.23-alpha
 
 ## @param webapp.podAnnotations [object] Add extra annotations to the webapp pod(s)
 ##

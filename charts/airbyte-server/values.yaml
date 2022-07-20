@@ -67,7 +67,6 @@ replicaCount: 1
 image:
   repository: airbyte/server
   pullPolicy: IfNotPresent
-  tag: 0.39.23-alpha
 
 ## @param server.podAnnotations [object] Add extra annotations to the server pod
 ##

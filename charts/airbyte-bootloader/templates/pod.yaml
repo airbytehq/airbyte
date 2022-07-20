@@ -29,7 +29,7 @@ spec:
   {{- end }}
   containers:
     - name: airbyte-bootloader-container
-      image: {{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
+      image: {{ printf "%s:%s" .Values.image.repository (default .Chart.AppVersion .Values.image.tag) }}
       imagePullPolicy: "{{ .Values.image.pullPolicy }}"
       env:
         {{- if eq .Values.global.deploymentMode "oss"  }}
