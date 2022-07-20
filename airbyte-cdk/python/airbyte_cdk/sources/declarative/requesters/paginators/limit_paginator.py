@@ -17,7 +17,7 @@ from airbyte_cdk.sources.declarative.types import Config
 class LimitPaginator(Paginator):
     """
     Limit paginator.
-    Requests pages of results with a maximum number of records defined by limit_value.
+    Requests pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
     Examples:
         1.
@@ -68,8 +68,6 @@ class LimitPaginator(Paginator):
             page_token:
               option_type: "request_parameter"
               field_name: "page"
-        `
-
     """
 
     def __init__(
