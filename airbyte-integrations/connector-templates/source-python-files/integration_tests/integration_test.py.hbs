@@ -12,7 +12,7 @@ import pytest
 from source_{{snakeCase name}}.source import Source{{properCase name}}
 from source_{{snakeCase name}}.stream import {{properCase name}}Stream
 
-from airbyte_cdk.sources.streams.files.test_framework.custom_integration_test import AbstractFilesStreamIntegrationTest
+from airbyte_cdk.sources.streams.files.test_framework import AbstractFilesStreamIntegrationTest
 
 
 # This is a custom integration test specifically for files sources. 
@@ -22,7 +22,6 @@ from airbyte_cdk.sources.streams.files.test_framework.custom_integration_test im
 
 
 HERE = Path(__file__).resolve().parent
-SAMPLE_DIR = HERE.joinpath("sample_files/")
 LOGGER = logging.getLogger("airbyte")
 
 
