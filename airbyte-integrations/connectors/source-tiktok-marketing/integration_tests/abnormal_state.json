@@ -9,43 +9,43 @@
     "modify_time": "2030-08-30 09:16:10"
   },
 
-  "ads_reports": {
+  "ads_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
-  "advertisers_reports": {
+  "advertisers_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
-  "ad_groups_reports": {
+  "ad_groups_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
-  "campaigns_reports": {
+  "campaigns_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
 
-  "ads_audience_reports": {
+  "ads_audience_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
-  "advertisers_audience_reports": {
+  "advertisers_audience_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
-  "ad_group_audience_reports": {
+  "ad_group_audience_reports_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }
   },
-  "campaigns_audience_reports_by_country": {
+  "campaigns_audience_reports_by_country_daily": {
     "dimensions": {
       "stat_time_day": "2030-01-01"
     }

@@ -191,24 +191,24 @@ public class MSSQLDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
-            "ssl_method", "ssl_method",
-            "host", "localhost",
-            "port", "1773",
-            "database", "db",
-            "username", "username",
-            "password", "verysecure"));
+        "ssl_method", "ssl_method",
+        "host", "localhost",
+        "port", "1773",
+        "database", "db",
+        "username", "username",
+        "password", "verysecure"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(String extraParam) {
 
     return Jsons.jsonNode(com.google.common.collect.ImmutableMap.of(
-            "ssl_method", "ssl_method",
-            "host", "localhost",
-            "port", "1773",
-            "database", "db",
-            "username", "username",
-            "password", "verysecure",
-            "jdbc_url_params", extraParam));
+        "ssl_method", "ssl_method",
+        "host", "localhost",
+        "port", "1773",
+        "database", "db",
+        "username", "username",
+        "password", "verysecure",
+        "jdbc_url_params", extraParam));
   }
 
 }

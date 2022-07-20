@@ -5,10 +5,10 @@ import styled from "styled-components";
 import ImageBlock from "components/ImageBlock";
 
 interface IProps {
-  values: {
+  values: Array<{
     name: string;
     connector: string;
-  }[];
+  }>;
   enabled?: boolean;
   entity: "source" | "destination";
 }

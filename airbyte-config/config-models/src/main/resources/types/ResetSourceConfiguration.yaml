@@ -4,11 +4,12 @@
 title: ResetSourceConfiguration
 description: configuration of the reset source
 type: object
-additionalProperties: true
+additionalProperties: false
 required:
   - streamsToReset
 properties:
   streamsToReset:
     type: array
     items:
-      "$ref": StreamDescriptor.yaml
+      type: object
+      existingJavaType: io.airbyte.protocol.models.StreamDescriptor

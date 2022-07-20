@@ -11,7 +11,7 @@ import ToolTip from "components/ToolTip";
 import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
 import { useListJobs } from "services/job/JobService";
@@ -53,8 +53,7 @@ const SyncButton = styled(LoadingButton)`
 const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
-  const { hasFeature } = useFeatureService();
-  const allowSync = hasFeature(FeatureItem.AllowSync);
+  const allowSync = useFeature(FeatureItem.AllowSync);
 
   const jobs = useListJobs({
     configId: connection.connectionId,
@@ -87,7 +86,7 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
 
   const resetDataBtn = (
     <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={onResetDataButtonClick}>
-      <FormattedMessage id={"connection.resetData"} />
+      <FormattedMessage id="connection.resetData" />
     </Button>
   );
 
@@ -99,11 +98,11 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
       onClick={() => startAction({ action: onSync })}
     >
       {showFeedback ? (
-        <FormattedMessage id={"sources.syncingNow"} />
+        <FormattedMessage id="sources.syncingNow" />
       ) : (
         <>
           <TryArrow icon={faRedoAlt} />
-          <FormattedMessage id={"sources.syncNow"} />
+          <FormattedMessage id="sources.syncNow" />
         </>
       )}
     </SyncButton>
@@ -114,14 +113,14 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating })
       <StyledContentCard
         title={
           <Title>
-            <FormattedMessage id={"sources.syncHistory"} />
+            <FormattedMessage id="sources.syncHistory" />
             {connection.status === ConnectionStatus.active && (
               <div>
                 <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id={"connection.pendingSync"} />
+                  <FormattedMessage id="connection.pendingSync" />
                 </ToolTip>
                 <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id={"connection.pendingSync"} />
+                  <FormattedMessage id="connection.pendingSync" />
                 </ToolTip>
               </div>
             )}

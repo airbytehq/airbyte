@@ -58,10 +58,10 @@ const BatchEditProvider: React.FC<{
   const allChecked = selectedBatchNodes.size === nodes.length;
 
   const ctx: BatchContext = {
-    isActive: isActive,
+    isActive,
     toggleNode: toggle,
     onCheckAll: () => (allChecked ? reset() : nodes.forEach((n) => add(n.id))),
-    allChecked: allChecked,
+    allChecked,
     selectedBatchNodeIds: Array.from(selectedBatchNodes).filter((node): node is string => node !== undefined),
     selectedBatchNodes: nodes.filter((n) => selectedBatchNodes.has(n.id)),
     onChangeOption: (newOptions) => setOptions({ ...options, ...newOptions }),

@@ -24,6 +24,26 @@
       "patternProperties": {
         ".+": {}
       }
+    },
+    "something2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "oneOfOne": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "oneOfTwo": {
+              "type": "string"
+            }
+          }
+        }
+      ]
     }
   }
 }

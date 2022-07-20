@@ -33,7 +33,7 @@ export const Control: React.FC<ControlProps> = ({
   switch (typeof property.examples) {
     case "object":
       if (Array.isArray(property.examples)) {
-        placeholder = property.examples[0] + "";
+        placeholder = `${property.examples[0]}`;
       }
       break;
     case "number":
@@ -152,18 +152,17 @@ export const Control: React.FC<ControlProps> = ({
         disabled={disabled}
       />
     );
-  } else {
-    const inputType = property.type === "integer" ? "number" : "text";
-
-    return (
-      <Input
-        {...field}
-        placeholder={placeholder}
-        autoComplete="off"
-        type={inputType}
-        value={value ?? ""}
-        disabled={disabled}
-      />
-    );
   }
+  const inputType = property.type === "integer" ? "number" : "text";
+
+  return (
+    <Input
+      {...field}
+      placeholder={placeholder}
+      autoComplete="off"
+      type={inputType}
+      value={value ?? ""}
+      disabled={disabled}
+    />
+  );
 };

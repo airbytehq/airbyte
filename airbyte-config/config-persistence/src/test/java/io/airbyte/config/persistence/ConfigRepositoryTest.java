@@ -28,12 +28,15 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.db.Database;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.jooq.Result;
 import org.junit.jupiter.api.AfterEach;
@@ -111,22 +114,6 @@ class ConfigRepositoryTest {
     configRepository.getStandardWorkspaceFromConnection(connectionId, isTombstone);
 
     verify(configRepository).getStandardWorkspace(WORKSPACE_ID, isTombstone);
-  }
-
-  @Test
-  void testGetConnectionState() throws Exception {
-    final UUID connectionId = UUID.randomUUID();
-    final State state = new State().withState(Jsons.deserialize("{ \"cursor\": 1000 }"));
-    final StandardSyncState connectionState = new StandardSyncState().withConnectionId(connectionId).withState(state);
-
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), StandardSyncState.class))
-        .thenThrow(new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_STATE, connectionId));
-    assertEquals(Optional.empty(), configRepository.getConnectionState(connectionId));
-
-    reset(configPersistence);
-    when(configPersistence.getConfig(ConfigSchema.STANDARD_SYNC_STATE, connectionId.toString(), StandardSyncState.class))
-        .thenReturn(connectionState);
-    assertEquals(Optional.of(state), configRepository.getConnectionState(connectionId));
   }
 
   @Test
@@ -446,6 +433,33 @@ class ConfigRepositoryTest {
 
     final var check = configRepository.healthCheck();
     assertFalse(check);
+  }
+
+  @Test
+  void testGetAllStreamsForConnection() throws Exception {
+    final UUID connectionId = UUID.randomUUID();
+    final AirbyteStream airbyteStream = new AirbyteStream().withName("stream1").withNamespace("namespace1");
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream().withStream(airbyteStream);
+    final AirbyteStream airbyteStream2 = new AirbyteStream().withName("stream2");
+    final ConfiguredAirbyteStream configuredStream2 = new ConfiguredAirbyteStream().withStream(airbyteStream2);
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(configuredStream, configuredStream2));
+
+    final StandardSync sync = new StandardSync()
+        .withCatalog(configuredCatalog);
+    doReturn(sync)
+        .when(configRepository)
+        .getStandardSync(connectionId);
+
+    final List<StreamDescriptor> result = configRepository.getAllStreamsForConnection(connectionId);
+    assertEquals(2, result.size());
+
+    assertTrue(
+        result.stream().anyMatch(
+            streamDescriptor -> streamDescriptor.getName().equals("stream1") && streamDescriptor.getNamespace().equals("namespace1")));
+    assertTrue(
+        result.stream().anyMatch(
+            streamDescriptor -> streamDescriptor.getName().equals("stream2") && streamDescriptor.getNamespace() == null));
+
   }
 
 }

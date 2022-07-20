@@ -86,14 +86,14 @@ const TransformationForm: React.FC<TransformationProps> = ({
   onDone,
   isNewTransformation,
 }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const operationService = useGetService<OperationService>("OperationService");
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
 
   const formik = useFormik({
     initialValues: transformation,
-    validationSchema: validationSchema,
+    validationSchema,
     onSubmit: async (values) => {
       await operationService.check(values);
       clearFormChange(formId);

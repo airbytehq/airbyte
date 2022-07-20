@@ -31,7 +31,6 @@
         "oneOf": [
           {
             "title": "Standard Inserts",
-            "additionalProperties": false,
             "required": ["method"],
             "properties": {
               "method": {
@@ -42,7 +41,6 @@
           },
           {
             "title": "GCS Staging",
-            "additionalProperties": false,
             "type": "object",
             "required": [
               "method",

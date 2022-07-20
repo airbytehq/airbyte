@@ -26,7 +26,7 @@ tests:
         extra_fields: no
         exact_order: no
         extra_records: no
-      timeout_seconds: 900
+      timeout_seconds: 3600
     # THIS TEST IS COMMENTED OUT BECAUSE OF
     # https://advertising.amazon.com/API/docs/en-us/info/release-notes#sandbox-deprecation-on-june-28-2022
     # - config_path: "secrets/config.json"
@@ -40,7 +40,7 @@ tests:
   full_refresh:
     - config_path: "secrets/config_test_account.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1800
+      timeout_seconds: 3600
     # THIS TEST IS COMMENTED OUT BECAUSE OF
     # https://advertising.amazon.com/API/docs/en-us/info/release-notes#sandbox-deprecation-on-june-28-2022
     # - config_path: "secrets/config.json"

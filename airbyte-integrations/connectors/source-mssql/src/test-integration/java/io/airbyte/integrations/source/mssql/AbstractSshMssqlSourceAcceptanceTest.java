@@ -37,10 +37,11 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
 
   private static final String STREAM_NAME = "dbo.id_and_name";
   private static final String STREAM_NAME2 = "dbo.starships";
+  private static final Network network = Network.newNetwork();
+  private static JsonNode config;
   private String dbName;
   private MSSQLServerContainer<?> db;
   private final SshBastionContainer bastion = new SshBastionContainer();
-  private static JsonNode config;
 
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
@@ -56,7 +57,7 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
     return ImmutableMap.builder()
         .put("host", Objects.requireNonNull(db.getContainerInfo().getNetworkSettings()
             .getNetworks()
-            .get(((Network.NetworkImpl) bastion.getNetWork()).getName())
+            .get(((Network.NetworkImpl) network).getName())
             .getIpAddress()))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
@@ -77,13 +78,13 @@ public abstract class AbstractSshMssqlSourceAcceptanceTest extends SourceAccepta
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2017-latest")
-        .withNetwork(bastion.getNetWork())
+        .withNetwork(network)
         .acceptLicense();
     db.start();
   }

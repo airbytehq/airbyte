@@ -3,7 +3,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
 import { useDefaultTransformation } from "../formConfig";
@@ -27,11 +27,10 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   onStartEditTransformation,
   onEndEditTransformation,
 }) => {
-  const formatMessage = useIntl().formatMessage;
-  const { hasFeature } = useFeatureService();
+  const { formatMessage } = useIntl();
 
-  const supportsNormalization = destDefinition.supportsNormalization;
-  const supportsTransformations = destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
+  const { supportsNormalization } = destDefinition;
+  const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && destDefinition.supportsDbt;
 
   const defaultTransformation = useDefaultTransformation();
 

@@ -28,13 +28,17 @@ public class WorkflowState {
   private boolean updated = false;
   private boolean cancelled = false;
   private boolean failed = false;
-  private boolean resetConnection = false;
-  private boolean continueAsReset = false;
+  @Deprecated
+  private final boolean resetConnection = false;
+  @Deprecated
+  private final boolean continueAsReset = false;
   private boolean retryFailedActivity = false;
   private boolean quarantined = false;
   private boolean success = true;
   private boolean cancelledForReset = false;
-  private boolean resetWithScheduling = false;
+  @Deprecated
+  private final boolean resetWithScheduling = false;
+  private boolean doneWaiting = false;
 
   public void setRunning(final boolean running) {
     final ChangedStateEvent event = new ChangedStateEvent(
@@ -84,22 +88,6 @@ public class WorkflowState {
     this.failed = failed;
   }
 
-  public void setResetConnection(final boolean resetConnection) {
-    final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.RESET,
-        resetConnection);
-    stateChangedListener.addEvent(id, event);
-    this.resetConnection = resetConnection;
-  }
-
-  public void setContinueAsReset(final boolean continueAsReset) {
-    final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.CONTINUE_AS_RESET,
-        continueAsReset);
-    stateChangedListener.addEvent(id, event);
-    this.continueAsReset = continueAsReset;
-  }
-
   public void setRetryFailedActivity(final boolean retryFailedActivity) {
     final ChangedStateEvent event = new ChangedStateEvent(
         StateField.RETRY_FAILED_ACTIVITY,
@@ -132,12 +120,12 @@ public class WorkflowState {
     this.cancelledForReset = cancelledForReset;
   }
 
-  public void setResetWithScheduling(final boolean resetWithScheduling) {
+  public void setDoneWaiting(final boolean doneWaiting) {
     final ChangedStateEvent event = new ChangedStateEvent(
-        StateField.RESET_WITH_SCHEDULING,
-        resetWithScheduling);
+        StateField.DONE_WAITING,
+        doneWaiting);
     stateChangedListener.addEvent(id, event);
-    this.resetWithScheduling = resetWithScheduling;
+    this.doneWaiting = doneWaiting;
   }
 
   // TODO: bmoric -> This is noisy when inpecting the list of event, it should be just a single reset
@@ -149,12 +137,10 @@ public class WorkflowState {
     this.setUpdated(false);
     this.setCancelled(false);
     this.setFailed(false);
-    this.setResetConnection(false);
-    this.setContinueAsReset(false);
     this.setRetryFailedActivity(false);
     this.setSuccess(false);
     this.setQuarantined(false);
-    this.setCancelledForReset(false);
+    this.setDoneWaiting(false);
   }
 
 }
