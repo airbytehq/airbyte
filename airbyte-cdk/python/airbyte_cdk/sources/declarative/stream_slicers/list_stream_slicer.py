@@ -25,6 +25,12 @@ class ListStreamSlicer(StreamSlicer):
         config: Config,
         request_option: Optional[RequestOption] = None,
     ):
+        """
+        :param slice_values: values to iterate over
+        :param cursor_field: name of the cursor field
+        :param config: connection config
+        :param request_option: Request option to configure the HTTP request
+        """
         if isinstance(slice_values, str):
             slice_values = ast.literal_eval(slice_values)
         if isinstance(cursor_field, str):
