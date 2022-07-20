@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.debezium.internals;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.DataTypeUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Properties;
@@ -19,19 +19,18 @@ import org.slf4j.LoggerFactory;
  * This is a custom debezium converter used in MySQL to handle the DATETIME data type. We need a
  * custom converter cause by default debezium returns the DATETIME values as numbers. We need to
  * convert it to proper format. Ref :
- * https://debezium.io/documentation/reference/1.4/development/converters.html This is built from
+ * https://debezium.io/documentation/reference/1.9/development/converters.html This is built from
  * reference with {@link io.debezium.connector.mysql.converters.TinyIntOneToBooleanConverter} If you
  * rename this class then remember to rename the datetime.type property value in
- * io.airbyte-integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties() (If you don't
- * rename, a test would still fail but it might be tricky to figure out where to change the property
- * name)
+ * {@link io.airbyte.integrations.source.mysql.MySqlCdcProperties#getDebeziumProperties(JsonNode)}
+ * (If you don't rename, a test would still fail but it might be tricky to figure out where to
+ * change the property name)
  */
-public class MySQLConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
+public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, RelationalColumn> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLConverter.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDateTimeConverter.class);
 
   private final String[] DATE_TYPES = {"DATE", "DATETIME", "TIME"};
-  private final String[] TEXT_TYPES = {"VARCHAR", "TEXT", "LONGTEXT", "TINYTEXT", "MEDIUMTEXT"};
 
   @Override
   public void configure(final Properties props) {}
@@ -40,22 +39,7 @@ public class MySQLConverter implements CustomConverter<SchemaBuilder, Relational
   public void converterFor(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
-    } else if (Arrays.stream(TEXT_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
-      registerText(field, registration);
     }
-  }
-
-  private void registerText(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    registration.register(SchemaBuilder.string(), x -> {
-      if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
-      }
-      if (x instanceof byte[]) {
-        return new String((byte[]) x, StandardCharsets.UTF_8);
-      } else {
-        return x.toString();
-      }
-    });
   }
 
   /**

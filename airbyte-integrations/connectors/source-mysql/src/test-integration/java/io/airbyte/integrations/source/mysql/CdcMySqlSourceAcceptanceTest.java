@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mysql;
 
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -157,7 +157,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Test
-  public void testIncrementalSyncFailedIfBinlogIsDeleted() throws Exception {
+  public void testIncrementalSyncShouldNotFailIfBinlogIsDeleted() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog = withSourceDefinedCursors(getConfiguredCatalog());
     // only sync incremental streams
     configuredCatalog.setStreams(
@@ -180,7 +180,7 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     // leaving only a single, empty binary log file with a numeric suffix of .000001
     executeQuery("RESET MASTER;");
 
-    assertThrows(Exception.class, () -> filterRecords(runRead(configuredCatalog, latestState)));
+    assertEquals(6, filterRecords(runRead(configuredCatalog, latestState)).size());
   }
 
 }
