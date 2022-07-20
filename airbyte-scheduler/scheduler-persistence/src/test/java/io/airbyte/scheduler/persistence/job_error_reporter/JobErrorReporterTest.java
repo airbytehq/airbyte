@@ -98,8 +98,8 @@ public class JobErrorReporterTest {
             .withName(DESTINATION_DEFINITION_NAME));
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
-    Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
+    Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
 
     jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, mJobSyncConfig);
 
@@ -149,13 +149,15 @@ public class JobErrorReporterTest {
 
     Mockito.when(configRepository.getSourceDefinitionFromConnection(CONNECTION_ID))
         .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPOSITORY)
             .withReleaseStage(SOURCE_RELEASE_STAGE)
             .withSourceDefinitionId(SOURCE_DEFINITION_ID)
             .withName(SOURCE_DEFINITION_NAME));
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);
-    Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
+    Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
+    Mockito.when(webUrlHelper.getConnectionUrl(WORKSPACE_ID, CONNECTION_ID)).thenReturn(CONNECTION_URL);
 
     Mockito.doThrow(new RuntimeException("some exception"))
         .when(jobErrorReportingClient)

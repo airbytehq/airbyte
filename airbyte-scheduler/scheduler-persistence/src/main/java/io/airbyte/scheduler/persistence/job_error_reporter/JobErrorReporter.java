@@ -39,7 +39,6 @@ public class JobErrorReporter {
   private static final String WORKSPACE_ID_META_KEY = "workspace_id";
   private static final String CONNECTION_ID_META_KEY = "connection_id";
   private static final String CONNECTION_URL_META_KEY = "connection_url";
-  private static final String CONNECTOR_TYPE_META_KEY = "connector_type";
   private static final String CONNECTOR_NAME_META_KEY = "connector_name";
   private static final String CONNECTOR_REPOSITORY_META_KEY = "connector_repository";
   private static final String CONNECTOR_DEFINITION_ID_META_KEY = "connector_definition_id";
@@ -79,7 +78,7 @@ public class JobErrorReporter {
           .toList();
 
       final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
-      final Map<String, String> connectionMetadata = getConnectionMetadata(workspace, connectionId);
+      final Map<String, String> connectionMetadata = getConnectionMetadata(workspace.getWorkspaceId(), connectionId);
 
       for (final FailureReason failureReason : traceMessageFailures) {
         final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
@@ -165,8 +164,8 @@ public class JobErrorReporter {
     });
   }
 
-  private Map<String, String> getConnectionMetadata(final StandardWorkspace workspace, final UUID connectionId) {
-    final String connectionUrl = webUrlHelper.getConnectionUrl(workspace.getWorkspaceId(), connectionId);
+  private Map<String, String> getConnectionMetadata(final UUID workspaceId, final UUID connectionId) {
+    final String connectionUrl = webUrlHelper.getConnectionUrl(workspaceId, connectionId);
     return Map.ofEntries(
         Map.entry(CONNECTION_ID_META_KEY, connectionId.toString()),
         Map.entry(CONNECTION_URL_META_KEY, connectionUrl));
@@ -174,7 +173,6 @@ public class JobErrorReporter {
 
   private Map<String, String> getDestinationMetadata(final StandardDestinationDefinition destinationDefinition) {
     return Map.ofEntries(
-        Map.entry(CONNECTOR_TYPE_META_KEY, "destination"),
         Map.entry(CONNECTOR_DEFINITION_ID_META_KEY, destinationDefinition.getDestinationDefinitionId().toString()),
         Map.entry(CONNECTOR_NAME_META_KEY, destinationDefinition.getName()),
         Map.entry(CONNECTOR_REPOSITORY_META_KEY, destinationDefinition.getDockerRepository()),
@@ -183,7 +181,6 @@ public class JobErrorReporter {
 
   private Map<String, String> getSourceMetadata(final StandardSourceDefinition sourceDefinition) {
     return Map.ofEntries(
-        Map.entry(CONNECTOR_TYPE_META_KEY, "source"),
         Map.entry(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString()),
         Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
         Map.entry(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository()),
