@@ -1,9 +1,8 @@
-{{- if .Values.temporal.enabled -}}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "common.names.fullname" . }}-temporal-dynamicconfig
+  name: {{ include "common.names.fullname" . }}-dynamicconfig
 data:
   "development.yaml": |
     # when modifying, remember to update the docker-compose version of this file in temporal/dynamicconfig/development.yaml
@@ -47,4 +46,3 @@ data:
     limit.blobSize.warn:
       - value: 10485760 # 10MB
         constraints: {}
-{{- end -}}
