@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "code": {
       "type": ["null", "string"]
@@ -27,7 +27,7 @@
       "type": ["null", "string"]
     },
     "is_assumption": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "suppress_zeroes": {
       "type": ["null", "string"]
@@ -51,7 +51,7 @@
       "type": ["null", "string"]
     },
     "is_system": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "is_importable": {
       "type": ["null", "string"]
@@ -75,7 +75,7 @@
       "type": ["null", "string"]
     },
     "level_dim_weight_acct_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "rollup_text": {
       "type": ["null", "string"]
@@ -105,21 +105,7 @@
       "type": ["null", "string"]
     },
     "attributes": {
-      "type": ["null", "array"],
-      "items": {
-        "attributeId": {
-          "type": ["null", "string"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        },
-        "valueId": {
-          "type": ["null", "string"]
-        },
-        "value": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": ["null", "string"]
     }
   }
 }

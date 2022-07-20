@@ -61,7 +61,7 @@ class Level:
             "is_linked": self.isLinked,
             "workflow_status": self.workflowStatus,
             "is_important": self.isImportable,
-            "attributes": self.parse_attributes(self.attributes)
+            "attributes": str(self.parse_attributes(self.attributes))
         }
 
 

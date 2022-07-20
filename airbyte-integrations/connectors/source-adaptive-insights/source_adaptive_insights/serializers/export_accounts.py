@@ -138,7 +138,7 @@ class Account:
             "enable_actuals": self.enableActuals,
             "is_group": self.isGroup,
             "has_formula": self.hasFormula,
-            "attributes": self.parse_attributes(self.attributes)
+            "attributes": str(self.parse_attributes(self.attributes))
         }
 
 

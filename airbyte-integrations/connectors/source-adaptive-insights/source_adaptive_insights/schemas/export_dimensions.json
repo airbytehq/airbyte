@@ -3,7 +3,10 @@
   "type": "object",
   "properties": {
     "dimension_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
+    },
+    "dimension_id": {
+      "type": ["null", "string"]
     },
     "dimension_name": {
       "type": ["null", "string"]
@@ -12,7 +15,7 @@
       "type": ["null", "string"]
     },
     "value_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "value_name": {
       "type": ["null", "string"]
@@ -24,13 +27,13 @@
       "type": ["null", "string"]
     },
     "attribute_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "attribute_name": {
       "type": ["null", "string"]
     },
     "attribute_value_id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "attribute_value": {
       "type": ["null", "string"]

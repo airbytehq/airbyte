@@ -3,31 +3,25 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
-    },
-    "name": {
       "type": ["null", "string"]
     },
-    "currency": {
+    "account_name": {
       "type": ["null", "string"]
     },
-    "short_name": {
+    "account_code": {
       "type": ["null", "string"]
     },
-    "is_elimination": {
+    "level": {
       "type": ["null", "string"]
     },
-    "is_linked": {
+    "gl_account": {
       "type": ["null", "string"]
     },
-    "workflow_status": {
+    "date": {
       "type": ["null", "string"]
     },
-    "is_important": {
-      "type": ["null", "string"]
-    },
-    "attributes": {
-      "type": ["null", "string"]
+    "amount": {
+      "type": "number"
     }
   }
 }
