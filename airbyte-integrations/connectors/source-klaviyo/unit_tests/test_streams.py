@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from unittest import mock
 
 import pendulum
@@ -140,7 +141,11 @@ class TestIncrementalKlaviyoStream:
             ({}, {"updated_at": 10, "some_field": 100}, {"updated_at": 10}),
             ({"updated_at": 11}, {"updated_at": 10, "some_field": 100}, {"updated_at": 11}),
             ({"updated_at": 11}, {"updated_at": 12, "some_field": 100}, {"updated_at": 12}),
-            ({"updated_at": 12}, {"updated_at": "2021-04-03 17:15:12", "some_field": 100}, {"updated_at": 1617459312.0}),
+            (
+                {"updated_at": 12},
+                {"updated_at": "2021-04-03 17:15:12", "some_field": 100},
+                {"updated_at": datetime.strptime("2021-04-03 17:15:12", "%Y-%m-%d %H:%M:%S").timestamp()},
+            ),
         ],
     )
     def test_get_updated_state(self, current_state, latest_record, expected_state):
