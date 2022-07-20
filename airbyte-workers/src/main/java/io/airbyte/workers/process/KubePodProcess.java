@@ -725,7 +725,7 @@ public class KubePodProcess extends Process implements KubePod {
         throw new RuntimeException(
             prependPodInfo("Cannot find pod %s : %s while trying to retrieve exit code. This probably means the pod was not correctly created.",
                 podDefinition.getMetadata().getNamespace(),
-                podDefinition.getMetadata().getName()));
+                podDefinition.getMetadata().getName()), e);
       }
     } else {
       throw new IllegalThreadStateException(prependPodInfo("Main container in kube pod has not terminated yet.",
