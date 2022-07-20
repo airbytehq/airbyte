@@ -388,8 +388,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
         TestDataHolder.builder()
             .sourceType("json")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
-            .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
+            .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'", "'{\"fóo\": \"bär\"}'", "'{\"春江潮水连海平\": \"海上明月共潮生\"}'")
+            .addExpectedValues(null, "{\"a\": 10, \"b\": 15}", "{\"fóo\": \"bär\"}", "{\"春江潮水连海平\": \"海上明月共潮生\"}")
             .build());
 
     addDataTypeTestData(

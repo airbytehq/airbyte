@@ -39,19 +39,19 @@ public class TiDBSource extends AbstractJdbcSource<MysqlType> implements Source 
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+    final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:mysql://%s:%s/%s?",
         config.get("host").asText(),
         config.get("port").asInt(),
         config.get("database").asText()));
 
     if (config.get("jdbc_url_params") != null
         && !config.get("jdbc_url_params").asText().isEmpty()) {
-      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
+      jdbcUrl.append(config.get("jdbc_url_params").asText()).append("&");
     }
 
     // only if config ssl and ssl == true, use ssl to connect db
     if (config.has("ssl") && config.get("ssl").asBoolean()) {
-      jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
+      jdbcUrl.append(String.join("&", SSL_PARAMETERS)).append("&");
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()

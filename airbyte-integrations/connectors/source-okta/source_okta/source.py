@@ -9,10 +9,11 @@ from urllib import parse
 
 import pendulum
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
 
 class OktaStream(HttpStream, ABC):
@@ -112,6 +113,56 @@ class Groups(IncrementalOktaStream):
         return "groups"
 
 
+class GroupMembers(IncrementalOktaStream):
+    cursor_field = "id"
+    primary_key = "id"
+    min_user_id = "00u00000000000000000"
+    use_cache = True
+
+    def stream_slices(self, **kwargs):
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"group_id": group["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        group_id = stream_slice["group_id"]
+        return f"groups/{group_id}/users"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
+        latest_entry = stream_state.get(self.cursor_field)
+        if latest_entry:
+            params["after"] = latest_entry
+        return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            self.cursor_field: max(
+                latest_record.get(self.cursor_field, self.min_user_id),
+                current_stream_state.get(self.cursor_field, self.min_user_id),
+            )
+        }
+
+
+class GroupRoleAssignments(OktaStream):
+    primary_key = "id"
+    use_cache = True
+
+    def stream_slices(self, **kwargs):
+        group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base)
+        for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"group_id": group["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        group_id = stream_slice["group_id"]
+        return f"groups/{group_id}/roles"
+
+
 class Logs(IncrementalOktaStream):
 
     cursor_field = "published"
@@ -129,13 +180,19 @@ class Logs(IncrementalOktaStream):
         # The log stream use a different params to get data
         # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
         stream_state = stream_state or {}
-        params = {
-            "limit": self.page_size,
-            **(next_page_token or {}),
-        }
+        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["since"] = latest_entry
+            # [Test-driven Development] Set until When the cursor value from the stream state
+            #   is abnormally large, otherwise the server side that sets now to until
+            #   will throw an error: The "until" date must be later than the "since" date
+            # https://developer.okta.com/docs/reference/api/system-log/#request-parameters
+            parsed = pendulum.parse(latest_entry)
+            utc_now = pendulum.utcnow()
+            if parsed > utc_now:
+                params["until"] = latest_entry
+
         return params
 
 
@@ -147,18 +204,95 @@ class Users(IncrementalOktaStream):
         return "users"
 
 
-class SourceOkta(AbstractSource):
-    def initialize_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
-        return TokenAuthenticator(config["token"], auth_method="SSWS")
+class CustomRoles(OktaStream):
+    primary_key = "id"
 
-    def get_url_base(self, config: Mapping[str, Any]) -> str:
-        return parse.urljoin(config["base_url"], "/api/v1/")
+    def path(self, **kwargs) -> str:
+        return "iam/roles"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["roles"]
+
+
+class UserRoleAssignments(OktaStream):
+    primary_key = "id"
+    use_cache = True
+
+    def stream_slices(self, **kwargs):
+        user_stream = Users(authenticator=self.authenticator, url_base=self.url_base)
+        for user in user_stream.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"user_id": user["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        user_id = stream_slice["user_id"]
+        return f"users/{user_id}/roles"
+
+
+class OktaOauth2Authenticator(Oauth2Authenticator):
+    def get_refresh_request_body(self) -> Mapping[str, Any]:
+        return {
+            "grant_type": "refresh_token",
+            "refresh_token": self.refresh_token,
+        }
+
+    def refresh_access_token(self) -> Tuple[str, int]:
+        try:
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=self.get_refresh_request_body(),
+                auth=(self.client_id, self.client_secret),
+            )
+            response.raise_for_status()
+            response_json = response.json()
+            return response_json["access_token"], response_json["expires_in"]
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
+
+
+class SourceOkta(AbstractSource):
+    def initialize_authenticator(self, config: Mapping[str, Any]):
+        if "token" in config:
+            return TokenAuthenticator(config["token"], auth_method="SSWS")
+
+        creds = config.get("credentials")
+        if not creds:
+            raise "Config validation error. `credentials` not specified."
+
+        auth_type = creds.get("auth_type")
+        if not auth_type:
+            raise "Config validation error. `auth_type` not specified."
+
+        if auth_type == "api_token":
+            return TokenAuthenticator(creds["api_token"], auth_method="SSWS")
+
+        if auth_type == "oauth2.0":
+            return OktaOauth2Authenticator(
+                token_refresh_endpoint=self.get_token_refresh_endpoint(config),
+                client_secret=creds["client_secret"],
+                client_id=creds["client_id"],
+                refresh_token=creds["refresh_token"],
+            )
+
+    @staticmethod
+    def get_url_base(config: Mapping[str, Any]) -> str:
+        return config.get("base_url") or f"https://{config['domain']}.okta.com"
+
+    def get_api_endpoint(self, config: Mapping[str, Any]) -> str:
+        return parse.urljoin(self.get_url_base(config), "/api/v1/")
+
+    def get_token_refresh_endpoint(self, config: Mapping[str, Any]) -> str:
+        return parse.urljoin(self.get_url_base(config), "/oauth2/v1/token")
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             auth = self.initialize_authenticator(config)
-            base_url = self.get_url_base(config)
-            url = parse.urljoin(base_url, "users")
+            api_endpoint = self.get_api_endpoint(config)
+            url = parse.urljoin(api_endpoint, "users")
 
             response = requests.get(
                 url,
@@ -175,15 +309,19 @@ class SourceOkta(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.initialize_authenticator(config)
-        url_base = self.get_url_base(config)
+        api_endpoint = self.get_api_endpoint(config)
 
         initialization_params = {
             "authenticator": auth,
-            "url_base": url_base,
+            "url_base": api_endpoint,
         }
 
         return [
             Groups(**initialization_params),
             Logs(**initialization_params),
             Users(**initialization_params),
+            GroupMembers(**initialization_params),
+            CustomRoles(**initialization_params),
+            UserRoleAssignments(**initialization_params),
+            GroupRoleAssignments(**initialization_params),
         ]

@@ -31,6 +31,7 @@ from source_github.streams import (
     PullRequestCommentReactions,
     PullRequestCommits,
     PullRequests,
+    PullRequestStats,
     Releases,
     Repositories,
     Reviews,
@@ -111,6 +112,39 @@ def test_retry_after(time_mock):
     assert len(responses.calls) == 2
     assert responses.calls[0].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
     assert responses.calls[1].request.url == "https://api.github.com/orgs/airbytehq?per_page=100"
+
+
+@responses.activate
+@patch("time.sleep")
+@patch("time.time", return_value=1655804424.0)
+def test_graphql_rate_limited(time_mock, sleep_mock):
+    response_objects = [
+        (
+            HTTPStatus.OK,
+            {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"},
+            json.dumps({"errors": [{"type": "RATE_LIMITED"}]}),
+        ),
+        (
+            HTTPStatus.OK,
+            {"X-RateLimit-Limit": "5000", "X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655808324"},
+            json.dumps({"data": {"repository": None}}),
+        ),
+    ]
+
+    responses.add_callback(
+        responses.POST,
+        "https://api.github.com/graphql",
+        callback=lambda r: response_objects.pop(0),
+        content_type="application/json",
+    )
+
+    stream = PullRequestStats(repositories=["airbytehq/airbyte"], page_size_for_large_streams=30)
+    records = read_full_refresh(stream)
+    assert records == []
+    assert len(responses.calls) == 2
+    assert responses.calls[0].request.url == "https://api.github.com/graphql"
+    assert responses.calls[1].request.url == "https://api.github.com/graphql"
+    assert sum([c[0][0] for c in sleep_mock.call_args_list]) > 300
 
 
 @responses.activate

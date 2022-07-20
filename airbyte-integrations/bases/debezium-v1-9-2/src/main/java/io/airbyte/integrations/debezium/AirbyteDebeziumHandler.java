@@ -13,7 +13,6 @@ import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordIterator;
 import io.airbyte.integrations.debezium.internals.DebeziumRecordPublisher;
-import io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -58,6 +57,7 @@ public class AirbyteDebeziumHandler {
   public AutoCloseableIterator<AirbyteMessage> getSnapshotIterators(final ConfiguredAirbyteCatalog catalog,
                                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                                     final Properties connectorProperties,
+                                                                    final CdcStateHandler cdcStateHandler,
                                                                     final Instant emittedAt) {
     LOGGER.info("Running snapshot for " + catalog.getStreams().size() + " new tables");
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
@@ -81,10 +81,12 @@ public class AirbyteDebeziumHandler {
         publisher::hasClosed,
         publisher::close);
 
-    return AutoCloseableIterators
+    return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
         .transform(
             eventIterator,
-            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt));
+            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt)),
+        AutoCloseableIterators
+            .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
@@ -93,7 +95,7 @@ public class AirbyteDebeziumHandler {
                                                                        final CdcMetadataInjector cdcMetadataInjector,
                                                                        final Properties connectorProperties,
                                                                        final Instant emittedAt) {
-    LOGGER.info("using CDC: {}", true);
+    LOGGER.info("Using CDC: {}", true);
     final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(QUEUE_CAPACITY);
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager = schemaHistoryManager(cdcSavedInfoFetcher);
@@ -136,7 +138,6 @@ public class AirbyteDebeziumHandler {
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final CdcSavedInfoFetcher cdcSavedInfoFetcher) {
     if (trackSchemaHistory) {
-      FilteredFileDatabaseHistory.setDatabaseName(config.get("database").asText());
       return Optional.of(AirbyteSchemaHistoryStorage.initializeDBHistory(cdcSavedInfoFetcher.getSavedSchemaHistory()));
     }
 

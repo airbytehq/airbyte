@@ -1,0 +1,35 @@
+{
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string"
+    },
+    "created": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "lastUpdated": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "_links": {
+      "properties": {
+        "assignee": {
+          "properties": {
+            "self": {
+              "$ref": "shared-link.json"
+            },
+            "permissions": {
+              "$ref": "shared-link.json",
+              "description": "Gets a list of Permissions that is granted through this assignment"
+            }
+          }
+        }
+      },
+      "type": ["object", "null"]
+    }
+  },
+  "type": "object"
+}

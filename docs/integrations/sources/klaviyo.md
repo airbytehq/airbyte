@@ -17,19 +17,19 @@ This Source is capable of syncing the following core Streams:
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-| :--- | :--- | :--- |
-| `string` | `string` |  |
-| `number` | `number` |  |
-| `array` | `array` |  |
-| `object` | `object` |  |
+|:-----------------|:-------------|:------|
+| `string`         | `string`     |       |
+| `number`         | `number`     |       |
+| `array`          | `array`      |       |
+| `object`         | `object`     |       |
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Events and Global Exclusions|
-| Namespaces | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes                             |
+|:------------------|:---------------------|:----------------------------------|
+| Full Refresh Sync | Yes                  |                                   |
+| Incremental Sync  | Yes                  | Only Events and Global Exclusions |
+| Namespaces        | No                   |                                   |
 
 ### Performance considerations
 
@@ -50,8 +50,10 @@ Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062
 
 ## CHANGELOG
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| `0.1.4` | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream. |
-| `0.1.3` | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592) | Improve performance, make Global Exclusions stream incremental and enable Metrics stream. |
-| `0.1.2` | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952) | Update schema validation in SAT |
+| Version | Date       | Pull Request                                               | Subject                                                                                   |
+|:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| `0.1.6` | 2022-07-20 | [14872](https://github.com/airbytehq/airbyte/issues/14872) | Increase test coverage                                                                    |
+| `0.1.5` | 2022-07-12 | [14617](https://github.com/airbytehq/airbyte/issues/14617) | Set max\_retries = 10 for `lists` stream.                                                 |
+| `0.1.4` | 2022-04-15 | [11723](https://github.com/airbytehq/airbyte/issues/11723) | Enhance klaviyo source for flows stream and update to events stream.                      |
+| `0.1.3` | 2021-12-09 | [8592](https://github.com/airbytehq/airbyte/pull/8592)     | Improve performance, make Global Exclusions stream incremental and enable Metrics stream. |
+| `0.1.2` | 2021-10-19 | [6952](https://github.com/airbytehq/airbyte/pull/6952)     | Update schema validation in SAT                                                           |
