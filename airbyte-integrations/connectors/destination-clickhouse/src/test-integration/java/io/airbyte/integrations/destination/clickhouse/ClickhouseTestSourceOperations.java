@@ -15,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 
 public class ClickhouseTestSourceOperations extends JdbcSourceOperations {
 
-  public static final DateTimeFormatter CLICKHOUSE_DATETIME_WITH_TZ_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSX");
-
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     node.put(columnName, DateTimeFormatter.ISO_DATE.format(resultSet.getTimestamp(index).toLocalDateTime()));
