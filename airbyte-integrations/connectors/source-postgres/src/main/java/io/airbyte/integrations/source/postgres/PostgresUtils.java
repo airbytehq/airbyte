@@ -15,6 +15,7 @@ public class PostgresUtils {
 
   private static final String PGOUTPUT_PLUGIN = "pgoutput";
 
+  public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
   public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
 
   public static String getPluginValue(final JsonNode field) {
@@ -27,6 +28,17 @@ public class PostgresUtils {
         && config.get("replication_method").hasNonNull("publication");
     LOGGER.info("using CDC: {}", isCdc);
     return isCdc;
+  }
+
+  public static Duration getFirstRecordWaitTime(final JsonNode config) {
+    final Duration firstRecordWaitTime = config.has("initial_waiting_seconds") ? Duration.ofSeconds(config.get("initial_waiting_seconds").asInt())
+        : PostgresUtils.DEFAULT_FIRST_RECORD_WAIT_TIME;
+    if (firstRecordWaitTime.getSeconds() > MAX_FIRST_RECORD_WAIT_TIME.getSeconds()) {
+      LOGGER.warn("First record waiting time is overridden to {} minutes, which is the max time allowed for safety.",
+          MAX_FIRST_RECORD_WAIT_TIME.toMinutes());
+      return MAX_FIRST_RECORD_WAIT_TIME;
+    }
+    return firstRecordWaitTime;
   }
 
 }

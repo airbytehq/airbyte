@@ -292,9 +292,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
-      final Duration firstRecordWaitTime = sourceConfig.has("initial_waiting_seconds")
-          ? Duration.ofSeconds(sourceConfig.get("initial_waiting_seconds").asInt())
-          : PostgresUtils.DEFAULT_FIRST_RECORD_WAIT_TIME;
+      final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
 
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
