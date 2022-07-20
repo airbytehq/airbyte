@@ -69,17 +69,6 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
             [{"id": 0}, {"id": 1}],
             {"next_page_token": "https://airbyte.io/next_url"},
         ),
-        (
-            "test_limit_paginator_fewer_records_than_limit",
-            RequestOption(inject_into=RequestOptionType.header, field_name="from"),
-            None,
-            {"limit": 2},
-            {},
-            {},
-            {},
-            [{"id": 0}],
-            None,
-        ),
     ],
 )
 def test_limit_paginator(
@@ -125,7 +114,7 @@ def test_limit_cannot_be_set_in_path():
     cursor_value = "{{ decoded_response.next }}"
     url_base = "https://airbyte.io"
     config = {}
-    strategy = CursorPaginationStrategy(cursor_value, JsonDecoder(), config)
+    strategy = CursorPaginationStrategy(cursor_value, config)
     try:
         LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
         assert False
