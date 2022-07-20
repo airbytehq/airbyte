@@ -11,7 +11,19 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .api import Addresses, Charges, Collections, Customers, Discounts, Metafields, Onetimes, Orders, Products, Shop, Subscriptions
+from .api import (
+    Addresses, 
+    Charges, 
+    Collections, 
+    Customers, 
+    Discounts, 
+    Metafields, 
+    Onetimes, 
+    Orders, 
+    Products, 
+    Shop, 
+    Subscriptions,
+)
 
 
 class RechargeTokenAuthenticator(TokenAuthenticator):
@@ -21,10 +33,12 @@ class RechargeTokenAuthenticator(TokenAuthenticator):
 
 class SourceRecharge(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        auth = RechargeTokenAuthenticator(token=config["access_token"])
+        stream = Shop(authenticator=auth)
         try:
-            auth = RechargeTokenAuthenticator(token=config["access_token"])
-            list(Shop(authenticator=auth).read_records(SyncMode.full_refresh))
-            return True, None
+            result = list(stream.read_records(SyncMode.full_refresh))[0]
+            if stream.name in result.keys():
+                return True, None
         except Exception as error:
             return False, f"Unable to connect to Recharge API with the provided credentials - {repr(error)}"
 
