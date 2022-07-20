@@ -1,53 +1,42 @@
 
       
 
-  create  table
-    "integrationtests".test_normalization_iakoz."dedup_exchange_rate_scd"
-    
-    
-      compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
-    
+  create  table "postgres".test_normalization."types_testing_scd"
   as (
     
--- depends_on: ref('dedup_exchange_rate_stg')
+-- depends_on: ref('types_testing_stg')
 with
 
 input_data as (
     select *
-    from "integrationtests"._airbyte_test_normalization_iakoz."dedup_exchange_rate_stg"
-    -- dedup_exchange_rate from "integrationtests".test_normalization_iakoz._airbyte_raw_dedup_exchange_rate
+    from "postgres"._airbyte_test_normalization."types_testing_stg"
+    -- types_testing from "postgres".test_normalization._airbyte_raw_types_testing
 ),
 
 scd_data as (
     -- SQL model to build a Type 2 Slowly Changing Dimension (SCD) table for each record identified by their primary key
     select
-      md5(cast(coalesce(cast(id as text), '') || '-' || coalesce(cast(currency as text), '') || '-' || coalesce(cast(nzd as text), '') as text)) as _airbyte_unique_key,
-      id,
-      currency,
-      date,
-      timestamp_col,
-      "hkd@spéçiäl & characters",
-      hkd_special___characters,
-      nzd,
-      usd,
-      date as _airbyte_start_at,
-      lag(date) over (
-        partition by id, currency, cast(nzd as text)
+      md5(cast(coalesce(cast("id" as text), '') as text)) as _airbyte_unique_key,
+      "id",
+      big_integer,
+      _airbyte_emitted_at as _airbyte_start_at,
+      lag(_airbyte_emitted_at) over (
+        partition by cast("id" as text)
         order by
-            date is null asc,
-            date desc,
+            _airbyte_emitted_at is null asc,
+            _airbyte_emitted_at desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
-        partition by id, currency, cast(nzd as text)
+        partition by cast("id" as text)
         order by
-            date is null asc,
-            date desc,
+            _airbyte_emitted_at is null asc,
+            _airbyte_emitted_at desc,
             _airbyte_emitted_at desc
       ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
-      _airbyte_dedup_exchange_rate_hashid
+      _airbyte_types_testing_hashid
     from input_data
 ),
 dedup_data as (
@@ -68,21 +57,15 @@ dedup_data as (
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-    id,
-    currency,
-    date,
-    timestamp_col,
-    "hkd@spéçiäl & characters",
-    hkd_special___characters,
-    nzd,
-    usd,
+    "id",
+    big_integer,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,
     _airbyte_ab_id,
     _airbyte_emitted_at,
-    getdate() as _airbyte_normalized_at,
-    _airbyte_dedup_exchange_rate_hashid
+    now() as _airbyte_normalized_at,
+    _airbyte_types_testing_hashid
 from dedup_data where _airbyte_row_num = 1
   );
   
