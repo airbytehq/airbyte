@@ -54,6 +54,11 @@
         "type": "string",
         "airbyte_secret": true,
         "order": 6
+      },
+      "connection_properties": {
+        "title": "Connection Properties",
+        "description": "Custom jdbc parameters for Redshift source separated by delimeter",
+        "type": "string"
       }
     }
   }
