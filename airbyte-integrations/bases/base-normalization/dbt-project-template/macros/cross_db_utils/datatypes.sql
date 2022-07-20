@@ -80,6 +80,10 @@
 
 {# int  ------------------------------------------------- #}
 {% macro default__type_int() %}
+    int
+{% endmacro %}
+
+{% macro mysql__type_int() %}
     signed
 {% endmacro %}
 
