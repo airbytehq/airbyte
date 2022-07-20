@@ -16,6 +16,7 @@ from airbyte_api_client.api import (
     destination_api,
     destination_definition_specification_api,
     source_api,
+    source_definition_api,
     source_definition_specification_api,
     web_backend_api,
 )
@@ -41,8 +42,12 @@ from airbyte_api_client.model.operator_normalization import OperatorNormalizatio
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
 from airbyte_api_client.model.source_create import SourceCreate
+from airbyte_api_client.model.source_definition_create import SourceDefinitionCreate
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
 from airbyte_api_client.model.source_definition_specification_read import SourceDefinitionSpecificationRead
+from airbyte_api_client.model.source_definition_update import SourceDefinitionUpdate
 from airbyte_api_client.model.source_discover_schema_request_body import SourceDiscoverSchemaRequestBody
 from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.source_read import SourceRead
@@ -311,10 +316,10 @@ class BaseResource(abc.ABC):
     def was_created(self):
         return True if self.remote_resource else False
 
-    def _get_remote_resource(self) -> Union[SourceRead, DestinationRead, ConnectionRead]:
+    def _get_remote_resource(self) -> Union[SourceRead, DestinationRead, ConnectionRead, SourceDefinitionRead]:
         """Retrieve a resources on the remote Airbyte instance.
         Returns:
-            Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
+            Union[SourceReadList, DestinationReadList, ConnectionReadList, SourceDefinitionReadList]: Search results
         """
         return self._get_fn(self.api_instance, self.get_payload)
 
@@ -428,6 +433,8 @@ class BaseResource(abc.ABC):
 
 
 class SourceAndDestination(BaseResource):
+    APPLY_PRIORITY = 1
+
     @property
     @abc.abstractmethod
     def definition(
@@ -555,7 +562,7 @@ class Destination(SourceAndDestination):
 
 class Connection(BaseResource):
     # Set to 1 to create connection after source or destination.
-    APPLY_PRIORITY = 1
+    APPLY_PRIORITY = 2
     api = web_backend_api.WebBackendApi
     create_function_name = "web_backend_create_connection"
     update_function_name = "web_backend_update_connection"
@@ -782,7 +789,67 @@ class Connection(BaseResource):
         return comparable
 
 
-def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configuration_path: str) -> Union[Source, Destination, Connection]:
+class SourceAndDestinationDefinition(BaseResource):
+    @property
+    @abc.abstractmethod
+    def definition(
+        self,
+    ):  # pragma: no cover
+        pass
+
+    @property
+    def docker_repository(self):
+        return self.configuration["docker_repository"]
+
+    @property
+    def docker_image_tag(self):
+        return self.configuration["docker_image_tag"]
+
+    @property
+    def documentation_url(self):
+        return self.configuration["documentation_url"]
+
+    def _get_local_comparable_configuration(self) -> dict:
+        return {"docker_image_tag": self.docker_image_tag}
+
+    def _get_remote_comparable_configuration(self) -> dict:
+        return {"docker_image_tag": self.remote_resource.docker_image_tag}
+
+
+class SourceDefinition(SourceAndDestinationDefinition):
+
+    api = source_definition_api.SourceDefinitionApi
+    create_function_name = "create_source_definition"
+    resource_id_field = "source_definition_id"
+    get_function_name = "get_source_definition"
+    update_function_name = "update_source_definition"
+    resource_type = "source_definition"
+
+    @property
+    def create_payload(self):
+        return SourceDefinitionCreate(self.resource_name, self.docker_repository, self.docker_image_tag, self.documentation_url)
+
+    @property
+    def get_payload(self) -> Optional[SourceDefinitionIdRequestBody]:
+        """Defines the payload to retrieve the remote source definition if a state exists.
+        Returns:
+            SourceDefinitionIdRequestBody: The SourceDefinitionIdRequestBody payload.
+        """
+        if self.state is not None:
+            return SourceDefinitionIdRequestBody(self.state.resource_id)
+
+    @property
+    def update_payload(self):
+        return SourceDefinitionUpdate(source_definition_id=self.resource_id, docker_image_tag=self.docker_image_tag)
+
+    @property
+    def definition(self):
+        pass
+
+
+def factory(
+    api_client: airbyte_api_client.ApiClient, workspace_id: str, configuration_path: str
+) -> Union[Source, Destination, Connection, SourceDefinition]:
     """Create resource object according to the definition type field in their YAML configuration.
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
@@ -801,5 +868,7 @@ def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configu
         return Destination(api_client, workspace_id, raw_configuration, configuration_path)
     if raw_configuration["definition_type"] == "connection":
         return Connection(api_client, workspace_id, raw_configuration, configuration_path)
+    if raw_configuration["definition_type"] == "source_definition":
+        return SourceDefinition(api_client, workspace_id, raw_configuration, configuration_path)
     else:
         raise NotImplementedError(f"Resource {raw_configuration['definition_type']} was not yet implemented")

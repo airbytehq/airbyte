@@ -259,6 +259,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SourceDefinitionCreate"
+        required: true
       responses:
         "200":
           description: Successful operation
@@ -279,6 +280,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/SourceDefinitionUpdate"
+        required: true
       responses:
         "200":
           description: Successful operation

@@ -8,7 +8,7 @@ import pytest
 import yaml
 from airbyte_api_client.api import connection_api
 from airbyte_api_client.model.connection_id_request_body import ConnectionIdRequestBody
-from octavia_cli.apply.resources import Connection, Destination, Source
+from octavia_cli.apply.resources import Connection, Destination, Source, SourceDefinition
 from octavia_cli.entrypoint import get_api_client, get_workspace_id
 from octavia_cli.init.commands import DIRECTORIES_TO_CREATE as OCTAVIA_PROJECT_DIRECTORIES
 
@@ -153,3 +153,25 @@ def connection_with_normalization(
     yield connection
     connection_api.ConnectionApi(api_client).delete_connection(ConnectionIdRequestBody(connection.resource_id))
     silent_remove(configuration_path)
+
+
+@pytest.fixture(scope="session")
+def source_definition_configuration_and_path(octavia_test_project_directory):
+    path = f"{octavia_test_project_directory}/source_definitions/pokeapi/configuration.yaml"
+    return open_yaml_configuration(path)
+
+
+@pytest.fixture(scope="session")
+def source_definition_state_path(octavia_test_project_directory, workspace_id):
+    state_path = f"{octavia_test_project_directory}/source_definitions/pokeapi/state_{workspace_id}.yaml"
+    silent_remove(state_path)
+    yield state_path
+    silent_remove(state_path)
+
+
+@pytest.fixture(scope="session")
+def source_definition(api_client, workspace_id, source_definition_configuration_and_path, source_definition_state_path):
+    configuration, path = source_definition_configuration_and_path
+    source = SourceDefinition(api_client, workspace_id, configuration, path)
+    yield source
+    source.api_instance.delete_source_definition(source.get_payload)

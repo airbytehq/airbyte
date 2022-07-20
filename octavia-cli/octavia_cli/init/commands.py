@@ -12,7 +12,7 @@ from octavia_cli.base_commands import OctaviaCommand
 
 from . import example_files
 
-DIRECTORIES_TO_CREATE = {"connections", "destinations", "sources"}
+DIRECTORIES_TO_CREATE = {"connections", "destinations", "sources", "source_definitions", "destination_definitions"}
 DEFAULT_API_HEADERS_FILE_CONTENT = pkg_resources.read_text(example_files, "example_api_http_headers.yaml")
 API_HTTP_HEADERS_TARGET_PATH = Path("api_http_headers.yaml")
 

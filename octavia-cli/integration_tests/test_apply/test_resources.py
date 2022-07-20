@@ -67,3 +67,16 @@ def test_connection_lifecycle_with_normalization(source, destination, connection
     assert 'changed from "active" to "inactive"' in connection_with_normalization.get_diff_with_remote_resource()
     connection_with_normalization.update()
     assert not connection_with_normalization.get_diff_with_remote_resource()
+
+
+def test_source_definition_lifecycle(source_definition, workspace_id):
+    assert not source_definition.was_created
+    source_definition.create()
+    source_definition.state = source_definition._get_state_from_file(source_definition.configuration_path, workspace_id)
+    assert source_definition.was_created
+    assert not source_definition.get_diff_with_remote_resource()
+    source_definition.raw_configuration["configuration"]["docker_image_tag"] = "test"
+    source_definition.configuration = source_definition._deserialize_raw_configuration()
+    assert 'changed from "dev" to "test"' in source_definition.get_diff_with_remote_resource()
+    source_definition.update()
+    assert not source_definition.get_diff_with_remote_resource()
