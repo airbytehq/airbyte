@@ -27,7 +27,7 @@ jobs:
           major_pattern: "feat:"
           minor_pattern: "fix:"
           format: "${major}.${minor}.${patch}"
-          change_path: "./airbyte"
+          change_path: "/home/runner/work/airbyte/airbyte/airbyte"
           bump_each_commit: true
           user_format_type: "csv"
           search_commit_body: true
