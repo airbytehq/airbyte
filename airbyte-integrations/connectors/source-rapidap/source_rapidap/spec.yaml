@@ -1,0 +1,35 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Rapidap Spec
+  type: object
+  required:
+    - key
+    - asin
+    - country
+  additionalProperties: false
+  properties:
+    key:
+      title: Rapid API Key
+      type: string
+      description: Sign up for key
+      order: 1
+    asin:
+      title: Rapid API ASIN
+      type: string
+      description: Product ASIN
+      order: 2
+    country:
+      title: Rapid API Country
+      type: string
+      description: Marketplace country
+      order: 3
+      enum: [US,AU,BR,CA,CN,FR,DE,IN,IT,MX,NL,SG,ES,TR,AE,GB,SE]
+    filter_by_star:
+      title: Reviews Stars
+      type: integer
+      description: Filter reviews by stars. Empty value will return all reviews
+      order: 4,
+      enum: [1,2,3,4,5]
+
+
