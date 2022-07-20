@@ -1,4 +1,8 @@
-from datetime import datetime, timezone
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+from datetime import datetime
 
 
 class FutureDateException(Exception):

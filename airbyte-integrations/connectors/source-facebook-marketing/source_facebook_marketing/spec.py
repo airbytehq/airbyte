@@ -11,6 +11,7 @@ import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt, validator
+
 from .utils import validate_date_field
 
 logger = logging.getLogger("airbyte")
@@ -86,13 +87,13 @@ class InsightConfig(BaseModel):
         default=28,
     )
 
-    @validator('start_date')
+    @validator("start_date")
     def set_start_date(cls, start_date):
-        return validate_date_field('Start date', start_date)
+        return validate_date_field("Start date", start_date)
 
-    @validator('end_date')
+    @validator("end_date")
     def set_end_date(cls, end_date):
-        return validate_date_field('End date', end_date)
+        return validate_date_field("End date", end_date)
 
 
 class ConnectorConfig(BaseConfig):
@@ -189,10 +190,10 @@ class ConnectorConfig(BaseConfig):
         default=50,
     )
 
-    @validator('start_date')
+    @validator("start_date")
     def set_start_date(cls, start_date):
-        return validate_date_field('Start date', start_date)
+        return validate_date_field("Start date", start_date)
 
-    @validator('end_date')
+    @validator("end_date")
     def set_end_date(cls, end_date):
-        return validate_date_field('End date', end_date)
+        return validate_date_field("End date", end_date)
