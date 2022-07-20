@@ -15,6 +15,6 @@ class FutureDateException(Exception):
 
 
 def validate_date_field(field, date):
-    if date > datetime.now(timezone.utc).replace(microsecond=0):
+    if date.timestamp() > datetime.now().timestamp():
         raise FutureDateException(field)
     return date
