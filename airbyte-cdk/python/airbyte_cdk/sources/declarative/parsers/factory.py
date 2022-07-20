@@ -68,6 +68,7 @@ class DeclarativeComponentFactory:
         4. list: loop over the list and create objects for its items
         5. anything else -> return as is
         """
+        print(f"key={key} -> {definition}")
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
@@ -82,6 +83,7 @@ class DeclarativeComponentFactory:
         elif isinstance(definition, dict):
             # Try to infer object type
             expected_type = self.get_default_type(key, parent_class)
+            print(f"expected_type for {key} -> {expected_type}")
             # if there is an expected type, and it's not a builtin type, then instantiate it
             # We don't have to instantiate builtin types (eg string and dict) because definition is already going to be of that type
             if expected_type and not self._is_builtin_type(expected_type):

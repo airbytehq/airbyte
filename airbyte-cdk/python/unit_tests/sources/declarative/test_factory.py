@@ -109,6 +109,49 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     assert stream_slicer._request_option._field_name == "repository"
 
 
+def test_create_substream_slicer():
+    content = """
+    stream_slicer_A:
+      type: ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      cursor_field: repository
+    stream_slicer_B:
+      type: ListStreamSlicer
+      slice_values:
+        - hello
+        - world
+      cursor_field: words
+    stream_slicer:
+      type: SubstreamSlicer
+      parent_streams_configs:
+        - stream: "*ref(stream_slicer_A)"
+          slice_key: id
+          stream_slice_field: repository_id
+          request_option:
+            inject_into: request_parameter
+            field_name: repository_id
+        - stream: "*ref(stream_slicer_B)"
+          slice_key: someid
+          stream_slice_field: word_id
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    parent_stream_configs = stream_slicer._parent_stream_configs
+    assert len(parent_stream_configs) == 2
+    assert isinstance(parent_stream_configs[0].stream, ListStreamSlicer)
+    assert isinstance(parent_stream_configs[1].stream, ListStreamSlicer)
+    assert ["airbyte", "airbyte-cloud"] == parent_stream_configs[0].stream._slice_values
+    assert ["hello", "world"] == parent_stream_configs[1].stream._slice_values
+    assert stream_slicer._parent_stream_configs[0].slice_key == "id"
+    assert stream_slicer._parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert stream_slicer._parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert stream_slicer._parent_stream_configs[0].request_option._field_name == "repository_id"
+
+    assert stream_slicer._parent_stream_configs[1].slice_key == "someid"
+    assert stream_slicer._parent_stream_configs[1].stream_slice_field == "word_id"
+    assert stream_slicer._parent_stream_configs[1].request_option is None
+
+
 def test_create_cartesian_stream_slicer():
     content = """
     stream_slicer_A:

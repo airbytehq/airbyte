@@ -13,6 +13,7 @@ from airbyte_cdk.sources.streams.core import Stream
 
 @dataclass
 class ParentStreamConfig:
+    stream: Stream
     slice_key: str
     stream_slice_field: str
     request_option: Optional[RequestOption] = None
@@ -26,17 +27,14 @@ class SubstreamSlicer(StreamSlicer):
 
     def __init__(
         self,
-        parent_streams: List[Stream],
-        parent_stream_name_to_config: Mapping[str, ParentStreamConfig],
+        parent_streams_configs: List[ParentStreamConfig],
     ):
-        self._parent_streams = parent_streams
+        self._parent_stream_configs = parent_streams_configs
         self._cursor = None
-        self._parent_stream_name_to_config = parent_stream_name_to_config
-        # FIXME: this needs to fail if there is both body data and json!
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         cursor = {}
-        for parent_stream_config in self._parent_stream_name_to_config.values():
+        for parent_stream_config in self._parent_stream_configs:
             slice_value = stream_slice.get(parent_stream_config.stream_slice_field)
             if slice_value:
                 cursor.update({parent_stream_config.stream_slice_field: slice_value})
@@ -56,9 +54,9 @@ class SubstreamSlicer(StreamSlicer):
 
     def _get_request_option(self, option_type: RequestOptionType):
         params = {}
-        for stream_name, parent_config in self._parent_stream_name_to_config.items():
+        for parent_config in self._parent_stream_configs:
             if parent_config.request_option and parent_config.request_option.inject_into == option_type:
-                key = self._parent_stream_name_to_config[stream_name].stream_slice_field
+                key = parent_config.stream_slice_field
                 value = self._cursor.get(key)
                 if value:
                     params.update({key: value})
@@ -81,12 +79,13 @@ class SubstreamSlicer(StreamSlicer):
         - parent_record: mapping representing the parent record
         - parent_stream_name: string representing the parent stream name
         """
-        if not self._parent_streams:
+        if not self._parent_stream_configs:
             yield from []
         else:
-            for parent_stream in self._parent_streams:
-                parent_field = self._parent_stream_name_to_config[parent_stream.name].slice_key
-                stream_state_field = self._parent_stream_name_to_config[parent_stream.name].stream_slice_field
+            for parent_stream_config in self._parent_stream_configs:
+                parent_stream = parent_stream_config.stream
+                parent_field = parent_stream_config.slice_key
+                stream_state_field = parent_stream_config.stream_slice_field
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice.get("slice")
