@@ -33,7 +33,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
-        self._iterator = stream_slicer
+        self._stream_slicer = stream_slicer
         self._last_response = None
         self._last_records = None
 
@@ -269,11 +269,11 @@ class SimpleRetriever(Retriever, HttpStream):
         # Warning: use self.state instead of the stream_state passed as argument!
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
-            self._iterator.update_cursor(stream_slice, last_record=r)
+            self._stream_slicer.update_cursor(stream_slice, last_record=r)
             yield r
         else:
             last_record = self._last_records[-1] if self._last_records else None
-            self._iterator.update_cursor(stream_slice, last_record=last_record)
+            self._stream_slicer.update_cursor(stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
@@ -288,13 +288,13 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._iterator.stream_slices(sync_mode, self.state)
+        return self._stream_slicer.stream_slices(sync_mode, self.state)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._iterator.get_stream_state()
+        return self._stream_slicer.get_stream_state()
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
         """State setter, accept state serialized by state getter."""
-        self._iterator.update_cursor(value)
+        self._stream_slicer.update_cursor(value)
