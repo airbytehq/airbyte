@@ -182,7 +182,7 @@ public class JsonSchemas {
 
     for (final String nodeType : nodeTypes) {
       // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
-      if(ARRAY_TYPE == nodeType) {
+      if (ARRAY_TYPE == nodeType) {
         final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.list());
         if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
           // hit every node.
@@ -191,8 +191,7 @@ public class JsonSchemas {
           throw new IllegalArgumentException(
               "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
         }
-      }
-      else if(OBJECT_TYPE == nodeType) {
+      } else if (OBJECT_TYPE == nodeType) {
         final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
         if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
           for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {

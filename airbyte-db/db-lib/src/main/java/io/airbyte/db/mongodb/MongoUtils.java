@@ -225,7 +225,9 @@ public class MongoUtils {
     return types.size() != 1 ? name + AIRBYTE_SUFFIX : name;
   }
 
-  private static void setSubFields(final MongoCollection<Document> collection, final TreeNode<CommonField<BsonType>> parentNode, final String pathToField) {
+  private static void setSubFields(final MongoCollection<Document> collection,
+                                   final TreeNode<CommonField<BsonType>> parentNode,
+                                   final String pathToField) {
     final var nestedKeys = getFieldsName(collection, pathToField);
     nestedKeys.forEach(key -> {
       final var types = getTypes(collection, pathToField + "." + key);
