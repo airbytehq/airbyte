@@ -473,27 +473,49 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
     cursor_field = "TimePeriod"
     report_schema_name = "ad_group_performance_report"
 
-    report_columns = [
-        "AccountName",
-        "AccountNumber",
+    primary_key = [
         "AccountId",
-        "TimePeriod",
         "CampaignId",
-        "CampaignName",
+        "AdGroupId",
+        "TimePeriod",
+        "CurrencyCode",
+        "AdDistribution",
         "DeviceType",
         "Network",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "TopVsOther",
+        "BidMatchType",
+        "Language"
+    ]
+
+    report_columns = [
+        *primary_key,
         "Impressions",
         "Clicks",
         "Ctr",
-        "AverageCpc",
         "Spend",
-        "ReturnOnAdSpend",
-        "RevenuePerConversion",
-        "ConversionRate",
-        "Conversions",
         "CostPerConversion",
-        "AdGroupName",
-        "AdGroupId",
+        "QualityScore",
+        "ExpectedCtr",
+        "AdRelevance",
+        "LandingPageExperience",
+        "PhoneImpressions",
+        "PhoneCalls",
+        "Ptr",
+        "Assists",
+        "CostPerAssist",
+        "CustomParameters",
+        "FinalUrlSuffix",
+        "ViewThroughConversions",
+        "AllCostPerConversion",
+        "AllReturnOnAdSpend",
+        *ALL_CONVERSION_FIELDS,
+        *ALL_REVENUE_FIELDS,
+        *AVERAGE_FIELDS,
+        *CONVERSION_FIELDS,
+        *HISTORICAL_FIELDS,
+        *REVENUE_FIELDS
     ]
 
 
