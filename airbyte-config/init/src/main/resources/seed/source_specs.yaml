@@ -6287,7 +6287,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.17"
+- dockerImage: "airbyte/source-oracle:0.3.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
     connectionSpecification:
@@ -6299,7 +6299,6 @@
       - "port"
       - "sid"
       - "username"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
@@ -6356,7 +6355,6 @@
           order: 8
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "encryption_method"
@@ -6368,7 +6366,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "Native Network Encryption (NNE)"
-            additionalProperties: false
             description: "The native network encryption gives you the ability to encrypt\
               \ database connections, without the configuration overhead of TCP/IP\
               \ and SSL/TLS and without the need to open and listen on different ports."
@@ -6392,7 +6389,6 @@
                 - "RC4_56"
                 - "3DES168"
           - title: "TLS Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the certificate provided by the server."
             required:
             - "encryption_method"
