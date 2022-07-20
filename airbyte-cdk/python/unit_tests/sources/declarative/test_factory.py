@@ -17,6 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -372,6 +373,31 @@ def test_config_with_defaults():
 
     assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
     assert stream._retriever._paginator._page_size == 10
+
+
+def test_create_limit_paginator():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ decoded_response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    paginator_config = config["paginator"]
+    paginator = factory.create_component(paginator_config, input_config)()
+    assert isinstance(paginator, LimitPaginator)
+    page_token_option = paginator._page_token_option
+    assert isinstance(page_token_option, RequestOption)
+    assert page_token_option.option_type == RequestOptionType.path
 
 
 class TestCreateTransformations:

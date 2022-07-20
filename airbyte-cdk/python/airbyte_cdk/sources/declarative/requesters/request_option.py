@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional
 
 
 class RequestOptionType(Enum):
@@ -23,13 +23,11 @@ class RequestOption:
     Describes an option to set on a request
     """
 
-    def __init__(self, inject_into: Union[RequestOptionType, str], field_name: Optional[str] = None):
+    def __init__(self, inject_into: RequestOptionType, field_name: Optional[str] = None):
         """
         :param inject_into: where to set the value
         :param field_name: field name to set. None if option_type == path. Required otherwise.
         """
-        if isinstance(inject_into, str):
-            inject_into = RequestOptionType[inject_into]
         self._option_type = inject_into
         self._field_name = field_name
         if self._option_type == RequestOptionType.path:
