@@ -7,7 +7,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 import pytest as pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig, SubstreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
 parent_records = [{"id": 1, "data": "data1"}, {"id": 2, "data": "data2"}]
@@ -64,56 +64,52 @@ class MockStream(Stream):
 
 
 @pytest.mark.parametrize(
-    "test_name, parent_streams, parent_stream_name_to_parent_config, expected_slices",
+    "test_name, parent_stream_configs, expected_slices",
     [
-        ("test_no_parents", [], {}, []),
-        #        (
-        #                "test_single_parent_slices_no_records",
-        #                [MockStream([{}], [], "first_stream")],
-        #                {"first_stream": ParentStreamConfig("id", "first_stream_id")}
-        #                [{"first_stream_id": None, "parent_slice": None}],
-        #        ),
-        #        (
-        #                "test_single_parent_slices_with_records",
-        #                [MockStream([{}], parent_records, "first_stream")],
-        #                {"first_stream": ParentStreamConfig("id", "first_stream_id")},
-        #                [{"first_stream_id": 1, "parent_slice": None}, {"first_stream_id": 2, "parent_slice": None}],
-        #        ),
-        #        (
-        #                "test_with_parent_slices_and_records",
-        #                [MockStream(parent_slices, all_parent_data, "first_stream")],
-        #                {"first_stream": ParentStreamConfig("id", "first_stream_id")},
-        #                [
-        #                    {"parent_slice": "first", "first_stream_id": 0},
-        #                    {"parent_slice": "first", "first_stream_id": 1},
-        #                    {"parent_slice": "second", "first_stream_id": 2},
-        #                    {"parent_slice": "third", "first_stream_id": None},
-        #                ],
-        #        ),
-        #        (
-        #                "test_multiple_parent_streams",
-        #                [
-        #                    MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
-        #                    MockStream(second_parent_stream_slice, more_records, "second_stream"),
-        #                ],
-        #                {"first_stream": ParentStreamConfig("id", "first_stream_id"),
-        #                 "second_stream": ParentStreamConfig("id", "second_stream_id")},
-        #                [
-        #                    {"parent_slice": "first", "first_stream_id": 0},
-        #                    {"parent_slice": "first", "first_stream_id": 1},
-        #                    {"parent_slice": "second", "first_stream_id": 2},
-        #                    {"parent_slice": "third", "first_stream_id": None},
-        #                    {"parent_slice": "second_parent", "second_stream_id": 10},
-        #                    {"parent_slice": "second_parent", "second_stream_id": 20},
-        #                ],
-        #        ),
+        ("test_no_parents", [], []),
+        (
+            "test_single_parent_slices_no_records",
+            [ParentStreamConfig(MockStream([{}], [], "first_stream"), "id", "first_stream_id")],
+            [{"first_stream_id": None, "parent_slice": None}],
+        ),
+        (
+            "test_single_parent_slices_with_records",
+            [ParentStreamConfig(MockStream([{}], parent_records, "first_stream"), "id", "first_stream_id")],
+            [{"first_stream_id": 1, "parent_slice": None}, {"first_stream_id": 2, "parent_slice": None}],
+        ),
+        (
+            "test_with_parent_slices_and_records",
+            [ParentStreamConfig(MockStream(parent_slices, all_parent_data, "first_stream"), "id", "first_stream_id")],
+            [
+                {"parent_slice": "first", "first_stream_id": 0},
+                {"parent_slice": "first", "first_stream_id": 1},
+                {"parent_slice": "second", "first_stream_id": 2},
+                {"parent_slice": "third", "first_stream_id": None},
+            ],
+        ),
+        (
+            "test_multiple_parent_streams",
+            [
+                ParentStreamConfig(
+                    MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"), "id", "first_stream_id"
+                ),
+                ParentStreamConfig(MockStream(second_parent_stream_slice, more_records, "second_stream"), "id", "second_stream_id"),
+            ],
+            [
+                {"parent_slice": "first", "first_stream_id": 0},
+                {"parent_slice": "first", "first_stream_id": 1},
+                {"parent_slice": "second", "first_stream_id": 2},
+                {"parent_slice": "third", "first_stream_id": None},
+                {"parent_slice": "second_parent", "second_stream_id": 10},
+                {"parent_slice": "second_parent", "second_stream_id": 20},
+            ],
+        ),
     ],
 )
-def test_substream_slicer(test_name, parent_streams, parent_stream_name_to_parent_config, expected_slices):
-    # slicer = SubstreamSlicer(parent_streams, parent_stream_name_to_parent_config)
-    # slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
-    # assert slices == expected_slices
-    pass
+def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
+    slicer = SubstreamSlicer(parent_stream_configs)
+    slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
+    assert slices == expected_slices
 
 
 @pytest.mark.parametrize(
