@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.connector import Connector
+from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
 from pydantic import ValidationError
@@ -83,6 +84,8 @@ class Destination(Connector, ABC):
         return parsed_args
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
+        init_uncaught_exception_handler(logger)
+
         cmd = parsed_args.command
         if cmd not in self.VALID_CMDS:
             raise Exception(f"Unrecognized command: {cmd}")
