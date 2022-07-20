@@ -20,6 +20,10 @@ jobs:
           path: "./airbyte"
           fetch-depth: 0
 
+
+      - shell: bash
+        run: cd ./airbyte && git rev-parse HEAD
+
       - uses: paulhatch/semantic-version@v4.0.3
         id: sem-ver
         with:
