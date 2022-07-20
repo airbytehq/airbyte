@@ -239,8 +239,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         airbyteMessageIterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
       }
 
-      final JsonSchemaPrimitive cursorType = IncrementalUtils
-          .getCursorType(airbyteStream, cursorField);
+      final JsonSchemaPrimitive cursorType = IncrementalUtils.getCursorType(airbyteStream, cursorField);
 
       iterator = AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
           autoCloseableIterator,
@@ -494,13 +493,6 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
    * Read incremental data from a table. Incremental read should returns only records where cursor
    * column value is bigger than cursor.
    *
-   * @param database source database
-   * @param columnNames interested column names
-   * @param schemaName table namespace
-   * @param tableName target table
-   * @param cursorField cursor field name
-   * @param cursorFieldType cursor field type
-   * @param cursor cursor value
    * @return iterator with read data
    */
   public abstract AutoCloseableIterator<JsonNode> queryTableIncremental(Database database,
@@ -509,7 +501,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         String tableName,
                                                                         String cursorField,
                                                                         DataType cursorFieldType,
-                                                                        String cursor);
+                                                                        String cursorValue);
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);

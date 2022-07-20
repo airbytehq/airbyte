@@ -266,21 +266,24 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                                                                final String tableName,
                                                                final String cursorField,
                                                                final Datatype cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
+              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorField);
+              final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s ASC",
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
                   sourceOperations
                       .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorField));
+                  quotedCursorField,
+                  quotedCursorField
+              );
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
