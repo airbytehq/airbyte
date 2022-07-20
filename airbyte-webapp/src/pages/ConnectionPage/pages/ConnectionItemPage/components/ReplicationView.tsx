@@ -2,7 +2,7 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useAsyncFn, useUnmount, useToggle } from "react-use";
+import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
 import { Button, LabeledSwitch, ModalBody, ModalFooter } from "components";
@@ -88,8 +88,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const [saved, setSaved] = useState(false);
   const [connectionFormValues, setConnectionFormValues] = useState<FormikConnectionFormValues>();
   const connectionService = useConnectionService();
-  const [diffAcknowledged, setDiffAcknowledged] = useState(false);
-  const [schemaUpdateModalOpen, setSchemaUpdateModalOpen] = useToggle(false);
   const { mutateAsync: updateConnection } = useUpdateConnection();
 
   const { connection: initialConnection, refreshConnectionCatalog } = useConnectionLoad(connectionId);
@@ -179,7 +177,16 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const onRefreshSourceSchema = async () => {
     setSaved(false);
     setActiveUpdatingSchemaMode(true);
-    await refreshCatalog();
+    const { catalogDiff, syncCatalog } = await refreshCatalog();
+    if (catalogDiff?.transforms && catalogDiff.transforms.length > 0) {
+      await openModal<void>({
+        title: formatMessage({ id: "connection.updateSchema.completed" }),
+        preventCancel: true,
+        content: ({ onClose }) => (
+          <CatalogDiffModal catalogDiff={catalogDiff} catalog={syncCatalog} onClose={onClose} />
+        ),
+      });
+    }
   };
 
   const onCancelConnectionFormEdit = () => {
@@ -190,16 +197,6 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   return (
     <Content>
       <Card>
-        {schemaUpdateModalOpen &&
-          !diffAcknowledged &&
-          connection.catalogDiff?.transforms &&
-          connection.catalogDiff.transforms.length > 0 && (
-            <CatalogDiffModal
-              catalogDiff={connection.catalogDiff}
-              catalog={connection.syncCatalog}
-              setDiffAcknowledged={setDiffAcknowledged}
-            />
-          )}
         {!isRefreshingCatalog && connection ? (
           <ConnectionForm
             mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
