@@ -25,12 +25,6 @@ parent_stream_name_to_slice_key = {"first_stream": "id", "second_stream": "id"}
 parent_stream_name_to_stream_slice_key = {"first_stream": "first_stream_id", "second_stream": "second_stream_id"}
 
 
-# parent_stream_name_to_config = {
-#    "first_stream": ParentStreamConfig("id", "first_stream_id"),
-#    "second_stream": ParentStreamConfig("id", "second_stream_id"),
-# }
-
-
 class MockStream(Stream):
     def __init__(self, slices, records, name):
         self._slices = slices
@@ -115,9 +109,9 @@ def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
 @pytest.mark.parametrize(
     "test_name, stream_slice, expected_state",
     [
-        # ("test_update_cursor_no_state_no_record", {}, None),
-        # ("test_update_cursor_with_state_single_parent", {"first_stream_id": "1234"}, {"first_stream_id": "1234"}),
-        # ("test_update_cursor_with_unknown_state_field", {"unknown_stream_id": "1234"}, None),
+        ("test_update_cursor_no_state_no_record", {}, None),
+        ("test_update_cursor_with_state_single_parent", {"first_stream_id": "1234"}, {"first_stream_id": "1234"}),
+        ("test_update_cursor_with_unknown_state_field", {"unknown_stream_id": "1234"}, None),
         (
             "test_update_cursor_with_state_from_both_parents",
             {"first_stream_id": "1234", "second_stream_id": "4567"},
@@ -126,13 +120,14 @@ def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
     ],
 )
 def test_update_cursor(test_name, stream_slice, expected_state):
-    return
-    parent_streams = [
-        MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
-        MockStream(second_parent_stream_slice, more_records, "second_stream"),
+    parent_stream_name_to_config = [
+        ParentStreamConfig(
+            MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"), "id", "first_stream_id"
+        ),
+        ParentStreamConfig(MockStream(second_parent_stream_slice, more_records, "second_stream"), "id", "second_stream_id"),
     ]
 
-    slicer = SubstreamSlicer(parent_streams, parent_stream_name_to_config)
+    slicer = SubstreamSlicer(parent_stream_name_to_config)
     slicer.update_cursor(stream_slice, None)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
