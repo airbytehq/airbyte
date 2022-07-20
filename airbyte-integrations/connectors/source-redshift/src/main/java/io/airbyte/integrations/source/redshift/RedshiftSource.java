@@ -56,7 +56,6 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
       for (final JsonNode schema : redshiftConfig.get(SCHEMAS)) {
         schemas.add(schema.asText());
       }
-
       if (schemas != null && !schemas.isEmpty()) {
         additionalProperties.add("currentSchema=" + String.join(",", schemas));
       }
