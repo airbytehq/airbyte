@@ -582,7 +582,7 @@ def test_validate_oauth_flow(connector_spec, expected_error):
                 connectionSpecification={
                     "type": "object",
                     "additionalProperties": True,
-                    "properties": {"start_date": {"type": "object", "additionalProperties": "foo"}},
+                    "properties": {"my_object": {"type": "object", "additionalProperties": "foo"}},
                 }
             ),
             pytest.raises(AssertionError),
@@ -593,7 +593,7 @@ def test_validate_oauth_flow(connector_spec, expected_error):
                     "type": "object",
                     "additionalProperties": True,
                     "properties": {
-                        "start_date": {"type": "object", "oneOf": [{"additionalProperties": True}, {"additionalProperties": False}]}
+                        "my_oneOf_object": {"type": "object", "oneOf": [{"additionalProperties": True}, {"additionalProperties": False}]}
                     },
                 }
             ),
