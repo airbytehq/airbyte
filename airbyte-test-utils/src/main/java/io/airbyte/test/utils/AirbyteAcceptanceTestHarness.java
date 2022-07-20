@@ -656,7 +656,7 @@ public class AirbyteAcceptanceTestHarness {
   public UUID getPostgresSourceDefinitionId() throws ApiException {
     return apiClient.getSourceDefinitionApi().listSourceDefinitions().getSourceDefinitions()
         .stream()
-        .filter(sourceRead -> sourceRead.getName().equalsIgnoreCase("postgres"))
+        .filter(sourceRead -> "postgres".equalsIgnoreCase(sourceRead.getName()))
         .findFirst()
         .orElseThrow()
         .getSourceDefinitionId();
@@ -665,7 +665,7 @@ public class AirbyteAcceptanceTestHarness {
   public UUID getPostgresDestinationDefinitionId() throws ApiException {
     return apiClient.getDestinationDefinitionApi().listDestinationDefinitions().getDestinationDefinitions()
         .stream()
-        .filter(destRead -> destRead.getName().equalsIgnoreCase("postgres"))
+        .filter(destRead -> "postgres".equalsIgnoreCase(destRead.getName()))
         .findFirst()
         .orElseThrow()
         .getDestinationDefinitionId();

@@ -181,34 +181,32 @@ public class JsonSchemas {
     final List<String> nodeTypes = getTypeOrObject(jsonSchemaNode);
 
     for (final String nodeType : nodeTypes) {
-      switch (nodeType) {
-        // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
-        case ARRAY_TYPE -> {
-          final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.list());
-          if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
-            // hit every node.
-            traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
-          } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
-          }
+      // case BOOLEAN_TYPE, NUMBER_TYPE, STRING_TYPE, NULL_TYPE -> do nothing after consumer.accept above.
+      if(ARRAY_TYPE == nodeType) {
+        final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.list());
+        if (jsonSchemaNode.has(JSON_SCHEMA_ITEMS_KEY)) {
+          // hit every node.
+          traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
+        } else {
+          throw new IllegalArgumentException(
+              "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
         }
-        case OBJECT_TYPE -> {
-          final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
-          if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
-            for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
-              final Entry<String, JsonNode> child = it.next();
-              final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.fieldName(child.getKey()));
-              traverseJsonSchemaInternal(child.getValue(), newPath, consumer);
-            }
-          } else if (comboKeyWordOptional.isPresent()) {
-            for (final JsonNode arrayItem : jsonSchemaNode.get(comboKeyWordOptional.get())) {
-              traverseJsonSchemaInternal(arrayItem, path, consumer);
-            }
-          } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
+      }
+      else if(OBJECT_TYPE == nodeType) {
+        final Optional<String> comboKeyWordOptional = getKeywordIfComposite(jsonSchemaNode);
+        if (jsonSchemaNode.has(JSON_SCHEMA_PROPERTIES_KEY)) {
+          for (final Iterator<Entry<String, JsonNode>> it = jsonSchemaNode.get(JSON_SCHEMA_PROPERTIES_KEY).fields(); it.hasNext();) {
+            final Entry<String, JsonNode> child = it.next();
+            final List<FieldNameOrList> newPath = MoreLists.add(path, FieldNameOrList.fieldName(child.getKey()));
+            traverseJsonSchemaInternal(child.getValue(), newPath, consumer);
           }
+        } else if (comboKeyWordOptional.isPresent()) {
+          for (final JsonNode arrayItem : jsonSchemaNode.get(comboKeyWordOptional.get())) {
+            traverseJsonSchemaInternal(arrayItem, path, consumer);
+          }
+        } else {
+          throw new IllegalArgumentException(
+              "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
         }
       }
     }

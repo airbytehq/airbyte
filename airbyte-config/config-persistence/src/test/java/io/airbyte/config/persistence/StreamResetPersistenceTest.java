@@ -85,9 +85,9 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     assertEquals(2, result.size());
     assertTrue(
         result.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName().equals("stream_name_1") && streamDescriptor.getNamespace().equals("stream_namespace_1")));
+            streamDescriptor -> "stream_name_1".equals(streamDescriptor.getName()) && "stream_namespace_1".equals(streamDescriptor.getNamespace())));
     assertTrue(
-        result.stream().anyMatch(streamDescriptor -> streamDescriptor.getName().equals("stream_name_2") && streamDescriptor.getNamespace() == null));
+        result.stream().anyMatch(streamDescriptor -> "stream_name_2".equals(streamDescriptor.getName()) && streamDescriptor.getNamespace() == null));
 
     streamResetPersistence.createStreamResets(uuid, List.of(new StreamDescriptor().withName("stream_name_3").withNamespace("stream_namespace_2")));
     streamResetPersistence.deleteStreamResets(uuid, result);
@@ -97,7 +97,7 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     assertTrue(
         resultAfterDeleting.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName().equals("stream_name_3") && streamDescriptor.getNamespace().equals("stream_namespace_2")));
+            streamDescriptor -> "stream_name_3".equals(streamDescriptor.getName()) && "stream_namespace_2".equals(streamDescriptor.getNamespace())));
   }
 
 }
