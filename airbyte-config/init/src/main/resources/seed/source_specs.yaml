@@ -7065,7 +7065,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.34"
+- dockerImage: "airbyte/source-postgres:0.4.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7077,7 +7077,6 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
@@ -7286,7 +7285,6 @@
           order: 8
           oneOf:
           - title: "Standard"
-            additionalProperties: false
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
@@ -7300,7 +7298,6 @@
                 default: "Standard"
                 order: 0
           - title: "Logical Replication (CDC)"
-            additionalProperties: false
             description: "Logical replication uses the Postgres write-ahead log (WAL)\
               \ to detect inserts, updates, and deletes. This needs to be configured\
               \ on the source database itself. Only available on Postgres 10 and above.\
