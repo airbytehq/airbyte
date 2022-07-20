@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-import copy
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
@@ -19,10 +18,6 @@ data_third_parent_slice = []
 all_parent_data = data_first_parent_slice + data_second_parent_slice + data_third_parent_slice
 parent_slices = [{"slice": "first"}, {"slice": "second"}, {"slice": "third"}]
 second_parent_stream_slice = [{"slice": "second_parent"}]
-
-slice_definition = {"{{ parent_stream_name }}_id": "{{ parent_record['id'] }}", "parent_slice": "{{ parent_stream_slice['slice'] }}"}
-parent_stream_name_to_slice_key = {"first_stream": "id", "second_stream": "id"}
-parent_stream_name_to_stream_slice_key = {"first_stream": "first_stream_id", "second_stream": "second_stream_id"}
 
 
 class MockStream(Stream):
@@ -134,14 +129,14 @@ def test_update_cursor(test_name, stream_slice, expected_state):
 
 
 @pytest.mark.parametrize(
-    "test_name, parent_stream_name_to_request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    "test_name, parent_stream_request_options, expected_req_params, expected_headers, expected_body_json, expected_body_data",
     [
         (
             "test_request_option_in_request_param",
-            {
-                "first_stream": RequestOption(RequestOptionType.request_parameter, "first_stream"),
-                "second_stream": RequestOption(RequestOptionType.request_parameter, "second_stream"),
-            },
+            [
+                RequestOption(RequestOptionType.request_parameter, "first_stream"),
+                RequestOption(RequestOptionType.request_parameter, "second_stream"),
+            ],
             {"first_stream_id": "1234", "second_stream_id": "4567"},
             {},
             {},
@@ -149,10 +144,10 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_request_option_in_header",
-            {
-                "first_stream": RequestOption(RequestOptionType.header, "first_stream"),
-                "second_stream": RequestOption(RequestOptionType.header, "second_stream"),
-            },
+            [
+                RequestOption(RequestOptionType.header, "first_stream"),
+                RequestOption(RequestOptionType.header, "second_stream"),
+            ],
             {},
             {"first_stream_id": "1234", "second_stream_id": "4567"},
             {},
@@ -160,10 +155,10 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_request_option_in_param_and_header",
-            {
-                "first_stream": RequestOption(RequestOptionType.request_parameter, "first_stream"),
-                "second_stream": RequestOption(RequestOptionType.header, "second_stream"),
-            },
+            [
+                RequestOption(RequestOptionType.request_parameter, "first_stream"),
+                RequestOption(RequestOptionType.header, "second_stream"),
+            ],
             {"first_stream_id": "1234"},
             {"second_stream_id": "4567"},
             {},
@@ -171,10 +166,10 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_request_option_in_body_json",
-            {
-                "first_stream": RequestOption(RequestOptionType.body_json, "first_stream"),
-                "second_stream": RequestOption(RequestOptionType.body_json, "second_stream"),
-            },
+            [
+                RequestOption(RequestOptionType.body_json, "first_stream"),
+                RequestOption(RequestOptionType.body_json, "second_stream"),
+            ],
             {},
             {},
             {"first_stream_id": "1234", "second_stream_id": "4567"},
@@ -182,10 +177,10 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_request_option_in_body_data",
-            {
-                "first_stream": RequestOption(RequestOptionType.body_data, "first_stream"),
-                "second_stream": RequestOption(RequestOptionType.body_data, "second_stream"),
-            },
+            [
+                RequestOption(RequestOptionType.body_data, "first_stream"),
+                RequestOption(RequestOptionType.body_data, "second_stream"),
+            ],
             {},
             {},
             {},
@@ -195,23 +190,27 @@ def test_update_cursor(test_name, stream_slice, expected_state):
 )
 def test_request_option(
     test_name,
-    parent_stream_name_to_request_option,
+    parent_stream_request_options,
     expected_req_params,
     expected_headers,
     expected_body_json,
     expected_body_data,
 ):
-    return
-    global parent_stream_name_to_config
-    parent_stream_name_to_config = copy.deepcopy(parent_stream_name_to_config)
-    for parent_stream_name, request_option in parent_stream_name_to_request_option.items():
-        parent_stream_name_to_config[parent_stream_name].request_option = request_option
     slicer = SubstreamSlicer(
         [
-            MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
-            MockStream(second_parent_stream_slice, more_records, "second_stream"),
+            ParentStreamConfig(
+                MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
+                "id",
+                "first_stream_id",
+                parent_stream_request_options[0],
+            ),
+            ParentStreamConfig(
+                MockStream(second_parent_stream_slice, more_records, "second_stream"),
+                "id",
+                "second_stream_id",
+                parent_stream_request_options[1],
+            ),
         ],
-        parent_stream_name_to_config,
     )
     slicer.update_cursor({"first_stream_id": "1234", "second_stream_id": "4567"}, None)
 
