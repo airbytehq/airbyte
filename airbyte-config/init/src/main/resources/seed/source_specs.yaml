@@ -3806,7 +3806,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.11"
+- dockerImage: "airbyte/source-db2:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -3820,7 +3820,6 @@
       - "username"
       - "password"
       - "encryption"
-      additionalProperties: false
       properties:
         host:
           description: "Host of the Db2."
@@ -3857,7 +3856,6 @@
           order: 5
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "encryption_method"
@@ -3869,7 +3867,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "TLS Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the cert provided by the server."
             required:
             - "encryption_method"
@@ -4987,7 +4984,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.9"
+- dockerImage: "airbyte/source-mssql:0.4.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -4999,7 +4996,6 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: true
       properties:
         host:
           description: "The hostname of the database."
@@ -5048,7 +5044,6 @@
           order: 6
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "ssl_method"
@@ -5060,7 +5055,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "Encrypted (trust server certificate)"
-            additionalProperties: false
             description: "Use the certificate provided by the server without verification.\
               \ (For testing purposes only!)"
             required:
@@ -5073,7 +5067,6 @@
                 - "encrypted_trust_server_certificate"
                 default: "encrypted_trust_server_certificate"
           - title: "Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the certificate provided by the server."
             required:
             - "ssl_method"
@@ -5101,11 +5094,9 @@
             \ inserts, updates, and deletes. This needs to be configured on the source\
             \ database itself."
           default: "STANDARD"
-          additionalProperties: true
           order: 8
           oneOf:
           - title: "Standard"
-            additionalProperties: false
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
@@ -5119,7 +5110,6 @@
                 default: "STANDARD"
                 order: 0
           - title: "Logical Replication (CDC)"
-            additionalProperties: false
             description: "CDC uses {TBC} to detect inserts, updates, and deletes.\
               \ This needs to be configured on the source database itself."
             required:
@@ -7062,7 +7052,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.34"
+- dockerImage: "airbyte/source-postgres:0.4.35"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7074,7 +7064,6 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
@@ -7283,7 +7272,6 @@
           order: 8
           oneOf:
           - title: "Standard"
-            additionalProperties: false
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
@@ -7297,7 +7285,6 @@
                 default: "Standard"
                 order: 0
           - title: "Logical Replication (CDC)"
-            additionalProperties: false
             description: "Logical replication uses the Postgres write-ahead log (WAL)\
               \ to detect inserts, updates, and deletes. This needs to be configured\
               \ on the source database itself. Only available on Postgres 10 and above.\
