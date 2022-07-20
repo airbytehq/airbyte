@@ -440,6 +440,7 @@ class TestTransformConfig:
         actual = TransformConfig().transform_clickhouse(input)
         expected = {
             "type": "clickhouse",
+            "driver": "native",
             "host": "airbyte.io",
             "port": 9440,
             "schema": "default",
