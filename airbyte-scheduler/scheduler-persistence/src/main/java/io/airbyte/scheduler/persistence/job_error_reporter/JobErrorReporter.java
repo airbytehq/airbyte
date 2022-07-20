@@ -158,9 +158,20 @@ public class JobErrorReporter {
     });
   }
 
+  /**
+   * Reports a FailureReason from a connector Spec job to the JobErrorReportingClient
+   *
+   * @param failureReason - failure reason from the Deploy job
+   * @param jobSpecConfig - config for the Spec job
+   */
   public void reportSpecJobFailure(final FailureReason failureReason, final JobGetSpecConfig jobSpecConfig) {
     Exceptions.swallow(() -> {
-      reportJobFailureReason(null, failureReason, jobSpecConfig.getDockerImage(), Map.of(CONNECTOR_COMMAND_META_KEY, "spec"));
+      final String dockerImage = jobSpecConfig.getDockerImage();
+      final String connectorRepository = dockerImage.split(":")[0];
+      final Map<String, String> metadata = Map.of(
+          CONNECTOR_REPOSITORY_META_KEY, connectorRepository,
+          CONNECTOR_COMMAND_META_KEY, "spec");
+      reportJobFailureReason(null, failureReason, dockerImage, metadata);
     });
   }
 
@@ -187,10 +198,10 @@ public class JobErrorReporter {
         Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
   }
 
-  void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
-                              final FailureReason failureReason,
-                              final String dockerImage,
-                              final Map<String, String> metadata) {
+  private void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
+                                      final FailureReason failureReason,
+                                      final String dockerImage,
+                                      final Map<String, String> metadata) {
     final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
         Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
         Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
