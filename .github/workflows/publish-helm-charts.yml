@@ -51,7 +51,7 @@ jobs:
         shell: bash
         working-directory: ./airbyte/charts
         run: |
-          sed -i "s/    version: placeholder/      version: ${{ needs.generate-semantic-version.outputs.next-version }}/g" charts/airbyte/Chart.yaml
+          sed -i "s/    version: placeholder/      version: ${{ needs.generate-semantic-version.outputs.next-version }}/g" airbyte/Chart.yaml
 
       - name: "Helm package"
         shell: bash
