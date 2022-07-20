@@ -11,8 +11,10 @@ import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import { useChangeName } from "./hooks";
+import { useValidation } from "./validation";
 
 export const NameSection: React.FC = () => {
+  const validate = useValidation();
   const { formatMessage } = useIntl();
   const user = useCurrentUser();
   const { changeName, successMessage, errorMessage } = useChangeName();
@@ -25,8 +27,9 @@ export const NameSection: React.FC = () => {
             name: user.name,
           }}
           onSubmit={changeName}
+          validate={validate}
         >
-          {({ isSubmitting }) => (
+          {({ isSubmitting, isValid }) => (
             <Form>
               <RowFieldItem>
                 <Field name="name">
@@ -44,7 +47,7 @@ export const NameSection: React.FC = () => {
                   )}
                 </Field>
               </RowFieldItem>
-              <LoadingButton type="submit" isLoading={isSubmitting}>
+              <LoadingButton disabled={!isValid} type="submit" isLoading={isSubmitting}>
                 <FormattedMessage id="settings.accountSettings.updateName" />
               </LoadingButton>
               <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} />

@@ -61,6 +61,7 @@
   "settings.accountSettings.firstName.placeholder": "Christopher",
   "settings.accountSettings.name": "Full name",
   "settings.accountSettings.name.placeholder": "Christopher Smith",
+  "settings.accountSettings.name.empty.error": "Name cannot be empty",
   "settings.accountSettings.lastName": "Last name",
   "settings.accountSettings.lastName.placeholder": "Smith",
   "settings.accountSettings.updateName": "Update Name",

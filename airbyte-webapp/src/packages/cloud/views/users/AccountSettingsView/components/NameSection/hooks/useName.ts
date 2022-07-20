@@ -33,14 +33,11 @@ export const useChangeName: UseNameHook = () => {
         })
       );
     } catch (err) {
-      switch (err.code) {
-        default:
-          setErrorMessage(
-            formatMessage({
-              id: "settings.accountSettings.updateNameError",
-            }) + JSON.stringify(err)
-          );
-      }
+      setErrorMessage(
+        formatMessage({
+          id: "settings.accountSettings.updateNameError",
+        }) + JSON.stringify(err)
+      );
     }
 
     setSubmitting(false);
