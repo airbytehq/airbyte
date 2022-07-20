@@ -18,7 +18,7 @@ Given that we'll pulling currency data for our example source, we'll define the 
     "title": "Python Http Tutorial Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",
