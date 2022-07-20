@@ -24,10 +24,13 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
   static StreamResetPersistence streamResetPersistence;
+  private static final Logger LOGGER = LoggerFactory.getLogger(StreamResetPersistenceTest.class);
 
   @BeforeEach
   public void setup() throws Exception {
@@ -59,15 +62,15 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor1, streamDescriptor2));
 
     final List<StreamDescriptor> result = streamResetPersistence.getStreamResets(connectionId);
-    System.out.println(dslContext.selectFrom("stream_reset").fetch());
+    LOGGER.info(String.valueOf(dslContext.selectFrom("stream_reset").fetch()));
     assertEquals(2, result.size());
 
     streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor1));
-    System.out.println(dslContext.selectFrom("stream_reset").fetch());
+    LOGGER.info(String.valueOf(dslContext.selectFrom("stream_reset").fetch()));
     assertEquals(2, streamResetPersistence.getStreamResets(connectionId).size());
 
     streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor2));
-    System.out.println(dslContext.selectFrom("stream_reset").fetch());
+    LOGGER.info(String.valueOf(dslContext.selectFrom("stream_reset").fetch()));
     assertEquals(2, streamResetPersistence.getStreamResets(connectionId).size());
   }
 
