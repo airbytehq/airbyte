@@ -72,7 +72,7 @@ class DefaultAirbyteDestinationTest {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
       LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
     } catch (final IOException e) {
-      LOGGER.error(e.getMessage());
+      LOGGER.error(e.toString());
     }
   }
 
