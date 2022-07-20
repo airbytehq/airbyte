@@ -17,12 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          path: "./airbyte"
           fetch-depth: 0
 
 
       - shell: bash
-        run: cd ./airbyte && git rev-parse HEAD
+        run: git rev-parse HEAD
 
       - uses: paulhatch/semantic-version@v4.0.3
         id: sem-ver
@@ -31,9 +30,8 @@ jobs:
           major_pattern: "feat:"
           minor_pattern: "fix:"
           format: "${major}.${minor}.${patch}"
-          change_path: "./airbyte/charts"
+          change_path: "./charts"
           bump_each_commit: true
-          user_format_type: "csv"
 
       - shell: bash
         run: echo ${{ steps.sem-ver.outputs.version }}
