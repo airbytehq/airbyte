@@ -291,9 +291,9 @@ public class JobTracker {
   private static ImmutableMap<String, Object> generateStateMetadata(final JobState jobState) {
     final Builder<String, Object> metadata = ImmutableMap.builder();
 
-    if(JobState.STARTED.equals(jobState)) {
+    if (JobState.STARTED.equals(jobState)) {
       metadata.put("attempt_stage", "STARTED");
-    } else if(List.of(JobState.SUCCEEDED, JobState.FAILED).contains(jobState)) {
+    } else if (List.of(JobState.SUCCEEDED, JobState.FAILED).contains(jobState)) {
       metadata.put("attempt_stage", "ENDED");
       metadata.put("attempt_completion_status", jobState);
     }

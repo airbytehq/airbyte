@@ -102,23 +102,23 @@ public class JobNotifier {
               action,
               MoreMaps.merge(jobMetadata, sourceMetadata, destinationMetadata, notificationMetadata.build()));
 
-          if(FAILURE_NOTIFICATION == action) {
+          if (FAILURE_NOTIFICATION == action) {
             if (!notificationClient.notifyJobFailure(sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify failure: {}", notification);
             }
             break;
-          } else if(SUCCESS_NOTIFICATION == action) {
+          } else if (SUCCESS_NOTIFICATION == action) {
             if (!notificationClient.notifyJobSuccess(sourceConnector, destinationConnector, jobDescription, logUrl)) {
               LOGGER.warn("Failed to successfully notify success: {}", notification);
             }
             break;
-          } else if(CONNECTION_DISABLED_NOTIFICATION == action) {
+          } else if (CONNECTION_DISABLED_NOTIFICATION == action) {
             if (!notificationClient.notifyConnectionDisabled(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
                 workspaceId, connectionId)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection: {}", notification);
             }
             break;
-          } else if(CONNECTION_DISABLED_WARNING_NOTIFICATION == action) {
+          } else if (CONNECTION_DISABLED_WARNING_NOTIFICATION == action) {
             if (!notificationClient.notifyConnectionDisableWarning(workspace.getEmail(), sourceConnector, destinationConnector, jobDescription,
                 workspaceId, connectionId)) {
               LOGGER.warn("Failed to successfully notify auto-disable connection warning: {}", notification);
