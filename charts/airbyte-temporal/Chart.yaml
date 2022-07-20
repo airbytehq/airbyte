@@ -1,7 +1,6 @@
 apiVersion: v2
-name: airbyte
-description: Helm chart to deploy airbyte
-
+name: temporal
+description: Helm chart to deploy airbyte-temporal
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -16,7 +15,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.39.36
+version: "0.39.36"
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -30,35 +29,3 @@ dependencies:
     tags:
       - bitnami-common
     version: 1.x.x
-  - condition: postgresql.enabled
-    name: postgresql
-    version: 10.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - condition: logs.minio.enabled
-    name: minio
-    version: 11.x.x
-    repository: https://charts.bitnami.com/bitnami
-  - condition: airbyte-bootloader.enabled
-    name: airbyte-bootloader
-    repository: "https://airbytehq.github.io/helm-charts/"
-    version: placeholder
-  - condition: temporal.enabled
-    name: temporal
-    repository: "https://airbytehq.github.io/helm-charts/"
-    version: placeholder
-  - condition: webapp.enabled
-    name: webapp
-    repository: "https://airbytehq.github.io/helm-charts/"
-    version: placeholder
-  - condition: server.enabled
-    name: server
-    repository: "https://airbytehq.github.io/helm-charts/"
-    version: placeholder
-  - condition: worker.enabled
-    name: worker
-    repository: "https://airbytehq.github.io/helm-charts/"
-    version: placeholder
-  - condition: pod-sweeper.enabled
-    name: pod-sweeper
-    repository: "https://airbytehq.github.io/helm-charts/"
-    version: placeholder

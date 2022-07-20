@@ -1,10 +1,10 @@
 ---
-{{ if .Values.webapp.ingress.enabled -}}
+{{ if .Values.ingress.enabled -}}
 {{- $fullName := include "airbyte.fullname" . -}}
-{{- $svcPort := .Values.webapp.service.port -}}
-{{- if and .Values.webapp.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
-  {{- if not (hasKey .Values.webapp.ingress.annotations "kubernetes.io/ingress.class") }}
-  {{- $_ := set .Values.webapp.ingress.annotations "kubernetes.io/ingress.class" .Values.webapp.ingress.className}}
+{{- $svcPort := .Values.service.port -}}
+{{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
+  {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
+  {{- $_ := set .Values.ingress.annotations "kubernetes.io/ingress.class" .Values.ingress.className}}
   {{- end }}
 {{- end }}
 {{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
@@ -18,18 +18,22 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "airbyte.labels" . | nindent 4 }}
-  {{- with .Values.webapp.ingress.annotations }}
+    app.kubernetes.io/name: {{ include "airbyte.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    helm.sh/chart: {{ include "airbyte.chart" . }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if and .Values.webapp.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
-  ingressClassName: {{ .Values.webapp.ingress.className }}
+  {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
+  ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.webapp.ingress.tls }}
+  {{- if .Values.ingress.tls }}
   tls:
-    {{- range .Values.webapp.ingress.tls }}
+    {{- range .Values.ingress.tls }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -38,7 +42,7 @@ spec:
     {{- end }}
   {{- end }}
   rules:
-    {{- range .Values.webapp.ingress.hosts }}
+    {{- range .Values.ingress.hosts }}
     - host: {{ .host | quote }}
       http:
         paths:
