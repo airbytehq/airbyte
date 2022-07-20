@@ -103,6 +103,10 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     }
   }
 
+  private boolean useSsl(final JsonNode config) {
+    return !config.has("ssl") || config.get("ssl").asBoolean();
+  }
+
   public static void main(final String[] args) throws Exception {
     final Destination destination = ClickhouseDestination.sshWrappedDestination();
     LOGGER.info("starting destination: {}", ClickhouseDestination.class);
