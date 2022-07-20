@@ -9,7 +9,7 @@ connectionSpecification:
   additionalProperties: false
   properties:
     access_key:
-      title: Access Key *
+      title: Access Key
       type: string
       description: Your API Access Key.
       order: 1
