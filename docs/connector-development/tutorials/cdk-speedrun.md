@@ -51,7 +51,7 @@ connectionSpecification:
   type: object
   required:
     - pokemon_name
-  additionalProperties: false
+  additionalProperties: true
   properties:
     pokemon_name:
       type: string
