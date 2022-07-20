@@ -262,7 +262,11 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
                     # strings
                     return "string"
 
+                elif attribute.startswith("ga:dateHourMinute"):
+                    return "integer"
+
                 attr_type = self.dimensions_ref[attribute]
+
             elif field_type == "metric":
                 # Custom Google Analytics Metrics {ga:goalXXStarts, ga:metricXX, ... }
                 # We always treat them as strings as we can not be sure of their data type

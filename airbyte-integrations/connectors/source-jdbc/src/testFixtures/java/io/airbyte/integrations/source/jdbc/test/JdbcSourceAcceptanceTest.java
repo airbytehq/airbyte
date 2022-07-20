@@ -393,7 +393,8 @@ public abstract class JdbcSourceAcceptanceTest {
 
     final List<AirbyteMessage> expectedMessages = getAirbyteMessagesReadOneColumn();
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesReadOneColumn() {
@@ -448,7 +449,8 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessages);
 
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
@@ -483,7 +485,8 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.addAll(getAirbyteMessagesForTablesWithQuoting(streamForTableWithSpaces));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
@@ -625,7 +628,8 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessagesSecondSync);
 
     assertEquals(expectedMessages.size(), actualMessagesSecondSync.size());
-    assertEquals(expectedMessages, actualMessagesSecondSync);
+    assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
+    assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
   }
 
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
@@ -740,7 +744,8 @@ public abstract class JdbcSourceAcceptanceTest {
     setEmittedAtToNull(actualMessagesFirstSync);
 
     assertEquals(expectedMessagesFirstSync.size(), actualMessagesFirstSync.size());
-    assertEquals(expectedMessagesFirstSync, actualMessagesFirstSync);
+    assertTrue(expectedMessagesFirstSync.containsAll(actualMessagesFirstSync));
+    assertTrue(actualMessagesFirstSync.containsAll(expectedMessagesFirstSync));
   }
 
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
@@ -815,7 +820,8 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.addAll(createExpectedTestMessages(expectedStreams));
 
     assertEquals(expectedMessages.size(), actualMessages.size());
-    assertEquals(expectedMessages, actualMessages);
+    assertTrue(expectedMessages.containsAll(actualMessages));
+    assertTrue(actualMessages.containsAll(expectedMessages));
   }
 
   // get catalog and perform a defensive copy.
@@ -1058,6 +1064,19 @@ public abstract class JdbcSourceAcceptanceTest {
     } else {
       return new AirbyteMessage().withType(Type.STATE).withState(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
           .withData(Jsons.jsonNode(new DbState().withCdc(false).withStreams(legacyStates))));
+    }
+  }
+
+  public static void setEnv(final String key, final String value) {
+    try {
+      final Map<String, String> env = System.getenv();
+      final Class<?> cl = env.getClass();
+      final java.lang.reflect.Field field = cl.getDeclaredField("m");
+      field.setAccessible(true);
+      final Map<String, String> writableEnv = (Map<String, String>) field.get(env);
+      writableEnv.put(key, value);
+    } catch (final Exception e) {
+      throw new IllegalStateException("Failed to set environment variable", e);
     }
   }
 

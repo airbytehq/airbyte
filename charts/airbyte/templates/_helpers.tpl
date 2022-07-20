@@ -51,6 +51,18 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Create the image pull secrets
+*/}}
+{{- define "common.imagePullSecrets" -}}
+{{- if .Values.imagePullSecrets }}
+{{- printf "imagePullSecrets:" }}
+  {{- range .Values.imagePullSecrets }}
+    {{- printf "- name: %s" . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "airbyte.serviceAccountName" -}}
@@ -140,6 +152,24 @@ Add environment variables to configure database values
 {{- $dbName := (include "airbyte.database.name" .) -}}
 {{- $port := (include "airbyte.database.port" . ) -}}
 {{- printf "jdbc:postgresql://%s:%s/%s" $host $port $dbName -}}
+{{- end -}}
+
+{{/*
+Add variable for temporal host
+*/}}
+{{- define "airbyte.temporal.host" -}}
+{{- ternary (printf "%s-%s" (include "common.names.fullname" .) "temporal") .Values.externalTemporal.host .Values.temporal.enabled -}}
+{{- end -}}
+
+{{/*
+Add variable for temporal port
+*/}}
+{{- define "airbyte.temporal.port" -}}
+{{- ternary  .Values.temporal.service.port .Values.externalTemporal.port .Values.temporal.enabled -}}
+{{- end -}}
+
+{{- define "airbyte.temporal.url" -}}
+{{- (printf "%s:%d" (include "airbyte.temporal.host" .) (include "airbyte.temporal.port" . | default 7233 | int)) -}}
 {{- end -}}
 
 {{/*

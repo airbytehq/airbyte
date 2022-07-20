@@ -172,3 +172,10 @@ class ConnectorConfig(BaseConfig):
         mininum=1,
         default=28,
     )
+
+    max_batch_size: Optional[PositiveInt] = Field(
+        title="Maximum size of Batched Requests",
+        order=9,
+        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        default=50,
+    )

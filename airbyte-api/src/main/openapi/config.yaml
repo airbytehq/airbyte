@@ -668,7 +668,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SourceIdRequestBody"
+              $ref: "#/components/schemas/SourceCloneRequestBody"
         required: true
       responses:
         "200":
@@ -1253,7 +1253,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DestinationIdRequestBody"
+              $ref: "#/components/schemas/DestinationCloneRequestBody"
         required: true
       responses:
         "200":
@@ -1975,6 +1975,27 @@ paths:
                 $ref: "#/components/schemas/WebBackendConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/web_backend/connections/updateNew:
+    post:
+      operationId: webBackendUpdateConnectionNew
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebBackendConnectionUpdate"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendConnectionRead"
+          description: Successful operation
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+      summary: Update a connection
+      tags:
+        - web_backend
   /v1/web_backend/connections/search:
     post:
       tags:
@@ -2715,6 +2736,23 @@ components:
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
+    SourceCloneRequestBody:
+      description: The values required to configure the source. The schema for this should have an id of the existing source along with the configuration you want to change in case.
+      type: object
+      required:
+        - sourceCloneId
+      properties:
+        sourceCloneId:
+          $ref: "#/components/schemas/SourceId"
+        sourceConfiguration:
+          $ref: "#/components/schemas/SourceCloneConfiguration"
+    SourceCloneConfiguration:
+      type: object
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/SourceConfiguration"
+        name:
+          type: string
     SourceConfiguration:
       description: The values required to configure the source. The schema for this must match the schema return by source_definition_specifications/get for the source.
       example: { user: "charles" }
@@ -3043,6 +3081,23 @@ components:
           $ref: "#/components/schemas/DestinationConfiguration"
         name:
           type: string
+    DestinationCloneRequestBody:
+      description: The values required to configure the destination. The schema for this should have an id of the existing destination along with the configuration you want to change in case.
+      type: object
+      required:
+        - destinationCloneId
+      properties:
+        destinationCloneId:
+          $ref: "#/components/schemas/DestinationId"
+        destinationConfiguration:
+          $ref: "#/components/schemas/DestinationCloneConfiguration"
+    DestinationCloneConfiguration:
+      type: object
+      properties:
+        connectionConfiguration:
+          $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
     DestinationRead:
       type: object
       required:
@@ -3278,6 +3333,8 @@ components:
         resourceRequirements:
           $ref: "#/components/schemas/ResourceRequirements"
         withRefreshedCatalog:
+          type: boolean
+        skipReset:
           type: boolean
         operations:
           type: array

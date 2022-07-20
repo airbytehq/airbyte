@@ -493,6 +493,20 @@ class Groups(SourceZendeskSupportStream):
 class GroupMemberships(SourceZendeskSupportCursorPaginationStream):
     """GroupMemberships stream: https://developer.zendesk.com/api-reference/ticketing/groups/group_memberships/"""
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        next_page = self._parse_next_page_number(response)
+        return next_page if next_page else None
+
+    def request_params(
+        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"page": 1, "per_page": self.page_size, "sort_by": "asc"}
+        start_time = self.str2unixtime((stream_state or {}).get(self.cursor_field))
+        params["start_time"] = start_time if start_time else self.str2unixtime(self._start_date)
+        if next_page_token:
+            params["page"] = next_page_token
+        return params
+
 
 class SatisfactionRatings(SourceZendeskSupportCursorPaginationStream):
     """

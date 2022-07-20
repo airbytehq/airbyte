@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -57,6 +58,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
   @BeforeEach

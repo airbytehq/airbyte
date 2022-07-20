@@ -26,6 +26,6 @@ class InterpolatedPaginator(Paginator):
             self._config, decoded_response=decoded_response, headers=headers, last_records=last_records
         )
 
-        non_null_tokens = {k: v for k, v in interpolated_values.items() if v}
+        non_null_tokens = {k: v for k, v in interpolated_values.items() if v is not None}
 
         return non_null_tokens if non_null_tokens else None
