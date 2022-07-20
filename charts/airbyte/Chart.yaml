@@ -41,24 +41,24 @@ dependencies:
   - condition: airbyte-bootloader.enabled
     name: airbyte-bootloader
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.43.3
+    version: placeholder
   - condition: temporal.enabled
     name: temporal
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.43.3
+    version: placeholder
   - condition: webapp.enabled
     name: webapp
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.43.3
+    version: placeholder
   - condition: server.enabled
     name: server
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.43.3
+    version: placeholder
   - condition: worker.enabled
     name: worker
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.43.3
+    version: placeholder
   - condition: pod-sweeper.enabled
     name: pod-sweeper
     repository: "https://airbytehq.github.io/helm-charts/"
-    version: 0.43.3
+    version: placeholder

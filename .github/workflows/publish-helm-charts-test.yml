@@ -35,4 +35,9 @@ jobs:
 
       - shell: bash
         run: echo ${{ steps.sem-ver.outputs.version }}
+
+      - shell: bash
+        run: |
+          sed -i "s/    version: placeholder/      version: ${{ steps.sem-ver.outputs.version }}/g" charts/airbyte/Chart.yaml
+          cat charts/airbyte/Chart.yaml
       
