@@ -182,19 +182,15 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
         "test_schema", "table_with_tiny_int", "id", "bool_col", "tiny_int_one_col",
         "tiny_int_two_col", "id"));
 
-    executeQuery(String
-        .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
-            "table_with_tiny_int",
-            "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
-            data.get(0).get("id").asInt(), data.get(0).get("bool_col").asBoolean(),
-            data.get(0).get("tiny_int_one_col").asBoolean() ? 99 : -99, data.get(0).get("tiny_int_two_col").asInt()));
+    for (JsonNode record : data) {
+      executeQuery(String
+          .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
+              "table_with_tiny_int",
+              "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
+              record.get("id").asInt(), record.get("bool_col").asBoolean(),
+              record.get("tiny_int_one_col").asBoolean() ? 99 : -99, record.get("tiny_int_two_col").asInt()));
+    }
 
-    executeQuery(String
-        .format("INSERT INTO %s.%s (%s, %s, %s, %s) VALUES (%s, %s, %s, %s);", "test_schema",
-            "table_with_tiny_int",
-            "id", "bool_col", "tiny_int_one_col", "tiny_int_two_col",
-            data.get(1).get("id").asInt(), data.get(1).get("bool_col").asBoolean(),
-            data.get(1).get("tiny_int_one_col").asBoolean() ? 99 : -99, data.get(1).get("tiny_int_two_col").asInt()));
     ((ObjectNode) config).put("database", "test_schema");
   }
 
