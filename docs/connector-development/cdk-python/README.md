@@ -1,13 +1,10 @@
 # Connector Development Kit (Python)
 
-    :::info
-    Singer Taps are no longer supported and contributions of this type will not be accepted by the Airbyte team.
-    :::
-
 The Airbyte Python CDK is a framework for rapidly developing production-grade Airbyte connectors. The CDK currently offers helpers specific for creating Airbyte source connectors for:
 
 * HTTP APIs \(REST APIs, GraphQL, etc..\)
 * Generic Python sources \(anything not covered by the above\)
+* Singer Taps (Note: The CDK supports building Singer taps but Airbyte no longer access contributions of this type)
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
