@@ -8,10 +8,12 @@ from typing import (
     Tuple,
     Union
 )
+import hashlib
 
 
 class Dimension:
     def __init__(self):
+        self.id = None
         self.dimension_id = None
         self.dimension_name = None
         self.dimension_short_name = None
@@ -40,8 +42,12 @@ class Dimension:
             self.attribute_value_id = int(d.get("@valueId"))
             self.attribute_value = d.get("@value")
 
+        _id = f"{self.dimension_id}{self.value_id}{self.attribute_id}".encode("utf-8")
+        self.id = int(hashlib.sha1(_id).hexdigest(), 16) % (10 ** 12)
+
     def to_record(self) -> dict:
         return {
+            "id": self.id,
             "dimension_id": self.dimension_id,
             "dimension_name": self.dimension_name,
             "dimension_short_name": self.dimension_short_name,
