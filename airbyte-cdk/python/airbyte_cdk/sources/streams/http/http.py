@@ -255,7 +255,6 @@ class HttpStream(Stream, ABC):
         data: Any = None,
     ) -> requests.PreparedRequest:
         args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
-        print(f"request args: {args}")
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
