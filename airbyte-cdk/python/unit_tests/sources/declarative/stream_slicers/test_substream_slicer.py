@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import copy
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import pytest as pytest
@@ -206,14 +206,16 @@ def test_request_option(
     expected_body_json,
     expected_body_data,
 ):
+    global parent_stream_name_to_config
+    parent_stream_name_to_config = copy.deepcopy(parent_stream_name_to_config)
+    for parent_stream_name, request_option in parent_stream_name_to_request_option.items():
+        parent_stream_name_to_config[parent_stream_name].request_option = request_option
     slicer = SubstreamSlicer(
         [
             MockStream(parent_slices, data_first_parent_slice + data_second_parent_slice, "first_stream"),
             MockStream(second_parent_stream_slice, more_records, "second_stream"),
         ],
-        parent_stream_name_to_slice_key,
-        parent_stream_name_to_stream_slice_key,
-        parent_stream_name_to_request_option,
+        parent_stream_name_to_config,
     )
     slicer.update_cursor({"first_stream_id": "1234", "second_stream_id": "4567"}, None)
 
