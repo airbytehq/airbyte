@@ -20,7 +20,7 @@ Private key stays with the user (and only there), while the public key is sent t
 Server stores the public key (and "marks" it as authorized).
 Server will now allow access to anyone who can prove they have the corresponding private key.
 
-### Step 2: Set up the `$CONNECTOR_NAME` connector in Airbyte
+### Step 2: Set up the SFTP connector in Airbyte
 
 #### For Airbyte Cloud:
 
