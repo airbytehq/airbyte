@@ -1,13 +1,13 @@
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { H6 } from "components";
 import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
-import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import ConnectionName from "./ConnectionName";
@@ -29,7 +29,7 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   currentStep,
   onStatusUpdating,
 }) => {
-  const { push } = useRouter<{ id: string }>();
+  const navigate = useNavigate();
 
   const steps = useMemo(() => {
     const steps = [
@@ -59,9 +59,9 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   const onSelectStep = useCallback(
     (id: string) => {
       if (id === ConnectionSettingsRoutes.STATUS) {
-        push("");
+        navigate("");
       } else {
-        push(id);
+        navigate(id);
       }
     },
     [push]

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 
 // TODO: create separate component for source and destinations forms
+import { useLocation, useNavigate } from "react-router-dom";
+
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
-import useRouter from "hooks/useRouter";
 import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
@@ -13,7 +14,8 @@ interface ConnectionCreateDestinationFormProps {
 }
 
 export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinationFormProps> = ({ afterSubmit }) => {
-  const { push, location } = useRouter();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [successRequest, setSuccessRequest] = useState(false);
 
   const { destinationDefinitions } = useDestinationDefinitionList();
@@ -32,7 +34,7 @@ export const ConnectionCreateDestinationForm: React.FC<ConnectionCreateDestinati
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
-      push(
+      navigate(
         {},
         {
           state: {

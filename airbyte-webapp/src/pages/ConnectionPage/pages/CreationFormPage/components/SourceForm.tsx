@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 import { SourceForm } from "pages/SourcesPage/pages/CreateSourcePage/components/SourceForm";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
@@ -12,7 +12,8 @@ interface ConnectionCreateSourceFormProps {
 }
 
 export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProps> = ({ afterSubmit }) => {
-  const { push, location } = useRouter();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [successRequest, setSuccessRequest] = useState(false);
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: createSource } = useCreateSource();
@@ -31,7 +32,7 @@ export const ConnectionCreateSourceForm: React.FC<ConnectionCreateSourceFormProp
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
-      push(
+      navigate(
         {},
         {
           state: {

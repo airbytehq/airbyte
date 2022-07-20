@@ -1,6 +1,7 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 import styled from "styled-components";
 
@@ -8,7 +9,7 @@ import SortButton from "components/EntityTable/components/SortButton";
 import { SortOrderEnum } from "components/EntityTable/types";
 import Table from "components/Table";
 
-import useRouter from "hooks/useRouter";
+import { useRouterQuery } from "hooks/useRouter";
 import { CreditConsumptionByConnector } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -39,7 +40,8 @@ type FullTableProps = CreditConsumptionByConnector & {
 };
 
 const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ creditConsumption }) => {
-  const { query, push } = useRouter();
+  const query = useRouterQuery();
+  const navigate = useNavigate();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { destinationDefinitions } = useDestinationDefinitionList();
 
@@ -69,7 +71,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
     (field: string) => {
       const order =
         sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-      push({
+      navigate({
         search: queryString.stringify(
           {
             sortBy: field,
@@ -79,7 +81,7 @@ const UsagePerConnectionTable: React.FC<UsagePerConnectionTableProps> = ({ credi
         ),
       });
     },
-    [push, sortBy, sortOrder]
+    [navigate, sortBy, sortOrder]
   );
 
   const sortData = useCallback(
