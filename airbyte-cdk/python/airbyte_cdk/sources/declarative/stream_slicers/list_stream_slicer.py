@@ -35,8 +35,8 @@ class ListStreamSlicer(StreamSlicer):
         self._cursor = None
         self._request_option = request_option
 
-        if request_option and request_option.pass_by == RequestOptionType.path:
-            raise ValueError("Slice value cannot be passed by path")
+        if request_option and request_option.inject_into == RequestOptionType.path:
+            raise ValueError("Slice value cannot be injected in the path")
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
         slice_value = stream_slice.get(self._cursor_field.eval(self._config))
@@ -62,7 +62,7 @@ class ListStreamSlicer(StreamSlicer):
         return [{self._cursor_field.eval(self._config): slice_value} for slice_value in self._slice_values]
 
     def _get_request_option(self, request_option_type: RequestOptionType):
-        if self._request_option and self._request_option.pass_by == request_option_type:
+        if self._request_option and self._request_option.inject_into == request_option_type:
             return {self._request_option.field_name: self._cursor}
         else:
             return {}

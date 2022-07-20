@@ -89,7 +89,7 @@ class LimitPaginator(Paginator):
         :param url_base: endpoint's base url
         :param decoder: decoder to decode the response
         """
-        if limit_option.option_type == RequestOptionType.path:
+        if limit_option.inject_into == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
         self._page_size = page_size
         self._config = config
@@ -110,7 +110,7 @@ class LimitPaginator(Paginator):
             return None
 
     def path(self):
-        if self._token and self._page_token_option.option_type == RequestOptionType.path:
+        if self._token and self._page_token_option.inject_into == RequestOptionType.path:
             # Replace url base to only return the path
             return str(self._token).replace(self._url_base.eval(self._config), "")
         else:
@@ -130,10 +130,10 @@ class LimitPaginator(Paginator):
 
     def _get_request_options(self, option_type) -> Mapping[str, Any]:
         options = {}
-        if self._page_token_option.option_type == option_type:
+        if self._page_token_option.inject_into == option_type:
             if option_type != RequestOptionType.path and self._token:
                 options[self._page_token_option.field_name] = self._token
-        if self._limit_option.option_type == option_type:
+        if self._limit_option.inject_into == option_type:
             if option_type != RequestOptionType.path:
                 options[self._limit_option.field_name] = self._page_size
         return options

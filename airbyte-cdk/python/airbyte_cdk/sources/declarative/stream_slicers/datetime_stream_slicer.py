@@ -87,9 +87,9 @@ class DatetimeStreamSlicer(StreamSlicer):
         if not self._end_datetime.datetime_format:
             self._end_datetime.datetime_format = self._datetime_format
 
-        if self._start_time_option and self._start_time_option.pass_by == RequestOptionType.path:
+        if self._start_time_option and self._start_time_option.inject_into == RequestOptionType.path:
             raise ValueError("Start time cannot be passed by path")
-        if self._end_time_option and self._end_time_option.pass_by == RequestOptionType.path:
+        if self._end_time_option and self._end_time_option.inject_into == RequestOptionType.path:
             raise ValueError("End time cannot be passed by path")
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
@@ -201,9 +201,9 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def _get_request_options(self, option_type):
         options = {}
-        if self._start_time_option and self._start_time_option.pass_by == option_type:
+        if self._start_time_option and self._start_time_option.inject_into == option_type:
             if self._cursor:
                 options[self._start_time_option.field_name] = self._cursor
-        if self._end_time_option and self._end_time_option.pass_by == option_type:
+        if self._end_time_option and self._end_time_option.inject_into == option_type:
             options[self._end_time_option.field_name] = self._cursor_end
         return options

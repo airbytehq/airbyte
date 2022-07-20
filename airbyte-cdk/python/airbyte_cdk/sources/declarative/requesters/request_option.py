@@ -37,7 +37,7 @@ class RequestOption:
             raise ValueError(f"RequestOption expected field name for type {self._option_type}")
 
     @property
-    def pass_by(self) -> RequestOptionType:
+    def inject_into(self) -> RequestOptionType:
         return self._option_type
 
     @property

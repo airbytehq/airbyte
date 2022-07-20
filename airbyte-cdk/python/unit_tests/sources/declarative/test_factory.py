@@ -394,7 +394,7 @@ def test_create_limit_paginator():
     assert isinstance(paginator, LimitPaginator)
     page_token_option = paginator._page_token_option
     assert isinstance(page_token_option, RequestOption)
-    assert page_token_option.option_type == RequestOptionType.path
+    assert page_token_option.inject_into == RequestOptionType.path
 
 
 class TestCreateTransformations:

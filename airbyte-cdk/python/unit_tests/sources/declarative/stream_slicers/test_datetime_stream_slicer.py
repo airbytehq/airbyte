@@ -338,9 +338,9 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
 
 
 @pytest.mark.parametrize(
-    "test_name, pass_by, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data",
+    "test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data",
     [
-        ("test_start_time_passed_by_none", None, None, {}, {}, {}, {}),
+        ("test_start_time_inject_into_none", None, None, {}, {}, {}, {}),
         (
             "test_start_time_passed_by_req_param",
             RequestOptionType.request_parameter,
@@ -351,7 +351,7 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
             {},
         ),
         (
-            "test_start_time_passed_by_header",
+            "test_start_time_inject_into_header",
             RequestOptionType.header,
             "start_time",
             {},
@@ -360,7 +360,7 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
             {},
         ),
         (
-            "test_start_time_passed_by_body_json",
+            "test_start_time_inject_intoy_body_json",
             RequestOptionType.body_json,
             "start_time",
             {},
@@ -369,7 +369,7 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
             {},
         ),
         (
-            "test_start_time_passed_by_body_data",
+            "test_start_time_inject_into_body_data",
             RequestOptionType.body_data,
             "start_time",
             {},
@@ -378,7 +378,7 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
             {"start_time": "2021-01-02T00:00:00.000000+0000", "endtime": "2021-01-04T00:00:00.000000+0000"},
         ),
         (
-            "test_start_time_passed_by_path",
+            "test_start_time_inject_into_path",
             RequestOptionType.path,
             "start_time",
             {},
@@ -388,10 +388,10 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
         ),
     ],
 )
-def test_request_option(test_name, pass_by, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
-    if pass_by == RequestOptionType.path:
-        start_request_option = RequestOption(pass_by)
-        end_request_option = RequestOption(pass_by)
+def test_request_option(test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
+    if inject_into == RequestOptionType.path:
+        start_request_option = RequestOption(inject_into)
+        end_request_option = RequestOption(inject_into)
         try:
             DatetimeStreamSlicer(
                 start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000"),
@@ -408,8 +408,8 @@ def test_request_option(test_name, pass_by, field_name, expected_req_params, exp
         except ValueError:
             return
     else:
-        start_request_option = RequestOption(pass_by, field_name) if pass_by else None
-        end_request_option = RequestOption(pass_by, "endtime") if pass_by else None
+        start_request_option = RequestOption(inject_into, field_name) if inject_into else None
+        end_request_option = RequestOption(inject_into, "endtime") if inject_into else None
         slicer = DatetimeStreamSlicer(
             start_datetime=MinMaxDatetime("2021-01-01T00:00:00.000000+0000"),
             end_datetime=MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),

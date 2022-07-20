@@ -57,7 +57,7 @@ class SubstreamSlicer(StreamSlicer):
     def _get_request_option(self, option_type: RequestOptionType):
         params = {}
         for stream_name, parent_config in self._parent_stream_name_to_config.items():
-            if parent_config.request_option and parent_config.request_option.pass_by == option_type:
+            if parent_config.request_option and parent_config.request_option.inject_into == option_type:
                 key = self._parent_stream_name_to_config[stream_name].stream_slice_field
                 value = self._cursor.get(key)
                 if value:

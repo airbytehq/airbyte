@@ -53,7 +53,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
     "test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data",
     [
         (
-            "test_pass_by_req_param",
+            "test_inject_into_req_param",
             RequestOption(RequestOptionType.request_parameter, "owner_resource"),
             {"owner_resource": "customer"},
             {},
@@ -62,7 +62,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
         ),
         ("test_pass_by_header", RequestOption(RequestOptionType.header, "owner_resource"), {}, {"owner_resource": "customer"}, {}, {}),
         (
-            "test_pass_by_body_json",
+            "test_inject_into_body_json",
             RequestOption(RequestOptionType.body_json, "owner_resource"),
             {},
             {},
@@ -70,7 +70,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
             {},
         ),
         (
-            "test_pass_by_body_data",
+            "test_inject_into_body_data",
             RequestOption(RequestOptionType.body_data, "owner_resource"),
             {},
             {},
@@ -78,7 +78,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
             {"owner_resource": "customer"},
         ),
         (
-            "test_pass_by_path",
+            "test_inject_into_path",
             RequestOption(RequestOptionType.path),
             {},
             {},
@@ -88,7 +88,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
     ],
 )
 def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
-    if request_option.pass_by == RequestOptionType.path:
+    if request_option.inject_into == RequestOptionType.path:
         try:
             ListStreamSlicer(slice_values, cursor_field, {}, request_option)
             assert False
