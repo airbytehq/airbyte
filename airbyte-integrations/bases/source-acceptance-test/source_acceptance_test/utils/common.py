@@ -83,10 +83,7 @@ def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref
                 return item
 
 
-def find_keyword_schema(
-    schema: Union[dict, list, str],
-    key: str,
-) -> bool:
+def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
     """Find at least one keyword in a schema, skip object properties"""
 
     def _find_keyword(schema, key, _skip=False):
