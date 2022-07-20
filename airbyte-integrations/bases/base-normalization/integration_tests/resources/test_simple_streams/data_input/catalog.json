@@ -242,6 +242,28 @@
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "types_testing",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "big_integer": {
+              "type": "number",
+              "airbyte_type": "big_integer"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     }
   ]
 }
