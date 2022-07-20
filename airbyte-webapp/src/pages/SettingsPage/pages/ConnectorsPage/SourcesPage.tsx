@@ -13,7 +13,7 @@ const SourcesPage: React.FC = () => {
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 

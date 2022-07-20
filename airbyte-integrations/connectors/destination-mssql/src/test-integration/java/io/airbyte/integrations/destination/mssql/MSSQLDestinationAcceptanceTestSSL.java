@@ -16,6 +16,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -54,8 +55,8 @@ public class MSSQLDestinationAcceptanceTestSSL extends DestinationAcceptanceTest
   private JsonNode getConfig(final MSSQLServerContainer<?> db) {
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(db))
+        .put("port", HostPortResolver.resolvePort(db))
         .put("username", db.getUsername())
         .put("password", db.getPassword())
         .put("schema", "test_schema")

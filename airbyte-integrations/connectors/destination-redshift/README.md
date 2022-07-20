@@ -17,4 +17,8 @@ redshift.connString=<conn_string>
 redshift.user=<user>
 redshift.pass=<pass>
 ```
+## Actual secrets
+The actual secrets for integration tests could be found in Google Secrets Manager. It could be found by next labels:
+- SECRET_DESTINATION-REDSHIFT__CREDS - used for Standard tests. (__config.json__)
+- SECRET_DESTINATION-REDSHIFT_STAGING__CREDS - used for S3 Staging tests. (__config_staging.json__)
 

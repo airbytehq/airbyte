@@ -3,7 +3,7 @@ import React from "react";
 import { useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { DestinationDefinitionSpecificationRead } from "../../../../core/request/AirbyteClient";
 import { useDefaultTransformation } from "../formConfig";
@@ -16,14 +16,21 @@ const SectionTitle = styled.div`
   line-height: 17px;
 `;
 
-export const OperationsSection: React.FC<{
+interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
-}> = ({ destDefinition }) => {
-  const formatMessage = useIntl().formatMessage;
-  const { hasFeature } = useFeatureService();
+  onStartEditTransformation?: () => void;
+  onEndEditTransformation?: () => void;
+}
 
-  const supportsNormalization = destDefinition.supportsNormalization;
-  const supportsTransformations = destDefinition.supportsDbt && hasFeature(FeatureItem.AllowCustomDBT);
+export const OperationsSection: React.FC<OperationsSectionProps> = ({
+  destDefinition,
+  onStartEditTransformation,
+  onEndEditTransformation,
+}) => {
+  const { formatMessage } = useIntl();
+
+  const { supportsNormalization } = destDefinition;
+  const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && destDefinition.supportsDbt;
 
   const defaultTransformation = useDefaultTransformation();
 
@@ -42,7 +49,14 @@ export const OperationsSection: React.FC<{
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
         <FieldArray name="transformations">
-          {(formProps) => <TransformationField defaultTransformation={defaultTransformation} {...formProps} />}
+          {(formProps) => (
+            <TransformationField
+              defaultTransformation={defaultTransformation}
+              onStartEdit={onStartEditTransformation}
+              onEndEdit={onEndEditTransformation}
+              {...formProps}
+            />
+          )}
         </FieldArray>
       )}
     </>

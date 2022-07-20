@@ -23,8 +23,9 @@ class Retriever(ABC):
     def stream_slices(self, *, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
         pass
 
+    @property
     @abstractmethod
-    def get_state(self) -> MutableMapping[str, Any]:
+    def state(self) -> MutableMapping[str, Any]:
         """State getter, should return state in form that can serialized to a string and send to the output
         as a STATE AirbyteMessage.
 
@@ -36,3 +37,8 @@ class Retriever(ABC):
          State should try to be as small as possible but at the same time descriptive enough to restore
          syncing process from the point where it stopped.
         """
+
+    @state.setter
+    @abstractmethod
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""

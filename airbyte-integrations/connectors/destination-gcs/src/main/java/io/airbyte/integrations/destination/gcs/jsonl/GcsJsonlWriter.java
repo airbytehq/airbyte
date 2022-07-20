@@ -54,7 +54,6 @@ public class GcsJsonlWriter extends BaseGcsWriter implements DestinationFileWrit
 
     this.uploadManager = StreamTransferManagerFactory
         .create(config.getBucketName(), objectKey, s3Client)
-        .setPartSize(config.getFormatConfig().getPartSize())
         .get();
 
     // We only need one output stream as we only have one input stream. This is reasonably performant.

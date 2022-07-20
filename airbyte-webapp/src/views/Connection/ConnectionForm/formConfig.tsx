@@ -41,7 +41,7 @@ interface FormikConnectionFormValues {
 
 type ConnectionFormValues = ValuesProps;
 
-const SUPPORTED_MODES: [SyncMode, DestinationSyncMode][] = [
+const SUPPORTED_MODES: Array<[SyncMode, DestinationSyncMode]> = [
   [SyncMode.incremental, DestinationSyncMode.append_dedup],
   [SyncMode.full_refresh, DestinationSyncMode.overwrite],
   [SyncMode.incremental, DestinationSyncMode.append],
@@ -62,7 +62,7 @@ function useDefaultTransformation(): OperationCreate {
       operatorType: OperatorType.dbt,
       dbt: {
         gitRepoUrl: "", // TODO: Does this need a value?
-        dockerImage: "fishtownanalytics/dbt:0.19.1",
+        dockerImage: "fishtownanalytics/dbt:1.0.0",
         dbtArguments: "run",
       },
     },
@@ -114,7 +114,7 @@ const connectionValidationSchema = yup
               name: "connectionSchema.config.validator",
               // eslint-disable-next-line no-template-curly-in-string
               message: "${path} is wrong",
-              test: function (value) {
+              test(value) {
                 if (!value.selected) {
                   return true;
                 }
@@ -204,7 +204,7 @@ const getInitialTransformations = (operations: OperationCreate[]): OperationRead
   operations?.filter(isDbtTransformation) ?? [];
 
 const getInitialNormalization = (
-  operations?: (OperationRead | OperationCreate)[],
+  operations?: Array<OperationRead | OperationCreate>,
   isEditMode?: boolean
 ): NormalizationType => {
   const initialNormalization =
@@ -234,7 +234,7 @@ const useInitialValues = (
     const initialValues: FormikConnectionFormValues = {
       name: connection.name ?? `${connection.source.name} <> ${connection.destination.name}`,
       syncCatalog: initialSchema,
-      schedule: connection.schedule !== undefined ? connection.schedule : DEFAULT_SCHEDULE,
+      schedule: connection.connectionId || connection.schedule ? connection.schedule ?? null : DEFAULT_SCHEDULE,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -261,17 +261,14 @@ const useFrequencyDropdownData = (): DropDownRow.IDataItem[] => {
     () =>
       FrequencyConfig.map((item) => ({
         value: item.config,
-        label:
-          item.config === null
-            ? item.text
-            : formatMessage(
-                {
-                  id: "form.every",
-                },
-                {
-                  value: item.simpleText || item.text,
-                }
-              ),
+        label: item.config
+          ? formatMessage(
+              {
+                id: `form.every.${item.config.timeUnit}`,
+              },
+              { value: item.config.units }
+            )
+          : formatMessage({ id: "frequency.manual" }),
       })),
     [formatMessage]
   );

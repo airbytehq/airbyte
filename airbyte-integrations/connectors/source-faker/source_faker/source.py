@@ -176,9 +176,16 @@ def get_stream_cursor(state: Dict[str, any], stream: str) -> int:
 
 
 def generate_record(stream: any, data: any):
+    dict = data.copy()
+
+    # timestamps need to be emitted in ISO format
+    for key in dict:
+        if isinstance(dict[key], datetime.datetime):
+            dict[key] = dict[key].isoformat()
+
     return AirbyteMessage(
         type=Type.RECORD,
-        record=AirbyteRecordMessage(stream=stream.stream.name, data=data, emitted_at=int(datetime.datetime.now().timestamp()) * 1000),
+        record=AirbyteRecordMessage(stream=stream.stream.name, data=dict, emitted_at=int(datetime.datetime.now().timestamp()) * 1000),
     )
 
 

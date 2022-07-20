@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
 import io.airbyte.api.model.generated.AdvancedAuth;
@@ -13,7 +14,6 @@ import io.airbyte.api.model.generated.AuthSpecification;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -43,7 +43,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -60,21 +59,23 @@ import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.ErrorCode;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SchedulerHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
+
+  private static final ImmutableSet<ErrorCode> VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET =
+      ImmutableSet.of(ErrorCode.WORKFLOW_DELETED, ErrorCode.WORKFLOW_RUNNING);
 
   private final ConfigRepository configRepository;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
@@ -220,7 +221,8 @@ public class SchedulerHandler {
       final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
       if (response.isSuccess()) {
-        final UUID catalogId = configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
+        final UUID catalogId =
+            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
         returnValue.catalogId(catalogId);
       }
       return returnValue;
@@ -317,20 +319,9 @@ public class SchedulerHandler {
     return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
-  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
-  }
-
-  public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
-    LOGGER.info("currentState server: {}", currentState);
-
-    final ConnectionState connectionState = new ConnectionState()
-        .connectionId(connectionIdRequestBody.getConnectionId());
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-
-    return connectionState;
   }
 
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
@@ -384,15 +375,21 @@ public class SchedulerHandler {
     return readJobFromResult(manualSyncResult);
   }
 
-  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException {
-    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(connectionId);
+  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
+    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
+        connectionId,
+        configRepository.getAllStreamsForConnection(connectionId));
 
     return readJobFromResult(resetConnectionResult);
   }
 
   private JobInfoRead readJobFromResult(final ManualOperationResult manualOperationResult) throws IOException, IllegalStateException {
     if (manualOperationResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+      if (VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET.contains(manualOperationResult.getErrorCode().get())) {
+        throw new ValueConflictKnownException(manualOperationResult.getFailingReason().get());
+      } else {
+        throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+      }
     }
 
     final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());

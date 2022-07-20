@@ -55,7 +55,7 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get("username").asText(),
-        "",
+        config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s/%s?%s",
             config.get("host").asText(),

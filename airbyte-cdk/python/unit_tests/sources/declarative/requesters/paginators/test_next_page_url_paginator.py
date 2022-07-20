@@ -6,7 +6,6 @@ import json
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
 
 config = {"option": "OPTION"}
@@ -39,4 +38,4 @@ def test_no_next_page_found():
 
 
 def create_paginator(template):
-    return NextPageUrlPaginator("https://airbyte.io/", InterpolatedPaginator(template, decoder, config))
+    return NextPageUrlPaginator("https://airbyte.io/", next_page_token_template=template, config=config)

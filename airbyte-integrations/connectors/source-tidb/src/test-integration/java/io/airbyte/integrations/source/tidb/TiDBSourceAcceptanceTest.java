@@ -14,6 +14,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -43,8 +44,8 @@ public class TiDBSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "127.0.0.1")
-        .put("port", container.getFirstMappedPort())
+        .put("host", HostPortResolver.resolveHost(container))
+        .put("port", HostPortResolver.resolvePort(container))
         .put("username", "root")
         .put("database", "test")
         .build());

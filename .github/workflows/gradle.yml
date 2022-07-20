@@ -62,6 +62,7 @@ jobs:
             db:
               - 'airbyte-db/**'
             frontend:
+              - 'airbyte-api/src/main/openapi/config.yaml'
               - 'airbyte-webapp/**'
               - 'airbyte-webapp-e2e-tests/**'
   find_valid_pat:
@@ -193,9 +194,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - uses: actions/setup-python@v2
         with:
@@ -304,9 +305,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -343,9 +344,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -441,9 +442,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -569,9 +570,9 @@ jobs:
         with:
           java-version: "17"
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v2
         with:
-          node-version: "16.13.0"
+          node-version: "lts/gallium"
 
       - name: Fix EC-2 Runner
         run: |

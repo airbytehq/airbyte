@@ -6,9 +6,12 @@ package io.airbyte.metrics.lib;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static org.jooq.impl.SQLDataType.VARCHAR;
 
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +62,15 @@ public class MetricQueries {
   }
 
   public static int numberOfRunningJobs(final DSLContext ctx) {
-    return ctx.selectCount().from(JOBS).where(JOBS.STATUS.eq(JobStatus.running)).fetchOne(0, int.class);
+    return ctx.selectCount().from(JOBS).join(CONNECTION).on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.eq(StatusType.active)))
+        .fetchOne(0, int.class);
+  }
+
+  public static int numberOfOrphanRunningJobs(final DSLContext ctx) {
+    return ctx.selectCount().from(JOBS).join(CONNECTION).on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.ne(StatusType.active)))
+        .fetchOne(0, int.class);
   }
 
   public static Long oldestPendingJobAgeSecs(final DSLContext ctx) {

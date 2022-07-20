@@ -42,7 +42,7 @@ export interface ArrayOfObjectsEditorProps<T extends { name: string }> {
   disabled?: boolean;
 }
 
-export function ArrayOfObjectsEditor<T extends { name: string } = { name: string }>({
+export const ArrayOfObjectsEditor = <T extends { name: string } = { name: string }>({
   onStartEdit,
   onDone,
   onRemove,
@@ -54,7 +54,7 @@ export function ArrayOfObjectsEditor<T extends { name: string } = { name: string
   addButtonText,
   mode,
   disabled,
-}: ArrayOfObjectsEditorProps<T>): JSX.Element {
+}: ArrayOfObjectsEditorProps<T>): JSX.Element => {
   const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
 
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
@@ -108,4 +108,4 @@ export function ArrayOfObjectsEditor<T extends { name: string } = { name: string
       ) : null}
     </Content>
   );
-}
+};

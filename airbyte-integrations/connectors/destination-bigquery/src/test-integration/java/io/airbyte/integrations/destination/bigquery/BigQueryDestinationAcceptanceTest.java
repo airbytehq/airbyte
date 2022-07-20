@@ -112,8 +112,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected boolean supportArrayDataTypeTest() {
-    // #13154 Normalization issue
-    return false;
+    return true;
   }
 
   @Override

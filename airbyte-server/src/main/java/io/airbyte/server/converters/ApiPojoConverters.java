@@ -130,7 +130,8 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
+        .sourceCatalogId(standardSync.getSourceCatalogId());
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));

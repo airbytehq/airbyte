@@ -2,39 +2,28 @@
 
 This page guides you through the process of setting up the Stripe source connector.
 
+## Prerequisites 
 
+* Your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account)
+* Your [Stripe `Secret Key`](https://dashboard.stripe.com/apikeys)
 
-## Prerequisites (Airbyte Open Source)
+## Set up the Stripe source connector 
 
-* Stripe `Account ID` - the `Account ID` of your [Stripe Account](https://dashboard.stripe.com/settings/account)
-* Stripe `Secret Key` - the `Secret Key` to be used with [authorized API calls](https://dashboard.stripe.com/apikeys) to retrieve your Stripe data. 
-* `Lookback Window (in days)` (Optional) - the value in days, which allows you to sync your data with shift equals to the number of days set. If your data is updated after creation, you can use the this option to always reload data from the past N days. This allows you to pick up updates to the data. 
-Example usage: `Start Date` is set to "2021-01-01T00:00:00Z" then:
-    * Default is 0, meaning data will be synced from the `Start Date`.
-    * 1 - means (`Start Date` - 1 day), so the start point of the sync will be "2020-12-31T00:00:00Z"
-    * 7 - means (`Start Date` - 7 days) then `Start Date` will be "2020-12-25T00:00:00Z"
-    * 30 - means (`Start Date` - 30 days) then `Start Date` will be "2020-12-02T00:00:00Z"
-        
-## Step 1: Set up Stripe
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+2. Click **Sources** and then click **+ New source**. 
+3. On the Set up the source page, select **Stripe** from the Source type dropdown.
+4. Enter a name for your source.
+5. For **Account ID**, enter your [Stripe `Account ID`](https://dashboard.stripe.com/settings/account).
+6. For **Secret Key**, enter your [Stripe `Secret Key`](https://dashboard.stripe.com/apikeys)
+    
+    We recommend creating a secret key specifically for Airbyte to control which resources Airbyte can access. For ease of use, we recommend granting read permission to all resources and configuring which resource to replicate in the Airbyte UI. You can also use the API keys for the [test mode](https://stripe.com/docs/keys#obtain-api-keys) to try out the Stripe integration with Airbyte. 
 
-in the Stripe [dashboard](https://dashboard.stripe.com/apikeys) access the secret key for your account. Secret keys for the live Stripe environment will be prefixed with `sk_live_`or `rk_live`.
-
-We recommend creating a restricted key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access. For ease of use, we recommend using read permissions for all resources and configuring which resource to replicate in the Airbyte UI.
-
-If you would like to test Airbyte using test data on Stripe, `sk_test_` and `rk_test_` API keys are also supported.
-
-## Step 2: Set up the source connector in Airbyte
-
-**For Airbyte OSS:**
-
-1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Stripe** from the Source type dropdown.
-4. Copy and paste info from step 1:
-   * account ID 
-   * Secret Key
-5. Choose required Start date and type of aggregation report
-6. Click `Set up source`.
+7. For **Replication start date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+8. For **Lookback Window in days (Optional)**, select the number of days the value in days prior to the start date that you to sync your data with. If your data is updated after setting up this connector, you can use the this option to reload data from the past N days. Example: If the Replication start date is set to `2021-01-01T00:00:00Z`, then:
+    - If you leave the Lookback Window in days parameter to its the default value of 0, Airbyte will sync data from the Replication start date `2021-01-01T00:00:00Z`
+    - If the Lookback Window in days value is set to 1, Airbyte will consider the Replication start date to be `2020-12-31T00:00:00Z`
+    - If the Lookback Window in days value is set to 7, Airbyte will sync data from `2020-12-31T00:00:00Z`
+9. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -42,10 +31,13 @@ The Stripe source connector supports the following [sync modes](https://docs.air
  - Full Refresh
  - Incremental
 
+:::note
+Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the `created` field to query for new data in your Stripe account.
+:::
 
 ## Supported Streams
 
-This Source is capable of syncing the following core Streams:
+The Stripe source connector supports the following streams:
 
 * [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
 * [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
@@ -70,17 +62,13 @@ This Source is capable of syncing the following core Streams:
 * [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
 
-### Note on Incremental Syncs
-
-The Stripe API does not allow querying objects which were updated since the last sync. Therefore, this connector uses the `created` field to query for new data in your Stripe account.
-
 ### Data type mapping
 
-The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+The [Stripe API](https://stripe.com/docs/api) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
 
 ### Performance considerations
 
-The Stripe connector should not run into Stripe API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Stripe connector should not run into Stripe API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 

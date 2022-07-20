@@ -10,16 +10,13 @@ import io.airbyte.integrations.destination.scylla.ScyllaContainerInitializr.Scyl
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(ScyllaDestinationAcceptanceTest.class);
 
   private JsonNode configJson;
 
@@ -42,8 +39,8 @@ class ScyllaDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected void setup(TestDestinationEnv testEnv) {
     configJson = TestDataFactory.jsonConfig(
-        scyllaContainer.getHost(),
-        scyllaContainer.getFirstMappedPort());
+        HostPortResolver.resolveHost(scyllaContainer),
+        HostPortResolver.resolvePort(scyllaContainer));
     var scyllaConfig = new ScyllaConfig(configJson);
     this.scyllaCqlProvider = new ScyllaCqlProvider(scyllaConfig);
     this.nameTransformer = new ScyllaNameTransformer(scyllaConfig);

@@ -1,9 +1,7 @@
 import React, { useContext, useEffect, useMemo } from "react";
 import { useMap } from "react-use";
 
-interface ServiceContainer {
-  [key: string]: Service;
-}
+type ServiceContainer = Record<string, Service>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Service = any;

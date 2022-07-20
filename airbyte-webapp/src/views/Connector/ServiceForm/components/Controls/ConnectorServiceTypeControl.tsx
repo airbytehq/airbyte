@@ -196,9 +196,8 @@ const ConnectorServiceTypeControl: React.FC<ConnectorServiceTypeControlProps> = 
             return priorityB - priorityA;
           } else if (a.releaseStage !== b.releaseStage) {
             return getOrderForReleaseStage(a.releaseStage) - getOrderForReleaseStage(b.releaseStage);
-          } else {
-            return naturalComparator(a.label, b.label);
           }
+          return naturalComparator(a.label, b.label);
         }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableServices, orderOverwrite]

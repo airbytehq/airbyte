@@ -284,7 +284,7 @@ public class BigQuerySourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .createTablePatternSql(CREATE_SQL_PATTERN)
             .addInsertValues("['a', 'b']")
-            .addExpectedValues("[{\"test_column\":\"a\"},{\"test_column\":\"b\"}]")
+            .addExpectedValues("[\"a\",\"b\"]")
             .build());
 
     addDataTypeTestData(

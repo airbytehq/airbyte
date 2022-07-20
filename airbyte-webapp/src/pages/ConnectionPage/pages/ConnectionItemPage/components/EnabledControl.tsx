@@ -5,8 +5,9 @@ import styled from "styled-components";
 
 import { Switch } from "components";
 
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
+import { buildConnectionUpdate } from "core/domain/connection";
 import { useUpdateConnection } from "hooks/services/useConnectionHook";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 
 import { ConnectionStatus, WebBackendConnectionRead } from "../../../../../core/request/AirbyteClient";
 
@@ -30,34 +31,32 @@ const Content = styled.div`
 interface EnabledControlProps {
   connection: WebBackendConnectionRead;
   disabled?: boolean;
-  frequencyText?: string;
+  frequencyType?: string;
   onStatusUpdating?: (updating: boolean) => void;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyText, onStatusUpdating }) => {
+const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, frequencyType, onStatusUpdating }) => {
   const { mutateAsync: updateConnection, isLoading } = useUpdateConnection();
-  const analyticsService = useAnalyticsService();
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
 
   const onChangeStatus = async () => {
-    await updateConnection({
-      connectionId: connection.connectionId,
-      syncCatalog: connection.syncCatalog,
-      schedule: connection.schedule,
-      namespaceDefinition: connection.namespaceDefinition,
-      namespaceFormat: connection.namespaceFormat,
-      prefix: connection.prefix,
-      operations: connection.operations,
-      name: connection.name,
-      status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
-    });
+    await updateConnection(
+      buildConnectionUpdate(connection, {
+        status: connection.status === ConnectionStatus.active ? ConnectionStatus.inactive : ConnectionStatus.active,
+      })
+    );
 
-    analyticsService.track("Source - Action", {
-      action: connection.status === ConnectionStatus.active ? "Disable connection" : "Reenable connection",
+    const trackableAction =
+      connection.status === ConnectionStatus.active ? TrackActionType.DISABLE : TrackActionType.REENABLE;
+
+    const trackableActionString = `${trackableAction} connection`;
+
+    trackSourceAction(trackableActionString, trackableAction, {
       connector_source: connection.source?.sourceName,
-      connector_source_id: connection.source?.sourceDefinitionId,
+      connector_source_definition_id: connection.source?.sourceDefinitionId,
       connector_destination: connection.destination?.name,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
-      frequency: frequencyText,
+      frequency: frequencyType,
     });
   };
 

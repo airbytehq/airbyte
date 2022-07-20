@@ -11,6 +11,7 @@ import GlobalStyle from "../src/global-styles";
 import messages from "../src/locales/en.json";
 import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
+import { DocumentationPanelProvider } from "../src/views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServicesProvider } from "../src/core/servicesProvider";
 import {
   analyticsServiceContext,
@@ -47,11 +48,13 @@ export const withProviders = (getStory) => (
                 <ConfigServiceProvider
                   defaultConfig={defaultConfig}
                   providers={[]}
-                >
-                  <FeatureService>
-                    <GlobalStyle />
-                    {getStory()}
-                  </FeatureService>
+                  >
+                  <DocumentationPanelProvider>
+                    <FeatureService>
+                      <GlobalStyle />
+                      {getStory()}
+                    </FeatureService>
+                  </DocumentationPanelProvider>
                 </ConfigServiceProvider>
               </ThemeProvider>
             </IntlProvider>

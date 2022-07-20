@@ -9,6 +9,7 @@ import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -41,13 +42,15 @@ public interface JobCreator {
    * @param destination db model representing where data goes
    * @param standardSync sync options
    * @param destinationDockerImage docker image to use for the destination
+   * @param streamsToReset
    * @return the new job if no other conflicting job was running, otherwise empty
    * @throws IOException if something wrong happens
    */
   Optional<Long> createResetConnectionJob(DestinationConnection destination,
                                           StandardSync standardSync,
                                           String destinationDockerImage,
-                                          List<StandardSyncOperation> standardSyncOperations)
+                                          List<StandardSyncOperation> standardSyncOperations,
+                                          List<StreamDescriptor> streamsToReset)
       throws IOException;
 
 }

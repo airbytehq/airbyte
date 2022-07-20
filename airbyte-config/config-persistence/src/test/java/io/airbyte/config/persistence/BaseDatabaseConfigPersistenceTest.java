@@ -127,7 +127,7 @@ class BaseDatabaseConfigPersistenceTest {
     database.query(ctx -> ctx
         .execute(
             "TRUNCATE TABLE workspace_service_account, state, actor_catalog, actor_catalog_fetch_event, connection_operation, connection, operation, actor_oauth_parameter, "
-                + "actor, actor_definition, actor_definition_workspace_grant, workspace"));
+                + "actor, actor_definition, actor_definition_workspace_grant, workspace, stream_reset"));
   }
 
   void writeSource(final ConfigPersistence configPersistence, final StandardSourceDefinition source) throws Exception {

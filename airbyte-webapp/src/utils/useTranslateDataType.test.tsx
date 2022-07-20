@@ -6,7 +6,7 @@ import messages from "../locales/en.json";
 import { AirbyteConnectorData, useTranslateDataType } from "./useTranslateDataType";
 
 const wrapper: React.FC = ({ children }) => (
-  <IntlProvider messages={messages} locale={"en"}>
+  <IntlProvider messages={messages} locale="en">
     {children}
   </IntlProvider>
 );

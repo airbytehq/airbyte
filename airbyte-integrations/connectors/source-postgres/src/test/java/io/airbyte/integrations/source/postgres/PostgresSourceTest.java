@@ -33,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -190,6 +191,18 @@ class PostgresSourceTest {
         .build());
   }
 
+  private JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", psqlDb.getHost())
+        .put("port", psqlDb.getFirstMappedPort())
+        .put("database", dbName)
+        .put("schemas", List.of(SCHEMA_NAME))
+        .put("username", psqlDb.getUsername())
+        .put("password", psqlDb.getPassword())
+        .put("ssl", true)
+        .build());
+  }
+
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
@@ -338,6 +351,101 @@ class PostgresSourceTest {
   }
 
   @Test
+  void testDiscoverDifferentGrantAvailability() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("create table not_granted_table_name_1(column_1 integer);");
+          ctx.fetch("create table not_granted_table_name_2(column_1 integer);");
+          ctx.fetch("create table not_granted_table_name_3(column_1 integer);");
+          ctx.fetch("create table table_granted_by_role(column_1 integer);");
+          ctx.fetch("create table test_table_granted_directly(column_1 integer);");
+          ctx.fetch("create table table_granted_by_role_with_options(column_1 integer);");
+          ctx.fetch("create table test_table_granted_directly_with_options(column_1 integer);");
+
+          ctx.fetch("create materialized view not_granted_mv_name_1 as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
+          ctx.fetch("create materialized view not_granted_mv_name_2 as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
+          ctx.fetch("create materialized view not_granted_mv_name_3 as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
+          ctx.fetch("create materialized view mv_granted_by_role as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
+          ctx.fetch(
+              "create materialized view test_mv_granted_directly as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
+          ctx.fetch(
+              "create materialized view mv_granted_by_role_with_options as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
+          ctx.fetch(
+              "create materialized view test_mv_granted_directly_with_options as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
+
+          ctx.fetch("create view not_granted_view_name_1(column_1) as SELECT not_granted_table_name_1.column_1 FROM not_granted_table_name_1;");
+          ctx.fetch("create view not_granted_view_name_2(column_1) as SELECT not_granted_table_name_2.column_1 FROM not_granted_table_name_2;");
+          ctx.fetch("create view not_granted_view_name_3(column_1) as SELECT not_granted_table_name_3.column_1 FROM not_granted_table_name_3;");
+          ctx.fetch("create view view_granted_by_role(column_1) as SELECT table_granted_by_role.column_1 FROM table_granted_by_role;");
+          ctx.fetch(
+              "create view test_view_granted_directly(column_1) as SELECT test_table_granted_directly.column_1 FROM test_table_granted_directly;");
+          ctx.fetch(
+              "create view view_granted_by_role_with_options(column_1) as SELECT table_granted_by_role_with_options.column_1 FROM table_granted_by_role_with_options;");
+          ctx.fetch(
+              "create view test_view_granted_directly_with_options(column_1) as SELECT test_table_granted_directly_with_options.column_1 FROM test_table_granted_directly_with_options;");
+
+          ctx.fetch("create role test_role;");
+
+          ctx.fetch("grant delete on not_granted_table_name_2 to test_role;");
+          ctx.fetch("grant delete on not_granted_mv_name_2 to test_role;");
+          ctx.fetch("grant delete on not_granted_view_name_2 to test_role;");
+
+          ctx.fetch("grant select on table_granted_by_role to test_role;");
+          ctx.fetch("grant select on mv_granted_by_role to test_role;");
+          ctx.fetch("grant select on view_granted_by_role to test_role;");
+
+          ctx.fetch("grant select on table_granted_by_role_with_options to test_role with grant option;");
+          ctx.fetch("grant select on mv_granted_by_role_with_options to test_role with grant option;");
+          ctx.fetch("grant select on view_granted_by_role_with_options to test_role with grant option;");
+
+          ctx.fetch("create user new_test_user;");
+          ctx.fetch("ALTER USER new_test_user WITH PASSWORD 'new_pass';");
+          ctx.fetch("GRANT CONNECT ON DATABASE test TO new_test_user;");
+
+          ctx.fetch("grant test_role to new_test_user;");
+
+          ctx.fetch("grant delete on not_granted_table_name_3 to new_test_user;");
+          ctx.fetch("grant delete on not_granted_mv_name_3 to new_test_user;");
+          ctx.fetch("grant delete on not_granted_view_name_3 to new_test_user;");
+
+          ctx.fetch("grant select on test_table_granted_directly to new_test_user;");
+          ctx.fetch("grant select on test_mv_granted_directly to new_test_user;");
+          ctx.fetch("grant select on test_view_granted_directly to new_test_user;");
+
+          ctx.fetch("grant select on test_table_granted_directly_with_options to test_role with grant option;");
+          ctx.fetch("grant select on test_mv_granted_directly_with_options to test_role with grant option;");
+          ctx.fetch("grant select on test_view_granted_directly_with_options to test_role with grant option;");
+          return null;
+        });
+      }
+
+      final AirbyteCatalog actual = new PostgresSource().discover(getConfig(db, "new_test_user", "new_pass"));
+      final Set<String> tableNames = actual.getStreams().stream().map(stream -> stream.getName()).collect(Collectors.toSet());
+      final Set<String> expectedVisibleNames = Sets.newHashSet(
+          "table_granted_by_role",
+          "table_granted_by_role_with_options",
+          "test_table_granted_directly",
+          "test_table_granted_directly_with_options",
+          "mv_granted_by_role",
+          "mv_granted_by_role_with_options",
+          "test_mv_granted_directly",
+          "test_mv_granted_directly_with_options",
+          "test_view_granted_directly",
+          "test_view_granted_directly_with_options",
+          "view_granted_by_role",
+          "view_granted_by_role_with_options");
+
+      assertEquals(tableNames, expectedVisibleNames);
+
+      db.stop();
+    }
+  }
+
+  @Test
   void testReadSuccess() throws Exception {
     final ConfiguredAirbyteCatalog configuredCatalog =
         CONFIGURED_CATALOG.withStreams(CONFIGURED_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
@@ -352,13 +460,30 @@ class PostgresSourceTest {
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
+    assertTrue(PostgresUtils.isCdc(config));
   }
+
+  @Test
+  void testGetDefaultConnectionPropertiesWithoutSsl() {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
+    assertEquals(defaultConnectionProperties, Collections.emptyMap());
+  };
+
+  @Test
+  void testGetDefaultConnectionPropertiesWithSsl() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName);
+    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
+    assertEquals(defaultConnectionProperties, ImmutableMap.of(
+        "ssl", "true",
+        "sslmode", "require"
+    ));
+  };
 
   @Test
   void testGetUsername() {

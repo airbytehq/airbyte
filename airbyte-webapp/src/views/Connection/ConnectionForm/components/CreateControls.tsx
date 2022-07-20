@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 import { Button, Spinner, StatusIcon } from "components";
 
-interface IProps {
+interface CreateControlsProps {
   isSubmitting: boolean;
   isValid: boolean;
   errorMessage?: React.ReactNode;
@@ -59,7 +59,12 @@ const ErrorText = styled.div`
   max-width: 400px;
 `;
 
-const CreateControls: React.FC<IProps> = ({ isSubmitting, errorMessage, additionBottomControls }) => {
+const CreateControls: React.FC<CreateControlsProps> = ({
+  isSubmitting,
+  errorMessage,
+  additionBottomControls,
+  isValid,
+}) => {
   if (isSubmitting) {
     return (
       <LoadingContainer>
@@ -86,7 +91,7 @@ const CreateControls: React.FC<IProps> = ({ isSubmitting, errorMessage, addition
       )}
       <div>
         {additionBottomControls || null}
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !isValid}>
           <FormattedMessage id="onboarding.setUpConnection" />
         </Button>
       </div>

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -19,10 +20,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
@@ -49,7 +48,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -59,6 +57,7 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
@@ -68,14 +67,17 @@ import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.helpers.DestinationHelpers;
 import io.airbyte.server.helpers.SourceHelpers;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.ErrorCode;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,8 +93,6 @@ class SchedulerHandlerTest {
   private static final String DESTINATION_DOCKER_REPO = "dstimage";
   private static final String DESTINATION_DOCKER_TAG = "tag";
   private static final String DESTINATION_DOCKER_IMAGE = DockerUtils.getTaggedImageName(DESTINATION_DOCKER_REPO, DESTINATION_DOCKER_TAG);
-
-  private static final String OPERATION_NAME = "transfo";
 
   private static final SourceConnection SOURCE = new SourceConnection()
       .withName("my postgres db")
@@ -114,6 +114,8 @@ class SchedulerHandlerTest {
       .withDocumentationUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withChangelogUrl(Exceptions.toRuntime(() -> new URI("https://google.com")))
       .withConnectionSpecification(Jsons.jsonNode(new HashMap<>()));
+
+  private static final StreamDescriptor STREAM_DESCRIPTOR = new StreamDescriptor().withName("1");
 
   private SchedulerHandler schedulerHandler;
   private ConfigRepository configRepository;
@@ -237,7 +239,6 @@ class SchedulerHandlerTest {
     final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId =
         new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID());
 
-    final SynchronousResponse<ConnectorSpecification> specResponse = (SynchronousResponse<ConnectorSpecification>) jobResponse;
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
         .withName("name")
         .withDockerRepository(SOURCE_DOCKER_REPO)
@@ -556,25 +557,6 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testGetCurrentState() throws IOException {
-    final UUID connectionId = UUID.randomUUID();
-    final State state = new State().withState(Jsons.jsonNode(ImmutableMap.of("checkpoint", 1)));
-    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.of(state));
-
-    final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(new ConnectionState().connectionId(connectionId).state(state.getState()), connectionState);
-  }
-
-  @Test
-  void testGetCurrentStateEmpty() throws IOException {
-    final UUID connectionId = UUID.randomUUID();
-    when(configRepository.getConnectionState(connectionId)).thenReturn(Optional.empty());
-
-    final ConnectionState connectionState = schedulerHandler.getState(new ConnectionIdRequestBody().connectionId(connectionId));
-    assertEquals(new ConnectionState().connectionId(connectionId), connectionState);
-  }
-
-  @Test
   void testEnumConversion() {
     assertTrue(Enums.isCompatible(StandardCheckConnectionOutput.Status.class, CheckConnectionRead.StatusEnum.class));
     assertTrue(Enums.isCompatible(JobStatus.class, io.airbyte.api.model.generated.JobStatus.class));
@@ -603,7 +585,26 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testResetConnection() throws IOException {
+  void testSyncConnectionFailWithOtherSyncRunning() throws IOException {
+    final UUID connectionId = UUID.randomUUID();
+
+    final ManualOperationResult manualOperationResult = ManualOperationResult
+        .builder()
+        .failingReason(Optional.of("another sync running"))
+        .jobId(Optional.empty())
+        .errorCode(Optional.of(ErrorCode.WORKFLOW_RUNNING))
+        .build();
+
+    when(eventRunner.startNewManualSync(connectionId))
+        .thenReturn(manualOperationResult);
+
+    assertThrows(ValueConflictKnownException.class,
+        () -> schedulerHandler.syncConnection(new ConnectionIdRequestBody().connectionId(connectionId)));
+
+  }
+
+  @Test
+  void testResetConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID connectionId = UUID.randomUUID();
 
     final long jobId = 123L;
@@ -613,7 +614,11 @@ class SchedulerHandlerTest {
         .jobId(Optional.of(jobId))
         .build();
 
-    when(eventRunner.resetConnection(connectionId))
+    final List<StreamDescriptor> streamDescriptors = List.of(STREAM_DESCRIPTOR);
+    when(configRepository.getAllStreamsForConnection(connectionId))
+        .thenReturn(streamDescriptors);
+
+    when(eventRunner.resetConnection(connectionId, streamDescriptors))
         .thenReturn(manualOperationResult);
 
     doReturn(new JobInfoRead())
@@ -621,7 +626,7 @@ class SchedulerHandlerTest {
 
     schedulerHandler.resetConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    verify(eventRunner).resetConnection(connectionId);
+    verify(eventRunner).resetConnection(connectionId, streamDescriptors);
   }
 
   @Test

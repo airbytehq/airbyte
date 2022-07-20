@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.SQLDialect;
+import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 // todo (cgardens) - likely some of this could be further de-duplicated with
@@ -34,6 +35,7 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
   private static final String schemaName = RandomStringUtils.randomAlphabetic(8).toLowerCase();
+  private static final Network network = Network.newNetwork();
   private static PostgreSQLContainer<?> db;
   private final SshBastionContainer bastion = new SshBastionContainer();
 
@@ -154,13 +156,13 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   private void startTestContainers() {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     initAndStartJdbcContainer();
   }
 
   private void initAndStartJdbcContainer() {
     db = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withNetwork(bastion.getNetWork());
+        .withNetwork(network);
     db.start();
   }
 
