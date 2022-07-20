@@ -73,7 +73,7 @@ class IncrementalRechargeStream(RechargeStream, ABC):
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
-        
+
     @property
     def state_checkpoint_interval(self):
         return self.limit

@@ -11,19 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
-from .api import (
-    Addresses, 
-    Charges, 
-    Collections, 
-    Customers, 
-    Discounts, 
-    Metafields, 
-    Onetimes, 
-    Orders, 
-    Products, 
-    Shop, 
-    Subscriptions,
-)
+from .api import Addresses, Charges, Collections, Customers, Discounts, Metafields, Onetimes, Orders, Products, Shop, Subscriptions
 
 
 class RechargeTokenAuthenticator(TokenAuthenticator):
