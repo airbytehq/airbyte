@@ -82,5 +82,10 @@ jobs:
           done
           helm repo index airbyte-oss/
 
-
+      - name: Commit and push changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Bump release to ${{ needs.generate-semantic-version.outputs.next-version }}'
+          add: '.'
+          cwd: './airbyte-oss/'
       
