@@ -51,7 +51,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected String connectionProperties;
 
   protected static ObjectNode getStaticConfig() {
-    return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("src/secrets/config.json")));
+    return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
   @Override
