@@ -46,10 +46,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class DefaultAirbyteDestinationTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestinationTest.class);
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String STREAM_NAME = "user_preferences";
@@ -69,7 +72,7 @@ class DefaultAirbyteDestinationTest {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
       LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
     } catch (final IOException e) {
-      e.printStackTrace();
+      LOGGER.error(e.getMessage());
     }
   }
 
