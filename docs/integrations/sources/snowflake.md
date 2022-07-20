@@ -99,6 +99,25 @@ Field | Description |
 | OAuth2 | The Login name and password to obtain auth token. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 
+### Network policies
+
+By default, Snowflake allows users to connect to the service from any computer or device IP address. A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network policy to allow or deny access to a single IP address or a list of addresses.
+
+If you have any issues connecting with Airbyte Cloud please make sure that the list of IP addresses is on the allowed list
+
+To determine whether a network policy is set on your account or for a specific user, execute the _SHOW PARAMETERS_ command.
+
+**Account**
+
+        SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+
+**User**
+
+        SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+
+To read more please check official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+
+
 ## Changelog
 
 | Version | Date | Pull Request | Subject |

@@ -1,3 +1,4 @@
+{{- if .Values.temporal.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -72,11 +73,11 @@ spec:
         volumeMounts:
         - name: airbyte-temporal-dynamicconfig
           mountPath: "/etc/temporal/config/dynamicconfig/"
-        {{- if .Values.temporal.resources }}
-        resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
-        {{- end }}
         {{- if .Values.temporal.extraVolumeMounts }}
   {{ toYaml .Values.temporal.extraVolumeMounts | nindent 8 }}
+        {{- end }}
+        {{- if .Values.temporal.resources }}
+        resources: {{- toYaml .Values.temporal.resources | nindent 10 }}
         {{- end }}
         {{- if .Values.temporal.livenessProbe.enabled }}
         livenessProbe:
@@ -114,3 +115,4 @@ spec:
       {{- if .Values.temporal.extraVolumes }}
 {{ toYaml .Values.temporal.extraVolumes | nindent 6 }}
       {{- end }}
+{{- end }}

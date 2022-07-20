@@ -56,13 +56,24 @@ class GithubStream(HttpStream, ABC):
             page = dict(parse.parse_qsl(parsed_link.query)).get("page")
             return {"page": page}
 
+    def check_graphql_rate_limited(self, response_json) -> bool:
+        errors = response_json.get("errors")
+        if errors:
+            for error in errors:
+                if error.get("type") == "RATE_LIMITED":
+                    return True
+        return False
+
     def should_retry(self, response: requests.Response) -> bool:
         # We don't call `super()` here because we have custom error handling and GitHub API sometimes returns strange
         # errors. So in `read_records()` we have custom error handling which don't require to call `super()` here.
         retry_flag = (
+            # The GitHub GraphQL API has limitations
+            # https://docs.github.com/en/graphql/overview/resource-limitations
+            (response.headers.get("X-RateLimit-Resource") == "graphql" and self.check_graphql_rate_limited(response.json()))
             # Rate limit HTTP headers
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-            response.headers.get("X-RateLimit-Remaining") == "0"
+            or response.headers.get("X-RateLimit-Remaining") == "0"
             # Secondary rate limits
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
             or response.headers.get("Retry-After")

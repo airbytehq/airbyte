@@ -147,6 +147,7 @@ class PostgresSourceSSLTest {
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
         .put("ssl", true)
+        .put("ssl_mode", ImmutableMap.builder().put("mode", "require").build())
         .build());
   }
 
@@ -186,12 +187,12 @@ class PostgresSourceSSLTest {
   void testIsCdc() {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
-    assertFalse(PostgresSource.isCdc(config));
+    assertFalse(PostgresUtils.isCdc(config));
 
     ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
         "replication_slot", "slot",
         "publication", "ab_pub")));
-    assertTrue(PostgresSource.isCdc(config));
+    assertTrue(PostgresUtils.isCdc(config));
   }
 
 }
