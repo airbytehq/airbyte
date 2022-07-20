@@ -14,8 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -25,7 +23,6 @@ import org.slf4j.LoggerFactory;
 public class RecordSchemaValidator {
 
   private final Map<String, JsonNode> streams;
-  private static final Logger LOGGER = LoggerFactory.getLogger(RecordSchemaValidator.class);
 
   public RecordSchemaValidator(final Map<String, JsonNode> streamNamesToSchemas) {
     // streams is Map of a stream source namespace + name mapped to the stream schema

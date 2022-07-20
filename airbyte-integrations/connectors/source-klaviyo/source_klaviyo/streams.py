@@ -213,6 +213,7 @@ class Lists(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-lists"""
 
     schema = PersonList
+    max_retries = 10
 
     def path(self, **kwargs) -> str:
         return "lists"

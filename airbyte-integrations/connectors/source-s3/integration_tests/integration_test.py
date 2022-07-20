@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import os
 import shutil
 import time
@@ -104,7 +105,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
 
 
 class TestIntegrationCsvFiles:
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     @memory_limit(150)  # max used memory should be less than 150Mb
     def read_source(self, credentials: Dict[str, Any], catalog: Dict[str, Any]) -> int:

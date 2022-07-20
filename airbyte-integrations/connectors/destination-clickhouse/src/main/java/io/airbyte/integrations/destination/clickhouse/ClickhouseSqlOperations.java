@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
-import com.clickhouse.client.ClickHouseFile;
+import com.clickhouse.jdbc.ClickHouseConnection;
+import com.clickhouse.jdbc.ClickHouseStatement;
 import com.clickhouse.client.ClickHouseFormat;
-import com.clickhouse.client.ClickHouseRequest;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,12 +76,13 @@ public class ClickhouseSqlOperations extends JdbcSqlOperations {
       try {
         tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
-        Statement sth = connection.createStatement();
-        sth.unwrap(ClickHouseRequest.class)
-            .write()
-            .table(String.format("%s.%s", schemaName, tmpTableName))
-            .data(ClickHouseFile.of(tmpFile))
-            .format(ClickHouseFormat.CSV)
+
+        final ClickHouseConnection conn = connection.unwrap(ClickHouseConnection.class);
+        final ClickHouseStatement sth = conn.createStatement();
+        sth.write() // Write API entrypoint
+            .table(String.format("%s.%s", schemaName, tmpTableName)) // where to write data
+            .format(ClickHouseFormat.CSV) // set a format
+            .data(tmpFile.getAbsolutePath()) // specify input
             .send();
 
       } catch (final Exception e) {
