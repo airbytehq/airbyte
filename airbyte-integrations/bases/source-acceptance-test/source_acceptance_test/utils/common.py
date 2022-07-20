@@ -83,7 +83,10 @@ def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref
                 return item
 
 
-def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
+def find_keyword_schema(
+    schema: Union[dict, list, str],
+    key: str,
+) -> bool:
     """Find at least one keyword in a schema, skip object properties"""
 
     def _find_keyword(schema, key, _skip=False):
@@ -114,3 +117,16 @@ def load_yaml_or_json_path(path: Path):
             return load(file_data, Loader=Loader)
         else:
             raise RuntimeError("path must be a '.yaml' or '.json' file")
+
+
+def find_all_values_for_key_in_schema(schema: dict, searched_key: str):
+    """Retrieve all (nested) values in a schema for a specific searched key"""
+    if isinstance(schema, list):
+        for schema_item in schema:
+            yield from find_all_values_for_key_in_schema(schema_item, searched_key)
+    if isinstance(schema, dict):
+        for key, value in schema.items():
+            if key == searched_key:
+                yield value
+            if isinstance(value, dict) or isinstance(value, list):
+                yield from find_all_values_for_key_in_schema(value, searched_key)
