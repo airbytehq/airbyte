@@ -2,6 +2,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import React, { useCallback, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { H6 } from "components";
 import { InfoBox } from "components/InfoBox";
