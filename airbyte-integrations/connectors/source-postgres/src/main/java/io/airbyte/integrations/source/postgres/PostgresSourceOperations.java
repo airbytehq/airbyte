@@ -244,7 +244,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   public JsonSchemaType getJsonType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+      case TINYINT, SMALLINT, INTEGER -> JsonSchemaType.INTEGER;
+      case BIGINT -> JsonSchemaType.NUMBER_BIGINT;
       case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
       case ARRAY -> JsonSchemaType.ARRAY;

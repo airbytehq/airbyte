@@ -107,7 +107,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;
       case INTEGER -> JsonSchemaType.INTEGER;
-      case BIGINT -> JsonSchemaType.INTEGER;
+      case BIGINT -> JsonSchemaType.NUMBER_BIGINT;
       case FLOAT, DOUBLE -> JsonSchemaType.NUMBER;
       case REAL -> JsonSchemaType.NUMBER;
       case NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
