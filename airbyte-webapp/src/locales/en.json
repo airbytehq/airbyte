@@ -34,7 +34,7 @@
   "form.noConnectorFound": "No matching connector found",
   "form.sourceName.placeholder": "Your source name",
   "form.destinationName.placeholder": "Your destination name",
-  "form.connectionName": "Connection name",
+  "form.connectionName": "Connection name*",
   "form.connectionName.placeholder": "Name",
   "form.name": "Name *",
   "form.sourceName.message": "Pick a name to help you identify this source in Airbyte",
