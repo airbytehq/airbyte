@@ -830,7 +830,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.1.8"
+- dockerImage: "airbyte/source-bigquery:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -840,7 +840,6 @@
       required:
       - "project_id"
       - "credentials_json"
-      additionalProperties: false
       properties:
         project_id:
           type: "string"
@@ -1359,7 +1358,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.12"
+- dockerImage: "airbyte/source-cockroachdb:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -1371,7 +1370,6 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
@@ -7657,7 +7655,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.10"
+- dockerImage: "airbyte/source-redshift:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -7670,7 +7668,6 @@
       - "database"
       - "username"
       - "password"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
