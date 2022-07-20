@@ -82,7 +82,7 @@ class LimitPaginator(Paginator):
     ):
         """
         :param page_size: the number of records to request
-        :param limit_option: the request option to set the limit
+        :param limit_option: the request option to set the limit. Cannot be injected in the path.
         :param page_token_option: the request option to set the page token
         :param pagination_strategy: Strategy defining how to get the next page token
         :param config: connection config
