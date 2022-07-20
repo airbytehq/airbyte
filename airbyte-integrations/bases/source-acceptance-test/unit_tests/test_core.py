@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from contextlib import contextmanager
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -23,10 +22,7 @@ from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 
-
-@contextmanager
-def does_not_raise():
-    yield
+from .conftest import does_not_raise
 
 
 @pytest.mark.parametrize(
