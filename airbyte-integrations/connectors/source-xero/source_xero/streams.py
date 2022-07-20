@@ -159,7 +159,7 @@ class Journals(XeroHttpStream):
 
 
 class DoleadJournals(Journals):
-    dolead_id = "c1de2758-b8aa-45d7-8c01-163c3bbf8c39"
+    dolead_id = "ed4cac23-e9fe-4e05-89d6-b5c9fc6d2a32"
 
 
 class DoleadIncJournals(DoleadJournals):
