@@ -5,7 +5,6 @@
 package io.airbyte.integrations.base;
 
 import io.airbyte.protocol.models.AirbyteMessage;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

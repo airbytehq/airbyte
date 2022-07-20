@@ -7,7 +7,6 @@ package io.airbyte.integrations.base;
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
-import org.elasticsearch.common.collect.Map;
 
 /**
  * Interface for the destination's consumption of incoming records wrapped in an
@@ -57,8 +56,8 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void close() throws Exception {
-          consumer.close();
-          voidCallable.call();
+        consumer.close();
+        voidCallable.call();
       }
 
     };
