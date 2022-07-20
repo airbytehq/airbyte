@@ -77,8 +77,8 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._stream_slice_field_end = stream_state_field_end
         else:
             self._stream_slice_field_end = InterpolatedString("end_date")
-        self._cursor = None
-        self._cursor_end = None
+        self._cursor = None  # tracks current datetime
+        self._cursor_end = None  # tracks end of current stream slice
         self._lookback_window = lookback_window
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
@@ -96,7 +96,14 @@ class DatetimeStreamSlicer(StreamSlicer):
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
-        # FIXME: This method needs explanation!
+        """
+        Update the cursor value to the max datetime between the last record, the start of the stream_slice, and the current cursor value.
+        Update the cursor_end value with the stream_slice's end time.
+
+        :param stream_slice: current stream slice
+        :param last_record: last record read
+        :return: None
+        """
         stream_slice_value = stream_slice.get(self._cursor_field.eval(self._config))
         stream_slice_value_end = stream_slice.get(self._stream_slice_field_end.eval(self._config))
         last_record_value = last_record.get(self._cursor_field.eval(self._config)) if last_record else None
@@ -115,8 +122,16 @@ class DatetimeStreamSlicer(StreamSlicer):
             self._cursor_end = stream_slice_value_end
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        # Evaluate and compare start_date, end_date, and cursor_value based on configs and runtime state
-        # FIXME: This method needs explanation
+        """
+        Partition the daterange into slices of size = step.
+
+        The start of the window is the minimum datetime between start_datetime - looback_window and the stream_state's datetime
+        The end of the window is the minimum datetime between the start of the window and end_datetime.
+
+        :param sync_mode:
+        :param stream_state: current stream state. If set, the start_date will be the day following the stream_state.
+        :return:
+        """
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self._end_datetime.get_datetime(self._config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
@@ -127,15 +142,16 @@ class DatetimeStreamSlicer(StreamSlicer):
             cursor_datetime = self.parse_date(stream_state[self._cursor_field.eval(self._config)])
         else:
             cursor_datetime = start_datetime
+
         start_datetime = max(cursor_datetime, start_datetime)
 
-        dates = self._partition_daterange(start_datetime, end_datetime, self._step)
-        state_date = stream_state.get(self._cursor_field.eval(self._config, stream_state=stream_state))
+        state_date = self.parse_date(stream_state.get(self._cursor_field.eval(self._config, stream_state=stream_state)))
         if state_date:
-            dates_later_than_state = [d for d in dates if d[self._stream_slice_field_start.eval(self._config)] > state_date]
-        else:
-            dates_later_than_state = dates
-        return dates_later_than_state
+            # If the input_state's date is greater than start_datetime, the start of the time window is the state's next day
+            next_date = state_date + datetime.timedelta(days=1)
+            start_datetime = max(start_datetime, next_date)
+        dates = self._partition_daterange(start_datetime, end_datetime, self._step)
+        return dates
 
     def _format_datetime(self, dt: datetime.datetime):
         if self._datetime_format == "timestamp":

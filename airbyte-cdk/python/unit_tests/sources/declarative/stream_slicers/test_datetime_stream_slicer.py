@@ -152,6 +152,21 @@ def mock_datetime_now(monkeypatch):
             ],
         ),
         (
+            "test_cursor_date_greater_than_start_date_multiday_step",
+            {cursor_field: "2021-01-05T00:00:00.000000+0000"},
+            MinMaxDatetime("2021-01-03T00:00:00.000000+0000"),
+            MinMaxDatetime("2021-01-10T00:00:00.000000+0000"),
+            "2d",
+            cursor_field,
+            None,
+            datetime_format,
+            [
+                {"start_date": "2021-01-06T00:00:00.000000+0000", "end_date": "2021-01-07T00:00:00.000000+0000"},
+                {"start_date": "2021-01-08T00:00:00.000000+0000", "end_date": "2021-01-09T00:00:00.000000+0000"},
+                {"start_date": "2021-01-10T00:00:00.000000+0000", "end_date": "2021-01-10T00:00:00.000000+0000"},
+            ],
+        ),
+        (
             "test_start_date_less_than_min_date",
             {"date": "2021-01-05T00:00:00.000000+0000"},
             MinMaxDatetime("{{ config['start_date'] }}", min_datetime="{{ stream_state['date'] }}"),
