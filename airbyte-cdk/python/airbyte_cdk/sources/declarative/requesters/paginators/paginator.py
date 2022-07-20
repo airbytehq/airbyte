@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional
 
 import requests
 
@@ -43,7 +43,7 @@ class Paginator(ABC):
         pass
 
     @abstractmethod
-    def request_body_data(self) -> Union[Mapping[str, Any], str]:
+    def request_body_data(self) -> Mapping[str, Any]:
         """
 
         :return: the request body data to set to fetch the next page

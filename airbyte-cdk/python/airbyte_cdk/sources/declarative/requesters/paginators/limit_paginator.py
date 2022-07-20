@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
@@ -131,18 +131,11 @@ class LimitPaginator(Paginator):
             **self._request_options_provider.request_headers(stream_state=None, stream_slice=None, next_page_token=None),
         }
 
-    def request_body_data(self) -> Union[Mapping[str, Any], str]:
-        # the request body data coming from the provider can be a string of the form
-        # "k1=v1&k2=v2"
-        request_options = self._get_request_options(RequestOptionType.body_data)
-        request_options_from_provider = (
-            self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None) or {}
-        )
-        if request_options_from_provider and isinstance(request_options_from_provider, str):
-            # convert request_options to "k1=v1&k2=v2" string then join the request options
-            return "&".join([*[f"{k}={v}" for k, v in request_options.items()], request_options_from_provider])
-        else:
-            return {**request_options, **request_options_from_provider}
+    def request_body_data(self) -> Mapping[str, Any]:
+        return {
+            **self._get_request_options(RequestOptionType.body_data),
+            **self._request_options_provider.request_body_data(stream_state=None, stream_slice=None, next_page_token=None),
+        }
 
     def request_body_json(self) -> Mapping[str, Any]:
         return {
