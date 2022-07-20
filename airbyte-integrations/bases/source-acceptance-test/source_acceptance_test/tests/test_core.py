@@ -169,7 +169,6 @@ class TestSpec(BaseTest):
         A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
         Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
         False value introduces the risk of accidental breaking changes.
-        Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
         Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
         additional_properties_values = find_all_values_for_key_in_schema(
             actual_connector_spec.connectionSpecification, "additionalProperties"
@@ -177,7 +176,7 @@ class TestSpec(BaseTest):
         if additional_properties_values:
             assert all(
                 [additional_properties_value is True for additional_properties_value in additional_properties_values]
-            ), "When set additionalProperties field value must be true for backward compatibility."
+            ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 @pytest.mark.default_timeout(30)
@@ -263,6 +262,19 @@ class TestDiscovery(BaseTest):
         for _, stream in discovered_catalog.items():
             assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
             assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
+
+    def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
+        """Check that value of the "additionalProperties" field is always true.
+        A stream schema declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the stream schema, existing connector catalog will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        for stream in discovered_catalog.values():
+            additional_properties_values = list(find_all_values_for_key_in_schema(stream.json_schema, "additionalProperties"))
+            if additional_properties_values:
+                assert all(
+                    [additional_properties_value is True for additional_properties_value in additional_properties_values]
+                ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 def primary_keys_for_records(streams, records):

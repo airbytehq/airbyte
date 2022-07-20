@@ -152,6 +152,52 @@ def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
 
 
 @pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        ({"test_stream_1": AirbyteStream.parse_obj({"name": "test_stream_1", "json_schema": {}})}, does_not_raise()),
+        (
+            {"test_stream_2": AirbyteStream.parse_obj({"name": "test_stream_2", "json_schema": {"additionalProperties": True}})},
+            does_not_raise(),
+        ),
+        (
+            {"test_stream_3": AirbyteStream.parse_obj({"name": "test_stream_3", "json_schema": {"additionalProperties": False}})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {"test_stream_4": AirbyteStream.parse_obj({"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_5": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_5",
+                        "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": True}}},
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_6": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_6",
+                        "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": False}}},
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+    ],
+)
+def test_additional_properties_is_true(discovered_catalog, expectation):
+    t = _TestDiscovery()
+    with expectation:
+        t.test_additional_properties_is_true(discovered_catalog)
+
+
+@pytest.mark.parametrize(
     "schema, record, should_fail",
     [
         ({"type": "object"}, {"aa": 23}, False),
