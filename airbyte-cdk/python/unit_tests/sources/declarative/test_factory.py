@@ -25,6 +25,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
@@ -97,10 +98,43 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
       class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: repository
+      request_option:
+        inject_into: header
+        field_name: repository
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+    assert stream_slicer._request_option._option_type == RequestOptionType.header
+    assert stream_slicer._request_option._field_name == "repository"
+
+
+def test_create_cartesian_stream_slicer():
+    content = """
+    stream_slicer_A:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      cursor_field: repository
+    stream_slicer_B:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      slice_values:
+        - hello
+        - world
+      cursor_field: words
+    stream_slicer:
+      class_name: airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer.CartesianProductStreamSlicer
+      stream_slicers:
+        - "*ref(stream_slicer_A)"
+        - "*ref(stream_slicer_B)"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    underlying_slicers = stream_slicer._stream_slicers
+    assert len(underlying_slicers) == 2
+    assert isinstance(underlying_slicers[0], ListStreamSlicer)
+    assert isinstance(underlying_slicers[1], ListStreamSlicer)
+    assert ["airbyte", "airbyte-cloud"] == underlying_slicers[0]._slice_values
+    assert ["hello", "world"] == underlying_slicers[1]._slice_values
 
 
 def test_datetime_stream_slicer():
