@@ -2,6 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
   "changelogUrl": "https://docs.airbyte.io/integrations/sources/klaviyo",
   "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Klaviyo Spec",
     "type": "object",
     "properties": {
@@ -20,7 +21,5 @@
       }
     },
     "required": ["api_key", "start_date"]
-  },
-  "supportsIncremental": true,
-  "supported_destination_sync_modes": ["append"]
+  }
 }
