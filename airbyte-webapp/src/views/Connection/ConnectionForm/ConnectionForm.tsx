@@ -28,7 +28,9 @@ import {
   useInitialValues,
 } from "./formConfig";
 
-const EditLaterMessage = styled(Label)``;
+const EditLaterMessage = styled(Label)`
+  text-align: center;
+`;
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -267,81 +269,88 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           </Section>
-          <Section title={<FormattedMessage id="connection.streams" />}>
-            <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
-            </span>
-            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
-              <Field name="namespaceFormat">
-                {({ field, meta }: FieldProps<string>) => (
+          <Card>
+            <StyledSection>
+              <H5 bold>
+                <FormattedMessage id="connection.streams" />
+              </H5>
+              <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+              </span>
+              {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
+                <Field name="namespaceFormat">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <FlexRow>
+                      <LeftFieldCol>
+                        <NamespaceFormatLabel
+                          nextLine
+                          error={!!meta.error}
+                          label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
+                          message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        />
+                      </LeftFieldCol>
+                      <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                        <Input
+                          {...field}
+                          error={!!meta.error}
+                          placeholder={formatMessage({
+                            id: "connectionForm.namespaceFormat.placeholder",
+                          })}
+                        />
+                      </RightFieldCol>
+                    </FlexRow>
+                  )}
+                </Field>
+              )}
+              <Field name="prefix">
+                {({ field }: FieldProps<string>) => (
                   <FlexRow>
                     <LeftFieldCol>
-                      <NamespaceFormatLabel
+                      <ControlLabels
                         nextLine
-                        error={!!meta.error}
-                        label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        label={formatMessage({
+                          id: "form.prefix",
+                        })}
+                        message={formatMessage({
+                          id: "form.prefix.message",
+                        })}
                       />
                     </LeftFieldCol>
-                    <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                    <RightFieldCol>
                       <Input
                         {...field}
-                        error={!!meta.error}
+                        type="text"
                         placeholder={formatMessage({
-                          id: "connectionForm.namespaceFormat.placeholder",
+                          id: `form.prefix.placeholder`,
                         })}
+                        data-testid="prefixInput"
+                        style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                       />
                     </RightFieldCol>
                   </FlexRow>
                 )}
               </Field>
-            )}
-            <Field name="prefix">
-              {({ field }: FieldProps<string>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ControlLabels
-                      nextLine
-                      label={formatMessage({
-                        id: "form.prefix",
-                      })}
-                      message={formatMessage({
-                        id: "form.prefix.message",
-                      })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol>
-                    <Input
-                      {...field}
-                      type="text"
-                      placeholder={formatMessage({
-                        id: `form.prefix.placeholder`,
-                      })}
-                      data-testid="prefixInput"
-                      style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
-            <Field
-              name="syncCatalog.streams"
-              destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
-              additionalControl={additionalSchemaControl}
-              component={SchemaField}
-              mode={mode}
-            />
+            </StyledSection>
+            <StyledSection>
+              <Field
+                name="syncCatalog.streams"
+                destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
+                additionalControl={additionalSchemaControl}
+                component={SchemaField}
+                mode={mode}
+              />
+            </StyledSection>
             {mode === "create" && (
-              <>
+              <StyledSection>
                 <OperationsSection
                   destDefinition={destDefinition}
                   onStartEditTransformation={toggleEditingTransformation}
                   onEndEditTransformation={toggleEditingTransformation}
                 />
                 <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />
-              </>
+              </StyledSection>
             )}
-          </Section>
+          </Card>
           {mode === "edit" && (
             <EditControls
               isSubmitting={isSubmitting}
