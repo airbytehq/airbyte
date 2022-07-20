@@ -3808,7 +3808,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.11"
+- dockerImage: "airbyte/source-db2:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -3822,7 +3822,6 @@
       - "username"
       - "password"
       - "encryption"
-      additionalProperties: false
       properties:
         host:
           description: "Host of the Db2."
@@ -3859,7 +3858,6 @@
           order: 5
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "encryption_method"
@@ -3871,7 +3869,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "TLS Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the cert provided by the server."
             required:
             - "encryption_method"
