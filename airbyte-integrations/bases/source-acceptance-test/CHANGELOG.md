@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.55
+Add test case in `TestDiscovery` to assert `supported_sync_modes` stream field in catalog is set and not empty.
+
 ## 0.1.54
 Fixed `AirbyteTraceMessage` test case to make connectors fail more reliably.
 
