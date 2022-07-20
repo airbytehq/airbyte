@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { FormPageContent } from "components/ConnectorBlocks";
 import HeadTitle from "components/HeadTitle";
@@ -7,14 +8,13 @@ import PageTitle from "components/PageTitle";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
 import { SourceForm } from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
   const [successRequest, setSuccessRequest] = useState(false);
 
   const { sourceDefinitions } = useSourceDefinitionList();
@@ -34,7 +34,7 @@ const CreateSourcePage: React.FC = () => {
     setSuccessRequest(true);
     setTimeout(() => {
       setSuccessRequest(false);
-      push(`../${result.sourceId}`);
+      navigate(`../${result.sourceId}`);
     }, 2000);
   };
 

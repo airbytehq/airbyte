@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import useRouter from "hooks/useRouter";
 import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -38,7 +38,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   hasSuccess,
   afterSelectConnector,
 }) => {
-  const { location } = useRouter();
+  const location = useLocation();
   const trackNewDestinationAction = useTrackAction(
     TrackActionNamespace.DESTINATION,
     TrackActionLegacyType.NEW_DESTINATION

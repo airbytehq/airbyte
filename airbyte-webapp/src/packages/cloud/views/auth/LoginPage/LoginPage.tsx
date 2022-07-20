@@ -6,7 +6,7 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import HeadTitle from "components/HeadTitle";
 
-import useRouter from "hooks/useRouter";
+import { useRouterQuery, useRouterReplace } from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { FieldError } from "packages/cloud/lib/errors/FieldError";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -23,7 +23,8 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const { formatMessage } = useIntl();
   const { login } = useAuthService();
-  const { query, replace } = useRouter();
+  const query = useRouterQuery();
+  const replace = useRouterReplace();
 
   return (
     <div>

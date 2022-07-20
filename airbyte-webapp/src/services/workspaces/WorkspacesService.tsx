@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Workspace, WorkspaceService } from "core/domain/workspace";
-import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
 import { useConfig } from "../../config";
@@ -29,18 +29,18 @@ export const WorkspaceServiceContext = React.createContext<Context | null>(null)
 
 const useSelectWorkspace = (): ((workspace?: string | null | Workspace) => void) => {
   const queryClient = useQueryClient();
-  const { push } = useRouter();
+  const navigate = useNavigate();
 
   return useCallback(
     async (workspace) => {
       if (typeof workspace === "object") {
-        push(`/${RoutePaths.Workspaces}/${workspace?.workspaceId}`);
+        navigate(`/${RoutePaths.Workspaces}/${workspace?.workspaceId}`);
       } else {
-        push(`/${RoutePaths.Workspaces}/${workspace}`);
+        navigate(`/${RoutePaths.Workspaces}/${workspace}`);
       }
       await queryClient.removeQueries(SCOPE_WORKSPACE);
     },
-    [push, queryClient]
+    [navigate, queryClient]
   );
 };
 
@@ -76,7 +76,7 @@ function useWorkspaceApiService() {
 }
 
 export const useCurrentWorkspaceId = () => {
-  const { params } = useRouter<unknown, { workspaceId: string }>();
+  const params = useParams() as { workspaceId: string };
 
   return params.workspaceId;
 };

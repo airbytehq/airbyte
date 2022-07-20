@@ -2,12 +2,13 @@ import { AuthErrorCodes } from "firebase/auth";
 import { Field, FieldProps, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import useRouterHook from "hooks/useRouter";
+import { useRouterQuery } from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -21,7 +22,8 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const { push, query } = useRouterHook<{ oobCode: string }>();
+  const navigate = useNavigate();
+  const query = useRouterQuery();
   const { formatMessage } = useIntl();
 
   return (
@@ -37,13 +39,16 @@ const ResetPasswordConfirmPage: React.FC = () => {
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ newPassword }) => {
           try {
+            if (!query.oobCode) {
+              return;
+            }
             await confirmPasswordReset(query.oobCode, newPassword);
             registerNotification({
               id: "confirmResetPassword.success",
               title: formatMessage({ id: "confirmResetPassword.success" }),
               isError: false,
             });
-            push(CloudRoutes.Login);
+            navigate(CloudRoutes.Login);
           } catch (err) {
             // Error code reference:
             // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#confirmpasswordreset

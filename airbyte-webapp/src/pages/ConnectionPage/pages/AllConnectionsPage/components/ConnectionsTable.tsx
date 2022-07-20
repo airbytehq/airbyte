@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { useQueryClient } from "react-query";
+import { useNavigate } from "react-router-dom";
 
 import { ConnectionTable } from "components/EntityTable";
 import useSyncActions from "components/EntityTable/hooks";
@@ -7,7 +8,6 @@ import { ITableDataItem } from "components/EntityTable/types";
 import { getConnectionTableData } from "components/EntityTable/utils";
 
 import { invalidateConnectionsList } from "hooks/services/useConnectionHook";
-import useRouter from "hooks/useRouter";
 import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
 
@@ -18,7 +18,7 @@ interface IProps {
 }
 
 const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
   const { changeStatus, syncManualConnection } = useSyncActions();
   const queryClient = useQueryClient();
 
@@ -50,7 +50,7 @@ const ConnectionsTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) => push(`${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => navigate(`${source.connectionId}`);
 
   return (
     <ConnectionTable

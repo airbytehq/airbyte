@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { PageTitle } from "components";
@@ -10,7 +10,6 @@ import MainPageWithScroll from "components/MainPageWithScroll";
 import SideMenu from "components/SideMenu";
 import { CategoryItem } from "components/SideMenu/SideMenu";
 
-import useRouter from "hooks/useRouter";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
@@ -39,8 +38,9 @@ const EmailVerificationHintWithMargin = styled(EmailVerificationHint)`
 `;
 
 const CreditsPage: React.FC = () => {
-  const { push, pathname } = useRouter();
-  const onSelectMenuItem = (newPath: string) => push(newPath);
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const onSelectMenuItem = (newPath: string) => navigate(newPath);
   const { emailVerified } = useAuthService();
 
   const menuItems: CategoryItem[] = [

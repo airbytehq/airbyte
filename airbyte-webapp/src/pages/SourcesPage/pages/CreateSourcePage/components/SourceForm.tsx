@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import useRouter from "hooks/useRouter";
 import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
@@ -39,7 +39,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   hasSuccess,
   afterSelectConnector,
 }) => {
-  const { location } = useRouter();
+  const location = useLocation();
   const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.NEW_SOURCE);
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(

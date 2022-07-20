@@ -1,12 +1,12 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 import { H6 } from "components";
 import StepsMenu from "components/StepsMenu";
 
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
-import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import ConnectionName from "./ConnectionName";
@@ -41,7 +41,7 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
   currentStep,
   onStatusUpdating,
 }) => {
-  const { push } = useRouter<{ id: string }>();
+  const navigate = useNavigate();
 
   const steps = [
     {
@@ -66,9 +66,9 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
 
   const onSelectStep = (id: string) => {
     if (id === ConnectionSettingsRoutes.STATUS) {
-      push("");
+      navigate("");
     } else {
-      push(id);
+      navigate(id);
     }
   };
 

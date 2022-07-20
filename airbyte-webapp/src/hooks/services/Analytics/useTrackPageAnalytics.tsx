@@ -1,12 +1,11 @@
 import { useEffect } from "react";
-
-import useRouter from "hooks/useRouter";
+import { useLocation } from "react-router-dom";
 
 import { getPageName } from "./pageNameUtils";
 import { useAnalyticsService } from "./useAnalyticsService";
 
 export const useTrackPageAnalytics = () => {
-  const { pathname } = useRouter();
+  const { pathname } = useLocation();
   const analyticsService = useAnalyticsService();
   useEffect(() => {
     const pathWithoutWorkspaceId = pathname.split("/").splice(2).join(".");

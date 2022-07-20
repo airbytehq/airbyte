@@ -1,5 +1,6 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
 import { Button, MainPageWithScroll } from "components";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
@@ -7,16 +8,15 @@ import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
 import { useDestinationList } from "hooks/services/useDestinationHook";
-import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../routePaths";
 import DestinationsTable from "./components/DestinationsTable";
 
 const AllDestinationsPage: React.FC = () => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
   const { destinations } = useDestinationList();
 
-  const onCreateDestination = () => push(`${RoutePaths.DestinationNew}`);
+  const onCreateDestination = () => navigate(`${RoutePaths.DestinationNew}`);
 
   return destinations.length ? (
     <MainPageWithScroll
