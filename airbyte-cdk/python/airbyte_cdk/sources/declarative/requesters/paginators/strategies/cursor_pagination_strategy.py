@@ -26,8 +26,10 @@ class CursorPaginationStrategy(PaginationStrategy):
         decoder: Decoder = None,
     ):
         """
+
         :param cursor_value: template string evaluating to the cursor value
         :param config: connection config
+        :param stop_condition: template string evaluating when to stop paginating
         :param decoder: decoder to decode the response
         """
         if isinstance(cursor_value, str):
