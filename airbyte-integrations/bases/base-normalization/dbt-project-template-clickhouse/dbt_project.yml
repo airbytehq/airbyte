@@ -47,7 +47,7 @@ models:
       airbyte_ctes:
         +tags: airbyte_internal_cte
         # ephemeral materialization isn't supported in ClickHouse yet
-        +materialized: "ignore"
+        +materialized: view
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental
