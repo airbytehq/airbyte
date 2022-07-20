@@ -5,7 +5,7 @@ import { useToggle } from "react-use";
 import { useDebounce } from "react-use";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
+import { Card, ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -28,9 +28,7 @@ import {
   useInitialValues,
 } from "./formConfig";
 
-const EditLaterMessage = styled(Label)`
-  margin: -20px 0 29px;
-`;
+const EditLaterMessage = styled(Label)``;
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -48,42 +46,53 @@ const NamespaceFormatLabel = styled(ControlLabels)`
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: space-between;
   align-items: flex-start;
   gap: 10px;
 `;
 
 export const LeftFieldCol = styled.div`
-  width: 470px;
+  // min-width: 470px;
 `;
 
 export const RightFieldCol = styled.div`
+  min-width: 300px;
   width: 300px;
 `;
 
 const StyledSection = styled.div`
-  padding: 15px 20px;
+  padding: 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 
-  & > div:not(:last-child) {
-    margin-bottom: 20px;
+  &:not(:last-child) {
+    box-shadow: 0 1px 0 rgba(139, 139, 160, 0.25);
   }
 `;
 
-const Header = styled(H5)`
-  margin-bottom: 16px;
+interface SectionProps {
+  title?: React.ReactNode;
+}
+
+const LabelHeading = styled(H5)`
+  line-height: 16px;
+  display: inline;
 `;
 
-const Section: React.FC<{ title: React.ReactNode }> = (props) => (
-  <StyledSection>
-    <Header bold>{props.title}</Header>
-    {props.children}
-  </StyledSection>
+const Section: React.FC<SectionProps> = ({ title, children }) => (
+  <Card>
+    <StyledSection>
+      {title && <H5 bold>{title}</H5>}
+      {children}
+    </StyledSection>
+  </Card>
 );
 
 const FormContainer = styled(Form)`
-  & > ${StyledSection}:not(:last-child) {
-    box-shadow: 0 1px 0 rgba(139, 139, 160, 0.25);
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 export interface ConnectionFormSubmitResult {
@@ -193,7 +202,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           <FormChangeTracker changed={dirty} formId={formId} />
           <FormValuesChangeTracker onChangeValues={onChangeValues} />
           {!isEditMode && (
-            <StyledSection>
+            <Section>
               <Field name="name">
                 {({ field, meta }: FieldProps<string>) => (
                   <FlexRow>
@@ -201,9 +210,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       <ConnectorLabel
                         nextLine
                         error={!!meta.error && meta.touched}
-                        label={formatMessage({
-                          id: "form.connectionName",
-                        })}
+                        label={
+                          <LabelHeading bold>
+                            <FormattedMessage id="form.connectionName" />
+                          </LabelHeading>
+                        }
                         message={formatMessage({
                           id: "form.connectionName.message",
                         })}
@@ -223,7 +234,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   </FlexRow>
                 )}
               </Field>
-            </StyledSection>
+            </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
@@ -320,21 +331,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               component={SchemaField}
               mode={mode}
             />
-            {mode === "edit" && (
-              <EditControls
-                isSubmitting={isSubmitting}
-                dirty={dirty}
-                resetForm={() => {
-                  resetForm();
-                  onCancel?.();
-                }}
-                successMessage={successMessage}
-                errorMessage={
-                  errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                }
-                enableControls={canSubmitUntouchedForm}
-              />
-            )}
             {mode === "create" && (
               <>
                 <OperationsSection
@@ -343,17 +339,30 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   onEndEditTransformation={toggleEditingTransformation}
                 />
                 <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />
-                <CreateControls
-                  additionBottomControls={additionBottomControls}
-                  isSubmitting={isSubmitting}
-                  isValid={isValid && !editingTransformation}
-                  errorMessage={
-                    errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                  }
-                />
               </>
             )}
           </Section>
+          {mode === "edit" && (
+            <EditControls
+              isSubmitting={isSubmitting}
+              dirty={dirty}
+              resetForm={() => {
+                resetForm();
+                onCancel?.();
+              }}
+              successMessage={successMessage}
+              errorMessage={errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null}
+              enableControls={canSubmitUntouchedForm}
+            />
+          )}
+          {mode === "create" && (
+            <CreateControls
+              additionBottomControls={additionBottomControls}
+              isSubmitting={isSubmitting}
+              isValid={isValid && !editingTransformation}
+              errorMessage={errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null}
+            />
+          )}
         </FormContainer>
       )}
     </Formik>
