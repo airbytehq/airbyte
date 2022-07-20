@@ -1,11 +1,12 @@
 import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 import { CellProps } from "react-table";
 
 import Table from "components/Table";
 
-import useRouter from "hooks/useRouter";
+import { useRouterQuery } from "hooks/useRouter";
 
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
@@ -23,7 +24,8 @@ interface IProps {
 }
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => {
-  const { query, push } = useRouter();
+  const query = useRouterQuery();
+  const navigate = useNavigate();
   const sortBy = query.sortBy || "entity";
   const sortOrder = query.order || SortOrderEnum.ASC;
 
@@ -31,7 +33,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
     (field: string) => {
       const order =
         sortBy !== field ? SortOrderEnum.ASC : sortOrder === SortOrderEnum.ASC ? SortOrderEnum.DESC : SortOrderEnum.ASC;
-      push({
+      navigate({
         search: queryString.stringify(
           {
             sortBy: field,
@@ -41,7 +43,7 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity, onClickRow }) => 
         ),
       });
     },
-    [push, sortBy, sortOrder]
+    [navigate, sortBy, sortOrder]
   );
 
   const sortData = useCallback(

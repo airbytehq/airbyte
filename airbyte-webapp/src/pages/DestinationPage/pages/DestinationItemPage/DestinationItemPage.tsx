@@ -1,6 +1,6 @@
 import React, { Suspense, useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate, useParams } from "react-router-dom";
 
 import { DropDownRow, LoadingPage, PageTitle } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
@@ -13,7 +13,6 @@ import Placeholder, { ResourceTypes } from "components/Placeholder";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useSourceList } from "hooks/services/useSourceHook";
-import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
@@ -26,7 +25,8 @@ import DestinationSettings from "./components/DestinationSettings";
 
 const DestinationItemPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
-  const { params, push } = useRouter<unknown, { id: string; "*": string }>();
+  const params = useParams() as { "*": StepsTypes | ""; id: string };
+  const navigate = useNavigate();
   const currentStep = useMemo<string>(() => (params["*"] === "" ? StepsTypes.OVERVIEW : params["*"]), [params]);
 
   const { sources } = useSourceList();
@@ -39,11 +39,11 @@ const DestinationItemPage: React.FC = () => {
 
   const { connections } = useConnectionList();
 
-  const onClickBack = () => push("..");
+  const onClickBack = () => navigate("..");
 
   const onSelectStep = (id: string) => {
     const path = id === StepsTypes.OVERVIEW ? "." : id.toLowerCase();
-    push(path);
+    navigate(path);
   };
 
   const breadcrumbsData = [
@@ -81,7 +81,7 @@ const DestinationItemPage: React.FC = () => {
             destinationId: destination.destinationId,
           };
 
-    push(path, { state });
+    navigate(path, { state });
   };
 
   return (
