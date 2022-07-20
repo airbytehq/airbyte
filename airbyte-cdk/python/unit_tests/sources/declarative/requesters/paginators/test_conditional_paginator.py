@@ -114,7 +114,7 @@ def test_interpolated_conditional_paginator(test_name, stop_condition_template, 
     if pass_by == RequestOptionType.path:
         page_token = RequestOption(pass_by)
     else:
-        page_token = RequestOption(pass_by=pass_by, field_name="from")
+        page_token = RequestOption(inject_into=pass_by, field_name="from")
     response = requests.Response()
     response.headers = {"has_more": True}
     response_body = {"_metadata": {"content": "stop_if_you_see_me"}, "accounts": [], "end": 99, "total": 200, "characters": {}}

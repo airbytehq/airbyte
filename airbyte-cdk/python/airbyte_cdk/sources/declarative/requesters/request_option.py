@@ -23,14 +23,14 @@ class RequestOption:
     Describes an option to set on a request
     """
 
-    def __init__(self, pass_by: Union[RequestOptionType, str], field_name: Optional[str] = None):
+    def __init__(self, inject_into: Union[RequestOptionType, str], field_name: Optional[str] = None):
         """
-        :param pass_by: where to set the value
+        :param inject_into: where to set the value
         :param field_name: field name to set. None if option_type == path. Required otherwise.
         """
-        if isinstance(pass_by, str):
-            pass_by = RequestOptionType[pass_by]
-        self._option_type = pass_by
+        if isinstance(inject_into, str):
+            inject_into = RequestOptionType[inject_into]
+        self._option_type = inject_into
         self._field_name = field_name
         if self._option_type == RequestOptionType.path:
             if self._field_name is not None:

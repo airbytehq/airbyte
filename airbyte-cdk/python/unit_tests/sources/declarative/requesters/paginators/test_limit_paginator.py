@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
     [
         (
             "test_limit_paginator_cursor_param",
-            RequestOption(pass_by=RequestOptionType.path),
+            RequestOption(inject_into=RequestOptionType.path),
             "/next_url",
             {"limit": 2},
             {},
@@ -27,7 +27,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ),
         (
             "test_limit_paginator_cursor_param",
-            RequestOption(pass_by=RequestOptionType.request_parameter, field_name="from"),
+            RequestOption(inject_into=RequestOptionType.request_parameter, field_name="from"),
             None,
             {"limit": 2, "from": "https://airbyte.io/next_url"},
             {},
@@ -38,7 +38,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ),
         (
             "test_limit_paginator_cursor_header",
-            RequestOption(pass_by=RequestOptionType.header, field_name="from"),
+            RequestOption(inject_into=RequestOptionType.header, field_name="from"),
             None,
             {"limit": 2},
             {"from": "https://airbyte.io/next_url"},
@@ -49,7 +49,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ),
         (
             "test_limit_paginator_cursor_body_data",
-            RequestOption(pass_by=RequestOptionType.body_data, field_name="from"),
+            RequestOption(inject_into=RequestOptionType.body_data, field_name="from"),
             None,
             {"limit": 2},
             {},
@@ -60,7 +60,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ),
         (
             "test_limit_paginator_cursor_body_json",
-            RequestOption(pass_by=RequestOptionType.body_json, field_name="from"),
+            RequestOption(inject_into=RequestOptionType.body_json, field_name="from"),
             None,
             {"limit": 2},
             {},
@@ -71,7 +71,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ),
         (
             "test_limit_paginator_fewer_records_than_limit",
-            RequestOption(pass_by=RequestOptionType.header, field_name="from"),
+            RequestOption(inject_into=RequestOptionType.header, field_name="from"),
             None,
             {"limit": 2},
             {},
@@ -93,7 +93,7 @@ def test_limit_paginator(
     last_records,
     expected_next_page_token,
 ):
-    limit_request_option = RequestOption(pass_by=RequestOptionType.request_parameter, field_name="limit")
+    limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit")
     cursor_value = "{{ decoded_response.next }}"
     url_base = "https://airbyte.io"
     config = {}
@@ -120,8 +120,8 @@ def test_limit_paginator(
 
 
 def test_limit_cannot_be_set_in_path():
-    limit_request_option = RequestOption(pass_by=RequestOptionType.path)
-    page_token_request_option = RequestOption(pass_by=RequestOptionType.request_parameter, field_name="offset")
+    limit_request_option = RequestOption(inject_into=RequestOptionType.path)
+    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset")
     cursor_value = "{{ decoded_response.next }}"
     url_base = "https://airbyte.io"
     config = {}
