@@ -209,32 +209,34 @@ const SyncCatalogField: React.FC<SchemaViewProps> = ({
 
   return (
     <BatchEditProvider nodes={streams} update={onChangeSchema}>
-      <HeaderBlock>
-        {mode !== "readonly" ? (
-          <>
+      <div>
+        <HeaderBlock>
+          {mode !== "readonly" ? (
+            <>
+              <H5 bold>
+                <FormattedMessage id="form.dataSync" />
+              </H5>
+              {additionalControl}
+            </>
+          ) : (
             <H5 bold>
-              <FormattedMessage id="form.dataSync" />
+              <FormattedMessage id="form.dataSync.readonly" />
             </H5>
-            {additionalControl}
-          </>
-        ) : (
-          <H5 bold>
-            <FormattedMessage id="form.dataSync.readonly" />
-          </H5>
-        )}
-      </HeaderBlock>
-      {mode !== "readonly" && <Search onSearch={setSearchString} />}
-      <CatalogHeader mode={mode} />
-      <CatalogSubheader mode={mode} />
-      <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
-      <TreeViewContainer mode={mode}>
-        <CatalogTree
-          streams={filteredStreams}
-          onChangeStream={onChangeStream}
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-          mode={mode}
-        />
-      </TreeViewContainer>
+          )}
+        </HeaderBlock>
+        {mode !== "readonly" && <Search onSearch={setSearchString} />}
+        <CatalogHeader mode={mode} />
+        <CatalogSubheader mode={mode} />
+        <BulkHeader destinationSupportedSyncModes={destinationSupportedSyncModes} />
+        <TreeViewContainer mode={mode}>
+          <CatalogTree
+            streams={filteredStreams}
+            onChangeStream={onChangeStream}
+            destinationSupportedSyncModes={destinationSupportedSyncModes}
+            mode={mode}
+          />
+        </TreeViewContainer>
+      </div>
     </BatchEditProvider>
   );
 };
