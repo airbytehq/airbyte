@@ -24,6 +24,9 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+
+import com.trilead.ssh2.crypto.PEMDecoder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,12 +233,26 @@ public class SshTunnel implements AutoCloseable {
    * the keys from the key info, and return the key pair for use in authentication.
    */
   private KeyPair getPrivateKeyPair() throws IOException {
-    final PEMParser pemParser = new PEMParser(new StringReader(validateKey()));
-    final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
-    final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-    return new KeyPair(
-        converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
-        converter.getPrivateKey(keypair.getPrivateKeyInfo()));
+    String validatedKey = validateKey();
+    PemReader pemReader = new PemReader(new StringReader(validatedKey));
+    PemObject pemObject = pemReader.readPemObject();
+
+    if (pemObject == null) {
+      throw new IOException("Could not load private key");
+    }
+
+    String type = pemObject.getType();
+
+    if ("OPENSSH PRIVATE KEY".equals(type)) {
+      return PEMDecoder.decode(validatedKey.toCharArray(), null);// we do not support encrypted keys for now
+    } else {
+      final PEMParser pemParser = new PEMParser(new StringReader(validatedKey));
+      final PEMKeyPair keypair = (PEMKeyPair) pemParser.readObject();
+      final JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+      return new KeyPair(
+          converter.getPublicKey(SubjectPublicKeyInfo.getInstance(keypair.getPublicKeyInfo())),
+          converter.getPrivateKey(keypair.getPrivateKeyInfo()));
+    }
   }
 
   private String validateKey() {
