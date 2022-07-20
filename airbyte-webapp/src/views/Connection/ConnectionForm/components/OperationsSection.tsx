@@ -1,7 +1,8 @@
 import { Field, FieldArray } from "formik";
 import React from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
+
+import { H5 } from "components";
 
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 
@@ -9,12 +10,6 @@ import { DestinationDefinitionSpecificationRead } from "../../../../core/request
 import { useDefaultTransformation } from "../formConfig";
 import { NormalizationField } from "./NormalizationField";
 import { TransformationField } from "./TransformationField";
-
-const SectionTitle = styled.div`
-  font-weight: bold;
-  font-size: 14px;
-  line-height: 17px;
-`;
 
 interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
@@ -37,14 +32,14 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   return (
     <>
       {supportsNormalization || supportsTransformations ? (
-        <SectionTitle>
+        <H5 bold>
           {[
             supportsNormalization && formatMessage({ id: "connectionForm.normalization.title" }),
             supportsTransformations && formatMessage({ id: "connectionForm.transformation.title" }),
           ]
             .filter(Boolean)
             .join(" & ")}
-        </SectionTitle>
+        </H5>
       ) : null}
       {supportsNormalization && <Field name="normalization" component={NormalizationField} />}
       {supportsTransformations && (
