@@ -726,7 +726,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-azure-table:0.1.1"
+- dockerImage: "airbyte/source-azure-table:0.1.2"
   spec:
     documentationUrl: "https://docsurl.com"
     connectionSpecification:
@@ -1827,7 +1827,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.54"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.55"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2163,7 +2163,7 @@
           title: "Maximum size of Batched Requests"
           description: "Maximum batch size used when sending batch requests to Facebook\
             \ API. Most users do not need to set this field unless they specifically\
-            \ need to tune   the connector to address specific issues or use cases."
+            \ need to tune the connector to address specific issues or use cases."
           default: 50
           order: 9
           exclusiveMinimum: 0
@@ -6030,32 +6030,119 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.7"
+- dockerImage: "airbyte/source-okta:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Okta Spec"
       type: "object"
-      required:
-      - "token"
-      - "base_url"
-      additionalProperties: false
+      required: []
+      additionalProperties: true
       properties:
-        token:
+        domain:
           type: "string"
-          title: "API Token"
-          description: "A Okta token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\"\
-            >docs</a> for instructions on how to generate it."
-          airbyte_secret: true
-        base_url:
-          type: "string"
-          title: "Base URL"
-          description: "The Okta base URL."
-          airbyte_secret: true
+          title: "Okta domain"
+          description: "The Okta domain. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\"\
+            >docs</a> for instructions on how to find it."
+          airbyte_secret: false
+        credentials:
+          title: "Authorization Method *"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "auth_type"
+            - "client_id"
+            - "client_secret"
+            - "refresh_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+                order: 0
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your OAuth application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client Secret"
+                description: "The Client Secret of your OAuth application."
+                airbyte_secret: true
+              refresh_token:
+                type: "string"
+                title: "Refresh Token"
+                description: "Refresh Token to obtain new Access Token, when it's\
+                  \ expired."
+                airbyte_secret: true
+          - type: "object"
+            title: "API Token"
+            required:
+            - "auth_type"
+            - "api_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "api_token"
+                order: 0
+              api_token:
+                type: "string"
+                title: "Personal API Token"
+                description: "An Okta token. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\"\
+                  >docs</a> for instructions on how to generate it."
+                airbyte_secret: true
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "auth_type"
+      predicate_value: "oauth2.0"
+      oauth_config_specification:
+        oauth_user_input_from_connector_config_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            domain:
+              type: "string"
+              path_in_connector_config:
+              - "domain"
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            refresh_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "refresh_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/source-onesignal:0.1.2"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/onesignal"
@@ -6627,7 +6714,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.6"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
     connectionSpecification:
