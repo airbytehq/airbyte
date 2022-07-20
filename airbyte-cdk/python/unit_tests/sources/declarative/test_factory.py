@@ -95,7 +95,7 @@ def test_list_based_stream_slicer_with_values_refd():
 def test_list_based_stream_slicer_with_values_defined_in_config():
     content = """
     stream_slicer:
-      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: repository
       request_option:
@@ -112,17 +112,17 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_create_cartesian_stream_slicer():
     content = """
     stream_slicer_A:
-      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
       cursor_field: repository
     stream_slicer_B:
-      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      type: ListStreamSlicer
       slice_values:
         - hello
         - world
       cursor_field: words
     stream_slicer:
-      class_name: airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer.CartesianProductStreamSlicer
+      type: CartesianProductStreamSlicer
       stream_slicers:
         - "*ref(stream_slicer_A)"
         - "*ref(stream_slicer_B)"
