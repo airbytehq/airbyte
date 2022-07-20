@@ -830,7 +830,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.1.8"
+- dockerImage: "airbyte/source-bigquery:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -840,7 +840,6 @@
       required:
       - "project_id"
       - "credentials_json"
-      additionalProperties: false
       properties:
         project_id:
           type: "string"
@@ -1359,7 +1358,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-cockroachdb:0.1.12"
+- dockerImage: "airbyte/source-cockroachdb:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/cockroachdb"
     connectionSpecification:
@@ -1371,7 +1370,6 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
@@ -3808,7 +3806,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-db2:0.1.11"
+- dockerImage: "airbyte/source-db2:0.1.12"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/db2"
     connectionSpecification:
@@ -3822,7 +3820,6 @@
       - "username"
       - "password"
       - "encryption"
-      additionalProperties: false
       properties:
         host:
           description: "Host of the Db2."
@@ -3859,7 +3856,6 @@
           order: 5
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "encryption_method"
@@ -3871,7 +3867,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "TLS Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the cert provided by the server."
             required:
             - "encryption_method"
@@ -4989,7 +4984,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.9"
+- dockerImage: "airbyte/source-mssql:0.4.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mssql"
     connectionSpecification:
@@ -5001,7 +4996,6 @@
       - "port"
       - "database"
       - "username"
-      additionalProperties: true
       properties:
         host:
           description: "The hostname of the database."
@@ -5050,7 +5044,6 @@
           order: 6
           oneOf:
           - title: "Unencrypted"
-            additionalProperties: false
             description: "Data transfer will not be encrypted."
             required:
             - "ssl_method"
@@ -5062,7 +5055,6 @@
                 - "unencrypted"
                 default: "unencrypted"
           - title: "Encrypted (trust server certificate)"
-            additionalProperties: false
             description: "Use the certificate provided by the server without verification.\
               \ (For testing purposes only!)"
             required:
@@ -5075,7 +5067,6 @@
                 - "encrypted_trust_server_certificate"
                 default: "encrypted_trust_server_certificate"
           - title: "Encrypted (verify certificate)"
-            additionalProperties: false
             description: "Verify and use the certificate provided by the server."
             required:
             - "ssl_method"
@@ -5103,11 +5094,9 @@
             \ inserts, updates, and deletes. This needs to be configured on the source\
             \ database itself."
           default: "STANDARD"
-          additionalProperties: true
           order: 8
           oneOf:
           - title: "Standard"
-            additionalProperties: false
             description: "Standard replication requires no setup on the DB side but\
               \ will not be able to represent deletions incrementally."
             required:
@@ -5121,7 +5110,6 @@
                 default: "STANDARD"
                 order: 0
           - title: "Logical Replication (CDC)"
-            additionalProperties: false
             description: "CDC uses {TBC} to detect inserts, updates, and deletes.\
               \ This needs to be configured on the source database itself."
             required:
@@ -5772,7 +5760,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.15"
+- dockerImage: "airbyte/source-mysql:0.5.16"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5785,7 +5773,6 @@
       - "database"
       - "username"
       - "replication_method"
-      additionalProperties: false
       properties:
         host:
           description: "The host name of the database."
@@ -7654,7 +7641,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-redshift:0.3.10"
+- dockerImage: "airbyte/source-redshift:0.3.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/redshift"
     connectionSpecification:
@@ -7667,7 +7654,6 @@
       - "database"
       - "username"
       - "password"
-      additionalProperties: false
       properties:
         host:
           title: "Host"
@@ -8786,7 +8772,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.12"
+- dockerImage: "airbyte/source-snowflake:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snowflake"
     connectionSpecification:
@@ -8799,7 +8785,6 @@
       - "warehouse"
       - "database"
       - "schema"
-      additionalProperties: true
       properties:
         credentials:
           title: "Authorization Method"
@@ -8925,7 +8910,6 @@
       oauth_config_specification:
         oauth_user_input_from_connector_config_specification:
           type: "object"
-          additionalProperties: false
           properties:
             host:
               type: "string"
@@ -8933,7 +8917,6 @@
               - "host"
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             access_token:
               type: "string"
@@ -8947,7 +8930,6 @@
               - "refresh_token"
         complete_oauth_server_input_specification:
           type: "object"
-          additionalProperties: false
           properties:
             client_id:
               type: "string"
@@ -8955,7 +8937,6 @@
               type: "string"
         complete_oauth_server_output_specification:
           type: "object"
-          additionalProperties: false
           properties:
             client_id:
               type: "string"
