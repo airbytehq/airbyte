@@ -1,7 +1,7 @@
 global:
   imageRegistry: ""
   serviceAccountName: &service-account-name "airbyte-admin"
-  # configMapName: "airbyte-env"
+  
   secretName: "airbyte-secrets"
   database:
     secretName: "test-postgresql"

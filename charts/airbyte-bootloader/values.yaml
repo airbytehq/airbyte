@@ -1,6 +1,6 @@
 
 global:
-  serviceAccountName: something
+  serviceAccountName: placeholderServiceAccounr
   deploymentMode: oss
   secretName: something
   database:
