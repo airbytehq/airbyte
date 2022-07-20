@@ -14,7 +14,6 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -25,7 +24,6 @@ class SimpleRetriever(Retriever, HttpStream):
         primary_key,
         requester: Requester,
         record_selector: HttpSelector,
-        config: Config,
         paginator: Optional[Paginator] = None,
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
     ):
@@ -38,7 +36,6 @@ class SimpleRetriever(Retriever, HttpStream):
         self._iterator = stream_slicer
         self._last_response = None
         self._last_records = None
-        self._config = config
 
     @property
     def name(self) -> str:
