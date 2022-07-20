@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
@@ -25,7 +26,7 @@ class SimpleRetriever(Retriever, HttpStream):
         primary_key,
         requester: Requester,
         record_selector: HttpSelector,
-        paginator: Paginator = None,
+        paginator: Optional[Paginator] = None,
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
         state: Optional[State] = None,
     ):
@@ -57,24 +58,8 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def raise_on_http_errors(self) -> bool:
-        """
-        If set to False, allows opting-out of raising HTTP code exception.
-        """
-        return self._requester.raise_on_http_errors
-
-    @property
-    def max_retries(self) -> Union[int, None]:
-        """
-        Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-        return self._requester.max_retries
-
-    @property
-    def retry_factor(self) -> float:
-        """
-        Specifies factor to multiply the exponentiation by for backoff policy.
-        """
-        return self._requester.retry_factor
+        # never raise on http_errors because this overrides the error handler logic...
+        return False
 
     def should_retry(self, response: requests.Response) -> bool:
         """
@@ -86,7 +71,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return self._requester.should_retry(response)
+        return self._requester.should_retry(response).action == ResponseAction.RETRY
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -98,7 +83,11 @@ class SimpleRetriever(Retriever, HttpStream):
          :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
          to the default backoff behavior (e.g using an exponential algorithm).
         """
-        return self._requester.backoff_time(response)
+        should_retry = self._requester.should_retry(response)
+        if should_retry.action != ResponseAction.RETRY:
+            raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
+        assert should_retry.action == ResponseAction.RETRY
+        return should_retry.retry_in
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -197,6 +186,16 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        # if fail -> raise exception
+        # if ignore -> ignore response and return no records
+        # else -> delegate to record selector
+        response_status = self._requester.should_retry(response)
+        if response_status.action == ResponseAction.FAIL:
+            response.raise_for_status()
+        elif response_status.action == ResponseAction.IGNORE:
+            self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
+            return []
+
         # Warning: use self.state instead of the stream_state passed as argument!
         self._last_response = response
         records = self._record_selector.select_records(

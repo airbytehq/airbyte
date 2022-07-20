@@ -211,10 +211,7 @@
       "type": "string",
       "example": "OPENED",
       "description": "Account status.",
-      "enum": [
-        "OPENED",
-        "CLOSED"
-      ]
+      "enum": ["OPENED", "CLOSED"]
     },
     "attachments": {
       "type": "boolean",
