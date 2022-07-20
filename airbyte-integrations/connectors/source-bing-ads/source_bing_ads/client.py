@@ -6,7 +6,6 @@ import sys
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from typing import Any, Iterator, Mapping, Optional
-import logging
 
 import backoff
 import pendulum
