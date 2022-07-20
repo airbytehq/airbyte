@@ -45,15 +45,15 @@ class DatetimeStreamSlicer(StreamSlicer):
 
         :param start_datetime:
         :param end_datetime:
-        :param step:
+        :param step: size of the timewindow
         :param cursor_field: record's cursor field
-        :param datetime_format:
-        :param config:
+        :param datetime_format: format of the datetime
+        :param config: connection config
         :param start_time_option: request option for start time
         :param end_time_option: request option for end time
         :param stream_state_field_start: stream slice start time field
         :param stream_state_field_end: stream slice end time field
-        :param lookback_window:
+        :param lookback_window: how many days before start_datetime to read data for
         """
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
@@ -96,6 +96,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
     def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
+        # FIXME: This method needs explanation!
         stream_slice_value = stream_slice.get(self._cursor_field.eval(self._config))
         stream_slice_value_end = stream_slice.get(self._stream_slice_field_end.eval(self._config))
         last_record_value = last_record.get(self._cursor_field.eval(self._config)) if last_record else None
@@ -115,6 +116,7 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         # Evaluate and compare start_date, end_date, and cursor_value based on configs and runtime state
+        # FIXME: This method needs explanation
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self._end_datetime.get_datetime(self._config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))

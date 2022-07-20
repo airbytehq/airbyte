@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams.core import Stream
 @dataclass
 class ParentStreamConfig:
     stream: Stream
-    slice_key: str
+    parent_key: str
     stream_slice_field: str
     request_option: Optional[RequestOption] = None
 
@@ -29,6 +29,9 @@ class SubstreamSlicer(StreamSlicer):
         self,
         parent_streams_configs: List[ParentStreamConfig],
     ):
+        """
+        :param parent_streams_configs: parent streams to iterate over and their config
+        """
         self._parent_stream_configs = parent_streams_configs
         self._cursor = None
 
@@ -84,7 +87,7 @@ class SubstreamSlicer(StreamSlicer):
         else:
             for parent_stream_config in self._parent_stream_configs:
                 parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.slice_key
+                parent_field = parent_stream_config.parent_key
                 stream_state_field = parent_stream_config.stream_slice_field
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True

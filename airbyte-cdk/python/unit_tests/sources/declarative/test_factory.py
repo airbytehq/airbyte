@@ -125,13 +125,13 @@ def test_create_substream_slicer():
       type: SubstreamSlicer
       parent_streams_configs:
         - stream: "*ref(stream_slicer_A)"
-          slice_key: id
+          parent_key: id
           stream_slice_field: repository_id
           request_option:
             inject_into: request_parameter
             field_name: repository_id
         - stream: "*ref(stream_slicer_B)"
-          slice_key: someid
+          parent_key: someid
           stream_slice_field: word_id
     """
     config = parser.parse(content)
@@ -142,12 +142,12 @@ def test_create_substream_slicer():
     assert isinstance(parent_stream_configs[1].stream, ListStreamSlicer)
     assert ["airbyte", "airbyte-cloud"] == parent_stream_configs[0].stream._slice_values
     assert ["hello", "world"] == parent_stream_configs[1].stream._slice_values
-    assert stream_slicer._parent_stream_configs[0].slice_key == "id"
+    assert stream_slicer._parent_stream_configs[0].parent_key == "id"
     assert stream_slicer._parent_stream_configs[0].stream_slice_field == "repository_id"
     assert stream_slicer._parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
     assert stream_slicer._parent_stream_configs[0].request_option._field_name == "repository_id"
 
-    assert stream_slicer._parent_stream_configs[1].slice_key == "someid"
+    assert stream_slicer._parent_stream_configs[1].parent_key == "someid"
     assert stream_slicer._parent_stream_configs[1].stream_slice_field == "word_id"
     assert stream_slicer._parent_stream_configs[1].request_option is None
 
