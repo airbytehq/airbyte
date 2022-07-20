@@ -877,6 +877,7 @@ public class DefaultJobPersistence implements JobPersistence {
   /**
    * Read @param jsonSchema and @returns a list of properties (converted as Field objects)
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static List<Field<?>> getFields(final JsonNode jsonSchema) {
     final List<Field<?>> result = new ArrayList<>();
     final JsonNode properties = jsonSchema.get("properties");

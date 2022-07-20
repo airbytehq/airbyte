@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class TestDefaultJdbcDatabase {
+class TestDefaultJdbcDatabase {
 
   private static final List<JsonNode> RECORDS_AS_JSON = Lists.newArrayList(
       Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),

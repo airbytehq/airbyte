@@ -28,7 +28,7 @@ import java.nio.file.Path;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
-public class ConfigurationApiTest {
+class ConfigurationApiTest {
 
   @Test
   void testImportDefinitions() {
