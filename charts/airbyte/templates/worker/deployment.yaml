@@ -269,10 +269,10 @@ spec:
               name: {{ include "common.names.fullname" . }}-env
               key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
         - name: USE_STREAM_CAPABLE_STATE
-            valueFrom:
-              configMapKeyRef:
-                name: { { include "common.names.fullname" . } }-env
-                key: USE_STREAM_CAPABLE_STATE
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "common.names.fullname" . }}-env
+              key: USE_STREAM_CAPABLE_STATE
         {{- if .Values.worker.extraEnv }}
         {{ .Values.worker.extraEnv | toYaml | nindent 8 }}
         {{- end }}

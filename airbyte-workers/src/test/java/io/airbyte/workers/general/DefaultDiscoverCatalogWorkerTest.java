@@ -5,6 +5,8 @@
 package io.airbyte.workers.general;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -17,7 +19,10 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -28,6 +33,7 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.internal.AirbyteMessageUtils;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
@@ -81,9 +87,11 @@ public class DefaultDiscoverCatalogWorkerTest {
   @Test
   public void testDiscoverSchema() throws Exception {
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
-    final AirbyteCatalog output = worker.run(INPUT, jobRoot);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
 
-    assertEquals(CATALOG, output);
+    assertNull(output.getFailureReason());
+    assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
+    assertEquals(CATALOG, output.getDiscoverCatalog());
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
@@ -101,6 +109,32 @@ public class DefaultDiscoverCatalogWorkerTest {
 
     final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, streamFactory);
     assertThrows(WorkerException.class, () -> worker.run(INPUT, jobRoot));
+
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).exitValue();
+  }
+
+  @SuppressWarnings("BusyWait")
+  @Test
+  public void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
+    final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
+        AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
+
+    when(process.exitValue()).thenReturn(1);
+
+    final DefaultDiscoverCatalogWorker worker = new DefaultDiscoverCatalogWorker(workerConfigs, integrationLauncher, traceStreamFactory);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
+    assertEquals(OutputType.DISCOVER_CATALOG, output.getOutputType());
+    assertNull(output.getDiscoverCatalog());
+    assertNotNull(output.getFailureReason());
+
+    final FailureReason failureReason = output.getFailureReason();
+    assertEquals("some error from the connector", failureReason.getExternalMessage());
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
