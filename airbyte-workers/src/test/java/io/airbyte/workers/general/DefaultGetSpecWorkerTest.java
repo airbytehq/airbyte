@@ -115,7 +115,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnNonzeroExitCodeWithTraceMessage() throws WorkerException, InterruptedException {
+  void testFailureOnNonzeroExitCodeWithTraceMessage() throws WorkerException, InterruptedException {
     final AirbyteMessage message = AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0);
 
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));

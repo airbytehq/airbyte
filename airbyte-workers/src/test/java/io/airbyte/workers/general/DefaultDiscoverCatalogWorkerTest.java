@@ -125,7 +125,7 @@ class DefaultDiscoverCatalogWorkerTest {
 
   @SuppressWarnings("BusyWait")
   @Test
-  public void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
+  void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
     final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
         AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
 

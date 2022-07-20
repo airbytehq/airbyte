@@ -117,7 +117,7 @@ class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFail() {
+  void testProcessFail() {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
@@ -125,7 +125,7 @@ class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFailWithTraceMessage() throws WorkerException {
+  void testProcessFailWithTraceMessage() throws WorkerException {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, traceMessageStreamFactory);
