@@ -3,11 +3,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 on:
-  # push:
-  #   branches: 
-  #     - 'master'
-  #   paths:
-  #     - 'charts/**'
+  push:
+    branches: 
+      - 'master'
+    paths:
+      - 'charts/**'
   workflow_dispatch:
 
 jobs:
