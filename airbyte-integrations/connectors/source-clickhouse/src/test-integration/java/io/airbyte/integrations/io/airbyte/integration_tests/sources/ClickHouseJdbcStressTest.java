@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -12,11 +14,13 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
+import java.time.Duration;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 @Disabled
 public class ClickHouseJdbcStressTest extends JdbcStressTest {
@@ -33,7 +37,9 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
   @Override
   @BeforeEach
   public void setup() throws Exception {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()

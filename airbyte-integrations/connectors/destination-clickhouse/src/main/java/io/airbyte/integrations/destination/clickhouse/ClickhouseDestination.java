@@ -17,7 +17,6 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -32,12 +31,13 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final List<String> HOST_KEY = List.of("host");
   public static final List<String> PORT_KEY = List.of("port");
+  public static final String HTTPS_PROTOCOL = "https";
+  public static final String HTTP_PROTOCOL = "http";
 
   private static final String PASSWORD = "password";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "socket_timeout", "3000000",
-      "ssl", "true",
       "sslmode", "none");
 
   public static Destination sshWrappedDestination() {
@@ -50,7 +50,9 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String jdbcUrl = String.format("jdbc:clickhouse://%s:%s/%s?",
+    final boolean isSsl = useSsl(config);
+    final String jdbcUrl = String.format("jdbc:clickhouse:%s://%s:%s/%s",
+        isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText());

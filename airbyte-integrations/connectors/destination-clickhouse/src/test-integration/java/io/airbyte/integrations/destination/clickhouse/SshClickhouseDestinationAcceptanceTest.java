@@ -153,6 +153,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
             config.has("password") ? config.get("password").asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                ClickhouseDestination.HTTP_PROTOCOL,
                 config.get("host").asText(),
                 config.get("port").asInt(),
                 config.get("database").asText())));

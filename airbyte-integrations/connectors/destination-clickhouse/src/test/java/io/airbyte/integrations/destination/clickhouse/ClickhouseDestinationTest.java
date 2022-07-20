@@ -27,7 +27,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,7 +61,7 @@ public class ClickhouseDestinationTest {
 
   @BeforeAll
   static void init() {
-    db = new ClickHouseContainer("yandex/clickhouse-server");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
     db.start();
   }
 
@@ -132,7 +131,8 @@ public class ClickhouseDestinationTest {
             config.get("username").asText(),
             config.get("password").asText(),
             ClickhouseDestination.DRIVER_CLASS,
-            String.format("jdbc:clickhouse://%s:%s/%s",
+            String.format("jdbc:clickhouse:%s://%s:%s/%s",
+                ClickhouseDestination.HTTP_PROTOCOL,
                 config.get("host").asText(),
                 config.get("port").asText(),
                 config.get("database").asText())));
