@@ -7,6 +7,7 @@ from typing import Mapping, Type
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
+from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
@@ -16,7 +17,10 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
@@ -36,10 +40,14 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "HttpRequester": HttpRequester,
     "InterpolatedPaginator": InterpolatedPaginator,
     "JelloExtractor": JelloExtractor,
+    "JsonSchema": JsonSchema,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
     "NextPageUrlPaginator": NextPageUrlPaginator,
+    "NoPagination": NoPagination,
     "OffsetPaginator": OffsetPaginator,
+    "RecordSelector": RecordSelector,
     "RemoveFields": RemoveFields,
+    "SimpleRetriever": SimpleRetriever,
     "TokenAuthenticator": TokenAuthenticator,
 }
