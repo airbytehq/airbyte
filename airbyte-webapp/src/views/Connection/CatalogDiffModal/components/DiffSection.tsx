@@ -1,6 +1,6 @@
 import { FormattedMessage } from "react-intl";
 
-import { AirbyteCatalog, StreamTransform } from "core/request/AirbyteClient";
+import { AirbyteCatalog, StreamDescriptor, StreamTransform } from "core/request/AirbyteClient";
 
 import { DiffVerb } from "../utils/types";
 import { DiffHeader } from "./DiffHeader";
@@ -13,6 +13,18 @@ interface DiffSectionProps {
   diffVerb: DiffVerb;
 }
 
+const calculateSyncModeString = (catalog: AirbyteCatalog, streamDescriptor: StreamDescriptor) => {
+  const streamConfig = catalog.streams.find(
+    (catalogStream) =>
+      catalogStream.stream?.namespace === streamDescriptor.namespace &&
+      catalogStream.stream?.name === streamDescriptor.name
+  )?.config;
+
+  if (streamConfig?.syncMode && streamConfig.destinationSyncMode) {
+    return `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`;
+  }
+  return "";
+};
 export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diffVerb }) => {
   return (
     <div className={styles.sectionContainer}>
@@ -33,24 +45,14 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diff
         </thead>
         <tbody>
           {streams.map((stream) => {
-            let syncModeString;
-
-            if (catalog) {
-              const streamConfig = catalog.streams.find(
-                (catalogStream) =>
-                  catalogStream.stream?.namespace === stream.streamDescriptor.namespace &&
-                  catalogStream.stream?.name === stream.streamDescriptor.name
-              )?.config;
-
-              streamConfig?.syncMode &&
-                streamConfig.destinationSyncMode &&
-                (syncModeString = `${streamConfig?.syncMode} | ${streamConfig?.destinationSyncMode}`);
-            }
-
             return (
               <StreamRow
                 streamTransform={stream}
-                syncMode={syncModeString}
+                syncMode={
+                  !catalog || !stream.streamDescriptor
+                    ? undefined
+                    : calculateSyncModeString(catalog, stream.streamDescriptor)
+                }
                 diffVerb={diffVerb}
                 key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}
               />
