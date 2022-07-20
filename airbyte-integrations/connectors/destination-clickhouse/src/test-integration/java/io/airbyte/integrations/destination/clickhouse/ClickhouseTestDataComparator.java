@@ -22,11 +22,9 @@ public class ClickhouseTestDataComparator extends AdvancedTestDataComparator {
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseTestDataComparator.class);
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  public static final String CLICKHOUSE_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
+  private static final String CLICKHOUSE_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSX";
 
   // https://clickhouse.com/docs/en/sql-reference/data-types/date32/
-  // private final LocalDate minSupportedDate = LocalDate.parse("1925-01-01");
-  // private final LocalDate maxSupportedDate = LocalDate.parse("2283-11-11");
   private final LocalDate minSupportedDate = LocalDate.parse("1970-01-01");
   private final LocalDate maxSupportedDate = LocalDate.parse("2149-06-06");
   private final ZonedDateTime minSupportedDateTime = ZonedDateTime.parse(

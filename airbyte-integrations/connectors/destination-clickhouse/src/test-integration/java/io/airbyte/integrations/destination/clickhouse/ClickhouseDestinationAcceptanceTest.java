@@ -83,9 +83,6 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected JsonNode getConfig() {
-    // Note: ClickHouse official JDBC driver uses HTTP protocol, its default port is 8123
-    // dbt clickhouse adapter uses native protocol, its default port is 9000
-    // Since we disabled normalization and dbt test, we only use the JDBC port here.
     final Optional tcpPort = db.getExposedPorts().stream()
         .map(exPort -> db.getMappedPort((Integer) exPort))
         .filter(el -> !db.getFirstMappedPort().equals(el))
