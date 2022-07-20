@@ -159,7 +159,7 @@ metadata_paginator:
       inject_into: path
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ decoded_response._metadata.next }}"
+      cursor_value: "{{ response._metadata.next }}"
     url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
@@ -305,7 +305,7 @@ def test_create_composite_error_handler():
           type: "CompositeErrorHandler"
           error_handlers:
             - response_filters:
-                - predicate: "{{ 'code' in decoded_response }}"
+                - predicate: "{{ 'code' in response }}"
                   action: RETRY
             - response_filters:
                 - http_codes: [ 403 ]
@@ -316,7 +316,7 @@ def test_create_composite_error_handler():
     assert len(component._error_handlers) == 2
     assert isinstance(component._error_handlers[0], DefaultErrorHandler)
     assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
-    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in response }}"
     assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
 
@@ -342,7 +342,7 @@ def test_config_with_defaults():
               inject_into: path
             pagination_strategy:
               type: "CursorPagination"
-              cursor_value: "{{ decoded_response._metadata.next }}"
+              cursor_value: "{{ response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -388,7 +388,7 @@ def test_create_limit_paginator():
           inject_into: path
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ decoded_response._metadata.next }}"
+          cursor_value: "{{ response._metadata.next }}"
     """
     config = parser.parse(content)
 
