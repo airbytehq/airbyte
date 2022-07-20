@@ -1,0 +1,37 @@
+name: Test workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+on:
+  push:
+    branches: 
+      - 'master'
+    paths:
+      - 'charts/**'
+  workflow_dispatch:
+
+jobs:
+  release-chart:
+    name: Chart release
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: "airbyte"
+          fetch-depth: 0
+
+      - uses: paulhatch/semantic-version@v4.0.2
+        id: sem-ver
+        with:
+          tag_prefix: "v"
+          major_pattern: "feat:"
+          minor_pattern: "fix:"
+          format: "${major}.${minor}.${patch}"
+          change_path: "airbyte/charts"
+          bump_each_commit: true
+          user_format_type: "csv"
+          search_commit_body: true
+
+      - shell: bash
+        run: echo ${{ steps.sem-ver.outputs.version }}
+      
