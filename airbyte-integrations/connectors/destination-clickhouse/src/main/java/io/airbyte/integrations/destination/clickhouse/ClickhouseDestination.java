@@ -51,7 +51,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final boolean isSsl = useSsl(config);
+    final boolean isSsl = JdbcUtils.useSsl(config);
     final String jdbcUrl = String.format("jdbc:clickhouse:%s://%s:%s/%s",
         isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
         config.get("host").asText(),
@@ -68,7 +68,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -101,10 +100,6 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       // No need for any parameters if the connection doesn't use SSL except socket_timeout
       return ImmutableMap.of("socket_timeout", "3000000");
     }
-  }
-
-  private boolean useSsl(final JsonNode config) {
-    return !config.has("ssl") || config.get("ssl").asBoolean();
   }
 
   public static void main(final String[] args) throws Exception {

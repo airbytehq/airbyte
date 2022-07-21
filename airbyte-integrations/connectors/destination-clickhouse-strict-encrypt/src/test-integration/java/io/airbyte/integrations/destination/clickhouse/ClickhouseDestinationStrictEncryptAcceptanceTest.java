@@ -4,17 +4,21 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,7 +26,9 @@ import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
-import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.ImageFromDockerfile;
 
 public class ClickhouseDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -32,7 +38,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  private ClickHouseContainer db;
+  private GenericContainer db;
 
   public static final Integer HTTP_PORT = 8123;
   public static final Integer NATIVE_PORT = 9000;
@@ -76,8 +82,8 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
         .put("host", db.getHost())
         .put("port", db.getMappedPort(HTTPS_PORT))
         .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
+        .put("username", "default")
+        .put("password", "")
         .put("schema", DB_NAME)
         .build());
   }
@@ -129,7 +135,8 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
-    final String jdbcStr = String.format("jdbc:clickhouse://%s:%s/%s?ssl=true&sslmode=none",
+    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+        ClickhouseDestination.HTTPS_PROTOCOL,
         config.get("host").asText(),
         config.get("port").asText(),
         config.get("database").asText());
@@ -142,22 +149,27 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server")
+    db = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
+        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
+        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
+        .withEnv("TZ", "UTC")
         .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
-        .withClasspathResourceMapping("config.xml", "/etc/clickhouse-server/config.xml", BindMode.READ_ONLY)
-        .withClasspathResourceMapping("server.crt", "/etc/clickhouse-server/server.crt", BindMode.READ_ONLY)
-        .withClasspathResourceMapping("server.key", "/etc/clickhouse-server/server.key", BindMode.READ_ONLY)
-        .withClasspathResourceMapping("dhparam.pem", "/etc/clickhouse-server/dhparam.pem", BindMode.READ_ONLY);
+        .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+        .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+
     db.start();
 
-    LOGGER.info(String.format("Clickhouse server container port mapping: %d -> %d, %d -> %d",
+    LOGGER.info(String.format("Clickhouse server container port mapping: %d -> %d, %d -> %d, %d -> %d, %d -> %d",
         HTTP_PORT, db.getMappedPort(HTTP_PORT),
-        HTTPS_PORT, db.getMappedPort(HTTPS_PORT)));
+        HTTPS_PORT, db.getMappedPort(HTTPS_PORT),
+        NATIVE_PORT, db.getMappedPort(NATIVE_PORT),
+        NATIVE_SECURE_PORT, db.getMappedPort(NATIVE_SECURE_PORT)
+    ));
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
-    db.stop();
     db.close();
   }
 
