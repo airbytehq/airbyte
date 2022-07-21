@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
+
   "properties": {
     "funnel_id": {
       "type": ["null", "integer"]
@@ -68,7 +68,7 @@
           },
           "time_buckets_from_start": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+
             "properties": {
               "lower": {
                 "type": ["null", "integer"]
@@ -86,7 +86,7 @@
           },
           "time_buckets_from_prev": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+
             "properties": {
               "lower": {
                 "type": ["null", "integer"]
@@ -107,7 +107,7 @@
     },
     "analysis": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+
       "properties": {
         "completion": {
           "type": ["null", "integer"]
