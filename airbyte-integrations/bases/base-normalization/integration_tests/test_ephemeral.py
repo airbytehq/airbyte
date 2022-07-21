@@ -95,6 +95,8 @@ def test_stream_with_1_airbyte_column(setup_test_path):
 
 
 def run_test(destination_type: DestinationType, column_count: int, expected_exception_message: str = ""):
+    if destination_type.value == DestinationType.CLICKHOUSE.value:
+        pytest.skip("ephemeral materialization isn't supported in ClickHouse yet")
     if destination_type.value == DestinationType.ORACLE.value:
         # Oracle does not allow changing to random schema
         dbt_test_utils.set_target_schema("test_normalization")
