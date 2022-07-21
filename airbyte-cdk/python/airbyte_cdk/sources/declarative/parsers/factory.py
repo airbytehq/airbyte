@@ -69,7 +69,6 @@ class DeclarativeComponentFactory:
         4. list: loop over the list and create objects for its items
         5. anything else -> return as is
         """
-        # definitions.options has name...
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
