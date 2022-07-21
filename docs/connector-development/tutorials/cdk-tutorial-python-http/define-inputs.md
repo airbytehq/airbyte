@@ -20,7 +20,6 @@ connectionSpecification:
     - access_key
     - start_date
     - base
-  additionalProperties: true
   properties:
     access_key:
       type: string
