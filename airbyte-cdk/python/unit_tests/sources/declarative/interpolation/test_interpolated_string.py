@@ -24,3 +24,10 @@ def test_eval_from_kwargs():
     kwargs = {"c": "airbyte"}
     s = InterpolatedString.create(string, options={})
     assert s.eval(config, **{"kwargs": kwargs}) == "airbyte"
+
+
+def test_eval_from_options():
+    string = "{{ options['hello'] }}"
+    kwargs = {"c": "airbyte"}
+    s = InterpolatedString.create(string, options={"hello": "world"})
+    assert s.eval(config, **{"kwargs": kwargs}) == "world"
