@@ -126,7 +126,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             containerOrchestratorConfig.secretMountPath(),
             containerOrchestratorConfig.containerOrchestratorImage(),
             containerOrchestratorConfig.googleApplicationCredentials(),
-            featureFlag);
+            featureFlag.useStreamCapableState());
 
         cancellationCallback.set(() -> {
           // When cancelled, try to set to true.
