@@ -40,6 +40,7 @@ class PostgresCdcGetPublicizedTablesTest {
   private static final String SCHEMA_NAME = "public";
   private static final String PUBLICATION = "publication_test_12";
   private static final String REPLICATION_SLOT = "replication_slot_test_12";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
   private static PostgreSQLContainer<?> container;
   private JsonNode config;
 
@@ -122,6 +123,7 @@ class PostgresCdcGetPublicizedTablesTest {
       // when config is cdc
       ((ObjectNode) config).set("replication_method", Jsons.jsonNode(ImmutableMap.of(
           "replication_slot", REPLICATION_SLOT,
+          "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
           "publication", PUBLICATION)));
       database.setSourceConfig(config);
       final Set<AirbyteStreamNameNamespacePair> expectedTables = Set.of(
