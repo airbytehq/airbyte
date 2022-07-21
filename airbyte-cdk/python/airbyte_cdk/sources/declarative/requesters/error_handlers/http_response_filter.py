@@ -46,7 +46,7 @@ class HttpResponseFilter:
             return None
 
     def _response_matches_predicate(self, response: requests.Response) -> bool:
-        return self._predicate and self._predicate.eval(None, decoded_response=response.json())
+        return self._predicate and self._predicate.eval(None, response=response.json())
 
     def _response_contains_error_message(self, response: requests.Response) -> bool:
         if not self._error_message_contains:
