@@ -13,7 +13,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class SentryExceptionHelperTest {
+class SentryExceptionHelperTest {
 
   final SentryExceptionHelper exceptionHelper = new SentryExceptionHelper();
 
