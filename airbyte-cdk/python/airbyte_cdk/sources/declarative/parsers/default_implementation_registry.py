@@ -12,11 +12,13 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -35,19 +37,22 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 from airbyte_cdk.sources.streams.core import Stream
 
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
+    ConnectionChecker: CheckStream,
+    Decoder: JsonDecoder,
+    ErrorHandler: DefaultErrorHandler,
+    HttpResponseFilter: HttpResponseFilter,
+    HttpSelector: RecordSelector,
+    InterpolatedBoolean: InterpolatedBoolean,
+    InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
+    InterpolatedString: InterpolatedString,
+    MinMaxDatetime: MinMaxDatetime,
+    Paginator: NoPagination,
+    RequestOption: RequestOption,
+    RequestOptionsProvider: InterpolatedRequestOptionsProvider,
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
-    HttpSelector: RecordSelector,
-    ConnectionChecker: CheckStream,
-    ErrorHandler: DefaultErrorHandler,
-    Decoder: JsonDecoder,
     State: DictState,
-    StreamSlicer: SingleSlice,
-    RequestOptionsProvider: InterpolatedRequestOptionsProvider,
-    Paginator: NoPagination,
-    HttpResponseFilter: HttpResponseFilter,
     Stream: DeclarativeStream,
-    MinMaxDatetime: MinMaxDatetime,
-    InterpolatedString: InterpolatedString,
+    StreamSlicer: SingleSlice,
 }
