@@ -353,6 +353,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.2.9 | 2022-07-06 | [\#14485](https://github.com/airbytehq/airbyte/pull/14485/) | BigQuery partition pruning otimization |
 |                 | 0.2.8 | 2022-07-13 | [\#14522](https://github.com/airbytehq/airbyte/pull/14522) | BigQuery replaces `NULL` array entries with the string value `"NULL"` |
 |                 | 0.2.7 | 2022-07-05 | [\#11694](https://github.com/airbytehq/airbyte/pull/11694) | Do not return NULL for MySQL column values > 512 chars |
 |                 | 0.2.6 | 2022-06-16 | [\#13894](https://github.com/airbytehq/airbyte/pull/13894) | Fix incorrect jinja2 macro `json_extract_array` call |
