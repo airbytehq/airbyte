@@ -23,13 +23,13 @@ class InterpolatedString:
         return self._string == other._string and self._default == other._default
 
     @classmethod
-    def create(cls, string_or_interpolated: Union["InterpolatedString", str]):
+    def create(cls, string_or_interpolated: Union["InterpolatedString", str], options):
         """
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
         :param string_or_interpolated: either a raw string or an InterpolatedString.
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):
-            return InterpolatedString(string_or_interpolated)
+            return InterpolatedString(string_or_interpolated, options=options)
         else:
             return string_or_interpolated

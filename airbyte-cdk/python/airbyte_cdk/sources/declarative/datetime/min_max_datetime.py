@@ -22,11 +22,11 @@ class MinMaxDatetime:
         max_datetime: str = "",
         **kwargs,  # phantom parameter needed for the factory
     ):
-        self._datetime_interpolator = InterpolatedString(datetime)
+        self._datetime_interpolator = InterpolatedString(datetime, options=kwargs)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString(min_datetime) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString(max_datetime) if max_datetime else None
+        self._min_datetime_interpolator = InterpolatedString(min_datetime, options=kwargs) if min_datetime else None
+        self._max_datetime_interpolator = InterpolatedString(max_datetime, options=kwargs) if max_datetime else None
 
     def get_datetime(self, config, **kwargs) -> dt.datetime:
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first

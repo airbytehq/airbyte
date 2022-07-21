@@ -4,7 +4,7 @@
 
 import datetime
 
-from airbyte_cdk.sources.declarative.auth.token import BearerAuth
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuth
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -275,11 +275,13 @@ def test_create_requester():
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
-    name: lists
+    options:
+        name: lists
     url_base: "https://api.sendgrid.com"
     authenticator:
-      type: "BearerAuth"
-      token: "{{ config.apikey }}"
+      type: "BasicHttpAuth"
+      username: "{{ options.name }}"
+      password: "{{ config.apikey }}"
     request_options_provider:
       request_parameters:
         page_size: 10
@@ -292,7 +294,9 @@ def test_create_requester():
     assert isinstance(component._error_handler, DefaultErrorHandler)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
-    assert isinstance(component._authenticator, BearerAuth)
+    assert isinstance(component._authenticator, BasicHttpAuth)
+    assert component._authenticator._username.eval(input_config) == "lists"
+    assert component._authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
     assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"

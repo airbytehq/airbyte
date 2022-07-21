@@ -19,10 +19,10 @@ class ListStreamSlicer(StreamSlicer):
     If slice_values is a string, then evaluate it as literal and assert the resulting literal is a list
     """
 
-    def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
+    def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config, **kwargs):
         print(f"slice_values: {slice_values}")
         if isinstance(slice_values, str):
-            slice_values = InterpolatedString.create(slice_values).eval(config)
+            slice_values = InterpolatedString.create(slice_values, options=kwargs).eval(config)
         elif isinstance(slice_values, InterpolatedString):
             slice_values = ast.literal_eval(slice_values.eval(config))
         assert isinstance(slice_values, list)
