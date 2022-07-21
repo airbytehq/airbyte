@@ -58,6 +58,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -606,35 +607,35 @@ public class AirbyteAcceptanceTestHarness {
     if (isKube) {
       if (isMinikube) {
         // used with minikube driver=none instance
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+        dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put("host", "host.docker.internal");
+        dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
       }
     } else if (isMac) {
-      dbConfig.put("host", "host.docker.internal");
+      dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
     } else {
-      dbConfig.put("host", "localhost");
+      dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
     }
 
     if (hiddenPassword) {
-      dbConfig.put("password", "**********");
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, "**********");
     } else {
-      dbConfig.put("password", psql.getPassword());
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put("port", psql.getFirstMappedPort());
-    dbConfig.put("database", psql.getDatabaseName());
-    dbConfig.put("username", psql.getUsername());
-
+    dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
+    dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
+    dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
+    dbConfig.put(JdbcUtils.SSL_KEY, false);
     // Some database docker images labeled strict-enforce do not contain an option to ssl off, so it is
     // not included in the schema.
     if (!strictEnforce) {
-      dbConfig.put("ssl", false);
+      dbConfig.put(JdbcUtils.SSL_KEY, false);
     }
 
     if (withSchema) {
-      dbConfig.put("schema", "public");
+      dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
     }
     return dbConfig;
   }
