@@ -109,7 +109,7 @@ def test_datetime_stream_slicer():
     content = """
     stream_slicer:
         type: DatetimeStreamSlicer
-        options:
+        $options:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -195,7 +195,7 @@ partial_stream:
   cursor_field: [ ]
 list_stream:
   ref: "*ref(partial_stream)"
-  options:
+  $options:
     name: "lists"
     primary_key: "id"
     extractor:
@@ -275,7 +275,7 @@ def test_create_requester():
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
-    options:
+    $options:
         name: lists
     url_base: "https://api.sendgrid.com"
     authenticator:
@@ -329,7 +329,7 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
-      options:
+      $options:
         name: "lists"
         primary_key: id
         url_base: "https://api.sendgrid.com"
@@ -426,7 +426,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            options:
+            $options:
                 {self.base_options}
         """
         config = parser.parse(content)
@@ -438,7 +438,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            options:
+            $options:
                 {self.base_options}
                 transformations:
                     - type: RemoveFields
@@ -456,7 +456,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
-            options:
+            $options:
                 {self.base_options}
                 transformations:
                     - type: AddFields

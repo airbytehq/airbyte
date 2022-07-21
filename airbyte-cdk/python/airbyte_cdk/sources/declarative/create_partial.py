@@ -16,6 +16,7 @@ import inspect
     :param keywords:
     :return: partially created object
     """
+OPTIONS_STR = "$options"
 
 
 def create(func, /, *args, **keywords):
@@ -26,9 +27,9 @@ def create(func, /, *args, **keywords):
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)
 
-        # options is a special keyword used for interpolation and propagation
-        if "options" in all_keywords:
-            options = all_keywords.get("options")
+        # $options is a special keyword used for interpolation and propagation
+        if "$options" in all_keywords:
+            options = all_keywords.get("$options")
         else:
             options = dict()
 

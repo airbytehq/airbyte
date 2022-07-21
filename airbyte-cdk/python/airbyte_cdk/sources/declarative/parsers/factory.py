@@ -9,7 +9,7 @@ import enum
 import importlib
 from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
-from airbyte_cdk.sources.declarative.create_partial import create
+from airbyte_cdk.sources.declarative.create_partial import OPTIONS_STR, create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_TYPES_REGISTRY
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
@@ -43,8 +43,8 @@ class DeclarativeComponentFactory:
             class_ = class_or_class_name
 
         # create components in options before propagating them
-        if "options" in kwargs:
-            kwargs["options"] = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs["options"].items()}
+        if OPTIONS_STR in kwargs:
+            kwargs[OPTIONS_STR] = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs[OPTIONS_STR].items()}
 
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs.items()}
         return create(class_, config=config, **updated_kwargs)
@@ -71,11 +71,11 @@ class DeclarativeComponentFactory:
         """
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
-            definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
+            definition[OPTIONS_STR] = self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), definition.get(OPTIONS_STR, dict()))
             return self.create_component(definition, config)()
         elif self.is_object_definition_with_type(definition):
             # If type is set instead of class_name, get the class_name from the CLASS_TYPES_REGISTRY
-            definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
+            definition[OPTIONS_STR] = self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), definition.get(OPTIONS_STR, dict()))
             object_type = definition.pop("type")
             class_name = CLASS_TYPES_REGISTRY[object_type]
             definition["class_name"] = class_name
@@ -87,14 +87,14 @@ class DeclarativeComponentFactory:
             # We don't have to instantiate builtin types (eg string and dict) because definition is already going to be of that type
             if expected_type and not self._is_builtin_type(expected_type):
                 definition["class_name"] = expected_type
-                definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
+                definition[OPTIONS_STR] = self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), definition.get(OPTIONS_STR, dict()))
                 return self.create_component(definition, config)()
             else:
                 return definition
         elif isinstance(definition, list):
             return [
                 self._create_subcomponent(
-                    key, sub, self._merge_dicts(kwargs.get("options", dict()), self._get_subcomponent_options(sub)), config, parent_class
+                    key, sub, self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), self._get_subcomponent_options(sub)), config, parent_class
                 )
                 for sub in definition
             ]
@@ -103,7 +103,7 @@ class DeclarativeComponentFactory:
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
                 # for instance, to turn a string into an InterpolatedString
-                options = kwargs.get("options", {})
+                options = kwargs.get(OPTIONS_STR, {})
                 try:
                     # enums can't accept options
                     if issubclass(expected_type, enum.Enum):
@@ -148,7 +148,7 @@ class DeclarativeComponentFactory:
     @staticmethod
     def _get_subcomponent_options(sub: Any):
         if isinstance(sub, dict):
-            return sub.get("options", {})
+            return sub.get(OPTIONS_STR, {})
         else:
             return {}
 
