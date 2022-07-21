@@ -71,6 +71,7 @@ import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.test.utils.SchemaTableNamePair;
@@ -254,7 +255,7 @@ class BasicAcceptanceTests {
 
     final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
     // expect replacement of secret with magic string.
-    ((ObjectNode) expectedConfig).put("password", "**********");
+    ((ObjectNode) expectedConfig).put(JdbcUtils.PASSWORD_KEY, "**********");
     assertEquals(dbName, response.getName());
     assertEquals(workspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
