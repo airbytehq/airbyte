@@ -11,4 +11,3 @@ connectionSpecification:
       type: string
       description: API key provided by Glassfrog
       airbyte_secret: true
-

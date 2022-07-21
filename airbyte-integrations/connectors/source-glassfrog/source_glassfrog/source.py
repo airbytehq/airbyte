@@ -4,7 +4,7 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
@@ -21,15 +21,6 @@ class GlassfrogStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        """
-        TODO: Override this method to define any query parameters to be set. Remove this method if you don't need to define request params.
-        Usually contains common params e.g. pagination size etc.
-        """
-        return {}
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = response.json()
         records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
@@ -39,6 +30,7 @@ class GlassfrogStream(HttpStream, ABC):
 
 
 class Assignments(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#db2934bd-8c07-1951-b273-51fbc2dc6422
     data_field = "assignments"
     primary_key = "id"
 
@@ -49,6 +41,7 @@ class Assignments(GlassfrogStream):
 
 
 class ChecklistItems(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#a81716d4-b492-79ff-1348-9048fd9dc527
     data_field = "checklist_items"
     primary_key = "id"
 
@@ -59,6 +52,7 @@ class ChecklistItems(GlassfrogStream):
 
 
 class Circles(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#ed696857-c3d8-fba1-a174-fbe63de07798
     data_field = "circles"
     primary_key = "id"
 
@@ -69,6 +63,7 @@ class Circles(GlassfrogStream):
 
 
 class CustomFields(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#901f8ec2-a986-0291-2fa2-281c16622107
     data_field = "custom_fields"
     primary_key = "id"
 
@@ -79,6 +74,7 @@ class CustomFields(GlassfrogStream):
 
 
 class Metrics(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#00d4f5fb-d6e5-5521-a77d-bdce50a9fb84
     data_field = "metrics"
     primary_key = "id"
 
@@ -89,6 +85,7 @@ class Metrics(GlassfrogStream):
 
 
 class People(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#78b74b9f-72b7-63fc-a18c-18518932944b
     data_field = "people"
     primary_key = "id"
 
@@ -99,6 +96,7 @@ class People(GlassfrogStream):
 
 
 class Projects(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#110bde88-a319-ae9c-077a-9752fd2f0843
     data_field = "projects"
     primary_key = "id"
 
@@ -109,6 +107,7 @@ class Projects(GlassfrogStream):
 
 
 class Roles(GlassfrogStream):
+    # https://documenter.getpostman.com/view/1014385/2SJViY?version=latest#d1f31f7a-1d42-8c86-be1d-a36e640bf993
     data_field = "roles"
     primary_key = "id"
 

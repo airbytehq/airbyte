@@ -4,19 +4,26 @@
 
 from unittest.mock import MagicMock
 
+from pytest import fixture
 from source_glassfrog.source import SourceGlassfrog
 
 
-def test_check_connection(mocker):
-    source = SourceGlassfrog()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+@fixture()
+def config(request):
+    args = {"api_key": "xxxxxxx"}
+    return args
 
 
-def test_streams(mocker):
+def test_check_connection(mocker, config):
     source = SourceGlassfrog()
-    config_mock = MagicMock()
-    streams = source.streams(config_mock)
-    # TODO: replace this with your streams number
-    expected_streams_number = 2
+    logger_mock = MagicMock()
+    (connection_status, error) = source.check_connection(logger_mock, config)
+    expected_status = False
+    assert connection_status == expected_status
+
+
+def test_streams(mocker, config):
+    source = SourceGlassfrog()
+    streams = source.streams(config)
+    expected_streams_number = 8
     assert len(streams) == expected_streams_number
