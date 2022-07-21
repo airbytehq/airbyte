@@ -1,0 +1,6 @@
+@use "../../../../../scss/variables" as vars;
+
+.connectionDeleted {
+  max-width: vars.$width-modal-md;
+  margin: vars.$spacing-lg auto;
+}
