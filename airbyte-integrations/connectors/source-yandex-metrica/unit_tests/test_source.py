@@ -27,6 +27,7 @@ def fixtures():
                 'ym:s:dateTime',
                 'ym:s:counterID'
             ],
+            'check_connectivity': True
         }
     }
 
@@ -76,5 +77,5 @@ def test_check_connection_invalid_api_key(fixtures):
     config = fixtures['config']
     config['auth_token'] = 'invalid_token'
     ok, error_msg = SourceYandexMetrica().check_connection(logger, config=config)
-
+    print(error_msg)
     assert not ok and error_msg.response.status_code == 403

@@ -17,7 +17,12 @@ class MockResponse(object):
         return self.json_data
 
 @pytest.fixture
-def patch_base_class():
+def patch_base_class(mocker):
+    # Mock abstract methods to enable instantiating abstract class
+    mocker.patch.object(YandexMetricaStream, "path", "v0/example_endpoint")
+    mocker.patch.object(YandexMetricaStream, "primary_key", "test_primary_key")
+    mocker.patch.object(YandexMetricaStream, "__abstractmethods__", set())
+
     kwargs = {'authenticator': TokenAuthenticator('MockOAuth2Token')}
     return {
         'views_stream': Views(counter_id=00000000, params={'start_date': '2022-07-01',  'end_date':'2022-07-02', 'fields':['ym:pv:watchID', 'ym:pv:dateTime']}, **kwargs),
