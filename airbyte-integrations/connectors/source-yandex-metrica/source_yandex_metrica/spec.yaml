@@ -290,8 +290,4 @@ connectionSpecification:
         - ym:s:visitID        
         - ym:s:dateTime
       order: 5
-    check_connectivity:
-      title: Check Connectivity
-      description: Check if streams can return records with provided parameters. This might take a long time to complete, however, it will make sure that records can be downloaed.
-      type: boolean
-      order: 6
+      

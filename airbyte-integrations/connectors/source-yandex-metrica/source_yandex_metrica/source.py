@@ -3,6 +3,8 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.models import SyncMode
+from pytest import param
+import requests
 from .streams import Views, Sessions, YandexMetricaStream
 from .fields import HitsFields, VisitsFields
 
@@ -29,33 +31,35 @@ class SourceYandexMetrica(AbstractSource):
                 return False, f'Fields from "visits" must contain "{", ".join(visits_required_fields)}"' 
 
             # Check connectivity
-            if config['check_connectivity']:
-                views_stream = Views(**{
-                    'counter_id': config['counter_id'],
-                    'params': {
-                        'fields': config['hits_fields'],
-                        'start_date': config['start_date'],
-                        'end_date': config['end_date']
-                    },
-                    'authenticator': TokenAuthenticator(token=config["auth_token"]),
-                })
-                sessions_stream = Sessions(**{
-                    'counter_id': config['counter_id'],
-                    'params': {
-                        'fields': config['visits_fields'],
-                        'start_date': config['start_date'],
-                        'end_date': config['end_date']
-                    },
-                    'authenticator': TokenAuthenticator(token=config["auth_token"]),
-                })
-                next(views_stream.read_records(sync_mode=SyncMode.full_refresh))
-                next(sessions_stream.read_records(sync_mode=SyncMode.full_refresh))
+            counter_id = config['counter_id']
+            authenticator = TokenAuthenticator(token=config["auth_token"])
+            # Check Views stream
+            views_params = {
+                'source': 'hits',
+                'fields': config['hits_fields'],
+                'start_date': config['start_date'],
+                'end_date': config['end_date']
+            }
+            views_ok, views_error = self.evaluate(authenticator, counter_id, views_params)
+            if not views_ok:
+                raise Exception(f"Views stream connection check failed. Error: {views_error}")
+            # Check Sessions stream
+            sessions_params = {
+                'source': 'visits',
+                'fields': config['visits_fields'],
+                'start_date': config['start_date'],
+                'end_date': config['end_date']
+            }
+            sessions_ok, sessions_error = self.evaluate(authenticator, counter_id, sessions_params)
+            if not sessions_ok:
+                raise Exception(f"Sessions stream connection check failed. Error: {sessions_error}")
 
             return True, None
         except Exception as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[YandexMetricaStream]:
+        authenticator = TokenAuthenticator(token=config["auth_token"])
         views_stream_args = {
             'counter_id': config['counter_id'],
             'params': {
@@ -63,7 +67,7 @@ class SourceYandexMetrica(AbstractSource):
                 'start_date': config['start_date'],
                 'end_date': config['end_date'],
             },
-            'authenticator': TokenAuthenticator(token=config["auth_token"])
+            'authenticator': authenticator
         }
         sessions_stream_args = {
             'counter_id': config['counter_id'],
@@ -72,8 +76,19 @@ class SourceYandexMetrica(AbstractSource):
                 'start_date': config['start_date'],
                 'end_date': config['end_date'],
             },
-            'authenticator': TokenAuthenticator(token=config["auth_token"])
+            'authenticator': authenticator
         }
-        return [Views(**views_stream_args), Sessions(**sessions_stream_args)]
+        return [Sessions(**sessions_stream_args), Views(**views_stream_args)]
  
+    def evaluate(self, authenticator: TokenAuthenticator, counter_id: str, params: dict):
+        url = f"{YandexMetricaStream.url_base}{counter_id}/logrequests/evaluate?date1={params['start_date']}&date2={params['end_date']}&source={params['source']}&fields="
+        url += ','.join(params['fields'])
 
+        headers = authenticator.get_auth_header()
+        headers['Content-Type'] = 'application/x-ymetrika+json'
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        if response.status_code == 200 and data['log_request_evaluation']['possible']:
+            return True, None
+        return False, response.json()['errors']
