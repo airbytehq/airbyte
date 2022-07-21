@@ -8,13 +8,14 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 
 class InterpolatedString:
-    def __init__(self, string: str, default: Optional[str] = None):
+    def __init__(self, string: str, default: Optional[str] = None, options=None):
         self._string = string
         self._default = default or string
         self._interpolation = JinjaInterpolation()
+        self._options = options or {}
 
     def eval(self, config, **kwargs):
-        return self._interpolation.eval(self._string, config, self._default, **kwargs)
+        return self._interpolation.eval(self._string, config, self._default, options=self._options, **kwargs)
 
     def __eq__(self, other):
         if not isinstance(other, InterpolatedString):

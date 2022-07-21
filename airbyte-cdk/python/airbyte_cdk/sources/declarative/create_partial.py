@@ -4,9 +4,6 @@
 
 import inspect
 
-from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-
 """
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
@@ -23,7 +20,6 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
-        interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
 
@@ -32,18 +28,9 @@ def create(func, /, *args, **keywords):
 
         # options is a special keyword used for interpolation and propagation
         if "options" in all_keywords:
-            options = all_keywords.pop("options")
+            options = all_keywords.get("options")
         else:
             options = dict()
-
-        # create object's partial parameters
-        fully_created = _create_inner_objects(all_keywords, options)
-
-        # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
-        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
-
-        all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:

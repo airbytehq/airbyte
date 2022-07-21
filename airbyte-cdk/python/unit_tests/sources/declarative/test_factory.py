@@ -4,6 +4,7 @@
 
 import datetime
 
+from airbyte_cdk.sources.declarative.auth.token import BearerAuth
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -27,7 +28,6 @@ from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
 
@@ -74,7 +74,7 @@ def test_interpolate_config():
     assert authenticator._client_id._string == "some_client_id"
     assert authenticator._client_secret._string == "some_client_secret"
     assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
-    assert authenticator._refresh_token._string == "verysecrettoken"
+    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
@@ -172,7 +172,7 @@ requester:
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
-    class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
+    type: BearerAuth
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
   error_handler:
@@ -231,7 +231,7 @@ check:
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._token == "verysecrettoken"
+    assert stream._retriever._requester._authenticator._token.eval(input_config) == "verysecrettoken"
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
@@ -278,7 +278,7 @@ def test_create_requester():
     name: lists
     url_base: "https://api.sendgrid.com"
     authenticator:
-      type: "TokenAuthenticator"
+      type: "BearerAuth"
       token: "{{ config.apikey }}"
     request_options_provider:
       request_parameters:
@@ -292,7 +292,7 @@ def test_create_requester():
     assert isinstance(component._error_handler, DefaultErrorHandler)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
-    assert isinstance(component._authenticator, TokenAuthenticator)
+    assert isinstance(component._authenticator, BearerAuth)
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
     assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"
@@ -346,7 +346,7 @@ def test_config_with_defaults():
           requester:
             path: "/v3/marketing/lists"
             authenticator:
-              type: "TokenAuthenticator"
+              type: "BearerAuth"
               token: "{{ config.apikey }}"
             request_parameters:
               page_size: 10
@@ -366,7 +366,7 @@ def test_config_with_defaults():
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._token == "verysecrettoken"
+    assert stream._retriever._requester._authenticator._token.eval(input_config) == "verysecrettoken"
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)

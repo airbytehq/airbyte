@@ -20,6 +20,7 @@ class MinMaxDatetime:
         datetime_format: str = "",
         min_datetime: str = "",
         max_datetime: str = "",
+        **kwargs,  # phantom parameter needed for the factory
     ):
         self._datetime_interpolator = InterpolatedString(datetime)
         self._datetime_format = datetime_format

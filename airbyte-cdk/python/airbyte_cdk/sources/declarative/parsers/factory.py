@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import copy
+import enum
 import importlib
 from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
@@ -68,6 +69,7 @@ class DeclarativeComponentFactory:
         4. list: loop over the list and create objects for its items
         5. anything else -> return as is
         """
+        # definitions.options has name...
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
@@ -102,7 +104,15 @@ class DeclarativeComponentFactory:
             if expected_type and not isinstance(definition, expected_type):
                 # call __init__(definition) if definition is not a dict and is not of the expected type
                 # for instance, to turn a string into an InterpolatedString
-                return expected_type(definition)
+                options = kwargs.get("options", {})
+                try:
+                    # enums can't accept options
+                    if issubclass(expected_type, enum.Enum):
+                        return expected_type(definition)
+                    else:
+                        return expected_type(definition, options=options)
+                except Exception as e:
+                    raise Exception(f"failed to instantiate type {expected_type}. {e}")
             else:
                 return definition
 

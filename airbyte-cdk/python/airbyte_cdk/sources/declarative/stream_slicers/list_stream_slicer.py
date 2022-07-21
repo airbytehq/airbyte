@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config
@@ -19,8 +20,11 @@ class ListStreamSlicer(StreamSlicer):
     """
 
     def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config):
+        print(f"slice_values: {slice_values}")
         if isinstance(slice_values, str):
-            slice_values = ast.literal_eval(slice_values)
+            slice_values = InterpolatedString.create(slice_values).eval(config)
+        elif isinstance(slice_values, InterpolatedString):
+            slice_values = ast.literal_eval(slice_values.eval(config))
         assert isinstance(slice_values, list)
         self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
         self._slice_values = slice_values
