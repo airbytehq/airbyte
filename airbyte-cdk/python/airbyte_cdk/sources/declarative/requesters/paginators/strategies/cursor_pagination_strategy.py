@@ -43,10 +43,8 @@ class CursorPaginationStrategy(PaginationStrategy):
         decoded_response = self._decoder.decode(response)
         headers = response.headers
         if self._stop_condition:
-            should_stop = self._stop_condition.eval(
-                self._config, decoded_response=decoded_response, headers=headers, last_records=last_records
-            )
+            should_stop = self._stop_condition.eval(self._config, response=decoded_response, headers=headers, last_records=last_records)
             if should_stop:
                 return None
-        token = self._cursor_value.eval(config=self._config, last_records=last_records, decoded_response=self._decoder.decode(response))
+        token = self._cursor_value.eval(config=self._config, last_records=last_records, response=decoded_response)
         return token if token else None
