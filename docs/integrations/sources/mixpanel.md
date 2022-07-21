@@ -61,7 +61,7 @@ Please note, that incremental sync could return duplicated \(old records\) for t
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
-| `0.1.18` | 2022-07-21 | [\#14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and sp                                            |
+| `0.1.18` | 2022-07-21 | [\#14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and specs                                            |
 | `0.1.17` | 2022-06-01 | [\#12801](https://github.com/airbytehq/airbyte/pull/13372) | Acceptance tests fix, fixing some bugs for beta release                                            |
 | `0.1.16` | 2022-05-30 | [\#12801](https://github.com/airbytehq/airbyte/pull/12801) | Add end_date parameter                                                                             |
 | `0.1.15` | 2022-05-04 | [\#12482](https://github.com/airbytehq/airbyte/pull/12482) | Update input configuration copy                                                                    |
