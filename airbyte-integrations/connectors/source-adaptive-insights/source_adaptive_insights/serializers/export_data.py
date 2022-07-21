@@ -67,16 +67,23 @@ class DataProcessor:
         self.file_path = os.path.join(os.getcwd(), f"{str(uuid4())}.csv")
 
     def process(self, response: str) -> None:
+        
+        if not response:
+            return
 
         df = pd.read_csv(StringIO(response), sep=",")
         del response  # memory management
+
 
         df = df.melt(
             id_vars=[
                 "Account Name",
                 "Account Code",
                 "Level Name",
-                "GL Account Name"
+                "GL Account Name",
+                "Location Name",
+                "Contract Name",
+                "Assignment Name"
             ],
             var_name="Date",
             value_name="Amount"
