@@ -12,11 +12,10 @@
 
   padding: variables.$spacing-md;
   margin: variables.$spacing-sm;
-  border-radius: 4px;
+  border-radius: 5px;
   min-width: 100px;
   max-width: 380px;
   z-index: variables.$z-tooltip;
-
   box-shadow: 0px 2px 4px rgba(colors.$dark-blue, 0.12);
   background: rgba(colors.$dark-blue, 0.9);
   color: colors.$white;
