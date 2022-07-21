@@ -67,22 +67,6 @@ class SecretDict(UserDict):
         return str(self)
 
 
-def find_key_inside_schema(schema_item: Union[dict, list, str], key: str = "$ref") -> dict:
-    """Checking the incoming schema for the presence of a `$ref` object in it"""
-    if isinstance(schema_item, list):
-        for list_schema_item in schema_item:
-            item = find_key_inside_schema(list_schema_item, key)
-            if item is not None:
-                return item
-    elif isinstance(schema_item, dict):
-        if key in schema_item:
-            return schema_item
-        for schema_object_value in schema_item.values():
-            item = find_key_inside_schema(schema_object_value, key)
-            if item is not None:
-                return item
-
-
 def find_keyword_schema(schema: Union[dict, list, str], key: str) -> bool:
     """Find at least one keyword in a schema, skip object properties"""
 

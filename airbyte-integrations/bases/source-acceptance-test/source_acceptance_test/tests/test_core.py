@@ -29,7 +29,7 @@ from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
-from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_key_inside_schema, find_keyword_schema
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -135,8 +135,7 @@ class TestSpec(BaseTest):
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
-        check_result = find_key_inside_schema(schema_item=connector_spec_dict)
-
+        check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
@@ -231,8 +230,8 @@ class TestDiscovery(BaseTest):
         """Check the presence of unresolved `$ref`s values within each json schema."""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
-            check_result = find_key_inside_schema(schema_item=stream.json_schema, key="$ref")
-            if check_result is not None:
+            check_result = list(find_all_values_for_key_in_schema(stream.json_schema, "$ref"))
+            if check_result:
                 schemas_errors.append({stream_name: check_result})
 
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
