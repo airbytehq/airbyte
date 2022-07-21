@@ -232,7 +232,7 @@ public class SshTunnel implements AutoCloseable {
    * From the RSA format private key string, use bouncycastle to deserialize the key pair, reconstruct
    * the keys from the key info, and return the key pair for use in authentication.
    */
-  private KeyPair getPrivateKeyPair() throws IOException {
+  KeyPair getPrivateKeyPair() throws IOException {
     String validatedKey = validateKey();
     PemReader pemReader = new PemReader(new StringReader(validatedKey));
     PemObject pemObject = pemReader.readPemObject();
