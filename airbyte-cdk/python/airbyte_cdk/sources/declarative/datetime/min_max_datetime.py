@@ -14,14 +14,7 @@ class MinMaxDatetime:
     If neither, the input date is returned.
     """
 
-    def __init__(
-        self,
-        datetime: str,
-        datetime_format: str = "",
-        min_datetime: str = "",
-        max_datetime: str = "",
-        **kwargs,  # phantom parameter needed for the factory
-    ):
+    def __init__(self, datetime: str, datetime_format: str = "", min_datetime: str = "", max_datetime: str = "", **kwargs):
         self._datetime_interpolator = InterpolatedString(datetime, options=kwargs)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
