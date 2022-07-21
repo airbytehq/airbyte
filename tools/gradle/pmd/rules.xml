@@ -9,6 +9,7 @@
     <!-- TODO: couldn't figure out how to make gradle exclude to work so defining exclude at PMD level. Cons: hardcoding 'generated' -->
     <exclude-pattern>.*/generated/.*</exclude-pattern>
     <exclude-pattern>.*/airbyte-integrations/.*</exclude-pattern>
+    <exclude-pattern>.*/test-integration/.*</exclude-pattern>
 
     <rule ref="category/java/bestpractices.xml">
         <!-- exclude permanently -->
@@ -16,29 +17,11 @@
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
         <!-- to be applied eventually -->
-        <exclude name="AbstractClassWithoutAbstractMethod"/>
-        <exclude name="ArrayIsStoredDirectly"/>
-        <exclude name="AvoidPrintStackTrace"/>
-        <exclude name="AvoidReassigningLoopVariables"/>
-        <exclude name="AvoidReassigningParameters"/>
-        <exclude name="AvoidUsingHardCodedIP"/>
-        <exclude name="CheckResultSet"/>
-        <exclude name="DoubleBraceInitialization"/>
-        <exclude name="ForLoopCanBeForeach"/>
-        <exclude name="JUnit4TestShouldUseTestAnnotation"/>
-        <exclude name="JUnit5TestShouldBePackagePrivate"/>
-        <exclude name="JUnitTestsShouldIncludeAssert"/>
         <exclude name="LiteralsFirstInComparisons"/>
         <exclude name="LooseCoupling"/>
-        <exclude name="MissingOverride"/>
         <exclude name="PreserveStackTrace"/>
         <exclude name="SwitchStmtsShouldHaveDefault"/>
         <exclude name="SystemPrintln"/>
-        <exclude name="UnusedAssignment"/>
-        <exclude name="UnusedFormalParameter"/>
-        <exclude name="UnusedLocalVariable"/>
-        <exclude name="UnusedPrivateField"/>
-        <exclude name="UnusedPrivateMethod"/>
         <exclude name="UseCollectionIsEmpty"/>
         <exclude name="UseVarargs"/>
     </rule>

@@ -58,11 +58,11 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidReassigningLoopVariables")
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
   private static final String CONFIG_FOLDER_NAME = "airbyte_config";
-  private static final String DB_FOLDER_NAME = "airbyte_db";
   private static final String VERSION_FILE_NAME = "VERSION";
   private static final Path TMP_AIRBYTE_STAGED_RESOURCES = Path.of("/tmp/airbyte_staged_resources");
 

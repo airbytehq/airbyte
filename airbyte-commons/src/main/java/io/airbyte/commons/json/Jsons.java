@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.AvoidReassigningParameters")
 public class Jsons {
 
   // Object Mapper is thread-safe
@@ -222,6 +223,7 @@ public class Jsons {
   /**
    * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   public static Map<String, Object> flatten(final JsonNode node) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();

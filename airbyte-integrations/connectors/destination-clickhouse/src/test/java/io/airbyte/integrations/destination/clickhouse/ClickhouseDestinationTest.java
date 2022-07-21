@@ -27,7 +27,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.time.Instant;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,6 +56,7 @@ public class ClickhouseDestinationTest {
   private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
       CONFIG_WITH_SSL,
       ImmutableMap.of(
+          "socket_timeout", "3000000",
           "ssl", "false"));
 
   @BeforeAll
@@ -95,7 +95,7 @@ public class ClickhouseDestinationTest {
   void testDefaultParamsNoSSL() {
     final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
         Jsons.jsonNode(CONFIG_NO_SSL));
-    assertEquals(new HashMap<>(), defaultProperties);
+    assertEquals(ImmutableMap.of("socket_timeout", "3000000"), defaultProperties);
   }
 
   @Test

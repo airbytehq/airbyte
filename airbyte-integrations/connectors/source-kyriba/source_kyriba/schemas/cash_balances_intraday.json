@@ -1,0 +1,101 @@
+{
+  "type": "object",
+  "properties": {
+    "account": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "example": "ACCOUNT001",
+          "description": "Code that represents the account.",
+          "minLength": 1,
+          "maxLength": 12
+        },
+        "statementIdentifier": {
+          "type": ["null", "string"],
+          "example": "Statement identifier",
+          "description": "Account Statement Identifier of the account.",
+          "minLength": 0,
+          "maxLength": 50
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid",
+          "example": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+          "description": "Unique internal identifier that represents the account."
+        }
+      },
+      "title": "BK-BankAccountModel"
+    },
+    "cashBalance": {
+      "type": "array",
+      "description": "Cash balance.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "format": "double",
+            "example": -50000.0,
+            "description": "Cash balance amount of the selected date, Amount can be positive and negative."
+          },
+          "balanceDate": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "date",
+                "example": "2020-05-25",
+                "description": "The date based on which the cash balance is calculated."
+              },
+              "dateType": {
+                "type": "string",
+                "example": "TRANSACTION",
+                "description": "The date type based on which the cash balance is calculated.",
+                "enum": ["TRANSACTION", "VALUE"]
+              }
+            },
+            "title": "BK-BalanceDateModel"
+          },
+          "currencyCode": {
+            "type": "string",
+            "example": "EUR",
+            "description": "Currency code.",
+            "minLength": 1,
+            "maxLength": 3
+          }
+        },
+        "title": "BK-CashBalanceModel"
+      }
+    },
+    "cashFlowStatus": {
+      "type": "object",
+      "properties": {
+        "actual": {
+          "type": "boolean",
+          "example": false,
+          "description": "Select the status Actual to calculate the cash balance."
+        },
+        "confirmedForecasts": {
+          "type": "boolean",
+          "example": false,
+          "description": "Select the status Confirmed forecast to calculate the cash balance."
+        },
+        "estimatedForecasts": {
+          "type": "boolean",
+          "example": false,
+          "description": "Select the status Estimated forecast to calculate the cash balance."
+        },
+        "intraday": {
+          "type": "boolean",
+          "example": false,
+          "description": "Select the status Intraday to calculate the cash balance."
+        }
+      },
+      "title": "BK-CashFlowStatusModel",
+      "description": "Cash flow status."
+    }
+  },
+  "title": "BK-AccountCashBalanceModel",
+  "$schema": "http://json-schema.org/schema#"
+}
