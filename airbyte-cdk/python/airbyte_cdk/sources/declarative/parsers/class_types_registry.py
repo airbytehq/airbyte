@@ -4,6 +4,7 @@
 
 from typing import Mapping, Type
 
+from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuth, BasicHttpAuth, BearerAuth
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
@@ -22,7 +23,6 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "AddFields": AddFields,
@@ -41,5 +41,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "MinMaxDatetime": MinMaxDatetime,
     "OffsetIncrement": OffsetIncrement,
     "RemoveFields": RemoveFields,
-    "TokenAuthenticator": TokenAuthenticator,
+    "ApiKeyAuth": ApiKeyAuth,
+    "BearerAuth": BearerAuth,
+    "BasicHttpAuth": BasicHttpAuth,
 }
