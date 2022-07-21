@@ -55,7 +55,7 @@ class MockStream(Stream):
 @pytest.mark.parametrize(
     "test_name, parent_stream_configs, expected_slices",
     [
-        ("test_no_parents", [], []),
+        ("test_no_parents", [], None),
         (
             "test_single_parent_slices_no_records",
             [ParentStreamConfig(MockStream([{}], [], "first_stream"), "id", "first_stream_id")],
@@ -96,6 +96,13 @@ class MockStream(Stream):
     ],
 )
 def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
+    print(f"{test_name} -> {expected_slices}")
+    if expected_slices is None:
+        try:
+            SubstreamSlicer(parent_stream_configs)
+            assert False
+        except ValueError:
+            return
     slicer = SubstreamSlicer(parent_stream_configs)
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices

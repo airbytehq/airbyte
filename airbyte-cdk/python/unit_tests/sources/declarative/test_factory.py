@@ -111,26 +111,40 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 
 def test_create_substream_slicer():
     content = """
-    stream_slicer_A:
-      type: ListStreamSlicer
-      slice_values: "{{config['repos']}}"
-      cursor_field: repository
-    stream_slicer_B:
-      type: ListStreamSlicer
-      slice_values:
-        - hello
-        - world
-      cursor_field: words
+    schema_loader:
+      file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+    retriever:
+      requester:
+        path: "/v3"
+      record_selector:
+        extractor:
+          transform: "_"
+    stream_A:
+      type: DeclarativeStream
+      options:
+        name: "A"
+        primary_key: "id"
+        retriever: "*ref(retriever)"
+        url_base: "https://airbyte.io"
+        schema_loader: "*ref(schema_loader)"
+    stream_B:
+      type: DeclarativeStream
+      options:
+        name: "B"
+        primary_key: "id"
+        retriever: "*ref(retriever)"
+        url_base: "https://airbyte.io"
+        schema_loader: "*ref(schema_loader)"
     stream_slicer:
       type: SubstreamSlicer
       parent_streams_configs:
-        - stream: "*ref(stream_slicer_A)"
+        - stream: "*ref(stream_A)"
           parent_key: id
           stream_slice_field: repository_id
           request_option:
             inject_into: request_parameter
             field_name: repository_id
-        - stream: "*ref(stream_slicer_B)"
+        - stream: "*ref(stream_B)"
           parent_key: someid
           stream_slice_field: word_id
     """
@@ -138,10 +152,8 @@ def test_create_substream_slicer():
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     parent_stream_configs = stream_slicer._parent_stream_configs
     assert len(parent_stream_configs) == 2
-    assert isinstance(parent_stream_configs[0].stream, ListStreamSlicer)
-    assert isinstance(parent_stream_configs[1].stream, ListStreamSlicer)
-    assert ["airbyte", "airbyte-cloud"] == parent_stream_configs[0].stream._slice_values
-    assert ["hello", "world"] == parent_stream_configs[1].stream._slice_values
+    assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
+    assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
     assert stream_slicer._parent_stream_configs[0].parent_key == "id"
     assert stream_slicer._parent_stream_configs[0].stream_slice_field == "repository_id"
     assert stream_slicer._parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter

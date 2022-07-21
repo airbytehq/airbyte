@@ -32,6 +32,8 @@ class SubstreamSlicer(StreamSlicer):
         """
         :param parent_streams_configs: parent streams to iterate over and their config
         """
+        if not parent_streams_configs:
+            raise ValueError("SubstreamSlicer needs at least 1 parent stream")
         self._parent_stream_configs = parent_streams_configs
         self._cursor = None
 
