@@ -22,7 +22,7 @@ class LimitPaginator(Paginator):
     Examples:
         1.
         * fetches up to 10 records at a time by setting the "limit" request param to 10
-        * updates the request path with  "{{ decoded_response._metadata.next }}"
+        * updates the request path with  "{{ response._metadata.next }}"
           paginator:
             type: "LimitPaginator"
             limit_value: 10
@@ -33,7 +33,7 @@ class LimitPaginator(Paginator):
               option_type: path
             pagination_strategy:
               type: "CursorPagination"
-              cursor_value: "{{ decoded_response._metadata.next }}"
+              cursor_value: "{{ response._metadata.next }}"
         `
 
         2.

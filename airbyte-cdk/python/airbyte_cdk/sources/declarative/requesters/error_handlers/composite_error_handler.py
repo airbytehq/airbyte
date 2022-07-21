@@ -18,7 +18,7 @@ class CompositeErrorHandler(ErrorHandler):
           type: "CompositeErrorHandler"
           error_handlers:
             - response_filters:
-                - predicate: "{{ 'codase' in decoded_response }}"
+                - predicate: "{{ 'codase' in response }}"
                   action: RETRY
               backoff_strategies:
                 - type: "ConstantBackoffStrategy"
