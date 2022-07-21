@@ -59,7 +59,7 @@ def entrypoint() -> AirbyteEntrypoint:
 
 def test_airbyte_entrypoint_init(mocker):
     mocker.patch.object(entrypoint_module, "init_uncaught_exception_handler")
-    AirbyteEntrypoint(MockSource)
+    AirbyteEntrypoint(MockSource())
     entrypoint_module.init_uncaught_exception_handler.assert_called_once_with(entrypoint_module.logger)
 
 
