@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, Mapping
+from typing import Any, Mapping
 
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
