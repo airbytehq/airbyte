@@ -6,7 +6,12 @@ import logging
 
 import pendulum
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator, Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import (
+    BasicHttpAuthenticator,
+    MultipleTokenAuthenticator,
+    Oauth2Authenticator,
+    TokenAuthenticator,
+)
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
@@ -29,6 +34,23 @@ def test_token_authenticator():
     assert {"Authorization": "Bearer test-token"} == prepared_request.headers
     assert {"Authorization": "Bearer test-token"} == header1
     assert {"Authorization": "Bearer test-token"} == header2
+
+
+def test_basic_http_authenticator():
+    """
+    Should match passed in token, no matter how many times token is retrieved.
+    """
+    token_auth = BasicHttpAuthenticator(username="user", password="password")
+    header1 = token_auth.get_auth_header()
+    header2 = token_auth.get_auth_header()
+
+    prepared_request = requests.PreparedRequest()
+    prepared_request.headers = {}
+    token_auth(prepared_request)
+
+    assert {"Authorization": "Basic dXNlcjpwYXNzd29yZA=="} == prepared_request.headers
+    assert {"Authorization": "Basic dXNlcjpwYXNzd29yZA=="} == header1
+    assert {"Authorization": "Basic dXNlcjpwYXNzd29yZA=="} == header2
 
 
 def test_multiple_token_authenticator():

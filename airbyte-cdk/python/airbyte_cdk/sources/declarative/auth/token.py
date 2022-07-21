@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 from typing import Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -36,3 +37,22 @@ class BearerAuth(AbstractHeaderAuthenticator):
     @property
     def token(self) -> str:
         return f"Bearer {self._token.eval(self._config)}"
+
+
+class BasicHttpAuth(AbstractHeaderAuthenticator):
+    def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = ""):
+        self._username = InterpolatedString.create(username)
+        self._password = InterpolatedString.create(password)
+        self._config = config
+
+    @property
+    def auth_header(self) -> str:
+        return "Authorization"
+
+    @property
+    def token(self) -> str:
+        auth_string = f"{self._username.eval(self._config)}:{self._password.eval(self._config)}".encode("utf8")
+        print(f"auth_string: {auth_string}")
+        b64_encoded = base64.b64encode(auth_string).decode("utf8")
+        print(f"b64encoded: {b64_encoded}")
+        return f"Basic {b64_encoded}"
