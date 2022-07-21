@@ -54,4 +54,10 @@
 
 {"type":"RECORD","record":{"stream":"multiple_column_names_conflicts","data":{"id":1,"User Id":"chris","user_id":42,"User id":300,"user id": 102,"UserId":101},"emitted_at":1623959926}}
 
-{"type":"RECORD","record":{"stream":"types_testing","data":{"id":2147483647,"big_integer":9223372036854775807},"emitted_at":1623959926}}
+# These records are verified in test_types_testing_values.sql. If you add/remove entries, make sure to update that file as well.
+# Verify max values for int32 and int64
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":1,"airbyte_integer":2147483647,"nullable_airbyte_integer":2147483647,"big_integer":9223372036854775807,"nullable_big_integer":9223372036854775807},"emitted_at":1623959926}}
+# Verify max values for int32 and int64
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":2,"airbyte_integer":-2147483648,"nullable_airbyte_integer":-2147483648,"big_integer":-9223372036854775808,"nullable_big_integer":-9223372036854775808},"emitted_at":1623959926}}
+# Verify nullable values
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":3,"airbyte_integer":0,"big_integer":0},"emitted_at":1623959926}}

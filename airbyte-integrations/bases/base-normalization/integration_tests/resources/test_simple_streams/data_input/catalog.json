@@ -250,11 +250,22 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
+              "type": "integer"
+            },
+            "airbyte_integer": {
               "type": "number",
+              "airbyte_type": "integer"
+            },
+            "nullable_airbyte_integer": {
+              "type": ["null", "number"],
               "airbyte_type": "integer"
             },
             "big_integer": {
               "type": "number",
+              "airbyte_type": "big_integer"
+            },
+            "nullable_big_integer": {
+              "type": ["null", "number"],
               "airbyte_type": "big_integer"
             }
           }
