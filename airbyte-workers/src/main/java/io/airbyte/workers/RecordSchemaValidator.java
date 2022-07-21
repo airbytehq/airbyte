@@ -71,6 +71,13 @@ public class RecordSchemaValidator {
       throw new RecordSchemaValidationException(validationMessagesToDisplay,
           String.format("Record schema validation failed for %s", messageStream), e);
     }
-  }
 
+    if(messageStream == "pokemon"){
+      final Set<String> validationMessagesToDisplay = new HashSet<>();
+      validationMessagesToDisplay.add("test validation error message");
+
+      throw new RecordSchemaValidationException(validationMessagesToDisplay,
+          String.format("Record schema validation failed for %s", messageStream));
+    }
+  }
 }
