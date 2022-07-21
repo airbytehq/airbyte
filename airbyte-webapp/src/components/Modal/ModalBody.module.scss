@@ -2,6 +2,6 @@
 
 .modalBody {
   padding: variables.$spacing-lg variables.$spacing-xl;
-  overflow: scroll;
+  overflow: auto;
   max-width: 100%;
 }

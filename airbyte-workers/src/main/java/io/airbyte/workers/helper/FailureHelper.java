@@ -56,6 +56,7 @@ public class FailureHelper {
     }
     return new FailureReason()
         .withInternalMessage(m.getError().getInternalMessage())
+        .withExternalMessage(m.getError().getMessage())
         .withStacktrace(m.getError().getStackTrace())
         .withTimestamp(m.getEmittedAt().longValue())
         .withFailureType(failureType)
@@ -70,8 +71,7 @@ public class FailureHelper {
 
   public static FailureReason sourceFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
     return genericFailure(m, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.SOURCE)
-        .withExternalMessage(m.getError().getMessage());
+        .withFailureOrigin(FailureOrigin.SOURCE);
   }
 
   public static FailureReason destinationFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
@@ -82,11 +82,13 @@ public class FailureHelper {
 
   public static FailureReason destinationFailure(final AirbyteTraceMessage m, final Long jobId, final Integer attemptNumber) {
     return genericFailure(m, jobId, attemptNumber)
-        .withFailureOrigin(FailureOrigin.DESTINATION)
-        .withExternalMessage(m.getError().getMessage());
+        .withFailureOrigin(FailureOrigin.DESTINATION);
   }
 
-  public static FailureReason checkFailure(final Throwable t, final Long jobId, final Integer attemptNumber, FailureReason.FailureOrigin origin) {
+  public static FailureReason checkFailure(final Throwable t,
+                                           final Long jobId,
+                                           final Integer attemptNumber,
+                                           final FailureReason.FailureOrigin origin) {
     return genericFailure(t, jobId, attemptNumber)
         .withFailureOrigin(origin)
         .withFailureType(FailureReason.FailureType.CONFIG_ERROR)
