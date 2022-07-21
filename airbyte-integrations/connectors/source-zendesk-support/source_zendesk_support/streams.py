@@ -474,13 +474,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        for record in super().parse_response(response, **kwargs):
-            for field in record.get("custom_fields", []):
-                if field["value"] is not None:
-                    field["value"] = str(field["value"])
-            yield record
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
