@@ -5,7 +5,7 @@ import { useToggle } from "react-use";
 import { useDebounce } from "react-use";
 import styled from "styled-components";
 
-import { Card, ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
+import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -27,10 +27,6 @@ import {
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-
-const EditLaterMessage = styled(Label)`
-  text-align: center;
-`;
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -347,7 +343,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   onStartEditTransformation={toggleEditingTransformation}
                   onEndEditTransformation={toggleEditingTransformation}
                 />
-                <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />
               </StyledSection>
             )}
           </Card>
