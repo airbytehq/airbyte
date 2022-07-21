@@ -159,7 +159,7 @@ metadata_paginator:
       inject_into: path
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ response._metadata.next }}"
+      cursor_value: "{{ decoded_response._metadata.next }}"
     url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
@@ -342,7 +342,7 @@ def test_config_with_defaults():
               inject_into: path
             pagination_strategy:
               type: "CursorPagination"
-              cursor_value: "{{ response._metadata.next }}"
+              cursor_value: "{{ decoded_response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -388,7 +388,7 @@ def test_create_limit_paginator():
           inject_into: path
         pagination_strategy:
           type: "CursorPagination"
-          cursor_value: "{{ response._metadata.next }}"
+          cursor_value: "{{ decoded_response._metadata.next }}"
     """
     config = parser.parse(content)
 
@@ -397,7 +397,7 @@ def test_create_limit_paginator():
     assert isinstance(paginator, LimitPaginator)
     page_token_option = paginator._page_token_option
     assert isinstance(page_token_option, RequestOption)
-    assert page_token_option.option_type == RequestOptionType.path
+    assert page_token_option.inject_into == RequestOptionType.path
 
 
 class TestCreateTransformations:
