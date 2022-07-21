@@ -44,18 +44,20 @@ const NamespaceFormatLabel = styled(ControlLabels)`
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 10px;
 `;
 
 export const LeftFieldCol = styled.div`
-  // min-width: 470px;
+  flex: 1;
+  max-width: 640px;
+  padding-right: 30px;
 `;
 
 export const RightFieldCol = styled.div`
-  min-width: 300px;
-  width: 300px;
+  flex: 1;
+  max-width: 300px;
 `;
 
 const StyledSection = styled.div`
