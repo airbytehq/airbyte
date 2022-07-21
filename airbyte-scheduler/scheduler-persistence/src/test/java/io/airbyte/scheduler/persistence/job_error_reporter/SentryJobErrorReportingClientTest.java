@@ -32,7 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-public class SentryJobErrorReportingClientTest {
+class SentryJobErrorReportingClientTest {
 
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final String WORKSPACE_NAME = "My Workspace";

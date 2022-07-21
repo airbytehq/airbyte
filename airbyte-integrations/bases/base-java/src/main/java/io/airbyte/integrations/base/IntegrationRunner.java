@@ -12,25 +12,14 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions.Procedure;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.WorkerEnvConstants;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.sentry.ITransaction;
-import io.sentry.NoOpTransaction;
-import io.sentry.Sentry;
-import io.sentry.SentryLevel;
-import io.sentry.SpanStatus;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
@@ -102,20 +91,10 @@ public class IntegrationRunner {
 
   public void run(final String[] args) throws Exception {
     final IntegrationConfig parsed = cliParser.parse(args);
-    final ITransaction transaction = createSentryTransaction(integration.getClass(), parsed.getCommand());
     try {
       runInternal(parsed);
-      transaction.finish(SpanStatus.OK);
     } catch (final Exception e) {
-      transaction.setThrowable(e);
-      transaction.finish(SpanStatus.INTERNAL_ERROR);
       throw e;
-    } finally {
-      /*
-       * This finally block may not run, probably because the container can be terminated by the worker.
-       * So the transaction should always be finished in the try and catch blocks.
-       */
-      transaction.finish();
     }
   }
 
@@ -153,7 +132,7 @@ public class IntegrationRunner {
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         final Optional<JsonNode> stateOptional = parsed.getStatePath().map(IntegrationRunner::parseConfig);
         try (final AutoCloseableIterator<AirbyteMessage> messageIterator = source.read(config, catalog, stateOptional.orElse(null))) {
-          AirbyteSentry.executeWithTracing("ReadSource", () -> produceMessages(messageIterator));
+          produceMessages(messageIterator);
         }
       }
       // destination only
@@ -162,7 +141,7 @@ public class IntegrationRunner {
         validateConfig(integration.spec().getConnectionSpecification(), config, "WRITE");
         final ConfiguredAirbyteCatalog catalog = parseConfig(parsed.getCatalogPath(), ConfiguredAirbyteCatalog.class);
         try (final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, outputRecordCollector)) {
-          AirbyteSentry.executeWithTracing("WriteDestination", () -> runConsumer(consumer));
+          runConsumer(consumer);
         }
       }
       default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
@@ -217,7 +196,7 @@ public class IntegrationRunner {
    * interrupt/exit hooks after giving it some time delay to close up properly. It is generally
    * preferred to have a proper closing sequence from children threads instead of interrupting or
    * force exiting the process, so this mechanism serve as a fallback while surfacing warnings in logs
-   * and sentry for maintainers to fix the code behavior instead.
+   * for maintainers to fix the code behavior instead.
    */
   @VisibleForTesting
   static void watchForOrphanThreads(final Procedure runMethod,
@@ -237,14 +216,11 @@ public class IntegrationRunner {
           .filter(runningThread -> !runningThread.getName().equals(currentThread.getName()) && !runningThread.isDaemon())
           .collect(Collectors.toList());
       if (!runningThreads.isEmpty()) {
-        final StringBuilder sentryMessageBuilder = new StringBuilder();
         LOGGER.warn("""
                     The main thread is exiting while children non-daemon threads from a connector are still active.
                     Ideally, this situation should not happen...
                     Please check with maintainers if the connector or library code should safely clean up its threads before quitting instead.
                     The main thread is: {}""", dumpThread(currentThread));
-        sentryMessageBuilder.append("The main thread is exiting while children non-daemon threads are still active.\nMain Thread:")
-            .append(dumpThread(currentThread));
         final ScheduledExecutorService scheduledExecutorService = Executors
             .newSingleThreadScheduledExecutor(new BasicThreadFactory.Builder()
                 // this thread executor will create daemon threads, so it does not block exiting if all other active
@@ -253,13 +229,11 @@ public class IntegrationRunner {
         for (final Thread runningThread : runningThreads) {
           final String str = "Active non-daemon thread: " + dumpThread(runningThread);
           LOGGER.warn(str);
-          sentryMessageBuilder.append(str);
           // even though the main thread is already shutting down, we still leave some chances to the children
           // threads to close properly on their own.
           // So, we schedule an interrupt hook after a fixed time delay instead...
           scheduledExecutorService.schedule(runningThread::interrupt, interruptTimeDelay, interruptTimeUnit);
         }
-        Sentry.captureMessage(sentryMessageBuilder.toString(), SentryLevel.WARNING);
         scheduledExecutorService.schedule(() -> {
           if (ThreadUtils.getAllThreads().stream()
               .anyMatch(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(currentThread.getName()))) {
@@ -291,65 +265,6 @@ public class IntegrationRunner {
   private static <T> T parseConfig(final Path path, final Class<T> klass) {
     final JsonNode jsonNode = parseConfig(path);
     return Jsons.object(jsonNode, klass);
-  }
-
-  private static ITransaction createSentryTransaction(final Class<?> connectorClass, final Command command) {
-    if (command == Command.SPEC) {
-      return NoOpTransaction.getInstance();
-    }
-
-    final Map<String, String> env = System.getenv();
-    final boolean enableSentry = Boolean.parseBoolean(env.getOrDefault("ENABLE_SENTRY", "false"));
-    final String sentryDsn = env.getOrDefault("SENTRY_DSN", "");
-    if (!enableSentry || sentryDsn.equals("")) {
-      LOGGER.debug("Skip Sentry transaction because DSN is not available");
-      return NoOpTransaction.getInstance();
-    }
-
-    final String version = parseConnectorVersion(env.getOrDefault("WORKER_CONNECTOR_IMAGE", ""));
-    final String airbyteVersion = env.getOrDefault(EnvConfigs.AIRBYTE_VERSION, "");
-    final String airbyteRole = env.getOrDefault(EnvConfigs.AIRBYTE_ROLE, "");
-    final boolean isDev = version.startsWith(AirbyteVersion.DEV_VERSION_PREFIX)
-        || airbyteVersion.startsWith(AirbyteVersion.DEV_VERSION_PREFIX)
-        || airbyteRole.equals("airbyter");
-    if (isDev) {
-      LOGGER.debug("Skip Sentry transaction for dev environment");
-      return NoOpTransaction.getInstance();
-    }
-    final String connector = env.getOrDefault("APPLICATION", "");
-    if (connector.equals("")) {
-      LOGGER.debug("Skip Sentry transaction for unknown connector");
-      return NoOpTransaction.getInstance();
-    }
-    final String workerEnvironment = env.getOrDefault("WORKER_ENVIRONMENT", "");
-    final String workerJobId = env.getOrDefault(WorkerEnvConstants.WORKER_JOB_ID, "");
-    final String workerJobAttempt = env.getOrDefault(WorkerEnvConstants.WORKER_JOB_ATTEMPT, "");
-    if (workerEnvironment.equals("") || workerEnvironment.equals(WorkerEnvironment.DOCKER.name())) {
-      LOGGER.debug("Skip Sentry transaction for unknown or docker deployment");
-      return NoOpTransaction.getInstance();
-    }
-
-    // https://docs.sentry.io/platforms/java/configuration/
-    Sentry.init(options -> {
-      options.setDsn(sentryDsn);
-      options.setEnableExternalConfiguration(true);
-      options.setTracesSampleRate(1.0);
-      options.setRelease(String.format("%s@%s", connector, version));
-      options.setEnvironment(isDev ? "dev" : "production");
-      options.setTag("connector", connector);
-      options.setTag("connector_version", version);
-      options.setTag("job_id", workerJobId);
-      options.setTag("job_attempt", workerJobAttempt);
-      options.setTag("airbyte_version", airbyteVersion);
-      options.setTag("worker_environment", workerEnvironment);
-    });
-
-    final ITransaction transaction = Sentry.startTransaction(
-        connectorClass.getSimpleName(),
-        command.toString(),
-        true);
-    LOGGER.info("Sentry transaction event: {}", transaction.getEventId());
-    return transaction;
   }
 
   /**

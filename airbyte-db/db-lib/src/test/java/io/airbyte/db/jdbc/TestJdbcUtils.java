@@ -41,7 +41,8 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class TestJdbcUtils {
+@SuppressWarnings("PMD.CheckResultSet")
+class TestJdbcUtils {
 
   private String dbName;
 
