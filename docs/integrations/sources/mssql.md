@@ -306,6 +306,7 @@ If you do not see a type in this list, assume that it is coerced into a string. 
 
 | Version | Date       | Pull Request | Subject                                                                                                |
 |:--------|:-----------| :----------------------------------------------------- |:-------------------------------------------------------------------------------------------------------|
+| 0.4.10   | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.4.9   | 2022-07-05 | [14379](https://github.com/airbytehq/airbyte/pull/14379) | Aligned Normal and CDC migration + added some fixes for datatypes processing                         |
 | 0.4.8   | 2022-06-24 | [14121](https://github.com/airbytehq/airbyte/pull/14121) | Omit using 'USE' keyword on Azure SQL with CDC                                                       |
 | 0.4.5   | 2022-06-23 | [14077](https://github.com/airbytehq/airbyte/pull/14077) | Use the new state management                                                                         |

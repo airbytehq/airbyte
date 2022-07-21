@@ -39,7 +39,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class TestStreamingJdbcDatabase {
+class TestStreamingJdbcDatabase {
 
   private static PostgreSQLContainer<?> PSQL_DB;
   private final JdbcSourceOperations sourceOperations = JdbcUtils.getDefaultSourceOperations();
