@@ -42,7 +42,6 @@ class DatetimeStreamSlicer(StreamSlicer):
         lookback_window: Optional[InterpolatedString] = None,
     ):
         """
-
         :param start_datetime:
         :param end_datetime:
         :param step: size of the timewindow
