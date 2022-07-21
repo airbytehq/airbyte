@@ -15,14 +15,14 @@ class ApiKeyAuth(AbstractHeaderAuthenticator):
     ApiKeyAuth sets a request header on the HTTP requests sent
     """
 
-    def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config, **kwargs):
+    def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config):
         """
         :param header: Header key to set on the HTTP requests
         :param token: Header value to set on the HTTP requests
         :param config: connection config
         """
-        self._header = InterpolatedString.create(header, options=kwargs)
-        self._token = InterpolatedString.create(token, options=kwargs)
+        self._header = InterpolatedString.create(header)
+        self._token = InterpolatedString.create(token)
         self._config = config
 
     @property
@@ -40,12 +40,12 @@ class BearerAuth(AbstractHeaderAuthenticator):
     `Authorization: Bearer <token>`
     """
 
-    def __init__(self, token: Union[InterpolatedString, str], config: Config, **kwargs):
+    def __init__(self, token: Union[InterpolatedString, str], config: Config):
         """
         :param token:
         :param config:
         """
-        self._token = InterpolatedString.create(token, options=kwargs)
+        self._token = InterpolatedString.create(token)
         self._config = config
 
     @property
@@ -63,14 +63,14 @@ class BasicHttpAuth(AbstractHeaderAuthenticator):
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
     """
 
-    def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = "", **kwargs):
+    def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = ""):
         """
         :param username:
         :param config:
         :param password:
         """
-        self._username = InterpolatedString.create(username, options=kwargs)
-        self._password = InterpolatedString.create(password, options=kwargs)
+        self._username = InterpolatedString.create(username)
+        self._password = InterpolatedString.create(password)
         self._config = config
 
     @property

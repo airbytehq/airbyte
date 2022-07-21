@@ -109,7 +109,7 @@ def test_datetime_stream_slicer():
     content = """
     stream_slicer:
         type: DatetimeStreamSlicer
-        $options:
+        options:
           datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -195,7 +195,7 @@ partial_stream:
   cursor_field: [ ]
 list_stream:
   ref: "*ref(partial_stream)"
-  $options:
+  options:
     name: "lists"
     primary_key: "id"
     extractor:
@@ -275,12 +275,12 @@ def test_create_requester():
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
-    $options:
+    options:
         name: lists
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuth"
-      username: "{{ options.name }}"
+      username: "{{ config.apikey }}"
       password: "{{ config.apikey }}"
     request_options_provider:
       request_parameters:
@@ -295,7 +295,7 @@ def test_create_requester():
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, BasicHttpAuth)
-    assert component._authenticator._username.eval(input_config) == "lists"
+    assert component._authenticator._username.eval(input_config) == "verysecrettoken"
     assert component._authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
@@ -329,7 +329,7 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
-      $options:
+      options:
         name: "lists"
         primary_key: id
         url_base: "https://api.sendgrid.com"
@@ -411,7 +411,7 @@ class TestCreateTransformations:
                 primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
-                  file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+                  file_path: "./source_sendgrid/schemas/{{name}}.yaml"
                 retriever:
                   requester:
                     path: "/v3/marketing/lists"
@@ -426,7 +426,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
+            options:
                 {self.base_options}
         """
         config = parser.parse(content)
@@ -438,7 +438,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            $options:
+            options:
                 {self.base_options}
                 transformations:
                     - type: RemoveFields
@@ -456,7 +456,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
-            $options:
+            options:
                 {self.base_options}
                 transformations:
                     - type: AddFields

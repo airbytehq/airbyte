@@ -2,20 +2,19 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, Optional, Union
+from typing import Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
 class InterpolatedString:
-    def __init__(self, string: str, default: Optional[str] = None, options=None):
+    def __init__(self, string: str, default: Optional[str] = None):
         self._string = string
         self._default = default or string
         self._interpolation = JinjaInterpolation()
-        self._options = options or {}
 
     def eval(self, config, **kwargs):
-        return self._interpolation.eval(self._string, config, self._default, options=self._options, **kwargs)
+        return self._interpolation.eval(self._string, config, self._default, **kwargs)
 
     def __eq__(self, other):
         if not isinstance(other, InterpolatedString):
@@ -27,7 +26,6 @@ class InterpolatedString:
         cls,
         string_or_interpolated: Union["InterpolatedString", str],
         /,
-        options: Mapping[str, Any],
         default=None,
     ):
         """
@@ -37,6 +35,6 @@ class InterpolatedString:
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):
-            return InterpolatedString(string_or_interpolated, default=default, options=options)
+            return InterpolatedString(string_or_interpolated, default=default)
         else:
             return string_or_interpolated
