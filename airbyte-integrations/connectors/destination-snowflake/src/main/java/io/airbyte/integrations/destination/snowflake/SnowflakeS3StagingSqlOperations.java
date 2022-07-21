@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake;
 import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
@@ -79,16 +78,12 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                      final String schemaName,
                                      final String stageName,
                                      final String stagingPath) {
-    return AirbyteSentry.queryWithTracing("UploadRecordsToStage",
-        () -> s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath),
-        Map.of("stage", stageName, "path", stagingPath));
+    return s3StorageOperations.uploadRecordsToBucket(recordsData, schemaName, stageName, stagingPath);
   }
 
   @Override
   public void createStageIfNotExists(final JdbcDatabase database, final String stageName) {
-    AirbyteSentry.executeWithTracing("CreateStageIfNotExists",
-        () -> s3StorageOperations.createBucketObjectIfNotExists(stageName),
-        Map.of("stage", stageName));
+    s3StorageOperations.createBucketObjectIfNotExists(stageName);
   }
 
   @Override
@@ -100,9 +95,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
                                         final String schemaName) {
     LOGGER.info("Starting copy to tmp table from stage: {} in destination from stage: {}, schema: {}, .", dstTableName, stagingPath, schemaName);
     // Print actual SQL query if user needs to manually force reload from staging
-    AirbyteSentry.executeWithTracing("CopyIntoTableFromStage",
-        () -> Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName))),
-        Map.of("schema", schemaName, "path", stagingPath, "table", dstTableName));
+    Exceptions.toRuntime(() -> database.execute(getCopyQuery(stagingPath, stagedFiles, dstTableName, schemaName)));
     LOGGER.info("Copy to tmp table {}.{} in destination complete.", schemaName, dstTableName);
   }
 
@@ -131,16 +124,12 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
 
   @Override
   public void dropStageIfExists(final JdbcDatabase database, final String stageName) {
-    AirbyteSentry.executeWithTracing("DropStageIfExists",
-        () -> s3StorageOperations.dropBucketObject(stageName),
-        Map.of("stage", stageName));
+    s3StorageOperations.dropBucketObject(stageName);
   }
 
   @Override
   public void cleanUpStage(final JdbcDatabase database, final String stageName, final List<String> stagedFiles) {
-    AirbyteSentry.executeWithTracing("CleanStage",
-        () -> s3StorageOperations.cleanUpBucketObject(stageName, stagedFiles),
-        Map.of("stage", stageName));
+    s3StorageOperations.cleanUpBucketObject(stageName, stagedFiles);
   }
 
 }

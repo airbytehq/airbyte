@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AdvancedAcceptanceTests {
+class AdvancedAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdvancedAcceptanceTests.class);
 
@@ -90,7 +90,7 @@ public class AdvancedAcceptanceTests {
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -114,23 +114,23 @@ public class AdvancedAcceptanceTests {
   }
 
   @AfterAll
-  public static void end() {
+  static void end() {
     testHarness.stopDbAndContainers();
   }
 
   @BeforeEach
-  public void setup() throws URISyntaxException, IOException, SQLException {
+  void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     testHarness.cleanup();
   }
 
   @RetryingTest(3)
   @Order(1)
-  public void testManualSync() throws Exception {
+  void testManualSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createDestination().getDestinationId();
@@ -148,7 +148,7 @@ public class AdvancedAcceptanceTests {
 
   @RetryingTest(3)
   @Order(2)
-  public void testCheckpointing() throws Exception {
+  void testCheckpointing() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
@@ -213,7 +213,7 @@ public class AdvancedAcceptanceTests {
 
   @RetryingTest(3)
   @Order(3)
-  public void testRedactionOfSensitiveRequestBodies() throws Exception {
+  void testRedactionOfSensitiveRequestBodies() throws Exception {
     // check that the source password is not present in the logs
     final List<String> serverLogLines = java.nio.file.Files.readAllLines(
         apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
@@ -237,7 +237,7 @@ public class AdvancedAcceptanceTests {
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @RetryingTest(3)
   @Order(4)
-  public void testBackpressure() throws Exception {
+  void testBackpressure() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
