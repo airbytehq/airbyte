@@ -78,7 +78,7 @@
             "type": ["null", "integer"]
           },
           "value": {
-            "type": ["null", "string", "boolean"]
+            "type": ["null", "string"]
           }
         },
         "type": ["null", "object"]

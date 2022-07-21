@@ -475,6 +475,13 @@ class Tickets(SourceZendeskIncrementalExportStream):
 
     response_list_name: str = "tickets"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            for field in record.get("custom_fields", []):
+                if field["value"] is not None:
+                    field["value"] = str(field["value"])
+            yield record
+
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     """
