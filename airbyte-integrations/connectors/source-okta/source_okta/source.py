@@ -77,14 +77,10 @@ class OktaStream(HttpStream, ABC):
 
 
 class IncrementalOktaStream(OktaStream, ABC):
-    def __init__(self, url_base: str, *args, **kwargs):
-        super().__init__(url_base, *args, **kwargs)
-        self._cursor_field = "id"
-
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        return self._cursor_field
+        pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         lowest_date = str(pendulum.datetime.min)
