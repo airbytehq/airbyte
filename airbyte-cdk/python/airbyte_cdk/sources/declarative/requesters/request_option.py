@@ -11,9 +11,6 @@ class RequestOptionType(Enum):
     Describes where to set a value on a request
     """
 
-    def __init__(self, s, options={}):
-        pass
-
     request_parameter = "request_parameter"
     header = "header"
     path = "path"
