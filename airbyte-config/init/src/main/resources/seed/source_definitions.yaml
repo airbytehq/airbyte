@@ -316,6 +316,14 @@
   icon: gitlab.svg
   sourceType: api
   releaseStage: alpha
+- name: Glassfrog
+  sourceDefinitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
+  dockerRepository: airbyte/source-glassfrog
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/glassfrog
+  icon: glassfrog.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
