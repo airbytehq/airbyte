@@ -192,7 +192,7 @@ public class KubePodProcess extends Process implements KubePod {
                                    final ResourceRequirements resourceRequirements,
                                    final Map<Integer, Integer> internalToExternalPorts,
                                    final Map<String, String> envMap,
-                                   final String[] args)
+                                   final String... args)
       throws IOException {
     final var argsStr = String.join(" ", args);
     final var optionalStdin = usesStdin ? String.format("< %s", STDIN_PIPE_FILE) : "";
