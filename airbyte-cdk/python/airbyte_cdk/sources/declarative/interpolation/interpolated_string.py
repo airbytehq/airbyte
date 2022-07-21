@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from typing import Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
@@ -20,3 +20,10 @@ class InterpolatedString:
         if not isinstance(other, InterpolatedString):
             return False
         return self._string == other._string and self._default == other._default
+
+    @classmethod
+    def create(cls, string: Union["InterpolatedString", str]):
+        if isinstance(string, str):
+            return InterpolatedString(string)
+        else:
+            return string

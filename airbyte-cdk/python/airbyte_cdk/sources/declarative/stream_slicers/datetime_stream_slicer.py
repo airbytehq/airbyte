@@ -63,20 +63,11 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._end_datetime = end_datetime
         self._step = self._parse_timedelta(step)
         self._config = config
-        self._cursor_field = cursor_field
-        if isinstance(self._cursor_field, str):
-            self._cursor_field = InterpolatedString(self._cursor_field)
+        self._cursor_field = InterpolatedString.create(cursor_field)
         self._start_time_option = start_time_option
         self._end_time_option = end_time_option
-        self._stream_slice_field_start = stream_state_field_start or "start_date"
-        if isinstance(self._stream_slice_field_start, str):
-            self._stream_slice_field_start = InterpolatedString(string=self._stream_slice_field_start)
-        if stream_state_field_end and isinstance(stream_state_field_end, str):
-            self._stream_slice_field_end = InterpolatedString(stream_state_field_end)
-        elif stream_state_field_end:
-            self._stream_slice_field_end = stream_state_field_end
-        else:
-            self._stream_slice_field_end = InterpolatedString("end_date")
+        self._stream_slice_field_start = InterpolatedString.create(stream_state_field_start or "start_date")
+        self._stream_slice_field_end = InterpolatedString.create(stream_state_field_end or "end_date")
         self._cursor = None  # tracks current datetime
         self._cursor_end = None  # tracks end of current stream slice
         self._lookback_window = lookback_window
@@ -160,8 +151,8 @@ class DatetimeStreamSlicer(StreamSlicer):
             return dt.strftime(self._datetime_format)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
-        start_field = self._stream_slice_field_start.eval(self._config) or "start_time"
-        end_field = self._stream_slice_field_end.eval(self._config) or "end_time"
+        start_field = self._stream_slice_field_start.eval(self._config)
+        end_field = self._stream_slice_field_end.eval(self._config)
         dates = []
         while start <= end:
             end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
