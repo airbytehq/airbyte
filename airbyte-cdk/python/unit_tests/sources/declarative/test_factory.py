@@ -231,7 +231,7 @@ check:
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert stream._retriever._requester._authenticator._token == "verysecrettoken"
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
@@ -366,7 +366,7 @@ def test_config_with_defaults():
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert stream._retriever._requester._authenticator._token == "verysecrettoken"
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
