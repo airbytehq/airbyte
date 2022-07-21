@@ -20,7 +20,6 @@ class ListStreamSlicer(StreamSlicer):
     """
 
     def __init__(self, slice_values: Union[str, List[str]], slice_definition: Mapping[str, Any], config: Config, **kwargs):
-        print(f"slice_values: {slice_values}")
         if isinstance(slice_values, str):
             slice_values = InterpolatedString.create(slice_values, options=kwargs).eval(config)
         elif isinstance(slice_values, InterpolatedString):
