@@ -53,7 +53,7 @@ import org.slf4j.MDC;
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @EnabledIfEnvironmentVariable(named = "KUBE",
                               matches = "true")
-public class ContainerOrchestratorAcceptanceTests {
+class ContainerOrchestratorAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorAcceptanceTests.class);
 
@@ -64,7 +64,7 @@ public class ContainerOrchestratorAcceptanceTests {
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -89,22 +89,17 @@ public class ContainerOrchestratorAcceptanceTests {
   }
 
   @AfterAll
-  public static void end() {
+  static void end() {
     testHarness.stopDbAndContainers();
   }
 
   @BeforeEach
-  public void setup() throws URISyntaxException, IOException, SQLException {
+  void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
 
-  @AfterEach
-  public void tearDown() {
-    testHarness.cleanup();
-  }
-
   @Test
-  public void testDowntimeDuringSync() throws Exception {
+  void testDowntimeDuringSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
@@ -140,8 +135,13 @@ public class ContainerOrchestratorAcceptanceTests {
     assertEquals(1, numAttempts);
   }
 
+  @AfterEach
+  void tearDown() {
+    testHarness.cleanup();
+  }
+
   @Test
-  public void testCancelSyncWithInterruption() throws Exception {
+  void testCancelSyncWithInterruption() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
@@ -164,7 +164,7 @@ public class ContainerOrchestratorAcceptanceTests {
   }
 
   @Test
-  public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
+  void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();

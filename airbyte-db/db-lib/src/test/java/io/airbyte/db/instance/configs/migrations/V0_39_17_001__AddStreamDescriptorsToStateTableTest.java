@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends AbstractConfigsDatabaseTest {
+class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends AbstractConfigsDatabaseTest {
 
   private final String STATE_TABLE = "State";
 
@@ -30,7 +30,7 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends Abstract
   private UUID connection2;
 
   @Test
-  public void testSimpleMigration() {
+  void testSimpleMigration() {
     final DSLContext context = getDslContext();
 
     // Adding a couple of states
@@ -76,7 +76,7 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends Abstract
   }
 
   @Test
-  public void testUniquenessConstraint() {
+  void testUniquenessConstraint() {
     devConfigsDbMigrator.migrate();
 
     final DSLContext context = getDslContext();
@@ -124,10 +124,11 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends Abstract
   }
 
   @BeforeEach
-  public void beforeEach() {
-    Flyway flyway = FlywayFactory.create(dataSource, "V0_39_17_001__AddStreamDescriptorsToStateTableTest", ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    ConfigsDatabaseMigrator configsDbMigrator = new ConfigsDatabaseMigrator(database, flyway);
+  void beforeEach() {
+    final Flyway flyway =
+        FlywayFactory.create(dataSource, "V0_39_17_001__AddStreamDescriptorsToStateTableTest", ConfigsDatabaseMigrator.DB_IDENTIFIER,
+            ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
+    final ConfigsDatabaseMigrator configsDbMigrator = new ConfigsDatabaseMigrator(database, flyway);
     devConfigsDbMigrator = new DevDatabaseMigrator(configsDbMigrator);
 
     devConfigsDbMigrator.createBaseline();
@@ -135,7 +136,7 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends Abstract
   }
 
   @AfterEach
-  public void afterEach() {
+  void afterEach() {
     // Making sure we reset between tests
     dslContext.dropSchemaIfExists("public").cascade().execute();
     dslContext.createSchema("public").execute();
@@ -145,9 +146,9 @@ public class V0_39_17_001__AddStreamDescriptorsToStateTableTest extends Abstract
   private void injectMockData() {
     final DSLContext context = getDslContext();
 
-    UUID workspaceId = UUID.randomUUID();
-    UUID actorId = UUID.randomUUID();
-    UUID actorDefinitionId = UUID.randomUUID();
+    final UUID workspaceId = UUID.randomUUID();
+    final UUID actorId = UUID.randomUUID();
+    final UUID actorDefinitionId = UUID.randomUUID();
     connection1 = UUID.randomUUID();
     connection2 = UUID.randomUUID();
 

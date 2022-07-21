@@ -81,7 +81,8 @@ import org.slf4j.LoggerFactory;
  */
 @DisabledIfEnvironmentVariable(named = "KUBE",
                                matches = "true")
-public class CdcAcceptanceTests {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class CdcAcceptanceTests {
 
   record DestinationCdcRecordMatcher(JsonNode sourceRecord, Instant minUpdatedAt, Optional<Instant> minDeletedAt) {}
 
@@ -115,7 +116,7 @@ public class CdcAcceptanceTests {
   private AirbyteAcceptanceTestHarness testHarness;
 
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -142,19 +143,19 @@ public class CdcAcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
+  void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId, POSTGRES_INIT_SQL_FILE);
     testHarness.setup();
   }
 
   @AfterEach
-  public void end() {
+  void end() {
     testHarness.cleanup();
     testHarness.stopDbAndContainers();
   }
 
   @Test
-  public void testIncrementalCdcSync(final TestInfo testInfo) throws Exception {
+  void testIncrementalCdcSync(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -250,7 +251,7 @@ public class CdcAcceptanceTests {
   // tests that incremental syncs still work properly even when using a destination connector that was
   // built on the old protocol that did not have any per-stream state fields
   @Test
-  public void testIncrementalCdcSyncWithLegacyDestinationConnector(final TestInfo testInfo) throws Exception {
+  void testIncrementalCdcSyncWithLegacyDestinationConnector(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
     final UUID postgresDestDefId = testHarness.getPostgresDestinationDefinitionId();
     // Fetch the current/most recent source definition version
@@ -271,7 +272,7 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testDeleteRecordCdcSync(final TestInfo testInfo) throws Exception {
+  void testDeleteRecordCdcSync(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -310,7 +311,7 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromSchemaUpdate(final TestInfo testInfo) throws Exception {
+  void testPartialResetFromSchemaUpdate(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -353,7 +354,7 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromStreamSelection(final TestInfo testInfo) throws Exception {
+  void testPartialResetFromStreamSelection(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
