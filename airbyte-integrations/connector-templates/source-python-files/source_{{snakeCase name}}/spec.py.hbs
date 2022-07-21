@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field
 from airbyte_cdk.sources.streams.files import FilesSpec
 
 
+# TODO: in acceptance-test-config.yml, comment out the spec test.
+# We do this because it relies on a spec.yaml or spec.json existing, but this connector uses pydantic for its spec.
+
+
 class Source{{properCase name}}Spec(FilesSpec, BaseModel):
     class Config:
         title = "{{properCase name}} Source Spec"

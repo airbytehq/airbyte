@@ -4,6 +4,7 @@
 
 
 import logging
+import os
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterator, List, Mapping
@@ -173,7 +174,7 @@ class AbstractFilesStreamIntegrationTest(ABC):
         [
             # single file tests
             (  # public
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
+                [os.path.join(SAMPLE_DIR, "simple_test.csv")],
                 "**",
                 False,
                 3,
@@ -184,7 +185,7 @@ class AbstractFilesStreamIntegrationTest(ABC):
                 False,
             ),
             (  # private
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
+                [os.path.join(SAMPLE_DIR, "simple_test.csv")],
                 "**",
                 True,
                 3,
@@ -195,7 +196,7 @@ class AbstractFilesStreamIntegrationTest(ABC):
                 False,
             ),
             (  # provided schema exact match to actual schema
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
+                [os.path.join(SAMPLE_DIR, "simple_test.csv")],
                 "**",
                 True,
                 3,
@@ -206,7 +207,7 @@ class AbstractFilesStreamIntegrationTest(ABC):
                 False,
             ),
             (  # provided schema not matching datatypes, expect successful coercion
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
+                [os.path.join(SAMPLE_DIR, "simple_test.csv")],
                 "**",
                 True,
                 3,
@@ -217,7 +218,7 @@ class AbstractFilesStreamIntegrationTest(ABC):
                 False,
             ),
             (  # provided incompatible schema, expect fail
-                [SAMPLE_DIR.joinpath("simple_test.csv")],
+                [os.path.join(SAMPLE_DIR, "simple_test.csv")],
                 "**",
                 True,
                 3,
@@ -230,9 +231,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             # multiple file tests (all have identical schemas)
             (  # public, auto-infer
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 False,
@@ -245,9 +246,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # private, auto-infer
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 True,
@@ -260,9 +261,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # provided schema exact match to actual schema
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 True,
@@ -275,9 +276,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # provided schema not matching datatypes, expect successful coercion
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 True,
@@ -290,9 +291,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # provided incompatible schema, expect fail
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 True,
@@ -306,9 +307,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             # multiple file tests (different but merge-able schemas)
             (  # auto-infer
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_1.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_2.csv"),
                 ],
                 "**",
                 True,
@@ -321,9 +322,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # provided schema, not containing all columns (extra columns should go into FileStream.ab_additional_col)
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_1.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_2.csv"),
                 ],
                 "**",
                 True,
@@ -337,10 +338,10 @@ class AbstractFilesStreamIntegrationTest(ABC):
             # pattern matching tests with additional files present that we don't want to read
             (  # at top-level of bucket
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.txt"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "file_to_skip.csv"),
+                    os.path.join(SAMPLE_DIR, "file_to_skip.txt"),
                 ],
                 "simple*",
                 True,
@@ -353,13 +354,13 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # at multiple levels of bucket
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("file_to_skip.txt"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/this_folder/simple_test.csv"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.csv"),
-                    SAMPLE_DIR.joinpath("pattern_match_test/not_this_folder/file_to_skip.txt"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "file_to_skip.csv"),
+                    os.path.join(SAMPLE_DIR, "file_to_skip.txt"),
+                    os.path.join(SAMPLE_DIR, "pattern_match_test/this_folder/simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "pattern_match_test/not_this_folder/file_to_skip.csv"),
+                    os.path.join(SAMPLE_DIR, "pattern_match_test/not_this_folder/file_to_skip.txt"),
                 ],
                 "**/simple*",
                 True,
@@ -373,9 +374,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             # incremental tests (passing num_records/num_columns/fails as lists holding value for each file in order)
             (  # auto-infer, all same schema
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 True,
@@ -388,9 +389,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # provided schema, all same schema
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_2.csv"),
-                    SAMPLE_DIR.joinpath("simple_test_3.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test_3.csv"),
                 ],
                 "**",
                 True,
@@ -403,9 +404,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # auto-infer, (different but merge-able schemas)
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_1.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_2.csv"),
                 ],
                 "**",
                 True,
@@ -418,9 +419,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # same as previous but change order and expect 5 columns instead of 3 in all
                 [
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_2.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_1.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
                 ],
                 "**",
                 True,
@@ -433,9 +434,9 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # like previous test but with a user_schema limiting columns
                 [
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_2.csv"),
-                    SAMPLE_DIR.joinpath("multi_file_diffschema_1.csv"),
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_2.csv"),
+                    os.path.join(SAMPLE_DIR, "multi_file_diffschema_1.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
                 ],
                 "**",
                 True,
@@ -448,8 +449,8 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # fail when 2nd file has incompatible schema, auto-infer
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("incompatible_schema.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "incompatible_schema.csv"),
                 ],
                 "**",
                 True,
@@ -462,8 +463,8 @@ class AbstractFilesStreamIntegrationTest(ABC):
             ),
             (  # fail when 2nd file has incompatible schema, provided schema
                 [
-                    SAMPLE_DIR.joinpath("simple_test.csv"),
-                    SAMPLE_DIR.joinpath("incompatible_schema.csv"),
+                    os.path.join(SAMPLE_DIR, "simple_test.csv"),
+                    os.path.join(SAMPLE_DIR, "incompatible_schema.csv"),
                 ],
                 "**",
                 True,
