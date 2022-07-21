@@ -16,8 +16,6 @@
         <exclude name="GuardLogStatement" />
         <exclude name="JUnitAssertionsShouldIncludeMessage" />
         <exclude name="JUnitTestContainsTooManyAsserts" />
-        <!-- to be applied eventually -->
-        <exclude name="UseVarargs"/>
     </rule>
     <rule ref="category/java/codestyle.xml">
         <!-- exclude permanently -->
