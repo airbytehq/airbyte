@@ -9,6 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice
 from airbyte_cdk.sources.streams.core import Stream
 
 
@@ -23,6 +24,7 @@ class DeclarativeStream(Stream):
         primary_key,
         schema_loader: SchemaLoader,
         retriever: Retriever,
+        config: Config,
         cursor_field: Optional[List[str]] = None,
         transformations: List[RecordTransformation] = None,
         checkpoint_interval: Optional[int] = None,
@@ -38,6 +40,7 @@ class DeclarativeStream(Stream):
         in the order in which they are defined.
         """
         self._name = name
+        self._config = config
         self._primary_key = primary_key
         self._cursor_field = cursor_field or []
         self._schema_loader = schema_loader
@@ -98,12 +101,12 @@ class DeclarativeStream(Stream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         for record in self._retriever.read_records(sync_mode, cursor_field, stream_slice, stream_state):
-            yield self._apply_transformations(record)
+            yield self._apply_transformations(record, self._config, stream_slice)
 
-    def _apply_transformations(self, record: Mapping[str, Any]):
+    def _apply_transformations(self, record: Mapping[str, Any], config: Config, stream_slice: StreamSlice):
         output_record = record
         for transformation in self._transformations:
-            output_record = transformation.transform(record)
+            output_record = transformation.transform(record, config=config, stream_state=self.state, stream_slice=stream_slice)
 
         return output_record
 

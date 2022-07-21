@@ -49,7 +49,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/source-square", new SquareOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-strava", new StravaOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-surveymonkey", new SurveymonkeyOAuthFlow(configRepository, httpClient))
-        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-trello", new TrelloOAuthFlow(configRepository))
         .put("airbyte/source-youtube-analytics", new YouTubeAnalyticsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-drift", new DriftOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-zendesk-chat", new ZendeskChatOAuthFlow(configRepository, httpClient))
@@ -62,6 +62,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/destination-snowflake", new DestinationSnowflakeOAuthFlow(configRepository, httpClient))
         .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-okta", new OktaOAuthFlow(configRepository, httpClient))
         .build();
   }
 

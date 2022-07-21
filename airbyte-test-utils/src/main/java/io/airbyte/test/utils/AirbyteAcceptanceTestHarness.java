@@ -30,6 +30,7 @@ import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.client.model.generated.DestinationDefinitionUpdate;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
+import io.airbyte.api.client.model.generated.DestinationSyncMode;
 import io.airbyte.api.client.model.generated.JobConfigType;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.api.client.model.generated.JobListRequestBody;
@@ -50,10 +51,14 @@ import io.airbyte.api.client.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
+import io.airbyte.api.client.model.generated.SyncMode;
+import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
+import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreProperties;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.airbyte_test_container.AirbyteTestContainer;
 import io.airbyte.workers.temporal.TemporalUtils;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
@@ -585,30 +590,30 @@ public class AirbyteAcceptanceTestHarness {
     if (isKube) {
       if (isMinikube) {
         // used with minikube driver=none instance
-        dbConfig.put("host", Inet4Address.getLocalHost().getHostAddress());
+        dbConfig.put(JdbcUtils.HOST_KEY, Inet4Address.getLocalHost().getHostAddress());
       } else {
         // used on a single node with docker driver
-        dbConfig.put("host", "host.docker.internal");
+        dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
       }
     } else if (isMac) {
-      dbConfig.put("host", "host.docker.internal");
+      dbConfig.put(JdbcUtils.HOST_KEY, "host.docker.internal");
     } else {
-      dbConfig.put("host", "localhost");
+      dbConfig.put(JdbcUtils.HOST_KEY, "localhost");
     }
 
     if (hiddenPassword) {
-      dbConfig.put("password", "**********");
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, "**********");
     } else {
-      dbConfig.put("password", psql.getPassword());
+      dbConfig.put(JdbcUtils.PASSWORD_KEY, psql.getPassword());
     }
 
-    dbConfig.put("port", psql.getFirstMappedPort());
-    dbConfig.put("database", psql.getDatabaseName());
-    dbConfig.put("username", psql.getUsername());
-    dbConfig.put("ssl", false);
+    dbConfig.put(JdbcUtils.PORT_KEY, psql.getFirstMappedPort());
+    dbConfig.put(JdbcUtils.DATABASE_KEY, psql.getDatabaseName());
+    dbConfig.put(JdbcUtils.USERNAME_KEY, psql.getUsername());
+    dbConfig.put(JdbcUtils.SSL_KEY, false);
 
     if (withSchema) {
-      dbConfig.put("schema", "public");
+      dbConfig.put(JdbcUtils.SCHEMA_KEY, "public");
     }
     return dbConfig;
   }
@@ -717,7 +722,7 @@ public class AirbyteAcceptanceTestHarness {
     apiClient.getOperationApi().deleteOperation(new OperationIdRequestBody().operationId(destinationId));
   }
 
-  public JobRead getMostRecentSyncJobId(UUID connectionId) throws Exception {
+  public JobRead getMostRecentSyncJobId(final UUID connectionId) throws Exception {
     return apiClient.getJobsApi()
         .listJobsFor(new JobListRequestBody().configId(connectionId.toString()).configTypes(List.of(JobConfigType.SYNC)))
         .getJobs()
@@ -797,6 +802,52 @@ public class AirbyteAcceptanceTestHarness {
   public enum Type {
     SOURCE,
     DESTINATION
+  }
+
+  public void assertDestinationDbEmpty(final boolean withScdTable) throws Exception {
+    final Database source = getSourceDatabase();
+    final Set<SchemaTableNamePair> sourceTables = listAllTables(source);
+    final Set<SchemaTableNamePair> sourceTablesWithRawTablesAdded = addAirbyteGeneratedTables(withScdTable, sourceTables);
+    final Database destination = getDestinationDatabase();
+    final Set<SchemaTableNamePair> destinationTables = listAllTables(destination);
+    assertEquals(sourceTablesWithRawTablesAdded, destinationTables,
+        String.format("streams did not match.\n source stream names: %s\n destination stream names: %s\n", sourceTables, destinationTables));
+
+    for (final SchemaTableNamePair pair : sourceTables) {
+      final List<JsonNode> sourceRecords = retrieveRawDestinationRecords(pair);
+      assertTrue(sourceRecords.isEmpty());
+    }
+  }
+
+  public void setIncrementalAppendSyncMode(final AirbyteCatalog airbyteCatalog, final List<String> cursorField) {
+    airbyteCatalog.getStreams().forEach(stream -> {
+      stream.getConfig().syncMode(SyncMode.INCREMENTAL)
+          .destinationSyncMode(DestinationSyncMode.APPEND)
+          .cursorField(cursorField);
+    });
+  }
+
+  public WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
+    setIncrementalAppendSyncMode(catalog, List.of(COLUMN_ID));
+
+    return new WebBackendConnectionUpdate()
+        .connectionId(connection.getConnectionId())
+        .name(connection.getName())
+        .operationIds(connection.getOperationIds())
+        .operations(List.of(new WebBackendOperationCreateOrUpdate()
+            .name(operation.getName())
+            .operationId(operation.getOperationId())
+            .workspaceId(operation.getWorkspaceId())
+            .operatorConfiguration(operation.getOperatorConfiguration())))
+        .namespaceDefinition(connection.getNamespaceDefinition())
+        .namespaceFormat(connection.getNamespaceFormat())
+        .syncCatalog(catalog)
+        .schedule(connection.getSchedule())
+        .sourceCatalogId(connection.getSourceCatalogId())
+        .status(connection.getStatus())
+        .prefix(connection.getPrefix())
+        .withRefreshedCatalog(true)
+        .skipReset(false);
   }
 
 }
