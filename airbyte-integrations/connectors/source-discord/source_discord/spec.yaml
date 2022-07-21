@@ -6,9 +6,12 @@ connectionSpecification:
   required:
     - server_token
     - guild_id
+    - bot_id
   additionalProperties: false
   properties:
     server_token:
       type: string
     guild_id:
+      type: string
+    bot_id:
       type: string
