@@ -14,9 +14,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator import InterpolatedPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator import OffsetPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
@@ -29,17 +29,17 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
     "CompositeErrorHandler": CompositeErrorHandler,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
+    "CursorPagination": CursorPaginationStrategy,
     "DatetimeStreamSlicer": DatetimeStreamSlicer,
     "DeclarativeStream": DeclarativeStream,
     "DefaultErrorHandler": DefaultErrorHandler,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
-    "InterpolatedPaginator": InterpolatedPaginator,
     "JelloExtractor": JelloExtractor,
+    "LimitPaginator": LimitPaginator,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
-    "NextPageUrlPaginator": NextPageUrlPaginator,
-    "OffsetPaginator": OffsetPaginator,
+    "OffsetIncrement": OffsetIncrement,
     "RemoveFields": RemoveFields,
     "TokenAuthenticator": TokenAuthenticator,
 }
