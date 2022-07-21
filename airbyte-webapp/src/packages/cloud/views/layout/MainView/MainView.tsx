@@ -65,11 +65,11 @@ const MainView: React.FC = (props) => {
     } else if (alertToShow === "trial") {
       const { trialExpiryTimestamp } = cloudWorkspace;
 
-      //calculate difference between timestamp and now
-      const trialRemainingSeconds = trialExpiryTimestamp ? trialExpiryTimestamp - Math.round(Date.now() / 1000) : 0;
+      //calculate difference between timestamp (in epoch seconds) and now (in epoch seconds)
+      const trialRemainingSeconds = trialExpiryTimestamp ? trialExpiryTimestamp - Date.now() / 1000 : 0;
 
-      //calculate days
-      const trialRemainingDays = trialRemainingSeconds / 86400;
+      //calculate days (rounding up if decimal)
+      const trialRemainingDays = Math.ceil(trialRemainingSeconds / (24 * 60 * 60));
 
       return formatMessage({ id: "trial.alertMessage" }, { value: trialRemainingDays });
     }
