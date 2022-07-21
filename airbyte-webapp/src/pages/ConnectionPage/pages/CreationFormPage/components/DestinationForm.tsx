@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-
-// TODO: create separate component for source and destinations forms
 import { useLocation, useNavigate } from "react-router-dom";
 
+// TODO: create separate component for source and destinations forms
 import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateDestination } from "hooks/services/useDestinationHook";
 import { DestinationForm } from "pages/DestinationPage/pages/CreateDestinationPage/components/DestinationForm";
