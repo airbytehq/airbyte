@@ -14,6 +14,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -23,6 +24,8 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
+import java.util.Objects;
+
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.CockroachContainer;
@@ -41,9 +44,14 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
+        .put("host", Objects.requireNonNull(container.getContainerInfo()
+                .getNetworkSettings()
+                .getNetworks()
+                .entrySet().stream()
+                .findFirst()
+                .get().getValue().getIpAddress()))
         // by some reason it return not a port number as exposed and mentioned in logs
-        .put("port", container.getFirstMappedPort() - 1)
+        .put("port", container.getExposedPorts().get(1))
         .put("database", container.getDatabaseName())
         .put("username", container.getUsername())
         .put("password", container.getPassword())
