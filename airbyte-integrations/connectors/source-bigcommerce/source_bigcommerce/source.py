@@ -184,12 +184,6 @@ class Pages(IncrementalBigcommerceStream):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
 
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        params = {"limit": self.limit}
-        return params
-
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
