@@ -48,6 +48,8 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
   protected String schemaToIgnore;
   protected String streamName;
 
+  protected String connectionProperties;
+
   protected static ObjectNode getStaticConfig() {
     return (ObjectNode) Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
@@ -63,6 +65,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     schemaName = Strings.addRandomSuffix("integration_test", "_", 5).toLowerCase();
     schemaToIgnore = schemaName + "shouldIgnore";
     streamName = "customer";
+    connectionProperties = "queryTimeout=60000&defaultRowFetchSize=200&ssl=false";
 
     // limit the connection to one schema only
     config = config.set("schemas", Jsons.jsonNode(List.of(schemaName)));
@@ -70,6 +73,7 @@ public class RedshiftSourceAcceptanceTest extends SourceAcceptanceTest {
     // use test user user
     config = config.set("username", Jsons.jsonNode(testUserName));
     config = config.set("password", Jsons.jsonNode(testUserPassword));
+    config = config.set("connection_properties", Jsons.jsonNode(connectionProperties));
 
     // create a test data
     createTestData(database, schemaName, streamName, testUserName, true);

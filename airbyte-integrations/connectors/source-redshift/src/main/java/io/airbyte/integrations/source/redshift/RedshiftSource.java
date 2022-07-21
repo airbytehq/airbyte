@@ -60,6 +60,9 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
       if (schemas != null && !schemas.isEmpty()) {
         additionalProperties.add("currentSchema=" + String.join(",", schemas));
       }
+      if(redshiftConfig.get("connection_properties").asText() != null && !redshiftConfig.get("connection_properties").asText().isEmpty()){
+        additionalProperties.add(redshiftConfig.get("connection_properties").asText());
+      }
     }
 
     addSsl(additionalProperties);
