@@ -8,6 +8,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
@@ -17,6 +18,7 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
+import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
@@ -147,10 +149,17 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                       f.get(INTERNAL_COLUMN_NAME).asText(),
                       f.get(INTERNAL_COLUMN_TYPE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_SIZE).asInt(),
+                      f.get(INTERNAL_IS_NULLABLE).asBoolean(),
                       jsonType);
                   return new CommonField<Datatype>(f.get(INTERNAL_COLUMN_NAME).asText(), datatype) {};
                 })
                 .collect(Collectors.toList()))
+            .cursorFields((fields.stream()
+                .filter(field -> isCursorType(getFieldType(field)))
+                .peek(System.out::println)
+                .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText())))
+                    .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
+                    .collect(Collectors.toList()))
             .build())
         .collect(Collectors.toList());
   }
@@ -190,6 +199,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         .put(INTERNAL_COLUMN_TYPE, resultSet.getString(JDBC_COLUMN_DATA_TYPE))
         .put(INTERNAL_COLUMN_TYPE_NAME, resultSet.getString(JDBC_COLUMN_TYPE_NAME))
         .put(INTERNAL_COLUMN_SIZE, resultSet.getInt(JDBC_COLUMN_SIZE))
+        .put(INTERNAL_IS_NULLABLE, resultSet.getString(JDBC_IS_NULLABLE))
         .build());
   }
 
@@ -260,9 +270,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
-  public List<String> getCursorFields(List<CommonField<Datatype>> fields) {
-    return fields.stream().filter(field -> sourceOperations.isCursorType(field.getType()))
-        .map(f -> f.getName()).collect(Collectors.toList());
+  public boolean isCursorType(Datatype type) {
+    return sourceOperations.isCursorType(type);
   }
 
   @Override
@@ -325,8 +334,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   /**
-   * Retrieves connection_properties from config and also validates if custom
-   * jdbc_url parameters overlap with the default properties
+   * Retrieves connection_properties from config and also validates if custom jdbc_url parameters
+   * overlap with the default properties
    *
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of connection properties
@@ -346,7 +355,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @throws IllegalArgumentException
    */
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
+                                                                    final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
@@ -357,8 +366,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   /**
    * Retrieves default connection_properties from config
    *
-   * TODO: make this method abstract and add parity features to
-   * destination connectors
+   * TODO: make this method abstract and add parity features to destination connectors
+   *
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of the default connection properties
    */

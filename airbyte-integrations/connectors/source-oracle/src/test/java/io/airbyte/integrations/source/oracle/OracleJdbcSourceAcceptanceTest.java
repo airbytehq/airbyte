@@ -340,11 +340,29 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
+  protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement().execute(String.format("CREATE TABLE %s (text CLOB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s VALUES(to_clob('clob data'))", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
+  }
+
+  protected void createTableWithNullableTypeField() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s (nullfield VARCHAR(20))", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+    });
+  }
+
+  protected void createTableWithNonNullableTypeField() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s (nonnullfield VARCHAR(20) NOT NULL)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
     });
   }
 

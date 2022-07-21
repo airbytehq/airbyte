@@ -5,43 +5,17 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.postgres.PostgresUtils.ALLOWED_CURSOR_TYPES;
-import static java.sql.JDBCType.BIGINT;
-import static java.sql.JDBCType.CHAR;
-import static java.sql.JDBCType.DATE;
-import static java.sql.JDBCType.DECIMAL;
-import static java.sql.JDBCType.DOUBLE;
-import static java.sql.JDBCType.FLOAT;
-import static java.sql.JDBCType.INTEGER;
-import static java.sql.JDBCType.LONGVARCHAR;
-import static java.sql.JDBCType.NCHAR;
-import static java.sql.JDBCType.NUMERIC;
-import static java.sql.JDBCType.NVARCHAR;
-import static java.sql.JDBCType.REAL;
-import static java.sql.JDBCType.SMALLINT;
-import static java.sql.JDBCType.TIME;
-import static java.sql.JDBCType.TIMESTAMP;
-import static java.sql.JDBCType.TIMESTAMP_WITH_TIMEZONE;
-import static java.sql.JDBCType.TIME_WITH_TIMEZONE;
-import static java.sql.JDBCType.TINYINT;
-import static java.sql.JDBCType.VARCHAR;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -90,8 +64,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import io.airbyte.protocol.models.SyncMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

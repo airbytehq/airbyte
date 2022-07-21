@@ -13,11 +13,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import java.sql.JDBCType;
-import java.sql.SQLException;
-import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -79,4 +74,5 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceA
     DataSourceFactory.close(dataSource);
     container.close();
   }
+
 }

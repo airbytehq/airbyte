@@ -94,7 +94,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
+  protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
           .execute(String.format("CREATE TABLE %s (bitfield boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));

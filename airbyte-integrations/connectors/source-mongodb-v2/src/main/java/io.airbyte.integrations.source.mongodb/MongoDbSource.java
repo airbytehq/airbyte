@@ -67,8 +67,9 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String AUTH_SOURCE = "auth_source";
   private static final String TLS = "tls";
   private static final String PRIMARY_KEY = "_id";
-  private static final Set<BsonType>  ALLOWED_CURSOR_TYPES  = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
-          SYMBOL, INT32, TIMESTAMP, INT64, DECIMAL128);
+  private static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
+      SYMBOL, INT32, TIMESTAMP, INT64, DECIMAL128);
+
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
     LOGGER.info("starting source: {}", MongoDbSource.class);
@@ -203,11 +204,12 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   }
 
   @Override
-  public List<String> getCursorFields(List<CommonField<BsonType>> fields) {
+  public boolean isCursorType(BsonType bsonType) {
     // while reading from mongo primary key "id" is always added, so there will be no situation
     // when we have no cursor field here, at least id could be used as cursor here.
-    // This logic will be used feather when we will implement part which will show only list of possible cursor fields on UI
-    return fields.stream().filter(field -> ALLOWED_CURSOR_TYPES.contains(field.getType())).map(field -> field.getName()).collect(Collectors.toList());
+    // This logic will be used feather when we will implement part which will show only list of possible
+    // cursor fields on UI
+    return ALLOWED_CURSOR_TYPES.contains(bsonType);
   }
 
   private AutoCloseableIterator<JsonNode> queryTable(final MongoDatabase database,

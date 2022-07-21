@@ -4,13 +4,6 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.sql.JDBCType;
-import java.util.Set;
-
 import static java.sql.JDBCType.BIGINT;
 import static java.sql.JDBCType.CHAR;
 import static java.sql.JDBCType.DATE;
@@ -31,10 +24,17 @@ import static java.sql.JDBCType.TIME_WITH_TIMEZONE;
 import static java.sql.JDBCType.TINYINT;
 import static java.sql.JDBCType.VARCHAR;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import java.sql.JDBCType;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PostgresUtils {
+
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIMESTAMP_WITH_TIMEZONE, TIME, TIME_WITH_TIMEZONE,
-          DATE, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL,
-          CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR);
+      DATE, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL,
+      CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR);
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresUtils.class);
 
