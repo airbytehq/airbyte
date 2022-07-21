@@ -24,6 +24,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         config: Config,
         stop_condition: Optional[InterpolatedBoolean] = None,
         decoder: Decoder = None,
+        **kwargs,
     ):
         """
 
@@ -33,7 +34,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         :param decoder: decoder to decode the response
         """
         if isinstance(cursor_value, str):
-            cursor_value = InterpolatedString(cursor_value)
+            cursor_value = InterpolatedString.create(cursor_value, options=kwargs)
         self._cursor_value = cursor_value
         self._config = config
         self._decoder = decoder or JsonDecoder()

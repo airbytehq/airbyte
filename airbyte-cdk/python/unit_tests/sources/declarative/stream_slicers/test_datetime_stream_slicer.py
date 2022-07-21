@@ -15,10 +15,8 @@ datetime_format = "%Y-%m-%d"
 FAKE_NOW = datetime.datetime(2022, 1, 1, tzinfo=datetime.timezone.utc)
 
 config = {"start_date": "2021-01-01"}
-end_date_now = InterpolatedString(
-    "{{ today_utc() }}",
-)
-cursor_value = InterpolatedString("{{ stream_state['date'] }}")
+end_date_now = InterpolatedString.create("{{ today_utc() }}", options={})
+cursor_value = InterpolatedString.create("{{ stream_state['date'] }}", options={})
 timezone = datetime.timezone.utc
 
 
@@ -133,7 +131,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ stream_state['date'] }}", datetime_format=datetime_format),
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
-            InterpolatedString("{{ stream_state['date'] }}"),
+            InterpolatedString.create("{{ stream_state['date'] }}", options={}),
             None,
             [
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
@@ -150,7 +148,7 @@ def mock_datetime_now(monkeypatch):
             MinMaxDatetime("{{ config['start_date'] }}", min_datetime="{{ stream_state['date'] }}", datetime_format=datetime_format),
             MinMaxDatetime("2021-01-10", datetime_format=datetime_format),
             "1d",
-            InterpolatedString("{{ stream_state['date'] }}"),
+            InterpolatedString.create("{{ stream_state['date'] }}", options={}),
             None,
             [
                 {"start_date": "2021-01-05", "end_date": "2021-01-05"},
@@ -231,7 +229,7 @@ def mock_datetime_now(monkeypatch):
     ],
 )
 def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, cursor, step, lookback_window, expected_slices):
-    lookback_window = InterpolatedString(lookback_window) if lookback_window else None
+    lookback_window = InterpolatedString.create(lookback_window, options={}) if lookback_window else None
     slicer = DatetimeStreamSlicer(
         start_datetime=start,
         end_datetime=end,

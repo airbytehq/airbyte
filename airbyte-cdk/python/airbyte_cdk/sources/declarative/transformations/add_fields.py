@@ -71,7 +71,7 @@ class AddFields(RecordTransformation):
           value: {{ 2 * 2 }}
     """
 
-    def __init__(self, fields: List[AddedFieldDefinition]):
+    def __init__(self, fields: List[AddedFieldDefinition], **kwargs):
         self._fields: List[ParsedAddFieldDefinition] = []
         for field in fields:
             if len(field.path) < 1:
@@ -81,7 +81,7 @@ class AddFields(RecordTransformation):
                 if not isinstance(field.value, str):
                     raise f"Expected a string value for the AddFields transformation: {field}"
                 else:
-                    self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString(field.value)))
+                    self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString.create(field.value, options=kwargs)))
             else:
                 self._fields.append(ParsedAddFieldDefinition(field.path, field.value))
 

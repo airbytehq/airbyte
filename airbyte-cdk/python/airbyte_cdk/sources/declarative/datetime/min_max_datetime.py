@@ -15,11 +15,11 @@ class MinMaxDatetime:
     """
 
     def __init__(self, datetime: str, datetime_format: str = "", min_datetime: str = "", max_datetime: str = "", **kwargs):
-        self._datetime_interpolator = InterpolatedString(datetime, options=kwargs)
+        self._datetime_interpolator = InterpolatedString.create(datetime, options=kwargs)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString(min_datetime, options=kwargs) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString(max_datetime, options=kwargs) if max_datetime else None
+        self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=kwargs) if min_datetime else None
+        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=kwargs) if max_datetime else None
 
     def get_datetime(self, config, **kwargs) -> dt.datetime:
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first

@@ -29,19 +29,20 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
+        **kwargs,
     ):
         self.config = config
-        self.token_refresh_endpoint = InterpolatedString(token_refresh_endpoint)
-        self.client_secret = InterpolatedString(client_secret)
-        self.client_id = InterpolatedString(client_id)
-        self.refresh_token = InterpolatedString(refresh_token)
+        self.token_refresh_endpoint = InterpolatedString.create(token_refresh_endpoint, options=kwargs)
+        self.client_secret = InterpolatedString.create(client_secret, options=kwargs)
+        self.client_id = InterpolatedString.create(client_id, options=kwargs)
+        self.refresh_token = InterpolatedString.create(refresh_token, options=kwargs)
         self.scopes = scopes
-        self.access_token_name = InterpolatedString(access_token_name)
-        self.expires_in_name = InterpolatedString(expires_in_name)
-        self.refresh_request_body = InterpolatedMapping(refresh_request_body)
+        self.access_token_name = InterpolatedString.create(access_token_name, options=kwargs)
+        self.expires_in_name = InterpolatedString.create(expires_in_name, options=kwargs)
+        self.refresh_request_body = InterpolatedMapping(refresh_request_body, options=kwargs)
 
         self.token_expiry_date = (
-            pendulum.parse(InterpolatedString(token_expiry_date).eval(self.config))
+            pendulum.parse(InterpolatedString.create(token_expiry_date, options=kwargs).eval(self.config))
             if token_expiry_date
             else pendulum.now().subtract(days=1)
         )

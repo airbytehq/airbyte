@@ -79,6 +79,7 @@ class LimitPaginator(Paginator):
         config: Config,
         url_base: str,
         decoder: Decoder = None,
+        **kwargs,
     ):
         """
         :param page_size: the number of records to request
@@ -98,7 +99,7 @@ class LimitPaginator(Paginator):
         self._pagination_strategy = pagination_strategy
         self._token = None
         if isinstance(url_base, str):
-            url_base = InterpolatedString(url_base)
+            url_base = InterpolatedString.create(url_base, options=kwargs)
         self._url_base = url_base
         self._decoder = decoder or JsonDecoder()
 

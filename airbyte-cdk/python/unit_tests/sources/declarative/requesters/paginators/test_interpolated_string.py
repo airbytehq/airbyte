@@ -10,7 +10,7 @@ kwargs = {"next_page_token": {"next_page_url": "https://airbyte.io"}}
 
 def test_value_is_static():
     static_value = "a_static_value"
-    interpolated_string = InterpolatedString(static_value)
+    interpolated_string = InterpolatedString.create(static_value, options={})
 
     evaluated_string = interpolated_string.eval(config, **kwargs)
 
@@ -19,7 +19,7 @@ def test_value_is_static():
 
 def test_value_from_config():
     string = "{{ config['start'] }}"
-    interpolated_string = InterpolatedString(string)
+    interpolated_string = InterpolatedString.create(string, options={})
 
     evaluated_string = interpolated_string.eval(config, **kwargs)
 
@@ -28,7 +28,7 @@ def test_value_from_config():
 
 def test_value_from_kwargs():
     string = "{{ next_page_token['next_page_url'] }}"
-    interpolated_string = InterpolatedString(string)
+    interpolated_string = InterpolatedString.create(string, options={})
 
     evaluated_string = interpolated_string.eval(config, **kwargs)
 
@@ -38,7 +38,7 @@ def test_value_from_kwargs():
 def test_default_value():
     static_value = "{{ config['end'] }}"
     default = 5678
-    interpolated_string = InterpolatedString(static_value, default)
+    interpolated_string = InterpolatedString.create(static_value, default=default, options={})
 
     evaluated_string = interpolated_string.eval(config, **kwargs)
 
@@ -47,7 +47,7 @@ def test_default_value():
 
 def test_interpolated_default_value():
     static_value = "{{ config['end'] }}"
-    interpolated_string = InterpolatedString(static_value, "{{ config['start'] }}")
+    interpolated_string = InterpolatedString.create(static_value, default="{{ config['start'] }}", options={})
 
     evaluated_string = interpolated_string.eval(config, **kwargs)
 

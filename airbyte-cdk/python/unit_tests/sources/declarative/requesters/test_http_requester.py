@@ -41,8 +41,8 @@ def test_http_requester():
 
     requester = HttpRequester(
         name=name,
-        url_base=InterpolatedString("{{ config['url'] }}"),
-        path=InterpolatedString("v1/{{ stream_slice['id'] }}"),
+        url_base=InterpolatedString.create("{{ config['url'] }}", options={}),
+        path=InterpolatedString.create("v1/{{ stream_slice['id'] }}", options={}),
         http_method=http_method,
         request_options_provider=request_options_provider,
         authenticator=authenticator,

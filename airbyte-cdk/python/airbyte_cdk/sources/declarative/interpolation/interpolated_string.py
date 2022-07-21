@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional, Union
+from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
@@ -23,13 +23,20 @@ class InterpolatedString:
         return self._string == other._string and self._default == other._default
 
     @classmethod
-    def create(cls, string_or_interpolated: Union["InterpolatedString", str], options):
+    def create(
+        cls,
+        string_or_interpolated: Union["InterpolatedString", str],
+        /,
+        options: Mapping[str, Any],
+        default=None,
+    ):
         """
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
         :param string_or_interpolated: either a raw string or an InterpolatedString.
+        :param options: options parameters propagated from parent component
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):
-            return InterpolatedString(string_or_interpolated, options=options)
+            return InterpolatedString(string_or_interpolated, default=default, options=options)
         else:
             return string_or_interpolated
