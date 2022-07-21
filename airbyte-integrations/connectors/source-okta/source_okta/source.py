@@ -77,10 +77,14 @@ class OktaStream(HttpStream, ABC):
 
 
 class IncrementalOktaStream(OktaStream, ABC):
+    def __init__(self, url_base: str, *args, **kwargs):
+        super().__init__(url_base, *args, **kwargs)
+        self._cursor_field = "id"
+
     @property
     @abstractmethod
     def cursor_field(self) -> str:
-        pass
+        return self._cursor_field
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         lowest_date = str(pendulum.datetime.min)
@@ -261,11 +265,11 @@ class SourceOkta(AbstractSource):
 
         creds = config.get("credentials")
         if not creds:
-            raise "Config validation error. `credentials` not specified."
+            raise Exception("Config validation error. `credentials` not specified.")
 
         auth_type = creds.get("auth_type")
         if not auth_type:
-            raise "Config validation error. `auth_type` not specified."
+            raise Exception("Config validation error. `auth_type` not specified.")
 
         if auth_type == "api_token":
             return TokenAuthenticator(creds["api_token"], auth_method="SSWS")
