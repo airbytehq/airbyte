@@ -84,7 +84,7 @@ First install test dependencies into your virtual environment:
 pip install '.[tests]'
 ```
 ### Unit Tests
-To run unit tests locally, from the connector directory run:pip install '.[tests]'
+To run unit tests locally, from the connector directory run:
 ```
 python -m pytest unit_tests
 ```
