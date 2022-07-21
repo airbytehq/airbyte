@@ -81,10 +81,10 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
-pip install .[tests]
+pip install '.[tests]'
 ```
 ### Unit Tests
-To run unit tests locally, from the connector directory run:
+To run unit tests locally, from the connector directory run:pip install '.[tests]'
 ```
 python -m pytest unit_tests
 ```
