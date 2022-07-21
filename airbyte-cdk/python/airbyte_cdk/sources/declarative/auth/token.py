@@ -11,7 +11,16 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abtract_token import 
 
 
 class ApiKeyAuth(AbstractHeaderAuthenticator):
+    """
+    ApiKeyAuth sets a request header on the HTTP requests sent
+    """
+
     def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config):
+        """
+        :param header: Header key to set on the HTTP requests
+        :param token: Header value to set on the HTTP requests
+        :param config: connection config
+        """
         self._header = InterpolatedString.create(header)
         self._token = InterpolatedString.create(token)
         self._config = config
@@ -26,7 +35,16 @@ class ApiKeyAuth(AbstractHeaderAuthenticator):
 
 
 class BearerAuth(AbstractHeaderAuthenticator):
+    """
+    Authenticator that sets the Authorization header on the HTTP requests sent.
+    `Authorization: Bearer <token>`
+    """
+
     def __init__(self, token: Union[InterpolatedString, str], config: Config):
+        """
+        :param token:
+        :param config:
+        """
         self._token = InterpolatedString.create(token)
         self._config = config
 
@@ -40,7 +58,17 @@ class BearerAuth(AbstractHeaderAuthenticator):
 
 
 class BasicHttpAuth(AbstractHeaderAuthenticator):
+    """
+    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
+    """
+
     def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = ""):
+        """
+        :param username:
+        :param config:
+        :param password:
+        """
         self._username = InterpolatedString.create(username)
         self._password = InterpolatedString.create(password)
         self._config = config
