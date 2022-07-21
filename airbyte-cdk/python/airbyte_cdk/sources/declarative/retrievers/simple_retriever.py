@@ -202,7 +202,6 @@ class SimpleRetriever(Retriever, HttpStream):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-
         return self._get_request_options(stream_slice, next_page_token, self._requester.request_params, self._paginator.request_params)
 
     @property
