@@ -173,8 +173,9 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link
       // getFieldType}
-      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, INT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> JsonSchemaType.INTEGER;
-      case BIGINT, BIGINT_UNSIGNED -> JsonSchemaType.NUMBER_BIGINT;
+      TINYINT, TINYINT_UNSIGNED, SMALLINT, SMALLINT_UNSIGNED, INT, MEDIUMINT, MEDIUMINT_UNSIGNED -> JsonSchemaType.INTEGER;
+      // `int unsigned` needs to upcast to a bigint, since some values don't fit in a signed int32
+      case INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED -> JsonSchemaType.NUMBER_BIGINT;
       case FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED -> JsonSchemaType.NUMBER;
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case NULL -> JsonSchemaType.NULL;
