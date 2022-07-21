@@ -1,6 +1,7 @@
 import { Field, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
 import { LoadingButton } from "components";
 import { LabeledInput } from "components/LabeledInput";
@@ -11,10 +12,12 @@ import FeedbackBlock from "pages/SettingsPage/components/FeedbackBlock";
 import { Content, SettingsCard } from "pages/SettingsPage/pages/SettingsComponents";
 
 import { useChangeName } from "./hooks";
-import { useValidation } from "./validation";
+
+const nameSectionValidationSchema = yup.object({
+  name: yup.string().required("form.empty.error"),
+});
 
 export const NameSection: React.FC = () => {
-  const validate = useValidation();
   const { formatMessage } = useIntl();
   const user = useCurrentUser();
   const { changeName, successMessage, errorMessage } = useChangeName();
@@ -23,11 +26,13 @@ export const NameSection: React.FC = () => {
     <SettingsCard title={<FormattedMessage id="settings.account" />}>
       <Content>
         <Formik
+          validateOnBlur
+          validateOnChange
+          validationSchema={nameSectionValidationSchema}
           initialValues={{
             name: user.name,
           }}
           onSubmit={changeName}
-          validate={validate}
         >
           {({ isSubmitting, isValid }) => (
             <Form>
