@@ -29,26 +29,27 @@ class SourceYandexMetrica(AbstractSource):
                 return False, f'Fields from "visits" must contain "{", ".join(visits_required_fields)}"' 
 
             # Check connectivity
-            views_stream = Views(**{
-                'counter_id': config['counter_id'],
-                'params': {
-                    'fields': config['hits_fields'],
-                    'start_date': config['start_date'],
-                    'end_date': config['end_date']
-                },
-                'authenticator': TokenAuthenticator(token=config["auth_token"]),
-            })
-            sessions_stream = Sessions(**{
-                'counter_id': config['counter_id'],
-                'params': {
-                    'fields': config['visits_fields'],
-                    'start_date': config['start_date'],
-                    'end_date': config['end_date']
-                },
-                'authenticator': TokenAuthenticator(token=config["auth_token"]),
-            })
-            next(views_stream.read_records(sync_mode=SyncMode.full_refresh))
-            next(sessions_stream.read_records(sync_mode=SyncMode.full_refresh))
+            if config['check_connectivity']:
+                views_stream = Views(**{
+                    'counter_id': config['counter_id'],
+                    'params': {
+                        'fields': config['hits_fields'],
+                        'start_date': config['start_date'],
+                        'end_date': config['end_date']
+                    },
+                    'authenticator': TokenAuthenticator(token=config["auth_token"]),
+                })
+                sessions_stream = Sessions(**{
+                    'counter_id': config['counter_id'],
+                    'params': {
+                        'fields': config['visits_fields'],
+                        'start_date': config['start_date'],
+                        'end_date': config['end_date']
+                    },
+                    'authenticator': TokenAuthenticator(token=config["auth_token"]),
+                })
+                next(views_stream.read_records(sync_mode=SyncMode.full_refresh))
+                next(sessions_stream.read_records(sync_mode=SyncMode.full_refresh))
 
             return True, None
         except Exception as e:
