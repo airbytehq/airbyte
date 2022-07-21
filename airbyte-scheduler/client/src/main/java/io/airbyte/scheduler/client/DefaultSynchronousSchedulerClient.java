@@ -28,8 +28,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerClient {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSynchronousSchedulerClient.class);
 
   private final TemporalClient temporalClient;
   private final JobTracker jobTracker;
@@ -214,8 +218,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       case GET_SPEC -> jobErrorReporter.reportSpecJobFailure(
           ((ConnectorJobOutput) jobOutput).getFailureReason(),
           (JobGetSpecConfig) jobConfig);
-      default -> throw new IllegalArgumentException(
-          String.format("Jobs of type %s cannot be processed here.", configType));
+      default -> LOGGER.error("Tried to report job failure for type {}, but this job type is not supported", configType);
     }
   }
 
