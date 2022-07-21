@@ -325,6 +325,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             messageTracker.acceptFromSource(message);
             try {
               destination.accept(message);
+              String firstChild = message.getRecord().getData().fieldNames().next();
+              if (message.getRecord().getData().get(firstChild) != null)
+                LOGGER.info(firstChild + ": " + message.getRecord().getData().get(firstChild).asText());
             } catch (final Exception e) {
               throw new DestinationException("Destination process message delivery failed", e);
             }
