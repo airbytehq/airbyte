@@ -17,6 +17,15 @@
     "gl_account": {
       "type": ["null", "string"]
     },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "contract": {
+      "type": ["null", "string"]
+    },
+    "assignment": {
+      "type": ["null", "string"]
+    },
     "date": {
       "type": ["null", "string"]
     },
