@@ -24,7 +24,7 @@ class SourceRecharge(AbstractSource):
         auth = RechargeTokenAuthenticator(token=config["access_token"])
         stream = Shop(authenticator=auth)
         try:
-            result = list(stream.read_records(SyncMode.full_refresh))[0]
+            result = next(stream.read_records(SyncMode.full_refresh))
             if stream.name in result.keys():
                 return True, None
         except Exception as error:
