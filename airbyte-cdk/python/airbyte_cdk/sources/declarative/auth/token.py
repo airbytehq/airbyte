@@ -52,7 +52,5 @@ class BasicHttpAuth(AbstractHeaderAuthenticator):
     @property
     def token(self) -> str:
         auth_string = f"{self._username.eval(self._config)}:{self._password.eval(self._config)}".encode("utf8")
-        print(f"auth_string: {auth_string}")
         b64_encoded = base64.b64encode(auth_string).decode("utf8")
-        print(f"b64encoded: {b64_encoded}")
         return f"Basic {b64_encoded}"
