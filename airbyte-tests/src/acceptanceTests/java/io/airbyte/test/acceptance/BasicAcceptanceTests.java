@@ -1170,7 +1170,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -1204,7 +1204,7 @@ class BasicAcceptanceTests {
     });
     UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final UUID operationId = operation.getOperationId();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
