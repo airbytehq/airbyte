@@ -455,7 +455,7 @@ class ConfigRepositoryTest {
 
     assertTrue(
         result.stream().anyMatch(
-            streamDescriptor -> "stream1".equals(streamDescriptor.getName()) && "namespace".equals(streamDescriptor.getNamespace())));
+            streamDescriptor -> "stream1".equals(streamDescriptor.getName()) && "namespace1".equals(streamDescriptor.getNamespace())));
     assertTrue(
         result.stream().anyMatch(
             streamDescriptor -> "stream2".equals(streamDescriptor.getName()) && streamDescriptor.getNamespace() == null));
