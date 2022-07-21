@@ -338,7 +338,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 mode={mode}
               />
             </StyledSection>
-            {mode === "create" && (
+          </Card>
+          {mode === "create" && (
+            <Card>
               <StyledSection>
                 <OperationsSection
                   destDefinition={destDefinition}
@@ -346,8 +348,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   onEndEditTransformation={toggleEditingTransformation}
                 />
               </StyledSection>
-            )}
-          </Card>
+            </Card>
+          )}
           {mode === "edit" && (
             <EditControls
               isSubmitting={isSubmitting}
