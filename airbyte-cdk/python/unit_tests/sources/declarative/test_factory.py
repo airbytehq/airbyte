@@ -16,7 +16,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_h
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -149,9 +150,17 @@ selector:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
-  class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
-  next_page_token_template:
-    "next_page_url": "{{ decoded_response['_metadata']['next'] }}"
+    type: "LimitPaginator"
+    page_size: 10
+    limit_option:
+      inject_into: request_parameter
+      field_name: page_size
+    page_token_option:
+      inject_into: path
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ decoded_response._metadata.next }}"
+    url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
@@ -324,9 +333,16 @@ def test_config_with_defaults():
           file_path: "./source_sendgrid/schemas/{{name}}.yaml"
         retriever:
           paginator:
-            type: "NextPageUrlPaginator"
-            next_page_token_template:
-                next_page_token: "{{ decoded_response.metadata.next}}"
+            type: "LimitPaginator"
+            page_size: 10
+            limit_option:
+              inject_into: request_parameter
+              field_name: page_size
+            page_token_option:
+              inject_into: path
+            pagination_strategy:
+              type: "CursorPagination"
+              cursor_value: "{{ decoded_response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -353,11 +369,35 @@ def test_config_with_defaults():
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
     assert stream._retriever._record_selector._extractor._transform == ".result[]"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
-    assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
-    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
-        "next_page_token": "{{ decoded_response.metadata.next}}"
-    }
+    assert isinstance(stream._retriever._paginator, LimitPaginator)
+
+    assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._page_size == 10
+
+
+def test_create_limit_paginator():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ decoded_response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    paginator_config = config["paginator"]
+    paginator = factory.create_component(paginator_config, input_config)()
+    assert isinstance(paginator, LimitPaginator)
+    page_token_option = paginator._page_token_option
+    assert isinstance(page_token_option, RequestOption)
+    assert page_token_option.inject_into == RequestOptionType.path
 
 
 class TestCreateTransformations:

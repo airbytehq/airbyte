@@ -117,7 +117,7 @@ class WebBackendConnectionsHandlerTest {
   private ConfigRepository configRepository;
 
   @BeforeEach
-  public void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void setup() throws IOException, JsonValidationException, ConfigNotFoundException {
     connectionsHandler = mock(ConnectionsHandler.class);
     stateHandler = mock(StateHandler.class);
     operationsHandler = mock(OperationsHandler.class);
@@ -253,7 +253,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testGetWorkspaceState() throws IOException {
+  void testGetWorkspaceState() throws IOException {
     final UUID uuid = UUID.randomUUID();
     final WebBackendWorkspaceState request = new WebBackendWorkspaceState().workspaceId(uuid);
     when(configRepository.countSourcesForWorkspace(uuid)).thenReturn(5);
@@ -266,7 +266,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testGetWorkspaceStateEmpty() throws IOException {
+  void testGetWorkspaceStateEmpty() throws IOException {
     final UUID uuid = UUID.randomUUID();
     final WebBackendWorkspaceState request = new WebBackendWorkspaceState().workspaceId(uuid);
     when(configRepository.countSourcesForWorkspace(uuid)).thenReturn(0);
@@ -279,7 +279,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendListConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
@@ -296,7 +296,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendListAllConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendListAllConnectionsForWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody();
     workspaceIdRequestBody.setWorkspaceId(sourceRead.getWorkspaceId());
 
@@ -313,7 +313,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendSearchConnections() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionReadList connectionReadList = new ConnectionReadList();
     connectionReadList.setConnections(Collections.singletonList(connectionRead));
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
@@ -334,7 +334,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendGetConnection() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendGetConnection() throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
 
@@ -349,7 +349,7 @@ class WebBackendConnectionsHandlerTest {
     assertEquals(expected, WebBackendConnectionRead);
   }
 
-  public WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)
+  WebBackendConnectionRead testWebBackendGetConnection(final boolean withCatalogRefresh)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody();
     connectionIdRequestBody.setConnectionId(connectionRead.getConnectionId());
@@ -367,7 +367,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendGetConnectionWithDiscovery() throws ConfigNotFoundException, IOException, JsonValidationException {
+  void testWebBackendGetConnectionWithDiscovery() throws ConfigNotFoundException, IOException, JsonValidationException {
     when(connectionsHandler.getDiff(any(), any())).thenReturn(expectedWithNewSchema.getCatalogDiff());
     final WebBackendConnectionRead result = testWebBackendGetConnection(true);
     verify(schedulerHandler).discoverSchemaForSourceFromSourceId(any());
@@ -375,7 +375,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testWebBackendGetConnectionNoRefreshCatalog()
+  void testWebBackendGetConnectionNoRefreshCatalog()
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final WebBackendConnectionRead result = testWebBackendGetConnection(false);
     verify(schedulerHandler, never()).discoverSchemaForSourceFromSourceId(any());
@@ -383,7 +383,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testToConnectionCreate() throws IOException {
+  void testToConnectionCreate() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
 
@@ -431,7 +431,7 @@ class WebBackendConnectionsHandlerTest {
 
   // TODO: remove withRefreshedCatalog param from this test when param is removed from code
   @Test
-  public void testToConnectionUpdate() throws IOException {
+  void testToConnectionUpdate() throws IOException {
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
 
@@ -471,7 +471,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testForConnectionCreateCompleteness() {
+  void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
         Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "syncCatalog", "schedule",
             "status", "resourceRequirements", "sourceCatalogId");
@@ -492,7 +492,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testForConnectionUpdateCompleteness() {
+  void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
             "resourceRequirements", "name", "sourceCatalogId");
@@ -875,7 +875,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testUpdateConnectionWithSkipReset() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testUpdateConnectionWithSkipReset() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WebBackendConnectionUpdate updateBody = new WebBackendConnectionUpdate()
         .namespaceDefinition(expected.getNamespaceDefinition())
         .namespaceFormat(expected.getNamespaceFormat())
@@ -918,7 +918,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testUpdateSchemaWithDiscoveryFromEmpty() {
+  void testUpdateSchemaWithDiscoveryFromEmpty() {
     final AirbyteCatalog original = new AirbyteCatalog().streams(List.of());
     final AirbyteCatalog discovered = ConnectionHelpers.generateBasicApiCatalog();
     discovered.getStreams().get(0).getStream()
@@ -951,7 +951,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testUpdateSchemaWithDiscoveryResetStream() {
+  void testUpdateSchemaWithDiscoveryResetStream() {
     final AirbyteCatalog original = ConnectionHelpers.generateBasicApiCatalog();
     original.getStreams().get(0).getStream()
         .name("random-stream")
@@ -1001,7 +1001,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testUpdateSchemaWithDiscoveryMergeNewStream() {
+  void testUpdateSchemaWithDiscoveryMergeNewStream() {
     final AirbyteCatalog original = ConnectionHelpers.generateBasicApiCatalog();
     original.getStreams().get(0).getStream()
         .name("stream1")
@@ -1078,7 +1078,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testUpdateSchemaWithNamespacedStreams() {
+  void testUpdateSchemaWithNamespacedStreams() {
     final AirbyteCatalog original = ConnectionHelpers.generateBasicApiCatalog();
     final AirbyteStreamAndConfiguration stream1Config = original.getStreams().get(0);
     final AirbyteStream stream1 = stream1Config.getStream();
@@ -1126,7 +1126,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  public void testGetStreamsToReset() {
+  void testGetStreamsToReset() {
     final StreamTransform streamTransformAdd =
         new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM).streamDescriptor(new StreamDescriptor().name("added_stream"));
     final StreamTransform streamTransformRemove =
