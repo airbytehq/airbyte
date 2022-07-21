@@ -339,17 +339,6 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               />
             </StyledSection>
           </Card>
-          {mode === "create" && (
-            <Card>
-              <StyledSection>
-                <OperationsSection
-                  destDefinition={destDefinition}
-                  onStartEditTransformation={toggleEditingTransformation}
-                  onEndEditTransformation={toggleEditingTransformation}
-                />
-              </StyledSection>
-            </Card>
-          )}
           {mode === "edit" && (
             <EditControls
               isSubmitting={isSubmitting}
@@ -364,12 +353,25 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
             />
           )}
           {mode === "create" && (
-            <CreateControls
-              additionBottomControls={additionBottomControls}
-              isSubmitting={isSubmitting}
-              isValid={isValid && !editingTransformation}
-              errorMessage={errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null}
-            />
+            <>
+              <Card>
+                <StyledSection>
+                  <OperationsSection
+                    destDefinition={destDefinition}
+                    onStartEditTransformation={toggleEditingTransformation}
+                    onEndEditTransformation={toggleEditingTransformation}
+                  />
+                </StyledSection>
+              </Card>
+              <CreateControls
+                additionBottomControls={additionBottomControls}
+                isSubmitting={isSubmitting}
+                isValid={isValid && !editingTransformation}
+                errorMessage={
+                  errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
+                }
+              />
+            </>
           )}
         </FormContainer>
       )}
