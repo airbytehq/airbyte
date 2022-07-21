@@ -194,6 +194,9 @@ def test_datetime_stream_slicer():
         step: "10d"
         cursor_field: "created"
         lookback_window: "5d"
+        start_time_option:
+          inject_into: request_parameter
+          field_name: created[gte]
     """
 
     config = parser.parse(content)
@@ -210,6 +213,8 @@ def test_datetime_stream_slicer():
     assert stream_slicer._step == datetime.timedelta(days=10)
     assert stream_slicer._cursor_field._string == "created"
     assert stream_slicer._lookback_window._string == "5d"
+    assert stream_slicer._start_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream_slicer._start_time_option._field_name == "created[gte]"
 
 
 def test_full_config():
