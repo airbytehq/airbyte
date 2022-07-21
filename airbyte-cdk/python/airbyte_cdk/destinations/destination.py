@@ -84,7 +84,6 @@ class Destination(Connector, ABC):
         return parsed_args
 
     def run_cmd(self, parsed_args: argparse.Namespace) -> Iterable[AirbyteMessage]:
-        init_uncaught_exception_handler(logger)
 
         cmd = parsed_args.command
         if cmd not in self.VALID_CMDS:
@@ -106,6 +105,7 @@ class Destination(Connector, ABC):
             yield from self._run_write(config=config, configured_catalog_path=parsed_args.catalog, input_stream=wrapped_stdin)
 
     def run(self, args: List[str]):
+        init_uncaught_exception_handler(logger)
         parsed_args = self.parse_args(args)
         output_messages = self.run_cmd(parsed_args)
         for message in output_messages:

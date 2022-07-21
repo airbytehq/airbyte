@@ -137,12 +137,12 @@ class OrderedIterableMatcher(Iterable):
 
 
 class TestRun:
-    def test_run_cmd(self, mocker, destination: Destination):
+    def test_run_initializes_exception_handler(self, mocker, destination: Destination):
         mocker.patch.object(destination_module, "init_uncaught_exception_handler")
-        parsed_args = argparse.Namespace(command="dummy")
-        with pytest.raises(Exception):
-            destination.run_cmd(parsed_args)
-            destination_module.init_uncaught_exception_handler_mock.assert_called_once_with(destination_module.logger)
+        mocker.patch.object(destination, "parse_args")
+        mocker.patch.object(destination, "run_cmd")
+        destination.run(["dummy"])
+        destination_module.init_uncaught_exception_handler.assert_called_once_with(destination_module.logger)
 
     def test_run_spec(self, mocker, destination: Destination):
         args = {"command": "spec"}
