@@ -1,6 +1,5 @@
 {
   "type": "object",
-
   "properties": {
     "assigned_to": {
       "oneOf": [
@@ -27,7 +26,6 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
-
         "properties": {
           "type": {
             "type": ["null", "string"]
@@ -55,7 +53,6 @@
     },
     "author": {
       "type": ["null", "object"],
-
       "properties": {
         "id": {
           "type": ["null", "string"]

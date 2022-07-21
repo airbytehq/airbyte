@@ -42,7 +42,6 @@
             "oneOf": [
               {
                 "type": "object",
-
                 "properties": {
                   "id": {
                     "type": "string"
@@ -55,7 +54,6 @@
               },
               {
                 "type": "object",
-
                 "properties": {
                   "id": {
                     "type": "string"

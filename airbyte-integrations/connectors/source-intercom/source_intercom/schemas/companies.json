@@ -1,6 +1,5 @@
 {
   "type": "object",
-
   "properties": {
     "type": {
       "type": ["null", "string"]
@@ -95,7 +94,6 @@
     },
     "plan": {
       "type": ["null", "object"],
-
       "properties": {
         "id": {
           "type": ["null", "string"]

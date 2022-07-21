@@ -47,7 +47,6 @@
     },
     "properties": {
       "type": "array",
-
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,

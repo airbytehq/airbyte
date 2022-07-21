@@ -1,6 +1,5 @@
 {
   "type": "object",
-
   "properties": {
     "id": {
       "type": ["null", "string"]
