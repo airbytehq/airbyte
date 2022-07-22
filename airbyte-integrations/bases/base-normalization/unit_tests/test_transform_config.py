@@ -355,7 +355,7 @@ class TestTransformConfig:
             "username": "AIRBYTE_USER",
             "credentials": {
                 "private_key": "AIRBYTE_PRIVATE_KEY",
-                "passphrase": "AIRBYTE_PRIVATE_KEY_PASSWORD",
+                "private_key_password": "AIRBYTE_PRIVATE_KEY_PASSWORD1",
             },
         }
 
