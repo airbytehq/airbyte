@@ -50,14 +50,14 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRun
 
 
 @pytest.fixture(name="previous_connector_spec")
-def previous_connector_spec_fixture(request: BaseTest, previous_docker_runner: ConnectorRunner):
-    if previous_docker_runner is None:
+def previous_connector_spec_fixture(request: BaseTest, previous_connector_docker_runner: ConnectorRunner):
+    if previous_connector_docker_runner is None:
         logging.warning(
-            "\n We could not retrieve the previous connector spec as the connector runner for the previous connector version could not be instantiated."
+            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
         )
         return None
     if not request.instance.previous_spec_cache:
-        output = previous_docker_runner.call_spec()
+        output = previous_connector_docker_runner.call_spec()
         spec_messages = filter_output(output, Type.SPEC)
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         spec = spec_messages[0].spec
@@ -181,6 +181,7 @@ class TestSpec(BaseTest):
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
+    @pytest.mark.default_timeout(60)  # Pulling the previous connector image can take more than 10 sec.
     @pytest.mark.spec_backward_compatibility
     def test_backward_compatibility(self, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
         if previous_connector_spec is None:

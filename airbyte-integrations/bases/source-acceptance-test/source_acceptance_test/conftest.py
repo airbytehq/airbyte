@@ -126,21 +126,19 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
     return ConnectorRunner(image_tag, volume=tmp_path)
 
 
-@pytest.fixture(name="previous_docker_runner")
-def previous_docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
+@pytest.fixture(name="previous_connector_image_name")
+def previous_connector_image_name_fixture(image_tag, inputs) -> str:
+    """Fixture with previous connector version to use for backward compatibilty tests"""
+    return f"{image_tag.split(':')[0]}:{getattr(inputs, 'previous_connector_version')}"
 
-    current_version = image_tag.split(":")[-1]
-    if current_version != "dev":
-        # TODO alafanechere: implement capability of fetching previous version if current version is not dev
-        raise NotImplementedError(
-            "The previous_connector_spec can only load previous connector spec when the current connector version is dev"
-        )
-    previous_tag = image_tag.replace(":dev", ":latest")
+
+@pytest.fixture(name="previous_connector_docker_runner")
+def previous_connector_docker_runner_fixture(previous_connector_image_name, tmp_path) -> ConnectorRunner:
     try:
-        return ConnectorRunner(previous_tag, volume=tmp_path / "previous_connector")
-    except errors.NotFound:
+        return ConnectorRunner(previous_connector_image_name, volume=tmp_path / "previous_connector")
+    except (errors.NotFound, errors.ImageNotFound):
         logging.warning(
-            "\n We did not find a latest image for this connector. This probably means that the connector has not yet been published to our docker registry."
+            f"\n We did not find the {previous_connector_image_name} image for this connector. This probably means this version has not yet been published to our docker registry."
         )
         return None
 
