@@ -8,7 +8,14 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 
 class InterpolatedString:
+    """Wrapper around a raw string to be interpolated with the Jinja2 templating engine"""
+
     def __init__(self, string: str, default: Optional[str] = None, options=None):
+        """
+        :param string: string to evaluate
+        :param default: Default value to return if the evaluation returns an empty string
+        :param options: Interpolation parameters propagated by parent component
+        """
         self._string = string
         self._default = default or string
         self._interpolation = JinjaInterpolation()
