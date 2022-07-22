@@ -12,6 +12,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
@@ -75,10 +76,10 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -89,14 +90,14 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
         .findFirst();
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put("tcp-port", tcpPort.get())
-        .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", DB_NAME)
-        .put("ssl", false)
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, DB_NAME)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
@@ -136,13 +137,13 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.has("password") ? config.get("password").asText() : null,
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText())),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())),
         new ClickhouseTestSourceOperations());
   }
 
