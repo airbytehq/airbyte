@@ -167,6 +167,7 @@ public class JsonSchemas {
    *        the node from the root of the object passed at the root level invocation
    *
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
                                                  final List<FieldNameOrList> path,
                                                  final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {

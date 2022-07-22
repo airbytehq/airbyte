@@ -51,11 +51,11 @@ class JdbcSourceStressTest extends JdbcStressTest {
     final String schemaName = Strings.addRandomSuffix("db", "_", 10);;
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", schemaName)
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, schemaName)
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
         .build());
 
     final String initScriptName = "init_" + schemaName.concat(".sql");
@@ -103,14 +103,14 @@ class JdbcSourceStressTest extends JdbcStressTest {
     @Override
     public JsonNode toDatabaseConfig(final JsonNode config) {
       final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-          .put("username", config.get("username").asText())
-          .put("jdbc_url", String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-              config.get("host").asText(),
-              config.get("port").asInt(),
-              config.get("database").asText()));
+          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+          .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+              config.get(JdbcUtils.HOST_KEY).asText(),
+              config.get(JdbcUtils.PORT_KEY).asInt(),
+              config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-      if (config.has("password")) {
-        configBuilder.put("password", config.get("password").asText());
+      if (config.has(JdbcUtils.PASSWORD_KEY)) {
+        configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
       }
 
       return Jsons.jsonNode(configBuilder.build());

@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping, Union
+from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -26,7 +26,7 @@ class InterpolatedRequestInputProvider:
 
     def request_inputs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Union[Mapping, str]:
+    ) -> Mapping[str, Any]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         interpolated_value = self._interpolator.eval(self._config, **kwargs)
 

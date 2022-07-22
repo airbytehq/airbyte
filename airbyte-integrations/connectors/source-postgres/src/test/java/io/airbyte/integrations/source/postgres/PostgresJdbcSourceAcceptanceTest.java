@@ -72,13 +72,13 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME, SCHEMA_NAME2))
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -91,11 +91,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
-        jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
