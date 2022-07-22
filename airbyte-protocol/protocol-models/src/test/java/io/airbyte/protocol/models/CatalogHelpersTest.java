@@ -115,4 +115,27 @@ class CatalogHelpersTest {
     assertEquals(expectedDiff, actualDiff.stream().sorted(STREAM_TRANSFORM_COMPARATOR).toList());
   }
 
+  @Test
+  public void testConfiguredCatalogToCatalogOnlyIncremental() {
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withStream(
+                    new AirbyteStream()
+                        .withName("one")
+                ),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.FULL_REFRESH)
+                .withStream(
+                    new AirbyteStream()
+                        .withName("one")
+                )
+        ));
+
+    final AirbyteCatalog catalog = CatalogHelpers.configuredCatalogToCatalogOnlyIncremental(configuredCatalog);
+
+    assertEquals(1, catalog.getStreams().size());
+    assertEquals("one", catalog.getStreams().get(0).getName());
+  }
 }
