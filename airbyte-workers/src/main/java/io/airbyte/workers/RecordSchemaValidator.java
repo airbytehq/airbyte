@@ -72,7 +72,7 @@ public class RecordSchemaValidator {
           String.format("Record schema validation failed for %s", messageStream), e);
     }
 
-    if (messageStream == "pokemon") {
+    if ("pokemon".equals(messageStream)) {
       final Set<String> validationMessagesToDisplay = new HashSet<>();
       validationMessagesToDisplay.add("test validation error message");
 
