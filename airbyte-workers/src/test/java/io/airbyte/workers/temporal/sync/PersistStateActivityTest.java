@@ -99,7 +99,8 @@ class PersistStateActivityTest {
   void testPersistWithValidStateDuringMigration() throws IOException {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
-    final ConfiguredAirbyteStream stream3 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c")).withSyncMode(SyncMode.FULL_REFRESH);
+    final ConfiguredAirbyteStream stream3 =
+        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c")).withSyncMode(SyncMode.FULL_REFRESH);
 
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)

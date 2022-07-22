@@ -130,10 +130,10 @@ class CatalogHelpersTest {
                     new AirbyteStream()
                         .withName("one"))));
 
-    final AirbyteCatalog catalog = CatalogHelpers.configuredCatalogToCatalogOnlyIncremental(configuredCatalog);
+    final List<StreamDescriptor> streamDescriptors = CatalogHelpers.extractIncrementalStreamDescriptors(configuredCatalog);
 
-    assertEquals(1, catalog.getStreams().size());
-    assertEquals("one", catalog.getStreams().get(0).getName());
+    assertEquals(1, streamDescriptors.size());
+    assertEquals("one", streamDescriptors.get(0).getName());
   }
 
 }
