@@ -181,6 +181,7 @@ class TestSpec(BaseTest):
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
+    @pytest.mark.spec_backward_compatibility
     def test_backward_compatibility(self, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
         if previous_connector_spec is None:
             pytest.skip("The previous connector spec could not be retrieved.")
