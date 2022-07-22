@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
 
 
 class DatetimeStreamSlicer(StreamSlicer):
@@ -85,7 +85,7 @@ class DatetimeStreamSlicer(StreamSlicer):
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         """
         Update the cursor value to the max datetime between the last record, the start of the stream_slice, and the current cursor value.
         Update the cursor_end value with the stream_slice's end time.

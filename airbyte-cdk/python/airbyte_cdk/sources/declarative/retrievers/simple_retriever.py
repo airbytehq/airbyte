@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import StreamState
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -268,11 +269,11 @@ class SimpleRetriever(Retriever, HttpStream):
         # Warning: use self.state instead of the stream_state passed as argument!
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
-            self._stream_slicer.update_cursor(stream_slice, last_record=r)
+            self._stream_slicer.update_cursor(self.state, stream_slice, last_record=r)
             yield r
         else:
             last_record = self._last_records[-1] if self._last_records else None
-            self._stream_slicer.update_cursor(stream_slice, last_record=last_record)
+            self._stream_slicer.update_cursor(self.state, stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
@@ -294,6 +295,6 @@ class SimpleRetriever(Retriever, HttpStream):
         return self._stream_slicer.get_stream_state()
 
     @state.setter
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
         self._stream_slicer.update_cursor(value)
