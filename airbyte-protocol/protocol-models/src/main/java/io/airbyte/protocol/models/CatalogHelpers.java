@@ -115,6 +115,21 @@ public class CatalogHelpers {
   }
 
   /**
+   * Extracts {@link StreamDescriptor}s for each stream with an incremental {@link SyncMode} in a
+   * given {@link ConfiguredAirbyteCatalog}
+   *
+   * @param configuredCatalog catalog
+   * @return list of stream descriptors
+   */
+  public static List<StreamDescriptor> extractIncrementalStreamDescriptors(final ConfiguredAirbyteCatalog configuredCatalog) {
+    return configuredCatalog.getStreams()
+        .stream()
+        .filter(configuredStream -> configuredStream.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(configuredStream -> extractDescriptor(configuredStream.getStream()))
+        .toList();
+  }
+
+  /**
    * Extracts {@link StreamDescriptor}s for each stream in a given {@link AirbyteCatalog}
    *
    * @param catalog catalog
