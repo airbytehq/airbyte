@@ -248,7 +248,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.55
+  dockerImageTag: 0.2.56
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -327,7 +327,7 @@
 - name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.1.23
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
