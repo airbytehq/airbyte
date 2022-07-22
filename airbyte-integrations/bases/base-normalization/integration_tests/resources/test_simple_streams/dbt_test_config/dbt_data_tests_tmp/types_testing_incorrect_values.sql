@@ -8,15 +8,15 @@ select * from {{ ref('types_testing') }} where
   id = 1 and (
     cast(airbyte_integer as {{ dbt_utils.type_string() }}) != '9223372036854775807'
     or cast(nullable_airbyte_integer as {{ dbt_utils.type_string() }}) != '9223372036854775807'
-    or cast(big_integer as {{ dbt_utils.type_string() }}) != '123141241234124123141241234124123141241234124123141241234124123141241234124'
-    or cast(nullable_big_integer as {{ dbt_utils.type_string() }}) != '123141241234124123141241234124123141241234124123141241234124123141241234124'
+    or cast(big_integer as {{ dbt_utils.type_string() }}) != '12345678901234567890123456789012345678'
+    or cast(nullable_big_integer as {{ dbt_utils.type_string() }}) != '12345678901234567890123456789012345678'
   )
 ) or (
   id = 2 and (
     cast(airbyte_integer as {{ dbt_utils.type_string() }}) != '-9223372036854775808'
     or cast(nullable_airbyte_integer as {{ dbt_utils.type_string() }}) != '-9223372036854775808'
-    or cast(big_integer as {{ dbt_utils.type_string() }}) != '-123141241234124123141241234124123141241234124123141241234124123141241234124'
-    or cast(nullable_big_integer as {{ dbt_utils.type_string() }}) != '-123141241234124123141241234124123141241234124123141241234124123141241234124'
+    or cast(big_integer as {{ dbt_utils.type_string() }}) != '-12345678901234567890123456789012345678'
+    or cast(nullable_big_integer as {{ dbt_utils.type_string() }}) != '-12345678901234567890123456789012345678'
   )
 ) or (
   id = 3 and (

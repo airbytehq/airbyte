@@ -134,6 +134,10 @@ so this macro needs to be called very_large_integer.
     numeric
 {% endmacro %}
 
+{% macro snowflake__type_very_large_integer() %}
+    numeric
+{% endmacro %}
+
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
