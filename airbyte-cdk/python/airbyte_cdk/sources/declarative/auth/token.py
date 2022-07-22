@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.requests_native_auth.abtract_token import AbstractHeaderAuthenticator
 
 
-class ApiKeyAuth(AbstractHeaderAuthenticator):
+class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent
     """
@@ -34,7 +34,7 @@ class ApiKeyAuth(AbstractHeaderAuthenticator):
         return self._token.eval(self._config)
 
 
-class BearerAuth(AbstractHeaderAuthenticator):
+class BearerAuthenticator(AbstractHeaderAuthenticator):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
     `Authorization: Bearer <token>`
@@ -57,7 +57,7 @@ class BearerAuth(AbstractHeaderAuthenticator):
         return f"Bearer {self._token.eval(self._config)}"
 
 
-class BasicHttpAuth(AbstractHeaderAuthenticator):
+class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme

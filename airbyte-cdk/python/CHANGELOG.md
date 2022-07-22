@@ -1,6 +1,7 @@
 # Changelog
 
-## Unreleased
+## 0.1.66
+- Call init_uncaught_exception_handler from AirbyteEntrypoint.__init__ and Destination.run_cmd
 - Add the ability to remove & add records in YAML-based sources
 
 ## 0.1.65
