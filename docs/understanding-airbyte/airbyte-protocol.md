@@ -306,6 +306,7 @@ This section will document the meaning of each field in an `ConfiguredAirbyteStr
 ```yaml
   ConfiguredAirbyteStream:
     type: object
+    additionalProperties: true
     required:
       - stream
       - sync_mode
@@ -606,6 +607,7 @@ In the `GLOBAL` case, the state for the whole Source is encapsulated in the mess
       - LEGACY
   AirbyteStreamState:
     type: object
+    additionalProperties: true
     required:
       - stream_descriptor
     properties:
