@@ -113,4 +113,51 @@ class TestJsonlParser(AbstractTestParser):
                 },
                 "fails": [],
             },
+            "extra_columns_in_master_schema": {
+                # tests extra columns in master schema
+                "AbstractFileParser": JsonlParser(
+                    format={"filetype": "jsonl"},
+                    master_schema={
+                        "EXTRA_COLUMN_1": "boolean",
+                        "EXTRA_COLUMN_2": "number",
+                        "id": "integer",
+                        "name": "string",
+                        "valid": "boolean",
+                        "code": "integer",
+                        "degrees": "number",
+                        "birthday": "string",
+                        "last_seen": "string",
+                    },
+                ),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_1.jsonl"),
+                "num_records": 8,
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {},
+                "fails": [],
+            },
+            "missing_columns_in_master_schema": {
+                # tests missing columns in master schema
+                "AbstractFileParser": JsonlParser(format={"filetype": "jsonl"}, master_schema={"id": "integer", "name": "string"}),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "jsonl/test_file_1.jsonl"),
+                "num_records": 8,
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {},
+                "fails": [],
+            },
         }

@@ -29,7 +29,7 @@ LOGGER = AirbyteLogger()
 
 
 class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
-    region = "ap-southeast-2"
+    region = "eu-west-3"
 
     @property
     def stream_class(self) -> type:
