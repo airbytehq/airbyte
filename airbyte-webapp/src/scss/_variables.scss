@@ -1,4 +1,5 @@
 $transition: 0.3s;
+$transition-out: all $transition ease-out;
 
 $border-thin: 1px;
 $border-thick: 2px;
@@ -13,6 +14,7 @@ $spacing-lg: 15px;
 $spacing-xl: 20px;
 $spacing-2xl: 40px;
 $spacing-page-bottom: 150px;
+$main-page-content-min-width: 960px;
 
 $width-size-menu: 93px;
 

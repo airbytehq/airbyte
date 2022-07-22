@@ -170,7 +170,7 @@ def get_docker_label_to_connector_directory(base_directory: str, connector_modul
         # parse the dockerfile label if the dockerfile exists
         dockerfile_path = pathlib.Path(base_directory, connector, "Dockerfile")
         if os.path.isfile(dockerfile_path):
-            print(f"Reading f{dockerfile_path}")
+            print(f"Reading {dockerfile_path}")
             with open(dockerfile_path, "r") as file:
                 dockerfile_contents = file.read()
                 label = parse_dockerfile_repository_label(dockerfile_contents)

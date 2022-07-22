@@ -709,7 +709,7 @@ public class DefaultJobPersistence implements JobPersistence {
       final String JOB_HISTORY_PURGE_SQL = MoreResources.readResource("job_history_purge.sql");
       // interval '?' days cannot use a ? bind, so we're using %d instead.
       final String sql = String.format(JOB_HISTORY_PURGE_SQL, (JOB_HISTORY_MINIMUM_AGE_IN_DAYS - 1));
-      final Integer rows = jobDatabase.query(ctx -> ctx.execute(sql,
+      jobDatabase.query(ctx -> ctx.execute(sql,
           asOfDate.format(DateTimeFormatter.ofPattern("YYYY-MM-dd")),
           JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS,
           JOB_HISTORY_MINIMUM_RECENCY));
@@ -877,6 +877,7 @@ public class DefaultJobPersistence implements JobPersistence {
   /**
    * Read @param jsonSchema and @returns a list of properties (converted as Field objects)
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static List<Field<?>> getFields(final JsonNode jsonSchema) {
     final List<Field<?>> result = new ArrayList<>();
     final JsonNode properties = jsonSchema.get("properties");

@@ -46,7 +46,7 @@ class BasicHttpAuthenticator(TokenAuthenticator):
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
     """
 
-    def __init__(self, username: str, password: str, auth_method: str = "Basic", auth_header: str = "Authorization"):
+    def __init__(self, username: str, password: str = "", auth_method: str = "Basic", auth_header: str = "Authorization"):
         auth_string = f"{username}:{password}".encode("utf8")
         b64_encoded = base64.b64encode(auth_string).decode("utf8")
         super().__init__(b64_encoded, auth_method, auth_header)

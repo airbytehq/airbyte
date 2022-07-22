@@ -43,14 +43,9 @@ public class JsonSchemas {
   private static final String ARRAY_TYPE = "array";
   private static final String OBJECT_TYPE = "object";
   private static final String STRING_TYPE = "string";
-  private static final String NUMBER_TYPE = "number";
-  private static final String BOOLEAN_TYPE = "boolean";
-  private static final String NULL_TYPE = "null";
   private static final String ONE_OF_TYPE = "oneOf";
   private static final String ALL_OF_TYPE = "allOf";
   private static final String ANY_OF_TYPE = "anyOf";
-
-  private static final String ARRAY_JSON_PATH = "[]";
 
   private static final Set<String> COMPOSITE_KEYWORDS = Set.of(ONE_OF_TYPE, ALL_OF_TYPE, ANY_OF_TYPE);
 
@@ -172,6 +167,7 @@ public class JsonSchemas {
    *        the node from the root of the object passed at the root level invocation
    *
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   private static void traverseJsonSchemaInternal(final JsonNode jsonSchemaNode,
                                                  final List<FieldNameOrList> path,
                                                  final BiConsumer<JsonNode, List<FieldNameOrList>> consumer) {

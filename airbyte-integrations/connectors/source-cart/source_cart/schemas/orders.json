@@ -68,7 +68,7 @@
       "type": ["string", "null"]
     },
     "is_ppc": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "ppc_keyword": {
       "type": ["string", "null"]
@@ -86,7 +86,7 @@
       "type": ["number", "null"]
     },
     "is_payment_order_only": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "selected_shipping_provider_service": {
       "type": ["string", "null"]
@@ -98,13 +98,13 @@
       "type": ["integer", "null"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "is_gift": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "gift_message": {
       "type": ["string", "null"]
@@ -143,7 +143,7 @@
       "type": ["string", "null"]
     },
     "expires": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "from_quote_id": {
       "type": ["integer", "null"]
@@ -152,7 +152,7 @@
       "type": ["string", "null"]
     },
     "reward_points_credited": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "channel": {
       "type": ["string", "null"]
@@ -167,7 +167,7 @@
       "type": ["number", "null"]
     },
     "manufacturer_invoice_paid": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "entered_by": {
       "type": ["string", "null"]

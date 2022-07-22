@@ -64,7 +64,8 @@ import org.testcontainers.utility.ComparableVersion;
  * When running this test consecutively locally, it might be necessary to run `docker volume prune`
  * to remove hanging volumes.
  */
-public class MigrationAcceptanceTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class MigrationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MigrationAcceptanceTest.class);
 
@@ -78,7 +79,7 @@ public class MigrationAcceptanceTest {
   private static final String TEST_LOCAL_DOCKER_MOUNT = "/tmp/airbyte_local_migration_test";
 
   @Test
-  public void testAutomaticMigration() throws Exception {
+  void testAutomaticMigration() throws Exception {
     // run version 17 (the oldest version of airbyte that supports auto migration)
     final File version17DockerComposeFile = MoreResources.readResourceAsFile("docker-compose-migration-test-0-17-0-alpha.yaml");
     final Properties version17EnvVariables = MoreProperties
