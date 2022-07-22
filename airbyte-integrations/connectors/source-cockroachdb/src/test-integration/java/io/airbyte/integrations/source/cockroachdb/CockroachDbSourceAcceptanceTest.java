@@ -15,7 +15,6 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -26,10 +25,8 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.Objects;
-
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
-import org.jooq.meta.jaxb.Jdbc;
 import org.testcontainers.containers.CockroachContainer;
 
 public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
@@ -47,11 +44,11 @@ public class CockroachDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(container.getContainerInfo()
-                .getNetworkSettings()
-                .getNetworks()
-                .entrySet().stream()
-                .findFirst()
-                .get().getValue().getIpAddress()))
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet().stream()
+            .findFirst()
+            .get().getValue().getIpAddress()))
         // by some reason it return not a port number as exposed and mentioned in logs
         .put(JdbcUtils.PORT_KEY, container.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
