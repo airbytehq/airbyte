@@ -123,7 +123,8 @@ public class MongodbDestination extends BaseConnector implements Destination {
   @VisibleForTesting
   String getConnectionString(final JsonNode config) {
     final var credentials = config.get(AUTH_TYPE).get(AUTHORIZATION).asText().equals(LOGIN_AND_PASSWORD)
-        ? String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(), config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText())
+        ? String.format("%s:%s@", config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText())
         : StringUtils.EMPTY;
 
     // backward compatibility check
@@ -148,12 +149,14 @@ public class MongodbDestination extends BaseConnector implements Destination {
         // if there is no TLS present in spec, TLS should be enabled by default for strict encryption
         final var tls = !instanceConfig.has(JdbcUtils.TLS_KEY) || instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean();
         connectionStrBuilder.append(
-            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(), instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
+            String.format(MONGODB_SERVER_URL, credentials, instanceConfig.get(JdbcUtils.HOST_KEY).asText(),
+                instanceConfig.get(JdbcUtils.PORT_KEY).asText(),
                 config.get(JdbcUtils.DATABASE_KEY).asText(), tls));
       }
       case REPLICA -> {
         connectionStrBuilder.append(
-            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(), config.get(JdbcUtils.DATABASE_KEY).asText()));
+            String.format(MONGODB_REPLICA_URL, credentials, instanceConfig.get(SERVER_ADDRESSES).asText(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()));
         if (instanceConfig.has(REPLICA_SET)) {
           connectionStrBuilder.append(String.format("&replicaSet=%s", instanceConfig.get(REPLICA_SET).asText()));
         }

@@ -1,10 +1,8 @@
 {
   "type": "object",
-  "additionalProperties": false,
   "properties": {
     "assignee": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "id": {
           "type": ["null", "string"]
@@ -22,7 +20,6 @@
     },
     "source": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -44,7 +41,6 @@
         },
         "author": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "id": {
               "type": ["null", "string"]
@@ -77,7 +73,6 @@
       "type": ["null", "object"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": false,
         "properties": {
           "type": {
             "type": ["null", "string"]
@@ -90,13 +85,11 @@
     },
     "teammates": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "admins": {
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
             "properties": {
               "id": {
                 "type": ["null", "string"]
@@ -114,7 +107,6 @@
     },
     "first_contact_reply": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -132,7 +124,6 @@
     },
     "conversation_message": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "attachments": {
           "anyOf": [
@@ -140,7 +131,6 @@
               "type": "array",
               "items": {
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
                   "type": {
                     "type": ["null", "string"]
@@ -173,7 +163,6 @@
         },
         "author": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "id": {
               "type": ["null", "string"]
@@ -211,14 +200,12 @@
     },
     "conversation_rating": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "created_at": {
           "type": ["null", "integer"]
         },
         "customer": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "id": {
               "type": ["null", "string"]
@@ -236,7 +223,6 @@
         },
         "teammate": {
           "type": ["null", "object"],
-          "additionalProperties": false,
           "properties": {
             "id": {
               "type": ["null", "integer"]
@@ -253,7 +239,6 @@
     },
     "customer_first_reply": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "created_at": {
           "type": ["null", "integer"]
@@ -272,7 +257,6 @@
           "type": "array",
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
             "properties": {
               "id": {
                 "type": ["null", "string"]
@@ -383,14 +367,12 @@
       "type": ["null", "object"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": false,
         "properties": {
           "applied_at": {
             "type": ["null", "integer"]
           },
           "applied_by": {
             "type": ["null", "object"],
-            "additionalProperties": false,
             "properties": {
               "id": {
                 "type": ["null", "string"]
@@ -420,7 +402,6 @@
     },
     "user": {
       "type": ["null", "object"],
-      "additionalProperties": false,
       "properties": {
         "id": {
           "type": ["null", "string"]
