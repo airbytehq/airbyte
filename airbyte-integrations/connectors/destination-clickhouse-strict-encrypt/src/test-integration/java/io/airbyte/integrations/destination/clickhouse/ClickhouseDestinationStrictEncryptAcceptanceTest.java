@@ -14,6 +14,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -48,12 +49,12 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   private static JdbcDatabase getDatabase(final JsonNode config) {
     final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
         ClickhouseDestination.HTTPS_PROTOCOL,
-        config.get("host").asText(),
-        config.get("port").asInt(),
-        config.get("database").asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
     return new DefaultJdbcDatabase(DataSourceFactory.create(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         ClickhouseDestination.DRIVER_CLASS,
         jdbcStr));
   }
@@ -100,10 +101,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -112,19 +113,19 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(db))
-        .put("port", HTTPS_PORT)
-        .put("database", DB_NAME)
-        .put("username", USER_NAME)
-        .put("password", "")
-        .put("schema", DB_NAME)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
+        .put(JdbcUtils.USERNAME_KEY, USER_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, "")
+        .put(JdbcUtils.SCHEMA_KEY, DB_NAME)
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password").put("ssl", false);
+    ((ObjectNode) clone).put("password", "wrong password").put(JdbcUtils.SSL_KEY, false);
     return clone;
   }
 

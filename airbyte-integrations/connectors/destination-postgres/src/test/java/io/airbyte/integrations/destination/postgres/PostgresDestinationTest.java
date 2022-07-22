@@ -53,28 +53,28 @@ public class PostgresDestinationTest {
 
   private JsonNode buildConfigNoJdbcParameters() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db"));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db"));
   }
 
   private JsonNode buildConfigWithExtraJdbcParameters(final String extraParam) {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "jdbc_url_params", extraParam));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.JDBC_URL_PARAMS_KEY, extraParam));
   }
 
   private JsonNode buildConfigNoExtraJdbcParametersWithoutSsl() {
     return Jsons.jsonNode(ImmutableMap.of(
-        "host", "localhost",
-        "port", 1337,
-        "username", "user",
-        "database", "db",
-        "ssl", false));
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1337,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db",
+        JdbcUtils.SSL_KEY, false));
   }
 
   @BeforeAll
@@ -96,20 +96,20 @@ public class PostgresDestinationTest {
   @Test
   void testJdbcUrlAndConfigNoExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigNoJdbcParameters());
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlEmptyExtraParams() {
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(""));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test
   void testJdbcUrlExtraParams() {
     final String extraParam = "key1=value1&key2=value2&key3=value3";
     final JsonNode jdbcConfig = new PostgresDestination().toJdbcConfig(buildConfigWithExtraJdbcParameters(extraParam));
-    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get("jdbc_url").asText());
+    assertEquals(EXPECTED_JDBC_URL, jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
   }
 
   @Test

@@ -64,7 +64,7 @@ class DefaultErrorHandler(ErrorHandler):
     `
         error_handler:
           response_filters:
-            - predicate: "{{ 'code' in decoded_response }}"
+            - predicate: "{{ 'code' in response }}"
               action: IGNORE
     `
 

@@ -70,7 +70,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -79,7 +79,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
@@ -113,14 +113,14 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
 
   private static void populateDatabaseTestData() throws Exception {
     final DataSource dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
             ClickHouseSource.HTTP_PROTOCOL,
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()));
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

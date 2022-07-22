@@ -46,7 +46,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
       "socket_timeout=3000000");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ClickhouseDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public ClickhouseDestination() {
@@ -59,9 +59,9 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
         isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
-        config.get("host").asText(),
-        config.get("port").asInt(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (isSsl) {
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
@@ -70,11 +70,11 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
-    if (config.has(PASSWORD)) {
-      configBuilder.put(PASSWORD, config.get(PASSWORD).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -86,7 +86,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
-      final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
+      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {

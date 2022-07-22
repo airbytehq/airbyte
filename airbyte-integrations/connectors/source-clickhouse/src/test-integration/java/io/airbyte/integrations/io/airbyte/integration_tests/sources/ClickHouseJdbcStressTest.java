@@ -9,6 +9,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcStressTest;
@@ -43,12 +44,12 @@ public class ClickHouseJdbcStressTest extends JdbcStressTest {
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(db))
-        .put("port", HostPortResolver.resolvePort(db))
-        .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
+        .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     super.setup();

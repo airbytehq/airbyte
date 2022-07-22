@@ -17,6 +17,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
@@ -95,29 +96,29 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", HostPortResolver.resolveHost(container))
-        .put("port", HTTPS_PORT)
-        .put("username", DEFAULT_USER_NAME)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
+        .put(JdbcUtils.USERNAME_KEY, DEFAULT_USER_NAME)
         .put("database", DEFAULT_DB_NAME)
-        .put("password", "")
+        .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
 
     db = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            configWithoutDbName.get("username").asText(),
-            configWithoutDbName.get("password").asText(),
+            configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickHouseSource.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
                 ClickHouseSource.HTTPS_PROTOCOL,
-                configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asInt(),
+                configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+                configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt(),
                 configWithoutDbName.get("database").asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     db.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
     super.setup();
   }
