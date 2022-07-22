@@ -101,8 +101,6 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
-        <exclude name="AvoidCatchingNPE"/>
-        <exclude name="AvoidCatchingThrowable"/>
         <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidFieldNameMatchingTypeName"/>
         <exclude name="AvoidInstanceofChecksInCatchClause"/>
