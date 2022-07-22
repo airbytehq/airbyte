@@ -34,13 +34,4 @@ class MetricClientFactoryTest {
     });
   }
 
-  @Test
-  @DisplayName("Should throw error if MetricClientFactory create a metric client multiple times;")
-  void testMetricClientFactoryCreateMultipleTimesThrows() {
-    Assertions.assertThrows(RuntimeException.class, () -> {
-      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
-      MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
-    });
-  }
-
 }
