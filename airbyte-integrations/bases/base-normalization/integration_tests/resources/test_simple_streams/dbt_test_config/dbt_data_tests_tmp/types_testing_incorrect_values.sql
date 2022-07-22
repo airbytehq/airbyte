@@ -1,7 +1,7 @@
 -- Note that we cast columns to string to avoid any weird numeric equality nonsense.
 -- For example, in Postgres, this query returns `true`, even though the two numbers are different: (9223372036854775807 is the max value of a signed 64-bit int)
 --   select (9223372036854775807 :: double precision) = (9223372036854775806 :: double precision)
--- Because a double has only 15 decimals of precision, so in the first query, both values are rounded off to 9.223372036854776e+18
+-- Because a double has only 15 decimals of precision, so both values are rounded off to 9.223372036854776e+18
 
 select * from {{ ref('types_testing') }} where
 (
