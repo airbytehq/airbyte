@@ -261,11 +261,11 @@
               "airbyte_type": "integer"
             },
             "big_integer": {
-              "type": "number",
+              "type": "string",
               "airbyte_type": "big_integer"
             },
             "nullable_big_integer": {
-              "type": ["null", "number"],
+              "type": ["null", "string"],
               "airbyte_type": "big_integer"
             }
           }

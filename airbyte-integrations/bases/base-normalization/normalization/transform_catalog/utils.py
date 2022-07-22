@@ -59,14 +59,17 @@ def is_number(property_type) -> bool:
     return property_type == "number" or "number" in property_type
 
 
-def is_integer(definition: dict) -> bool:
-    # By default, {type: integer} will be treated as an int64 (see is_long)
-    # Only {type: number, airbyte_type: integer} is treated as an int32
-    return "airbyte_type" in definition and definition["airbyte_type"] == "integer"
+def is_big_integer(definition: dict) -> bool:
+    return "airbyte_type" in definition and definition["airbyte_type"] == "big_integer"
 
 
 def is_long(property_type, definition: dict) -> bool:
-    if "airbyte_type" in definition and definition["airbyte_type"] == "big_integer":
+    # Check specifically for {type: number, airbyte_type: integer}
+    if (
+        (property_type == "number" or "number" in property_type)
+        and "airbyte_type" in definition
+        and definition["airbyte_type"] == "integer"
+    ):
         return True
     if is_string(property_type) or is_number(property_type):
         # Handle union type, give priority to wider scope types
@@ -75,7 +78,7 @@ def is_long(property_type, definition: dict) -> bool:
 
 
 def is_boolean(property_type, definition: dict) -> bool:
-    if is_string(property_type) or is_number(property_type) or is_integer(definition) or is_long(property_type, definition):
+    if is_string(property_type) or is_number(property_type) or is_big_integer(definition) or is_long(property_type, definition):
         # Handle union type, give priority to wider scope types
         return False
     return property_type == "boolean" or "boolean" in property_type
@@ -100,7 +103,7 @@ def is_simple_property(definition: dict) -> bool:
         property_type = definition["type"]
     return (
         is_string(property_type)
-        or is_integer(definition)
+        or is_big_integer(definition)
         or is_long(property_type, definition)
         or is_number(property_type)
         or is_boolean(property_type, definition)

@@ -120,6 +120,20 @@
 {% endmacro %}
 
 
+{# very_large_integer --------------------------------------- --#}
+{#
+Most databases don't have a true unbounded numeric datatype, so we use a really big numeric field.
+Our type terminology unfortunately collides with DB terminology (i.e. "big_integer" means different things in different contexts)
+so this macro needs to be called very_large_integer.
+#}
+{%- macro type_very_large_integer() -%}
+  {{ adapter.dispatch('type_very_large_integer')() }}
+{%- endmacro -%}
+
+{% macro default__type_very_large_integer() %}
+    numeric
+{% endmacro %}
+
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time
