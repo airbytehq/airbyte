@@ -11,7 +11,7 @@ from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception impor
 
 
 class YamlParser(ConfigParser):
-    ref_tag = "$ref"
+    ref_tag = "ref"
 
     def parse(self, config_str: str) -> Mapping[str, Any]:
         """
