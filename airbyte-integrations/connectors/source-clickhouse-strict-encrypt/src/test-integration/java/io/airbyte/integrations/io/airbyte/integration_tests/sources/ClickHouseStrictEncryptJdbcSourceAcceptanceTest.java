@@ -96,7 +96,7 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveIpAddress(container))
         .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
         .put(JdbcUtils.USERNAME_KEY, DEFAULT_USER_NAME)
         .put("database", DEFAULT_DB_NAME)
