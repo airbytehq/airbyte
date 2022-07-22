@@ -48,7 +48,9 @@ public final class PostgresCdcCatalogHelper {
   }
 
   /**
-   * This method is used for CDC sync in order to overwrite sync modes for cursor fields cause cdc use another cursor logic
+   * This method is used for CDC sync in order to overwrite sync modes for cursor fields cause cdc use
+   * another cursor logic
+   *
    * @param stream - airbyte stream
    * @return will return list of sync modes
    */
