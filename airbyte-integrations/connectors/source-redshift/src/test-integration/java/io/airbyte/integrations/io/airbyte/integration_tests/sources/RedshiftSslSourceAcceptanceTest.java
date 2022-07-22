@@ -17,13 +17,13 @@ public class RedshiftSslSourceAcceptanceTest extends RedshiftSourceAcceptanceTes
   protected JdbcDatabase createDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText()),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText()),
             JdbcUtils.parseJdbcParameters("ssl=true&" +
                 "sslfactory=com.amazon.redshift.ssl.NonValidatingFactory")));
   }

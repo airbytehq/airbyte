@@ -1,8 +1,10 @@
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { H6 } from "components";
+import { InfoBox } from "components/InfoBox";
 import StepsMenu from "components/StepsMenu";
 
 import { ConnectionStatus, DestinationRead, SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -10,6 +12,7 @@ import useRouter from "hooks/useRouter";
 
 import { ConnectionSettingsRoutes } from "../ConnectionSettingsRoutes";
 import ConnectionName from "./ConnectionName";
+import styles from "./ConnectionPageTitle.module.scss";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 interface ConnectionPageTitleProps {
@@ -74,6 +77,11 @@ const ConnectionPageTitle: React.FC<ConnectionPageTitleProps> = ({
 
   return (
     <Title>
+      {connection.status === ConnectionStatus.deprecated && (
+        <InfoBox className={styles.connectionDeleted} icon={faTrash}>
+          <FormattedMessage id="connection.connectionDeletedView" />
+        </InfoBox>
+      )}
       <H6 center bold highlighted>
         <FormattedMessage id="connection.title" />
       </H6>

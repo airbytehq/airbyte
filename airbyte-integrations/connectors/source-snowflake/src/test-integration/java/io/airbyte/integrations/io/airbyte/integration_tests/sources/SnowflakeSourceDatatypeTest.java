@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
@@ -46,15 +47,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
 
     dslContext = DSLContextFactory.create(
-        config.get("credentials").get("username").asText(),
-        config.get("credentials").get("password").asText(),
+        config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),
         SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText()),
         SQLDialect.DEFAULT,
         Map.of(
             "role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()));
+            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     database = getDatabase();
 
