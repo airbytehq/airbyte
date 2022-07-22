@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.slf4j.Logger;
@@ -113,7 +114,13 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(
+            db.getContainerInfo()
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet().stream()
+            .findFirst()
+            .get().getValue().getIpAddress()))
         .put(JdbcUtils.PORT_KEY, HTTPS_PORT)
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, USER_NAME)

@@ -121,7 +121,7 @@ public class ClickhouseDestinationTest {
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 ClickhouseDestination.HTTP_PROTOCOL,
                 config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
