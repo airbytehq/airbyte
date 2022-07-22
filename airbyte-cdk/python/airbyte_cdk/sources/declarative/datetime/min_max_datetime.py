@@ -28,11 +28,11 @@ class MinMaxDatetime:
         :param min_datetime: InterpolatedString or string representing the min datetime
         :param max_datetime: InterpolatedString or string representing the max datetime
         """
-        self._datetime_interpolator = InterpolatedString(datetime)
+        self._datetime_interpolator = self._to_interpolated_string(datetime)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString(min_datetime) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString(max_datetime) if max_datetime else None
+        self._min_datetime_interpolator = self._to_interpolated_string(min_datetime) if min_datetime else None
+        self._max_datetime_interpolator = self._to_interpolated_string(max_datetime) if max_datetime else None
 
     def get_datetime(self, config, **kwargs) -> dt.datetime:
         """
@@ -69,3 +69,9 @@ class MinMaxDatetime:
     def datetime_format(self, value: str):
         """Setter for the datetime format"""
         self._datetime_format = value
+
+    def _to_interpolated_string(self, s: Union[InterpolatedString, str]):
+        if isinstance(s, str):
+            return InterpolatedString(s)
+        else:
+            return s

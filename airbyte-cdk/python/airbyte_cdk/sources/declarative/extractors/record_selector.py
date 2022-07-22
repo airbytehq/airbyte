@@ -18,6 +18,10 @@ class RecordSelector(HttpSelector):
     """
 
     def __init__(self, extractor: JelloExtractor, record_filter: RecordFilter = None):
+        """
+        :param extractor: The record extractor responsible for extracting records from a response
+        :param record_filter: the record filter responsible for filtering extracted records
+        """
         self._extractor = extractor
         self._record_filter = record_filter
 

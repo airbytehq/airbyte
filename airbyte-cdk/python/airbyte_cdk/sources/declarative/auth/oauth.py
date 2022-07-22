@@ -35,7 +35,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         :param client_id: Client id
         :param client_secret: Client secret
         :param refresh_token: Token used to refresh the access token
-        :param config: The user-provided configuration as specified by the source's spec.
+        :param config: The user-provided configuration as specified by the source's spec
         :param scopes: Scopes to request
         :param token_expiry_date: Access token expiration date #FIXME make sure this is actually for the refresh token and not for the access token
         :param access_token_name: Field to extract access token from in the response
@@ -43,17 +43,17 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         :param refresh_request_body: Request body to send in the refresh request
         """
         self.config = config
-        self.token_refresh_endpoint = InterpolatedString(token_refresh_endpoint)
-        self.client_secret = InterpolatedString(client_secret)
-        self.client_id = InterpolatedString(client_id)
-        self.refresh_token = InterpolatedString(refresh_token)
+        self.token_refresh_endpoint = self._to_interpolated_string(token_refresh_endpoint)
+        self.client_secret = self._to_interpolated_string(client_secret)
+        self.client_id = self._to_interpolated_string(client_id)
+        self.refresh_token = self._to_interpolated_string(refresh_token)
         self.scopes = scopes
-        self.access_token_name = InterpolatedString(access_token_name)
-        self.expires_in_name = InterpolatedString(expires_in_name)
+        self.access_token_name = self._to_interpolated_string(access_token_name)
+        self.expires_in_name = self._to_interpolated_string(expires_in_name)
         self.refresh_request_body = InterpolatedMapping(refresh_request_body or {})
 
         self.token_expiry_date = (
-            pendulum.parse(InterpolatedString(token_expiry_date).eval(self.config))
+            pendulum.parse(self._to_interpolated_string(token_expiry_date).eval(self.config))
             if token_expiry_date
             else pendulum.now().subtract(days=1)
         )
@@ -147,3 +147,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
     @access_token.setter
     def access_token(self, value: str):
         self._access_token = value
+
+    def _to_interpolated_string(self, s: Union[InterpolatedString, str]):
+        if isinstance(s, str):
+            return InterpolatedString(s)
+        else:
+            return s
