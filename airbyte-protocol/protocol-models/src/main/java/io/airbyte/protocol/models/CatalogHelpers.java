@@ -130,7 +130,8 @@ public class CatalogHelpers {
   }
 
   /**
-   * Extracts {@link StreamDescriptor}s for each stream with an incremental {@link SyncMode} in a given {@link ConfiguredAirbyteCatalog}
+   * Extracts {@link StreamDescriptor}s for each stream with an incremental {@link SyncMode} in a
+   * given {@link ConfiguredAirbyteCatalog}
    *
    * @param configuredCatalog catalog
    * @return list of stream descriptors
