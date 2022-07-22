@@ -160,6 +160,7 @@ The following are fields that still exist in the specification but are slated to
     type: object
     required:
       - connectionSpecification
+    additionalProperties: true
     properties:
       # General Properties (Common to all connectors)
       documentationUrl:
@@ -442,7 +443,7 @@ This table breaks down attributes of these state types.
 
 # Messages
 ## Common
-For forwards compatibility all messages should allow for unknown properties (in JSONSchema parlance that is `additionalProperties: true`, which is the default value).
+For forwards compatibility all messages should allow for unknown properties (in JSONSchema parlance that is `additionalProperties: true`).
 
 Messages are structs emitted by actors.
 
@@ -458,6 +459,7 @@ This is the new pattern for referring to a stream. As structs are updated, they 
 ```yaml
   StreamDescriptor:
     type: object
+    additionalProperties: true
     required:
       - name
     properties:
@@ -475,6 +477,7 @@ The envelope has a required `type` which described the type of the wrapped messa
 ```yaml
 AirbyteMessage:
   type: object
+  additionalProperties: true
   required:
     - type
   properties:
@@ -522,6 +525,7 @@ The `emitted_at` field contains when the source extracted the record. It is a re
 ```yaml
   AirbyteRecordMessage:
     type: object
+    additionalProperties: true
     required:
       - stream
       - data
@@ -550,6 +554,7 @@ The state message is a wrapper around the state that a Source emits. The state t
 ```yaml
   AirbyteStateMessage:
     type: object
+    additionalProperties: true
     required:
       - data
     properties:
@@ -573,6 +578,7 @@ In the `GLOBAL` case, the state for the whole Source is encapsulated in the mess
 ```yaml
   AirbyteStateMessage:
     type: object
+    additionalProperties: true
     properties:
       state_type:
         "$ref": "#/definitions/AirbyteStateType"
@@ -609,6 +615,7 @@ In the `GLOBAL` case, the state for the whole Source is encapsulated in the mess
         "$ref": "#/definitions/AirbyteStateBlob"
   AirbyteGlobalState:
     type: object
+    additionalProperties: true
     required:
       - stream_states
     properties:
@@ -627,6 +634,7 @@ This message reports whether an Actor was able to connect to its underlying data
   AirbyteConnectionStatus:
     description: Airbyte connection status
     type: object
+    additionalProperties: true
     required:
       - status
     properties:
@@ -653,6 +661,7 @@ The Airbyte implementation of the protocol does attempt to parse any data emitte
 ```yaml
   AirbyteLogMessage:
     type: object
+    additionalProperties: true
     required:
       - level
       - message
@@ -678,6 +687,7 @@ The trace message allows an Actor to emit metadata about the runtime of the Acto
 ```yaml
   AirbyteTraceMessage:
     type: object
+    additionalProperties: true
     required:
       - type
       - emitted_at
@@ -696,6 +706,7 @@ The trace message allows an Actor to emit metadata about the runtime of the Acto
         "$ref": "#/definitions/AirbyteErrorTraceMessage"
   AirbyteErrorTraceMessage:
     type: object
+    additionalProperties: true
     required:
       - message
     properties:
