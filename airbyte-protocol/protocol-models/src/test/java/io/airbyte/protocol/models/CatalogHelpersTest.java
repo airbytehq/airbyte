@@ -116,7 +116,7 @@ class CatalogHelpersTest {
   }
 
   @Test
-  void testConfiguredCatalogToCatalogOnlyIncremental() {
+  void testExtractIncrementalStreamDescriptors() {
     final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(
             new ConfiguredAirbyteStream()
