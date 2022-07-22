@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -167,13 +169,7 @@ public class IntegrationRunner {
     final Scanner input = new Scanner(System.in, StandardCharsets.UTF_8).useDelimiter("[\r\n]+");
     consumer.start();
     while (input.hasNext()) {
-      final String inputString = input.next();
-      final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
-      if (messageOptional.isPresent()) {
-        consumer.accept(messageOptional.get());
-      } else {
-        LOGGER.error("Received invalid message: " + inputString);
-      }
+      consumeMessage(consumer, input.next());
     }
   }
 
@@ -245,6 +241,31 @@ public class IntegrationRunner {
     }
   }
 
+  /**
+   * Consumes an {@link AirbyteMessage} for processing.
+   *
+   * If the provided JSON string is invalid AND represents a {@link AirbyteMessage.Type#STATE}
+   * message, processing is halted. Otherwise, the invalid message is logged and execution continues.
+   *
+   * @param consumer An {@link AirbyteMessageConsumer} that can handle the provided message.
+   * @param inputString JSON representation of an {@link AirbyteMessage}.
+   * @throws Exception if an invalid state message is provided or the consumer is unable to accept the
+   *         provided message.
+   */
+  @VisibleForTesting
+  static void consumeMessage(final AirbyteMessageConsumer consumer, final String inputString) throws Exception {
+    final Optional<AirbyteMessage> messageOptional = Jsons.tryDeserialize(inputString, AirbyteMessage.class);
+    if (messageOptional.isPresent()) {
+      consumer.accept(messageOptional.get());
+    } else {
+      if (isStateMessage(inputString)) {
+        throw new IllegalStateException("Invalid state message: " + inputString);
+      } else {
+        LOGGER.error("Received invalid message: " + inputString);
+      }
+    }
+  }
+
   private static String dumpThread(final Thread thread) {
     return String.format("%s (%s)\n Thread stacktrace: %s", thread.getName(), thread.getState(),
         Strings.join(List.of(thread.getStackTrace()), "\n        at "));
@@ -278,6 +299,43 @@ public class IntegrationRunner {
 
     final String[] tokens = connectorImage.split(":");
     return tokens[tokens.length - 1];
+  }
+
+  /**
+   * Tests whether the provided JSON string represents a state message.
+   *
+   * @param input a JSON string that represents an {@link AirbyteMessage}.
+   * @return {@code true} if the message is a state message, {@code false} otherwise.
+   */
+  private static boolean isStateMessage(final String input) {
+    final Optional<AirbyteTypeMessage> deserialized = Jsons.tryDeserialize(input, AirbyteTypeMessage.class);
+    if (deserialized.isPresent()) {
+      return deserialized.get().getType() == Type.STATE;
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Custom class that can be used to parse a JSON message to determine the type of the represented
+   * {@link AirbyteMessage}.
+   */
+  private static class AirbyteTypeMessage {
+
+    @JsonProperty("type")
+    @JsonPropertyDescription("Message type")
+    private AirbyteMessage.Type type;
+
+    @JsonProperty("type")
+    public AirbyteMessage.Type getType() {
+      return type;
+    }
+
+    @JsonProperty("type")
+    public void setType(final AirbyteMessage.Type type) {
+      this.type = type;
+    }
+
   }
 
 }
