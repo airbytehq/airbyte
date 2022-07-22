@@ -710,6 +710,7 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(METRIC_CLIENT, "");
   }
 
+  @Override
   public String getOtelCollectorEndpoint() {
     return getEnvOrDefault(OTEL_COLLECTOR_ENDPOINT, "");
   }

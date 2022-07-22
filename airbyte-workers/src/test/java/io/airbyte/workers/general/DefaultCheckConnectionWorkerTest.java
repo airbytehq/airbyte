@@ -42,7 +42,8 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DefaultCheckConnectionWorkerTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class DefaultCheckConnectionWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
@@ -57,7 +58,7 @@ public class DefaultCheckConnectionWorkerTest {
   private AirbyteStreamFactory traceMessageStreamFactory;
 
   @BeforeEach
-  public void setup() throws IOException, WorkerException {
+  void setup() throws IOException, WorkerException {
     workerConfigs = WorkerConfigs.buildCheckWorkerConfigs(new EnvConfigs());
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
@@ -85,12 +86,12 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testEnums() {
+  void testEnums() {
     Enums.isCompatible(AirbyteConnectionStatus.Status.class, Status.class);
   }
 
   @Test
-  public void testSuccessfulConnection() throws WorkerException {
+  void testSuccessfulConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, successStreamFactory);
     final ConnectorJobOutput output = worker.run(input, jobRoot);
 
@@ -103,7 +104,7 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testFailedConnection() throws WorkerException {
+  void testFailedConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
     final ConnectorJobOutput output = worker.run(input, jobRoot);
 
@@ -116,7 +117,7 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFail() {
+  void testProcessFail() {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
@@ -124,7 +125,7 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testProcessFailWithTraceMessage() throws WorkerException {
+  void testProcessFailWithTraceMessage() throws WorkerException {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, traceMessageStreamFactory);
@@ -138,7 +139,7 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testExceptionThrownInRun() throws WorkerException {
+  void testExceptionThrownInRun() throws WorkerException {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
@@ -147,7 +148,7 @@ public class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  public void testCancel() throws WorkerException {
+  void testCancel() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
 
