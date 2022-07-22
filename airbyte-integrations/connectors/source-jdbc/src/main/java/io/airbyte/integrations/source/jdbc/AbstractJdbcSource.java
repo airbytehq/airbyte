@@ -278,6 +278,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
                   sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
                   quotedCursorField));
+              // if the connector emits intermediate states, the incremental query must be sorted by the cursor field
               if (getStateEmissionFrequency() > 0) {
                 sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
               }
