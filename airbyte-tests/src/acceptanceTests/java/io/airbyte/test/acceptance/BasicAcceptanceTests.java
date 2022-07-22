@@ -182,7 +182,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(-2)
   void testGetDestinationSpec() throws ApiException {
-    final UUID destinationDefinitionId = testHarness.getDestinationDefId();
+    final UUID destinationDefinitionId = testHarness.getPostgresDestinationDefinitionId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(
             new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
@@ -212,7 +212,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(1)
   void testCreateDestination() throws ApiException {
-    final UUID destinationDefId = testHarness.getDestinationDefId();
+    final UUID destinationDefId = testHarness.getPostgresDestinationDefinitionId();
     final JsonNode destinationConfig = testHarness.getDestinationDbConfig();
     final String name = "AccTestDestinationDb-" + UUID.randomUUID();
 
@@ -231,7 +231,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(2)
   void testDestinationCheckConnection() throws ApiException {
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
 
     final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
         .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
@@ -317,7 +317,7 @@ class BasicAcceptanceTests {
   void testCreateConnection() throws ApiException {
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final String name = "test-connection-" + UUID.randomUUID();
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
@@ -353,7 +353,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -376,7 +376,7 @@ class BasicAcceptanceTests {
   void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -412,7 +412,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -434,7 +434,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -454,7 +454,7 @@ class BasicAcceptanceTests {
   void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
@@ -499,7 +499,7 @@ class BasicAcceptanceTests {
     LOGGER.info("Starting testIncrementalSync()");
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
@@ -575,7 +575,7 @@ class BasicAcceptanceTests {
   void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
@@ -640,7 +640,7 @@ class BasicAcceptanceTests {
     // is running after the update method is called.
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
@@ -683,7 +683,7 @@ class BasicAcceptanceTests {
             .put("message_interval", 100)
             .build()));
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
@@ -723,7 +723,7 @@ class BasicAcceptanceTests {
     // underlying temporal workflow.
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
@@ -759,7 +759,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -790,7 +790,7 @@ class BasicAcceptanceTests {
     final SourceRead source = testHarness.createPostgresSource();
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -879,7 +879,7 @@ class BasicAcceptanceTests {
     final SourceRead source = testHarness.createPostgresSource();
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -953,7 +953,7 @@ class BasicAcceptanceTests {
 
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
@@ -1079,7 +1079,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -1171,7 +1171,7 @@ class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -1205,7 +1205,7 @@ class BasicAcceptanceTests {
     });
     UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final UUID operationId = operation.getOperationId();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
