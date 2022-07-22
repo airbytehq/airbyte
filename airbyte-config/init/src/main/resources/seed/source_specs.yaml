@@ -547,7 +547,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.10"
+- dockerImage: "airbyte/source-amplitude:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/amplitude"
     connectionSpecification:
@@ -558,7 +558,6 @@
       - "api_key"
       - "secret_key"
       - "start_date"
-      additionalProperties: false
       properties:
         api_key:
           type: "string"
@@ -1825,7 +1824,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.55"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.56"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2939,7 +2938,7 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.21"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.23"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
     connectionSpecification:
@@ -3222,14 +3221,13 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-search-console:0.1.12"
+- dockerImage: "airbyte/source-google-search-console:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/google-search-console"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Search Console Spec"
       type: "object"
-      additionalProperties: false
       required:
       - "site_urls"
       - "start_date"
@@ -3934,7 +3932,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-intercom:0.1.23"
+- dockerImage: "airbyte/source-intercom:0.1.24"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/intercom"
     connectionSpecification:
@@ -4600,7 +4598,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-linkedin-ads:0.1.8"
+- dockerImage: "airbyte/source-linkedin-ads:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/linkedin-ads"
     connectionSpecification:
@@ -5397,7 +5395,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-mixpanel:0.1.17"
+- dockerImage: "airbyte/source-mixpanel:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mixpanel"
     connectionSpecification:
@@ -5406,7 +5404,6 @@
       type: "object"
       required:
       - "api_secret"
-      additionalProperties: true
       properties:
         api_secret:
           order: 0
@@ -5934,7 +5931,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.5"
+- dockerImage: "airbyte/source-notion:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -5943,7 +5940,6 @@
       type: "object"
       required:
       - "start_date"
-      additionalProperties: true
       properties:
         start_date:
           title: "Start Date"
@@ -5955,6 +5951,7 @@
           type: "string"
         credentials:
           title: "Authenticate using"
+          description: "Pick an authentication method."
           type: "object"
           order: 1
           oneOf:
@@ -5965,7 +5962,6 @@
             - "client_id"
             - "client_secret"
             - "access_token"
-            additionalProperties: false
             properties:
               auth_type:
                 type: "string"
@@ -5991,7 +5987,6 @@
             required:
             - "auth_type"
             - "token"
-            additionalProperties: false
             properties:
               auth_type:
                 type: "string"
@@ -7047,7 +7042,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.35"
+- dockerImage: "airbyte/source-postgres:0.4.36"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7325,6 +7320,17 @@
                   \ more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#publications-replication\"\
                   >publications and replication identities</a>."
                 order: 3
+              initial_waiting_seconds:
+                type: "integer"
+                title: "Initial Waiting Time in Seconds (Advanced)"
+                description: "The amount of time the connector will wait when it launches\
+                  \ to figure out whether there is new data to sync or not. Default\
+                  \ to 5 minutes. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\"\
+                  >initial waiting time</a>."
+                default: 300
+                order: 4
+                min: 30
+                max: 1200
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -7568,7 +7574,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-recharge:0.1.5"
+- dockerImage: "airbyte/source-recharge:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/recharge"
     connectionSpecification:
@@ -8705,7 +8711,7 @@
           type: "object"
           additionalProperties: false
           properties: {}
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.5"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -8716,7 +8722,6 @@
       - "client_id"
       - "client_secret"
       - "refresh_token"
-      additionalProperties: false
       properties:
         client_id:
           title: "Client ID"
@@ -9179,7 +9184,7 @@
               type: "string"
               path_in_connector_config:
               - "client_secret"
-- dockerImage: "airbyte/source-stripe:0.1.33"
+- dockerImage: "airbyte/source-stripe:0.1.34"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/stripe"
     connectionSpecification:
@@ -9190,7 +9195,6 @@
       - "client_secret"
       - "account_id"
       - "start_date"
-      additionalProperties: false
       properties:
         account_id:
           type: "string"
@@ -10231,7 +10235,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.12"
+- dockerImage: "airbyte/source-zendesk-support:0.2.13"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:

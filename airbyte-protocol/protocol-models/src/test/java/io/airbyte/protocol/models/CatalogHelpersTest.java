@@ -82,7 +82,7 @@ class CatalogHelpersTest {
     final JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     final Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
     final List<String> expectedFieldNames =
-        List.of("CAD", "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文");
+        List.of("CAD", "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文", "someArray", "items", "oldName");
 
     // sort so that the diff is easier to read.
     assertEquals(expectedFieldNames.stream().sorted().toList(), actualFieldNames.stream().sorted().toList());
@@ -109,7 +109,17 @@ class CatalogHelpersTest {
             FieldTransform.createRemoveFieldTransform(List.of("HKD"), schema1.get("properties").get("HKD")),
             FieldTransform.createUpdateFieldTransform(List.of("CAD"), new UpdateFieldSchemaTransform(
                 schema1.get("properties").get("CAD"),
-                schema2.get("properties").get("CAD")))))))
+                schema2.get("properties").get("CAD"))),
+            FieldTransform.createUpdateFieldTransform(List.of("someArray"), new UpdateFieldSchemaTransform(
+                schema1.get("properties").get("someArray"),
+                schema2.get("properties").get("someArray"))),
+            FieldTransform.createUpdateFieldTransform(List.of("someArray", "items"), new UpdateFieldSchemaTransform(
+                schema1.get("properties").get("someArray").get("items"),
+                schema2.get("properties").get("someArray").get("items"))),
+            FieldTransform.createRemoveFieldTransform(List.of("someArray", "items", "oldName"),
+                schema1.get("properties").get("someArray").get("items").get("properties").get("oldName")),
+            FieldTransform.createAddFieldTransform(List.of("someArray", "items", "newName"),
+                schema2.get("properties").get("someArray").get("items").get("properties").get("newName"))))))
         .sorted(STREAM_TRANSFORM_COMPARATOR)
         .toList();
     assertEquals(expectedDiff, actualDiff.stream().sorted(STREAM_TRANSFORM_COMPARATOR).toList());

@@ -74,6 +74,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
   private PostgreSQLContainer<?> container;
 
   protected String dbName;
@@ -123,6 +124,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
         .put("plugin", getPluginName())
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -397,7 +399,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   // TODO (Subodh): This should be a generic test
   @Test
-  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global state for this test
+  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global
+            // state for this test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
