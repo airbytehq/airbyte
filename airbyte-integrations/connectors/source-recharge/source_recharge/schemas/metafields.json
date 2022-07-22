@@ -19,7 +19,14 @@
       "type": ["null", "string"]
     },
     "owner_id": {
-      "type": ["null", "integer", "string"]
+      "oneOf": [
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "owner_resource": {
       "type": ["null", "string"]
@@ -29,7 +36,14 @@
       "format": "date-time"
     },
     "value": {
-      "type": ["null", "string", "number", "integer"]
+      "oneOf": [
+        {
+          "type": ["null", "number"]
+        },
+        {
+          "type": ["null", "string"]
+        }
+      ]
     },
     "value_type": {
       "type": ["null", "string"]
