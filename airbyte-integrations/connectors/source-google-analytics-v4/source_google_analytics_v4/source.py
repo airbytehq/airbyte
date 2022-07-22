@@ -149,7 +149,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             self.logger.info(f"{response.json()['error']['message']}")
             self._raise_on_http_errors = False
 
-        elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()['error']['message']:
+        elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
             rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
             self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
             self._raise_on_http_errors = False
