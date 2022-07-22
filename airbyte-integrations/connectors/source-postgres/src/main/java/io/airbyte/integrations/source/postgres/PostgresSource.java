@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
@@ -18,7 +16,6 @@ import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -73,6 +70,7 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
 
   public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String DATABASE_KEY = "database";
@@ -82,6 +80,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String PORT_KEY = "port";
   public static final String SCHEMAS_KEY = "schemas";
   public static final String USERNAME_KEY = "username";
+
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -94,7 +93,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   PostgresSource() {
-
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.featureFlags = new EnvVariableFeatureFlags();
   }
@@ -127,7 +125,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
           additionalParameters.add("sslmode=disable");
         } else {
-          var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
+          final var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
               .entrySet()
               .stream()
               .map(e -> e.getKey() + "=" + e.getValue())
@@ -414,6 +412,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       return AirbyteStateType.LEGACY;
     }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+  }
+
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {

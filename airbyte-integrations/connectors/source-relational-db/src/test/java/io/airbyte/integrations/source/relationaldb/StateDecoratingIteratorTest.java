@@ -72,7 +72,8 @@ class StateDecoratingIteratorTest {
         NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
-        JsonSchemaPrimitive.STRING);
+        JsonSchemaPrimitive.STRING,
+        0);
 
     assertEquals(RECORD_MESSAGE1, iterator.next());
     assertEquals(RECORD_MESSAGE2, iterator.next());
@@ -90,7 +91,8 @@ class StateDecoratingIteratorTest {
         NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         "xyz",
-        JsonSchemaPrimitive.STRING);
+        JsonSchemaPrimitive.STRING,
+        0);
 
     assertEquals(RECORD_MESSAGE1, iterator.next());
     assertEquals(RECORD_MESSAGE2, iterator.next());
@@ -112,7 +114,8 @@ class StateDecoratingIteratorTest {
         NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
-        JsonSchemaPrimitive.STRING);
+        JsonSchemaPrimitive.STRING,
+        0);
 
     assertEquals(recordMessage, iterator.next());
     // null because no records with a cursor field were replicated for the stream.
@@ -130,7 +133,8 @@ class StateDecoratingIteratorTest {
         NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
-        JsonSchemaPrimitive.STRING);
+        JsonSchemaPrimitive.STRING,
+        0);
 
     assertEquals(stateMessage, iterator.next().getState());
     assertFalse(iterator.hasNext());
@@ -147,7 +151,8 @@ class StateDecoratingIteratorTest {
         NAME_NAMESPACE_PAIR,
         UUID_FIELD_NAME,
         null,
-        JsonSchemaPrimitive.STRING);
+        JsonSchemaPrimitive.STRING,
+        0);
 
     assertEquals(RECORD_MESSAGE3, iterator.next());
     assertEquals(stateMessage, iterator.next().getState());

@@ -247,7 +247,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
           pair,
           cursorField,
           cursorOptional.orElse(null),
-          cursorType),
+          cursorType,
+          getStateEmissionFrequency()),
           airbyteMessageIterator);
     } else if (airbyteStream.getSyncMode() == SyncMode.FULL_REFRESH) {
       iterator = getFullRefreshStream(database, streamName, namespace, selectedDatabaseFields, table, emittedAt);
@@ -490,8 +491,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         final String tableName);
 
   /**
-   * Read incremental data from a table. Incremental read should returns only records where cursor
-   * column value is bigger than cursor.
+   * Read incremental data from a table. Incremental read should return only records where cursor
+   * column value is bigger than cursor. Note that if the connector needs to emit intermediate
+   * state (i.e. {@link AbstractDbSource#getStateEmissionFrequency} > 0), the incremental query
+   * must be sorted by the cursor field.
    *
    * @return iterator with read data
    */
@@ -502,6 +505,15 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                                                                         String cursorField,
                                                                         DataType cursorFieldType,
                                                                         String cursorValue);
+
+  /**
+   * When larger than 0, the incremental iterator will emit intermediate state for every N records.
+   * Please note that if intermediate state emission is enabled, the incremental query must be
+   * ordered by the cursor field.
+   */
+  protected int getStateEmissionFrequency() {
+    return 0;
+  }
 
   private Database createDatabaseInternal(final JsonNode sourceConfig) throws Exception {
     final Database database = createDatabase(sourceConfig);

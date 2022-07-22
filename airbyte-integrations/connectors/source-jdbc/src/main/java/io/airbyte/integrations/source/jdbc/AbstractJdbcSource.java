@@ -274,15 +274,15 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
               final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorField);
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ? ORDER BY %s ASC",
+              final StringBuilder sql = new StringBuilder(String.format("SELECT %s FROM %s WHERE %s > ?",
                   sourceOperations.enquoteIdentifierList(connection, columnNames),
-                  sourceOperations
-                      .getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  quotedCursorField,
-                  quotedCursorField
-              );
+                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
+                  quotedCursorField));
+              if (getStateEmissionFrequency() > 0) {
+                sql.append(String.format(" ORDER BY %s ASC", quotedCursorField));
+              }
 
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
+              final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
               sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
