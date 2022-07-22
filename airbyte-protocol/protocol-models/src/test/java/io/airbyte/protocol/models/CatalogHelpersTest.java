@@ -126,4 +126,25 @@ class CatalogHelpersTest {
     assertEquals(expectedDiff, actualDiff.stream().sorted(STREAM_TRANSFORM_COMPARATOR).toList());
   }
 
+  @Test
+  void testExtractIncrementalStreamDescriptors() {
+    final ConfiguredAirbyteCatalog configuredCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.INCREMENTAL)
+                .withStream(
+                    new AirbyteStream()
+                        .withName("one")),
+            new ConfiguredAirbyteStream()
+                .withSyncMode(SyncMode.FULL_REFRESH)
+                .withStream(
+                    new AirbyteStream()
+                        .withName("one"))));
+
+    final List<StreamDescriptor> streamDescriptors = CatalogHelpers.extractIncrementalStreamDescriptors(configuredCatalog);
+
+    assertEquals(1, streamDescriptors.size());
+    assertEquals("one", streamDescriptors.get(0).getName());
+  }
+
 }
