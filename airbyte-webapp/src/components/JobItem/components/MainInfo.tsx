@@ -4,16 +4,14 @@ import React from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 import styled from "styled-components";
 
-import { LoadingButton, StatusIcon } from "components";
+import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
 
-import { AttemptRead, JobStatus } from "core/request/AirbyteClient";
+import { AttemptRead } from "core/request/AirbyteClient";
 import { SynchronousJobReadWithStatus } from "core/request/LogsRequestError";
-import useLoadingState from "hooks/useLoadingState";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
-import { useCancelJob } from "services/job/JobService";
 
-import { getJobId, getJobStatus } from "../JobItem";
+import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 
 const MainView = styled(Row)<{
@@ -42,12 +40,6 @@ const AttemptCount = styled.div`
   font-size: 12px;
   line-height: 15px;
   color: ${({ theme }) => theme.dangerColor};
-`;
-
-const CancelButton = styled(LoadingButton)`
-  margin-right: 10px;
-  padding: 3px 7px;
-  z-index: 1;
 `;
 
 const InfoCell = styled(Cell)`
@@ -106,19 +98,6 @@ const MainInfo: React.FC<MainInfoProps> = ({
   shortInfo,
   isPartialSuccess,
 }) => {
-  const { isLoading, showFeedback, startAction } = useLoadingState();
-  const cancelJob = useCancelJob();
-
-  const onCancelJob = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    const jobId = Number(getJobId(job));
-    return startAction({ action: () => cancelJob(jobId) });
-  };
-
-  const jobStatus = getJobStatus(job);
-  const isNotCompleted =
-    jobStatus === JobStatus.pending || jobStatus === JobStatus.running || jobStatus === JobStatus.incomplete;
-
   const jobStatusLabel = isPartialSuccess ? (
     <FormattedMessage id="sources.partialSuccess" />
   ) : (
@@ -154,17 +133,6 @@ const MainInfo: React.FC<MainInfoProps> = ({
         </Title>
       </InfoCell>
       <InfoCell>
-        {!shortInfo && isNotCompleted && (
-          <CancelButton
-            secondary
-            disabled={isLoading}
-            isLoading={isLoading}
-            wasActive={showFeedback}
-            onClick={onCancelJob}
-          >
-            <FormattedMessage id={showFeedback ? "form.canceling" : "form.cancel"} />
-          </CancelButton>
-        )}
         <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
           {(parts) => <span>{`${parts[0].value}:${parts[2].value}${parts[4].value} `}</span>}
         </FormattedTimeParts>
