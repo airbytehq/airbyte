@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -19,17 +19,29 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
 
     def __init__(
         self,
-        token_refresh_endpoint: str,
-        client_id: str,
-        client_secret: str,
-        refresh_token: str,
+        token_refresh_endpoint: Union[InterpolatedString, str],
+        client_id: Union[InterpolatedString, str],
+        client_secret: Union[InterpolatedString, str],
+        refresh_token: Union[InterpolatedString, str],
         config: Mapping[str, Any],
-        scopes: List[str] = None,
-        token_expiry_date: str = None,
-        access_token_name: str = "access_token",
-        expires_in_name: str = "expires_in",
-        refresh_request_body: Mapping[str, Any] = None,
+        scopes: Optional[List[str]] = None,
+        token_expiry_date: Optional[Union[InterpolatedString, str]] = None,
+        access_token_name: Union[InterpolatedString, str] = InterpolatedString("access_token"),
+        expires_in_name: Union[InterpolatedString, str] = InterpolatedString("expires_in"),
+        refresh_request_body: Optional[Mapping[str, Any]] = None,
     ):
+        """
+        :param token_refresh_endpoint: Endpoint to refresh the access token
+        :param client_id: Client id
+        :param client_secret: Client secret
+        :param refresh_token: Token used to refresh the access token
+        :param config: The user-provided configuration as specified by the source's spec.
+        :param scopes: Scopes to request
+        :param token_expiry_date: Access token expiration date #FIXME make sure this is actually for the refresh token and not for the access token
+        :param access_token_name: Field to extract access token from in the response
+        :param expires_in_name:Field to extract expires_in from in the response
+        :param refresh_request_body: Request body to send in the refresh request
+        """
         self.config = config
         self.token_refresh_endpoint = InterpolatedString(token_refresh_endpoint)
         self.client_secret = InterpolatedString(client_secret)
@@ -38,7 +50,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         self.scopes = scopes
         self.access_token_name = InterpolatedString(access_token_name)
         self.expires_in_name = InterpolatedString(expires_in_name)
-        self.refresh_request_body = InterpolatedMapping(refresh_request_body)
+        self.refresh_request_body = InterpolatedMapping(refresh_request_body or {})
 
         self.token_expiry_date = (
             pendulum.parse(InterpolatedString(token_expiry_date).eval(self.config))
