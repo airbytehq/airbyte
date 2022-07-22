@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.JsonSchemas;
-import io.airbyte.commons.json.JsonSchemas.FieldNameOrList;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.util.MoreLists;
@@ -32,6 +31,8 @@ import org.apache.commons.lang3.tuple.Pair;
  * Helper class for Catalog and Stream related operations. Generally only used in tests.
  */
 public class CatalogHelpers {
+
+  private static final String ITEMS_KEY = "items";
 
   public static AirbyteCatalog createAirbyteCatalog(final String streamName, final Field... fields) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
@@ -222,7 +223,7 @@ public class CatalogHelpers {
     final Set<List<String>> fieldNamesThatAreOneOfs = new HashSet<>();
 
     return JsonSchemas.traverseJsonSchemaWithCollector(jsonSchema, (node, basicPath) -> {
-      final List<String> fieldName = basicPath.stream().filter(fieldOrList -> !fieldOrList.isList()).map(FieldNameOrList::getFieldName).toList();
+      final List<String> fieldName = basicPath.stream().map(fieldOrList -> fieldOrList.isList() ? ITEMS_KEY : fieldOrList.getFieldName()).toList();
       return Pair.of(fieldName, node);
     })
         .stream()
