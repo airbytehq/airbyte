@@ -39,7 +39,7 @@ def connector_spec_dict_fixture(actual_connector_spec):
 
 
 @pytest.fixture(name="actual_connector_spec")
-def actual_connector_spec_fixture(request: BaseTest, docker_runner):
+def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRunner):
     if not request.instance.spec_cache:
         output = docker_runner.call_spec()
         spec_messages = filter_output(output, Type.SPEC)
@@ -49,10 +49,27 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner):
     return request.spec_cache
 
 
+@pytest.fixture(name="previous_connector_spec")
+def previous_connector_spec_fixture(request: BaseTest, previous_docker_runner: ConnectorRunner):
+    if previous_docker_runner is None:
+        logging.warning(
+            "\n We could not retrieve the previous connector spec as the connector runner for the previous connector version could not be instantiated."
+        )
+        return None
+    if not request.instance.previous_spec_cache:
+        output = previous_docker_runner.call_spec()
+        spec_messages = filter_output(output, Type.SPEC)
+        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+        spec = spec_messages[0].spec
+        request.previous_spec_cache = spec
+    return request.previous_spec_cache
+
+
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
+    previous_spec_cache: ConnectorSpecification = None
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
         """Check that config matches the actual schema from the spec call"""
@@ -163,6 +180,11 @@ class TestSpec(BaseTest):
 
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_backward_compatibility(self, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
+        if previous_connector_spec is None:
+            pytest.skip("The previous connector spec could not be retrieved.")
+        assert actual_connector_spec and previous_connector_spec
 
 
 @pytest.mark.default_timeout(30)

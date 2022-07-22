@@ -126,6 +126,25 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
     return ConnectorRunner(image_tag, volume=tmp_path)
 
 
+@pytest.fixture(name="previous_docker_runner")
+def previous_docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
+
+    current_version = image_tag.split(":")[-1]
+    if current_version != "dev":
+        # TODO alafanechere: implement capability of fetching previous version if current version is not dev
+        raise NotImplementedError(
+            "The previous_connector_spec can only load previous connector spec when the current connector version is dev"
+        )
+    previous_tag = image_tag.replace(":dev", ":latest")
+    try:
+        return ConnectorRunner(previous_tag, volume=tmp_path / "previous_connector")
+    except errors.NotFound:
+        logging.warning(
+            "\n We did not find a latest image for this connector. This probably means that the connector has not yet been published to our docker registry."
+        )
+        return None
+
+
 @pytest.fixture(scope="session", autouse=True)
 def pull_docker_image(acceptance_test_config) -> None:
     """Startup fixture to pull docker image"""
