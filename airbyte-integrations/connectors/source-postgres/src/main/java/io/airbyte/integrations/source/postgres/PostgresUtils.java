@@ -44,4 +44,5 @@ public class PostgresUtils {
 
     return DEFAULT_FIRST_RECORD_WAIT_TIME;
   }
+
 }
