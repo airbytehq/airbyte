@@ -247,19 +247,19 @@ class ExportData(AdaptiveInsightsStream):
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
         pagination_complete = False
-        current_date = datetime.now().strftime("%Y-%m-%d")
-
+        current_year = datetime.now().year
+        end_date = f"{current_year}-12"
         start_date = self.start_date
 
         while True:
             
-            self.logger.info(f"Runing `export_data` for period {start_date} for version {self.version_type} with argument: start_date {self.start_date}")
+            self.logger.info(f"Runing `export_data` for period {start_date} for version {self.version_type} with argument `start_date:{self.start_date}` - `end_date:{end_date}`")
             response = self.send_data_request(xml_body=self.construct_xml_body(start_date=start_date, end_date=start_date))
             
             for record in self.parse_response(response):
                 yield record
 
-            if datetime.strptime(start_date, "%m/%Y").strftime("%Y-%m-%d") > current_date:
+            if datetime.strptime(start_date, "%m/%Y").strftime("%Y-%m") >= end_date:
                 break
 
             start_date = self.add_one_month(start_date)
