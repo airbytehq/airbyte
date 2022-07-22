@@ -27,9 +27,11 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.Duration;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
