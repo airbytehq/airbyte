@@ -49,6 +49,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Dockerhub](sources/dockerhub.md)                                                           | Alpha                | Yes                 |
 | [Drift](sources/drift.md)                                                                   | Alpha                | No                  |
 | [Drupal](sources/drupal.md)                                                                 | Alpha                | No                  |
+| [Elasticsearch](sources/elasticsearch.md)                                                   | Alpha                | No                  |
 | [End-to-End Testing](sources/e2e-test.md)                                                   | Alpha                | Yes                 |
 | [Exchange Rates API](sources/exchangeratesapi.md)                                           | Alpha                | Yes                 |
 | [Facebook Marketing](sources/facebook-marketing.md)                                         | Generally Available  | Yes                 |
