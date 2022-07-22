@@ -2,8 +2,6 @@ from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.models import SyncMode
-from pytest import param
 import requests
 from .streams import Views, Sessions, YandexMetricaStream
 from .fields import HitsFields, VisitsFields

@@ -95,7 +95,8 @@ def test_views_schema(patch_base_class):
             },
            'ym:pv:dateTime': {
                 'type': 'string',
-                'format': 'date-time'
+                'format': 'date-time',
+                'airbyte_type': 'timestamp_without_timezone'
             }
         }
     }
@@ -142,7 +143,8 @@ def test_sessions_schema(patch_base_class):
             },
            'ym:s:dateTime': {
                 'type': 'string',
-                'format': 'date-time'
+                'format': 'date-time',
+                'airbyte_type': 'timestamp_without_timezone'
             }
         }
     }
@@ -201,9 +203,6 @@ def test_check_http_method(patch_base_class):
     expected_method = "GET"
     assert stream.http_method == expected_method
 
-def test_check_max_retries(patch_base_class):
-    stream = patch_base_class['check_substream']
-
 def test_check_should_retry(patch_base_class):
     stream = patch_base_class['check_substream']
     inputs = {"response": MockResponse({'log_request': {'status': 'created'}}, 200)}
@@ -225,7 +224,7 @@ def test_check_backoff_time(patch_base_class):
 
 def test_check_max_retries(patch_base_class):
     stream = patch_base_class['check_substream']
-    expected_max_returns = 50
+    expected_max_returns = 240
 
     assert stream.max_retries == expected_max_returns
 
@@ -272,8 +271,8 @@ def test_download_http_method(patch_base_class):
 def test_download_parse_response(patch_base_class):
     stream = patch_base_class['download_substream_1_page']
     expected_records = [
-        {'ym:pv:watchID': '00000000', 'ym:pv:dateTime': '2022-07-01 12:00:00'},
-        {'ym:pv:watchID': '00000001', 'ym:pv:dateTime': '2022-07-01 12:00:10'},
+        {'ym:pv:watchID': '00000000', 'ym:pv:dateTime': '2022-07-01T12:00:00'},
+        {'ym:pv:watchID': '00000001', 'ym:pv:dateTime': '2022-07-01T12:00:10'},
     ]
     mock_response = MockResponse({}, 200, text='ym:pv:watchID\tym:pv:dateTime\n00000000\t2022-07-01 12:00:00\n00000000\t2022-07-01 12:00:10')
     inputs = {"response": mock_response}

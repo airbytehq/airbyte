@@ -26,11 +26,14 @@ class YandexMetricaStream(HttpStream, ABC):
     def primary_key(self):
         return YMPrimaryKey.VIEWS if self.params['source'] == YMSource.VIEWS else YMPrimaryKey.SESSIONS
 
+    @property
+    def cursor_field(self) -> str:
+        return YMCursor.VIEWS if self.params['source'] == YMSource.VIEWS else YMCursor.SESSIONS
+
     def __init__(self, counter_id: str, params: dict, **kwargs):
         self.counter_id = counter_id
         self.params = params
         super().__init__(**kwargs)
-      
         
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -66,7 +69,7 @@ class YandexMetricaStream(HttpStream, ABC):
             # 1. Evaluate a logrequest is valid
             evaluation = response.json()
             if not evaluation['log_request_evaluation']['possible']:
-                return
+                yield {}
             # 2. Create logrequest 
             create = Create(
                 authenticator=self._authenticator,
@@ -76,7 +79,7 @@ class YandexMetricaStream(HttpStream, ABC):
             create_response = next(create.read_records(sync_mode=SyncMode.full_refresh))
             logrequest_id = create_response["log_request"]["request_id"]
             if not logrequest_id:
-                return
+                yield {}
             # 3. Check logrequest status
             check = Check(
                 authenticator=self._authenticator,
@@ -86,7 +89,7 @@ class YandexMetricaStream(HttpStream, ABC):
             ) 
             check_response = next(check.read_records(sync_mode=SyncMode.full_refresh))
             if not check_response:
-                return
+                yield {}
             last_page = check_response["log_request"]["parts"][-1]['part_number']
             # 4. Download the logs
             download = Download(
@@ -96,7 +99,7 @@ class YandexMetricaStream(HttpStream, ABC):
                 logrequest_id=logrequest_id,
                 last_page=last_page
             ) 
-            download_response = download.read_records(sync_mode=SyncMode)
+            download_response = download.read_records(sync_mode=SyncMode.full_refresh)
 
             yield from download_response
             # 5. Clean logrequest
@@ -111,10 +114,6 @@ class IncrementalYandexMetricaStream(YandexMetricaStream, IncrementalMixin):
     def __init__(self, counter_id: str, params: dict, **kwargs):
         super().__init__(counter_id, params, **kwargs)
         self._cursor_value = ""
-
-    @property
-    def cursor_field(self) -> str:
-        return YMCursor.VIEWS if self.params['source'] == YMSource.VIEWS else YMCursor.SESSIONS
 
     @property # State getter
     def state(self) -> MutableMapping[str, Any]:
@@ -180,6 +179,10 @@ class Views(IncrementalYandexMetricaStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state=stream_state)
+        
+    @property
+    def raise_on_http_errors(self) -> bool:
+        return False
 
     def parse_response(
         self,
@@ -220,6 +223,10 @@ class Sessions(IncrementalYandexMetricaStream):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return super().request_params(stream_state=stream_state)
+
+    @property
+    def raise_on_http_errors(self) -> bool:
+        return False
 
     def parse_response(
         self,
@@ -281,7 +288,7 @@ class Check(YandexMetricaStream):
 
     @property
     def max_retries(self) -> Union[int, None]:
-        return 50
+        return 240
         
     def should_retry(self, response: requests.Response) -> bool:
         data = response.json()
@@ -330,5 +337,10 @@ class Download(YandexMetricaStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         reader = csv.DictReader(io.StringIO(response.text), delimiter='\t')
-        for line in reader:
-            yield line
+        for row in reader:
+            # Transform datetime fields
+            row[self.cursor_field] = row[self.cursor_field].replace(' ', 'T')
+            if hasattr(row, 'ym:s:dateTimeUTC'):
+                row['ym:s:dateTimeUTC'] = row['ym:s:dateTimeUTC'].replace(' ', 'T')
+    
+            yield row

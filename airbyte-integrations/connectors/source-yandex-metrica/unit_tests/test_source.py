@@ -5,6 +5,7 @@ import pytest
 import logging
 from unittest.mock import MagicMock
 from source_yandex_metrica.source import SourceYandexMetrica
+from source_yandex_metrica.enums import YMCursor
 
 logger = logging.getLogger("test_source")
 
@@ -47,14 +48,14 @@ def test_check_connection_empty_config():
 
 def test_check_connection_no_required_fields_1(fixtures):
     config = fixtures['config']
-    config['hits_fields'].remove('ym:pv:dateTime')
+    config['hits_fields'].remove(YMCursor.VIEWS)
     ok, error_msg = SourceYandexMetrica().check_connection(logger, config=config)
 
     assert not ok and error_msg
 
 def test_check_connection_no_required_fields_2(fixtures):
     config = fixtures['config']
-    config['visits_fields'].remove('ym:s:dateTime')
+    config['visits_fields'].remove(YMCursor.SESSIONS)
     ok, error_msg = SourceYandexMetrica().check_connection(logger, config=config)
 
     assert not ok and error_msg
@@ -77,5 +78,5 @@ def test_check_connection_invalid_api_key(fixtures):
     config = fixtures['config']
     config['auth_token'] = 'invalid_token'
     ok, error_msg = SourceYandexMetrica().check_connection(logger, config=config)
-    print(error_msg)
-    assert not ok and error_msg.response.status_code == 403
+
+    assert not ok and error_msg

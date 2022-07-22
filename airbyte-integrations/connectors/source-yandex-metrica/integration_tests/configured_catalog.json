@@ -1,56 +1,30 @@
 {
   "streams": [
     {
-      "cursor_field": "ym:pv:dateTime",
-      "primary_key": "ym:pv:watchID",
       "stream": {
-        "default_cursor_field": "ym:pv:dateTime",
-        "source_defined_cursor": true,
         "name": "views",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "counter_id": {
-              "type": "string"
-            }
-          }
-        },
-        "source_defined_primary_key": [
-          [
-            "ym:pv:watchID"
-          ]
-        ],
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["ym:pv:dateTime"],
+        "source_defined_primary_key": [["ym:pv:watchID"]]
       },
       "sync_mode": "incremental",
+      "cursor_field": ["ym:pv:dateTime"],
       "destination_sync_mode": "overwrite"
     },
     {
-      "cursor_field": "ym:s:dateTime",
-      "primary_key": "ym:s:visitID",
       "stream": {
-        "default_cursor_field": "ym:s:dateTime",
-        "source_defined_cursor": true,
         "name": "sessions",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
-          "type": "object",
-          "properties": {
-            "counter_id": {
-              "type": "string"
-            }
-          }
-        },
-        "source_defined_primary_key": [
-          [
-            "ym:s:visitID"
-          ]
-        ],
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["ym:s:dateTime"],
+        "source_defined_primary_key": [["ym:s:visitID"]]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "overwrite"
+      "cursor_field": ["ym:s:dateTime"],
+      "destination_sync_mode": "append"
     }
   ]
 }
