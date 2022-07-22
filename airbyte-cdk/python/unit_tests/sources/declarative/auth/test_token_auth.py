@@ -6,7 +6,7 @@ import logging
 
 import pytest
 import requests
-from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuth, BasicHttpAuth, BearerAuth
+from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ def test_bearer_token_authenticator(test_name, token, expected_header_value):
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token_auth = BearerAuth(token, config)
+    token_auth = BearerAuthenticator(token, config)
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
 
@@ -50,7 +50,7 @@ def test_basic_authenticator(test_name, username, password, expected_header_valu
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token_auth = BasicHttpAuth(username=username, password=password, config=config)
+    token_auth = BasicHttpAuthenticator(username=username, password=password, config=config)
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
 
@@ -74,7 +74,7 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token_auth = ApiKeyAuth(header, token, config)
+    token_auth = ApiKeyAuthenticator(header, token, config)
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
 
