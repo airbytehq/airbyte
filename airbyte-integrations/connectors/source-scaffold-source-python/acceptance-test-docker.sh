@@ -6,7 +6,7 @@ RUN_SPEC_BACKWARD_COMPATIBILITY_TEST=true
 # Build latest connector image
 docker build . -t $(cat acceptance-test-config.yml | grep "connector_image" | head -n 1 | cut -d: -f2-)
 
-# Pull latest source-acceptance test image
+# Pull latest source-acceptance-test image
 docker pull airbyte/source-acceptance-test:latest
 
 TEST_OPTIONS="--acceptance-test-config /test_input"
