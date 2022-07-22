@@ -175,7 +175,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaType.INTEGER)
+            .airbyteType(JsonSchemaType.NUMBER_BIGINT)
             .fullSourceDataType("int unsigned")
             .addInsertValues("3428724653")
             .addExpectedValues("3428724653")
@@ -184,7 +184,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaType.INTEGER)
+            .airbyteType(JsonSchemaType.NUMBER_BIGINT)
             .fullSourceDataType("int zerofill")
             .addInsertValues("1")
             .addExpectedValues("1")
