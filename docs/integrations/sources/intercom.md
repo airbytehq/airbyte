@@ -49,7 +49,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date | Pull Request | Subject |
 |:--------| :--- | :--- | :--- |
-| 0.1.24  | 2022-07-19 | [14924](https://github.com/airbytehq/airbyte/pull/14924)  | Remove `additionalProperties` field from schemas    |
+| 0.1.24  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924)  | Remove `additionalProperties` field from schemas    |
 | 0.1.23  | 2022-07-19 | [14830](https://github.com/airbytehq/airbyte/pull/14830)  | Added `checkpoint_interval` for Incremental streams |
 | 0.1.22  | 2022-07-09 | [14554](https://github.com/airbytehq/airbyte/pull/14554)  | Fixed `conversation_parts` stream schema definition |
 | 0.1.21  | 2022-07-05 | [14403](https://github.com/airbytehq/airbyte/pull/14403)  | Refactored  `Conversations`, `Conversation Parts`, `Company Segments` to increase performance |
