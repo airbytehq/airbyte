@@ -1,6 +1,6 @@
 {{ config(
     sort = "_airbyte_emitted_at",
-    schema = "_airbyte_test_normalization_kkvia",
+    schema = "_airbyte_test_normalization_lpgvp",
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema

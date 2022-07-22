@@ -7,8 +7,11 @@
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
 -- depends_on: {{ ref('types_testing_ab1') }}
 select
-    cast({{ adapter.quote('id') }} as {{ dbt_utils.type_int() }}) as {{ adapter.quote('id') }},
+    cast({{ adapter.quote('id') }} as {{ dbt_utils.type_bigint() }}) as {{ adapter.quote('id') }},
+    cast(airbyte_integer as {{ dbt_utils.type_int() }}) as airbyte_integer,
+    cast(nullable_airbyte_integer as {{ dbt_utils.type_int() }}) as nullable_airbyte_integer,
     cast(big_integer as {{ dbt_utils.type_bigint() }}) as big_integer,
+    cast(nullable_big_integer as {{ dbt_utils.type_bigint() }}) as nullable_big_integer,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at

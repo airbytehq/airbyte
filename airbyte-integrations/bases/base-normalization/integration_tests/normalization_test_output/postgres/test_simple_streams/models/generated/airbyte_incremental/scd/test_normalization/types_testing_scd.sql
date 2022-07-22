@@ -105,17 +105,20 @@ scd_data as (
       adapter.quote('id'),
       ]) }} as _airbyte_unique_key,
       {{ adapter.quote('id') }},
+      airbyte_integer,
+      nullable_airbyte_integer,
       big_integer,
+      nullable_big_integer,
       _airbyte_emitted_at as _airbyte_start_at,
       lag(_airbyte_emitted_at) over (
-        partition by cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})
+        partition by {{ adapter.quote('id') }}
         order by
             _airbyte_emitted_at is null asc,
             _airbyte_emitted_at desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
       case when row_number() over (
-        partition by cast({{ adapter.quote('id') }} as {{ dbt_utils.type_string() }})
+        partition by {{ adapter.quote('id') }}
         order by
             _airbyte_emitted_at is null asc,
             _airbyte_emitted_at desc,
@@ -149,7 +152,10 @@ select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
     {{ adapter.quote('id') }},
+    airbyte_integer,
+    nullable_airbyte_integer,
     big_integer,
+    nullable_big_integer,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

@@ -10,7 +10,10 @@ with __dbt__cte__types_testing_ab1 as (
 -- depends_on: "postgres".test_normalization._airbyte_raw_types_testing
 select
     jsonb_extract_path_text(_airbyte_data, 'id') as "id",
+    jsonb_extract_path_text(_airbyte_data, 'airbyte_integer') as airbyte_integer,
+    jsonb_extract_path_text(_airbyte_data, 'nullable_airbyte_integer') as nullable_airbyte_integer,
     jsonb_extract_path_text(_airbyte_data, 'big_integer') as big_integer,
+    jsonb_extract_path_text(_airbyte_data, 'nullable_big_integer') as nullable_big_integer,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -24,11 +27,20 @@ where 1 = 1
 -- depends_on: __dbt__cte__types_testing_ab1
 select
     cast("id" as 
-    int
+    bigint
 ) as "id",
+    cast(airbyte_integer as 
+    int
+) as airbyte_integer,
+    cast(nullable_airbyte_integer as 
+    int
+) as nullable_airbyte_integer,
     cast(big_integer as 
     bigint
 ) as big_integer,
+    cast(nullable_big_integer as 
+    bigint
+) as nullable_big_integer,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     now() as _airbyte_normalized_at
@@ -39,7 +51,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__types_testing_ab2
 select
-    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(big_integer as text), '') as text)) as _airbyte_types_testing_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(airbyte_integer as text), '') || '-' || coalesce(cast(nullable_airbyte_integer as text), '') || '-' || coalesce(cast(big_integer as text), '') || '-' || coalesce(cast(nullable_big_integer as text), '') as text)) as _airbyte_types_testing_hashid,
     tmp.*
 from __dbt__cte__types_testing_ab2 tmp
 -- types_testing

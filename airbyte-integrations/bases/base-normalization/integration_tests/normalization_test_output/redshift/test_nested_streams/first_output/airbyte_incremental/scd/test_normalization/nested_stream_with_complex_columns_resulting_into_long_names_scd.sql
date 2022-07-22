@@ -2,7 +2,7 @@
       
 
   create  table
-    "integrationtests".test_normalization_kkvia."nested_stream_with_complex_columns_resulting_into_long_names_scd"
+    "integrationtests".test_normalization_lpgvp."nested_stream_with_complex_columns_resulting_into_long_names_scd"
     
     
       compound sortkey(_airbyte_active_row,_airbyte_unique_key_scd,_airbyte_emitted_at)
@@ -14,8 +14,8 @@ with
 
 input_data as (
     select *
-    from "integrationtests"._airbyte_test_normalization_kkvia."nested_stream_with_complex_columns_resulting_into_long_names_stg"
-    -- nested_stream_with_complex_columns_resulting_into_long_names from "integrationtests".test_normalization_kkvia._airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names
+    from "integrationtests"._airbyte_test_normalization_lpgvp."nested_stream_with_complex_columns_resulting_into_long_names_stg"
+    -- nested_stream_with_complex_columns_resulting_into_long_names from "integrationtests".test_normalization_lpgvp._airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names
 ),
 
 scd_data as (

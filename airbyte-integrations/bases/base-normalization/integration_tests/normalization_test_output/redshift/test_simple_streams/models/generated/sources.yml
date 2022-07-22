@@ -1,6 +1,6 @@
 version: 2
 sources:
-- name: test_normalization_iakoz
+- name: test_normalization_lfocr
   quoting:
     database: true
     schema: false

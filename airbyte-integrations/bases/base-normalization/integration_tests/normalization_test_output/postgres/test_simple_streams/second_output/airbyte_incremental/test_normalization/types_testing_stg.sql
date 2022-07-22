@@ -7,9 +7,9 @@
     );
     
 
-    insert into "postgres"._airbyte_test_normalization."types_testing_stg" ("_airbyte_types_testing_hashid", "id", "big_integer", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_normalized_at")
+    insert into "postgres"._airbyte_test_normalization."types_testing_stg" ("_airbyte_types_testing_hashid", "id", "airbyte_integer", "nullable_airbyte_integer", "big_integer", "nullable_big_integer", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_normalized_at")
     (
-        select "_airbyte_types_testing_hashid", "id", "big_integer", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_normalized_at"
+        select "_airbyte_types_testing_hashid", "id", "airbyte_integer", "nullable_airbyte_integer", "big_integer", "nullable_big_integer", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_normalized_at"
         from "types_testing_stg__dbt_tmp"
     )
   
