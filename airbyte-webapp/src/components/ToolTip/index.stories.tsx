@@ -1,6 +1,8 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import { ToolTip } from "./ToolTip";
+import { TooltipLearnMoreLink } from "./TooltipLearnMoreLink";
+import { TooltipTable } from "./TooltipTable";
 
 export default {
   title: "Ui/ToolTip",
@@ -27,5 +29,29 @@ Primary.args = {
         Apply at Airbyte!
       </a>
     </>
+  ),
+};
+
+export const WithLearnMoreUrl = Template.bind({});
+WithLearnMoreUrl.args = {
+  control: "Hover to see Tooltip with Body",
+  children: (
+    <>
+      Airbyte is hiring! <TooltipLearnMoreLink url="https://www.airbyte.com/careers" />
+    </>
+  ),
+};
+
+export const WithTable = Template.bind({});
+WithTable.args = {
+  control: "Hover to see Tooltip with Table",
+  children: (
+    <TooltipTable
+      rows={[
+        ["String", "Value"],
+        ["Number", 32768],
+        ["With a longer label", "And here is a longer value"],
+      ]}
+    />
   ),
 };

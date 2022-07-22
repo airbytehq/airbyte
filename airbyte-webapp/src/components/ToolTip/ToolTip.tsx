@@ -2,20 +2,9 @@ import classNames from "classnames";
 import React, { useState, useEffect } from "react";
 import TetherComponent from "react-tether";
 
+import { tooltipContext } from "./context";
 import styles from "./ToolTip.module.scss";
-
-type ToolTipCursor = "pointer" | "help" | "not-allowed" | "initial";
-type ToolTipTheme = "dark" | "light";
-type ToolTipAlignment = "top" | "right" | "bottom" | "left";
-
-interface ToolTipProps {
-  control: React.ReactNode;
-  className?: string;
-  disabled?: boolean;
-  cursor?: ToolTipCursor;
-  theme?: ToolTipTheme;
-  align?: ToolTipAlignment;
-}
+import { ToolTipAlignment, ToolTipProps } from "./types";
 
 const MOUSE_OUT_TIMEOUT_MS: Readonly<number> = 50;
 
@@ -26,15 +15,9 @@ const TETHER_ATTACHMENT_BY_ALIGNMENT: Readonly<Record<ToolTipAlignment, string>>
   left: "middle right",
 };
 
-export const ToolTip: React.FC<ToolTipProps> = ({
-  children,
-  control,
-  className,
-  disabled,
-  cursor,
-  theme = "dark",
-  align = "bottom",
-}) => {
+export const ToolTip: React.FC<ToolTipProps> = (props) => {
+  const { children, control, className, disabled, cursor, theme = "dark", align = "bottom" } = props;
+
   const [isMouseOver, setIsMouseOver] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -85,7 +68,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
             onMouseOver={onMouseOver}
             onMouseOut={onMouseOut}
           >
-            {children}
+            <tooltipContext.Provider value={props}>{children}</tooltipContext.Provider>
           </div>
         )
       }
