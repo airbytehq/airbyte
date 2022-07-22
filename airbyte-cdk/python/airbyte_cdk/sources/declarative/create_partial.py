@@ -5,7 +5,6 @@
 import inspect
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 """
     Create a partial on steroids.
@@ -23,7 +22,6 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 
 def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
-        interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
 
@@ -40,7 +38,7 @@ def create(func, /, *args, **keywords):
         fully_created = _create_inner_objects(all_keywords, options)
 
         # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
+        interpolated_keywords = InterpolatedMapping(fully_created).eval(config, **{"options": options})
         interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
 
         all_keywords.update(interpolated_keywords)

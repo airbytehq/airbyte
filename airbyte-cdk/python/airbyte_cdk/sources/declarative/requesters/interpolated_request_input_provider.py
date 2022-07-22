@@ -6,7 +6,6 @@ from typing import Any, Mapping
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
 class InterpolatedRequestInputProvider:
@@ -22,7 +21,7 @@ class InterpolatedRequestInputProvider:
         if isinstance(request_inputs, str):
             self._interpolator = InterpolatedString(request_inputs, "")
         else:
-            self._interpolator = InterpolatedMapping(request_inputs, JinjaInterpolation())
+            self._interpolator = InterpolatedMapping(request_inputs)
 
     def request_inputs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
