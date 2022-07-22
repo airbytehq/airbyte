@@ -6,7 +6,7 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
 
@@ -48,7 +48,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         self._body_json_interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_body_json)
 
     def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> MutableMapping[str, Any]:
         interpolated_value = self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
         if isinstance(interpolated_value, dict):
@@ -56,16 +56,19 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         return {}
 
     def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Mapping[str, Any]:
         return self._headers_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
 
     def request_body_data(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> Optional[Union[Mapping, str]]:
         return self._body_data_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
 
     def request_body_json(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         return self._body_json_interpolator.request_inputs(stream_state, stream_slice, next_page_token)

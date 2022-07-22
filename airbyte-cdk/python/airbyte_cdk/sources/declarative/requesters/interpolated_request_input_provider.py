@@ -6,7 +6,7 @@ from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 class InterpolatedRequestInputProvider:
@@ -25,7 +25,7 @@ class InterpolatedRequestInputProvider:
             self._interpolator = InterpolatedMapping(request_inputs)
 
     def request_inputs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Reuturns the request inputs to set on an outgoing HTTP request

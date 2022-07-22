@@ -3,10 +3,10 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
 class HttpSelector(ABC):
@@ -19,9 +19,9 @@ class HttpSelector(ABC):
     def select_records(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        stream_state: StreamState,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> List[Record]:
         """
         Selects records from the response
