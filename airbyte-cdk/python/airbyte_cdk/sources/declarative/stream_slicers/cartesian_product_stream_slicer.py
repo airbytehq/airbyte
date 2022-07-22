@@ -29,7 +29,6 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def __init__(self, stream_slicers: List[StreamSlicer]):
         """
-
         :param stream_slicers: Underlying stream slicers
         """
         self._stream_slicers = stream_slicers

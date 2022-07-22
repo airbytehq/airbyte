@@ -8,11 +8,21 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import Stream
 
 
 @dataclass
 class ParentStreamConfig:
+    """
+    Describes how to create a stream slice from a parent stream
+
+    stream: The stream to read records from
+    parent_key: The key of the parent stream's records that will be the stream slice key
+    stream_slice_field: The stream slice key
+    request_option: How to inject the slice value on an outgoing HTTP request
+    """
+
     stream: Stream
     parent_key: str
     stream_slice_field: str
@@ -37,7 +47,7 @@ class SubstreamSlicer(StreamSlicer):
         self._parent_stream_configs = parent_streams_configs
         self._cursor = None
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         cursor = {}
         for parent_stream_config in self._parent_stream_configs:
             slice_value = stream_slice.get(parent_stream_config.stream_slice_field)
@@ -67,14 +77,15 @@ class SubstreamSlicer(StreamSlicer):
                     params.update({key: value})
         return params
 
-    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+    def get_stream_state(self) -> Optional[StreamState]:
         return self._cursor if self._cursor else None
 
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         """
-        Iterate over each parent stream.
+        Iterate over each parent stream's record and create a StreamSlice for each record.
+
         For each stream, iterate over its stream_slices.
-        For each stream slice, iterate over each records.
+        For each stream slice, iterate over each record.
         yield a stream slice for each such records.
 
         If a parent slice contains no record, emit a slice with parent_record=None.

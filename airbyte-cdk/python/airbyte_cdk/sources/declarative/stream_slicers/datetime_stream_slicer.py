@@ -13,19 +13,27 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 class DatetimeStreamSlicer(StreamSlicer):
-    timedelta_regex = re.compile(
-        r"((?P<weeks>[\.\d]+?)w)?"
-        r"((?P<days>[\.\d]+?)d)?"
-        r"((?P<hours>[\.\d]+?)h)?"
-        r"((?P<minutes>[\.\d]+?)m)?"
-        r"((?P<seconds>[\.\d]+?)s)?"
-        r"((?P<microseconds>[\.\d]+?)ms)?"
-        r"((?P<milliseconds>[\.\d]+?)us)?$"
-    )
+    """
+    Slices the stream over a datetime range.
+
+    Given a start time, end time, a step function, and an optional lookback window,
+    the stream slicer will partition the date range from start time - lookback window to end time.
+
+    The step function is defined as a string of the form:
+    `"<number><unit>"`
+
+    where unit can be one of
+    - weeks, w
+    - days, d
+
+    For example, "1d" will produce windows of 1 day, and 2weeks windows of 2 weeks.
+    """
+
+    timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
 
     def __init__(
         self,
@@ -82,7 +90,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         if self._end_time_option and self._end_time_option.inject_into == RequestOptionType.path:
             raise ValueError("End time cannot be passed by path")
 
-    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+    def get_stream_state(self) -> Optional[StreamState]:
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):

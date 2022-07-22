@@ -9,7 +9,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 class ListStreamSlicer(StreamSlicer):
@@ -26,10 +26,10 @@ class ListStreamSlicer(StreamSlicer):
         request_option: Optional[RequestOption] = None,
     ):
         """
-        :param slice_values: values to iterate over
-        :param cursor_field: name of the cursor field
-        :param config: connection config
-        :param request_option: Request option to configure the HTTP request
+        :param slice_values: The values to iterate over
+        :param cursor_field: The name of the cursor field
+        :param config: The user-provided configuration as specified by the source's spec
+        :param request_option: The request option to configure the HTTP request
         """
         if isinstance(slice_values, str):
             slice_values = ast.literal_eval(slice_values)
@@ -44,12 +44,12 @@ class ListStreamSlicer(StreamSlicer):
         if request_option and request_option.inject_into == RequestOptionType.path:
             raise ValueError("Slice value cannot be injected in the path")
 
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]] = None):
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         slice_value = stream_slice.get(self._cursor_field.eval(self._config))
         if slice_value and slice_value in self._slice_values:
             self._cursor = slice_value
 
-    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
+    def get_stream_state(self) -> Optional[StreamState]:
         return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
 
     def request_params(self) -> Mapping[str, Any]:
