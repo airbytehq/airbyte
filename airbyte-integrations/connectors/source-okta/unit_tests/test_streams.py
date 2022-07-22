@@ -172,10 +172,9 @@ class TestStreamUsers:
 
     def test_stream_users(self, requests_mock, patch_base_class, users_instance, url_base, api_url):
         stream = Users(url_base=url_base)
-        record = users_instance
-        requests_mock.get(f"{api_url}/users", json=[record])
+        requests_mock.get(f"{api_url}/users", json=[users_instance])
         inputs = {"sync_mode": SyncMode.incremental}
-        assert list(stream.read_records(**inputs)) == [record]
+        assert list(stream.read_records(**inputs)) == [users_instance]
 
     def test_users_request_params_out_of_next_page_token(self, patch_base_class, url_base):
         stream = Users(url_base=url_base)
@@ -197,9 +196,8 @@ class TestStreamUsers:
 
     def test_users_source_parse_response(self, requests_mock, patch_base_class, users_instance, url_base, api_url):
         stream = Users(url_base=url_base)
-        expected_params = users_instance
         requests_mock.get(f"{api_url}", json=[users_instance])
-        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [expected_params]
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [users_instance]
 
 
 class TestStreamCustomRoles:
@@ -214,28 +212,22 @@ class TestStreamCustomRoles:
     def test_custom_roles_parse_response(self, requests_mock, patch_base_class, custom_role_instance, url_base, api_url):
         stream = CustomRoles(url_base=url_base)
         record = {"roles": [custom_role_instance]}
-        expected_params = [custom_role_instance]
         requests_mock.get(f"{api_url}", json=record)
-        r = requests.get(f"{api_url}")
-        assert list(stream.parse_response(response=r)) == expected_params
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [custom_role_instance]
 
 
 class TestStreamGroups:
 
     def test_groups(self, requests_mock, patch_base_class, groups_instance, url_base, api_url):
         stream = Groups(url_base=url_base)
-        record = [groups_instance]
-        requests_mock.get(f"{api_url}/groups?limit=200", json=record)
+        requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
         inputs = {"sync_mode": SyncMode.incremental}
-        assert list(stream.read_records(**inputs)) == record
+        assert list(stream.read_records(**inputs)) == [groups_instance]
 
     def test_groups_parse_response(self, requests_mock, patch_base_class, groups_instance, url_base, api_url):
         stream = Groups(url_base=url_base)
-        record = [groups_instance]
-        expected_params = [groups_instance]
-        requests_mock.get(f"{api_url}", json=record)
-        r = requests.get(f"{api_url}")
-        assert list(stream.parse_response(response=r)) == expected_params
+        requests_mock.get(f"{api_url}", json=[groups_instance])
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [groups_instance]
 
 
 class TestStreamGroupMembers:
@@ -243,18 +235,14 @@ class TestStreamGroupMembers:
     def test_group_members(self, requests_mock, patch_base_class, group_members_instance, url_base, api_url):
         stream = GroupMembers(url_base=url_base)
         group_id = "test_group_id"
-        record = [group_members_instance]
-        requests_mock.get(f"{api_url}/groups/{group_id}/users?limit=200", json=record)
+        requests_mock.get(f"{api_url}/groups/{group_id}/users?limit=200", json=[group_members_instance])
         inputs = {"sync_mode": SyncMode.incremental, "stream_state": {}, "stream_slice": {"group_id": group_id}}
-        assert list(stream.read_records(**inputs)) == record
+        assert list(stream.read_records(**inputs)) == [group_members_instance]
 
     def test_group_members_parse_response(self, requests_mock, patch_base_class, group_members_instance, url_base, api_url):
         stream = GroupMembers(url_base=url_base)
-        record = [group_members_instance]
-        expected_params = [group_members_instance]
-        requests_mock.get(f"{api_url}", json=record)
-        r = requests.get(f"{api_url}")
-        assert list(stream.parse_response(response=r)) == expected_params
+        requests_mock.get(f"{api_url}", json=[group_members_instance])
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [group_members_instance]
 
     def test_group_members_request_params_with_latest_entry(self, patch_base_class, group_members_instance, url_base):
         stream = GroupMembers(url_base=url_base)
@@ -263,108 +251,89 @@ class TestStreamGroupMembers:
             "stream_state": {"id": "some_test_id"},
             "next_page_token": {"next_cursor": "123"},
         }
-        expected_params = {"limit": 200, "next_cursor": "123", "after": "some_test_id"}
-        assert stream.request_params(**inputs) == expected_params
+        assert stream.request_params(**inputs) == {"limit": 200, "next_cursor": "123", "after": "some_test_id"}
 
     def test_group_members_slice_stream(self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url):
         stream = GroupMembers(url_base=url_base)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
-        expected_params = [{"group_id": "test_group_id"}]
-        assert list(stream.stream_slices()) == expected_params
+        assert list(stream.stream_slices()) == [{"group_id": "test_group_id"}]
 
     def test_group_member_request_get_update_state(self, latest_record_instance, url_base):
         stream = GroupMembers(url_base=url_base)
         stream._cursor_field = "id"
         current_stream_state = {"id": "test_user_group_id"}
         update_state = stream.get_updated_state(current_stream_state=current_stream_state, latest_record=latest_record_instance)
-        expected_result = {"id": "test_user_group_id"}
-        assert update_state == expected_result
+        assert update_state == {"id": "test_user_group_id"}
 
 
 class TestStreamGroupRoleAssignment:
 
     def test_group_role_assignments(self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url):
         stream = GroupRoleAssignments(url_base=url_base)
-        record = [group_role_assignments_instance]
         group_id = "test_group_id"
         mock_address = f"{api_url}/groups/{group_id}/roles?limit=200"
-        requests_mock.get(mock_address, json=record)
+        requests_mock.get(mock_address, json=[group_role_assignments_instance])
         inputs = {"sync_mode": SyncMode.full_refresh, "stream_state": {}, "stream_slice": {"group_id": group_id}}
-        assert list(stream.read_records(**inputs)) == record
+        assert list(stream.read_records(**inputs)) == [group_role_assignments_instance]
 
     def test_group_role_assignments_parse_response(
         self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url
     ):
         stream = GroupRoleAssignments(url_base=url_base)
-        record = [group_role_assignments_instance]
-        expected_params = [group_role_assignments_instance]
-        requests_mock.get(f"{api_url}", json=record)
-        r = requests.get(f"{api_url}")
-        assert list(stream.parse_response(response=r)) == expected_params
+        requests_mock.get(f"{api_url}", json=[group_role_assignments_instance])
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [group_role_assignments_instance]
 
     def test_group_role_assignments_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url
     ):
         stream = GroupRoleAssignments(url_base=url_base)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
-        expected_params = [{"group_id": "test_group_id"}]
-        assert list(stream.stream_slices()) == expected_params
+        assert list(stream.stream_slices()) == [{"group_id": "test_group_id"}]
 
 
 class TestStreamLogs:
 
     def test_logs(self, requests_mock, patch_base_class, logs_instance, url_base, api_url):
         stream = Logs(url_base=url_base)
-        record = [logs_instance]
-        requests_mock.get(f"{api_url}/logs?limit=200", json=record)
+        requests_mock.get(f"{api_url}/logs?limit=200", json=[logs_instance])
         inputs = {"sync_mode": SyncMode.incremental}
-        assert list(stream.read_records(**inputs)) == record
+        assert list(stream.read_records(**inputs)) == [logs_instance]
 
     def test_logs_parse_response(self, requests_mock, patch_base_class, logs_instance, url_base, api_url):
         stream = Logs(url_base=url_base)
-        record = [logs_instance]
-        expected_params = [logs_instance]
-        requests_mock.get(f"{api_url}/logs?limit=200", json=record)
-        r = requests.get(f"{api_url}/logs?limit=200")
-        assert list(stream.parse_response(response=r)) == expected_params
+        requests_mock.get(f"{api_url}/logs?limit=200", json=[logs_instance])
+        assert list(stream.parse_response(response=requests.get(f"{api_url}/logs?limit=200"))) == [logs_instance]
 
     def test_logs_request_params_for_since(self, patch_base_class, logs_instance, url_base):
         stream = Logs(url_base=url_base)
         inputs = {"stream_state": {"published": "2022-07-19T15:54:11.545Z"}, "stream_slice": None}
-        expected_params = {"limit": 200, "since": "2022-07-19T15:54:11.545Z"}
-        assert stream.request_params(**inputs) == expected_params
+        assert stream.request_params(**inputs) == {"limit": 200, "since": "2022-07-19T15:54:11.545Z"}
 
     def test_logs_request_params_for_until(self, patch_base_class, logs_instance, url_base):
         stream = Logs(url_base=url_base)
         testing_date = datetime.datetime.utcnow() + datetime.timedelta(days=10)
         inputs = {"stream_state": {"published": testing_date.isoformat()}, "stream_slice": None}
-        expected_params = {"limit": 200, "since": testing_date.isoformat(), "until": testing_date.isoformat()}
-        assert stream.request_params(**inputs) == expected_params
+        assert stream.request_params(**inputs) == {"limit": 200, "since": testing_date.isoformat(), "until": testing_date.isoformat()}
 
 
 class TestStreamUserRoleAssignment:
 
     def test_user_role_assignments(self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url):
         stream = UserRoleAssignments(url_base=url_base)
-        record = [user_role_assignments_instance]
         user_id = "test_user_id"
         mock_address = f"{api_url}/users/{user_id}/roles?limit=200"
-        requests_mock.get(mock_address, json=record)
+        requests_mock.get(mock_address, json=[user_role_assignments_instance])
         inputs = {"sync_mode": SyncMode.full_refresh, "stream_state": {}, "stream_slice": {"user_id": user_id}}
-        assert list(stream.read_records(**inputs)) == record
+        assert list(stream.read_records(**inputs)) == [user_role_assignments_instance]
 
     def test_user_role_assignments_parse_response(self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url):
         stream = UserRoleAssignments(url_base=url_base)
-        record = [user_role_assignments_instance]
-        expected_params = [user_role_assignments_instance]
-        requests_mock.get(f"{api_url}", json=record)
-        r = requests.get(f"{api_url}")
-        assert list(stream.parse_response(response=r)) == expected_params
+        requests_mock.get(f"{api_url}", json=[user_role_assignments_instance])
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [user_role_assignments_instance]
 
     def test_user_role_assignments_slice_stream(
         self, requests_mock, patch_base_class, group_members_instance, users_instance, url_base, api_url
     ):
         stream = UserRoleAssignments(url_base=url_base)
         requests_mock.get(f"{api_url}/users?limit=200", json=[users_instance])
-        expected_params = [{"user_id": "test_user_id"}]
-        assert list(stream.stream_slices()) == expected_params
+        assert list(stream.stream_slices()) == [{"user_id": "test_user_id"}]
