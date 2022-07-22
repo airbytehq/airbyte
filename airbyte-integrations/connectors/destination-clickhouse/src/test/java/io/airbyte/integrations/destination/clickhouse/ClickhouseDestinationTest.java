@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -92,20 +93,6 @@ public class ClickhouseDestinationTest {
   }
 
   @Test
-  void testDefaultParamsNoSSL() {
-    final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_NO_SSL));
-    assertEquals(ImmutableMap.of("socket_timeout", "3000000"), defaultProperties);
-  }
-
-  @Test
-  void testDefaultParamsWithSSL() {
-    final Map<String, String> defaultProperties = new ClickhouseDestination().getDefaultConnectionProperties(
-        Jsons.jsonNode(CONFIG_WITH_SSL));
-    assertEquals(ClickhouseDestination.SSL_JDBC_PARAMETERS, defaultProperties);
-  }
-
-  @Test
   void sanityTest() throws Exception {
     final Destination dest = new ClickhouseDestination();
     final AirbyteMessageConsumer consumer = dest.getConsumer(config, catalog,
@@ -131,7 +118,7 @@ public class ClickhouseDestinationTest {
             config.get("username").asText(),
             config.get("password").asText(),
             ClickhouseDestination.DRIVER_CLASS,
-            String.format("jdbc:clickhouse:%s://%s:%s/%s",
+            String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
                 ClickhouseDestination.HTTP_PROTOCOL,
                 config.get("host").asText(),
                 config.get("port").asText(),

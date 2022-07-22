@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -18,6 +19,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -37,9 +39,11 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   private static final String PASSWORD = "password";
 
-  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "socket_timeout", "3000000",
-      "sslmode", "none");
+  static final List<String> SSL_PARAMETERS = ImmutableList.of(
+      "socket_timeout=3000000",
+      "sslmode=none");
+  static final List<String> DEFAULT_PARAMETERS = ImmutableList.of(
+      "socket_timeout=3000000");
 
   public static Destination sshWrappedDestination() {
     return new SshWrappedDestination(new ClickhouseDestination(), HOST_KEY, PORT_KEY);
@@ -52,11 +56,18 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final boolean isSsl = JdbcUtils.useSsl(config);
-    final String jdbcUrl = String.format("jdbc:clickhouse:%s://%s:%s/%s",
+    final StringBuilder jdbcUrl = new StringBuilder(
+        String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
         isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
         config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText());
+        config.get("port").asInt(),
+        config.get("database").asText()));
+
+    if (isSsl) {
+      jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
+    } else {
+      jdbcUrl.append("?").append(String.join("&", DEFAULT_PARAMETERS));
+    }
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put("username", config.get("username").asText())
@@ -94,12 +105,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (JdbcUtils.useSsl(config)) {
-      return SSL_JDBC_PARAMETERS;
-    } else {
-      // No need for any parameters if the connection doesn't use SSL except socket_timeout
-      return ImmutableMap.of("socket_timeout", "3000000");
-    }
+    return Collections.emptyMap();
   }
 
   public static void main(final String[] args) throws Exception {

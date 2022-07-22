@@ -17,6 +17,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,16 +36,27 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClickhouseDestinationStrictEncryptAcceptanceTest.class);
 
-  private static final String DB_NAME = "default";
-
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
-
-  private GenericContainer db;
-
   public static final Integer HTTP_PORT = 8123;
   public static final Integer NATIVE_PORT = 9000;
   public static final Integer HTTPS_PORT = 8443;
   public static final Integer NATIVE_SECURE_PORT = 9440;
+  private static final String DB_NAME = "default";
+  private static final String USER_NAME = "default";
+  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private GenericContainer db;
+
+  private static JdbcDatabase getDatabase(final JsonNode config) {
+    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString() + "?sslmode=none",
+        ClickhouseDestination.HTTPS_PROTOCOL,
+        config.get("host").asText(),
+        config.get("port").asInt(),
+        config.get("database").asText());
+    return new DefaultJdbcDatabase(DataSourceFactory.create(
+        config.get("username").asText(),
+        config.has("password") ? config.get("password").asText() : null,
+        ClickhouseDestination.DRIVER_CLASS,
+        jdbcStr));
+  }
 
   @Override
   protected String getImageName() {
@@ -52,7 +65,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected boolean supportsNormalization() {
-    return true;
+    return false;
   }
 
   @Override
@@ -62,6 +75,26 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new ClickhouseTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
     return true;
   }
 
@@ -79,10 +112,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getMappedPort(HTTPS_PORT))
+        .put("host", HostPortResolver.resolveHost(db))
+        .put("port", HTTPS_PORT)
         .put("database", DB_NAME)
-        .put("username", "default")
+        .put("username", USER_NAME)
         .put("password", "")
         .put("schema", DB_NAME)
         .build());
@@ -134,19 +167,6 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     return result;
   }
 
-  private static JdbcDatabase getDatabase(final JsonNode config) {
-    final String jdbcStr = String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-        ClickhouseDestination.HTTPS_PROTOCOL,
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText());
-    return new DefaultJdbcDatabase(DataSourceFactory.create(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
-        ClickhouseDestination.DRIVER_CLASS,
-        jdbcStr));
-  }
-
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
     db = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
@@ -170,6 +190,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    db.stop();
     db.close();
   }
 
@@ -211,6 +232,11 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
     super.testSyncWithNormalization(messagesFilename, catalogFilename);
+  }
+
+  @Disabled
+  public void specNormalizationValueShouldBeCorrect() throws Exception {
+    super.specNormalizationValueShouldBeCorrect();
   }
 
 }
