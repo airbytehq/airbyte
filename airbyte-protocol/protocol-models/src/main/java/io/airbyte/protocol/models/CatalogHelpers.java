@@ -84,6 +84,22 @@ public class CatalogHelpers {
   }
 
   /**
+   * Converts a {@link ConfiguredAirbyteCatalog} into an {@link AirbyteCatalog}. This is possible
+   * because the latter is a subset of the former. It filters out the non incremental streams.
+   *
+   * @param configuredCatalog - catalog to convert
+   * @return - airbyte catalog
+   */
+  public static AirbyteCatalog configuredCatalogToCatalogOnlyIncremental(final ConfiguredAirbyteCatalog configuredCatalog) {
+    return new AirbyteCatalog().withStreams(
+        configuredCatalog.getStreams()
+            .stream()
+            .filter(streamAndConfig -> streamAndConfig.getSyncMode() == SyncMode.INCREMENTAL)
+            .map(ConfiguredAirbyteStream::getStream)
+            .toList());
+  }
+
+  /**
    * Extracts {@link StreamDescriptor} for a given {@link AirbyteStream}
    *
    * @param airbyteStream stream
@@ -111,6 +127,16 @@ public class CatalogHelpers {
    */
   public static List<StreamDescriptor> extractStreamDescriptors(final ConfiguredAirbyteCatalog configuredCatalog) {
     return extractStreamDescriptors(configuredCatalogToCatalog(configuredCatalog));
+  }
+
+  /**
+   * Extracts {@link StreamDescriptor}s for each stream with an incremental {@link SyncMode} in a given {@link ConfiguredAirbyteCatalog}
+   *
+   * @param configuredCatalog catalog
+   * @return list of stream descriptors
+   */
+  public static List<StreamDescriptor> extractIncrementalStreamDescriptors(final ConfiguredAirbyteCatalog configuredCatalog) {
+    return extractStreamDescriptors(configuredCatalogToCatalogOnlyIncremental(configuredCatalog));
   }
 
   /**
