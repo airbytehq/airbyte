@@ -71,6 +71,7 @@ import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import io.airbyte.test.utils.SchemaTableNamePair;
@@ -118,7 +119,8 @@ import org.testcontainers.utility.MountableFile;
  */
 @DisabledIfEnvironmentVariable(named = "KUBE",
                                matches = "true")
-public class BasicAcceptanceTests {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class BasicAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BasicAcceptanceTests.class);
 
@@ -133,7 +135,7 @@ public class BasicAcceptanceTests {
   private static PostgreSQLContainer sourcePsql;
 
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -163,24 +165,24 @@ public class BasicAcceptanceTests {
   }
 
   @AfterAll
-  public static void end() {
+  static void end() {
     testHarness.stopDbAndContainers();
   }
 
   @BeforeEach
-  public void setup() throws SQLException, URISyntaxException, IOException {
+  void setup() throws SQLException, URISyntaxException, IOException {
     testHarness.setup();
   }
 
   @AfterEach
-  public void tearDown() {
+  void tearDown() {
     testHarness.cleanup();
   }
 
   @Test
   @Order(-2)
-  public void testGetDestinationSpec() throws ApiException {
-    final UUID destinationDefinitionId = testHarness.getDestinationDefId();
+  void testGetDestinationSpec() throws ApiException {
+    final UUID destinationDefinitionId = testHarness.getPostgresDestinationDefinitionId();
     final DestinationDefinitionSpecificationRead spec = apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(
             new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(destinationDefinitionId).workspaceId(UUID.randomUUID()));
@@ -190,7 +192,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(-1)
-  public void testFailedGet404() {
+  void testFailedGet404() {
     final var e = assertThrows(ApiException.class, () -> apiClient.getDestinationDefinitionSpecificationApi()
         .getDestinationDefinitionSpecification(
             new DestinationDefinitionIdWithWorkspaceId().destinationDefinitionId(UUID.randomUUID()).workspaceId(UUID.randomUUID())));
@@ -199,7 +201,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(0)
-  public void testGetSourceSpec() throws ApiException {
+  void testGetSourceSpec() throws ApiException {
     final UUID sourceDefId = testHarness.getPostgresSourceDefinitionId();
     final SourceDefinitionSpecificationRead spec = apiClient.getSourceDefinitionSpecificationApi()
         .getSourceDefinitionSpecification(new SourceDefinitionIdWithWorkspaceId().sourceDefinitionId(sourceDefId).workspaceId(UUID.randomUUID()));
@@ -209,8 +211,8 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(1)
-  public void testCreateDestination() throws ApiException {
-    final UUID destinationDefId = testHarness.getDestinationDefId();
+  void testCreateDestination() throws ApiException {
+    final UUID destinationDefId = testHarness.getPostgresDestinationDefinitionId();
     final JsonNode destinationConfig = testHarness.getDestinationDbConfig();
     final String name = "AccTestDestinationDb-" + UUID.randomUUID();
 
@@ -228,8 +230,8 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(2)
-  public void testDestinationCheckConnection() throws ApiException {
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+  void testDestinationCheckConnection() throws ApiException {
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
 
     final CheckConnectionRead.StatusEnum checkOperationStatus = apiClient.getDestinationApi()
         .checkConnectionToDestination(new DestinationIdRequestBody().destinationId(destinationId))
@@ -240,7 +242,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(3)
-  public void testCreateSource() throws ApiException {
+  void testCreateSource() throws ApiException {
     final String dbName = "acc-test-db";
     final UUID postgresSourceDefinitionId = testHarness.getPostgresSourceDefinitionId();
     final JsonNode sourceDbConfig = testHarness.getSourceDbConfig();
@@ -253,7 +255,7 @@ public class BasicAcceptanceTests {
 
     final JsonNode expectedConfig = Jsons.jsonNode(sourceDbConfig);
     // expect replacement of secret with magic string.
-    ((ObjectNode) expectedConfig).put("password", "**********");
+    ((ObjectNode) expectedConfig).put(JdbcUtils.PASSWORD_KEY, "**********");
     assertEquals(dbName, response.getName());
     assertEquals(workspaceId, response.getWorkspaceId());
     assertEquals(postgresSourceDefinitionId, response.getSourceDefinitionId());
@@ -262,7 +264,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(4)
-  public void testSourceCheckConnection() throws ApiException {
+  void testSourceCheckConnection() throws ApiException {
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
 
     final CheckConnectionRead checkConnectionRead = apiClient.getSourceApi().checkConnectionToSource(new SourceIdRequestBody().sourceId(sourceId));
@@ -275,7 +277,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(5)
-  public void testDiscoverSourceSchema() throws ApiException {
+  void testDiscoverSourceSchema() throws ApiException {
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
 
     final AirbyteCatalog actual = testHarness.discoverSourceSchema(sourceId);
@@ -312,10 +314,10 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(6)
-  public void testCreateConnection() throws ApiException {
+  void testCreateConnection() throws ApiException {
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final String name = "test-connection-" + UUID.randomUUID();
     final ConnectionSchedule schedule = new ConnectionSchedule().timeUnit(MINUTES).units(100L);
@@ -336,7 +338,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(7)
-  public void testCancelSync() throws Exception {
+  void testCancelSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
 
     final SourceRead source = testHarness.createSource(
@@ -351,7 +353,7 @@ public class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -371,10 +373,10 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(8)
-  public void testScheduledSync() throws Exception {
+  void testScheduledSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -404,13 +406,13 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(9)
-  public void testMultipleSchemasAndTablesSync() throws Exception {
+  void testMultipleSchemasAndTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -426,13 +428,13 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(10)
-  public void testMultipleSchemasSameTablesSync() throws Exception {
+  void testMultipleSchemasSameTablesSync() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_separate_schema_same_table.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -449,10 +451,10 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(11)
-  public void testIncrementalDedupeSync() throws Exception {
+  void testIncrementalDedupeSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
@@ -493,11 +495,11 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(12)
-  public void testIncrementalSync() throws Exception {
+  void testIncrementalSync() throws Exception {
     LOGGER.info("Starting testIncrementalSync()");
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final AirbyteStream stream = catalog.getStreams().get(0).getStream();
@@ -570,10 +572,10 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(13)
-  public void testDeleteConnection() throws Exception {
+  void testDeleteConnection() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.INCREMENTAL;
@@ -628,7 +630,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(14)
-  public void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
+  void testUpdateConnectionWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
     // Also, this test doesn't verify correctness of the schedule update applied, as adding the ability
@@ -638,7 +640,7 @@ public class BasicAcceptanceTests {
     // is running after the update method is called.
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
@@ -666,7 +668,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(15)
-  public void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+  void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
     final String connectionName = "test-connection";
@@ -681,7 +683,7 @@ public class BasicAcceptanceTests {
             .put("message_interval", 100)
             .build()));
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
@@ -716,12 +718,12 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(16)
-  public void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
+  void testResetConnectionRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     catalog.getStreams().forEach(s -> s.getConfig()
@@ -742,7 +744,7 @@ public class BasicAcceptanceTests {
 
   @Test
   @Order(17)
-  public void testResetCancelsRunningSync() throws Exception {
+  void testResetCancelsRunningSync() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
 
     final SourceRead source = testHarness.createSource(
@@ -757,7 +759,7 @@ public class BasicAcceptanceTests {
 
     final String connectionName = "test-connection";
     final UUID sourceId = source.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -782,13 +784,13 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testSyncAfterUpgradeToPerStreamState(final TestInfo testInfo) throws Exception {
+  void testSyncAfterUpgradeToPerStreamState(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
     final String connectionName = "test-connection";
     final SourceRead source = testHarness.createPostgresSource();
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -871,13 +873,13 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testSyncAfterUpgradeToPerStreamStateWithNoNewData(final TestInfo testInfo) throws Exception {
+  void testSyncAfterUpgradeToPerStreamStateWithNoNewData(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
     final String connectionName = "test-connection";
     final SourceRead source = testHarness.createPostgresSource();
     final UUID sourceId = source.getSourceId();
     final UUID sourceDefinitionId = source.getSourceDefinitionId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -929,7 +931,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testResetAllWhenSchemaIsModified() throws Exception {
+  void testResetAllWhenSchemaIsModified() throws Exception {
     final String sourceTable1 = "test_table1";
     final String sourceTable2 = "test_table2";
     final String sourceTable3 = "test_table3";
@@ -951,7 +953,7 @@ public class BasicAcceptanceTests {
 
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
@@ -1070,14 +1072,14 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testIncrementalSyncMultipleStreams() throws Exception {
+  void testIncrementalSyncMultipleStreams() throws Exception {
     LOGGER.info("Starting testIncrementalSyncMultipleStreams()");
 
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -1163,13 +1165,13 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testMultipleSchemasAndTablesSyncAndReset() throws Exception {
+  void testMultipleSchemasAndTablesSyncAndReset() throws Exception {
     // create tables in another schema
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forClasspathResource("postgres_second_schema_multiple_tables.sql"), sourcePsql);
 
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
@@ -1187,7 +1189,7 @@ public class BasicAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetResetAllWhenSchemaIsModified(final TestInfo testInfo) throws Exception {
+  void testPartialResetResetAllWhenSchemaIsModified(final TestInfo testInfo) throws Exception {
     LOGGER.info("Running: " + testInfo.getDisplayName());
 
     // Add Table
@@ -1203,7 +1205,7 @@ public class BasicAcceptanceTests {
     });
     UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final UUID operationId = operation.getOperationId();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
@@ -1340,7 +1342,7 @@ public class BasicAcceptanceTests {
   // See relevant issue: https://github.com/airbytehq/airbyte/issues/8397
   @Test
   @Disabled
-  public void testFailureTimeout() throws Exception {
+  void testFailureTimeout() throws Exception {
     final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
     final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
 
