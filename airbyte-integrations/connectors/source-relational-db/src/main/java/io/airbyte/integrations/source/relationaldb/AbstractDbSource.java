@@ -492,9 +492,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * Read incremental data from a table. Incremental read should return only records where cursor
-   * column value is bigger than cursor. Note that if the connector needs to emit intermediate
-   * state (i.e. {@link AbstractDbSource#getStateEmissionFrequency} > 0), the incremental query
-   * must be sorted by the cursor field.
+   * column value is bigger than cursor. Note that if the connector needs to emit intermediate state
+   * (i.e. {@link AbstractDbSource#getStateEmissionFrequency} > 0), the incremental query must be
+   * sorted by the cursor field.
    *
    * @return iterator with read data
    */
@@ -508,8 +508,8 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * When larger than 0, the incremental iterator will emit intermediate state for every N records.
-   * Please note that if intermediate state emission is enabled, the incremental query must be
-   * ordered by the cursor field.
+   * Please note that if intermediate state emission is enabled, the incremental query must be ordered
+   * by the cursor field.
    */
   protected int getStateEmissionFrequency() {
     return 0;

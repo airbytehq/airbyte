@@ -32,8 +32,9 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private int recordCount;
 
   /**
-   * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every stateEmissionFrequency records. Only emit
-   *                               intermediate states if the records are sorted by the cursor field.
+   * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every
+   *        stateEmissionFrequency records. Only emit intermediate states if the records are sorted by
+   *        the cursor field.
    */
   public StateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
                                  final StateManager stateManager,

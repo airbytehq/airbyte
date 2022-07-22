@@ -396,7 +396,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   // TODO (Subodh): This should be a generic test
   @Test
-  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global state for this test
+  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global
+            // state for this test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
