@@ -16,6 +16,9 @@ class CheckStream(ConnectionChecker):
     """
 
     def __init__(self, stream_names: List[str]):
+        """
+        :param stream_names: name of streams to read records from
+        """
         self._stream_names = set(stream_names)
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
