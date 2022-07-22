@@ -20,6 +20,18 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class SimpleRetriever(Retriever, HttpStream):
+    """
+    Retrieves records by synchronously sending requests to fetch records.
+
+    The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
+
+    For each stream slice, submit requests until there are no more pages of records to fetch.
+
+    This retriever currently inherits from HttpStream to reuse the request submission and pagination machinery.
+    As a result, some of the parameters passed to some methods are unused.
+    The two will be decoupled in a future release.
+    """
+
     def __init__(
         self,
         name,
@@ -30,6 +42,15 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
         state: Optional[State] = None,
     ):
+        """
+        :param name: The stream's name
+        :param primary_key: The stream's primary key
+        :param requester: The HTTP requester
+        :param record_selector: The record selector
+        :param paginator: The paginator
+        :param stream_slicer: The stream slicer
+        :param state: The stream state
+        """
         self._name = name
         self._primary_key = primary_key
         self._paginator = paginator or NoPagination()
@@ -250,6 +271,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        """The stream's primary key"""
         return self._primary_key
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:

@@ -118,7 +118,7 @@ class DeclarativeStream(Stream):
         Override as needed.
         """
         # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
-        return self._schema_loader.get_json_schema()
+        return self._schema_loader.get_schema()
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

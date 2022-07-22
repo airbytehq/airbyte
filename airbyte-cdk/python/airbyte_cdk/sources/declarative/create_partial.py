@@ -6,7 +6,9 @@ import inspect
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 
-"""
+
+def create(func, /, *args, **keywords):
+    """
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
@@ -19,8 +21,6 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import I
     :return: partially created object
     """
 
-
-def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)

@@ -6,9 +6,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import Record
 
 
 class Retriever(ABC):
+    """
+    Responsible for fetching a stream's records from an HTTP API source.
+    """
+
     @abstractmethod
     def read_records(
         self,
@@ -16,11 +21,20 @@ class Retriever(ABC):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        pass
+    ) -> Iterable[Record]:
+        """
+        Fetch a stream's records from an HTTP API source
+
+        :param sync_mode: Unused but currently necessary for integrating with HttpStream
+        :param cursor_field: Unused but currently necessary for integrating with HttpStream
+        :param stream_slice: The stream slice to read data for
+        :param stream_state: The initial stream state
+        :return: the records read from the API source
+        """
 
     @abstractmethod
     def stream_slices(self, *, sync_mode: SyncMode, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+        """Returns the stream slices"""
         pass
 
     @property

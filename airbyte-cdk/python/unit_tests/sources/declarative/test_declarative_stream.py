@@ -17,7 +17,7 @@ def test():
 
     schema_loader = MagicMock()
     json_schema = {"name": {"type": "string"}}
-    schema_loader.get_json_schema.return_value = json_schema
+    schema_loader.get_schema.return_value = json_schema
 
     state = MagicMock()
     records = [{"pk": 1234, "field": "value"}, {"pk": 4567, "field": "different_value"}]

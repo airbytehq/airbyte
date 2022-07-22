@@ -210,13 +210,13 @@ def test_source_config_no_transform(abstract_source, catalog):
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
-    http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
+    http_stream.get_schema.return_value = non_http_stream.get_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [[{"value": 23}] * 5] * 2
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * 5
     assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 1
-    assert non_http_stream.get_json_schema.call_count == 1
+    assert http_stream.get_schema.call_count == 1
+    assert non_http_stream.get_schema.call_count == 1
 
 
 def test_source_config_transform(abstract_source, catalog):
@@ -226,7 +226,7 @@ def test_source_config_transform(abstract_source, catalog):
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     non_http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
+    http_stream.get_schema.return_value = non_http_stream.get_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2
@@ -239,7 +239,7 @@ def test_source_config_transform_and_no_transform(abstract_source, catalog):
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
     http_stream.transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    http_stream.get_json_schema.return_value = non_http_stream.get_json_schema.return_value = SCHEMA
+    http_stream.get_schema.return_value = non_http_stream.get_schema.return_value = SCHEMA
     http_stream.read_records.return_value, non_http_stream.read_records.return_value = [{"value": 23}], [{"value": 23}]
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2

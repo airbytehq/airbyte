@@ -16,7 +16,7 @@ class JsonSchema(SchemaLoader):
         self._kwargs = kwargs
         self._name = name
 
-    def get_json_schema(self) -> Mapping[str, Any]:
+    def get_schema(self) -> Mapping[str, Any]:
         json_schema_path = self._get_json_filepath()
         with open(json_schema_path, "r") as f:
             return json.loads(f.read())
