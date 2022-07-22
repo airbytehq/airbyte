@@ -9,7 +9,7 @@ import { FormValues } from "../types";
 type UseNameHook = () => {
   successMessage: string;
   errorMessage: string;
-  changeName: (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => void;
+  changeName: (values: FormValues, { setSubmitting, setFieldValue }: FormikHelpers<FormValues>) => Promise<void>;
 };
 
 export const useChangeName: UseNameHook = () => {

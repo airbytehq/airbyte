@@ -32,9 +32,11 @@ export const NameSection: React.FC = () => {
           initialValues={{
             name: user.name,
           }}
-          onSubmit={changeName}
+          onSubmit={(values, formikHelpers) =>
+            changeName(values, formikHelpers).then(() => formikHelpers.resetForm({ values }))
+          }
         >
-          {({ isSubmitting, isValid }) => (
+          {({ isSubmitting, isValid, dirty }) => (
             <Form>
               <RowFieldItem>
                 <Field name="name">
@@ -52,7 +54,7 @@ export const NameSection: React.FC = () => {
                   )}
                 </Field>
               </RowFieldItem>
-              <LoadingButton disabled={!isValid} type="submit" isLoading={isSubmitting}>
+              <LoadingButton disabled={!isValid || !dirty} type="submit" isLoading={isSubmitting}>
                 <FormattedMessage id="settings.accountSettings.updateName" />
               </LoadingButton>
               <FeedbackBlock errorMessage={errorMessage} successMessage={successMessage} />
