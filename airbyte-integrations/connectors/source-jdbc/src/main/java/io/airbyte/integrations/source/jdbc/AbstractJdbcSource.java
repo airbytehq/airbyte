@@ -114,7 +114,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   private String getCatalog(final SqlDatabase database) {
-    return (database.getSourceConfig().has("database") ? database.getSourceConfig().get("database").asText() : null);
+    return (database.getSourceConfig().has(JdbcUtils.DATABASE_KEY) ? database.getSourceConfig().get(JdbcUtils.DATABASE_KEY).asText() : null);
   }
 
   @Override
@@ -300,11 +300,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   protected DataSource createDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.has("username") ? jdbcConfig.get("username").asText() : null,
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
-        getConnectionProperties(config));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;

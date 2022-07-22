@@ -48,16 +48,16 @@ public class ClickhouseDestinationTest {
   private static JsonNode config;
 
   private static final Map<String, String> CONFIG_WITH_SSL = ImmutableMap.of(
-      "host", "localhost",
-      "port", "1337",
-      "username", "user",
-      "database", "db");
+      JdbcUtils.HOST_KEY, "localhost",
+      JdbcUtils.PORT_KEY, "1337",
+      JdbcUtils.USERNAME_KEY, "user",
+      JdbcUtils.DATABASE_KEY, "db");
 
   private static final Map<String, String> CONFIG_NO_SSL = MoreMaps.merge(
       CONFIG_WITH_SSL,
       ImmutableMap.of(
           "socket_timeout", "3000000",
-          "ssl", "false"));
+          JdbcUtils.SSL_KEY, "false"));
 
   @BeforeAll
   static void init() {
@@ -75,13 +75,13 @@ public class ClickhouseDestinationTest {
             Field.of("name", JsonSchemaType.STRING))));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", DB_NAME)
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, DB_NAME)
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
@@ -128,13 +128,13 @@ public class ClickhouseDestinationTest {
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickhouseDestination.DRIVER_CLASS,
             String.format("jdbc:clickhouse://%s:%s/%s",
-                config.get("host").asText(),
-                config.get("port").asText(),
-                config.get("database").asText())));
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asText(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
 
     final List<JsonNode> actualRecords = database.bufferedResultSetQuery(
         connection -> connection.createStatement().executeQuery(
