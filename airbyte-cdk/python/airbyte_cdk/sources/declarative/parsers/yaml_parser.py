@@ -6,12 +6,12 @@ from copy import deepcopy
 from typing import Any, Mapping, Tuple, Union
 
 import yaml
-from airbyte_cdk.sources.declarative.parsers.config_parser import ConfigParser
+from airbyte_cdk.sources.declarative.parsers.config_parser import ConnectionDefinitionParser
 from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
 
-class YamlParser(ConfigParser):
+class YamlParser(ConnectionDefinitionParser):
     """
     Parses a Yaml string to a ConnectionDefinition
 

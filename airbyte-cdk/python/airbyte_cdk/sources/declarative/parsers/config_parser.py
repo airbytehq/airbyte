@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
 
-class ConfigParser(ABC):
+class ConnectionDefinitionParser(ABC):
     """
     Parses a string to a ConnectionDefinition
     """
