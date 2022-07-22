@@ -13,13 +13,16 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abtract_token import 
 class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
     """
     ApiKeyAuth sets a request header on the HTTP requests sent
+
+    Adds a request header to outgoing HTTP requests of the form
+    "<header_key>: "<token>"
     """
 
     def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config, **kwargs):
         """
-        :param header: Header key to set on the HTTP requests
-        :param token: Header value to set on the HTTP requests
-        :param config: connection config
+        :param header: The header key to set on the HTTP requests
+        :param token: The header value to set on the HTTP requests
+        :param config: The user-provided configuration as specified by the source's spec
         """
         self._header = InterpolatedString.create(header, options=kwargs)
         self._token = InterpolatedString.create(token, options=kwargs)
@@ -27,23 +30,26 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
 
     @property
     def auth_header(self) -> str:
+        """The header key to set on the outgoing HTTP request"""
         return self._header.eval(self._config)
 
     @property
     def token(self) -> str:
+        """The header value to set on the outgoing HTTP request"""
         return self._token.eval(self._config)
 
 
 class BearerAuthenticator(AbstractHeaderAuthenticator):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
+
     `Authorization: Bearer <token>`
     """
 
     def __init__(self, token: Union[InterpolatedString, str], config: Config, **kwargs):
         """
-        :param token:
-        :param config:
+        :param token: The bearer token
+        :param config: The user-provided configuration as specified by the source's spec
         """
         self._token = InterpolatedString.create(token, options=kwargs)
         self._config = config
@@ -65,9 +71,9 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
 
     def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = "", **kwargs):
         """
-        :param username:
-        :param config:
-        :param password:
+        :param username: The username
+        :param config: The user-provided configuration as specified by the source's spec
+        :param password: The password. Defaults to "".
         """
         self._username = InterpolatedString.create(username, options=kwargs)
         self._password = InterpolatedString.create(password, options=kwargs)
