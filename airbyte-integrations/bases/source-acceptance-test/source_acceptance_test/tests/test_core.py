@@ -39,7 +39,7 @@ def connector_spec_dict_fixture(actual_connector_spec):
 
 
 @pytest.fixture(name="actual_connector_spec")
-def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRunner):
+def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRunner) -> ConnectorSpecification:
     if not request.instance.spec_cache:
         output = docker_runner.call_spec()
         spec_messages = filter_output(output, Type.SPEC)
@@ -50,7 +50,7 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRun
 
 
 @pytest.fixture(name="previous_connector_spec")
-def previous_connector_spec_fixture(request: BaseTest, previous_connector_docker_runner: ConnectorRunner):
+def previous_connector_spec_fixture(request: BaseTest, previous_connector_docker_runner: ConnectorRunner) -> ConnectorSpecification:
     if previous_connector_docker_runner is None:
         logging.warning(
             "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
@@ -184,9 +184,11 @@ class TestSpec(BaseTest):
     @pytest.mark.default_timeout(60)  # Pulling the previous connector image can take more than 10 sec.
     @pytest.mark.spec_backward_compatibility
     def test_backward_compatibility(self, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
+        """Run multiple checks to make sure the actual_connector_spec is backward compatible with the previous_connector_spec"""
         if previous_connector_spec is None:
             pytest.skip("The previous connector spec could not be retrieved.")
-        assert actual_connector_spec and previous_connector_spec
+        assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
+        # TODO alafanechere: add the actual tests for backward compatibility below or in a dedicated module.
 
 
 @pytest.mark.default_timeout(30)

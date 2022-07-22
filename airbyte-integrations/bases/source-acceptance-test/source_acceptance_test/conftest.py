@@ -128,7 +128,7 @@ def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
 
 @pytest.fixture(name="previous_connector_image_name")
 def previous_connector_image_name_fixture(image_tag, inputs) -> str:
-    """Fixture with previous connector version to use for backward compatibilty tests"""
+    """Fixture with previous connector image name to use for backward compatibilty tests"""
     return f"{image_tag.split(':')[0]}:{getattr(inputs, 'previous_connector_version')}"
 
 
