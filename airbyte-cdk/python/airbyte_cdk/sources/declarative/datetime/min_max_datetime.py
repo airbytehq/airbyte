@@ -62,7 +62,7 @@ class MinMaxDatetime:
 
     @property
     def datetime_format(self) -> str:
-        """THe format of the string representing the datetime"""
+        """The format of the string representing the datetime"""
         return self._datetime_format
 
     @datetime_format.setter

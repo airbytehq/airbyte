@@ -323,17 +323,6 @@ class SimpleRetriever(Retriever, HttpStream):
 
     @property
     def state(self) -> StreamState:
-        """State getter, should return state in form that can serialized to a string and send to the output
-        as a STATE AirbyteMessage.
-
-        A good example of a state is a cursor_value:
-            {
-                self.cursor_field: "cursor_value"
-            }
-
-         State should try to be as small as possible but at the same time descriptive enough to restore
-         syncing process from the point where it stopped.
-        """
         return self._state.get_stream_state()
 
     @state.setter

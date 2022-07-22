@@ -33,7 +33,7 @@ class Retriever(ABC):
         """
 
     @abstractmethod
-    def stream_slices(self, *, sync_mode: SyncMode, stream_state: StreamState = None) -> Iterable[Optional[StreamSlice]]:
+    def stream_slices(self, *, sync_mode: SyncMode, stream_state: Optional[StreamState] = None) -> Iterable[Optional[StreamSlice]]:
         """Returns the stream slices"""
         pass
 

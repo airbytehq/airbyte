@@ -39,8 +39,8 @@ class Requester(ABC):
     def get_path(
         self,
         *,
-        stream_state: Optional[Mapping[str, Any]],
-        stream_slice: Optional[Mapping[str, Any]],
+        stream_state: Optional[StreamState],
+        stream_slice: Optional[StreamSlice],
         next_page_token: Optional[Mapping[str, Any]],
     ) -> str:
         """

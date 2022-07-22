@@ -16,7 +16,7 @@ class RecordFilter:
     def __init__(self, config: Config, condition: str = ""):
         """
         :param config: The user-provided configuration as specified by the source's spec
-        :param condition: String representing the predicate to filter a record. Records will be removed if evaluated to False
+        :param condition: The string representing the predicate to filter a record. Records will be removed if evaluated to False
         """
         self._config = config
         self._filter_interpolator = InterpolatedBoolean(condition)

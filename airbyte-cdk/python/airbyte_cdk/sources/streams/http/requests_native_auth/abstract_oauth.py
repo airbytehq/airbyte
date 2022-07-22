@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 from abc import abstractmethod
 from typing import Any, List, Mapping, MutableMapping, Tuple
 
@@ -82,70 +81,58 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def token_refresh_endpoint(self) -> str:
         """Returns the endpoint to refresh the access token"""
-        pass
 
     @property
     @abstractmethod
     def client_id(self) -> str:
         """The client id to authenticate"""
-        pass
 
     @property
     @abstractmethod
     def client_secret(self) -> str:
         """The client secret to authenticate"""
-        pass
 
     @property
     @abstractmethod
     def refresh_token(self) -> str:
         """The token used to refresh the access token when it expires"""
-        pass
 
     @property
     @abstractmethod
     def scopes(self) -> List[str]:
         """List of requested scopes"""
-        pass
 
     @property
     @abstractmethod
-    def token_expiry_date(self) -> str:
+    def token_expiry_date(self) -> pendulum.datetime:
         """Expiration date of the access token"""
-        pass
 
     @token_expiry_date.setter
     @abstractmethod
-    def token_expiry_date(self, value: str):
+    def token_expiry_date(self, value: pendulum.datetime()):
         """Setter for access token expiration date"""
-        pass
 
     @property
     @abstractmethod
     def access_token_name(self) -> str:
         """Field to extract access token from in the response"""
-        pass
 
     @property
     @abstractmethod
     def expires_in_name(self):
         """Setter for field to extract access token expiration date from in the response"""
-        pass
 
     @property
     @abstractmethod
     def refresh_request_body(self) -> Mapping[str, Any]:
         """Returns the request body to set on the refresh request"""
-        pass
 
     @property
     @abstractmethod
     def access_token(self) -> str:
         """Returns the access token"""
-        pass
 
     @access_token.setter
     @abstractmethod
-    def access_token(self, value: str):
+    def access_token(self, value: str) -> str:
         """Setter for the access token"""
-        pass

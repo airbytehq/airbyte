@@ -14,14 +14,16 @@ from jello import lib as jello_lib
 
 class JelloExtractor:
     """
-    Record extractor that evaluates a Jello query to extract records from a decoded response
+    Record extractor that evaluates a Jello query to extract records from a decoded response.
+
+    More information on Jello can be found at https://github.com/kellyjonbrazil/jello
     """
 
     default_transform = "_"
 
     def __init__(self, transform: Union[InterpolatedString, str], config: Config, decoder: Decoder = JsonDecoder(), kwargs=None):
         """
-        :param transform: Jello query to evaluate on the decoded response
+        :param transform: The Jello query to evaluate on the decoded response
         :param config: The user-provided configuration as specified by the source's spec
         :param decoder: Decoder responsible to transfom the response in a Mapping
         :param kwargs: Additional arguments to be passed to the strings for interpolation

@@ -15,8 +15,8 @@ class InterpolatedString:
 
     def __init__(self, string: str, default: Optional[str] = None):
         """
-        :param string: string to evalute
-        :param default: Default value to return if the evaluation returns an empty string
+        :param string: The string to evalute
+        :param default: The default value to return if the evaluation returns an empty string
         """
         self._string = string
         self._default = default or string

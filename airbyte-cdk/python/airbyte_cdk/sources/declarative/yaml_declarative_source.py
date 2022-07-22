@@ -18,7 +18,7 @@ class YamlDeclarativeSource(DeclarativeSource):
 
     def __init__(self, path_to_yaml):
         """
-        :param path_to_yaml:
+        :param path_to_yaml: Path to the yaml file describing the source
         """
         self.logger = logging.getLogger(f"airbyte.{self.name}")
         self.logger.setLevel(logging.DEBUG)

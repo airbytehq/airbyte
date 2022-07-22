@@ -21,7 +21,7 @@ class DeclarativeSource(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        :param logger: source logger
+        :param logger: The source logger
         :param config: The user-provided configuration as specified by the source's spec.
           This usually contains information required to check connection e.g. tokens, secrets and keys etc.
         :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful

@@ -67,7 +67,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
 
     def request_body_json(
         self,
-        stream_state: Mapping[str, Any],
+        stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:

@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 class InterpolatedMapping:
     """
-    Wrapper around a Mapping[str, str] to be evaluated to be evaluated.
+    Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
     """
 
     def __init__(self, mapping: Mapping[str, str]):
