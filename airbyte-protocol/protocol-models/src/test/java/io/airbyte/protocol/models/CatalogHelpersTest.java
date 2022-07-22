@@ -82,7 +82,8 @@ class CatalogHelpersTest {
     final JsonNode node = Jsons.deserialize(MoreResources.readResource("valid_schema.json"));
     final Set<String> actualFieldNames = CatalogHelpers.getAllFieldNames(node);
     final List<String> expectedFieldNames =
-        List.of("CAD", "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文", "someArray", "items", "oldName");
+        List.of("CAD", "DKK", "HKD", "HUF", "ISK", "PHP", "date", "nestedkey", "somekey", "something", "something2", "文", "someArray", "items",
+            "oldName");
 
     // sort so that the diff is easier to read.
     assertEquals(expectedFieldNames.stream().sorted().toList(), actualFieldNames.stream().sorted().toList());
