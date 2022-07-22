@@ -20,6 +20,10 @@ from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, NoAuth
 
 
 class HttpRequester(Requester):
+    """
+    Default implementation of a Requester
+    """
+
     def __init__(
         self,
         *,
@@ -32,6 +36,16 @@ class HttpRequester(Requester):
         error_handler: Optional[ErrorHandler] = None,
         config: Config,
     ):
+        """
+        :param name: Name of the stream. Only used for request/response caching
+        :param url_base: Base url to send requests to
+        :param path: Path to send requests to
+        :param http_method: HTTP method to use when sending requests
+        :param request_options_provider: request option provider defining the options to set on outgoing requests
+        :param authenticator: Authenticator defining how to authenticate to the source
+        :param error_handler: Error handler defining how to detect and handle errors
+        :param config: The user-provided configuration as specified by the source's spec
+        """
         if request_options_provider is None:
             request_options_provider = InterpolatedRequestOptionsProvider(config=config)
         elif isinstance(request_options_provider, dict):
@@ -91,7 +105,9 @@ class HttpRequester(Requester):
     def request_kwargs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
-        return self._request_options_provider.request_kwargs(stream_state, stream_slice, next_page_token)
+        # todo: there are a few integrations that override the request_kwargs() method, but the use case for why kwargs over existing
+        #  constructs is a little unclear. We may revisit this, but for now lets leave it out of the DSL
+        return {}
 
     @property
     def cache_filename(self) -> str:

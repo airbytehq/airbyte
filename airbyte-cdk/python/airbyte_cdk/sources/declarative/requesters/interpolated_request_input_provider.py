@@ -2,10 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Mapping
+from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.types import Config
 
 
 class InterpolatedRequestInputProvider:
@@ -13,7 +14,7 @@ class InterpolatedRequestInputProvider:
     Helper class that generically performs string interpolation on the provided dictionary or string input
     """
 
-    def __init__(self, *, config, request_inputs=None):
+    def __init__(self, *, config: Config, request_inputs: Optional[Union[str, Mapping[str, str]]] = None):
         self._config = config
 
         if request_inputs is None:
@@ -26,6 +27,13 @@ class InterpolatedRequestInputProvider:
     def request_inputs(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
+        """
+        Reuturns the request inputs to set on an outgoing HTTP request
+        :param stream_state: The stream state
+        :param stream_slice: The stream slice
+        :param next_page_token: The pagination token
+        :return: The request inputs to set on an outgoing HTTP request
+        """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         interpolated_value = self._interpolator.eval(self._config, **kwargs)
 

@@ -12,6 +12,10 @@ from requests.auth import AuthBase
 
 
 class HttpMethod(Enum):
+    """
+    Http Method to use when submitting an outgoing HTTP request
+    """
+
     GET = "GET"
     POST = "POST"
 
