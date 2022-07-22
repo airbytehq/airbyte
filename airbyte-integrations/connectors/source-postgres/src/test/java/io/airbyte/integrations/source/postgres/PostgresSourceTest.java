@@ -482,8 +482,7 @@ class PostgresSourceTest {
     final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
     assertEquals(defaultConnectionProperties, ImmutableMap.of(
         "ssl", "true",
-        "sslmode", "require"
-    ));
+        "sslmode", "require"));
   };
 
   @Test
