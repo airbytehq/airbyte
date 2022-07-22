@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put("tcp-port", tcpPort.get())
+        .put(JdbcUtils.TCP_PORT_KEY, tcpPort.get())
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
