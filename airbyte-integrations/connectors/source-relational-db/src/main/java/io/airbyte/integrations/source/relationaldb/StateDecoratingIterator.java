@@ -32,8 +32,8 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   private int recordCount;
 
   /**
-   * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every stateEmissionFrequency records.
-   *                               Only emit intermediate states if the records are sorted by the cursor field.
+   * @param stateEmissionFrequency If larger than 0, intermediate states will be emitted for every stateEmissionFrequency records. Only emit
+   *                               intermediate states if the records are sorted by the cursor field.
    */
   public StateDecoratingIterator(final Iterator<AirbyteMessage> messageIterator,
                                  final StateManager stateManager,
@@ -59,7 +59,7 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
   @Override
   protected AirbyteMessage computeNext() {
     if (messageIterator.hasNext()) {
-      ++recordCount;
+      recordCount++;
       final AirbyteMessage message = messageIterator.next();
       if (message.getRecord().getData().hasNonNull(cursorField)) {
         final String cursorCandidate = getCursorCandidate(message);
@@ -69,23 +69,19 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
       }
 
       if (stateEmissionFrequency > 0 && recordCount % stateEmissionFrequency == 0) {
-        emitStateMessage();
-        if (!messageIterator.hasNext()) {
-          hasEmittedFinalState = true;
-        }
+        final boolean isFinalState = !messageIterator.hasNext();
+        emitStateMessage(isFinalState);
       }
 
       return message;
     } else if (!hasEmittedFinalState) {
-      final AirbyteMessage finalStateMessage = emitStateMessage();
-      hasEmittedFinalState = true;
-      return finalStateMessage;
+      return emitStateMessage(true);
     } else {
       return endOfData();
     }
   }
 
-  public AirbyteMessage emitStateMessage() {
+  public AirbyteMessage emitStateMessage(final boolean isFinalState) {
     final AirbyteStateMessage stateMessage = stateManager.updateAndEmit(pair, maxCursor);
     LOGGER.info("State Report: stream name: {}, original cursor field: {}, original cursor value {}, cursor field: {}, new cursor value: {}",
         pair,
@@ -93,8 +89,12 @@ public class StateDecoratingIterator extends AbstractIterator<AirbyteMessage> im
         stateManager.getOriginalCursor(pair).orElse(null),
         stateManager.getCursorField(pair).orElse(null),
         stateManager.getCursor(pair).orElse(null));
-    if (stateManager.getCursor(pair).isEmpty()) {
-      LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", pair);
+
+    if (isFinalState) {
+      hasEmittedFinalState = true;
+      if (stateManager.getCursor(pair).isEmpty()) {
+        LOGGER.warn("Cursor was for stream {} was null. This stream will replicate all records on the next run", pair);
+      }
     }
 
     return new AirbyteMessage().withType(Type.STATE).withState(stateMessage);
