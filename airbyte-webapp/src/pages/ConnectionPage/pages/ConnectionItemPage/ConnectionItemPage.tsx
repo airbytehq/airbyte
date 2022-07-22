@@ -2,7 +2,6 @@ import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
-import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
 import { getFrequencyConfig } from "config/utils";
@@ -69,9 +68,6 @@ const ConnectionItemPage: React.FC = () => {
           currentStep={currentStep}
           onStatusUpdating={setStatusUpdating}
         />
-      }
-      error={
-        isConnectionDeleted ? <AlertBanner alertType="connectionDeleted" id="connection.connectionDeletedView" /> : null
       }
     >
       <Suspense fallback={<LoadingPage />}>

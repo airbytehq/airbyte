@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
@@ -61,10 +62,10 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -73,19 +74,19 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
     // dbt clickhouse adapter uses native protocol, its default port is 9000
     // Since we disabled normalization and dbt test, we only use the JDBC port here.
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getMappedPort(HTTPS_PORT))
-        .put("database", DB_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", DB_NAME)
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getMappedPort(HTTPS_PORT))
+        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, DB_NAME)
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password").put("ssl", false);
+    ((ObjectNode) clone).put("password", "wrong password").put(JdbcUtils.SSL_KEY, false);
     return clone;
   }
 
@@ -130,12 +131,12 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
     final String jdbcStr = String.format("jdbc:clickhouse://%s:%s/%s?ssl=true&sslmode=none",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
     return new DefaultJdbcDatabase(DataSourceFactory.create(
-        config.get("username").asText(),
-        config.has("password") ? config.get("password").asText() : null,
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         ClickhouseDestination.DRIVER_CLASS,
         jdbcStr));
   }
