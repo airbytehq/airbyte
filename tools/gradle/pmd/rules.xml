@@ -101,7 +101,6 @@
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="UseLocaleWithCaseConversions"/>
         <!-- to be applied eventually -->
-        <exclude name="AvoidBranchingStatementAsLastInLoop"/>
         <exclude name="AvoidCatchingNPE"/>
         <exclude name="AvoidCatchingThrowable"/>
         <exclude name="AvoidDuplicateLiterals"/>
