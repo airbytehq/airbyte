@@ -9,6 +9,15 @@ import requests
 
 
 class Decoder(ABC):
+    """
+    Decoder strategy to transform a requests.Response into a Mapping[str, Any]
+    """
+
     @abstractmethod
     def decode(self, response: requests.Response) -> Mapping[str, Any]:
+        """
+        Decodes a requests.Response into a Mapping[str, Any]
+        :param response: the response to decode
+        :return: Mapping describing the response
+        """
         pass

@@ -9,5 +9,9 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 
 class JsonDecoder(Decoder):
+    """
+    Decoder strategy that returns the json-encoded content of a response, if any.
+    """
+
     def decode(self, response: requests.Response) -> Mapping[str, Any]:
-        return response.json()
+        return response.json() or {}
