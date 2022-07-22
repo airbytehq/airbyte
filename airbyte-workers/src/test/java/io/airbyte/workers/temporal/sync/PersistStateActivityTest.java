@@ -21,6 +21,7 @@ import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -98,6 +99,7 @@ class PersistStateActivityTest {
   void testPersistWithValidStateDuringMigration() throws IOException {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
+    final ConfiguredAirbyteStream stream3 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c")).withSyncMode(SyncMode.FULL_REFRESH);
 
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
@@ -111,7 +113,7 @@ class PersistStateActivityTest {
     final JsonNode jsonState = Jsons.jsonNode(List.of(stateMessage1, stateMessage2));
     final State state = new State().withState(jsonState);
 
-    final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2));
+    final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2, stream3));
     final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state);
     Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
     Mockito.when(statePersistence.isMigration(Mockito.eq(CONNECTION_ID), Mockito.eq(StateType.STREAM), Mockito.any(Optional.class))).thenReturn(true);
