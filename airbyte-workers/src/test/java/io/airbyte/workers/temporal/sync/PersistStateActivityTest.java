@@ -35,7 +35,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class PersistStateActivityTest {
+class PersistStateActivityTest {
 
   private final static UUID CONNECTION_ID = UUID.randomUUID();
 
@@ -49,14 +49,14 @@ public class PersistStateActivityTest {
   PersistStateActivityImpl persistStateActivity;
 
   @Test
-  public void testPersistEmpty() {
+  void testPersistEmpty() {
     persistStateActivity.persist(CONNECTION_ID, new StandardSyncOutput(), new ConfiguredAirbyteCatalog());
 
     Mockito.verifyNoInteractions(statePersistence);
   }
 
   @Test
-  public void testPersist() throws IOException {
+  void testPersist() throws IOException {
     Mockito.when(featureFlags.useStreamCapableState()).thenReturn(true);
 
     final JsonNode jsonState = Jsons.jsonNode(Map.ofEntries(
@@ -75,7 +75,7 @@ public class PersistStateActivityTest {
   // This test is to ensure that we correctly throw an error if not every stream in the configured
   // catalog has a state message when migrating from Legacy to Per-Stream
   @Test
-  public void testPersistWithInvalidStateDuringMigration() throws IOException {
+  void testPersistWithInvalidStateDuringMigration() throws IOException {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
 
@@ -95,7 +95,7 @@ public class PersistStateActivityTest {
   }
 
   @Test
-  public void testPersistWithValidStateDuringMigration() throws IOException {
+  void testPersistWithValidStateDuringMigration() throws IOException {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
 
@@ -121,7 +121,7 @@ public class PersistStateActivityTest {
 
   // Global stream states do not need to be validated during the migration to per-stream state
   @Test
-  public void testPersistWithGlobalStateDuringMigration() throws IOException {
+  void testPersistWithGlobalStateDuringMigration() throws IOException {
     final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
     final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
 
