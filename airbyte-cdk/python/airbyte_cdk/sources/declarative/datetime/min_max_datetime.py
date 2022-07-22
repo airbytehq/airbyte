@@ -39,7 +39,7 @@ class MinMaxDatetime:
         Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
         :param kwargs: Additional arguments to be passed to the strings for interpolation
-        :return: the evaluated datetime
+        :return: The evaluated datetime
         """
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
         datetime_format = self._datetime_format

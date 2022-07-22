@@ -25,7 +25,7 @@ class JelloExtractor:
         """
         :param transform: The Jello query to evaluate on the decoded response
         :param config: The user-provided configuration as specified by the source's spec
-        :param decoder: Decoder responsible to transfom the response in a Mapping
+        :param decoder: The decoder responsible to transfom the response in a Mapping
         :param kwargs: Additional arguments to be passed to the strings for interpolation
         """
 
