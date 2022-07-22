@@ -5,7 +5,7 @@ import TetherComponent from "react-tether";
 import styles from "./ToolTip.module.scss";
 
 type ToolTipCursor = "pointer" | "help" | "not-allowed" | "initial";
-type ToolTipMode = "dark" | "light";
+type ToolTipTheme = "dark" | "light";
 type ToolTipAlignment = "top" | "right" | "bottom" | "left";
 
 interface ToolTipProps {
@@ -13,7 +13,7 @@ interface ToolTipProps {
   className?: string;
   disabled?: boolean;
   cursor?: ToolTipCursor;
-  mode?: ToolTipMode;
+  theme?: ToolTipTheme;
   align?: ToolTipAlignment;
 }
 
@@ -32,7 +32,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
   className,
   disabled,
   cursor,
-  mode = "dark",
+  theme = "dark",
   align = "bottom",
 }) => {
   const [isMouseOver, setIsMouseOver] = useState(false);
@@ -81,7 +81,7 @@ export const ToolTip: React.FC<ToolTipProps> = ({
         canShowTooltip && (
           <div
             ref={ref as React.LegacyRef<HTMLDivElement>}
-            className={classNames(styles.toolTip, mode === "light" && styles.light, className)}
+            className={classNames(styles.toolTip, theme === "light" && styles.light, className)}
             onMouseOver={onMouseOver}
             onMouseOut={onMouseOut}
           >
