@@ -49,5 +49,4 @@ class MetricClientFactoryTest {
   void testMicroMeterRegistryRuturnsNullForEmptyClientConfig() {
     assertNull(MetricClientFactory.getMeterRegistry());
   }
-
 }
