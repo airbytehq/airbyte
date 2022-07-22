@@ -194,24 +194,24 @@ partial_stream:
     file_path: "./source_sendgrid/schemas/{{ name }}.json"
   cursor_field: [ ]
 list_stream:
-  ref: "*ref(partial_stream)"
+  $ref: "*ref(partial_stream)"
   options:
     name: "lists"
     primary_key: "id"
     extractor:
-      ref: "*ref(extractor)"
+      $ref: "*ref(extractor)"
       transform: "_.result"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path:
-        ref: "*ref(next_page_url_from_token_partial)"
+        $ref: "*ref(next_page_url_from_token_partial)"
         default: "marketing/lists"
     paginator:
-      ref: "*ref(metadata_paginator)"
+      $ref: "*ref(metadata_paginator)"
     record_selector:
-      ref: "*ref(selector)"
+      $ref: "*ref(selector)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -259,7 +259,7 @@ def test_create_record_selector():
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
-        ref: "*ref(extractor)"
+        $ref: "*ref(extractor)"
         transform: "_.result"
     """
     config = parser.parse(content)
