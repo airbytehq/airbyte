@@ -7,11 +7,29 @@ package io.airbyte.db.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Maps;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.jooq.JSONFormat;
 
 public class JdbcUtils {
 
+  // config parameters in alphabetical order
+  public static final String CONNECTION_PROPERTIES_KEY = "connection_properties";
+  public static final String DATABASE_KEY = "database";
+  public static final String ENCRYPTION_KEY = "encryption";
+  public static final String HOST_KEY = "host";
+  public static final List<String> HOST_LIST_KEY = List.of("host");
+  public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
+  public static final String PASSWORD_KEY = "password";
+  public static final String PORT_KEY = "port";
+  public static final List<String> PORT_LIST_KEY = List.of("port");
+  public static final String SCHEMA_KEY = "schema";
+  // NOTE: this is the plural version of SCHEMA_KEY
+  public static final String SCHEMAS_KEY = "schemas";
+  public static final String SSL_KEY = "ssl";
+  public static final String TLS_KEY = "tls";
+  public static final String USERNAME_KEY = "username";
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
   private static final JSONFormat defaultJSONFormat = new JSONFormat().recordFormat(JSONFormat.RecordFormat.OBJECT);
@@ -60,6 +78,17 @@ public class JdbcUtils {
       }
     }
     return parameters;
+  }
+
+  /**
+   * Checks that SSL_KEY has not been set or that an SSL_KEY is set and value can be mapped to true
+   * (e.g. non-zero integers, string true, etc)
+   *
+   * @param config A configuration used to check Jdbc connection
+   * @return true: if ssl has not been set or it has been set with true, false: in all other cases
+   */
+  public static boolean useSsl(final JsonNode config) {
+    return !config.has(SSL_KEY) || config.get(SSL_KEY).asBoolean();
   }
 
 }

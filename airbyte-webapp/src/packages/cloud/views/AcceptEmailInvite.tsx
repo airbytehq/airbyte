@@ -73,7 +73,11 @@ export const AcceptEmailInvite: React.FC = () => {
             <NewsField />
             <SecurityField />
           </FieldItem>
-          <SignupButton isLoading={isSubmitting} disabled={!isValid || !values.security} />
+          <SignupButton
+            isLoading={isSubmitting}
+            disabled={!isValid || !values.security}
+            buttonMessageId="login.activateAccess.submitButton"
+          />
           {status && <SignupFormStatusMessage>{status}</SignupFormStatusMessage>}
         </Form>
       )}

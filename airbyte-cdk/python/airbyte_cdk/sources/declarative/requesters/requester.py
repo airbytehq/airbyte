@@ -7,6 +7,7 @@ from enum import Enum
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from requests.auth import AuthBase
 
 
@@ -54,29 +55,8 @@ class Requester(ABC):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
 
-    @property
     @abstractmethod
-    def raise_on_http_errors(self) -> bool:
-        """
-        If set to False, allows opting-out of raising HTTP code exception.
-        """
-
-    @property
-    @abstractmethod
-    def max_retries(self) -> Union[int, None]:
-        """
-        Specifies maximum amount of retries for backoff policy. Return None for no limit.
-        """
-
-    @property
-    @abstractmethod
-    def retry_factor(self) -> float:
-        """
-        Specifies factor for backoff policy.
-        """
-
-    @abstractmethod
-    def should_retry(self, response: requests.Response) -> bool:
+    def should_retry(self, response: requests.Response) -> ResponseStatus:
         """
         Specifies conditions for backoff based on the response from the server.
 
@@ -85,18 +65,6 @@ class Requester(ABC):
          - 500s to handle transient server errors
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
-        """
-
-    @abstractmethod
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """
-        Dynamically determine backoff time e.g: by reading the X-Retry-After header.
-
-        This method is called only if should_backoff() returns True for the input request.
-
-        :param response:
-        :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
-        to the default backoff behavior (e.g using an exponential algorithm).
         """
 
     @abstractmethod

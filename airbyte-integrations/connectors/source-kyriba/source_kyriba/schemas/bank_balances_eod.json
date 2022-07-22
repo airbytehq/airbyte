@@ -1,9 +1,6 @@
 {
   "type": "object",
-  "required": [
-    "account",
-    "bankBalance"
-  ],
+  "required": ["account", "bankBalance"],
   "properties": {
     "account": {
       "type": "object",

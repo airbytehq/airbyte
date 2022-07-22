@@ -7,15 +7,18 @@ import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union, Dict
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator, Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from dateutil.parser import isoparse
+
+from .utils import middle_date_slices
 
 
 class PaypalHttpException(Exception):
@@ -28,15 +31,19 @@ class PaypalHttpException(Exception):
         message = repr(self.error)
 
         if self.error.response.content:
-            content = self.error.response.content.decode()
-            try:
-                details = json.loads(content)
-            except json.decoder.JSONDecodeError:
-                details = content
-
+            details = self.error_message()
             message = f"{message} Details: {details}"
 
         return message
+
+    def error_message(self):
+        content = self.error.response.content.decode()
+        try:
+            details = json.loads(content)
+        except json.decoder.JSONDecodeError:
+            details = content
+
+        return details
 
     def __repr__(self):
         return self.__str__()
@@ -72,7 +79,7 @@ class PaypalTransactionStream(HttpStream, ABC):
     # API limit: (now() - start_date_min) <= start_date <= end_date <= last_refreshed_datetime <= now
     start_date_min: Mapping[str, int] = {"days": 3 * 365}  # API limit - 3 years
     last_refreshed_datetime: Optional[datetime] = None  # extracted from API response. Indicate the most resent possible start_date
-    stream_slice_period: Mapping[str, int] = {"days": 1}  # max period is 31 days (API limit)
+    stream_slice_period: Mapping[str, int] = {"days": 15}  # max period is 31 days (API limit)
 
     requests_per_minute: int = 30  # API limit is 50 reqs/min from 1 IP to all endpoints, otherwise IP is banned for 5 mins
 
@@ -179,6 +186,11 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return data
 
+    @staticmethod
+    def max_records_in_response_reached(exception: Exception, **kwargs):
+        message = exception.error_message()
+        return message.get("name") == "RESULTSET_TOO_LARGE"
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
         # This method is called once for each record returned from the API to compare the cursor field value in that record with the current state
         # we then return an updated state object. If this is the first time we run a sync or no state was passed, current_stream_state will be None.
@@ -253,6 +265,59 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         return slices
 
+    def _prepared_request(
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Optional[dict] = None
+    ):
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        return request, request_kwargs
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+        next_page_token = None
+        while not pagination_complete:
+            request, request_kwargs = self._prepared_request(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            )
+
+            try:
+                response = self._send_request(request, request_kwargs)
+            except PaypalHttpException as exception:
+                if self.max_records_in_response_reached(exception):
+                    date_slices = middle_date_slices(stream_slice)
+                    if date_slices:
+                        for date_slice in date_slices:
+                            yield from self.read_records(
+                                sync_mode, cursor_field=cursor_field, stream_slice=date_slice, stream_state=stream_state
+                            )
+                        break
+                    else:
+                        raise exception
+
+            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         try:
             return super()._send_request(request, request_kwargs)
@@ -301,7 +366,7 @@ class Transactions(PaypalTransactionStream):
             "page_size": self.page_size,
             "page": page_number,
         }
-    
+
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
         if isinstance(original_value, str) and field_schema["type"] == "number":

@@ -4,9 +4,7 @@
   "additionalProperties": true,
   "properties": {
     "object": {
-      "enum": [
-        "database"
-      ]
+      "enum": ["database"]
     },
     "id": {
       "type": "string"
@@ -45,26 +43,16 @@
       "type": "string"
     },
     "is_inline": {
-      "type": [
-        "null",
-        "boolean"
-      ]
+      "type": ["null", "boolean"]
     },
     "properties": {
       "type": "array",
-      "additionalProperties": false,
       "items": {
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": ["null", "object"],
         "additionalProperties": true,
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "type": ["null", "string"]
           },
           "value": {
             "type": "object",
@@ -106,9 +94,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "number"
-                    ]
+                    "enum": ["number"]
                   },
                   "name": {
                     "type": "string"
@@ -162,10 +148,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "select",
-                      "multi_select"
-                    ]
+                    "enum": ["select", "multi_select"]
                   },
                   "name": {
                     "type": "string"
@@ -185,9 +168,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "formula"
-                    ]
+                    "enum": ["formula"]
                   },
                   "name": {
                     "type": "string"
@@ -204,9 +185,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "relation"
-                    ]
+                    "enum": ["relation"]
                   },
                   "name": {
                     "type": "string"
@@ -215,16 +194,10 @@
                     "type": "string"
                   },
                   "synced_property_name": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   },
                   "synced_property_id": {
-                    "type": [
-                      "null",
-                      "string"
-                    ]
+                    "type": ["null", "string"]
                   }
                 }
               },
@@ -235,9 +208,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": [
-                      "rollup"
-                    ]
+                    "enum": ["rollup"]
                   },
                   "name": {
                     "type": "string"

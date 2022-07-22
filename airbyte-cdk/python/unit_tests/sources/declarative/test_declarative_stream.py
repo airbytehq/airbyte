@@ -30,8 +30,10 @@ def test():
     retriever.stream_slices.return_value = stream_slices
 
     no_op_transform = mock.create_autospec(spec=RecordTransformation)
-    no_op_transform.transform = MagicMock(side_effect=lambda x: x)
+    no_op_transform.transform = MagicMock(side_effect=lambda record, config, stream_slice, stream_state: record)
     transformations = [no_op_transform]
+
+    config = {"api_key": "open_sesame"}
 
     stream = DeclarativeStream(
         name=name,
@@ -39,6 +41,7 @@ def test():
         cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
+        config=config,
         transformations=transformations,
         checkpoint_interval=checkpoint_interval,
     )
@@ -46,12 +49,13 @@ def test():
     assert stream.name == name
     assert stream.get_json_schema() == json_schema
     assert stream.state == state
-    assert list(stream.read_records(SyncMode.full_refresh, cursor_field, None, None)) == records
+    input_slice = stream_slices[0]
+    assert list(stream.read_records(SyncMode.full_refresh, cursor_field, input_slice, state)) == records
     assert stream.primary_key == primary_key
     assert stream.cursor_field == cursor_field
     assert stream.stream_slices(sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_state=None) == stream_slices
     assert stream.state_checkpoint_interval == checkpoint_interval
     for transformation in transformations:
         assert len(transformation.transform.call_args_list) == len(records)
-        expected_calls = [call(record) for record in records]
+        expected_calls = [call(record, config=config, stream_slice=input_slice, stream_state=state) for record in records]
         transformation.transform.assert_has_calls(expected_calls, any_order=False)

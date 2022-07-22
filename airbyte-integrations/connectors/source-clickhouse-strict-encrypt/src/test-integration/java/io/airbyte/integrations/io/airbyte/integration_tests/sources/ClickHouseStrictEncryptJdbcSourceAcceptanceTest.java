@@ -15,6 +15,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
@@ -74,26 +75,26 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("username", "default")
-        .put("password", "")
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, "default")
+        .put(JdbcUtils.PASSWORD_KEY, "")
         .build());
 
     db = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            configWithoutDbName.get("username").asText(),
-            configWithoutDbName.get("password").asText(),
+            configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
             ClickHouseSource.DRIVER_CLASS,
             String.format("jdbc:clickhouse://%s:%s?ssl=true&sslmode=none",
-                configWithoutDbName.get("host").asText(),
-                configWithoutDbName.get("port").asText())));
+                configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+                configWithoutDbName.get(JdbcUtils.PORT_KEY).asText())));
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     db.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
     config = Jsons.clone(configWithoutDbName);
-    ((ObjectNode) config).put("database", dbName);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
     super.setup();
   }

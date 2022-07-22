@@ -107,7 +107,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
    */
   @Override
   protected void putBoolean(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, resultSet.getInt(index) == 1);
+    node.put(columnName, resultSet.getInt(index) > 0);
   }
 
   @Override
