@@ -4,15 +4,20 @@
 
 from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
 class InterpolatedMapping:
-    def __init__(self, mapping: Mapping[str, Any], options: Mapping[str, Any], interpolation: Interpolation = JinjaInterpolation()):
+    """Wrapper around a Mapping[str, str] to be evaluated to be evaluated."""
+
+    def __init__(self, mapping: Mapping[str, Any], options: Mapping[str, Any]):
+        """
+        :param mapping: Mapping[str, str] to be evaluated
+        :param options: Interpolation parameters propagated by parent component
+        """
         self._mapping = mapping
         self._options = options
-        self._interpolation = interpolation
+        self._interpolation = JinjaInterpolation()
 
     def eval(self, config, **kwargs):
         interpolated_values = {
