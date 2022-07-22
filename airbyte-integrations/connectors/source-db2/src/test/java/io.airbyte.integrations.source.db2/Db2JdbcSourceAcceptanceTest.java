@@ -39,7 +39,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
-    TABLE_NAME_WITHOUT_CURSOR_FIELD = "TABLE_WITHOUT_CURSOR";
+    TABLE_NAME_WITHOUT_CURSOR_TYPE = "TABLE_NAME_WITHOUT_CURSOR_TYPE";
+    TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE";
     TEST_TABLES = ImmutableSet
         .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
     COL_ID = "ID";
@@ -98,7 +99,10 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_FIELD))));
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_TYPE))));
+    super.database.execute(connection -> connection.createStatement().execute(String
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE))));
     super.tearDown();
   }
 
@@ -131,9 +135,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (bitfield boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (%s boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement().execute(String.format("INSERT INTO %s VALUES(true)",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
   }
 

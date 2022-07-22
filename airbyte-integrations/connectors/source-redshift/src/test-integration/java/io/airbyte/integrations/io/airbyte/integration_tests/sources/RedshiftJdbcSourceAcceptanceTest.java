@@ -61,9 +61,9 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (shape GEOMETRY)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (%s GEOMETRY)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement().execute(String.format("INSERT INTO %s VALUES(ST_Point(129.77099609375, 62.093299865722656))",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
   }
 

@@ -150,30 +150,20 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
   @Override
   protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (`arr` Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();",
-          dbName + "." + getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+      connection.createStatement().execute(String.format("CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement()
-          .execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
   }
 
   protected void createTableWithNullableTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (nullfield Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();",
-              dbName + "." + getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();",
+              getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-    });
-  }
-
-  protected void createTableWithNonNullableTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (nonnullfield VARCHAR(20) NOT NULL) ENGINE = MergeTree ORDER BY tuple();",
-              dbName + "." + getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
     });
   }
 

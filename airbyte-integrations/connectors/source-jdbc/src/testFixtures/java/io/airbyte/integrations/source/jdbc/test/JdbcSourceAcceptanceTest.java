@@ -90,7 +90,8 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String TABLE_NAME_WITH_SPACES = "id and name";
   public static String TABLE_NAME_WITHOUT_PK = "id_and_name_without_pk";
   public static String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
-  public static String TABLE_NAME_WITHOUT_CURSOR_FIELD = "table_without_cursor";
+  public static String TABLE_NAME_WITHOUT_CURSOR_TYPE = "table_without_cursor_type";
+  public static String TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "table_with_nullable_cursor_type";
 
   public static String COL_ID = "id";
   public static String COL_NAME = "name";
@@ -98,6 +99,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COL_FIRST_NAME = "first_name";
   public static String COL_LAST_NAME = "last_name";
   public static String COL_LAST_NAME_WITH_SPACE = "last name";
+  public static String COL_CURSOR = "cursor_field";
   public static Number ID_VALUE_1 = 1;
   public static Number ID_VALUE_2 = 2;
   public static Number ID_VALUE_3 = 3;
@@ -204,28 +206,18 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (bitfield bit);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (%s bit NOT NULL);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement().execute(String.format("INSERT INTO %s VALUES(0);",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
   }
 
   protected void createTableWithNullableTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (nullfield VARCHAR(20));", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (%s VARCHAR(20));", getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
       connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)');",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-    });
-  }
-
-  protected void createTableWithNonNullableTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(
-              String.format("CREATE TABLE %s (nonnullfield VARCHAR(20) NOT NULL);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)');",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
     });
   }
 
@@ -351,9 +343,9 @@ public abstract class JdbcSourceAcceptanceTest {
     createTableWithoutCursorTypeField();
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     AirbyteStream stream =
-        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
+        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_TYPE)).findFirst().orElse(null);
     assertNotNull(stream);
-    assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD.toLowerCase(), stream.getName().toLowerCase());
+    assertEquals(TABLE_NAME_WITHOUT_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
     assertEquals(1, stream.getSupportedSyncModes().size());
     assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
   }
@@ -363,22 +355,11 @@ public abstract class JdbcSourceAcceptanceTest {
     createTableWithNullableTypeField();
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     AirbyteStream stream =
-        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
+        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)).findFirst().orElse(null);
     assertNotNull(stream);
-    assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD.toLowerCase(), stream.getName().toLowerCase());
+    assertEquals(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE.toLowerCase(), stream.getName().toLowerCase());
     assertEquals(1, stream.getSupportedSyncModes().size());
     assertEquals(SyncMode.FULL_REFRESH, stream.getSupportedSyncModes().get(0));
-  }
-
-  @Test
-  void testDiscoverWithNonNullableCursorFields() throws Exception {
-    createTableWithNonNullableTypeField();
-    final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
-    AirbyteStream stream =
-        actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_FIELD)).findFirst().orElse(null);
-    assertNotNull(stream);
-    assertEquals(TABLE_NAME_WITHOUT_CURSOR_FIELD.toLowerCase(), stream.getName().toLowerCase());
-    assertEquals(2, stream.getSupportedSyncModes().size());
   }
 
   protected AirbyteCatalog filterOutOtherSchemas(final AirbyteCatalog catalog) {
