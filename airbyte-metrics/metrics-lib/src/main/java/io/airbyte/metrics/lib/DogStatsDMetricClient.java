@@ -100,7 +100,7 @@ public class DogStatsDMetricClient implements MetricClient {
   }
 
   @Override
-  public void distribution(MetricsRegistry metric, double val, final String... tags) {
+  public void distribution(final MetricsRegistry metric, final double val, final String... tags) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
