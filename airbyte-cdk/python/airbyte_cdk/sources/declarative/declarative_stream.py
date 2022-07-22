@@ -116,7 +116,6 @@ class DeclarativeStream(Stream):
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
         return self._schema_loader.get_schema()
 
     def stream_slices(
