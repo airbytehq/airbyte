@@ -43,17 +43,17 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         :param refresh_request_body: The request body to send in the refresh request
         """
         self.config = config
-        self.token_refresh_endpoint = self._to_interpolated_string(token_refresh_endpoint)
-        self.client_secret = self._to_interpolated_string(client_secret)
-        self.client_id = self._to_interpolated_string(client_id)
-        self.refresh_token = self._to_interpolated_string(refresh_token)
+        self.token_refresh_endpoint = InterpolatedString.create(token_refresh_endpoint)
+        self.client_secret = InterpolatedString.create(client_secret)
+        self.client_id = InterpolatedString.create(client_id)
+        self.refresh_token = InterpolatedString.create(refresh_token)
         self.scopes = scopes
-        self.access_token_name = self._to_interpolated_string(access_token_name)
-        self.expires_in_name = self._to_interpolated_string(expires_in_name)
+        self.access_token_name = InterpolatedString.create(access_token_name)
+        self.expires_in_name = InterpolatedString.create(expires_in_name)
         self.refresh_request_body = InterpolatedMapping(refresh_request_body or {})
 
         self.token_expiry_date = (
-            pendulum.parse(self._to_interpolated_string(token_expiry_date).eval(self.config))
+            pendulum.parse(InterpolatedString.create(token_expiry_date).eval(self.config))
             if token_expiry_date
             else pendulum.now().subtract(days=1)
         )
@@ -147,9 +147,3 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
     @access_token.setter
     def access_token(self, value: str):
         self._access_token = value
-
-    def _to_interpolated_string(self, s: Union[InterpolatedString, str]):
-        if isinstance(s, str):
-            return InterpolatedString(s)
-        else:
-            return s
