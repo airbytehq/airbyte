@@ -81,7 +81,7 @@ class DeclarativeComponentFactory:
         Create a component defined by `component_definition`.
 
         This method will also traverse and instantiate its subcomponents if needed.
-        :param component_definition: Th definition of the object to create.
+        :param component_definition: The definition of the object to create.
         :param config: Connector's config
         :return: The object to create
         """
