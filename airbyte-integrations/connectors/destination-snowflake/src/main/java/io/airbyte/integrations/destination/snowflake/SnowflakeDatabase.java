@@ -52,7 +52,7 @@ public class SnowflakeDatabase {
       .build();
   public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
   public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
-  public static final String PASSPHRASE = "passphrase";
+  public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
 
   public static HikariDataSource createDataSource(final JsonNode config) {
     final HikariDataSource dataSource = new HikariDataSource();
@@ -103,8 +103,8 @@ public class SnowflakeDatabase {
       final String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
       createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
       properties.put("private_key_file", PRIVATE_KEY_FILE_NAME);
-      if (credentials.has(PASSPHRASE)) {
-        properties.put("private_key_file_pwd", credentials.get(PASSPHRASE).asText());
+      if (credentials.has(PRIVATE_KEY_PASSWORD)) {
+        properties.put("private_key_file_pwd", credentials.get(PRIVATE_KEY_PASSWORD).asText());
       }
     } else {
       LOGGER.warn(

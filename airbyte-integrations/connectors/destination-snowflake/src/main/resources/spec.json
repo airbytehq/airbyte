@@ -120,7 +120,7 @@
                 "multiline": true,
                 "airbyte_secret": true
               },
-              "passphrase": {
+              "private_key_password": {
                 "type": "string",
                 "title": "Passphrase (Optional)",
                 "description": "Passphrase for private key",
