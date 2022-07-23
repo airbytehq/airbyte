@@ -68,8 +68,6 @@ class StateDecoratingIteratorTest {
 
   @BeforeEach
   void setup() {
-    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
-
     stateManager = mock(StateManager.class);
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, null)).thenReturn(EMPTY_STATE_MESSAGE.getState());
     when(stateManager.updateAndEmit(NAME_NAMESPACE_PAIR, RECORD_VALUE_1)).thenReturn(STATE_MESSAGE_1.getState());
@@ -84,6 +82,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testWithoutInitialCursor() {
+    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageIterator,
         stateManager,
@@ -101,6 +100,7 @@ class StateDecoratingIteratorTest {
 
   @Test
   void testWithInitialCursor() {
+    messageIterator = MoreIterators.of(RECORD_MESSAGE_1, RECORD_MESSAGE_2);
     final StateDecoratingIterator iterator = new StateDecoratingIterator(
         messageIterator,
         stateManager,
