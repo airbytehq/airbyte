@@ -81,9 +81,9 @@ class DeclarativeComponentFactory:
         Create a component defined by `component_definition`.
 
         This method will also traverse and instantiate its subcomponents if needed.
-        :param component_definition: definition of the object to create.
+        :param component_definition: Th definition of the object to create.
         :param config: Connector's config
-        :return: the object to create
+        :return: The object to create
         """
         kwargs = copy.deepcopy(component_definition)
         if "class_name" in kwargs:

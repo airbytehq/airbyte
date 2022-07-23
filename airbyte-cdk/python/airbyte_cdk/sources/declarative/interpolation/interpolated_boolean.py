@@ -2,8 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Final, List
+
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.types import Config
+
+FALSE_VALUES: Final[List[Any]] = ["False", "false", "{}", "[]", "()", "", "0", "0.0", "False", "false", {}, False, [], (), set()]
 
 
 class InterpolatedBoolean:
@@ -11,8 +15,6 @@ class InterpolatedBoolean:
     Wrapper around a string to be evaluated to a boolean value.
     The string will be evaluated as False if it interpolates to a value in FALSE_VALUES
     """
-
-    FALSE_VALUES = ["False", "false", "{}", "[]", "()", "", "0", "0.0", "False", "false", {}, False, [], (), set()]
 
     def __init__(self, condition: str):
         """
@@ -34,7 +36,7 @@ class InterpolatedBoolean:
             return self._condition
         else:
             evaluated = self._interpolation.eval(self._condition, config, self._default, **kwargs)
-            if evaluated in self.FALSE_VALUES:
+            if evaluated in FALSE_VALUES:
                 return False
             # The presence of a value is generally regarded as truthy, so we treat it as such
             return True

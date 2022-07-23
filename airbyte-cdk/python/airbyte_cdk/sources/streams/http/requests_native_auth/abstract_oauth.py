@@ -109,7 +109,7 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @token_expiry_date.setter
     @abstractmethod
-    def token_expiry_date(self, value: pendulum.datetime()):
+    def token_expiry_date(self, value: pendulum.datetime):
         """Setter for access token expiration date"""
 
     @property

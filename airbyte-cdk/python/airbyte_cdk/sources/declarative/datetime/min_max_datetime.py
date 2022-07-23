@@ -24,7 +24,7 @@ class MinMaxDatetime:
     ):
         """
         :param datetime: InterpolatedString or string representing the datetime in the format specified by `datetime_format`
-        :param datetime_format: format of the datetime passed as argument
+        :param datetime_format: Format of the datetime passed as argument
         :param min_datetime: InterpolatedString or string representing the min datetime
         :param max_datetime: InterpolatedString or string representing the max datetime
         """
