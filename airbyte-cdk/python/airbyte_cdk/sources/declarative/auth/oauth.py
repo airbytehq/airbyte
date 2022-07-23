@@ -31,16 +31,16 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         refresh_request_body: Optional[Mapping[str, Any]] = None,
     ):
         """
-        :param token_refresh_endpoint: Endpoint to refresh the access token
-        :param client_id: Client id
+        :param token_refresh_endpoint: The endpoint to refresh the access token
+        :param client_id: The client id
         :param client_secret: Client secret
-        :param refresh_token: Token used to refresh the access token
+        :param refresh_token: The token used to refresh the access token
         :param config: The user-provided configuration as specified by the source's spec
-        :param scopes: Scopes to request
-        :param token_expiry_date: Access token expiration date #FIXME make sure this is actually for the refresh token and not for the access token
-        :param access_token_name: Field to extract access token from in the response
-        :param expires_in_name:Field to extract expires_in from in the response
-        :param refresh_request_body: Request body to send in the refresh request
+        :param scopes: The scopes to request
+        :param token_expiry_date: The access token expiration date
+        :param access_token_name: THe field to extract access token from in the response
+        :param expires_in_name:The field to extract expires_in from in the response
+        :param refresh_request_body: The request body to send in the refresh request
         """
         self.config = config
         self.token_refresh_endpoint = self._to_interpolated_string(token_refresh_endpoint)

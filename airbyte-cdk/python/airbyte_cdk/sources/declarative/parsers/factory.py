@@ -125,7 +125,7 @@ class DeclarativeComponentFactory:
         2. dict with "type" field -> lookup the `CLASS_TYPES_REGISTRY` to find the type of object and create an object of that type
         3. a dict with a type that can be inferred. If the parent class's constructor has type hints, we can infer the type of the object to create by looking up the `DEFAULT_IMPLEMENTATIONS_REGISTRY` map
         4. list: loop over the list and create objects for its items
-        5. a literal -> return as is
+        5. anything else -> return as is
         """
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects

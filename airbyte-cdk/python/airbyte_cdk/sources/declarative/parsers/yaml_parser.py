@@ -121,7 +121,6 @@ class YamlParser(ConnectionDefinitionParser):
         :return:
         """
         d = {}
-        print(f"tyepath: {type(path)}")
         if self.ref_tag in input_mapping:
             partial_ref_string = input_mapping[self.ref_tag]
             d = deepcopy(self._preprocess(partial_ref_string, evaluated_mapping, path))
