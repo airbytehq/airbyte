@@ -26,7 +26,7 @@ retriever:
     class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 customers_stream:
   type: DeclarativeStream
-  $options:
+  options:
     name: "customers"
   primary_key: "id"
   schema_loader:
