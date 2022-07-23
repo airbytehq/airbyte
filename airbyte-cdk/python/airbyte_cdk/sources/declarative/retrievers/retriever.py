@@ -29,7 +29,7 @@ class Retriever(ABC):
         :param cursor_field: Unused but currently necessary for integrating with HttpStream
         :param stream_slice: The stream slice to read data for
         :param stream_state: The initial stream state
-        :return: the records read from the API source
+        :return: The records read from the API source
         """
 
     @abstractmethod
