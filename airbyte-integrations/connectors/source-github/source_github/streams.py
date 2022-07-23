@@ -1000,7 +1000,7 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.cursor_storage = CursorStorage()
+        self.cursor_storage = CursorStorage(["PullRequest", "PullRequestReview", "PullRequestReviewComment", "Reaction"])
         self.query_reactions = QueryReactions()
 
     def path(

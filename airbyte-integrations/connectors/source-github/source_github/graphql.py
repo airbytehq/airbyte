@@ -190,10 +190,8 @@ class QueryReactions:
 
 
 class CursorStorage:
-    Objects = ["PullRequest", "PullRequestReview", "PullRequestReviewComment", "Reaction"]
-
-    def __init__(self):
-        self.typename_to_prio = {o: prio for prio, o in enumerate(reversed(self.Objects))}
+    def __init__(self, objects):
+        self.typename_to_prio = {o: prio for prio, o in enumerate(reversed(objects))}
         self.count = itertools.count()
         self.storage = []
 
