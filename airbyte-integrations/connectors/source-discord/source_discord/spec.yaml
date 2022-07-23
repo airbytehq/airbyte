@@ -7,6 +7,7 @@ connectionSpecification:
     - server_token
     - guild_id
     - bot_id
+    - channel_id
   additionalProperties: false
   properties:
     server_token:
@@ -14,4 +15,6 @@ connectionSpecification:
     guild_id:
       type: string
     bot_id:
+      type: string
+    channel_id:
       type: string
