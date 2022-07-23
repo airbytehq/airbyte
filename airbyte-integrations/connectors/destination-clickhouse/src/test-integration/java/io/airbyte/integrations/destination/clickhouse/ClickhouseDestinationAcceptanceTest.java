@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -20,12 +22,14 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
@@ -142,6 +146,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
             config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+                ClickhouseDestination.HTTP_PROTOCOL,
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
                 config.get(JdbcUtils.DATABASE_KEY).asText())),
@@ -150,7 +155,9 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
   }
 
