@@ -721,7 +721,7 @@ temporal:
   image:
     repository: temporalio/auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "latest"
 
   ## @param temporal.service.type The Kubernetes Service Type
   ## @param temporal.service.port The temporal port and exposed kubernetes port
