@@ -15,7 +15,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         if request_headers is None:
             request_headers = {}
         if request_body_data is None:
-            request_body_data = ""
+            request_body_data = {}
         if request_body_json is None:
             request_body_json = {}
 

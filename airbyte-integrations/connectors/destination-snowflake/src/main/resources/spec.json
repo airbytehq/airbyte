@@ -174,7 +174,6 @@
           },
           {
             "title": "[Recommended] Internal Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": ["method"],
             "properties": {
@@ -189,7 +188,6 @@
           },
           {
             "title": "AWS S3 Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -309,12 +307,24 @@
                     }
                   }
                 ]
+              },
+              "file_name_pattern": {
+                "type": "string",
+                "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
+                "title": "S3 Filename pattern (Optional)",
+                "examples": [
+                  "{date}",
+                  "{date:yyyy_MM}",
+                  "{timestamp}",
+                  "{part_number}",
+                  "{sync_id}"
+                ],
+                "order": 7
               }
             }
           },
           {
             "title": "Google Cloud Storage Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -357,7 +367,6 @@
           },
           {
             "title": "Azure Blob Storage Staging",
-            "additionalProperties": false,
             "description": "Recommended for large production workloads for better speed and scalability.",
             "required": [
               "method",
@@ -428,7 +437,6 @@
       },
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "access_token": {
             "type": "string",
@@ -442,7 +450,6 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string"
@@ -454,7 +461,6 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
         "properties": {
           "client_id": {
             "type": "string",

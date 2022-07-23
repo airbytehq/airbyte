@@ -52,7 +52,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.server.converters.ProtocolConverters;
@@ -62,6 +61,7 @@ import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -392,14 +392,18 @@ public class WebBackendConnectionsHandler {
 
     final Boolean skipReset = webBackendConnectionUpdate.getSkipReset() != null ? webBackendConnectionUpdate.getSkipReset() : false;
     if (!skipReset) {
-      final io.airbyte.protocol.models.AirbyteCatalog existingCatalog = CatalogHelpers.configuredCatalogToCatalog(existingConfiguredCatalog);
-      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingCatalog);
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(existingConfiguredCatalog);
       final AirbyteCatalog newAirbyteCatalog = webBackendConnectionUpdate.getSyncCatalog();
+      newAirbyteCatalog
+          .setStreams(newAirbyteCatalog.getStreams().stream().filter(streamAndConfig -> streamAndConfig.getConfig().getSelected()).toList());
       final CatalogDiff catalogDiff = connectionsHandler.getDiff(apiExistingCatalog, newAirbyteCatalog);
-
       final List<StreamDescriptor> apiStreamsToReset = getStreamsToReset(catalogDiff);
+      final Set<StreamDescriptor> changedConfigStreamDescriptors = connectionsHandler.getConfigurationDiff(apiExistingCatalog, newAirbyteCatalog);
+      final Set<StreamDescriptor> allStreamToReset = new HashSet<>();
+      allStreamToReset.addAll(apiStreamsToReset);
+      allStreamToReset.addAll(changedConfigStreamDescriptors);
       List<io.airbyte.protocol.models.StreamDescriptor> streamsToReset =
-          apiStreamsToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
+          allStreamToReset.stream().map(ProtocolConverters::streamDescriptorToProtocol).toList();
 
       if (!streamsToReset.isEmpty()) {
         final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(connectionId);
