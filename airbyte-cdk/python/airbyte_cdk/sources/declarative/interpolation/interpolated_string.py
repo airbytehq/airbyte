@@ -45,8 +45,10 @@ class InterpolatedString:
     ):
         """
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
-        :param string_or_interpolated: either a raw string or an InterpolatedString.
-        :param options: options parameters propagated from parent component
+
+
+        :param string_or_interpolated: Either a raw string or an InterpolatedString.
+        :param default: Default value if interpolation results to an empty string
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):
