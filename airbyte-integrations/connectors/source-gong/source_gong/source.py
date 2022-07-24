@@ -255,6 +255,5 @@ class SourceGong(AbstractSource):
         # TODO remove the authenticator if not required.
         authenticator = self._get_authenticator(config)
           # Oauth2Authenticator is also available if you need oauth support
-        global default_start_date
         default_start_date = pendulum.parse(config["start_date"])
         return [Calls(authenticator=authenticator,default_start_date=default_start_date),CallTranscripts(authenticator=authenticator,default_start_date=default_start_date)]
