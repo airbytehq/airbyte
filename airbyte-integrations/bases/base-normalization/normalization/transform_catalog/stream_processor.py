@@ -1209,7 +1209,7 @@ where 1 = 1
                     quoted_unique_key=self.get_unique_key(in_jinja=True),
                     active_row_column_name=active_row_column_name,
                     normalized_at_incremental_clause=self.get_incremental_clause_for_column(
-                        "{}.{}".format(
+                        "{} + '.' + {}".format(
                             self.name_transformer.apply_quote("this.schema", literal=False),
                             self.name_transformer.apply_quote(final_table_name),
                         ),
