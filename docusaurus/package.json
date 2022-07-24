@@ -90,7 +90,7 @@
     "@mdx-js/react": "^1.6.21",
     "async": "2.6.4",
     "autoprefixer": "10.4.7",
-    "clsx": "^1.1.1",
+    "clsx": "^1.2.0",
     "copy-webpack-plugin": "11.0.0",
     "core-js": "3.23.3",
     "css-declaration-sorter": "6.3.0",
