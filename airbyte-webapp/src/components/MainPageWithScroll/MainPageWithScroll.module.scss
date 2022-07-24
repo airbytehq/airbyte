@@ -7,13 +7,9 @@
   flex-direction: column;
 }
 
-.headerError {
-  padding-top: 25px;
-}
-
 .content {
   overflow-y: auto;
-  padding-top: 17px;
   height: 100%;
-  padding-bottom: variables.$spacing-page-bottom;
+  padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-page-bottom variables.$spacing-xl;
+  min-width: variables.$main-page-content-min-width;
 }

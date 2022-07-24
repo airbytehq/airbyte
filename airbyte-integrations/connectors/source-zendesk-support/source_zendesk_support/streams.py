@@ -474,6 +474,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
