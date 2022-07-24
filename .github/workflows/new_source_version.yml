@@ -1,12 +1,16 @@
 name: Build and Deploy to GCP
 
 on: workflow_dispatch
-
+workflow_dispatch:
+    inputs:
+      source-name:
+        description: 'The name of the model directory that we want to deploy'
+        required: true
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   RUN_REGION: europe-west1
-  SERVICE_NAME: new-source-version
-  FOLDER_PATH: ./airbyte-integrations/connectors/source-gong
+  SERVICE_NAME: ${{ github.event.inputs.source-name }}
+  FOLDER_PATH: ./airbyte-integrations/connectors/${{ github.event.inputs.source-name }}
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -29,19 +33,3 @@ jobs:
           docker build -t gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{  github.sha }} ${{ env.FOLDER_PATH }}
           docker push gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{  github.sha }}
       
-      # Deploy image to Cloud Run
-      - name: Deploy
-        run: |-
-          gcloud beta run deploy "${{ env.SERVICE_NAME }}" \
-            --set-env-vars "APP_MODULE=main:app" \
-            --set-env-vars "GCP_PROJECT=data-pipelines-dev" \
-            --update-secrets="BIGQUERY_CREDENTIALS=BIGQUERY_CREDENTIALS:latest" \
-            --project ${{ env.PROJECT_ID }} \
-            --port "80" \
-            --quiet \
-            --cpu 1 \
-            --min-instances 1 \
-            --memory 256Mi \
-            --region "${{ env.RUN_REGION }}" \
-            --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{  github.sha }}" \
-            --platform "managed"
