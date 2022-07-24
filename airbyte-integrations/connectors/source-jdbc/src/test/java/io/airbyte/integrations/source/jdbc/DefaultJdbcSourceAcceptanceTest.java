@@ -23,6 +23,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;
@@ -38,7 +39,7 @@ import org.testcontainers.utility.MountableFile;
  * itself as a sanity check. The trade off here is that this class is duplicated from the one used
  * in source-postgres.
  */
-class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -78,6 +79,16 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new PostgresTestSource();
+  }
+
+  @Override
+  protected void createTableWithoutCursorTypeField() throws SQLException {
+    database.execute(connection -> {
+      connection.createStatement()
+          .execute(String.format("CREATE TABLE %s (%s BIT(3) NOT NULL);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(B'101');",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
+    });
   }
 
   @Override

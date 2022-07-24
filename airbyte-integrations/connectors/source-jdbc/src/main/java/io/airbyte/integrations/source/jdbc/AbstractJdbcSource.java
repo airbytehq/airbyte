@@ -156,7 +156,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
                 .collect(Collectors.toList()))
             .cursorFields((fields.stream()
                 .filter(field -> isCursorType(getFieldType(field)))
-                .peek(System.out::println)
                 .filter(field -> "NO".equals(field.get(INTERNAL_IS_NULLABLE).asText())))
                     .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
                     .collect(Collectors.toList()))

@@ -38,6 +38,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.sql.JDBCType;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterAll;
@@ -188,13 +189,12 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }
 
-  @Override
-  protected void createTableWithoutCursorFields() throws SQLException {
+  protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (posts JSONB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('{\"color\": \"black\", \"capacity\": 4000}')",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_FIELD)));
+          .execute(String.format("CREATE TABLE %s (%s bit NOT NULL);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(B'1');",
+          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
   }
 
