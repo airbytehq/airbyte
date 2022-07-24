@@ -1,0 +1,60 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/Gong
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Gong Source Spec
+  type: object
+  required:
+    - start_date
+    - credentials
+  additionalProperties: true
+  properties:
+    start_date:
+      type: string
+      title: Start date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      description: >-
+        UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
+        this date will not be replicated.
+      examples:
+        - "2017-01-25T00:00:00Z"
+    credentials:
+      title: Authentication
+      description: Choose how to authenticate to Gong.
+      type: object
+      oneOf:
+        - type: object
+          title: OAuth
+          required:
+            - client_id
+            - client_secret
+            - access_token
+            - credentials_title
+          properties:
+            credentials_title:
+              type: string
+              title: Credentials
+              description: Name of the credentials
+              const: OAuth Credentials
+              order: 0
+            client_id:
+              title: Client ID
+              description: >-
+                The Client ID of your Gong developer application.
+              type: string
+              examples:
+                - "123456789000"
+            client_secret:
+              title: Client Secret
+              description: >-
+                The client secret for your Gong developer application. 
+              type: string
+              examples:
+                - secret
+              airbyte_secret: true
+            access_token:
+              title: Access Token
+              description: >-
+                Access token to renew an expired access token.
+              type: string
+              examples:
+                - access_token
