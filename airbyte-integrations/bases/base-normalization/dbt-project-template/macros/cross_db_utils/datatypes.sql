@@ -138,6 +138,14 @@ so this macro needs to be called very_large_integer.
     numeric
 {% endmacro %}
 
+{% macro mysql__type_very_large_integer() %}
+    decimal(38, 0)
+{% endmacro %}
+
+{% macro clickhouse__type_very_large_integer() %}
+    decimal128(0)
+{% endmacro %}
+
 {# timestamp ------------------------------------------------- --#}
 {% macro mysql__type_timestamp() %}
     time

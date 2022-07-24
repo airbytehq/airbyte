@@ -56,8 +56,8 @@
 
 # These records are verified in types_testing_incorrect_values.sql. If you add/remove entries, make sure to update that file as well.
 # Verify max value for int64, and a 28-digit value for big_integer. (28 is larger than an int64 can handle, but still within bounds for a BigQuery NUMERIC column)
-{"type":"RECORD","record":{"stream":"types_testing","data":{"id":1,"airbyte_integer":9223372036854775807,"nullable_airbyte_integer":9223372036854775807,"big_integer":"1234567890123456789012345678","nullable_big_integer":"1234567890123456789012345678"},"emitted_at":1623959926}}
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":1,"airbyte_integer_column":9223372036854775807,"nullable_airbyte_integer_column":9223372036854775807,"big_integer_column":"1234567890123456789012345678","nullable_big_integer_column":"1234567890123456789012345678"},"emitted_at":1623959926}}
 # Verify max value for int64, and a negative 28-digit value for big_integer
-{"type":"RECORD","record":{"stream":"types_testing","data":{"id":2,"airbyte_integer":-9223372036854775808,"nullable_airbyte_integer":-9223372036854775808,"big_integer":"-1234567890123456789012345678","nullable_big_integer":"-1234567890123456789012345678"},"emitted_at":1623959926}}
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":2,"airbyte_integer_column":-9223372036854775808,"nullable_airbyte_integer_column":-9223372036854775808,"big_integer_column":"-1234567890123456789012345678","nullable_big_integer_column":"-1234567890123456789012345678"},"emitted_at":1623959926}}
 # Verify nullable values
-{"type":"RECORD","record":{"stream":"types_testing","data":{"id":3,"airbyte_integer":0,"big_integer":0},"emitted_at":1623959926}}
+{"type":"RECORD","record":{"stream":"types_testing","data":{"id":3,"airbyte_integer_column":0,"big_integer_column":0},"emitted_at":1623959926}}
