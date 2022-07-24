@@ -163,7 +163,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case TINYBLOB, BLOB, MEDIUMBLOB, LONGBLOB, BINARY, VARBINARY -> setBinary(preparedStatement, parameterIndex, value);
       // since cursor are expected to be comparable, handle cursor typing strictly and error on
       // unrecognized types
-      default -> throw new IllegalArgumentException(String.format("%s is not supported.", cursorFieldType));
+      default -> throw new IllegalArgumentException(String.format("%s cannot be used as a cursor.", cursorFieldType));
     }
   }
 
