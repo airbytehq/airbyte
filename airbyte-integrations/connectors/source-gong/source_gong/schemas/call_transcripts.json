@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "callId": {
+      "type": "string"
+    },
+    "speakerId": {
+      "type": "string"
+    },
+    "transcript": {
+      "items": {
+      "additionalProperties": true,
+      "properties": {
+        "topic": {
+          "type": "string"
+        },
+        "sentences": {
+          "items": {
+            "additionalProperties": true,
+            "properties": {
+              "start": {
+                "type": ["null", "integer"]
+              },
+              "end": {
+                "type": ["null", "integer"]
+              },
+              "text":{
+                "type":"string"
+              }
+            },
+            "type": ["null", "object"]
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null","object"]
+      },
+      "type": ["null","array"]
+    }
+  },
+  "type": ["null","object"]
+}
