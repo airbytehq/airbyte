@@ -28,13 +28,13 @@ def is_datetime(definition: dict) -> bool:
     )
 
 
-def is_datetime_with_timezone(definition: dict) -> bool:
-    return is_datetime(definition) and definition.get("airbyte_type") == "timestamp_with_timezone"
-
-
 def is_datetime_without_timezone(definition: dict) -> bool:
+    return is_datetime(definition) and definition.get("airbyte_type") == "timestamp_without_timezone"
+
+
+def is_datetime_with_timezone(definition: dict) -> bool:
     return is_datetime(definition) and (
-        not definition.get("airbyte_type") or definition.get("airbyte_type") == "timestamp_without_timezone"
+        not definition.get("airbyte_type") or definition.get("airbyte_type") == "timestamp_with_timezone"
     )
 
 
