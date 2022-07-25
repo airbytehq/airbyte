@@ -14,7 +14,10 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   const { formatMessage } = useIntl();
   const state = useGetConnectionState(connectionId);
 
-  const stateString = useMemo(() => displayState(state, formatMessage), [formatMessage, state.state]);
+  const stateString = useMemo(
+    () => displayState(state, formatMessage),
+    [formatMessage, state.state, state.globalState, state.streamState]
+  );
 
   return (
     <Card $withPadding>
