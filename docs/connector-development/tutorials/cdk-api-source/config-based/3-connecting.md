@@ -99,7 +99,7 @@ rates_stream:
       path: /latest"
 ```
 
-5. Next, we'll set up the authentication.
+4. Next, we'll set up the authentication.
    The Exchange Rates API requires an access key, which we'll need to make accessible to our connector.
    We'll configure the connector to use this access key by setting the access key in a request parameter and pointing to a field in the config, which we'll populate in the next step:
 
@@ -114,7 +114,7 @@ requester:
       access_key: "{{ config.access_key }}"
 ```
 
-4. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter:
+5. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter:
 
 ```
 request_options_provider:
@@ -123,7 +123,7 @@ request_options_provider:
     base: "{{ config.base }}"
 ```
 
-5. Let's populate the config so the connector can access the access key and base currency.
+6. Let's populate the config so the connector can access the access key and base currency.
    First, we'll add these properties to the connector spec in
    `source-exchange-rates-tutorial/source_exchange_rates_tutorial/spec.yaml`
 
@@ -155,8 +155,8 @@ connectionSpecification:
         - USD
 ```
 
-We also need to fill in the connection config in the `secrets/config.json`
-Because of the sensitive nature of the access key, we recommend storing this config in the `secrets` directory because it is ignored by git.
+7. We also need to fill in the connection config in the `secrets/config.json`
+   Because of the sensitive nature of the access key, we recommend storing this config in the `secrets` directory because it is ignored by git.
 
 ```
 echo '{"access_key": "<your_access_key>", "base": "USD"}'  > secrets/config.json
