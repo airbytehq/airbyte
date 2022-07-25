@@ -116,7 +116,7 @@ class DeclarativeStream(Stream):
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-        return self._schema_loader.get_schema()
+        return self._schema_loader.get_json_schema()
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

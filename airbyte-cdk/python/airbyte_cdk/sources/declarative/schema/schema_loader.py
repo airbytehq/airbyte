@@ -10,6 +10,6 @@ class SchemaLoader(ABC):
     """Describes a stream's schema"""
 
     @abstractmethod
-    def get_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, Any]:
         """Returns a mapping describing the stream's schema"""
         pass
