@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
@@ -199,26 +200,29 @@ public class ConnectionsHandler {
     return metadata;
   }
 
-  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate)
+  public ConnectionRead updateConnection(final ConnectionUpdate connectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // retrieve and update sync
-    final StandardSync persistedSync = configRepository.getStandardSync(connectionUpdate.getConnectionId());
-
+    final StandardSync persistedSync = configRepository.getStandardSync(connectionPatch.getConnectionId());
+    final ConnectionUpdate fullUpdate = buildConnectionUpdateFromPatch(persistedSync, connectionPatch);
+    LOGGER.warn("incoming patch: {}", connectionPatch);
+    LOGGER.warn("persistedSync: {}", persistedSync);
+    LOGGER.warn("full update: {}", fullUpdate);
     final StandardSync newConnection = ConnectionHelper.updateConnectionObject(
         workspaceHelper,
         persistedSync,
-        ApiPojoConverters.connectionUpdateToInternal(connectionUpdate));
+        ApiPojoConverters.connectionUpdateToInternal(fullUpdate));
     ConnectionHelper.validateWorkspace(
         workspaceHelper,
         persistedSync.getSourceId(),
         persistedSync.getDestinationId(),
-        new HashSet<>(connectionUpdate.getOperationIds()));
+        new HashSet<>(fullUpdate.getOperationIds()));
 
     configRepository.writeStandardSync(newConnection);
 
-    eventRunner.update(connectionUpdate.getConnectionId());
+    eventRunner.update(fullUpdate.getConnectionId());
 
-    return buildConnectionRead(connectionUpdate.getConnectionId());
+    return buildConnectionRead(fullUpdate.getConnectionId());
   }
 
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
@@ -395,7 +399,81 @@ public class ConnectionsHandler {
   private ConnectionRead buildConnectionRead(final UUID connectionId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
+    LOGGER.warn("standardSync in buildConnectionRead: {}", standardSync);
     return ApiPojoConverters.internalToConnectionRead(standardSync);
+  }
+
+  /**
+   * Given an original {@link StandardSync} and a partially-populated {@link ConnectionUpdate}, return
+   * a fully-populated {@link ConnectionUpdate}
+   */
+  private ConnectionUpdate buildConnectionUpdateFromPatch(final StandardSync original, final ConnectionUpdate patch) {
+    Preconditions.checkArgument(original.getConnectionId().equals(patch.getConnectionId()));
+
+    final ConnectionUpdate fullUpdate = new ConnectionUpdate().connectionId(patch.getConnectionId());
+
+    if (patch.getNamespaceDefinition() == null) {
+      fullUpdate
+          .setNamespaceDefinition(Enums.convertTo(original.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class));
+    } else {
+      fullUpdate.setNamespaceDefinition(patch.getNamespaceDefinition());
+    }
+
+    if (patch.getNamespaceFormat() == null) {
+      fullUpdate.setNamespaceFormat(original.getNamespaceFormat());
+    } else {
+      fullUpdate.setNamespaceFormat(patch.getNamespaceFormat());
+    }
+
+    if (patch.getName() == null) {
+      fullUpdate.setName(original.getName());
+    } else {
+      fullUpdate.setName(patch.getName());
+    }
+
+    if (patch.getPrefix() == null) {
+      fullUpdate.setPrefix(original.getPrefix());
+    } else {
+      fullUpdate.setPrefix(patch.getPrefix());
+    }
+
+    if (patch.getOperationIds() == null) {
+      fullUpdate.setOperationIds(original.getOperationIds());
+    } else {
+      fullUpdate.setOperationIds(patch.getOperationIds());
+    }
+
+    if (patch.getSyncCatalog() == null) {
+      fullUpdate.setSyncCatalog(CatalogConverter.toApi(original.getCatalog()));
+    } else {
+      fullUpdate.setSyncCatalog(patch.getSyncCatalog());
+    }
+
+    if (patch.getSchedule() == null) {
+      fullUpdate.setSchedule(ApiPojoConverters.toApiSchedule(original.getSchedule()));
+    } else {
+      fullUpdate.setSchedule(patch.getSchedule());
+    }
+
+    if (patch.getStatus() == null) {
+      fullUpdate.setStatus(ApiPojoConverters.toApiStatus(original.getStatus()));
+    } else {
+      fullUpdate.setStatus(patch.getStatus());
+    }
+
+    if (patch.getResourceRequirements() == null) {
+      fullUpdate.setResourceRequirements(ApiPojoConverters.resourceRequirementsToApi(original.getResourceRequirements()));
+    } else {
+      fullUpdate.setResourceRequirements(patch.getResourceRequirements());
+    }
+
+    if (patch.getSourceCatalogId() == null) {
+      fullUpdate.setSourceCatalogId(original.getSourceCatalogId());
+    } else {
+      fullUpdate.setSourceCatalogId(patch.getSourceCatalogId());
+    }
+
+    return fullUpdate;
   }
 
 }

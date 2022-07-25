@@ -99,10 +99,14 @@ public class ApiPojoConverters {
 
     // update sync schedule
     if (update.getSchedule() != null) {
-      final Schedule newSchedule = new Schedule()
-          .withTimeUnit(toPersistenceTimeUnit(update.getSchedule().getTimeUnit()))
-          .withUnits(update.getSchedule().getUnits());
-      newConnection.withManual(false).withSchedule(newSchedule);
+      if (update.getSchedule().getManual()) {
+        newConnection.withManual(true).withSchedule(null);
+      } else {
+        final Schedule newSchedule = new Schedule()
+            .withTimeUnit(toPersistenceTimeUnit(update.getSchedule().getTimeUnit()))
+            .withUnits(update.getSchedule().getUnits());
+        newConnection.withManual(false).withSchedule(newSchedule);
+      }
     } else {
       newConnection.withManual(true).withSchedule(null);
     }
@@ -162,6 +166,20 @@ public class ApiPojoConverters {
 
   public static Schedule.TimeUnit toPersistenceTimeUnit(final ConnectionSchedule.TimeUnitEnum apiTimeUnit) {
     return Enums.convertTo(apiTimeUnit, Schedule.TimeUnit.class);
+  }
+
+  public static ConnectionSchedule toApiSchedule(final Schedule schedule) {
+    final ConnectionSchedule newSchedule = new ConnectionSchedule();
+    if (schedule == null) {
+      newSchedule.setTimeUnit(null);
+      newSchedule.setUnits(null);
+      newSchedule.setManual(true);
+    } else {
+      newSchedule.setTimeUnit(Enums.convertTo(schedule.getTimeUnit(), ConnectionSchedule.TimeUnitEnum.class));
+      newSchedule.setUnits(schedule.getUnits());
+      newSchedule.setManual(false);
+    }
+    return newSchedule;
   }
 
 }

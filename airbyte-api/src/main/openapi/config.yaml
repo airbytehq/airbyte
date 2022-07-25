@@ -3265,8 +3265,6 @@ components:
       type: object
       required:
         - connectionId
-        - syncCatalog
-        - status
       properties:
         connectionId:
           $ref: "#/components/schemas/ConnectionId"
@@ -3461,11 +3459,8 @@ components:
         - inactive
         - deprecated
     ConnectionSchedule:
-      description: if null, then no schedule is set.
+      description: If manual is true, no schedule is set. Otherwise, timeUnit and units are both required to define a schedule.
       type: object
-      required:
-        - units
-        - timeUnit
       properties:
         units:
           type: integer
@@ -3478,6 +3473,9 @@ components:
             - days
             - weeks
             - months
+        manual:
+          type: boolean
+          default: false
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
