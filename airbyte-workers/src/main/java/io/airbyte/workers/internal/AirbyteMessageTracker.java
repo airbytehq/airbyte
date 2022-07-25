@@ -197,7 +197,7 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public AirbyteTraceMessage getFirstSourceErrorTraceMessage() {
-    if (sourceErrorTraceMessages.size() > 0) {
+    if (!sourceErrorTraceMessages.isEmpty()) {
       return sourceErrorTraceMessages.get(0);
     } else {
       return null;
@@ -206,7 +206,7 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   @Override
   public AirbyteTraceMessage getFirstDestinationErrorTraceMessage() {
-    if (destinationErrorTraceMessages.size() > 0) {
+    if (!destinationErrorTraceMessages.isEmpty()) {
       return destinationErrorTraceMessages.get(0);
     } else {
       return null;
