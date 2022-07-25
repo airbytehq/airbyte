@@ -15,9 +15,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   const { formatMessage } = useIntl();
   const state = useGetConnectionState(connectionId);
 
-  const stateString = useMemo(() => {
-    return displayState(state) ?? formatMessage({ id: "tables.connectionState.noConnectionState" });
-  }, [formatMessage, state.state]);
+  const stateString = useMemo(() => displayState(state, formatMessage), [formatMessage, state.state]);
 
   return (
     <Card $withPadding>
@@ -29,8 +27,10 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   );
 };
 
-function displayState(state: ConnectionState) {
+function displayState(state: ConnectionState, formatMessage: ReturnType<typeof useIntl>["formatMessage"]) {
   // This hierarchy assumes that for those connections which have both global and per-stream state, the global state contains a meaningful copy of any state which would also be saved per-stream
   const displayState = state?.state ?? state?.globalState ?? state?.streamState ?? null;
-  return displayState ? JSON.stringify(displayState, null, 2) : null;
+  return displayState
+    ? JSON.stringify(displayState, null, 2)
+    : formatMessage({ id: "tables.connectionState.noConnectionState" });
 }
