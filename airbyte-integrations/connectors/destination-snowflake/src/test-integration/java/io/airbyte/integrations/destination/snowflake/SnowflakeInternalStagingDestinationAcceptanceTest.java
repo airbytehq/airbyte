@@ -32,7 +32,7 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
 
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename) throws Exception {
+  public void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename) throws Exception {
     testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair.json");
   }
 

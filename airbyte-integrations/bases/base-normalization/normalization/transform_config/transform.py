@@ -224,7 +224,7 @@ class TransformConfig:
               f.write(credentials["private_key"])
             dbt_config["private_key_path"] = "private_key_path.txt"
             if credentials.get("private_key_password"):
-                dbt_config["private_key_passphrase"] = credentials["private_key_password"]
+              dbt_config["private_key_passphrase"] = credentials["private_key_password"]
         elif credentials.get("password"):
             dbt_config["password"] = credentials["password"]
         else:
