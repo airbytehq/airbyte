@@ -95,7 +95,27 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "oldest running job in seconds"),
   OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS(MetricEmittingApps.METRICS_REPORTER,
       "overall_job_runtime_in_last_hour_by_terminal_state_secs",
-      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states.");
+      "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states."),
+
+  TEMPORAL_WORKFLOW_RESTART_ATTEMPT(MetricEmittingApps.WORKER,
+      "temporal.workflow.restart.attempt",
+      "count of number of attempts to restart a workflow"),
+
+  TEMPORAL_WORKFLOW_RESTART_SUCCESS(MetricEmittingApps.WORKER,
+      "temporal.workflow.restart.success",
+      "count of number of successful restarts performed by the workflow connection manager."),
+
+  TEMPORAL_WORKFLOW_RESTART_CANCELED(MetricEmittingApps.WORKER,
+      "temporal.workflow.restart.canceled",
+      "count of number of canceled workflow restart attempts"),
+
+  TEMPORAL_WORKFLOW_RESTART_ACTIVITY_FAILURE(MetricEmittingApps.WORKER,
+      "temporal.workflow.restart.failure.activity",
+      "count of the number of restart failures due to the attempted activity."),
+
+  TEMPORAL_WORKFLOW_RESTART_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
+      "temporal.workflow.restart.failure.workflow",
+      "count of the number of restart failures do to the workflow");
 
   private final MetricEmittingApp application;
   private final String metricName;

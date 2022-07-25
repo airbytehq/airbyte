@@ -16,6 +16,9 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.metrics.lib.MetricClient;
+import io.airbyte.metrics.lib.MetricClientFactory;
+import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
@@ -123,6 +126,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private UUID connectionId;
 
+  private final MetricClient metricClient = MetricClientFactory.getMetricClient();
+
   public ConnectionManagerWorkflowImpl() {}
 
   @Override
@@ -167,6 +172,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
+      metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_ATTEMPT, 1L);
       connectionId = connectionUpdaterInput.getConnectionId();
 
       // workflow state is only ever set in test cases. for production cases, it will always be null.
@@ -226,13 +232,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         }
 
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+        metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_SUCCESS, 1L);
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just
         // silently ignore it.
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
-
+          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_CANCELED, 1L);
         } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
@@ -245,12 +252,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_ACTIVITY_FAILURE, 1L);
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                   workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
+          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_WORKFLOW_FAILURE, 1L);
         }
       }
     });
