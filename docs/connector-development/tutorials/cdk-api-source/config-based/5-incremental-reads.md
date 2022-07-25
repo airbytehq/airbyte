@@ -54,9 +54,9 @@ echo "{\"access_key\": \"<your_access_key>\", \"start_date\": \"$(date -v -7d '+
 And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`:
 
 ```
-    retriever:
-      requester:
-        path: "{{ config.start_date }}"
+retriever:
+  requester:
+    path: "{{ config.start_date }}"
 ```
 
 You can test the connector by executing the `read` operation:
@@ -105,49 +105,74 @@ rates_stream:
       ref: "*ref(stream_slicer)"
 ```
 
+And we'll update the path to point to the `stream_slice`'s start_date
+
+```
+requester:
+  ref: "*ref(requester)"
+  path: "{{ stream_slice.start_date }}"
+```
+
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
 
 ```
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "[_]"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.exchangeratesapi.io/v1/"
+  http_method: "GET"
+  request_options_provider:
+    request_parameters:
+      access_key: "{{ config.access_key }}"
+      base: "{{ config.base }}"
+stream_slicer:
+  type: "DatetimeStreamSlicer"
+  start_datetime:
+    datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%d"
+  end_datetime:
+    datetime: "{{ now_local() }}"
+    datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+  step: "1d"
+  datetime_format: "%Y-%m-%d"
+  cursor_field: "{{ options.cursor_field }}"
+retriever:
+  type: SimpleRetriever
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+  record_selector:
+    ref: "*ref(selector)"
+  paginator:
+    type: NoPagination
 rates_stream:
+  type: DeclarativeStream
   options:
     name: "rates"
-    primary_key: ""
-    url_base: "https://api.exchangeratesapi.io/v1/"
     cursor_field: "date"
-    schema_loader:
-      file_path: "./source_exchange_rates_tutorial/schemas/{{name}}.json"
-    retriever:
-      requester:
-        path: "{{ stream_slice.start_date }}"
-        request_options_provider:
-          request_parameters:
-            access_key: "{{ config.access_key }}"
-            base: "{{ config.base }}"
-      record_selector:
-        extractor:
-          transform: "[_]"
-      stream_slicer:
-        type: "DatetimeStreamSlicer"
-        start_datetime:
-          datetime: "{{ config.start_date }}"
-          datetime_format: "%Y-%m-%d"
-        end_datetime:
-          datetime: "{{ now_local() }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-        step: "1d"
-        cursor_field: "date"
-        datetime_format: "%Y-%m-%d"
-
+  primary_key: "date"
+  schema_loader:
+    ref: "*ref(schema_loader)"
+  retriever:
+    ref: "*ref(retriever)"
+    stream_slicer:
+      ref: "*ref(stream_slicer)"
+    requester:
+      ref: "*ref(requester)"
+      path: "{{ stream_slice.start_date }}"
 streams:
   - "*ref(rates_stream)"
 check:
-  stream_names:
-    - "rates"
+  type: CheckStream
+  stream_names: ["rates"]
 ```
-
-> > > > FIXME: remove duplicated cursor_field from stream!
-> We should be able to do that with the stream slicer refactor!
-<<<<<
 
 Running the `read` operation will now read all data for all days between start_date and now:
 
