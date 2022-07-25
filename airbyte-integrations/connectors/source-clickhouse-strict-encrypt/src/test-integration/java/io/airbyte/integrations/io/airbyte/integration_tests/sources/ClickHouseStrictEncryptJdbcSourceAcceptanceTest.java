@@ -85,11 +85,11 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
     container = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
         .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
         .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
-        .withEnv("TZ", "UTC")
-        .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
-        .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
-        .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
-            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+            .withEnv("TZ", "UTC")
+            .withExposedPorts(HTTP_PORT, NATIVE_PORT, HTTPS_PORT, NATIVE_SECURE_PORT)
+            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
+            .waitingFor(Wait.forHttp("/ping").forPort(HTTP_PORT)
+                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     container.start();
   }
 

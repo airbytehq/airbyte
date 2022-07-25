@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
+import com.clickhouse.client.ClickHouseFormat;
 import com.clickhouse.jdbc.ClickHouseConnection;
 import com.clickhouse.jdbc.ClickHouseStatement;
-import com.clickhouse.client.ClickHouseFormat;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
