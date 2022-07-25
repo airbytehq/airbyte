@@ -199,9 +199,23 @@ class Logs(IncrementalOktaStream):
 class Users(IncrementalOktaStream):
     cursor_field = "lastUpdated"
     primary_key = "id"
+    # Should add all statuses to filter. Considering Okta documentation https://developer.okta.com/docs/reference/api/users/#list-all-users,
+    # users with "DEPROVISIONED" status are not returned by default.
+    statuses = ["ACTIVE", "DEPROVISIONED", "LOCKED_OUT", "PASSWORD_EXPIRED", "PROVISIONED", "RECOVERY", "STAGED", "SUSPENDED"]
 
     def path(self, **kwargs) -> str:
         return "users"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        status_filters = " or ".join([f'status eq "{status}"' for status in self.statuses])
+        params["filter"] = ("filter" in params and f'{params["filter"]} and ({status_filters})') or status_filters
+        return params
 
 
 class CustomRoles(OktaStream):

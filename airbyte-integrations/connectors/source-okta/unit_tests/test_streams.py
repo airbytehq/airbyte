@@ -176,22 +176,22 @@ class TestStreamUsers:
         inputs = {"sync_mode": SyncMode.incremental}
         assert list(stream.read_records(**inputs)) == [users_instance]
 
-    def test_users_request_params_out_of_next_page_token(self, patch_base_class, url_base):
+    def test_users_request_params_out_of_next_page_token(self, patch_base_class, url_base, user_status_filter):
         stream = Users(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-        expected_params = {"limit": 200}
+        expected_params = {"limit": 200, "filter": user_status_filter}
         assert stream.request_params(**inputs) == expected_params
 
-    def test_users_source_request_params_have_next_cursor(self, patch_base_class, url_base):
+    def test_users_source_request_params_have_next_cursor(self, patch_base_class, url_base, user_status_filter):
         stream = Users(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"next_cursor": "123"}}
-        expected_params = {"limit": 200, "next_cursor": "123"}
+        expected_params = {"limit": 200, "next_cursor": "123", "filter": user_status_filter}
         assert stream.request_params(**inputs) == expected_params
 
-    def test_users_source_request_params_have_latest_entry(self, patch_base_class, url_base):
+    def test_users_source_request_params_have_latest_entry(self, patch_base_class, url_base, user_status_filter):
         stream = Users(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": {"lastUpdated": "some_date"}, "next_page_token": {"next_cursor": "123"}}
-        expected_params = {"limit": 200, "next_cursor": "123", "filter": 'lastUpdated gt "some_date"'}
+        expected_params = {"limit": 200, "next_cursor": "123", "filter": f'lastUpdated gt "some_date" and ({user_status_filter})'}
         assert stream.request_params(**inputs) == expected_params
 
     def test_users_source_parse_response(self, requests_mock, patch_base_class, users_instance, url_base, api_url):
