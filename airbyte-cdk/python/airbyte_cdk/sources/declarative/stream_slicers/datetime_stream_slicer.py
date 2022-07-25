@@ -215,6 +215,10 @@ class DatetimeStreamSlicer(StreamSlicer):
     def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
+
     def _get_request_options(self, option_type):
         options = {}
         if self._start_time_option and self._start_time_option.inject_into == option_type:

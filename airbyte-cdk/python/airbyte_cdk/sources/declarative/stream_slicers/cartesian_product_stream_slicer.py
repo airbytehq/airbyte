@@ -29,7 +29,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def __init__(self, stream_slicers: List[StreamSlicer]):
         """
-        :param stream_slicers: Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer. 
+        :param stream_slicers: Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer.
         """
         self._stream_slicers = stream_slicers
 
@@ -48,6 +48,10 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def request_body_json(self) -> Optional[Mapping]:
         return dict(ChainMap(*[s.request_body_json() for s in self._stream_slicers]))
+
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
 
     def get_stream_state(self) -> Optional[Mapping[str, Any]]:
         states = list(filter(lambda s: s, [slicer.get_stream_state() for slicer in self._stream_slicers]))

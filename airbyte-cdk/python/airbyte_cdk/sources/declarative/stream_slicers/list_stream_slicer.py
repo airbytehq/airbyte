@@ -64,6 +64,10 @@ class ListStreamSlicer(StreamSlicer):
     def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_json)
 
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
+
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         return [{self._cursor_field.eval(self._config): slice_value} for slice_value in self._slice_values]
 

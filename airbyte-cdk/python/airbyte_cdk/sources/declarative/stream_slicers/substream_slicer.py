@@ -67,6 +67,10 @@ class SubstreamSlicer(StreamSlicer):
     def request_body_json(self) -> Optional[Mapping]:
         return self._get_request_option(RequestOptionType.body_json)
 
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
+
     def _get_request_option(self, option_type: RequestOptionType):
         params = {}
         for parent_config in self._parent_stream_configs:

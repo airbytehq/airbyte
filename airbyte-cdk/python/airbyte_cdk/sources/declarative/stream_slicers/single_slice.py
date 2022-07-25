@@ -32,3 +32,7 @@ class SingleSlice(StreamSlicer):
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:
         return [dict()]
+
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}

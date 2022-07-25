@@ -2,14 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional
+from abc import abstractmethod
+from typing import Iterable, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
-class StreamSlicer(ABC):
+class StreamSlicer(RequestOptionsProvider):
     """
     Slices the stream into a subset of records.
     Slices enable state checkpointing and data retrieval parallelization.
@@ -41,19 +42,3 @@ class StreamSlicer(ABC):
     @abstractmethod
     def get_stream_state(self) -> Optional[StreamState]:
         """Returns the current stream state"""
-
-    @abstractmethod
-    def request_params(self) -> Mapping[str, Any]:
-        """Specifies the query parameters that should be set on an outgoing HTTP request given the inputs."""
-
-    @abstractmethod
-    def request_headers(self) -> Mapping[str, Any]:
-        """Specifies the request headers that should be set on an outgoing HTTP request given the inputs."""
-
-    @abstractmethod
-    def request_body_data(self) -> Mapping[str, Any]:
-        """Specifies how to populate the body of the request with a non-JSON payload."""
-
-    @abstractmethod
-    def request_body_json(self) -> Mapping[str, Any]:
-        """Specifies how to populate the body of the request with a JSON payload."""
