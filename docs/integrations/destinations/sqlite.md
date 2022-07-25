@@ -63,3 +63,9 @@ docker cp airbyte-scheduler:/tmp/airbyte_local/{destination_path} .
 ```
 
 Note: If you are running Airbyte on Windows with Docker backed by WSL2, you have to use similar step as above or refer to this [link](../../operator-guides/locating-files-local-destination.md) for an alternative approach.
+
+## Changelog
+
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
+| 0.1.0 | 2022-07-25 | [15018](https://github.com/airbytehq/airbyte/pull/15018) | New SQLite destination |
