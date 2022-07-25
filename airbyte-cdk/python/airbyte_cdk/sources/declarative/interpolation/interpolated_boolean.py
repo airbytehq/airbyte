@@ -13,7 +13,7 @@ FALSE_VALUES: Final[List[Any]] = ["False", "false", "{}", "[]", "()", "", "0", "
 class InterpolatedBoolean:
     """
     Wrapper around a string to be evaluated to a boolean value.
-    The string will be evaluated as False if it interpolates to a value in FALSE_VALUES
+    The string will be evaluated as False if it interpolates to a value in {FALSE_VALUES}
     """
 
     def __init__(self, condition: str):
