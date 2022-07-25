@@ -5,7 +5,6 @@
     "title": "Flexport Spec",
     "type": "object",
     "required": ["api_key", "start_date"],
-    "additionalProperties": false,
     "properties": {
       "api_key": {
         "order": 0,
