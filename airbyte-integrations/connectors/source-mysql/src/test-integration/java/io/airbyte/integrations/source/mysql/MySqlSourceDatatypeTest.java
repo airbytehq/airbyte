@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -27,14 +28,16 @@ public class MySqlSourceDatatypeTest extends AbstractMySqlSourceDatatypeTest {
   protected Database setupDatabase() throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
-
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+            .put("method", "Standard")
+            .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", ReplicationMethod.STANDARD)
+        .put("replication_method", replicationMethod)
         .build());
 
     final Database database = new Database(

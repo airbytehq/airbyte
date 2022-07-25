@@ -10,7 +10,7 @@ public class SshKeyMySqlSourceAcceptanceTest extends AbstractSshMySqlSourceAccep
 
   @Override
   public Path getConfigFilePath() {
-    return Path.of("secrets/ssh-key-config.json");
+    return Path.of("secrets/ssh-key-repl-config.json");
   }
 
 }
