@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Mapping
+from typing import Any, List, Mapping, Union
 
 import requests
 
@@ -14,10 +14,10 @@ class Decoder(ABC):
     """
 
     @abstractmethod
-    def decode(self, response: requests.Response) -> Mapping[str, Any]:
+    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
         """
-        Decodes a requests.Response into a Mapping[str, Any]
+        Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode
-        :return: Mapping describing the response
+        :return: Mapping or array describing the response
         """
         pass
