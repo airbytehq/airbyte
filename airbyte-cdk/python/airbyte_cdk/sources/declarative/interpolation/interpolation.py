@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 class Interpolation(ABC):
     """
-    Strategy for evaluating the interpolated value of a string at runtime using.
+    Strategy for evaluating the interpolated value of a string at runtime using Jinja.
     """
 
     @abstractmethod
