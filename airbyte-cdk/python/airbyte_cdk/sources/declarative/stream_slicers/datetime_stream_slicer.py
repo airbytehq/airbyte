@@ -90,8 +90,8 @@ class DatetimeStreamSlicer(StreamSlicer):
         if self._end_time_option and self._end_time_option.inject_into == RequestOptionType.path:
             raise ValueError("End time cannot be passed by path")
 
-    def get_stream_state(self) -> Optional[StreamState]:
-        return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
+    def get_stream_state(self) -> StreamState:
+        return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else {}
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         """

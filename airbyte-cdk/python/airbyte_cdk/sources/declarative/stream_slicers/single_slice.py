@@ -15,8 +15,8 @@ class SingleSlice(StreamSlicer):
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         pass
 
-    def get_stream_state(self) -> Optional[StreamState]:
-        return None
+    def get_stream_state(self) -> StreamState:
+        return {}
 
     def request_params(self) -> Mapping[str, Any]:
         return {}

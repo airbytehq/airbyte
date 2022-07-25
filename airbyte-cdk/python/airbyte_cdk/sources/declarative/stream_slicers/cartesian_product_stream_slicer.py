@@ -53,12 +53,8 @@ class CartesianProductStreamSlicer(StreamSlicer):
         # Never update kwargs
         return {}
 
-    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        states = list(filter(lambda s: s, [slicer.get_stream_state() for slicer in self._stream_slicers]))
-        if states:
-            return dict(ChainMap(*states))
-        else:
-            return None
+    def get_stream_state(self) -> Mapping[str, Any]:
+        return dict(ChainMap(*[slicer.get_stream_state() for slicer in self._stream_slicers]))
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         sub_slices = (s.stream_slices(sync_mode, stream_state) for s in self._stream_slicers)

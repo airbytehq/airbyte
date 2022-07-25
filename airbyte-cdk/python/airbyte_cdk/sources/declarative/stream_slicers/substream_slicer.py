@@ -81,8 +81,8 @@ class SubstreamSlicer(StreamSlicer):
                     params.update({key: value})
         return params
 
-    def get_stream_state(self) -> Optional[StreamState]:
-        return self._cursor if self._cursor else None
+    def get_stream_state(self) -> StreamState:
+        return self._cursor if self._cursor else {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         """

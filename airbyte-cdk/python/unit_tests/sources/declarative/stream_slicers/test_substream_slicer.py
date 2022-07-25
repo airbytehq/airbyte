@@ -97,7 +97,6 @@ class MockStream(Stream):
     ],
 )
 def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
-    print(f"{test_name} -> {expected_slices}")
     if expected_slices is None:
         try:
             SubstreamSlicer(parent_stream_configs)
@@ -112,9 +111,9 @@ def test_substream_slicer(test_name, parent_stream_configs, expected_slices):
 @pytest.mark.parametrize(
     "test_name, stream_slice, expected_state",
     [
-        ("test_update_cursor_no_state_no_record", {}, None),
+        ("test_update_cursor_no_state_no_record", {}, {}),
         ("test_update_cursor_with_state_single_parent", {"first_stream_id": "1234"}, {"first_stream_id": "1234"}),
-        ("test_update_cursor_with_unknown_state_field", {"unknown_stream_id": "1234"}, None),
+        ("test_update_cursor_with_unknown_state_field", {"unknown_stream_id": "1234"}, {}),
         (
             "test_update_cursor_with_state_from_both_parents",
             {"first_stream_id": "1234", "second_stream_id": "4567"},

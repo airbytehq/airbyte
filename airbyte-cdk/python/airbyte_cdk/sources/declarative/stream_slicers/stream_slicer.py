@@ -40,5 +40,5 @@ class StreamSlicer(RequestOptionsProvider):
         """
 
     @abstractmethod
-    def get_stream_state(self) -> Optional[StreamState]:
+    def get_stream_state(self) -> StreamState:
         """Returns the current stream state"""

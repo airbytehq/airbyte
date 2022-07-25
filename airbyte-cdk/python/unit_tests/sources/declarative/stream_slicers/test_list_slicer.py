@@ -37,9 +37,9 @@ def test_list_slicer(test_name, slice_values, cursor_field, expected_slices):
 @pytest.mark.parametrize(
     "test_name, stream_slice, last_record, expected_state",
     [
-        ("test_update_cursor_no_state_no_record", {}, None, None),
+        ("test_update_cursor_no_state_no_record", {}, None, {}),
         ("test_update_cursor_with_state_no_record", {"owner_resource": "customer"}, None, {"owner_resource": "customer"}),
-        ("test_update_cursor_value_not_in_list", {"owner_resource": "invalid"}, None, None),
+        ("test_update_cursor_value_not_in_list", {"owner_resource": "invalid"}, None, {}),
     ],
 )
 def test_update_cursor(test_name, stream_slice, last_record, expected_state):

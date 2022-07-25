@@ -49,8 +49,8 @@ class ListStreamSlicer(StreamSlicer):
         if slice_value and slice_value in self._slice_values:
             self._cursor = slice_value
 
-    def get_stream_state(self) -> Optional[StreamState]:
-        return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else None
+    def get_stream_state(self) -> StreamState:
+        return {self._cursor_field.eval(self._config): self._cursor} if self._cursor else {}
 
     def request_params(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.request_parameter)

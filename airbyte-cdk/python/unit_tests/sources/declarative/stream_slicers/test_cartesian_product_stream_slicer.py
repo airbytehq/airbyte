@@ -71,7 +71,7 @@ def test_substream_slicer(test_name, stream_slicers, expected_slices):
 @pytest.mark.parametrize(
     "test_name, stream_slice, expected_state",
     [
-        ("test_update_cursor_no_state_no_record", {}, None),
+        ("test_update_cursor_no_state_no_record", {}, {}),
         ("test_update_cursor_partial_state", {"owner_resource": "customer"}, {"owner_resource": "customer"}),
         (
             "test_update_cursor_full_state",

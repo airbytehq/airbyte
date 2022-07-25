@@ -289,16 +289,13 @@ def test_stream_slices(
     )
     stream_slices = slicer.stream_slices(SyncMode.incremental, stream_state)
 
-    print(f"expected: {expected_slices}")
-    print(f"actual: {stream_slices}")
-
     assert expected_slices == stream_slices
 
 
 @pytest.mark.parametrize(
     "test_name, previous_cursor, stream_slice, last_record, expected_state",
     [
-        ("test_update_cursor_no_state_no_record", None, {}, None, None),
+        ("test_update_cursor_no_state_no_record", None, {}, None, {}),
         (
             "test_update_cursor_with_state_no_record",
             None,
