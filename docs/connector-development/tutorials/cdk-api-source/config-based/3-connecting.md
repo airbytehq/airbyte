@@ -96,7 +96,7 @@ rates_stream:
     ref: "*ref(retriever)"
     requester:
       ref: "*ref(requester)"
-      path: /latest"
+      path: "/latest"
 ```
 
 4. Next, we'll set up the authentication.

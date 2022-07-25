@@ -1,7 +1,7 @@
 # Step 3: Reading data
 
 Now that we're able to authenticate to the source API, we'll want to extract data from the responses.
-Let's first add the stream to the configured catalog in `source-exchange-rates-tutorial/integration_tests/configured_catalog.json`
+Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
 
 ```
 {
@@ -69,54 +69,92 @@ Note that the code sample below only contains CAD, EUR, and USD for simplicity. 
 }
 ```
 
-You can download the JSON file describing the output schema with all currencies [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
+You can download the JSON file describing the output schema with all currencies [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
 
-Next, we'll update the record selection to wrap the single record returned by the source in an array,
-and set the primary key to "date".
+```
+curl https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json > source_exchange_rates_tutorial/schemas/rates.json
+```
+
+We can also delete the boilerplate schema files
+
+```
+rm source_exchange_rates_tutorial/schemas/customers.json
+rm source_exchange_rates_tutorial/schemas/employees.json
+```
+
+Next, we'll update the record selection to wrap the single record returned by the source in an array.
+
+```
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "[_]"
+```
+
+The transform is defined using the `Jello` syntax, which is a Python-based JQ alternative. More details on Jello can be found [here](https://github.com/kellyjonbrazil/jello).
+
+We'll also set the primary key to `date`.
 
 ```
 rates_stream:
+  type: DeclarativeStream
   options:
     name: "rates"
-    primary_key: "date"
-```
-
-```
-      record_selector:
-        extractor:
-          transform: "[_]"
+  primary_key: "date"
 ```
 
 Here is the complete connector definition for convenience:
 
 ```
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ name }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "[_]"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.exchangeratesapi.io/v1/"
+  http_method: "GET"
+  request_options_provider:
+    request_parameters:
+      access_key: "{{ config.access_key }}"
+      base: "{{ config.base }}"
+  authenticator:
+    type: TokenAuthenticator
+    token: "{{ config['api_key'] }}"
+retriever:
+  type: SimpleRetriever
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+  record_selector:
+    ref: "*ref(selector)"
+  paginator:
+    type: NoPagination
+  state:
+    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 rates_stream:
+  type: DeclarativeStream
   options:
     name: "rates"
-    primary_key: "date"
-    url_base: "https://api.exchangeratesapi.io/v1/"
-    schema_loader:
-      file_path: "./source_exchange_rates_tutorial/schemas/{{name}}.json"
-    retriever:
-      requester:
-        path: "/latest"
-        request_options_provider:
-          request_parameters:
-            access_key: "{{ config.access_key }}"
-            base: "{{ config.base }}"
-      record_selector:
-        extractor:
-          transform: "[_]"
-
+  primary_key: "date"
+  schema_loader:
+    ref: "*ref(schema_loader)"
+  retriever:
+    ref: "*ref(retriever)"
+    requester:
+      ref: "*ref(requester)"
+      path: "/latest"
 streams:
   - "*ref(rates_stream)"
 check:
-  stream_names:
-    - "rates"
+  type: CheckStream
+  stream_names: ["rates"]
 ```
-
-Finally, we also need to add the start date to the config file
-echo '{"access_key": "<your-access-key>", "start_date": "2022-01-01", "base": "USD"}'  > secrets/config.json
 
 Reading from the source can be done by running the `read` operation
 
@@ -130,6 +168,10 @@ The logs should show that 1 record was read from the stream.
 {"type": "LOG", "log": {"level": "INFO", "message": "Read 1 records from rates stream"}}
 {"type": "LOG", "log": {"level": "INFO", "message": "Finished syncing rates"}}
 ```
+
+The `--debug` flag can be set to print out debug information, including the outgoing request and its associated response
+
+```python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json --debug```
 
 ## Next steps
 
