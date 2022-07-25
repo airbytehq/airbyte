@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
@@ -34,22 +35,27 @@ from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSl
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
+"""
+DEFAULT_IMPLEMENTATIONS_REGISTRY contains a mapping of interface -> subclass
+enabling the factory to instantiate a reasonable default class when no type or classname is specified
+"""
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
+    ConnectionChecker: CheckStream,
+    Decoder: JsonDecoder,
+    ErrorHandler: DefaultErrorHandler,
+    HttpResponseFilter: HttpResponseFilter,
+    HttpSelector: RecordSelector,
+    InterpolatedBoolean: InterpolatedBoolean,
+    InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
+    InterpolatedString: InterpolatedString,
+    MinMaxDatetime: MinMaxDatetime,
+    Paginator: NoPagination,
+    RequestOption: RequestOption,
+    RequestOptionsProvider: InterpolatedRequestOptionsProvider,
     Requester: HttpRequester,
     Retriever: SimpleRetriever,
     SchemaLoader: JsonSchema,
-    HttpSelector: RecordSelector,
-    ConnectionChecker: CheckStream,
-    ErrorHandler: DefaultErrorHandler,
-    Decoder: JsonDecoder,
     State: DictState,
-    StreamSlicer: SingleSlice,
-    RequestOptionsProvider: InterpolatedRequestOptionsProvider,
-    Paginator: NoPagination,
-    HttpResponseFilter: HttpResponseFilter,
     Stream: DeclarativeStream,
-    RequestOption: RequestOption,
-    InterpolatedRequestOptionsProvider: InterpolatedRequestOptionsProvider,
-    MinMaxDatetime: MinMaxDatetime,
-    InterpolatedString: InterpolatedString,
+    StreamSlicer: SingleSlice,
 }

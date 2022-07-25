@@ -14,7 +14,7 @@ class StreamSlicer(ABC):
         pass
 
     @abstractmethod
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self, sync_mode: SyncMode, stream_state: Optional[Mapping[str, Any]]) -> Iterable[Mapping[str, Any]]:
         pass
 
     @abstractmethod

@@ -17,6 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -70,10 +71,10 @@ def test_interpolate_config():
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._client_id._string == "some_client_id"
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
     assert authenticator._client_secret._string == "some_client_secret"
-    assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
-    assert authenticator._refresh_token._string == "verysecrettoken"
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
@@ -109,19 +110,15 @@ def test_datetime_stream_slicer():
     stream_slicer:
         type: DatetimeStreamSlicer
         options:
-          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+          datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
         step: "10d"
-<<<<<<< HEAD
         cursor_value: "created"
         lookback_window: "5d"
-=======
-        cursor_field: "created"
->>>>>>> alex/streamslicerRefactor
     """
 
     config = parser.parse(content)
@@ -130,14 +127,14 @@ def test_datetime_stream_slicer():
     assert stream_slicer._timezone == datetime.timezone.utc
     assert type(stream_slicer._start_datetime) == MinMaxDatetime
     assert type(stream_slicer._end_datetime) == MinMaxDatetime
-    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
+    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%d"
     assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
     assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
     assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._cursor_value._string == "created"
     assert stream_slicer._lookback_window._string == "5d"
-    assert stream_slicer._cursor_field == "created"
 
 
 def test_full_config():
@@ -154,15 +151,15 @@ selector:
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
     type: "LimitPaginator"
-    limit_value: 10
+    page_size: 10
     limit_option:
-      option_type: request_parameter
+      inject_into: request_parameter
       field_name: page_size
     page_token_option:
-      option_type: path
+      inject_into: path
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ decoded_response._metadata.next }}"
+      cursor_value: "{{ response._metadata.next }}"
     url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
@@ -197,24 +194,24 @@ partial_stream:
     file_path: "./source_sendgrid/schemas/{{ name }}.json"
   cursor_field: [ ]
 list_stream:
-  ref: "*ref(partial_stream)"
+  $ref: "*ref(partial_stream)"
   options:
     name: "lists"
     primary_key: "id"
     extractor:
-      ref: "*ref(extractor)"
-      transform: ".result[]"
+      $ref: "*ref(extractor)"
+      transform: "_.result"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path:
-        ref: "*ref(next_page_url_from_token_partial)"
+        $ref: "*ref(next_page_url_from_token_partial)"
         default: "marketing/lists"
     paginator:
-      ref: "*ref(metadata_paginator)"
+      $ref: "*ref(metadata_paginator)"
     record_selector:
-      ref: "*ref(selector)"
+      $ref: "*ref(selector)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -238,7 +235,7 @@ check:
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
     assert type(stream._retriever._record_selector._record_filter) == RecordFilter
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -255,21 +252,21 @@ def test_create_record_selector():
     content = """
     extractor:
       type: JelloExtractor
-      transform: "_"
+      transform: "_.result"
     selector:
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
-        ref: "*ref(extractor)"
-        transform: "_"
+        $ref: "*ref(extractor)"
+        transform: "_.result"
     """
     config = parser.parse(content)
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector._extractor, JelloExtractor)
-    assert selector._extractor._transform == "_"
+    assert selector._extractor._transform.eval(input_config) == "_.result"
     assert isinstance(selector._record_filter, RecordFilter)
 
 
@@ -308,7 +305,7 @@ def test_create_composite_error_handler():
           type: "CompositeErrorHandler"
           error_handlers:
             - response_filters:
-                - predicate: "{{ 'code' in decoded_response }}"
+                - predicate: "{{ 'code' in response }}"
                   action: RETRY
             - response_filters:
                 - http_codes: [ 403 ]
@@ -319,7 +316,7 @@ def test_create_composite_error_handler():
     assert len(component._error_handlers) == 2
     assert isinstance(component._error_handlers[0], DefaultErrorHandler)
     assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
-    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in response }}"
     assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
 
@@ -337,15 +334,15 @@ def test_config_with_defaults():
         retriever:
           paginator:
             type: "LimitPaginator"
-            limit_value: 10
+            page_size: 10
             limit_option:
-              option_type: request_parameter
+              inject_into: request_parameter
               field_name: page_size
             page_token_option:
-              option_type: path
+              inject_into: path
             pagination_strategy:
               type: "CursorPagination"
-              cursor_value: "{{ decoded_response._metadata.next }}"
+              cursor_value: "{{ response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -355,7 +352,7 @@ def test_config_with_defaults():
               page_size: 10
           record_selector:
             extractor:
-              transform: ".result[]"
+              transform: "_.result"
     streams:
       - "*ref(lists_stream)"
     """
@@ -370,13 +367,37 @@ def test_config_with_defaults():
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
-    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
+    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
-    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._limit == 10
+    assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._page_size == 10
+
+
+def test_create_limit_paginator():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    paginator_config = config["paginator"]
+    paginator = factory.create_component(paginator_config, input_config)()
+    assert isinstance(paginator, LimitPaginator)
+    page_token_option = paginator._page_token_option
+    assert isinstance(page_token_option, RequestOption)
+    assert page_token_option.inject_into == RequestOptionType.path
 
 
 class TestCreateTransformations:
@@ -394,7 +415,7 @@ class TestCreateTransformations:
                       page_size: 10
                   record_selector:
                     extractor:
-                      transform: ".result[]"
+                      transform: "_.result"
     """
 
     def test_no_transformations(self):

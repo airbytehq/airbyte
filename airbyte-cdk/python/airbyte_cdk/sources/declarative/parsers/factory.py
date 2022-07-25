@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
+from typing import Any, List, Literal, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -14,17 +14,76 @@ from airbyte_cdk.sources.declarative.parsers.class_types_registry import CLASS_T
 from airbyte_cdk.sources.declarative.parsers.default_implementation_registry import DEFAULT_IMPLEMENTATIONS_REGISTRY
 from airbyte_cdk.sources.declarative.types import Config
 
+ComponentDefinition: Union[Literal, Mapping, List]
+
 
 class DeclarativeComponentFactory:
+    """
+    Instantiates objects from a Mapping[str, Any] defining the object to create.
+
+    If the component is a literal, then it is returned as is:
+    ```
+    3
+    ```
+    will result in
+    ```
+    3
+    ```
+
+    If the component is a mapping with a "class_name" field,
+    an object of type "class_name" will be instantiated by passing the mapping's other fields to the constructor
+    ```
+    {
+      "class_name": "fully_qualified.class_name",
+      "a_parameter: 3,
+      "another_parameter: "hello"
+    }
+    ```
+    will result in
+    ```
+    fully_qualified.class_name(a_parameter=3, another_parameter="helo"
+    ```
+
+    If the component definition is a mapping with a "type" field,
+    the factory will lookup the `CLASS_TYPES_REGISTRY` and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
+    and instantiate the object from the resulting mapping
+
+    If the component definition is a mapping with neighter a "class_name" nor a "type" field,
+    the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
+    If the type hint is an interface present in `DEFAULT_IMPLEMENTATIONS_REGISTRY`,
+    then the factory will create an object of it's default implementation.
+
+    If the component definition is a list, then the factory will iterate over the elements of the list,
+    instantiate its subcomponents, and return a list of instantiated objects.
+
+    If the component has subcomponents, the factory will create the subcomponents before instantiating the top level object
+    ```
+    {
+      "type": TopLevel
+      "param":
+        {
+          "type": "ParamType"
+          "k": "v"
+        }
+    }
+    ```
+    will result in
+    ```
+    TopLevel(param=ParamType(k="v"))
+    ```
+    """
+
     def __init__(self):
         self._interpolator = JinjaInterpolation()
 
-    def create_component(self, component_definition: Mapping[str, Any], config: Config):
+    def create_component(self, component_definition: ComponentDefinition, config: Config):
         """
+        Create a component defined by `component_definition`.
 
-        :param component_definition: mapping defining the object to create. It should have at least one field: `class_name`
+        This method will also traverse and instantiate its subcomponents if needed.
+        :param component_definition: The definition of the object to create.
         :param config: Connector's config
-        :return: the object to create
+        :return: The object to create
         """
         kwargs = copy.deepcopy(component_definition)
         if "class_name" in kwargs:
