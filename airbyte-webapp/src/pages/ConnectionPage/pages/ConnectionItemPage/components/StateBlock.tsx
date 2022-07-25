@@ -4,7 +4,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { H5, Card } from "components";
 
 import { useGetConnectionState } from "hooks/services/useConnectionHook";
-
 import { ConnectionState } from "core/request/AirbyteClient";
 
 interface StateBlockProps {
