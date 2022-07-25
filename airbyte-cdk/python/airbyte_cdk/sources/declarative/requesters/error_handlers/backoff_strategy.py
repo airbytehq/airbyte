@@ -10,7 +10,7 @@ import requests
 
 class BackoffStrategy:
     """
-    Backoff strategy defining how long to backoff before retrying a request that resulted in an error.
+    Backoff strategy defining how long to wait before retrying a request that resulted in an error.
     """
 
     @abstractmethod
