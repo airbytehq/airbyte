@@ -316,6 +316,6 @@ def test_unnest_field():
     # check the cursor is not on the root level
     assert Transactions.cursor_field not in record.keys()
 
-    PaypalTransactionStream.unnest_field(record, Transactions.nested_cursor_object, Transactions.cursor_field)
+    PaypalTransactionStream.unnest_field(record, Transactions.nested_object, Transactions.cursor_field)
     # check the cursor now on the root level
     assert Transactions.cursor_field in record.keys()
