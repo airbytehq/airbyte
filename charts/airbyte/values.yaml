@@ -5,7 +5,8 @@
 global:
   imageRegistry: ""
   serviceAccountName: &service-account-name "airbyte-admin"
-  
+  deploymentMode: "oss"
+
   secretName: "airbyte-secrets"
   database:
     secretName: "test-postgresql"
@@ -721,7 +722,7 @@ temporal:
   image:
     repository: temporalio/auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ## @param temporal.service.type The Kubernetes Service Type
   ## @param temporal.service.port The temporal port and exposed kubernetes port
