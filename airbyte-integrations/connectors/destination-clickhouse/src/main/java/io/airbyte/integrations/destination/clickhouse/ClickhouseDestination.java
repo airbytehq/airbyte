@@ -58,10 +58,10 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     final boolean isSsl = JdbcUtils.useSsl(config);
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-        isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asInt(),
-        config.get(JdbcUtils.DATABASE_KEY).asText()));
+            isSsl ? HTTPS_PROTOCOL : HTTP_PROTOCOL,
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     if (isSsl) {
       jdbcUrl.append("?").append(String.join("&", SSL_PARAMETERS));
