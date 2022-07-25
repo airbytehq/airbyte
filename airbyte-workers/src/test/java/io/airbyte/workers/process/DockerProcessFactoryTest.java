@@ -42,7 +42,7 @@ class DockerProcessFactoryTest {
    * when jq is not installed.
    */
   @Test
-  public void testJqExists() throws IOException {
+  void testJqExists() throws IOException {
     final Process process = new ProcessBuilder("jq", "--version").start();
     final StringBuilder out = new StringBuilder();
     final StringBuilder err = new StringBuilder();
@@ -61,7 +61,7 @@ class DockerProcessFactoryTest {
    * turned on in gradle.
    */
   @Test
-  public void testImageExists() throws IOException, WorkerException {
+  void testImageExists() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
@@ -69,7 +69,7 @@ class DockerProcessFactoryTest {
   }
 
   @Test
-  public void testImageDoesNotExist() throws IOException, WorkerException {
+  void testImageDoesNotExist() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
 
     final DockerProcessFactory processFactory = new DockerProcessFactory(new WorkerConfigs(new EnvConfigs()), workspaceRoot, null, null, null);
@@ -77,7 +77,7 @@ class DockerProcessFactoryTest {
   }
 
   @Test
-  public void testFileWriting() throws IOException, WorkerException {
+  void testFileWriting() throws IOException, WorkerException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
@@ -95,7 +95,7 @@ class DockerProcessFactoryTest {
    * Tests that the env var map passed in is accessible within the process.
    */
   @Test
-  public void testEnvMapSet() throws IOException, WorkerException, InterruptedException {
+  void testEnvMapSet() throws IOException, WorkerException, InterruptedException {
     final Path workspaceRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "process_factory");
     final Path jobRoot = workspaceRoot.resolve("job");
 
@@ -160,7 +160,7 @@ class DockerProcessFactoryTest {
           "-c",
           "echo ENV_VAR_1=$ENV_VAR_1");
       p.waitFor();
-      int exitStatus = p.exitValue();
+      final int exitStatus = p.exitValue();
 
       if (exitStatus == 0) {
         log.info("Successfully ran test docker command.");

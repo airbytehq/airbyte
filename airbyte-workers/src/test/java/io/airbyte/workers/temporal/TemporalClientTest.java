@@ -245,7 +245,7 @@ class TemporalClientTest {
     }
 
     @Test
-    public void testSynchronousResetConnection() throws IOException {
+    void testSynchronousResetConnection() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
@@ -281,7 +281,7 @@ class TemporalClientTest {
 
     @DisplayName("Test that the migration is properly done if needed")
     @Test
-    public void migrateCalled() {
+    void migrateCalled() {
       final UUID nonMigratedId = UUID.randomUUID();
       final UUID migratedId = UUID.randomUUID();
 

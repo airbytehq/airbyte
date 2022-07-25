@@ -22,7 +22,6 @@ config = {"option": "OPTION"}
         ("test_value_depends_on_next_page_token", {"read_from_token": "{{ next_page_token['offset'] }}"}, {"read_from_token": 12345}),
         ("test_value_depends_on_config", {"read_from_config": "{{ config['option'] }}"}, {"read_from_config": "OPTION"}),
         ("test_none_value", {"missing_param": "{{ fake_path['date'] }}"}, {}),
-        ("test_return_empty_dict_for_string_templates", "Should return empty dict {{ stream_state['date'] }}", {}),
         (
             "test_parameter_is_interpolated",
             {"{{ stream_state['date'] }} - {{stream_slice['start_date']}} - {{next_page_token['offset']}} - {{config['option']}}": "ABC"},
@@ -66,12 +65,9 @@ def test_interpolated_request_json(test_name, input_request_json, expected_reque
     "test_name, input_request_data, expected_request_data",
     [
         ("test_static_map_data", {"a_static_request_param": "a_static_value"}, {"a_static_request_param": "a_static_value"}),
-        ("test_static_string_data", "a_static_value", "a_static_value"),
-        ("test_string_depends_on_state", "key={{ stream_state['date'] }}", "key=2021-01-01"),
         ("test_map_depends_on_stream_slice", {"read_from_slice": "{{ stream_slice['start_date'] }}"}, {"read_from_slice": "2020-01-01"}),
-        ("test_string_depends_on_next_page_token", "{{ next_page_token['page'] }} and {{ next_page_token['offset'] }}", "27 and 12345"),
         ("test_map_depends_on_config", {"read_from_config": "{{ config['option'] }}"}, {"read_from_config": "OPTION"}),
-        ("test_defaults_to_empty_string", None, ""),
+        ("test_defaults_to_empty_dict", None, {}),
         ("test_interpolated_keys", {"{{ stream_state['date'] }} - {{ next_page_token['offset'] }}": "ABC"}, {"2021-01-01 - 12345": "ABC"}),
     ],
 )

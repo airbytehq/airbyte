@@ -58,6 +58,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidReassigningLoopVariables")
 public class ConfigDumpImporter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigDumpImporter.class);
@@ -240,7 +241,7 @@ public class ConfigDumpImporter {
       throws IOException {
     // filter out the deployment record from the import data, if it exists.
     Stream<JsonNode> stream = metadataTableStream
-        .filter(record -> !record.get(DefaultJobPersistence.METADATA_KEY_COL).asText().equals(DefaultJobPersistence.DEPLOYMENT_ID_KEY));
+        .filter(record -> !DefaultJobPersistence.DEPLOYMENT_ID_KEY.equals(record.get(DefaultJobPersistence.METADATA_KEY_COL).asText()));
 
     // insert the current deployment id, if it exists.
     final Optional<UUID> deploymentOptional = postgresPersistence.getDeployment();
