@@ -2,40 +2,61 @@
 
 We're now ready to start implementing the connector.
 
-The code generator already created a boilerplate connector definition in  `source-exchange-rates-tutorial/source_exchange_rates_tutorial/connector_definition.yaml`
+The code generator already created a boilerplate connector definition in  `source-exchange-rates-tutorial/source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
 ```
-<TODO>_stream:
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ name }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: TODO "your_api_base_url"
+  http_method: "GET"
+  authenticator:
+    type: TokenAuthenticator
+    token: "{{ config['api_key'] }}"
+retriever:
+  type: SimpleRetriever
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+  record_selector:
+    ref: "*ref(selector)"
+  paginator:
+    type: NoPagination
+  state:
+    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
+customers_stream:
+  type: DeclarativeStream
   options:
-    name: "<TODO>"
-    primary_key: "<TODO>"
-    url_base: "<TODO>"
-    schema_loader:
-      file_path: "./source_exchange_rates_tutorial/schemas/{{name}}.json"
-    retriever:
-      requester:
-        path: "<TODO>"
-        authenticator:
-          type: "TokenAuthenticator"
-          token: "<TODO>"
-      record_selector:
-        extractor:
-          transform: "<TODO>"
-
+    name: "customers"
+  primary_key: "id"
+  schema_loader:
+    ref: "*ref(schema_loader)"
+  retriever:
+    ref: "*ref(retriever)"
+    requester:
+      ref: "*ref(requester)"
+      path: TODO "your_endpoint_path"
 streams:
-  - "*ref(<TODO>_stream)"
+  - "*ref(customers_stream)"
 check:
-  stream_names:
-    - "<TODO>>"
-
+  type: CheckStream
+  stream_names: ["customers_stream"]
 ```
 
 Let's fill this out these TODOs with the information found in the exchange rates api docs https://exchangeratesapi.io/documentation/
 
-1. First, let's name the stream "rates".
+1. First, let's rename the stream from `customers` to `rates.
 
 ```
 rates_stream:
+  type: DeclarativeStream
   options:
     name: "rates"
 ```
@@ -46,60 +67,64 @@ and update the references in the streams list and check block
 streams:
   - "*ref(rates_stream)"
 check:
-  stream_names:
-    - "rates"
+  type: CheckStream
+  stream_names: ["rates_stream"]
 ```
 
-2. Next we'll set the base url and the API path.
-   According to the API documentation, the base url is "https://api.exchangeratesapi.io/v1/" and we can fetch the latest data by submitting a request to "/latest".
-
-```
-    url_base: "https://api.exchangeratesapi.io/v1/"
-    retriever:
-      requester:
-        path: "/latest"
-```
-
-3. Next, we'll set up the authentication.
-   The Exchange Rates API requires an access key, which we'll need to make accessible to our connector.
-   We'll configure the connector to use this access key by setting the access key in a request parameter and pointing to a field in the config, which we'll populate in the next step:
-
-> > > > > > > FIXME: while writing this, I'm thinking it would make sense to have a few simple Authenticator wrapper classes
-> > > > > > None, BasicAuth, Bearer Token,ApiKey, OAuth2
-> > > > > > > The alternate connector definition could look like
+2. Next we'll set the base url.
+   According to the API documentation, the base url is "https://api.exchangeratesapi.io/v1/".
+   This can be set in the requester definition.
 
 ```
 requester:
-  authenticator:
-    api_key: "{{ config.access_key }}"
-    pass_by: "request_parameters"
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.exchangeratesapi.io/v1/"
 ```
 
-<<<<<<<<<
+3. We can fetch the latest data by submitting a request to "/latest". This path is specific to the stream, so we'll set within the `rates_stream` definition.
 
 ```
-    retriever:
-      requester:
-        path: "/latest"
-        request_options_provider:
-          request_parameters:
-            access_key: "{{ config.access_key }}"
+rates_stream:
+  type: DeclarativeStream
+  options:
+    name: "rates"
+  primary_key: "id"
+  schema_loader:
+    ref: "*ref(schema_loader)"
+  retriever:
+    ref: "*ref(retriever)"
+    requester:
+      ref: "*ref(requester)"
+      path: /latest"
 ```
 
-4. According to the ExchangeRatesApi documentation, we can specify the base currency we're interested in in a request parameter:
+5. Next, we'll set up the authentication.
+   The Exchange Rates API requires an access key, which we'll need to make accessible to our connector.
+   We'll configure the connector to use this access key by setting the access key in a request parameter and pointing to a field in the config, which we'll populate in the next step:
 
 ```
-        request_options_provider:
-          request_parameters:
-            access_key: "{{ config.access_key }}"
-            base: "{{ config.base }}"
-      record_selector:
-        extractor:
-          transform: "_"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.exchangeratesapi.io/v1/"
+  http_method: "GET"
+  request_options_provider:
+    request_parameters:
+      access_key: "{{ config.access_key }}"
+```
+
+4. According to the ExchangeRatesApi documentation, we can specify the base currency of interest in a request parameter:
+
+```
+request_options_provider:
+  request_parameters:
+    access_key: "{{ config.access_key }}"
+    base: "{{ config.base }}"
 ```
 
 5. Let's populate the config so the connector can access the access key and base currency.
-   First, we'll add these properties to the connect spec in
+   First, we'll add these properties to the connector spec in
    `source-exchange-rates-tutorial/source_exchange_rates_tutorial/spec.yaml`
 
 ```
