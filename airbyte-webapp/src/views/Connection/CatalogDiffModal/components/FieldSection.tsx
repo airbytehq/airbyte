@@ -29,15 +29,17 @@ export const FieldSection: React.FC<FieldSectionProps> = ({ streams, diffVerb })
           </div>
           <div />
         </div>
-        <ul>
-          {streams.map((stream) => {
-            return (
-              <li key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}>
-                <DiffAccordion streamTransform={stream} />
-              </li>
-            );
-          })}
-        </ul>
+        {streams.length > 0 && (
+          <ul>
+            {streams.map((stream) => {
+              return (
+                <li key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}>
+                  <DiffAccordion streamTransform={stream} />
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

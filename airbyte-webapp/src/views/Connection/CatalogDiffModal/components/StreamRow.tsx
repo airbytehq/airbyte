@@ -44,7 +44,7 @@ export const StreamRow: React.FC<StreamRowProps> = ({ streamTransform, syncMode,
           <ModificationIcon />
         )}
       </td>
-      {namespace && <td className={styles.nameCell}>{namespace}</td>}
+      <td className={styles.nameCell}>{namespace && { namespace }}</td>
       <td className={styles.nameCell}>{itemName}</td>
       {diffVerb === "removed" && syncMode && (
         <td>

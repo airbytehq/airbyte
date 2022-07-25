@@ -53,13 +53,13 @@ export const FieldRow: React.FC<FieldRowProps> = ({ transform }) => {
         <td className={styles.cell}>
           <span>{fieldName}</span>
         </td>
-        {oldType && newType && (
-          <td className={updateCellStyle}>
+        <td className={updateCellStyle}>
+          {oldType && newType && (
             <span>
               {oldType} <FontAwesomeIcon icon={faArrowRight} /> {newType}
             </span>
-          </td>
-        )}
+          )}
+        </td>
       </td>
     </tr>
   );
