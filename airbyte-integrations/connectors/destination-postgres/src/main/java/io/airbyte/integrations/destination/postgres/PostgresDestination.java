@@ -50,7 +50,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
           additionalParameters.putAll(obtainConnectionOptions(config.get(PARAM_SSL_MODE)));
         }
       } else {
-        additionalParameters.put("ssl", "true");
+        additionalParameters.put(JdbcUtils.SSL_KEY, "true");
         additionalParameters.put("sslmode", "require");
       }
     }

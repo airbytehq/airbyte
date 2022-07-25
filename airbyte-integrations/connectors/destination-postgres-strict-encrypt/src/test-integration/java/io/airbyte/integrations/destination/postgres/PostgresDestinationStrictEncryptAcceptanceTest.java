@@ -49,7 +49,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SCHEMA_KEY, "public")
         .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put("ssl_mode", ImmutableMap.builder()
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
                 .put("mode", "verify-full")
                 .put("ca_certificate", certs.getCaCertificate())
                 .put("client_certificate", certs.getClientCertificate())
