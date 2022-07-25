@@ -44,18 +44,6 @@
           }
         }
       ]
-    },
-    "someArray": {
-      "type": ["array", "null"],
-      "items": {
-        "type": ["object", "null"],
-        "properties": {
-          "oldName": {
-            "type": ["string", "null"],
-            "maxLength": 100
-          }
-        }
-      }
     }
   }
 }

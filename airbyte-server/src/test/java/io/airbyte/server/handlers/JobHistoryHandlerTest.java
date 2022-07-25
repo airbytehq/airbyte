@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Job History Handler")
-class JobHistoryHandlerTest {
+public class JobHistoryHandlerTest {
 
   private static final long JOB_ID = 100L;
   private static final long ATTEMPT_ID = 1002L;
@@ -113,7 +113,7 @@ class JobHistoryHandlerTest {
   }
 
   @BeforeEach
-  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
+  public void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
     testJobAttempt = createSuccessfulAttempt(JOB_ID, CREATED_AT);
     testJob = new Job(JOB_ID, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(testJobAttempt), JOB_STATUS, null, CREATED_AT,
         CREATED_AT);
@@ -135,7 +135,7 @@ class JobHistoryHandlerTest {
 
     @Test
     @DisplayName("Should return jobs with/without attempts in descending order")
-    void testListJobs() throws IOException {
+    public void testListJobs() throws IOException {
       final var successfulJob = testJob;
       final int pagesize = 25;
       final int rowOffset = 0;
@@ -165,7 +165,7 @@ class JobHistoryHandlerTest {
 
     @Test
     @DisplayName("Should return jobs in descending order regardless of type")
-    void testListJobsFor() throws IOException {
+    public void testListJobsFor() throws IOException {
       final var firstJob = testJob;
       final int pagesize = 25;
       final int rowOffset = 0;
@@ -209,7 +209,7 @@ class JobHistoryHandlerTest {
 
   @Test
   @DisplayName("Should return the right job info")
-  void testGetJobInfo() throws IOException {
+  public void testGetJobInfo() throws IOException {
     when(jobPersistence.getJob(JOB_ID)).thenReturn(testJob);
 
     final JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
@@ -222,7 +222,7 @@ class JobHistoryHandlerTest {
 
   @Test
   @DisplayName("Should return the right info to debug this job")
-  void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
+  public void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
     standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
     sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
@@ -253,7 +253,7 @@ class JobHistoryHandlerTest {
 
   @Test
   @DisplayName("Should have compatible config enums")
-  void testEnumConversion() {
+  public void testEnumConversion() {
     assertTrue(Enums.isCompatible(JobConfig.ConfigType.class, JobConfigType.class));
   }
 

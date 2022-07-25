@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ConnectionDeletionActivityTest {
+public class ConnectionDeletionActivityTest {
 
   @Mock
   private ConnectionHelper mConnectionHelper;
@@ -33,7 +33,7 @@ class ConnectionDeletionActivityTest {
 
   @Test
   @DisplayName("Test that the proper helper method is called")
-  void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException {
     connectionDeletionActivity.deleteConnection(input);
 
     Mockito.verify(mConnectionHelper).deleteConnection(input.getConnectionId());
@@ -41,7 +41,7 @@ class ConnectionDeletionActivityTest {
 
   @Test
   @DisplayName("Test that exception are properly wrapped")
-  void testWrapException() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testWrapException() throws JsonValidationException, ConfigNotFoundException, IOException {
     Mockito.doThrow(new JsonValidationException(""), new ConfigNotFoundException("", ""), new IOException())
         .when(mConnectionHelper).deleteConnection(input.getConnectionId());
 

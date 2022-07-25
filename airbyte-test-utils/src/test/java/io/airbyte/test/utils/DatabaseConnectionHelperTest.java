@@ -16,14 +16,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-class DatabaseConnectionHelperTest {
+public class DatabaseConnectionHelperTest {
 
   private static final String DATABASE_NAME = "airbyte_test_database";
 
   protected static PostgreSQLContainer<?> container;
 
   @BeforeAll
-  static void dbSetup() {
+  public static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName(DATABASE_NAME)
         .withUsername("docker")
@@ -32,7 +32,7 @@ class DatabaseConnectionHelperTest {
   }
 
   @AfterAll
-  static void dbDown() {
+  public static void dbDown() {
     container.close();
   }
 

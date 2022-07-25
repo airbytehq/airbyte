@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "admin_ids": {
       "anyOf": [
@@ -16,6 +17,7 @@
     },
     "avatar": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "image_url": {
           "type": ["null", "string"]

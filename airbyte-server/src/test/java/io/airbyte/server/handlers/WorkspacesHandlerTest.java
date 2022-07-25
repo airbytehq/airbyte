@@ -392,7 +392,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
         .workspaceId(UUID.randomUUID());
 

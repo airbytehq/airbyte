@@ -15,7 +15,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -57,26 +56,26 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
   @BeforeEach
   public void setup() throws Exception {
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, Strings.addRandomSuffix("db", "_", 10))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", Strings.addRandomSuffix("db", "_", 10))
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         DatabaseDriver.MYSQL.getDriverClassName(),
         String.format("jdbc:mysql://%s:%s?%s",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asText(),
+            config.get("host").asText(),
+            config.get("port").asText(),
             String.join("&", SSL_PARAMETERS)),
         SQLDialect.MYSQL);
     database = new Database(dslContext);
 
     database.query(ctx -> {
-      ctx.fetch("CREATE DATABASE " + config.get(JdbcUtils.DATABASE_KEY).asText());
+      ctx.fetch("CREATE DATABASE " + config.get("database").asText());
       return null;
     });
 

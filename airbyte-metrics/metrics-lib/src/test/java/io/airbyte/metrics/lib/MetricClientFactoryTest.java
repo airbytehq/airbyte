@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class MetricClientFactoryTest {
+public class MetricClientFactoryTest {
 
   @AfterEach
   void tearDown() {
@@ -21,14 +21,14 @@ class MetricClientFactoryTest {
 
   @Test
   @DisplayName("Should not throw error if calling get without calling create;")
-  void testMetricClientFactoryGetMetricOnlyDoNotThrow() {
-    final MetricClient metricClient = MetricClientFactory.getMetricClient();
+  public void testMetricClientFactoryGetMetricOnlyDoNotThrow() {
+    MetricClient metricClient = MetricClientFactory.getMetricClient();
     assertThat(metricClient, instanceOf(NotImplementedMetricClient.class));
   }
 
   @Test
   @DisplayName("Should not throw error if MetricClientFactory creates a metric client on the first call;")
-  void testMetricClientFactoryCreateSuccess() {
+  public void testMetricClientFactoryCreateSuccess() {
     Assertions.assertDoesNotThrow(() -> {
       MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
     });
@@ -36,7 +36,7 @@ class MetricClientFactoryTest {
 
   @Test
   @DisplayName("Should throw error if MetricClientFactory create a metric client multiple times;")
-  void testMetricClientFactoryCreateMultipleTimesThrows() {
+  public void testMetricClientFactoryCreateMultipleTimesThrows() {
     Assertions.assertThrows(RuntimeException.class, () -> {
       MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
       MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);

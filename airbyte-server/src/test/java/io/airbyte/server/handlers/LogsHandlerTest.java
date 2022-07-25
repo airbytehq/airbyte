@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class LogsHandlerTest {
 
   @Test
-  void testServerLogs() {
+  public void testServerLogs() {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);
@@ -35,7 +35,7 @@ class LogsHandlerTest {
   }
 
   @Test
-  void testSchedulerLogs() {
+  public void testSchedulerLogs() {
     final Configs configs = mock(Configs.class);
     when(configs.getWorkspaceRoot()).thenReturn(Path.of("/workspace"));
     when(configs.getWorkerEnvironment()).thenReturn(WorkerEnvironment.DOCKER);

@@ -22,32 +22,32 @@ import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class StateMessageHelperTest {
+public class StateMessageHelperTest {
 
   private static final boolean USE_STREAM_CAPABLE_STATE = true;
   private static final boolean DONT_USE_STREAM_CAPABALE_STATE = false;
 
   @Test
-  void testEmpty() {
+  public void testEmpty() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(null, USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isEmpty();
   }
 
   @Test
-  void testEmptyList() {
+  public void testEmptyList() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.arrayNode(), USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isEmpty();
   }
 
   @Test
-  void testLegacy() {
+  public void testLegacy() {
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(Jsons.emptyObject(), USE_STREAM_CAPABLE_STATE);
     Assertions.assertThat(stateWrapper).isNotEmpty();
     Assertions.assertThat(stateWrapper.get().getStateType()).isEqualTo(StateType.LEGACY);
   }
 
   @Test
-  void testLegacyInList() {
+  public void testLegacyInList() {
     final JsonNode jsonState = Jsons.jsonNode(List.of(Map.of("Any", "value")));
 
     final Optional<StateWrapper> stateWrapper = StateMessageHelper.getTypedState(jsonState, USE_STREAM_CAPABLE_STATE);
@@ -57,7 +57,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testLegacyInNewFormat() {
+  public void testLegacyInNewFormat() {
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.LEGACY)
         .withData(Jsons.emptyObject());
@@ -67,7 +67,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testGlobal() {
+  public void testGlobal() {
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
@@ -84,7 +84,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testGlobalForceLegacy() {
+  public void testGlobalForceLegacy() {
     final JsonNode legacyState = Jsons.jsonNode(1);
     final AirbyteStateMessage stateMessage = new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
@@ -103,7 +103,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testStream() {
+  public void testStream() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
@@ -120,7 +120,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testStreamForceLegacy() {
+  public void testStreamForceLegacy() {
     final JsonNode firstEmittedLegacyState = Jsons.jsonNode(1);
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
@@ -141,7 +141,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testInvalidMixedState() {
+  public void testInvalidMixedState() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.STREAM)
         .withStream(
@@ -161,7 +161,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testDuplicatedGlobalState() {
+  public void testDuplicatedGlobalState() {
     final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
         .withType(AirbyteStateType.GLOBAL)
         .withGlobal(
@@ -185,7 +185,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testLegacyStateConversion() {
+  public void testLegacyStateConversion() {
     final StateWrapper stateWrapper = new StateWrapper()
         .withStateType(StateType.LEGACY)
         .withLegacyState(Jsons.deserialize("{\"json\": \"blob\"}"));
@@ -196,7 +196,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testGlobalStateConversion() {
+  public void testGlobalStateConversion() {
     final StateWrapper stateWrapper = new StateWrapper()
         .withStateType(StateType.GLOBAL)
         .withGlobal(
@@ -225,7 +225,7 @@ class StateMessageHelperTest {
   }
 
   @Test
-  void testStreamStateConversion() {
+  public void testStreamStateConversion() {
     final StateWrapper stateWrapper = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(

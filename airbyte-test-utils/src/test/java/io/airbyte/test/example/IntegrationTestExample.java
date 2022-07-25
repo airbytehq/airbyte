@@ -13,11 +13,10 @@ import org.junit.jupiter.api.Test;
  */
 @IntegrationTest
 @Slf4j
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class IntegrationTestExample {
+public class IntegrationTestExample {
 
   @Test
-  void longTest() {
+  public void longTest() {
     log.error("Start test - integration");
     log.error("end test - integration");
   }

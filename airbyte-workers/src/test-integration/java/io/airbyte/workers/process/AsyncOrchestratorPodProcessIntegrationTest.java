@@ -4,8 +4,7 @@
 
 package io.airbyte.workers.process;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.EnvConfigs;
@@ -110,8 +109,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         "airbyte/container-orchestrator:dev",
-        null,
-        true);
+        null);
 
     final Map<Integer, Integer> portMap = Map.of(
         WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
@@ -143,13 +141,13 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   public static void teardown() {
     try {
       portForwardProcess.destroyForcibly();
-    } catch (final Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
 
     try {
       kubernetesClient.pods().delete();
-    } catch (final Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }

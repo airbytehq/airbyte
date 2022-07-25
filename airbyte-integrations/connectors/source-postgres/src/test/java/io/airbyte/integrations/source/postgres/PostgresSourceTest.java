@@ -23,7 +23,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -158,9 +157,9 @@ class PostgresSourceTest {
         password,
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -170,25 +169,25 @@ class PostgresSourceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()),
         SQLDialect.POSTGRES);
   }
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", psqlDb.getHost())
+        .put("port", psqlDb.getFirstMappedPort())
+        .put("database", dbName)
+        .put("schemas", List.of(SCHEMA_NAME))
+        .put("username", psqlDb.getUsername())
+        .put("password", psqlDb.getPassword())
+        .put("ssl", false)
         .build());
   }
 
@@ -206,13 +205,13 @@ class PostgresSourceTest {
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, user)
-        .put(JdbcUtils.PASSWORD_KEY, password)
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", psqlDb.getHost())
+        .put("port", psqlDb.getFirstMappedPort())
+        .put("database", dbName)
+        .put("schemas", List.of(SCHEMA_NAME))
+        .put("username", user)
+        .put("password", password)
+        .put("ssl", false)
         .build());
   }
 
@@ -482,7 +481,8 @@ class PostgresSourceTest {
     final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
     assertEquals(defaultConnectionProperties, ImmutableMap.of(
         "ssl", "true",
-        "sslmode", "require"));
+        "sslmode", "require"
+    ));
   };
 
   @Test
@@ -491,14 +491,14 @@ class PostgresSourceTest {
 
     // normal host
     final JsonNode normalConfig = Jsons.jsonNode(Map.of(
-        JdbcUtils.USERNAME_KEY, username,
-        JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
+        "username", username,
+        "jdbc_url", "jdbc:postgresql://airbyte.database.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(normalConfig));
 
     // azure host
     final JsonNode azureConfig = Jsons.jsonNode(Map.of(
-        JdbcUtils.USERNAME_KEY, username + "@airbyte",
-        JdbcUtils.JDBC_URL_KEY, "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
+        "username", username + "@airbyte",
+        "jdbc_url", "jdbc:postgresql://airbyte.azure.com:5432:airbyte"));
     assertEquals(username, PostgresSource.getUsername(azureConfig));
   }
 

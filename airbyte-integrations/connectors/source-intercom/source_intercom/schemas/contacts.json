@@ -1,5 +1,6 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": false,
   "properties": {
     "type": {
       "type": ["null", "string"]
@@ -33,6 +34,7 @@
     },
     "social_profiles": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -41,6 +43,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": false,
             "properties": {
               "type": {
                 "type": ["null", "string"]
@@ -112,6 +115,7 @@
     },
     "location": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -171,6 +175,7 @@
     },
     "tags": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -179,6 +184,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": false,
             "properties": {
               "type": {
                 "type": ["null", "string"]
@@ -205,6 +211,7 @@
     },
     "notes": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -213,6 +220,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": false,
             "properties": {
               "type": {
                 "type": ["null", "string"]
@@ -239,6 +247,7 @@
     },
     "companies": {
       "type": ["null", "object"],
+      "additionalProperties": false,
       "properties": {
         "type": {
           "type": ["null", "string"]
@@ -247,6 +256,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
+            "additionalProperties": false,
             "properties": {
               "type": {
                 "type": ["null", "string"]

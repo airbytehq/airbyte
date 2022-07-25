@@ -78,7 +78,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 @DisplayName("DefaultJobPersistance")
 class DefaultJobPersistenceTest {
 
@@ -111,7 +110,7 @@ class DefaultJobPersistenceTest {
   private DSLContext dslContext;
 
   @BeforeAll
-  static void dbSetup() {
+  public static void dbSetup() {
     container = new PostgreSQLContainer<>("postgres:13-alpine")
         .withDatabaseName("airbyte")
         .withUsername("docker")
@@ -120,7 +119,7 @@ class DefaultJobPersistenceTest {
   }
 
   @AfterAll
-  static void dbDown() {
+  public static void dbDown() {
     container.close();
   }
 
@@ -175,7 +174,7 @@ class DefaultJobPersistenceTest {
 
   @SuppressWarnings("unchecked")
   @BeforeEach
-  void setup() throws Exception {
+  public void setup() throws Exception {
     dataSource = DatabaseConnectionHelper.createDataSource(container);
     dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
     final TestDatabaseProviders databaseProviders = new TestDatabaseProviders(dataSource, dslContext);
@@ -298,7 +297,7 @@ class DefaultJobPersistenceTest {
 
   @Test
   @DisplayName("Should extract a Job model from a JOOQ result set")
-  void testGetJobFromRecord() throws IOException, SQLException {
+  public void testGetJobFromRecord() throws IOException, SQLException {
     final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
     final Optional<Job> actual = DefaultJobPersistence.getJobFromResult(getJobRecord(jobId));
@@ -729,7 +728,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should create initial job without attempt")
-    void testCreateJobAndGetWithoutAttemptJob() throws IOException {
+    public void testCreateJobAndGetWithoutAttemptJob() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
       final Job actual = jobPersistence.getJob(jobId);
@@ -739,7 +738,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should not create a second job if a job under the same scope is in a non-terminal state")
-    void testCreateJobNoQueueing() throws IOException {
+    public void testCreateJobNoQueueing() throws IOException {
       final Optional<Long> jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
       final Optional<Long> jobId2 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
 
@@ -753,7 +752,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should create a second job if a previous job under the same scope has failed")
-    void testCreateJobIfPrevJobFailed() throws IOException {
+    public void testCreateJobIfPrevJobFailed() throws IOException {
       final Optional<Long> jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG);
       assertTrue(jobId1.isPresent());
 
@@ -807,7 +806,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return nothing if no job exists")
-    void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
+    public void testGetLastSyncJobForConnectionIdEmpty() throws IOException {
       final Optional<Job> actual = jobPersistence.getLastReplicationJob(CONNECTION_ID);
 
       assertTrue(actual.isEmpty());
@@ -815,7 +814,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return the last enqueued job")
-    void testGetLastSyncJobForConnectionId() throws IOException {
+    public void testGetLastSyncJobForConnectionId() throws IOException {
       final long jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
       jobPersistence.succeedAttempt(jobId1, jobPersistence.createAttempt(jobId1, LOG_PATH));
 
@@ -837,7 +836,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return nothing if no job exists")
-    void testGetFirstSyncJobForConnectionIdEmpty() throws IOException {
+    public void testGetFirstSyncJobForConnectionIdEmpty() throws IOException {
       final Optional<Job> actual = jobPersistence.getFirstReplicationJob(CONNECTION_ID);
 
       assertTrue(actual.isEmpty());
@@ -845,7 +844,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return the first job")
-    void testGetFirstSyncJobForConnectionId() throws IOException {
+    public void testGetFirstSyncJobForConnectionId() throws IOException {
       final long jobId1 = jobPersistence.enqueueJob(SCOPE, SYNC_JOB_CONFIG).orElseThrow();
       jobPersistence.succeedAttempt(jobId1, jobPersistence.createAttempt(jobId1, LOG_PATH));
       final List<AttemptWithJobInfo> attemptsWithJobInfo = jobPersistence.listAttemptsWithJobInfo(SYNC_JOB_CONFIG.getConfigType(), Instant.EPOCH);
@@ -869,7 +868,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should always return oldest pending job")
-    void testGetOldestPendingJob() throws IOException {
+    public void testGetOldestPendingJob() throws IOException {
       final long jobId = createJobAt(NOW);
       createJobAt(NOW.plusSeconds(1000));
 
@@ -881,7 +880,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return nothing if no jobs pending")
-    void testGetOldestPendingJobOnlyPendingJobs() throws IOException {
+    public void testGetOldestPendingJobOnlyPendingJobs() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       jobPersistence.cancelJob(jobId);
 
@@ -914,7 +913,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return oldest pending job even if another job with same scope failed")
-    void testGetOldestPendingJobWithOtherJobWithSameScopeFailed() throws IOException {
+    public void testGetOldestPendingJobWithOtherJobWithSameScopeFailed() throws IOException {
       // create a job and set it to incomplete.
       final long jobId = createJobAt(NOW.minusSeconds(1000));
       jobPersistence.createAttempt(jobId, LOG_PATH);
@@ -931,7 +930,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return oldest pending job even if another job with same scope cancelled")
-    void testGetOldestPendingJobWithOtherJobWithSameScopeCancelled() throws IOException {
+    public void testGetOldestPendingJobWithOtherJobWithSameScopeCancelled() throws IOException {
       // create a job and set it to incomplete.
       final long jobId = createJobAt(NOW.minusSeconds(1000));
       jobPersistence.cancelJob(jobId);
@@ -947,7 +946,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return oldest pending job even if another job with same scope succeeded")
-    void testGetOldestPendingJobWithOtherJobWithSameScopeSucceeded() throws IOException {
+    public void testGetOldestPendingJobWithOtherJobWithSameScopeSucceeded() throws IOException {
       // create a job and set it to incomplete.
       final long jobId = createJobAt(NOW.minusSeconds(1000));
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
@@ -964,7 +963,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should not return pending job if job with same scope is running")
-    void testGetOldestPendingJobWithOtherJobWithSameScopeRunning() throws IOException {
+    public void testGetOldestPendingJobWithOtherJobWithSameScopeRunning() throws IOException {
       // create a job and set it to running.
       final long jobId = createJobAt(NOW.minusSeconds(1000));
       jobPersistence.createAttempt(jobId, LOG_PATH);
@@ -979,7 +978,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should not return pending job if job with same scope is incomplete")
-    void testGetOldestPendingJobWithOtherJobWithSameScopeIncomplete() throws IOException {
+    public void testGetOldestPendingJobWithOtherJobWithSameScopeIncomplete() throws IOException {
       // create a job and set it to incomplete.
       final long jobId = createJobAt(NOW.minusSeconds(1000));
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
@@ -1003,7 +1002,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return the correct page of results with multiple pages of history")
-    void testListJobsByPage() throws IOException {
+    public void testListJobsByPage() throws IOException {
       final List<Long> ids = new ArrayList<Long>();
       for (int i = 0; i < 100; i++) {
         final long jobId = jobPersistence.enqueueJob(CONNECTION_ID.toString(), SPEC_JOB_CONFIG).orElseThrow();
@@ -1019,7 +1018,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should return the results in the correct sort order")
-    void testListJobsSortsDescending() throws IOException {
+    public void testListJobsSortsDescending() throws IOException {
       final List<Long> ids = new ArrayList<Long>();
       for (int i = 0; i < 100; i++) {
         // These have strictly the same created_at due to the setup() above, so should come back sorted by
@@ -1037,7 +1036,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list all jobs")
-    void testListJobs() throws IOException {
+    public void testListJobs() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
 
       final List<Job> actualList = jobPersistence.listJobs(SPEC_JOB_CONFIG.getConfigType(), CONNECTION_ID.toString(), 9999, 0);
@@ -1051,7 +1050,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list all jobs with all attempts")
-    void testListJobsWithMultipleAttempts() throws IOException {
+    public void testListJobsWithMultipleAttempts() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber0 = jobPersistence.createAttempt(jobId, LOG_PATH);
 
@@ -1080,7 +1079,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list all jobs with all attempts in descending order")
-    void testListJobsWithMultipleAttemptsInDescOrder() throws IOException {
+    public void testListJobsWithMultipleAttemptsInDescOrder() throws IOException {
       // create first job with multiple attempts
       final var jobId1 = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final var job1Attempt1 = jobPersistence.createAttempt(jobId1, LOG_PATH);
@@ -1111,7 +1110,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should only list jobs with requested status")
-    void testListJobsWithStatus() throws IOException {
+    public void testListJobsWithStatus() throws IOException {
       // not failed.
       jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG);
       // failed
@@ -1136,7 +1135,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should only list jobs with requested status and config type")
-    void testListJobsWithStatusAndConfigType() throws IOException, InterruptedException {
+    public void testListJobsWithStatusAndConfigType() throws IOException, InterruptedException {
       // not failed.
       final long pendingSpecJobId = jobPersistence.enqueueJob(SPEC_SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final long pendingSyncJobId = jobPersistence.enqueueJob(SYNC_SCOPE, SYNC_JOB_CONFIG).orElseThrow();
@@ -1178,7 +1177,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should only list jobs for the requested connection and with the requested statuses and config types")
-    void testListJobsWithStatusesAndConfigTypesForConnection() throws IOException, InterruptedException {
+    public void testListJobsWithStatusesAndConfigTypesForConnection() throws IOException, InterruptedException {
       final UUID desiredConnectionId = UUID.randomUUID();
       final UUID otherConnectionId = UUID.randomUUID();
 
@@ -1429,7 +1428,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list only job statuses and timestamps of specified connection id")
-    void testConnectionIdFiltering() throws IOException {
+    public void testConnectionIdFiltering() throws IOException {
       jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, DEFAULT_MINIMUM_AGE_IN_DAYS, DEFAULT_EXCESSIVE_NUMBER_OF_JOBS,
           DEFAULT_MINIMUM_RECENCY_COUNT);
 
@@ -1454,7 +1453,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list jobs statuses filtered by different timestamps")
-    void testTimestampFiltering() throws IOException {
+    public void testTimestampFiltering() throws IOException {
       jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, DEFAULT_MINIMUM_AGE_IN_DAYS, DEFAULT_EXCESSIVE_NUMBER_OF_JOBS,
           DEFAULT_MINIMUM_RECENCY_COUNT);
 
@@ -1507,7 +1506,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list jobs statuses of differing status types")
-    void testMultipleJobStatusTypes() throws IOException {
+    public void testMultipleJobStatusTypes() throws IOException {
       final Supplier<Instant> timeSupplier = incrementingSecondSupplier(NOW);
       jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, DEFAULT_MINIMUM_AGE_IN_DAYS, DEFAULT_EXCESSIVE_NUMBER_OF_JOBS,
           DEFAULT_MINIMUM_RECENCY_COUNT);
@@ -1540,7 +1539,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Should list jobs statuses of differing job config types")
-    void testMultipleConfigTypes() throws IOException {
+    public void testMultipleConfigTypes() throws IOException {
       final Set<ConfigType> configTypes = Sets.newHashSet(ConfigType.GET_SPEC, ConfigType.CHECK_CONNECTION_DESTINATION);
       final Supplier<Instant> timeSupplier = incrementingSecondSupplier(NOW);
       jobPersistence = new DefaultJobPersistence(jobDatabase, timeSupplier, DEFAULT_MINIMUM_AGE_IN_DAYS, DEFAULT_EXCESSIVE_NUMBER_OF_JOBS,

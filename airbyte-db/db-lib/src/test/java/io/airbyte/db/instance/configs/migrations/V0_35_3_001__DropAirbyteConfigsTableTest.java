@@ -15,10 +15,10 @@ import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.Test;
 
-class V0_35_3_001__DropAirbyteConfigsTableTest extends AbstractConfigsDatabaseTest {
+public class V0_35_3_001__DropAirbyteConfigsTableTest extends AbstractConfigsDatabaseTest {
 
   @Test
-  void test() throws IOException, SQLException {
+  public void test() throws IOException, SQLException {
     final DSLContext context = getDslContext();
     assertTrue(airbyteConfigsExists(context));
     V0_35_3_001__DropAirbyteConfigsTable.dropTable(context);

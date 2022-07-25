@@ -5,6 +5,7 @@
     "title": "MSSQL Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
+    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -55,6 +56,7 @@
         "oneOf": [
           {
             "title": "Encrypted (trust server certificate)",
+            "additionalProperties": false,
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "properties": {
@@ -68,6 +70,7 @@
           },
           {
             "title": "Encrypted (verify certificate)",
+            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "properties": {
@@ -92,10 +95,12 @@
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
         "default": "STANDARD",
+        "additionalProperties": true,
         "order": 8,
         "oneOf": [
           {
             "title": "Standard",
+            "additionalProperties": false,
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["replication_type"],
             "properties": {
@@ -110,6 +115,7 @@
           },
           {
             "title": "Logical Replication (CDC)",
+            "additionalProperties": false,
             "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
             "required": ["replication_type"],
             "properties": {

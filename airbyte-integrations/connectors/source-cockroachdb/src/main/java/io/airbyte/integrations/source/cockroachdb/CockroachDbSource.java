@@ -41,13 +41,15 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
 
   public CockroachDbSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new CockroachJdbcSourceOperations());
   }
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new CockroachDbSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedSource(new CockroachDbSource(), HOST_KEY, PORT_KEY);
   }
 
   @Override
@@ -56,11 +58,11 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asText(),
-        config.get(JdbcUtils.DATABASE_KEY).asText()));
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText()));
 
-    if (config.has(JdbcUtils.SSL_KEY) && config.get(JdbcUtils.SSL_KEY).asBoolean() || !config.has(JdbcUtils.SSL_KEY)) {
+    if (config.has("ssl") && config.get("ssl").asBoolean() || !config.has("ssl")) {
       additionalParameters.add("ssl=true");
       additionalParameters.add("sslmode=require");
     }
@@ -68,13 +70,13 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
+        .put("username", config.get("username").asText())
+        .put("jdbc_url", jdbcUrl.toString());
 
     LOGGER.warn(jdbcUrl.toString());
 
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    if (config.has("password")) {
+      configBuilder.put("password", config.get("password").asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -118,11 +120,11 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
 
     final DataSource dataSource = DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         driverClass,
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY));
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties"));
     dataSources.add(dataSource);
     return dataSource;
   }
@@ -141,7 +143,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
           "SELECT DISTINCT table_catalog, table_schema, table_name, privilege_type\n"
               + "FROM   information_schema.table_privileges\n"
               + "WHERE  (grantee  = ? AND privilege_type in ('SELECT', 'ALL')) OR (table_schema = 'public')");
-      ps.setString(1, database.getDatabaseConfig().get(JdbcUtils.USERNAME_KEY).asText());
+      ps.setString(1, database.getDatabaseConfig().get("username").asText());
       return ps;
     };
   }

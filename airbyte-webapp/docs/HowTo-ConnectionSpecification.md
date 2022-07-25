@@ -11,6 +11,7 @@ e.g.
     "title": "BigQuery Destination Spec",
     "type": "object",
     "required": ["project_id", "dataset_id"],
+    "additionalProperties": true,
     "properties": {
       "project_id": {
         "type": "string",

@@ -22,8 +22,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -146,23 +144,6 @@ class TemporalClientTest {
       assertEquals(logPath, response.getMetadata().getLogPath());
     }
 
-    @Test
-    void testExecuteWithConnectorJobFailure() {
-      final Supplier<ConnectorJobOutput> supplier = mock(Supplier.class);
-      final FailureReason mockFailureReason = mock(FailureReason.class);
-      final ConnectorJobOutput connectorJobOutput = new ConnectorJobOutput()
-          .withFailureReason(mockFailureReason);
-      when(supplier.get()).thenReturn(connectorJobOutput);
-
-      final TemporalResponse<ConnectorJobOutput> response = temporalClient.execute(JOB_RUN_CONFIG, supplier);
-
-      assertNotNull(response);
-      assertTrue(response.getOutput().isPresent());
-      assertEquals(connectorJobOutput, response.getOutput().get());
-      assertFalse(response.getMetadata().isSucceeded());
-      assertEquals(logPath, response.getMetadata().getLogPath());
-    }
-
   }
 
   @Nested
@@ -245,7 +226,7 @@ class TemporalClientTest {
     }
 
     @Test
-    void testSynchronousResetConnection() throws IOException {
+    public void testSynchronousResetConnection() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
@@ -281,7 +262,7 @@ class TemporalClientTest {
 
     @DisplayName("Test that the migration is properly done if needed")
     @Test
-    void migrateCalled() {
+    public void migrateCalled() {
       final UUID nonMigratedId = UUID.randomUUID();
       final UUID migratedId = UUID.randomUUID();
 

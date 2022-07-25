@@ -136,24 +136,24 @@ public class SnowflakeSourceAcceptanceTest extends SourceAcceptanceTest {
   protected DataSource createDataSource() {
     config = Jsons.clone(getStaticConfig());
     return DataSourceFactory.create(
-        config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("credentials").get("username").asText(),
+        config.get("credentials").get("password").asText(),
         SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText()),
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
         Map.of("role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
+            "database", config.get("database").asText()));
   }
 
   @Test
   public void testBackwardCompatibilityAfterAddingOAuth() throws Exception {
     final JsonNode deprecatedStyleConfig = Jsons.clone(config);
-    final JsonNode password = deprecatedStyleConfig.get("credentials").get(JdbcUtils.PASSWORD_KEY);
-    final JsonNode username = deprecatedStyleConfig.get("credentials").get(JdbcUtils.USERNAME_KEY);
+    final JsonNode password = deprecatedStyleConfig.get("credentials").get("password");
+    final JsonNode username = deprecatedStyleConfig.get("credentials").get("username");
 
     ((ObjectNode) deprecatedStyleConfig).remove("credentials");
-    ((ObjectNode) deprecatedStyleConfig).set(JdbcUtils.PASSWORD_KEY, password);
-    ((ObjectNode) deprecatedStyleConfig).set(JdbcUtils.USERNAME_KEY, username);
+    ((ObjectNode) deprecatedStyleConfig).set("password", password);
+    ((ObjectNode) deprecatedStyleConfig).set("username", username);
 
     assertEquals("SUCCEEDED", runCheckAndGetStatusAsString(deprecatedStyleConfig).toUpperCase());
   }

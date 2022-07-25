@@ -88,7 +88,7 @@
     "discount_codes": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"]
+        "type": "object"
       }
     },
     "email": {
@@ -214,7 +214,7 @@
       "type": ["null", "string"]
     },
     "shopify_variant_id_not_found": {
-      "type": ["null", "integer"]
+      "type": ["null", "integer", "string"]
     },
     "status": {
       "type": ["null", "string"]
@@ -226,34 +226,13 @@
       "type": ["null", "string"]
     },
     "tax_lines": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string", "number"]
     },
     "total_discounts": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string"]
     },
     "total_line_items_price": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string"]
     },
     "total_price": {
       "type": ["null", "string"]
@@ -262,14 +241,7 @@
       "type": ["null", "string"]
     },
     "total_tax": {
-      "oneOf": [
-        {
-          "type": ["null", "number"]
-        },
-        {
-          "type": ["null", "string"]
-        }
-      ]
+      "type": ["null", "string", "number"]
     },
     "total_weight": {
       "type": ["null", "integer"]

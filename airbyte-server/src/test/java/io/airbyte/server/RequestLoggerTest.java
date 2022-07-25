@@ -36,9 +36,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 
-@SuppressWarnings({"PMD.AvoidPrintStackTrace", "PMD.JUnitTestsShouldIncludeAssert"})
 @ExtendWith(MockitoExtension.class)
-class RequestLoggerTest {
+public class RequestLoggerTest {
 
   private static final String VALID_JSON_OBJECT = "{\"valid\":1}";
   private static final String INVALID_JSON_OBJECT = "invalid";
@@ -57,7 +56,7 @@ class RequestLoggerTest {
   private Path logPath;
 
   @BeforeEach
-  void init() throws IOException {
+  public void init() throws IOException {
     Mockito.when(mServletRequest.getMethod())
         .thenReturn(METHOD);
     Mockito.when(mServletRequest.getRemoteAddr())
@@ -76,7 +75,7 @@ class RequestLoggerTest {
 
   @Nested
   @DisplayName("Formats logs correctly")
-  class RequestLoggerFormatsLogsCorrectly {
+  public class RequestLoggerFormatsLogsCorrectly {
 
     private static final int ERROR_CODE = 401;
     private static final int SUCCESS_CODE = 200;
@@ -109,7 +108,7 @@ class RequestLoggerTest {
     @ParameterizedTest
     @MethodSource("logScenarios")
     @DisplayName("Check that the proper log is produced based on the scenario")
-    void test(final String requestBody, final String contentType, final int status, final String expectedLog) throws IOException {
+    public void test(final String requestBody, final String contentType, final int status, final String expectedLog) throws IOException {
       // We have to instanciate the logger here, because the MDC config has been changed to log in a
       // temporary file.
       requestLogger = new RequestLogger(MDC.getCopyOfContextMap(), mServletRequest);
@@ -140,7 +139,7 @@ class RequestLoggerTest {
 
   @Nested
   @DisplayName("Logs correct requestBody")
-  class RequestLoggerCorrectRequestBody {
+  public class RequestLoggerCorrectRequestBody {
 
     /**
      * This is a complex test that was written to prove that our requestLogger had a concurrency bug
@@ -161,7 +160,7 @@ class RequestLoggerTest {
      * some request bodies are overwritten before they can be logged.
      */
     @Test
-    void testRequestBodyConsistency() {
+    public void testRequestBodyConsistency() {
       Mockito.when(mServletRequest.getHeader("Content-Type"))
           .thenReturn(ACCEPTED_CONTENT_TYPE);
 
@@ -205,14 +204,13 @@ class RequestLoggerTest {
     }
 
     @RequiredArgsConstructor
-    class RequestResponseRunnable implements Runnable {
+    public class RequestResponseRunnable implements Runnable {
 
       private final RequestLogger requestLogger;
       private final String expectedRequestBody;
       private final ContainerRequestContext mRequestContext;
       private final ContainerResponseContext mResponseContext;
 
-      @Override
       public void run() {
         try {
           requestLogger.filter(mRequestContext);
@@ -224,7 +222,7 @@ class RequestLoggerTest {
       }
 
       // search all log lines to see if this thread's request body was logged
-      Boolean requestBodyWasLogged() {
+      public Boolean requestBodyWasLogged() {
         return IOs.readFile(logPath).lines().anyMatch(line -> line.contains(expectedRequestBody));
       }
 

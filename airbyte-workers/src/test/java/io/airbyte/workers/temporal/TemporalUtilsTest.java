@@ -48,7 +48,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class TemporalUtilsTest {
 
   private static final String TASK_QUEUE = "default";
@@ -191,7 +190,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      final ActivityExecutionContext context = Activity.getExecutionContext();
+      ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           () -> {
@@ -232,7 +231,7 @@ class TemporalUtilsTest {
     final CountDownLatch latch = new CountDownLatch(2);
 
     worker.registerActivitiesImplementations(new HeartbeatWorkflow.HeartbeatActivityImpl(() -> {
-      final ActivityExecutionContext context = Activity.getExecutionContext();
+      ActivityExecutionContext context = Activity.getExecutionContext();
       TemporalUtils.withBackgroundHeartbeat(
           // TODO (itaseski) figure out how to decrease heartbeat intervals using reflection
           new AtomicReference<>(() -> {}),
@@ -312,7 +311,6 @@ class TemporalUtilsTest {
         this.callable = callable;
       }
 
-      @Override
       public void activity() {
         LOGGER.info("before: {}", ACTIVITY1);
         try {
@@ -379,17 +377,16 @@ class TemporalUtilsTest {
         this.timesReachedEnd = timesReachedEnd;
       }
 
-      @Override
-      public void activity(final String arg) {
+      public void activity(String arg) {
         LOGGER.info("before: {}", ACTIVITY1);
-        final ActivityExecutionContext context = Activity.getExecutionContext();
+        ActivityExecutionContext context = Activity.getExecutionContext();
         TemporalUtils.withBackgroundHeartbeat(
             new AtomicReference<>(null),
             () -> {
               if (timesReachedEnd.get() == 0) {
-                if ("runtime".equals(arg)) {
+                if (arg.equals("runtime")) {
                   throw new RuntimeException("failed");
-                } else if ("timeout".equals(arg)) {
+                } else if (arg.equals("timeout")) {
                   Thread.sleep(10000);
                   return null;
                 } else {

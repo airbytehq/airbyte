@@ -72,8 +72,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class JobCreationAndStatusUpdateActivityTest {
+public class JobCreationAndStatusUpdateActivityTest {
 
   @Mock
   private SyncJobFactory mJobFactory;
@@ -142,7 +141,7 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test job creation")
-    void createJob() throws JsonValidationException, ConfigNotFoundException, IOException {
+    public void createJob() throws JsonValidationException, ConfigNotFoundException, IOException {
       Mockito.when(mJobFactory.create(CONNECTION_ID))
           .thenReturn(JOB_ID);
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID))
@@ -155,7 +154,7 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test reset job creation")
-    void createResetJob() throws JsonValidationException, ConfigNotFoundException, IOException {
+    public void createResetJob() throws JsonValidationException, ConfigNotFoundException, IOException {
       final StandardSync standardSync = new StandardSync().withDestinationId(DESTINATION_ID);
       Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
       final DestinationConnection destination = new DestinationConnection().withDestinationDefinitionId(DESTINATION_DEFINITION_ID);
@@ -177,7 +176,7 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test attempt creation")
-    void createAttempt() throws IOException {
+    public void createAttempt() throws IOException {
       final Job mJob = Mockito.mock(Job.class);
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))
@@ -213,7 +212,7 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test exception errors are properly wrapped")
-    void createAttemptThrowException() throws IOException {
+    public void createAttemptThrowException() throws IOException {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenThrow(new IOException());
 
@@ -225,7 +224,7 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test attempt creation")
-    void createAttemptNumber() throws IOException {
+    public void createAttemptNumber() throws IOException {
       final Job mJob = Mockito.mock(Job.class);
 
       Mockito.when(mJobPersistence.getJob(JOB_ID))
@@ -261,7 +260,7 @@ class JobCreationAndStatusUpdateActivityTest {
 
     @Test
     @DisplayName("Test exception errors are properly wrapped")
-    void createAttemptNumberThrowException() throws IOException {
+    public void createAttemptNumberThrowException() throws IOException {
       Mockito.when(mJobPersistence.getJob(JOB_ID))
           .thenThrow(new IOException());
 
@@ -277,7 +276,7 @@ class JobCreationAndStatusUpdateActivityTest {
   class Update {
 
     @Test
-    void setJobSuccess() throws IOException {
+    public void setJobSuccess() throws IOException {
       jobCreationAndStatusUpdateActivity.jobSuccess(new JobSuccessInput(JOB_ID, ATTEMPT_ID, standardSyncOutput));
 
       Mockito.verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
@@ -287,7 +286,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setJobSuccessWrapException() throws IOException {
+    public void setJobSuccessWrapException() throws IOException {
       Mockito.doThrow(new IOException())
           .when(mJobPersistence).succeedAttempt(JOB_ID, ATTEMPT_ID);
 
@@ -297,7 +296,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setJobFailure() throws IOException {
+    public void setJobFailure() throws IOException {
       final Attempt mAttempt = Mockito.mock(Attempt.class);
       Mockito.when(mAttempt.getFailureSummary()).thenReturn(Optional.of(failureSummary));
 
@@ -317,7 +316,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setJobFailureWrapException() throws IOException {
+    public void setJobFailureWrapException() throws IOException {
       Mockito.doThrow(new IOException())
           .when(mJobPersistence).failJob(JOB_ID);
 
@@ -327,7 +326,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setAttemptFailure() throws IOException {
+    public void setAttemptFailure() throws IOException {
       jobCreationAndStatusUpdateActivity.attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, standardSyncOutput, failureSummary));
 
       Mockito.verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
@@ -336,7 +335,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setAttemptFailureWrapException() throws IOException {
+    public void setAttemptFailureWrapException() throws IOException {
       Mockito.doThrow(new IOException())
           .when(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
 
@@ -348,7 +347,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setJobCancelled() throws IOException {
+    public void setJobCancelled() throws IOException {
       jobCreationAndStatusUpdateActivity.jobCancelled(new JobCancelledInput(JOB_ID, ATTEMPT_ID, failureSummary));
 
       // attempt must be failed before job is cancelled, or else job state machine is not respected
@@ -359,7 +358,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void setJobCancelledWrapException() throws IOException {
+    public void setJobCancelledWrapException() throws IOException {
       Mockito.doThrow(new IOException())
           .when(mJobPersistence).cancelJob(JOB_ID);
 
@@ -369,7 +368,7 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
-    void ensureCleanJobState() throws IOException {
+    public void ensureCleanJobState() throws IOException {
       final Attempt failedAttempt = new Attempt(0, 1, Path.of(""), null, AttemptStatus.FAILED, null, 2L, 3L, 3L);
       final int runningAttemptNumber = 1;
       final Attempt runningAttempt = new Attempt(runningAttemptNumber, 1, Path.of(""), null, AttemptStatus.RUNNING, null, 4L, 5L, null);

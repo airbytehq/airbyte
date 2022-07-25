@@ -33,11 +33,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class OAuthConfigSupplierTest {
+public class OAuthConfigSupplierTest {
 
-  static final String API_CLIENT = "api_client";
-  static final String CREDENTIALS = "credentials";
-  static final String PROPERTIES = "properties";
+  public static final String API_CLIENT = "api_client";
+  public static final String CREDENTIALS = "credentials";
+  public static final String PROPERTIES = "properties";
 
   private ConfigRepository configRepository;
   private TrackingClient trackingClient;
@@ -45,7 +45,7 @@ class OAuthConfigSupplierTest {
   private UUID sourceDefinitionId;
 
   @BeforeEach
-  void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
+  public void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
     configRepository = mock(ConfigRepository.class);
     trackingClient = mock(TrackingClient.class);
     oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
@@ -56,7 +56,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testNoOAuthInjectionBecauseEmptyParams() throws IOException {
+  public void testNoOAuthInjectionBecauseEmptyParams() throws IOException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
@@ -65,7 +65,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testNoOAuthInjectionBecauseMissingPredicateKey() throws IOException, JsonValidationException, ConfigNotFoundException {
+  public void testNoOAuthInjectionBecauseMissingPredicateKey() throws IOException, JsonValidationException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
         .withPredicateKey(List.of("some_random_fields", "auth_type"))
         .withPredicateValue("oauth"));
@@ -78,7 +78,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testNoOAuthInjectionBecauseWrongPredicateValue() throws IOException, JsonValidationException, ConfigNotFoundException {
+  public void testNoOAuthInjectionBecauseWrongPredicateValue() throws IOException, JsonValidationException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
         .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
         .withPredicateValue("wrong_auth_type"));
@@ -91,7 +91,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthInjection() throws JsonValidationException, IOException {
+  public void testOAuthInjection() throws JsonValidationException, IOException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
@@ -103,7 +103,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthInjectionWithoutPredicate() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void testOAuthInjectionWithoutPredicate() throws JsonValidationException, IOException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
         .withPredicateKey(null)
         .withPredicateValue(null));
@@ -118,7 +118,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthInjectionWithoutPredicateValue() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void testOAuthInjectionWithoutPredicateValue() throws JsonValidationException, IOException, ConfigNotFoundException {
     setupStandardDefinitionMock(createAdvancedAuth()
         .withPredicateKey(List.of(CREDENTIALS, "auth_type"))
         .withPredicateValue(""));
@@ -133,7 +133,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthFullInjectionBecauseNoOAuthSpec() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void testOAuthFullInjectionBecauseNoOAuthSpec() throws JsonValidationException, IOException, ConfigNotFoundException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
@@ -155,7 +155,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthInjectionScopedToWorkspace() throws JsonValidationException, IOException {
+  public void testOAuthInjectionScopedToWorkspace() throws JsonValidationException, IOException {
     final JsonNode config = generateJsonConfig();
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
@@ -177,7 +177,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthFullInjectionBecauseNoOAuthSpecNestedParameters() throws JsonValidationException, IOException, ConfigNotFoundException {
+  public void testOAuthFullInjectionBecauseNoOAuthSpecNestedParameters() throws JsonValidationException, IOException, ConfigNotFoundException {
     // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth
     // parameters
     final JsonNode config = generateJsonConfig();
@@ -196,7 +196,7 @@ class OAuthConfigSupplierTest {
   }
 
   @Test
-  void testOAuthInjectionNestedParameters() throws JsonValidationException, IOException {
+  public void testOAuthInjectionNestedParameters() throws JsonValidationException, IOException {
     // Until https://github.com/airbytehq/airbyte/issues/7624 is solved, we need to handle nested oauth
     // parameters
     final JsonNode config = generateJsonConfig();

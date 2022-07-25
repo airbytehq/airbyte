@@ -10,7 +10,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.util.Map;
 import org.jooq.DSLContext;
@@ -37,11 +36,11 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         "snapshot_isolation", "Snapshot"));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, DB_NAME)
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", DB_NAME)
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
         .put("replication", replicationConfig)
         .build());
 
@@ -50,8 +49,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         container.getPassword(),
         container.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()),
+            config.get("host").asText(),
+            config.get("port").asInt()),
         null);
     final Database database = new Database(dslContext);
 
@@ -69,8 +68,8 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
             container.getPassword(),
             container.getDriverClassName(),
             String.format("jdbc:sqlserver://%s:%d;",
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt())),
+                config.get("host").asText(),
+                config.get("port").asInt())),
         null)) {
       final Database database = new Database(dslContext);
       database.query(

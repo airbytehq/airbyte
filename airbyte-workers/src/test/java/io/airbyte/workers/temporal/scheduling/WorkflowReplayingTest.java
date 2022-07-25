@@ -10,11 +10,10 @@ import java.net.URL;
 import org.junit.jupiter.api.Test;
 
 // TODO: Auto generation of the input and more scenario coverage
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class WorkflowReplayingTest {
+public class WorkflowReplayingTest {
 
   @Test
-  void replaySimpleSuccessfulWorkflow() throws Exception {
+  public void replaySimpleSuccessfulWorkflow() throws Exception {
     // This test ensures that a new version of the workflow doesn't break an in-progress execution
     // This JSON file is exported from Temporal directly (e.g.
     // `http://${temporal-ui}/namespaces/default/workflows/connection_manager_-${uuid}/${uuid}/history`)

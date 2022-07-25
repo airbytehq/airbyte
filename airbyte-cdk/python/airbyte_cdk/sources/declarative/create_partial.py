@@ -5,10 +5,9 @@
 import inspect
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
-
-def create(func, /, *args, **keywords):
-    """
+"""
     Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
@@ -21,7 +20,10 @@ def create(func, /, *args, **keywords):
     :return: partially created object
     """
 
+
+def create(func, /, *args, **keywords):
     def newfunc(*fargs, **fkeywords):
+        interpolation = JinjaInterpolation()
         all_keywords = {**keywords}
         all_keywords.update(fkeywords)
 
@@ -38,7 +40,7 @@ def create(func, /, *args, **keywords):
         fully_created = _create_inner_objects(all_keywords, options)
 
         # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created).eval(config, **{"options": options})
+        interpolated_keywords = InterpolatedMapping(fully_created, interpolation).eval(config, **{"options": options})
         interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
 
         if "auth" in str(func).lower():

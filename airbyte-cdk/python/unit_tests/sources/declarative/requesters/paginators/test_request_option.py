@@ -1,9 +1,8 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 import pytest
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
 
 
 @pytest.mark.parametrize(
@@ -23,7 +22,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 )
 def test_request_option(test_name, option_type, field_name, should_raise):
     try:
-        request_option = RequestOption(inject_into=option_type, field_name=field_name)
+        request_option = RequestOption(option_type=option_type, field_name=field_name)
         if should_raise:
             assert False
         assert request_option._field_name == field_name

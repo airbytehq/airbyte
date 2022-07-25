@@ -15,7 +15,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -45,19 +44,19 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
-        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
+        .put("host", dbContainer.getHost())
+        .put("port", dbContainer.getFirstMappedPort())
+        .put("username", dbContainer.getUsername())
+        .put("password", dbContainer.getPassword())
         .build());
 
     dataSource = DataSourceFactory.create(
-        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
-        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
+        configWithoutDbName.get("username").asText(),
+        configWithoutDbName.get("password").asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
+            configWithoutDbName.get("host").asText(),
+            configWithoutDbName.get("port").asInt()));
 
     try {
       database = new DefaultJdbcDatabase(dataSource);
@@ -67,7 +66,7 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
       database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
       config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+      ((ObjectNode) config).put("database", dbName);
 
       super.setup();
     } finally {

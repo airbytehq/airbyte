@@ -205,11 +205,11 @@ public abstract class JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        jdbcConfig.get("username").asText(),
+        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
         getDriverClass(),
-        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
+        jdbcConfig.get("jdbc_url").asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
@@ -294,7 +294,7 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckFailure() throws Exception {
-    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
+    ((ObjectNode) config).put("password", "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
   }
@@ -990,7 +990,7 @@ public abstract class JdbcSourceAcceptanceTest {
   protected String getDefaultNamespace() {
     // mysql does not support schemas. it namespaces using database names instead.
     if (getDriverClass().toLowerCase().contains("mysql") || getDriverClass().toLowerCase().contains("clickhouse")) {
-      return config.get(JdbcUtils.DATABASE_KEY).asText();
+      return config.get("database").asText();
     } else {
       return SCHEMA_NAME;
     }

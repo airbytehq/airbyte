@@ -39,14 +39,14 @@ class DefaultAirbyteStreamFactoryTest {
   private Logger logger;
 
   @BeforeEach
-  void setup() {
+  public void setup() {
     protocolPredicate = mock(AirbyteProtocolPredicate.class);
     when(protocolPredicate.test(any())).thenReturn(true);
     logger = mock(Logger.class);
   }
 
   @Test
-  void testValid() {
+  public void testValid() {
     final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(record1));
@@ -57,7 +57,7 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   @Test
-  void testLoggingLine() {
+  public void testLoggingLine() {
     final String invalidRecord = "invalid line";
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(invalidRecord);
@@ -68,7 +68,7 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   @Test
-  void testLoggingLevel() {
+  public void testLoggingLevel() {
     final AirbyteMessage logMessage = AirbyteMessageUtils.createLogMessage(AirbyteLogMessage.Level.WARN, "warning");
 
     final Stream<AirbyteMessage> messageStream = stringToMessageStream(Jsons.serialize(logMessage));
@@ -79,7 +79,7 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   @Test
-  void testFailValidation() {
+  public void testFailValidation() {
     final String invalidRecord = "{ \"fish\": \"tuna\"}";
 
     when(protocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(false);
@@ -92,7 +92,7 @@ class DefaultAirbyteStreamFactoryTest {
   }
 
   @Test
-  void testFailDeserialization() {
+  public void testFailDeserialization() {
     final String invalidRecord = "{ \"type\": \"abc\"}";
 
     when(protocolPredicate.test(Jsons.deserialize(invalidRecord))).thenReturn(true);
@@ -106,7 +106,7 @@ class DefaultAirbyteStreamFactoryTest {
 
   @Test
   @Disabled
-  void testMissingNewLineBetweenValidRecords() {
+  public void testMissingNewLineBetweenValidRecords() {
     final AirbyteMessage record1 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "green");
     final AirbyteMessage record2 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, "yellow");
 

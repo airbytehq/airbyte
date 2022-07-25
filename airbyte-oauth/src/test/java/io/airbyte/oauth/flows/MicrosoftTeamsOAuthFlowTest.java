@@ -10,8 +10,7 @@ import io.airbyte.oauth.BaseOAuthFlow;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class MicrosoftTeamsOAuthFlowTest extends BaseOAuthFlowTest {
+public class MicrosoftTeamsOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -34,11 +33,9 @@ class MicrosoftTeamsOAuthFlowTest extends BaseOAuthFlowTest {
   }
 
   @Test
-  @Override
-  void testEmptyInputCompleteSourceOAuth() {}
+  public void testEmptyInputCompleteSourceOAuth() {}
 
   @Test
-  @Override
-  void testEmptyInputCompleteDestinationOAuth() {}
+  public void testEmptyInputCompleteDestinationOAuth() {}
 
 }

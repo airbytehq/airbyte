@@ -34,7 +34,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class SecretMigratorTest {
+public class SecretMigratorTest {
 
   private final UUID workspaceId = UUID.randomUUID();
 
@@ -55,7 +55,7 @@ class SecretMigratorTest {
   }
 
   @Test
-  void testMigrateSecret() throws JsonValidationException, IOException {
+  public void testMigrateSecret() throws JsonValidationException, IOException {
     final JsonNode sourceSpec = Jsons.jsonNode("sourceSpec");
     final UUID sourceDefinitionId = UUID.randomUUID();
     final StandardSourceDefinition standardSourceDefinition = new StandardSourceDefinition()

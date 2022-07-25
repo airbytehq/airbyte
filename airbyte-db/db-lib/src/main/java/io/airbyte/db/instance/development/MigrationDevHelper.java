@@ -47,15 +47,15 @@ public class MigrationDevHelper {
     migrator.createBaseline();
 
     final List<MigrationInfo> preMigrationInfoList = migrator.list();
-    LOGGER.info("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
-    LOGGER.info("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+    System.out.println("\n==== Pre Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(preMigrationInfoList));
+    System.out.println("\n==== Pre Migration Schema ====\n" + migrator.dumpSchema() + "\n");
 
     final MigrateResult migrateResult = migrator.migrate();
-    LOGGER.info("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
+    System.out.println("\n==== Migration Result ====\n" + FlywayFormatter.formatMigrationResult(migrateResult));
 
     final List<MigrationInfo> postMigrationInfoList = migrator.list();
-    LOGGER.info("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
-    LOGGER.info("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
+    System.out.println("\n==== Post Migration Info ====\n" + FlywayFormatter.formatMigrationInfoList(postMigrationInfoList));
+    System.out.println("\n==== Post Migration Schema ====\n" + migrator.dumpSchema() + "\n");
   }
 
   public static void createNextMigrationFile(final String dbIdentifier, final FlywayDatabaseMigrator migrator) throws IOException {
@@ -73,7 +73,7 @@ public class MigrationDevHelper {
     final String fileName = String.format("V%s__%s.java", versionId, description);
     final String filePath = String.format("src/main/java/io/airbyte/db/instance/%s/migrations/%s", dbIdentifier, fileName);
 
-    LOGGER.info("\n==== New Migration File ====\n" + filePath);
+    System.out.println("\n==== New Migration File ====\n" + filePath);
 
     final File file = new File(Path.of(filePath).toUri());
     FileUtils.forceMkdirParent(file);
@@ -97,8 +97,8 @@ public class MigrationDevHelper {
     try (final PrintWriter writer = new PrintWriter(new File(Path.of(schemaDumpFile).toUri()), StandardCharsets.UTF_8)) {
       writer.println(schema);
       if (printSchema) {
-        LOGGER.info("\n==== Schema ====\n" + schema);
-        LOGGER.info("\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
+        System.out.println("\n==== Schema ====\n" + schema);
+        System.out.println("\n==== Dump File ====\nThe schema has been written to: " + schemaDumpFile);
       }
     } catch (final FileNotFoundException e) {
       throw new IOException(e);
@@ -147,7 +147,7 @@ public class MigrationDevHelper {
         }
       }
     } catch (final FileNotFoundException e) {
-      throw new IllegalStateException("Cannot find the .env file", e);
+      throw new IllegalStateException("Cannot find the .env file");
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
@@ -214,9 +214,9 @@ public class MigrationDevHelper {
         migrationAirbyteVersion,
         currentAirbyteVersion);
     final String lastMigrationId = getMigrationId(migrationVersion);
-    LOGGER.info("lastMigrationId: " + lastMigrationId);
+    System.out.println("lastMigrationId: " + lastMigrationId);
     final String nextMigrationId = String.format("%03d", Integer.parseInt(lastMigrationId) + 1);
-    LOGGER.info("nextMigrationId: " + nextMigrationId);
+    System.out.println("nextMigrationId: " + nextMigrationId);
     return MigrationVersion.fromVersion(String.format("%s_%s", migrationAirbyteVersion.serialize(), nextMigrationId));
   }
 

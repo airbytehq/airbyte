@@ -29,7 +29,7 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.junit.jupiter.api.Test;
 
-class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJobsDatabaseTest {
+public class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJobsDatabaseTest {
 
   private static int currJobId = 1;
   private static final long timeNowMillis = System.currentTimeMillis();
@@ -98,7 +98,7 @@ class V0_35_40_001_MigrateFailureReasonEnumValues_Test extends AbstractJobsDatab
       getFailureSummary(fixedOriginReplicationWorker, unrecognizedValue);
 
   @Test
-  void test() throws Exception {
+  public void test() throws Exception {
     final DSLContext ctx = getDslContext();
 
     V0_35_5_001__Add_failureSummary_col_to_Attempts.migrate(ctx);

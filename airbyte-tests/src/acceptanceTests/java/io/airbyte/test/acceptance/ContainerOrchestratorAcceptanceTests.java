@@ -53,7 +53,7 @@ import org.slf4j.MDC;
 @SuppressWarnings({"rawtypes", "ConstantConditions"})
 @EnabledIfEnvironmentVariable(named = "KUBE",
                               matches = "true")
-class ContainerOrchestratorAcceptanceTests {
+public class ContainerOrchestratorAcceptanceTests {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContainerOrchestratorAcceptanceTests.class);
 
@@ -64,7 +64,7 @@ class ContainerOrchestratorAcceptanceTests {
 
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
-  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -89,20 +89,25 @@ class ContainerOrchestratorAcceptanceTests {
   }
 
   @AfterAll
-  static void end() {
+  public static void end() {
     testHarness.stopDbAndContainers();
   }
 
   @BeforeEach
-  void setup() throws URISyntaxException, IOException, SQLException {
+  public void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
 
+  @AfterEach
+  public void tearDown() {
+    testHarness.cleanup();
+  }
+
   @Test
-  void testDowntimeDuringSync() throws Exception {
+  public void testDowntimeDuringSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
@@ -113,7 +118,7 @@ class ContainerOrchestratorAcceptanceTests {
         testHarness.createConnection(connectionName, sourceId, destinationId, List.of(), catalog, null).getConnectionId();
 
     LOGGER.info("Run manual sync...");
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
     LOGGER.info("Waiting for job to run...");
     waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
@@ -135,16 +140,11 @@ class ContainerOrchestratorAcceptanceTests {
     assertEquals(1, numAttempts);
   }
 
-  @AfterEach
-  void tearDown() {
-    testHarness.cleanup();
-  }
-
   @Test
-  void testCancelSyncWithInterruption() throws Exception {
+  public void testCancelSyncWithInterruption() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;
@@ -164,10 +164,10 @@ class ContainerOrchestratorAcceptanceTests {
   }
 
   @Test
-  void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
+  public void testCancelSyncWhenCancelledWhenWorkerIsNotRunning() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+    final UUID destinationId = testHarness.createDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
     final SyncMode syncMode = SyncMode.FULL_REFRESH;

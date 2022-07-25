@@ -9,37 +9,26 @@ from typing import Union
 
 from dateutil import parser
 
-"""
-This file contains macros that can be evaluated by a `JinjaInterpolation` object
-"""
-
 
 def now_local() -> datetime.datetime:
     """
-    Current local date and time.
-
-    Usage:
-    `"{{ now_local() }}"
+    :return: current local date and time.
     """
     return datetime.datetime.now()
 
 
 def now_utc():
     """
-    Current local date and time in UTC timezone
 
-    Usage:
-    `"{{ now_utc() }}"`
+    :return: current local date and time in utc
     """
     return datetime.datetime.now(datetime.timezone.utc)
 
 
 def today_utc():
     """
-    Current date in UTC timezone
 
-    Usage:
-    `"{{ today_utc() }}"`
+    :return: current date in utc
     """
     return datetime.datetime.now(datetime.timezone.utc).date()
 
@@ -47,13 +36,8 @@ def today_utc():
 def timestamp(dt: Union[numbers.Number, str]):
     """
     Converts a number or a string to a timestamp
-
     If dt is a number, then convert to an int
     If dt is a string, then parse it using dateutil.parser
-
-    Usage:
-    `"{{ timestamp(1658505815.223235) }}"
-
     :param dt: datetime to convert to timestamp
     :return: unix timestamp
     """
@@ -65,19 +49,14 @@ def timestamp(dt: Union[numbers.Number, str]):
 
 def max(*args):
     """
-    Returns biggest object of an iterable, or two or more arguments.
+        max(iterable, *[, default=obj, key=func]) -> value
+        max(arg1, arg2, *args, *[, key=func]) -> value
 
-    max(iterable, *[, default=obj, key=func]) -> value
-    max(arg1, arg2, *args, *[, key=func]) -> value
-
-    Usage:
-    `"{{ max(2,3) }}"
-
-    With a single iterable argument, return its biggest item. The
-    default keyword-only argument specifies an object to return if
-    the provided iterable is empty.
-    With two or more arguments, return the largest argument.
-    :param args: args to compare
+        With a single iterable argument, return its biggest item. The
+        default keyword-only argument specifies an object to return if
+        the provided iterable is empty.
+        With two or more arguments, return the largest argument.
+    :param args:
     :return: largest argument
     """
     return builtins.max(*args)
@@ -86,10 +65,6 @@ def max(*args):
 def day_delta(num_days: int) -> str:
     """
     Returns datetime of now() + num_days
-
-    Usage:
-    `"{{ day_delta(25) }}"`
-
     :param num_days: number of days to add to current date time
     :return: datetime formatted as RFC3339
     """

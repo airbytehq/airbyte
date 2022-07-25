@@ -5,6 +5,7 @@
     "title": "Oracle Source Spec",
     "type": "object",
     "required": ["host", "port", "sid", "username"],
+    "additionalProperties": false,
     "properties": {
       "host": {
         "title": "Host",
@@ -64,6 +65,7 @@
         "oneOf": [
           {
             "title": "Unencrypted",
+            "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
             "required": ["encryption_method"],
             "properties": {
@@ -77,6 +79,7 @@
           },
           {
             "title": "Native Network Encryption (NNE)",
+            "additionalProperties": false,
             "description": "The native network encryption gives you the ability to encrypt database connections, without the configuration overhead of TCP/IP and SSL/TLS and without the need to open and listen on different ports.",
             "required": ["encryption_method"],
             "properties": {
@@ -97,6 +100,7 @@
           },
           {
             "title": "TLS Encrypted (verify certificate)",
+            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["encryption_method", "ssl_certificate"],
             "properties": {

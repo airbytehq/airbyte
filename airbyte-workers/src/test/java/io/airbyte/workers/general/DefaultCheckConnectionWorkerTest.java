@@ -18,10 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -31,7 +28,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.internal.AirbyteMessageUtils;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.ByteArrayInputStream;
@@ -42,8 +38,7 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class DefaultCheckConnectionWorkerTest {
+public class DefaultCheckConnectionWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
@@ -55,10 +50,9 @@ class DefaultCheckConnectionWorkerTest {
   private Process process;
   private AirbyteStreamFactory successStreamFactory;
   private AirbyteStreamFactory failureStreamFactory;
-  private AirbyteStreamFactory traceMessageStreamFactory;
 
   @BeforeEach
-  void setup() throws IOException, WorkerException {
+  public void setup() throws IOException, WorkerException {
     workerConfigs = WorkerConfigs.buildCheckWorkerConfigs(new EnvConfigs());
     input = new StandardCheckConnectionInput().withConnectionConfiguration(CREDS);
 
@@ -80,66 +74,44 @@ class DefaultCheckConnectionWorkerTest {
         .withType(Type.CONNECTION_STATUS)
         .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to connect"));
     failureStreamFactory = noop -> Lists.newArrayList(failureMessage).stream();
-
-    final AirbyteMessage traceMessage = AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0);
-    traceMessageStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
   }
 
   @Test
-  void testEnums() {
+  public void testEnums() {
     Enums.isCompatible(AirbyteConnectionStatus.Status.class, Status.class);
   }
 
   @Test
-  void testSuccessfulConnection() throws WorkerException {
+  public void testSuccessfulConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, successStreamFactory);
-    final ConnectorJobOutput output = worker.run(input, jobRoot);
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
-    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertNull(output.getFailureReason());
+    assertEquals(Status.SUCCEEDED, output.getStatus());
+    assertNull(output.getMessage());
 
-    final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
-    assertEquals(Status.SUCCEEDED, checkOutput.getStatus());
-    assertNull(checkOutput.getMessage());
   }
 
   @Test
-  void testFailedConnection() throws WorkerException {
+  public void testFailedConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    final ConnectorJobOutput output = worker.run(input, jobRoot);
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
 
-    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertNull(output.getFailureReason());
-
-    final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
-    assertEquals(Status.FAILED, checkOutput.getStatus());
-    assertEquals("failed to connect", checkOutput.getMessage());
+    assertEquals(Status.FAILED, output.getStatus());
+    assertEquals("failed to connect", output.getMessage());
   }
 
   @Test
-  void testProcessFail() {
+  public void testProcessFail() throws WorkerException {
     when(process.exitValue()).thenReturn(1);
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
-    assertThrows(WorkerException.class, () -> worker.run(input, jobRoot));
+    final StandardCheckConnectionOutput output = worker.run(input, jobRoot);
+
+    assertEquals(Status.FAILED, output.getStatus());
   }
 
   @Test
-  void testProcessFailWithTraceMessage() throws WorkerException {
-    when(process.exitValue()).thenReturn(1);
-
-    final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, traceMessageStreamFactory);
-    final ConnectorJobOutput output = worker.run(input, jobRoot);
-
-    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
-    assertNull(output.getCheckConnection());
-
-    final FailureReason failureReason = output.getFailureReason();
-    assertEquals("some error from the connector", failureReason.getExternalMessage());
-  }
-
-  @Test
-  void testExceptionThrownInRun() throws WorkerException {
+  public void testExceptionThrownInRun() throws WorkerException {
     doThrow(new RuntimeException()).when(integrationLauncher).check(jobRoot, WorkerConstants.SOURCE_CONFIG_JSON_FILENAME, Jsons.serialize(CREDS));
 
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, failureStreamFactory);
@@ -148,7 +120,7 @@ class DefaultCheckConnectionWorkerTest {
   }
 
   @Test
-  void testCancel() throws WorkerException {
+  public void testCancel() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(workerConfigs, integrationLauncher, successStreamFactory);
     worker.run(input, jobRoot);
 

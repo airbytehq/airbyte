@@ -2,32 +2,18 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Mapping
+from typing import Any, Mapping
 
+from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
-from airbyte_cdk.sources.declarative.types import Config
 
 
 class InterpolatedMapping:
-    """
-    Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
-    """
-
-    def __init__(self, mapping: Mapping[str, str]):
-        """
-        :param mapping: Mapping[str, str] to be evaluated
-        """
+    def __init__(self, mapping: Mapping[str, Any], interpolation: Interpolation = JinjaInterpolation()):
         self._mapping = mapping
-        self._interpolation = JinjaInterpolation()
+        self._interpolation = interpolation
 
-    def eval(self, config: Config, **kwargs):
-        """
-        Interpolates the mapping using the config, and kwargs passed as parameter.
-
-        :param config: The user-provided configuration as specified by the source's spec
-        :param kwargs: Optional parameters used for interpolation
-        :return: The interpolated string
-        """
+    def eval(self, config, **kwargs):
         interpolated_values = {
             self._interpolation.eval(name, config, **kwargs): self._eval(value, config, **kwargs) for name, value in self._mapping.items()
         }

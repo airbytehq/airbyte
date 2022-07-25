@@ -37,7 +37,7 @@ public class StateMessageHelper {
       } catch (final IllegalArgumentException e) {
         return Optional.of(getLegacyStateWrapper(state));
       }
-      if (stateMessages.isEmpty()) {
+      if (stateMessages.size() == 0) {
         return Optional.empty();
       }
 

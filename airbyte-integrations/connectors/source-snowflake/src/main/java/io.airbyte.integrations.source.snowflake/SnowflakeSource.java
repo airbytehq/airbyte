@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -92,23 +91,23 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
     final var credentials = config.get("credentials");
     try {
       accessToken = SnowflakeDataSourceUtils.getAccessTokenUsingRefreshToken(
-          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
+          config.get("host").asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.CONNECTION_PROPERTIES_KEY,
+        .put("connection_properties",
             String.join(";", "authenticator=oauth", "token=" + accessToken))
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+        .put("jdbc_url", jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());
   }
 
   private JsonNode buildUsernamePasswordConfig(final JsonNode config, final String jdbcUrl) {
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+        .put("username", config.get("username").asText())
+        .put("password", config.get("password").asText())
+        .put("jdbc_url", jdbcUrl);
     LOGGER.info(jdbcUrl);
     return Jsons.jsonNode(configBuilder.build());
   }

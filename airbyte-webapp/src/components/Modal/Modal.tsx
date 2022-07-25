@@ -22,10 +22,10 @@ const cardStyleBySize = {
 };
 
 const Modal: React.FC<ModalProps> = ({ children, title, onClose, clear, closeOnBackground, size }) => {
-  const handleUserKeyPress = useCallback((event: KeyboardEvent, closeModal: () => void) => {
-    const { key } = event;
+  const handleUserKeyPress = useCallback((event, closeModal) => {
+    const { keyCode } = event;
     // Escape key
-    if (key === "Escape") {
+    if (keyCode === 27) {
       closeModal();
     }
   }, []);

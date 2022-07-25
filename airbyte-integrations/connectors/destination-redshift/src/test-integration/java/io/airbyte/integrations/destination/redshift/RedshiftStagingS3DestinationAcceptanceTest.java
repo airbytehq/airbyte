@@ -13,7 +13,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
@@ -154,13 +153,13 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   protected Database getDatabase() {
     return new Database(
         DSLContextFactory.create(
-            baseConfig.get(JdbcUtils.USERNAME_KEY).asText(),
-            baseConfig.get(JdbcUtils.PASSWORD_KEY).asText(),
+            baseConfig.get("username").asText(),
+            baseConfig.get("password").asText(),
             DatabaseDriver.REDSHIFT.getDriverClassName(),
             String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-                baseConfig.get(JdbcUtils.HOST_KEY).asText(),
-                baseConfig.get(JdbcUtils.PORT_KEY).asInt(),
-                baseConfig.get(JdbcUtils.DATABASE_KEY).asText()),
+                baseConfig.get("host").asText(),
+                baseConfig.get("port").asInt(),
+                baseConfig.get("database").asText()),
             null,
             RedshiftInsertDestination.SSL_JDBC_PARAMETERS));
   }

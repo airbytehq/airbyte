@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.temporal.spec;
 
-import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.temporal.activity.ActivityInterface;
@@ -14,6 +14,6 @@ import io.temporal.activity.ActivityMethod;
 public interface SpecActivity {
 
   @ActivityMethod
-  ConnectorJobOutput run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig);
+  ConnectorSpecification run(JobRunConfig jobRunConfig, IntegrationLauncherConfig launcherConfig);
 
 }

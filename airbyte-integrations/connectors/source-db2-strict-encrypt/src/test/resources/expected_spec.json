@@ -5,6 +5,7 @@
     "title": "IBM Db2 Source Spec",
     "type": "object",
     "required": ["host", "port", "db", "username", "password", "encryption"],
+    "additionalProperties": false,
     "properties": {
       "host": {
         "description": "Host of the Db2.",
@@ -45,6 +46,7 @@
         "oneOf": [
           {
             "title": "TLS Encrypted (verify certificate)",
+            "additionalProperties": false,
             "description": "Verify and use the cert provided by the server.",
             "required": ["encryption_method", "ssl_certificate"],
             "properties": {

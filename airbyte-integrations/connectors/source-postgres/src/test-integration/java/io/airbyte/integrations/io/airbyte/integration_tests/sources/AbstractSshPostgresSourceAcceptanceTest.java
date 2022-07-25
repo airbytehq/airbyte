@@ -11,7 +11,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -43,8 +42,8 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   private static void populateDatabaseTestData() throws Exception {
     SshTunnel.sshWrap(
         config,
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
+        List.of("host"),
+        List.of("port"),
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(ctx -> {
               ctx.fetch("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
@@ -58,13 +57,13 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
   private static Database getDatabaseFromConfig(final JsonNode config) {
     return new Database(
         DSLContextFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            config.get("username").asText(),
+            config.get("password").asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText()),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText()),
             SQLDialect.POSTGRES));
   }
 

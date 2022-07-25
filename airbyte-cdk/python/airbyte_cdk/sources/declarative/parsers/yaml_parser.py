@@ -3,117 +3,28 @@
 #
 
 from copy import deepcopy
-from typing import Any, Mapping, Tuple, Union
+from typing import Any, Mapping
 
 import yaml
-from airbyte_cdk.sources.declarative.parsers.config_parser import ConnectionDefinitionParser
+from airbyte_cdk.sources.declarative.parsers.config_parser import ConfigParser
 from airbyte_cdk.sources.declarative.parsers.undefined_reference_exception import UndefinedReferenceException
-from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
 
-class YamlParser(ConnectionDefinitionParser):
-    """
-    Parses a Yaml string to a ConnectionDefinition
+class YamlParser(ConfigParser):
+    ref_tag = "ref"
 
-    In addition to standard Yaml parsing, the input_string can contain refererences to values previously defined.
-    This parser will dereference these values to produce a complete ConnectionDefinition.
-
-    References can be defined using a *ref(<arg>) string.
-    ```
-    key: 1234
-    reference: "*ref(key)"
-    ```
-    will produce the following definition:
-    ```
-    key: 1234
-    reference: 1234
-    ```
-    This also works with objects:
-    ```
-    key_value_pairs:
-      k1: v1
-      k2: v2
-    same_key_value_pairs: "*ref(key_value_pairs)"
-    ```
-    will produce the following definition:
-    ```
-    key_value_pairs:
-      k1: v1
-      k2: v2
-    same_key_value_pairs:
-      k1: v1
-      k2: v2
-    ```
-
-    The $ref keyword can be used to refer to an object and enhance it with addition key-value pairs
-    ```
-    key_value_pairs:
-      k1: v1
-      k2: v2
-    same_key_value_pairs:
-      $ref: "*ref(key_value_pairs)"
-      k3: v3
-    ```
-    will produce the following definition:
-    ```
-    key_value_pairs:
-      k1: v1
-      k2: v2
-    same_key_value_pairs:
-      k1: v1
-      k2: v2
-      k3: v3
-    ```
-
-    References can also point to nested values.
-    Nested references are ambiguous because one could define a key containing with `.`
-    in this example, we want to refer to the limit key in the dict object:
-    ```
-    dict:
-        limit: 50
-    limit_ref: "*ref(dict.limit)"
-    ```
-    will produce the following definition:
-    ```
-    dict
-        limit: 50
-    limit-ref: 50
-    ```
-
-    whereas here we want to access the `nested.path` value.
-    ```
-    nested:
-        path: "first one"
-    nested.path: "uh oh"
-    value: "ref(nested.path)
-    ```
-    will produce the following definition:
-    ```
-    nested:
-        path: "first one"
-    nested.path: "uh oh"
-    value: "uh oh"
-    ```
-
-    to resolve the ambiguity, we try looking for the reference key at the top level, and then traverse the structs downward
-    until we find a key with the given path, or until there is nothing to traverse.
-    """
-
-    ref_tag = "$ref"
-
-    def parse(self, connection_definition_str: str) -> ConnectionDefinition:
+    def parse(self, config_str: str) -> Mapping[str, Any]:
         """
         Parses a yaml file and dereferences string in the form "*ref({reference)"
         to {reference}
-        :param connection_definition_str: yaml string to parse
-        :return: The ConnectionDefinition parsed from connection_definition_str
+        :param config_str: yaml string to parse
+        :return:
         """
-        input_mapping = yaml.safe_load(connection_definition_str)
-        evaluated_definition = {}
-        return self._preprocess_dict(input_mapping, evaluated_definition, "")
+        input_mapping = yaml.safe_load(config_str)
+        evaluated_config = {}
+        return self.preprocess_dict(input_mapping, evaluated_config, "")
 
-    def _preprocess_dict(self, input_mapping: Mapping[str, Any], evaluated_mapping: Mapping[str, Any], path: Union[str, Tuple[str]]):
-
+    def preprocess_dict(self, input_mapping, evaluated_mapping, path):
         """
         :param input_mapping: mapping produced by parsing yaml
         :param evaluated_mapping: mapping produced by dereferencing the content of input_mapping
@@ -123,35 +34,35 @@ class YamlParser(ConnectionDefinitionParser):
         d = {}
         if self.ref_tag in input_mapping:
             partial_ref_string = input_mapping[self.ref_tag]
-            d = deepcopy(self._preprocess(partial_ref_string, evaluated_mapping, path))
+            d = deepcopy(self.preprocess(partial_ref_string, evaluated_mapping, path))
 
         for key, value in input_mapping.items():
             if key == self.ref_tag:
                 continue
-            full_path = self._resolve_value(key, path)
+            full_path = self.resolve_value(key, path)
             if full_path in evaluated_mapping:
                 raise Exception(f"Databag already contains key={key} with path {full_path}")
-            processed_value = self._preprocess(value, evaluated_mapping, full_path)
+            processed_value = self.preprocess(value, evaluated_mapping, full_path)
             evaluated_mapping[full_path] = processed_value
             d[key] = processed_value
 
         return d
 
-    def _get_ref_key(self, s: str) -> str:
+    def get_ref_key(self, s: str) -> str:
         ref_start = s.find("*ref(")
         if ref_start == -1:
             return None
         return s[ref_start + 5 : s.find(")")]
 
-    def _resolve_value(self, value: str, path):
+    def resolve_value(self, value, path):
         if path:
             return *path, value
         else:
             return (value,)
 
-    def _preprocess(self, value, evaluated_config: Mapping[str, Any], path):
+    def preprocess(self, value, evaluated_config, path):
         if isinstance(value, str):
-            ref_key = self._get_ref_key(value)
+            ref_key = self.get_ref_key(value)
             if ref_key is None:
                 return value
             else:
@@ -180,11 +91,11 @@ class YamlParser(ConnectionDefinitionParser):
                         key = *key[:-1], split[0], ".".join(split[1:])
                 raise UndefinedReferenceException(path, ref_key)
         elif isinstance(value, dict):
-            return self._preprocess_dict(value, evaluated_config, path)
+            return self.preprocess_dict(value, evaluated_config, path)
         elif type(value) == list:
             evaluated_list = [
                 # pass in elem's path instead of the list's path
-                self._preprocess(v, evaluated_config, self._get_path_for_list_item(path, index))
+                self.preprocess(v, evaluated_config, self._get_path_for_list_item(path, index))
                 for index, v in enumerate(value)
             ]
             # Add the list's element to the evaluated config so they can be referenced

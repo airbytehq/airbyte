@@ -13,7 +13,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
@@ -82,33 +81,33 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", db.getHost())
+        .put("username", db.getUsername())
+        .put("password", db.getPassword())
+        .put("database", db.getDatabaseName())
+        .put("port", db.getFirstMappedPort())
+        .put("ssl", false)
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
-        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", db.getHost())
+        .put("username", db.getUsername())
+        .put("password", "wrong password")
+        .put("database", db.getDatabaseName())
+        .put("port", db.getFirstMappedPort())
+        .put("ssl", false)
         .build());
   }
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
+    if (config.get("database") == null) {
       return null;
     }
-    return config.get(JdbcUtils.DATABASE_KEY).asText();
+    return config.get("database").asText();
   }
 
   @Override

@@ -9,17 +9,13 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 
 
 class NoPagination(Paginator):
-    """
-    Pagination implementation that never returns a next page.
-    """
-
     def path(self) -> Optional[str]:
         return None
 
     def request_params(self) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, str]:
+    def request_headers(self) -> Mapping[str, Any]:
         return {}
 
     def request_body_data(self) -> Union[Mapping[str, Any], str]:
@@ -28,5 +24,5 @@ class NoPagination(Paginator):
     def request_body_json(self) -> Mapping[str, Any]:
         return {}
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Mapping[str, Any]:
-        return {}
+    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+        return None

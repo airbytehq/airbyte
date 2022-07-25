@@ -9,10 +9,6 @@ import requests
 
 
 class BackoffStrategy:
-    """
-    Backoff strategy defining how long to backoff before retrying a request that resulted in an error.
-    """
-
     @abstractmethod
     def backoff(self, response: requests.Response, attempt_count: int) -> Optional[float]:
         """

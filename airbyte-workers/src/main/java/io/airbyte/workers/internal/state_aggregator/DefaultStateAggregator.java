@@ -16,7 +16,7 @@ public class DefaultStateAggregator implements StateAggregator {
   private final StateAggregator singleStateAggregator = new SingleStateAggregator();
   private final boolean useStreamCapableState;
 
-  public DefaultStateAggregator(final boolean useStreamCapableState) {
+  public DefaultStateAggregator(boolean useStreamCapableState) {
     this.useStreamCapableState = useStreamCapableState;
   }
 
@@ -50,18 +50,15 @@ public class DefaultStateAggregator implements StateAggregator {
    * We can not have 2 different state types given to the same instance of this class. This method set
    * the type if it is not. If the state type doesn't exist in the message, it is set to LEGACY
    */
-  private void checkTypeOrSetType(final AirbyteStateType inputStateType) {
-    final AirbyteStateType validatedStateType;
+  private void checkTypeOrSetType(AirbyteStateType inputStateType) {
     if (inputStateType == null) {
-      validatedStateType = AirbyteStateType.LEGACY;
-    } else {
-      validatedStateType = inputStateType;
+      inputStateType = AirbyteStateType.LEGACY;
     }
     if (this.stateType == null) {
-      this.stateType = validatedStateType;
+      this.stateType = inputStateType;
     }
-    Preconditions.checkArgument(this.stateType == validatedStateType,
-        "Input state type " + validatedStateType + " does not match the aggregator's current state type " + this.stateType);
+    Preconditions.checkArgument(this.stateType == inputStateType,
+        "Input state type " + inputStateType + " does not match the aggregator's current state type " + this.stateType);
   }
 
 }

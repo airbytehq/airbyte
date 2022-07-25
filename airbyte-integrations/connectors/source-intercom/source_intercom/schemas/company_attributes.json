@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "admin_id": {
       "type": ["null", "string"]

@@ -9,6 +9,7 @@
     "title": "BigQuery Source Spec",
     "type": "object",
     "required": ["project_id", "credentials_json"],
+    "additionalProperties": false,
     "properties": {
       "project_id": {
         "type": "string",

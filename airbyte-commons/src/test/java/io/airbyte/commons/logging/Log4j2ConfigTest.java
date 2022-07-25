@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-class Log4j2ConfigTest {
+public class Log4j2ConfigTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private Path root;

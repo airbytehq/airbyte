@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -56,14 +55,14 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", STANDALONE.getType())
-        .put(JdbcUtils.HOST_KEY, mongoDBContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, mongoDBContainer.getFirstMappedPort())
-        .put(JdbcUtils.TLS_KEY, false)
+        .put("host", mongoDBContainer.getHost())
+        .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
-        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
+        .put("database", DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
 
@@ -94,7 +93,7 @@ public class MongoDbSourceStandaloneAcceptanceTest extends MongoDbSourceAbstract
   }
 
   @Override
-  protected void verifyCatalog(final AirbyteCatalog catalog) {
+  protected void verifyCatalog(AirbyteCatalog catalog) {
     final List<AirbyteStream> streams = catalog.getStreams();
     // only one stream is expected; the schema that should be ignored
     // must not be included in the retrieved catalog

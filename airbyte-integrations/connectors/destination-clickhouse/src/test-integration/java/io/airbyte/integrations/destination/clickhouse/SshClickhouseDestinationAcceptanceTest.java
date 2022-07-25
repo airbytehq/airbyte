@@ -11,7 +11,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -83,10 +82,10 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
+    if (config.get("database") == null) {
       return null;
     }
-    return config.get(JdbcUtils.DATABASE_KEY).asText();
+    return config.get("database").asText();
   }
 
   @Override
@@ -125,8 +124,8 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
     return SshTunnel.sshWrap(
         getConfig(),
-        JdbcUtils.HOST_LIST_KEY,
-        JdbcUtils.PORT_LIST_KEY,
+        ClickhouseDestination.HOST_KEY,
+        ClickhouseDestination.PORT_KEY,
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
           final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -150,13 +149,13 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+            config.get("username").asText(),
+            config.has("password") ? config.get("password").asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText())));
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())));
   }
 
   @Override

@@ -16,7 +16,6 @@ import io.airbyte.api.model.generated.SourceDefinitionCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
-import io.airbyte.api.model.generated.SourceDefinitionRead.SourceTypeEnum;
 import io.airbyte.api.model.generated.SourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceRead;
@@ -79,7 +78,6 @@ public class SourceDefinitionsHandler {
       return new SourceDefinitionRead()
           .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
           .name(standardSourceDefinition.getName())
-          .sourceType(getSourceType(standardSourceDefinition))
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
@@ -91,13 +89,6 @@ public class SourceDefinitionsHandler {
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
-  }
-
-  private static SourceTypeEnum getSourceType(final StandardSourceDefinition standardSourceDefinition) {
-    if (standardSourceDefinition.getSourceType() == null) {
-      return null;
-    }
-    return SourceTypeEnum.fromValue(standardSourceDefinition.getSourceType().value());
   }
 
   private static ReleaseStage getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {

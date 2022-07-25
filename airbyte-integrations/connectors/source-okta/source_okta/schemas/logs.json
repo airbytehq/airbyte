@@ -5,7 +5,10 @@
         "alternateId": {
           "type": ["string", "null"]
         },
-        "detailEntry": {
+        "detail": {
+          "additionalProperties": {
+            "type": ["object", "null"]
+          },
           "type": ["object", "null"]
         },
         "displayName": {
@@ -35,10 +38,11 @@
           "type": ["string", "null"]
         },
         "authenticationStep": {
-          "type": ["integer"]
+          "type": ["integer", "null"]
         },
         "credentialProvider": {
           "enum": [
+            "OKTA_AUTHENTICATION_PROVIDER",
             "OKTA_CREDENTIAL_PROVIDER",
             "RSA",
             "SYMANTEC",
@@ -59,10 +63,6 @@
             "EMAIL",
             "OAUTH2",
             "JWT",
-            "CERTIFICATE",
-            "PRE_SHARED_SYMMETRIC_KEY",
-            "OKTA_CLIENT_SESSION",
-            "DEVICE_UDID",
             null
           ],
           "type": ["string", "null"]
@@ -151,6 +151,9 @@
     "debugContext": {
       "properties": {
         "debugData": {
+          "additionalProperties": {
+            "type": ["object", "null", "string"]
+          },
           "type": ["object", "null"]
         }
       },
@@ -171,16 +174,7 @@
           "type": ["string", "null"]
         },
         "result": {
-          "enum": [
-            "SUCCESS",
-            "FAILURE",
-            "SKIPPED",
-            "ALLOW",
-            "DENY",
-            "CHALLENGE",
-            "UNKNOWN"
-          ],
-          "type": "string"
+          "type": ["string", "null"]
         }
       },
       "type": ["object", "null"]
@@ -231,7 +225,7 @@
                 "type": ["string", "null"]
               },
               "version": {
-                "type": ["string", "null"]
+                "type": "string"
               }
             },
             "type": ["object", "null"]
@@ -272,16 +266,19 @@
             "type": ["string", "null"]
           },
           "detailEntry": {
+            "additionalProperties": {
+              "type": ["object", "null", "string"]
+            },
             "type": ["object", "null"]
           },
           "displayName": {
             "type": ["string", "null"]
           },
           "id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "type": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": ["object", "null"]
@@ -291,6 +288,9 @@
     "transaction": {
       "properties": {
         "detail": {
+          "additionalProperties": {
+            "type": ["object", "null", "string"]
+          },
           "type": ["object", "null"]
         },
         "id": {

@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.mysql;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingDestination;
@@ -25,7 +24,7 @@ public class MySQLDestinationStrictEncrypt extends SpecModifyingDestination impl
   @Override
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove("ssl");
     return spec;
   }
 

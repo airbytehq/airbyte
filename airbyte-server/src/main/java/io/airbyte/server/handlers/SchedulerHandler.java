@@ -221,8 +221,7 @@ public class SchedulerHandler {
       final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
       if (response.isSuccess()) {
-        final UUID catalogId =
-            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
+        final UUID catalogId = configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
         returnValue.catalogId(catalogId);
       }
       return returnValue;

@@ -10,10 +10,6 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 
 
 class ErrorHandler(ABC):
-    """
-    Defines whether a request was successful and how to handle a failure.
-    """
-
     @property
     @abstractmethod
     def max_retries(self) -> Union[int, None]:
@@ -26,7 +22,6 @@ class ErrorHandler(ABC):
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         """
         Evaluate response status describing whether a failing request should be retried or ignored.
-
         :param response: response to evaluate
         :return: response status
         """

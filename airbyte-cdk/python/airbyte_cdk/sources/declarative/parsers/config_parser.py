@@ -3,15 +3,10 @@
 #
 
 from abc import ABC, abstractmethod
+from typing import Any, Mapping
 
-from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 
-
-class ConnectionDefinitionParser(ABC):
-    """
-    Parses a string to a ConnectionDefinition
-    """
-
+class ConfigParser(ABC):
     @abstractmethod
-    def parse(self, config_str: str) -> ConnectionDefinition:
-        """Parses the config_str to a ConnectionDefinition"""
+    def parse(self, config_str: str) -> Mapping[str, Any]:
+        pass

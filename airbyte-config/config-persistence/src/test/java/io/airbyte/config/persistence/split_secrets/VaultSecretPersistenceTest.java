@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.vault.VaultContainer;
 
-class VaultSecretPersistenceTest {
+public class VaultSecretPersistenceTest {
 
   private VaultSecretPersistence persistence;
   private String baseCoordinate;

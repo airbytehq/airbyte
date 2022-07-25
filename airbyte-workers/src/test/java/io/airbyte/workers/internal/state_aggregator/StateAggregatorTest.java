@@ -25,21 +25,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class StateAggregatorTest {
+public class StateAggregatorTest {
 
   StateAggregator stateAggregator;
   boolean USE_STREAM_CAPABLE_STATE = true;
   boolean DONT_USE_STREAM_CAPABLE_STATE = false;
 
   @BeforeEach
-  void init() {
+  public void init() {
     stateAggregator = new DefaultStateAggregator(DONT_USE_STREAM_CAPABLE_STATE);
   }
 
   @ParameterizedTest
   @EnumSource(AirbyteStateType.class)
-  void testCantMixType(final AirbyteStateType stateType) {
+  public void testCantMixType(final AirbyteStateType stateType) {
     final Stream<AirbyteStateType> allTypes = Arrays.stream(AirbyteStateType.values());
 
     stateAggregator.ingest(getEmptyMessage(stateType));
@@ -49,7 +48,7 @@ class StateAggregatorTest {
   }
 
   @Test
-  void testCantMixNullType() {
+  public void testCantMixNullType() {
     final List<AirbyteStateType> allIncompatibleTypes = Lists.newArrayList(GLOBAL, STREAM);
 
     stateAggregator.ingest(getEmptyMessage(null));
@@ -60,7 +59,7 @@ class StateAggregatorTest {
   }
 
   @Test
-  void testNullState() {
+  public void testNullState() {
     final AirbyteStateMessage state1 = getNullMessage(1);
     final AirbyteStateMessage state2 = getNullMessage(2);
 
@@ -74,7 +73,7 @@ class StateAggregatorTest {
   }
 
   @Test
-  void testLegacyState() {
+  public void testLegacyState() {
     final AirbyteStateMessage state1 = getLegacyMessage(1);
     final AirbyteStateMessage state2 = getLegacyMessage(2);
 
@@ -88,7 +87,7 @@ class StateAggregatorTest {
   }
 
   @Test
-  void testGlobalState() {
+  public void testGlobalState() {
     final AirbyteStateMessage state1 = getGlobalMessage(1);
     final AirbyteStateMessage state2 = getGlobalMessage(2);
 
@@ -102,7 +101,7 @@ class StateAggregatorTest {
   }
 
   @Test
-  void testStreamStateWithFeatureFlagOff() {
+  public void testStreamStateWithFeatureFlagOff() {
     final AirbyteStateMessage state1 = getStreamMessage("a", 1);
     final AirbyteStateMessage state2 = getStreamMessage("b", 2);
     final AirbyteStateMessage state3 = getStreamMessage("b", 3);
@@ -121,7 +120,7 @@ class StateAggregatorTest {
   }
 
   @Test
-  void testStreamStateWithFeatureFlagOn() {
+  public void testStreamStateWithFeatureFlagOn() {
     final AirbyteStateMessage state1 = getStreamMessage("a", 1);
     final AirbyteStateMessage state2 = getStreamMessage("b", 2);
     final AirbyteStateMessage state3 = getStreamMessage("b", 3);

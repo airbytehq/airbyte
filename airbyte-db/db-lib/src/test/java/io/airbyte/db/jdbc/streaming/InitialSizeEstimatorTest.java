@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class InitialSizeEstimatorTest {
 
   @Test
-  void testIt() {
+  public void testIt() {
     final long bufferByteSize = 120;
     final int initialSampleSize = 5;
     final int minFetchSize = 1;

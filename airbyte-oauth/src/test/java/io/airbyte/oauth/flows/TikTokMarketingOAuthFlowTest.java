@@ -12,8 +12,7 @@ import io.airbyte.protocol.models.OAuthConfigSpecification;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class TikTokMarketingOAuthFlowTest extends BaseOAuthFlowTest {
+public class TikTokMarketingOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -64,10 +63,10 @@ class TikTokMarketingOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Test
   @Override
-  void testDeprecatedCompleteDestinationOAuth() {}
+  public void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  void testDeprecatedCompleteSourceOAuth() {}
+  public void testDeprecatedCompleteSourceOAuth() {}
 
 }

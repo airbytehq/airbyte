@@ -11,9 +11,15 @@ interface EditControlProps {
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-  enableControls?: boolean;
+  editSchemeMode?: boolean;
   withLine?: boolean;
 }
+
+const Warning = styled.div`
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: bold;
+`;
 
 const Buttons = styled.div`
   display: flex;
@@ -51,7 +57,7 @@ const EditControls: React.FC<EditControlProps> = ({
   resetForm,
   successMessage,
   errorMessage,
-  enableControls,
+  editSchemeMode,
   withLine,
 }) => {
   const showStatusMessage = () => {
@@ -66,19 +72,28 @@ const EditControls: React.FC<EditControlProps> = ({
 
   return (
     <>
+      {editSchemeMode && (
+        <Warning>
+          <FormattedMessage id="connection.warningUpdateSchema" />
+        </Warning>
+      )}
       {withLine && <Line />}
       <Buttons>
         <div>{showStatusMessage()}</div>
         <div>
-          <Button type="button" secondary disabled={isSubmitting || (!dirty && !enableControls)} onClick={resetForm}>
+          <Button type="button" secondary disabled={isSubmitting || (!dirty && !editSchemeMode)} onClick={resetForm}>
             <FormattedMessage id="form.cancel" />
           </Button>
           <ControlButton
             type="submit"
             isLoading={isSubmitting}
-            disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
+            disabled={submitDisabled || isSubmitting || (!dirty && !editSchemeMode)}
           >
-            <FormattedMessage id="form.saveChanges" />
+            {editSchemeMode ? (
+              <FormattedMessage id="connection.saveAndReset" />
+            ) : (
+              <FormattedMessage id="form.saveChanges" />
+            )}
           </ControlButton>
         </div>
       </Buttons>

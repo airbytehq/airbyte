@@ -45,9 +45,9 @@ public class DbMigrationHandler {
   }
 
   private DatabaseMigrator getMigrator(final String database) {
-    if ("configs".equalsIgnoreCase(database)) {
+    if (database.equalsIgnoreCase("configs")) {
       return configDbMigrator;
-    } else if ("jobs".equalsIgnoreCase(database)) {
+    } else if (database.equalsIgnoreCase("jobs")) {
       return jobDbMigrator;
     }
     throw new IllegalArgumentException("Unexpected database: " + database);

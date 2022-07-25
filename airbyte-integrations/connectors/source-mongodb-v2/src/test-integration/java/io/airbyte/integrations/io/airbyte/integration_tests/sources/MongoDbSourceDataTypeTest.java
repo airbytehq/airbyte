@@ -14,7 +14,6 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -70,27 +69,27 @@ public class MongoDbSourceDataTypeTest {
     mongoDBContainer = new MongoDBContainer(DockerImageName.parse("mongo:4.0.10"));
     mongoDBContainer.start();
 
-    final String connectionString = String.format("mongodb://%s:%s/",
+    String connectionString = String.format("mongodb://%s:%s/",
         mongoDBContainer.getHost(),
         mongoDBContainer.getFirstMappedPort());
 
     final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance", STANDALONE.getType())
-        .put(JdbcUtils.HOST_KEY, mongoDBContainer.getHost())
-        .put(JdbcUtils.PORT_KEY, mongoDBContainer.getFirstMappedPort())
-        .put(JdbcUtils.TLS_KEY, false)
+        .put("host", mongoDBContainer.getHost())
+        .put("port", mongoDBContainer.getFirstMappedPort())
+        .put("tls", false)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("instance_type", instanceConfig)
-        .put(JdbcUtils.DATABASE_KEY, "test")
+        .put("database", "test")
         .put("auth_source", "admin")
         .build());
 
     database = new MongoDatabase(connectionString, "test");
     database.createCollection("acceptance_test");
 
-    final BsonDocument bsonDocument = new BsonDocument()
+    BsonDocument bsonDocument = new BsonDocument()
         .append("_id", new BsonObjectId(new ObjectId("61703280f3ca180ab088b574")))
         .append("boolean", BsonBoolean.TRUE)
         .append("int32", new BsonInt32(Integer.MAX_VALUE))

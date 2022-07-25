@@ -51,7 +51,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @BeforeEach
-  void setup() throws JsonValidationException, IOException {
+  public void setup() throws JsonValidationException, IOException {
     httpClient = mock(HttpClient.class);
     configRepository = mock(ConfigRepository.class);
     oauthFlow = getOAuthFlow();
@@ -210,12 +210,12 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testGetDefaultOutputPath() {
+  public void testGetDefaultOutputPath() {
     assertEquals(getExpectedOutputPath(), oauthFlow.getDefaultOAuthOutputPath());
   }
 
   @Test
-  void testValidateInputOAuthConfigurationFailure() {
+  public void testValidateInputOAuthConfigurationFailure() {
     final JsonNode invalidInputOAuthConfiguration = Jsons.jsonNode(Map.of("UnexpectedRandomField", 42));
     assertThrows(JsonValidationException.class,
         () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, invalidInputOAuthConfiguration, getoAuthConfigSpecification()));
@@ -228,7 +228,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testGetConsentUrlEmptyOAuthParameters() throws JsonValidationException, IOException {
+  public void testGetConsentUrlEmptyOAuthParameters() throws JsonValidationException, IOException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of());
     when(configRepository.listDestinationOAuthParam()).thenReturn(List.of());
     assertThrows(ConfigNotFoundException.class,
@@ -239,7 +239,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testGetConsentUrlIncompleteOAuthParameters() throws IOException, JsonValidationException {
+  public void testGetConsentUrlIncompleteOAuthParameters() throws IOException, JsonValidationException {
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
         .withSourceDefinitionId(definitionId)
@@ -258,7 +258,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testGetSourceConsentUrlEmptyOAuthSpec() throws IOException, ConfigNotFoundException, JsonValidationException {
+  public void testGetSourceConsentUrlEmptyOAuthSpec() throws IOException, ConfigNotFoundException, JsonValidationException {
     if (hasDependencyOnConnectorConfigValues()) {
       assertThrows(IOException.class, () -> oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null),
           "OAuth Flow Implementations with dependencies on connector config can't be supported without OAuthConfigSpecifications");
@@ -269,7 +269,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testGetDestinationConsentUrlEmptyOAuthSpec() throws IOException, ConfigNotFoundException, JsonValidationException {
+  public void testGetDestinationConsentUrlEmptyOAuthSpec() throws IOException, ConfigNotFoundException, JsonValidationException {
     if (hasDependencyOnConnectorConfigValues()) {
       assertThrows(IOException.class, () -> oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null),
           "OAuth Flow Implementations with dependencies on connector config can't be supported without OAuthConfigSpecifications");
@@ -280,27 +280,27 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
+  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
     final String consentUrl =
         oauthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(), getoAuthConfigSpecification());
     assertEquals(getExpectedConsentUrl(), consentUrl);
   }
 
   @Test
-  void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
+  public void testGetDestinationConsentUrl() throws IOException, ConfigNotFoundException, JsonValidationException {
     final String consentUrl =
         oauthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL, getInputOAuthConfiguration(), getoAuthConfigSpecification());
     assertEquals(getExpectedConsentUrl(), consentUrl);
   }
 
   @Test
-  void testCompleteOAuthMissingCode() {
+  public void testCompleteOAuthMissingCode() {
     final Map<String, Object> queryParams = Map.of();
     assertThrows(IOException.class, () -> oauthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL));
   }
 
   @Test
-  void testDeprecatedCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testDeprecatedCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -325,7 +325,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testDeprecatedCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, InterruptedException {
+  public void testDeprecatedCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, InterruptedException {
     final Map<String, String> returnedCredentials = getExpectedOutput();
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
@@ -350,7 +350,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testEmptyOutputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testEmptyOutputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -362,7 +362,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testEmptyOutputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testEmptyOutputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -374,7 +374,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testEmptyInputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testEmptyInputCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -388,7 +388,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testEmptyInputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testEmptyInputCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -402,7 +402,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -416,7 +416,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testCompleteDestinationOAuth() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);
@@ -430,7 +430,7 @@ public abstract class BaseOAuthFlowTest {
   }
 
   @Test
-  void testValidateOAuthOutputFailure() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
+  public void testValidateOAuthOutputFailure() throws IOException, InterruptedException, ConfigNotFoundException, JsonValidationException {
     final HttpResponse response = mock(HttpResponse.class);
     when(response.body()).thenReturn(getMockedResponse());
     when(httpClient.send(any(), any())).thenReturn(response);

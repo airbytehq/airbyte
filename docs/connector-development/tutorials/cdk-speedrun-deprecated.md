@@ -44,6 +44,7 @@ We're working with the Exchange Rates API, so we need to define our input schema
     "title": "Python Http Example Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
+    "additionalProperties": false,
     "properties": {
       "start_date": {
         "type": "string",

@@ -10,7 +10,6 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
@@ -37,6 +36,8 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2Source.class);
   public static final String DRIVER_CLASS = DatabaseDriver.DB2.getDriverClassName();
+  public static final String USERNAME = "username";
+  public static final String PASSWORD = "password";
 
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   private static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
@@ -55,26 +56,26 @@ public class Db2Source extends AbstractJdbcSource<JDBCType> implements Source {
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format(DatabaseDriver.DB2.getUrlFormatString(),
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get("host").asText(),
+        config.get("port").asInt(),
         config.get("db").asText()));
 
     var result = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put("jdbc_url", jdbcUrl.toString())
+        .put(USERNAME, config.get(USERNAME).asText())
+        .put(PASSWORD, config.get(PASSWORD).asText())
         .build());
 
     // assume ssl if not explicitly mentioned.
-    final var additionalParams = obtainConnectionOptions(config.get(JdbcUtils.ENCRYPTION_KEY));
+    final var additionalParams = obtainConnectionOptions(config.get("encryption"));
     if (!additionalParams.isEmpty()) {
       jdbcUrl.append(":").append(String.join(";", additionalParams));
       jdbcUrl.append(";");
       result = Jsons.jsonNode(ImmutableMap.builder()
-          .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString())
-          .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-          .put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText())
-          .put(JdbcUtils.CONNECTION_PROPERTIES_KEY, additionalParams)
+          .put("jdbc_url", jdbcUrl.toString())
+          .put(USERNAME, config.get(USERNAME).asText())
+          .put(PASSWORD, config.get(PASSWORD).asText())
+          .put("connection_properties", additionalParams)
           .build());
     }
 

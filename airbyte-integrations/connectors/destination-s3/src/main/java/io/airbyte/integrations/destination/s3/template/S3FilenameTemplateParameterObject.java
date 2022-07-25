@@ -25,14 +25,8 @@ public class S3FilenameTemplateParameterObject {
   private final Timestamp timestamp;
   private final String customSuffix;
 
-  S3FilenameTemplateParameterObject(String objectPath,
-                                    SerializableBuffer recordsData,
-                                    String fileNamePattern,
-                                    String fileExtension,
-                                    String partId,
-                                    S3Format s3Format,
-                                    Timestamp timestamp,
-                                    String customSuffix) {
+  S3FilenameTemplateParameterObject(String objectPath, SerializableBuffer recordsData, String fileNamePattern, String fileExtension, String partId, S3Format s3Format, Timestamp timestamp,
+      String customSuffix) {
     this.objectPath = objectPath;
     this.recordsData = recordsData;
     this.fileNamePattern = fileNamePattern;
@@ -90,7 +84,8 @@ public class S3FilenameTemplateParameterObject {
     private Timestamp timestamp;
     private String customSuffix;
 
-    S3FilenameTemplateParameterObjectBuilder() {}
+    S3FilenameTemplateParameterObjectBuilder() {
+    }
 
     public S3FilenameTemplateParameterObjectBuilder objectPath(String objectPath) {
       this.objectPath = objectPath;
@@ -133,18 +128,14 @@ public class S3FilenameTemplateParameterObject {
     }
 
     public S3FilenameTemplateParameterObject build() {
-      return new S3FilenameTemplateParameterObject(objectPath, recordsData, fileNamePattern, fileExtension, partId, s3Format, timestamp,
-          customSuffix);
+      return new S3FilenameTemplateParameterObject(objectPath, recordsData, fileNamePattern, fileExtension, partId, s3Format, timestamp, customSuffix);
     }
 
     public String toString() {
-      return "S3FilenameTemplateParameterObject.S3FilenameTemplateParameterObjectBuilder(objectPath=" + this.objectPath + ", recordsData="
-          + this.recordsData + ", fileNamePattern="
-          + this.fileNamePattern + ", fileExtension=" + this.fileExtension + ", partId=" + this.partId + ", s3Format=" + this.s3Format
-          + ", timestamp=" + this.timestamp + ", customSuffix="
+      return "S3FilenameTemplateParameterObject.S3FilenameTemplateParameterObjectBuilder(objectPath=" + this.objectPath + ", recordsData=" + this.recordsData + ", fileNamePattern="
+          + this.fileNamePattern + ", fileExtension=" + this.fileExtension + ", partId=" + this.partId + ", s3Format=" + this.s3Format + ", timestamp=" + this.timestamp + ", customSuffix="
           + this.customSuffix + ")";
     }
-
   }
 
   @Override
@@ -156,17 +147,13 @@ public class S3FilenameTemplateParameterObject {
       return false;
     }
     final S3FilenameTemplateParameterObject that = (S3FilenameTemplateParameterObject) o;
-    return Objects.equals(objectPath, that.objectPath) && Objects.equals(recordsData, that.recordsData)
-        && Objects.equals(fileNamePattern, that.fileNamePattern)
-        && Objects.equals(fileExtension, that.fileExtension) && Objects.equals(partId, that.partId) && s3Format == that.s3Format
-        && Objects.equals(timestamp,
-            that.timestamp)
-        && Objects.equals(customSuffix, that.customSuffix);
+    return Objects.equals(objectPath, that.objectPath) && Objects.equals(recordsData, that.recordsData) && Objects.equals(fileNamePattern, that.fileNamePattern)
+        && Objects.equals(fileExtension, that.fileExtension) && Objects.equals(partId, that.partId) && s3Format == that.s3Format && Objects.equals(timestamp,
+        that.timestamp) && Objects.equals(customSuffix, that.customSuffix);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(objectPath, recordsData, fileNamePattern, fileExtension, partId, s3Format, timestamp, customSuffix);
   }
-
 }

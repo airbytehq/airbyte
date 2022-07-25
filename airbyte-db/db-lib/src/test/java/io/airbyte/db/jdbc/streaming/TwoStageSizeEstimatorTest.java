@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class TwoStageSizeEstimatorTest {
 
   @Test
-  void testDelegationSwitch() {
+  public void testDelegationSwitch() {
     final TwoStageSizeEstimator sizeEstimator = TwoStageSizeEstimator.getInstance();
     for (int i = 0; i < FetchSizeConstants.INITIAL_SAMPLE_SIZE; ++i) {
       sizeEstimator.accept("1");
@@ -25,7 +25,7 @@ class TwoStageSizeEstimatorTest {
   }
 
   @Test
-  void testGetTargetBufferByteSize() {
+  public void testGetTargetBufferByteSize() {
     assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,
         TwoStageSizeEstimator.getTargetBufferByteSize(null));
     assertEquals(FetchSizeConstants.MIN_BUFFER_BYTE_SIZE,

@@ -28,7 +28,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class TrelloOAuthFlowTest {
+public class TrelloOAuthFlowTest {
 
   private static final String REDIRECT_URL = "https://airbyte.io";
 
@@ -39,7 +39,7 @@ class TrelloOAuthFlowTest {
   private HttpTransport transport;
 
   @BeforeEach
-  void setup() throws IOException, JsonValidationException {
+  public void setup() throws IOException, JsonValidationException {
     workspaceId = UUID.randomUUID();
     definitionId = UUID.randomUUID();
 
@@ -74,14 +74,14 @@ class TrelloOAuthFlowTest {
   }
 
   @Test
-  void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testGetSourceConsentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
     final String consentUrl =
         trelloOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     assertEquals("https://trello.com/1/OAuthAuthorizeToken?oauth_token=test_token", consentUrl);
   }
 
   @Test
-  void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  public void testCompleteSourceAuth() throws IOException, InterruptedException, ConfigNotFoundException {
     final Map<String, String> expectedParams = Map.of(
         "key", "test_client_id",
         "token", "test_token",

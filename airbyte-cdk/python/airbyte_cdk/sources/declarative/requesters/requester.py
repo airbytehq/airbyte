@@ -4,19 +4,14 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Mapping, MutableMapping, Optional
+from typing import Any, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from requests.auth import AuthBase
 
 
 class HttpMethod(Enum):
-    """
-    Http Method to use when submitting an outgoing HTTP request
-    """
-
     GET = "GET"
     POST = "POST"
 
@@ -36,13 +31,7 @@ class Requester(ABC):
         """
 
     @abstractmethod
-    def get_path(
-        self,
-        *,
-        stream_state: Optional[StreamState],
-        stream_slice: Optional[StreamSlice],
-        next_page_token: Optional[Mapping[str, Any]],
-    ) -> str:
+    def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
         """
         Returns the URL path for the API endpoint e.g: if you wanted to hit https://myapi.com/v1/some_entity then this should return "some_entity"
         """
@@ -56,9 +45,9 @@ class Requester(ABC):
     @abstractmethod
     def request_params(
         self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
@@ -80,7 +69,7 @@ class Requester(ABC):
 
     @abstractmethod
     def request_headers(
-        self, stream_state: StreamSlice, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
@@ -89,10 +78,10 @@ class Requester(ABC):
     @abstractmethod
     def request_body_data(
         self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Union[Mapping, str]]:
         """
         Specifies how to populate the body of the request with a non-JSON payload.
 
@@ -106,10 +95,10 @@ class Requester(ABC):
     @abstractmethod
     def request_body_json(
         self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
         """
         Specifies how to populate the body of the request with a JSON payload.
 
@@ -119,9 +108,9 @@ class Requester(ABC):
     @abstractmethod
     def request_kwargs(
         self,
-        stream_state: StreamState,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
         """
         Returns a mapping of keyword arguments to be used when creating the HTTP request.

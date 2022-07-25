@@ -2,26 +2,29 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Mapping
 
 import requests
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
-from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator import ConditionalPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.paginators.request_option import RequestOption, RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
+    InterpolatedRequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.types import Config
 
 
-class LimitPaginator(Paginator):
+class LimitPaginator(ConditionalPaginator):
     """
-    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    Limit paginator.
+    Requests pages of results with a maximum number of records defined by limit_value.
+
 
     Examples:
         1.
         * fetches up to 10 records at a time by setting the "limit" request param to 10
-        * updates the request path with  "{{ response._metadata.next }}"
+        * updates the request path with  "{{ decoded_response._metadata.next }}"
           paginator:
             type: "LimitPaginator"
             limit_value: 10
@@ -32,7 +35,7 @@ class LimitPaginator(Paginator):
               option_type: path
             pagination_strategy:
               type: "CursorPagination"
-              cursor_value: "{{ response._metadata.next }}"
+              cursor_value: "{{ decoded_response._metadata.next }}"
         `
 
         2.
@@ -67,11 +70,13 @@ class LimitPaginator(Paginator):
             page_token:
               option_type: "request_parameter"
               field_name: "page"
+        `
+
     """
 
     def __init__(
         self,
-        page_size: int,
+        limit_value: int,
         limit_option: RequestOption,
         page_token_option: RequestOption,
         pagination_strategy: PaginationStrategy,
@@ -80,59 +85,40 @@ class LimitPaginator(Paginator):
         decoder: Decoder = None,
     ):
         """
-        :param page_size: the number of records to request
-        :param limit_option: the request option to set the limit. Cannot be injected in the path.
+
+        :param limit_value: the number of records to request
+        :param limit_option: the request option to set the limit
         :param page_token_option: the request option to set the page token
         :param pagination_strategy: Strategy defining how to get the next page token
         :param config: connection config
         :param url_base: endpoint's base url
         :param decoder: decoder to decode the response
         """
-        if limit_option.inject_into == RequestOptionType.path:
-            raise ValueError("Limit parameter cannot be a path")
-        self._page_size = page_size
         self._config = config
-        self._limit_option = limit_option
-        self._page_token_option = page_token_option
-        self._pagination_strategy = pagination_strategy
-        self._token = None
-        if isinstance(url_base, str):
-            url_base = InterpolatedString(url_base)
-        self._url_base = url_base
-        self._decoder = decoder or JsonDecoder()
+        self._limit = limit_value
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
-        self._token = self._pagination_strategy.next_page_token(response, last_records)
-        if self._token:
-            return {"next_page_token": self._token}
+        super().__init__(
+            self._create_request_options_provider(limit_value, limit_option),
+            page_token_option,
+            pagination_strategy,
+            config,
+            url_base,
+            decoder,
+        )
+
+    def stop_condition(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> bool:
+        return len(last_records) < self._limit
+
+    def _create_request_options_provider(self, limit_value, limit_option: RequestOption):
+        if limit_option.option_type == RequestOptionType.path:
+            raise ValueError("Limit parameter cannot be a path")
+        elif limit_option.option_type == RequestOptionType.request_parameter:
+            return InterpolatedRequestOptionsProvider(request_parameters={limit_option.field_name: limit_value}, config=self._config)
+        elif limit_option.option_type == RequestOptionType.header:
+            return InterpolatedRequestOptionsProvider(request_headers={limit_option.field_name: limit_value}, config=self._config)
+        elif limit_option.option_type == RequestOptionType.body_json:
+            return InterpolatedRequestOptionsProvider(request_body_json={limit_option.field_name: limit_value}, config=self._config)
+        elif limit_option.option_type == RequestOptionType.body_data:
+            return InterpolatedRequestOptionsProvider(request_body_data={limit_option.field_name: limit_value}, config=self._config)
         else:
-            return None
-
-    def path(self):
-        if self._token and self._page_token_option.inject_into == RequestOptionType.path:
-            # Replace url base to only return the path
-            return str(self._token).replace(self._url_base.eval(self._config), "")
-        else:
-            return None
-
-    def request_params(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.request_parameter)
-
-    def request_headers(self) -> Mapping[str, str]:
-        return self._get_request_options(RequestOptionType.header)
-
-    def request_body_data(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_data)
-
-    def request_body_json(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_json)
-
-    def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
-        options = {}
-        if self._page_token_option.inject_into == option_type:
-            if option_type != RequestOptionType.path and self._token:
-                options[self._page_token_option.field_name] = self._token
-        if self._limit_option.inject_into == option_type:
-            if option_type != RequestOptionType.path:
-                options[self._limit_option.field_name] = self._page_size
-        return options
+            raise ValueError(f"Unexpected request option type. Got :{limit_option}")

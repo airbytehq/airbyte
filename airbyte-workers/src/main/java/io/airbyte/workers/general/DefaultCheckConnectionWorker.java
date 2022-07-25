@@ -8,8 +8,6 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ConnectorJobOutput;
-import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
@@ -25,12 +23,8 @@ import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +51,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
   }
 
   @Override
-  public ConnectorJobOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
+  public StandardCheckConnectionOutput run(final StandardCheckConnectionInput input, final Path jobRoot) throws WorkerException {
 
     try {
       process = integrationLauncher.check(
@@ -67,19 +61,16 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType;
+      final Optional<AirbyteConnectionStatus> status;
       try (final InputStream stdout = process.getInputStream()) {
-        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
-            .collect(Collectors.groupingBy(AirbyteMessage::getType));
+        status = streamFactory.create(IOs.newBufferedReader(stdout))
+            .filter(message -> message.getType() == Type.CONNECTION_STATUS)
+            .map(AirbyteMessage::getConnectionStatus).findFirst();
 
         WorkerUtils.gentleClose(workerConfigs, process, 1, TimeUnit.MINUTES);
       }
 
       final int exitCode = process.exitValue();
-      final Optional<AirbyteConnectionStatus> status = messagesByType
-          .getOrDefault(Type.CONNECTION_STATUS, new ArrayList<>()).stream()
-          .map(AirbyteMessage::getConnectionStatus)
-          .findFirst();
 
       if (status.isPresent() && exitCode == 0) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
@@ -88,12 +79,14 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
         LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
-        return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
+        return output;
       } else {
         final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
-        LOGGER.error(message);
 
-        return WorkerUtils.getJobFailureOutputOrThrow(OutputType.CHECK_CONNECTION, messagesByType, message);
+        LOGGER.error(message);
+        return new StandardCheckConnectionOutput()
+            .withStatus(Status.FAILED)
+            .withMessage(message);
       }
 
     } catch (final Exception e) {

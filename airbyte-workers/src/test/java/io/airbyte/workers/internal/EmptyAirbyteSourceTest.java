@@ -28,8 +28,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-class EmptyAirbyteSourceTest {
+public class EmptyAirbyteSourceTest {
 
   private EmptyAirbyteSource emptyAirbyteSource;
   private final AirbyteMessage EMPTY_MESSAGE =
@@ -43,26 +42,26 @@ class EmptyAirbyteSourceTest {
           new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
 
   @BeforeEach
-  void init() {
+  public void init() {
     emptyAirbyteSource = new EmptyAirbyteSource(true);
   }
 
   @Test
-  void testLegacy() throws Exception {
+  public void testLegacy() throws Exception {
     emptyAirbyteSource.start(new WorkerSourceConfig(), null);
 
     legacyStateResult();
   }
 
   @Test
-  void testLegacyWithEmptyConfig() throws Exception {
+  public void testLegacyWithEmptyConfig() throws Exception {
     emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.emptyObject()), null);
 
     legacyStateResult();
   }
 
   @Test
-  void testLegacyWithWrongConfigFormat() throws Exception {
+  public void testLegacyWithWrongConfigFormat() throws Exception {
     emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.jsonNode(
         Map.of("not", "expected"))), null);
 
@@ -70,7 +69,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testEmptyListOfStreams() throws Exception {
+  public void testEmptyListOfStreams() throws Exception {
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(new ArrayList<>());
     final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
@@ -83,14 +82,14 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void nonStartedSource() {
+  public void nonStartedSource() {
     final Throwable thrown = Assertions.catchThrowable(() -> emptyAirbyteSource.attemptRead());
     Assertions.assertThat(thrown)
         .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
-  void testGlobal() throws Exception {
+  public void testGlobal() throws Exception {
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
@@ -143,7 +142,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testGlobalPartial() throws Exception {
+  public void testGlobalPartial() throws Exception {
     final String NOT_RESET_STREAM_NAME = "c";
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", NOT_RESET_STREAM_NAME));
@@ -187,7 +186,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testGlobalNewStream() throws Exception {
+  public void testGlobalNewStream() throws Exception {
     final String NEW_STREAM = "c";
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b"));
@@ -229,7 +228,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testPerStream() throws Exception {
+  public void testPerStream() throws Exception {
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
@@ -253,7 +252,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testPerStreamWithExtraState() throws Exception {
+  public void testPerStreamWithExtraState() throws Exception {
     // This should never happen but nothing keeps us from processing the reset and not fail
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c", "d"));
 
@@ -278,7 +277,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testPerStreamWithMissingState() throws Exception {
+  public void testPerStreamWithMissingState() throws Exception {
     final String NEW_STREAM = "c";
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b"));
@@ -306,7 +305,7 @@ class EmptyAirbyteSourceTest {
   // In the LEGACY state, if the list of streams passed in to be reset does not include every stream
   // in the Catalog, then something has gone wrong and we should throw an error
   @Test
-  void testLegacyWithMissingCatalogStream() {
+  public void testLegacyWithMissingCatalogStream() {
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
@@ -333,7 +332,7 @@ class EmptyAirbyteSourceTest {
   // If there are extra streams to reset that do not exist in the Catalog, the reset should work
   // properly with all streams being reset
   @Test
-  void testLegacyWithResettingExtraStreamNotInCatalog() throws Exception {
+  public void testLegacyWithResettingExtraStreamNotInCatalog() throws Exception {
     final List<StreamDescriptor> streamToResetWithExtra = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c", "d"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
@@ -371,7 +370,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testLegacyWithNewConfig() throws Exception {
+  public void testLegacyWithNewConfig() throws Exception {
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
@@ -408,7 +407,7 @@ class EmptyAirbyteSourceTest {
   }
 
   @Test
-  void testLegacyWithNullState() throws Exception {
+  public void testLegacyWithNullState() throws Exception {
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()

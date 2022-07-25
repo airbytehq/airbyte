@@ -11,7 +11,7 @@ import io.airbyte.config.Configs.JobErrorReportingStrategy;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class JobErrorReportingClientFactoryTest {
+public class JobErrorReportingClientFactoryTest {
 
   @Test
   void testCreateErrorReportingClientLogging() {

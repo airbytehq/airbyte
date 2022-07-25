@@ -113,7 +113,7 @@ public class JobCleaner implements Runnable {
             relativePath = workspaceRoot.relativize(f.toPath()).getParent();
           }
 
-          if (!"".equals(relativePath.toString())) {
+          if (!relativePath.toString().equals("")) {
             return !nonTerminalJobIds.contains(relativePath.toString());
           } else {
             return true;

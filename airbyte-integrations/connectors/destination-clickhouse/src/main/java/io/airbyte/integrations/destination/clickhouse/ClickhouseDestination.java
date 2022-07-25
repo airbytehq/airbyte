@@ -18,6 +18,7 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -29,13 +30,18 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
 
   public static final String DRIVER_CLASS = DatabaseDriver.CLICKHOUSE.getDriverClassName();
 
+  public static final List<String> HOST_KEY = List.of("host");
+  public static final List<String> PORT_KEY = List.of("port");
+
+  private static final String PASSWORD = "password";
+
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "socket_timeout", "3000000",
-      JdbcUtils.SSL_KEY, "true",
+      "ssl", "true",
       "sslmode", "none");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new ClickhouseDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+    return new SshWrappedDestination(new ClickhouseDestination(), HOST_KEY, PORT_KEY);
   }
 
   public ClickhouseDestination() {
@@ -45,20 +51,21 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String jdbcUrl = String.format("jdbc:clickhouse://%s:%s/%s?",
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asText(),
-        config.get(JdbcUtils.DATABASE_KEY).asText());
+        config.get("host").asText(),
+        config.get("port").asText(),
+        config.get("database").asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
-        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
+        .put("username", config.get("username").asText())
+        .put("jdbc_url", jdbcUrl);
 
-    if (config.has(JdbcUtils.PASSWORD_KEY)) {
-      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    if (config.has(PASSWORD)) {
+      configBuilder.put(PASSWORD, config.get(PASSWORD).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
   }
+
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
@@ -66,7 +73,7 @@ public class ClickhouseDestination extends AbstractJdbcDestination implements De
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final NamingConventionTransformer namingResolver = getNamingResolver();
-      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
+      final String outputSchema = namingResolver.getIdentifier(config.get("database").asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, getSqlOperations());
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {

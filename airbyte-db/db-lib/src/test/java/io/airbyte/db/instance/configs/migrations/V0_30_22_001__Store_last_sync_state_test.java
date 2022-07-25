@@ -54,7 +54,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTest {
 
@@ -89,13 +88,13 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
   @BeforeEach
   @Timeout(value = 2,
            unit = TimeUnit.MINUTES)
-  void setupJobDatabase() throws DatabaseInitializationException, IOException {
+  public void setupJobDatabase() throws DatabaseInitializationException, IOException {
     jobDatabase = new JobsDatabaseTestProvider(dslContext, null).create(false);
   }
 
   @Test
   @Order(10)
-  void testGetJobsDatabase() {
+  public void testGetJobsDatabase() {
     assertTrue(V0_30_22_001__Store_last_sync_state.getJobsDatabase("", "", "").isEmpty());
 
     // when there is database environment variable, return the database
@@ -110,7 +109,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
   @Test
   @Order(20)
-  void testGetStandardSyncStates() throws Exception {
+  public void testGetStandardSyncStates() throws Exception {
     jobDatabase.query(ctx -> {
       // Connection 1 has 1 job, no attempt.
       // This is to test that connection without no state is not returned.
@@ -147,7 +146,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
 
   @Test
   @Order(30)
-  void testCopyData() throws SQLException {
+  public void testCopyData() throws SQLException {
 
     final Set<StandardSyncState> newConnectionStates = Collections.singleton(
         new StandardSyncState()
@@ -180,7 +179,7 @@ class V0_30_22_001__Store_last_sync_state_test extends AbstractConfigsDatabaseTe
    */
   @Test
   @Order(40)
-  void testMigration() throws Exception {
+  public void testMigration() throws Exception {
     jobDatabase.query(ctx -> ctx.deleteFrom(TABLE_AIRBYTE_CONFIGS)
         .where(COLUMN_CONFIG_TYPE.eq(ConfigSchema.STANDARD_SYNC_STATE.name()))
         .execute());

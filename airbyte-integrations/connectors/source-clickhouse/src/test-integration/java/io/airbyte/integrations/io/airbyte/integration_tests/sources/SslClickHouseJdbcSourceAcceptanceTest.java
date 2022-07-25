@@ -12,7 +12,6 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
@@ -69,28 +68,28 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-        .put(JdbcUtils.USERNAME_KEY, "default")
-        .put(JdbcUtils.PASSWORD_KEY, "")
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("username", "default")
+        .put("password", "")
         .build());
 
     config = Jsons.clone(configWithoutDbName);
 
     dataSource = DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format("jdbc:clickhouse://%s:%d?ssl=true&sslmode=none",
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt()));
+            config.get("host").asText(),
+            config.get("port").asInt()));
 
     jdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
     jdbcDatabase.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
-    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
+    ((ObjectNode) config).put("database", dbName);
 
     super.setup();
   }

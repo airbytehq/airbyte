@@ -41,8 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-@SuppressWarnings("PMD.CheckResultSet")
-class TestJdbcUtils {
+public class TestJdbcUtils {
 
   private String dbName;
 
@@ -74,13 +73,13 @@ class TestJdbcUtils {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     dataSource = DataSourceFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()));
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()));
 
     final JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
@@ -92,11 +91,11 @@ class TestJdbcUtils {
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .put("host", psqlDb.getHost())
+        .put("port", psqlDb.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", psqlDb.getUsername())
+        .put("password", psqlDb.getPassword())
         .build());
   }
 

@@ -55,7 +55,7 @@ public class TempBigQueryJoolDatabaseImpl extends Database {
       try {
         database.execute(sql);
       } catch (final SQLException e) {
-        throw new DataAccessException(e.getMessage(), e);
+        throw new DataAccessException(e.getMessage());
       }
       return null;
     }

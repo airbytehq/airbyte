@@ -24,18 +24,6 @@
       "patternProperties": {
         ".+": {}
       }
-    },
-    "someArray": {
-      "type": ["array", "null"],
-      "items": {
-        "type": ["object", "null"],
-        "properties": {
-          "newName": {
-            "type": ["string", "null"],
-            "maxLength": 100
-          }
-        }
-      }
     }
   }
 }

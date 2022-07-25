@@ -51,14 +51,14 @@ public class MetricClientFactory {
    *
    * @param metricEmittingApp the name of the app which the metric will be running under.
    */
-  public static synchronized void initialize(final MetricEmittingApp metricEmittingApp) {
+  public static synchronized void initialize(MetricEmittingApp metricEmittingApp) {
     if (metricClient != null) {
       throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
-    if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
+    if (configs.getMetricClient().equals(DATADOG_METRIC_CLIENT)) {
       initializeDatadogMetricClient(metricEmittingApp);
-    } else if (OTEL_METRIC_CLIENT.equals(configs.getMetricClient())) {
+    } else if (configs.getMetricClient().equals(OTEL_METRIC_CLIENT)) {
       initializeOpenTelemetryMetricClient(metricEmittingApp);
     } else {
       metricClient = new NotImplementedMetricClient();
@@ -68,8 +68,8 @@ public class MetricClientFactory {
   }
 
   private static DogStatsDMetricClient initializeDatadogMetricClient(
-                                                                     final MetricEmittingApp metricEmittingApp) {
-    final DogStatsDMetricClient client = new DogStatsDMetricClient();
+                                                                     MetricEmittingApp metricEmittingApp) {
+    DogStatsDMetricClient client = new DogStatsDMetricClient();
 
     client.initialize(metricEmittingApp, new DatadogClientConfiguration(configs));
     metricClient = client;
@@ -77,8 +77,8 @@ public class MetricClientFactory {
   }
 
   private static OpenTelemetryMetricClient initializeOpenTelemetryMetricClient(
-                                                                               final MetricEmittingApp metricEmittingApp) {
-    final OpenTelemetryMetricClient client = new OpenTelemetryMetricClient();
+                                                                               MetricEmittingApp metricEmittingApp) {
+    OpenTelemetryMetricClient client = new OpenTelemetryMetricClient();
     client.initialize(metricEmittingApp, configs.getOtelCollectorEndpoint());
     metricClient = client;
     return client;

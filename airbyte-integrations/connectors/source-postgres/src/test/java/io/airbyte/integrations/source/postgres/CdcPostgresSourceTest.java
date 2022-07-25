@@ -33,7 +33,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
@@ -74,7 +73,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 5;
   private PostgreSQLContainer<?> container;
 
   protected String dbName;
@@ -124,17 +122,16 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
         .put("publication", PUBLICATION)
         .put("plugin", getPluginName())
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
-        .put(JdbcUtils.DATABASE_KEY, dbName)
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put(JdbcUtils.SSL_KEY, false)
+        .put("host", container.getHost())
+        .put("port", container.getFirstMappedPort())
+        .put("database", dbName)
+        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put("username", container.getUsername())
+        .put("password", container.getPassword())
+        .put("ssl", false)
         .put("replication_method", replicationMethod)
         .build());
   }
@@ -145,13 +142,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   private static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
-        config.get(JdbcUtils.USERNAME_KEY).asText(),
-        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("username").asText(),
+        config.get("password").asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get(JdbcUtils.HOST_KEY).asText(),
-            config.get(JdbcUtils.PORT_KEY).asInt(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
+            config.get("host").asText(),
+            config.get("port").asInt(),
+            config.get("database").asText()),
         SQLDialect.POSTGRES);
   }
 
@@ -200,13 +197,13 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   protected CdcTargetPosition cdcLatestTargetPosition() {
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get(JdbcUtils.USERNAME_KEY).asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            config.get("username").asText(),
+            config.get("password").asText(),
             DatabaseDriver.POSTGRESQL.getDriverClassName(),
             String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-                config.get(JdbcUtils.HOST_KEY).asText(),
-                config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get(JdbcUtils.DATABASE_KEY).asText())));
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("database").asText())));
 
     return PostgresCdcTargetPosition.targetPosition(database);
   }
@@ -399,8 +396,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
   // TODO (Subodh): This should be a generic test
   @Test
-  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global
-            // state for this test
+  @Disabled // Disabled because Postgres is not emitting Global state by default and we need to emit global state for this test
   public void newTableSnapshotTest() throws Exception {
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);

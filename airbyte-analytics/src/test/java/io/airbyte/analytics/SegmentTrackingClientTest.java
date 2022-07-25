@@ -137,7 +137,7 @@ class SegmentTrackingClientTest {
     assertTrue(properties.containsKey("tracked_at"));
     final Builder<String, Object> builder = ImmutableMap.builder();
     properties.forEach((key, value) -> {
-      if (!"tracked_at".equals(key)) {
+      if (!key.equals("tracked_at")) {
         builder.put(key, value);
       }
     });
