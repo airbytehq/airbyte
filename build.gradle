@@ -146,6 +146,7 @@ check.dependsOn 'spotlessApply'
 @SuppressWarnings('GroovyAssignabilityCheck')
 def Task getDockerBuildTask(String artifactName, String projectDir, String buildVersion, String buildTag) {
     return task ("buildDockerImage-$artifactName"(type: DockerBuildImage) {
+        // This is currently only used for connectors.
         def jdkVersion = System.getenv('JDK_VERSION') ?: '17.0.1'
 
         def arch = System.getenv('BUILD_ARCH') ?: System.getProperty("os.arch").toLowerCase()
