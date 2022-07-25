@@ -18,6 +18,7 @@ PARQUET_TYPES = {
     "boolean": ("boolean", ["BOOLEAN"], None),
     "number": ("number", ["DOUBLE", "FLOAT"], None),
     "integer": ("integer", ["INT32", "INT64", "INT96"], None),
+    "decimal": ("number", ["INT32", "INT64", "FIXED_LEN_BYTE_ARRAY"], None),
     # supported by PyArrow types
     "timestamp": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),
     "date": ("string", ["INT32", "INT64", "INT96"], lambda v: v.isoformat()),

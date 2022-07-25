@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.destination.clickhouse;
 
+import com.clickhouse.client.ClickHouseFormat;
+import com.clickhouse.jdbc.ClickHouseConnection;
+import com.clickhouse.jdbc.ClickHouseStatement;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
@@ -15,9 +18,6 @@ import java.sql.SQLException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.clickhouse.jdbc.ClickHouseConnection;
-import com.clickhouse.jdbc.ClickHouseStatement;
-import com.clickhouse.client.ClickHouseFormat;
 
 public class ClickhouseSqlOperations extends JdbcSqlOperations {
 
