@@ -13,10 +13,10 @@ interface DiffHeaderProps {
 export const DiffHeader: React.FC<DiffHeaderProps> = ({ diffCount, diffVerb, diffType }) => {
   return (
     <div>
-      {diffCount}{" "}
       <FormattedMessage
         id={`connection.updateSchema.${diffVerb}`}
         values={{
+          value: diffCount,
           item: <FormattedMessage id={`connection.updateSchema.${diffType}`} values={{ count: diffCount }} />,
         }}
       />

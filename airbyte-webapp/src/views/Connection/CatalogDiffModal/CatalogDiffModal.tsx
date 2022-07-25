@@ -25,7 +25,7 @@ export const CatalogDiffModal: React.FC<CatalogDiffModalProps> = ({ catalogDiff,
 
   return (
     <>
-      <ModalBody maxHeight={400} padding={false}>
+      <ModalBody maxHeight={400} padded={false}>
         <div className={styles.modalContent}>
           {removedItems.length > 0 && <DiffSection streams={removedItems} diffVerb="removed" catalog={catalog} />}
           {newItems.length > 0 && <DiffSection streams={newItems} diffVerb="new" />}

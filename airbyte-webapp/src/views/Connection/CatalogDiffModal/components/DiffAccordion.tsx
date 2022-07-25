@@ -62,6 +62,7 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
                         id: "connection.updateSchema.removed",
                       },
                       {
+                        value: removedItems.length,
                         item: formatMessage({ id: "field" }, { values: { count: removedItems.length } }),
                       }
                     )}`}
@@ -77,6 +78,7 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
                         id: "connection.updateSchema.new",
                       },
                       {
+                        value: newItems.length,
                         item: formatMessage({ id: "field" }, { values: { count: newItems.length } }),
                       }
                     )}`}
@@ -92,6 +94,7 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
                         id: "connection.updateSchema.changed",
                       },
                       {
+                        value: changedItems.length,
                         item: formatMessage({ id: "field" }, { values: { count: changedItems.length } }),
                       }
                     )}`}

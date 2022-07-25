@@ -4,12 +4,12 @@ import styles from "./ModalBody.module.scss";
 
 interface ModalBodyProps {
   maxHeight?: number | string;
-  padding?: boolean;
+  padded?: boolean;
 }
 
-export const ModalBody: React.FC<ModalBodyProps> = ({ children, maxHeight, padding }) => {
+export const ModalBody: React.FC<ModalBodyProps> = ({ children, maxHeight, padded = true }) => {
   const modalStyles = classnames(styles.modalBody, {
-    [styles.paddingNone]: padding === false,
+    [styles.paddingNone]: !padded,
   });
   return (
     <div className={modalStyles} style={{ maxHeight }}>
