@@ -51,12 +51,16 @@ The following `echo` command will update your config with a start date set at 7 
 echo "{\"access_key\": \"<your_access_key>\", \"start_date\": \"$(date -v -7d '+%Y-%m-%d')\", \"base\": \"USD\"}"  > secrets/config.json
 ```
 
-And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`:
+And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`.
+Note that we are setting a default value because the `check` operation does not know the `start_date`. We'll default to hitting `/latest`:
 
 ```
 retriever:
   requester:
-    path: "{{ config.start_date }}"
+      path:
+        type: "InterpolatedString"
+        string: "{{ stream_slice.start_date }}"
+        default: "/latest"
 ```
 
 You can test the connector by executing the `read` operation:
@@ -117,7 +121,8 @@ The full connector definition should now look like `./source_exchange_rates_tuto
 
 ```
 schema_loader:
-  type: JsonSchema
+  class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
+  name: "rates"
   file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
@@ -154,7 +159,7 @@ retriever:
     type: NoPagination
 rates_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "rates"
     cursor_field: "date"
   primary_key: "date"
@@ -166,7 +171,10 @@ rates_stream:
       ref: "*ref(stream_slicer)"
     requester:
       ref: "*ref(requester)"
-      path: "{{ stream_slice.start_date }}"
+      path:
+        type: "InterpolatedString"
+        string: "{{ stream_slice.start_date }}"
+        default: "/latest"
 streams:
   - "*ref(rates_stream)"
 check:
