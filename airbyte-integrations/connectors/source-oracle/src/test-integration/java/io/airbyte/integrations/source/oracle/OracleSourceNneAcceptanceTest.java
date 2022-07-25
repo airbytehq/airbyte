@@ -92,7 +92,7 @@ public class OracleSourceNneAcceptanceTest extends OracleSourceAcceptanceTest {
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),
-                config.get("sid").asText()),
+                config.get("connection_data").get("service_name").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
                 + algorithm + " )")));
