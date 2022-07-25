@@ -155,10 +155,11 @@ public class AirbyteTestContainer {
         final String message = prependService(service, log.replace("\n", ""));
         switch (c.getType()) {
           // prefer matching log levels from docker containers with log levels in logger.
-          case STDOUT -> LOGGER.info(message);
           case STDERR -> LOGGER.error(message);
           // assumption that this is an empty frame that connotes the container exiting.
           case END -> LOGGER.error(service + " stopped!!!");
+          // default includes STDOUT and anything else
+          default -> LOGGER.info(message);
         }
       }
     };
