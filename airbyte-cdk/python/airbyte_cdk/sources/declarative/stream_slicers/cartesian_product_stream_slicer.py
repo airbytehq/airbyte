@@ -29,7 +29,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def __init__(self, stream_slicers: List[StreamSlicer]):
         """
-        :param stream_slicers: Underlying stream slicers
+        :param stream_slicers: Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer. 
         """
         self._stream_slicers = stream_slicers
 
