@@ -3,8 +3,8 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { H5, Card } from "components";
 
-import { useGetConnectionState } from "hooks/services/useConnectionHook";
 import { ConnectionState } from "core/request/AirbyteClient";
+import { useGetConnectionState } from "hooks/services/useConnectionHook";
 
 interface StateBlockProps {
   connectionId: string;
@@ -15,7 +15,7 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   const state = useGetConnectionState(connectionId);
 
   const stateString = useMemo(
-    () => displayState(state, formatMessage),
+    () => displayState(state.state, state.globalState, state.streamState, formatMessage),
     [formatMessage, state.state, state.globalState, state.streamState]
   );
 
@@ -29,9 +29,14 @@ export const StateBlock: React.FC<StateBlockProps> = ({ connectionId }) => {
   );
 };
 
-function displayState(state: ConnectionState, formatMessage: ReturnType<typeof useIntl>["formatMessage"]) {
+function displayState(
+  legacyState: ConnectionState["state"],
+  globalState: ConnectionState["globalState"],
+  streamState: ConnectionState["streamState"],
+  formatMessage: ReturnType<typeof useIntl>["formatMessage"]
+) {
   // This hierarchy assumes that for those connections which have both global and per-stream state, the global state contains a meaningful copy of any state which would also be saved per-stream
-  const displayState = state?.state ?? state?.globalState ?? state?.streamState ?? null;
+  const displayState = legacyState ?? globalState ?? streamState ?? null;
   return displayState
     ? JSON.stringify(displayState, null, 2)
     : formatMessage({ id: "tables.connectionState.noConnectionState" });
