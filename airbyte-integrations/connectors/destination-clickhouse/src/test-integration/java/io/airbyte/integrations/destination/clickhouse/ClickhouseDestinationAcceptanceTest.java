@@ -96,7 +96,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
 
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.TCP_PORT_KEY, tcpPort.get())
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
