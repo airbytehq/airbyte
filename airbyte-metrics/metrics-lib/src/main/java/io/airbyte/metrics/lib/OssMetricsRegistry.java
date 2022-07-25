@@ -105,17 +105,9 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "temporal.workflow.restart.success",
       "count of number of successful restarts performed by the workflow connection manager."),
 
-  TEMPORAL_WORKFLOW_RESTART_CANCELED(MetricEmittingApps.WORKER,
-      "temporal.workflow.restart.canceled",
-      "count of number of canceled workflow restart attempts"),
-
-  TEMPORAL_WORKFLOW_RESTART_ACTIVITY_FAILURE(MetricEmittingApps.WORKER,
-      "temporal.workflow.restart.failure.activity",
-      "count of the number of restart failures due to the attempted activity."),
-
-  TEMPORAL_WORKFLOW_RESTART_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
-      "temporal.workflow.restart.failure.workflow",
-      "count of the number of restart failures do to the workflow");
+  TEMPORAL_WORKFLOW_RESTART_FAILURE(MetricEmittingApps.WORKER,
+      "temporal.workflow.restart.failure",
+      "count of the number of workflow restart failures");
 
   private final MetricEmittingApp application;
   private final String metricName;

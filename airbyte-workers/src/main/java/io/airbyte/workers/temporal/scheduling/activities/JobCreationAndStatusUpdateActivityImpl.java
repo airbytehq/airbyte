@@ -21,6 +21,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
@@ -51,6 +52,8 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @Slf4j
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
+
+  private static final String RELEASE_STAGE_ATTRIBUTE_KEY = "release_stage";
 
   private final SyncJobFactory jobFactory;
   private final JobPersistence jobPersistence;
@@ -119,7 +122,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1,
+            new MetricAttribute(RELEASE_STAGE_ATTRIBUTE_KEY, MetricTags.getReleaseStage(stage)));
       }
     }
   }
@@ -229,7 +233,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            MetricTags.getFailureOrigin(reason.getFailureOrigin()));
+            new MetricAttribute("failure_origin", MetricTags.getFailureOrigin(reason.getFailureOrigin())));
       }
 
     } catch (final IOException e) {
@@ -328,7 +332,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        MetricClientFactory.getMetricClient().count(metric, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(metric, 1,
+            new MetricAttribute(RELEASE_STAGE_ATTRIBUTE_KEY, MetricTags.getReleaseStage(stage)));
       }
     }
   }

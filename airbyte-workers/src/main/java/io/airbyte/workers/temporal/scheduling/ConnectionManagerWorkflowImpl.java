@@ -16,6 +16,7 @@ import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
@@ -100,6 +101,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   private static final String DELETE_RESET_JOB_STREAMS_TAG = "delete_reset_job_streams";
   private static final int DELETE_RESET_JOB_STREAMS_CURRENT_VERSION = 1;
+
+  private static final String RESET_WORKFLOW_FAILURE_ATTRIBUTE_KEY = "cause";
 
   static final Duration WORKFLOW_FAILURE_RESTART_DELAY = Duration.ofSeconds(new EnvConfigs().getWorkflowFailureRestartDelaySeconds());
 
@@ -239,7 +242,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // silently ignore it.
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
-          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_CANCELED, 1L);
+          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_FAILURE, 1L,
+              new MetricAttribute(RESET_WORKFLOW_FAILURE_ATTRIBUTE_KEY, "CANCELED"));
         } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
@@ -252,14 +256,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_ACTIVITY_FAILURE, 1L);
+          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_FAILURE, 1L,
+              new MetricAttribute(RESET_WORKFLOW_FAILURE_ATTRIBUTE_KEY, "ACTIVITY"));
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                   workflowInternalState.getAttemptNumber()));
           reportFailure(connectionUpdaterInput, standardSyncOutput);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_WORKFLOW_FAILURE, 1L);
+          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_FAILURE, 1L,
+              new MetricAttribute(RESET_WORKFLOW_FAILURE_ATTRIBUTE_KEY, "WORKFLOW"));
         }
       }
     });
