@@ -273,7 +273,6 @@ class Create(YandexMetricaStream):
     ) -> Iterable[Mapping]:
         data = response.json()
         yield data
-
 class Check(YandexMetricaStream):
     primary_key = None
 

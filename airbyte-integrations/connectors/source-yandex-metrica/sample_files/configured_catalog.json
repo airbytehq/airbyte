@@ -2,7 +2,7 @@
     "streams": [
       {
         "stream": {
-          "name": "sessions",
+          "name": "views",
           "json_schema": {
             "$schema": "http://json-schema.org/draft-04/schema#",
             "type": "object",
