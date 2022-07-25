@@ -16,6 +16,10 @@
       "type": "string",
       "description": "Name of the company entity."
     },
+    "ref": {
+      "type": "string",
+      "description": "Your reference for this company entity, as set in the Network tab."
+    },
     "mailing_address": {
       "description": "Address of the company entity.",
       "oneOf": [
@@ -26,10 +30,6 @@
           "$ref": "address.json"
         }
       ]
-    },
-    "ref": {
-      "type": "string",
-      "description": "Your reference for this company entity, as set in the Network tab."
     },
     "vat_numbers": {
       "type": "array",
