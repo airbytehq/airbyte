@@ -19,7 +19,7 @@ class JinjaInterpolation(Interpolation):
     If the input string is a raw string, the interpolated string will be the same.
     `eval("hello world") -> "hello world"`
 
-    The engine will evaluate the content passed within {{}}, interpolating the keys from the config and kwargs passed as argument.
+    The engine will evaluate the content passed within {{}}, interpolating the keys from the config and context-specific arguments.
     `eval("hello {{ name }}", name="airbyte") -> "hello airbyte")`
     `eval("hello {{ config.name }}", config={"name": "airbyte"}) -> "hello airbyte")`
 
