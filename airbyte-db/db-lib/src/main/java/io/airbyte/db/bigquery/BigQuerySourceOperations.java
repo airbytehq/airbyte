@@ -138,7 +138,7 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
         default -> paramValue;
       };
     } catch (final ParseException e) {
-      throw new RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name());
+      throw new RuntimeException("Fail to parse value " + paramValue + " to type " + paramType.name(), e);
     }
   }
 
