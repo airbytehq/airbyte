@@ -150,8 +150,8 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     Set<JsonNode> dataFromFullRefresh = extractRecordMessages(
         AutoCloseableIterators.toListAndClose(source.read(config, configuredCatalog, null)))
-        .stream()
-        .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
+            .stream()
+            .map(AirbyteRecordMessage::getData).collect(Collectors.toSet());
 
     configuredCatalog.getStreams().forEach(c -> c.setSyncMode(SyncMode.INCREMENTAL));
     Set<JsonNode> dataFromDebeziumSnapshot =
@@ -306,7 +306,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     return expectedCatalog;
   }
 
-  //TODO : Enable this test once we fix handling of DATETIME values
+  // TODO : Enable this test once we fix handling of DATETIME values
   @Test
   @Disabled
   public void dateTimeDataTypeTest() throws Exception {
@@ -439,4 +439,5 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertEquals((recordsToCreate * 2) + recordsCreatedBeforeTestCount, recordsFromSecondBatch.size(),
         "Expected 46 records to be replicated in the second sync.");
   }
+
 }

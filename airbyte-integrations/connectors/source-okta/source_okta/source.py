@@ -261,11 +261,11 @@ class SourceOkta(AbstractSource):
 
         creds = config.get("credentials")
         if not creds:
-            raise "Config validation error. `credentials` not specified."
+            raise Exception("Config validation error. `credentials` not specified.")
 
         auth_type = creds.get("auth_type")
         if not auth_type:
-            raise "Config validation error. `auth_type` not specified."
+            raise Exception("Config validation error. `auth_type` not specified.")
 
         if auth_type == "api_token":
             return TokenAuthenticator(creds["api_token"], auth_method="SSWS")
