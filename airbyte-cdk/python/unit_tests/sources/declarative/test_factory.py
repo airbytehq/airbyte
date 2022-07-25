@@ -200,7 +200,7 @@ list_stream:
     primary_key: "id"
     extractor:
       ref: "*ref(extractor)"
-      transform: ".result[]"
+      transform: "_.result"
   retriever:
     ref: "*ref(retriever)"
     requester:
@@ -235,7 +235,7 @@ check:
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._retriever._record_selector._extractor._transform == "_.result"
     assert type(stream._retriever._record_selector._record_filter) == RecordFilter
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -252,7 +252,7 @@ def test_create_record_selector():
     content = """
     extractor:
       type: JelloExtractor
-      transform: "_"
+      transform: "_.result"
     selector:
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
@@ -260,13 +260,13 @@ def test_create_record_selector():
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         ref: "*ref(extractor)"
-        transform: "_"
+        transform: "_.result"
     """
     config = parser.parse(content)
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector._extractor, JelloExtractor)
-    assert selector._extractor._transform == "_"
+    assert selector._extractor._transform == "_.result"
     assert isinstance(selector._record_filter, RecordFilter)
 
 
@@ -352,7 +352,7 @@ def test_config_with_defaults():
               page_size: 10
           record_selector:
             extractor:
-              transform: ".result[]"
+              transform: "_.result"
     streams:
       - "*ref(lists_stream)"
     """
@@ -367,7 +367,7 @@ def test_config_with_defaults():
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._retriever._record_selector._extractor._transform == "_.result"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
@@ -415,7 +415,7 @@ class TestCreateTransformations:
                       page_size: 10
                   record_selector:
                     extractor:
-                      transform: ".result[]"
+                      transform: "_.result"
     """
 
     def test_no_transformations(self):
