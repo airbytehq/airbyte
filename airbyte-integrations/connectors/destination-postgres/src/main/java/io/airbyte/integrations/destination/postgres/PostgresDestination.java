@@ -19,7 +19,7 @@ import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
