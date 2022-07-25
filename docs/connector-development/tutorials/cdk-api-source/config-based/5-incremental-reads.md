@@ -1,11 +1,13 @@
 # Step 5: Incremental Reads
 
+We now have a working implementation of a connector reading the latest exchange rates for a given currency.
+In this section, we'll update the source to read historical data instead of only reading the latest exchange rates.
+
 According to the API documentation, we can read the exchange rate for a specific date by querying the "/{date}" endpoint instead of "/latest".
-This will enable us to read historical data instead of only reading the latest exchange rates.
 
 We'll now add a `start_date` property to the connector.
 
-First we'll update the spec
+First we'll update the spec `source_exchange_rates_tutorial/spec.yaml`
 
 ```
 documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
@@ -42,10 +44,11 @@ connectionSpecification:
         - USD
 ```
 
-Then we'll set the `start_date` to last week our connection config
+Then we'll set the `start_date` to last week our connection config in `secrets/config.json`.
+The following `echo` command will update your config with a start date set at 7 days prior to today.
 
 ```
-echo "{\"access_key\": \"cb386247b67ff8c773deca4dafc39098\", \"start_date\": \"$(date -v -7d '+%Y-%m-%d')\", \"base\": \"USD\"}"  > secrets/config.json
+echo "{\"access_key\": \"<your_access_key>\", \"start_date\": \"$(date -v -7d '+%Y-%m-%d')\", \"base\": \"USD\"}"  > secrets/config.json
 ```
 
 And we'll update the `path` in the connector definition to point to `/{{ config.start_date }}`:
@@ -56,12 +59,53 @@ And we'll update the `path` in the connector definition to point to `/{{ config.
         path: "{{ config.start_date }}"
 ```
 
-The connector will now always reading data for the start date, which is not exactly what we want.
+You can test the connector by executing the `read` operation:
 
+```python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json```
+
+By reading the output record, you should see that we read historical data instead of the latest exchange rate.
+For example:
+> "historical": true, "base": "USD", "date": "2022-07-18"
+
+The connector will now always read data for the start date, which is not exactly what we want.
 Instead, we would like to iterate over all the dates between the start_date and today and read data for each day.
 
 We can do this by adding a `DatetimeStreamSlicer` to the connector definition, and update the `path` to point to the stream_slice's `start_date`:
 More details on the stream slicers can be found [here](./link-to-stream-slicers.md) <FIXME: need to fix links>
+
+Let's first define a stream slicer at the top level of the connector definition:
+
+```
+stream_slicer:
+  type: "DatetimeStreamSlicer"
+  start_datetime:
+    datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%d"
+  end_datetime:
+    datetime: "{{ now_local() }}"
+    datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+  step: "1d"
+  datetime_format: "%Y-%m-%d"
+```
+
+and refer to it in the stream's retriever. Note that we're also setting the `cursor_field` in the stream's `options` because it is used both by the `Stream` and the `StreamSlicer`:
+
+```
+rates_stream:
+  type: DeclarativeStream
+  options:
+    name: "rates"
+    cursor_field: "date
+  primary_key: "date"
+  schema_loader:
+    ref: "*ref(schema_loader)"
+  retriever:
+    ref: "*ref(retriever)"
+    stream_slicer:
+      ref: "*ref(stream_slicer)"
+```
+
+The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
 
 ```
 rates_stream:
@@ -114,13 +158,13 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 The operation should now output more than one record:
 
 ```
-{"type": "LOG", "log": {"level": "INFO", "message": "Read 196 records from rates stream"}}
+{"type": "LOG", "log": {"level": "INFO", "message": "Read 8 records from rates stream"}}
 ```
 
 ## Supporting incremental syncs
 
 Instead of always reading data for all dates, we would like the connector to only read data for dates we haven't read yet.
-This can be achieved by updating the catalog to run in incremental mode:
+This can be achieved by updating the catalog to run in incremental mode (`integration_tests/configured_catalog.json`):
 
 ```
 {
