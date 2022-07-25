@@ -5,7 +5,6 @@
     "title": "Snapchat Marketing Spec",
     "type": "object",
     "required": ["client_id", "client_secret", "refresh_token"],
-    "additionalProperties": false,
     "properties": {
       "client_id": {
         "title": "Client ID",
