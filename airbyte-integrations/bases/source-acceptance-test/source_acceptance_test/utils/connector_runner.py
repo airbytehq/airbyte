@@ -93,8 +93,6 @@ class ConnectorRunner:
         volumes = self._prepare_volumes(config, state, catalog)
         logging.debug(f"Docker run {self._image}: \n{cmd}\n" f"input: {self.input_folder}\noutput: {self.output_folder}")
 
-        logging.debug("HELLO!")
-
         container = self._client.containers.run(
             image=self._image,
             command=cmd,
