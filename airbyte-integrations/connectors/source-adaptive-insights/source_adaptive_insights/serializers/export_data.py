@@ -71,7 +71,7 @@ class DataProcessor:
     def process(self, response: str) -> None:
         
         if not response:
-            return
+            return None
 
         df = pd.read_csv(StringIO(response), sep=",")
         del response  # memory management
@@ -98,6 +98,8 @@ class DataProcessor:
             escapechar="\\",
             index=False
         )
+
+        return self.file_path
         
         del df  # memory management
 
@@ -116,7 +118,10 @@ def handle_export_data(response: dict, version: str) -> list:
     response = response.get("response").get("output")
 
     processor = DataProcessor()
-    processor.process(response)
+    file_path = processor.process(response)
+
+    if not file_path:
+        return []
 
     records = []
     try:

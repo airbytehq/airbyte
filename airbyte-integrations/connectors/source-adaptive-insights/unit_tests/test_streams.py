@@ -209,7 +209,6 @@ def test_parse_response_export_accounts(patch_base_class, requests_mock):
     requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
     resp = requests.post("https://api.adaptiveinsights.com/api/v32")
     inputs = {"response": resp}
-    print(next(stream.parse_response(**inputs)))
     assert next(stream.parse_response(**inputs)) == accounts_expected
 
 
@@ -244,8 +243,17 @@ def test_parse_response_export_data(patch_base_class, requests_mock):
     requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
     resp = requests.post("https://api.adaptiveinsights.com/api/v32")
     inputs = {"response": resp}
-    print(next(stream.parse_response(**inputs)))
     assert next(stream.parse_response(**inputs)) == data_expected
+
+def test_parse_response_export_data_no_data(patch_base_class, requests_mock):
+    stream = ExportData(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
+    with open("unit_tests/sample_data/data_output_no_data.xml", "r") as fp:
+        requests_data = fp.read()
+    requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
+    resp = requests.post("https://api.adaptiveinsights.com/api/v32")
+    inputs = {"response": resp}
+    assert next(stream.parse_response(**inputs), {}) == {}
+
 
 
 def test_http_method_export_data(patch_base_class):
