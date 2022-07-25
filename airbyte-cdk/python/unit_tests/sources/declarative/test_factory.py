@@ -191,7 +191,7 @@ partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    file_path: "./source_sendgrid/schemas/{{ name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
   cursor_field: [ ]
 list_stream:
   ref: "*ref(partial_stream)"
@@ -334,7 +334,7 @@ def test_config_with_defaults():
         primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
-          file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+          file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
         retriever:
           paginator:
             type: "LimitPaginator"
@@ -412,7 +412,7 @@ class TestCreateTransformations:
                 primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
-                  file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+                  file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
                 retriever:
                   requester:
                     path: "/v3/marketing/lists"
