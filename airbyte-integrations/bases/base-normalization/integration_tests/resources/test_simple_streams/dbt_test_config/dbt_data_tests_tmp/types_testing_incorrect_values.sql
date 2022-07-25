@@ -8,21 +8,27 @@ select * from {{ ref('types_testing') }} where
   id = 1 and (
     cast(airbyte_integer_column as {{ dbt_utils.type_string() }}) != '9223372036854775807'
     or cast(nullable_airbyte_integer_column as {{ dbt_utils.type_string() }}) != '9223372036854775807'
+    {#
     or cast(big_integer_column as {{ dbt_utils.type_string() }}) != '1234567890123456789012345678'
     or cast(nullable_big_integer_column as {{ dbt_utils.type_string() }}) != '1234567890123456789012345678'
+    #}
   )
 ) or (
   id = 2 and (
     cast(airbyte_integer_column as {{ dbt_utils.type_string() }}) != '-9223372036854775808'
     or cast(nullable_airbyte_integer_column as {{ dbt_utils.type_string() }}) != '-9223372036854775808'
+    {#
     or cast(big_integer_column as {{ dbt_utils.type_string() }}) != '-1234567890123456789012345678'
     or cast(nullable_big_integer_column as {{ dbt_utils.type_string() }}) != '-1234567890123456789012345678'
+    #}
   )
 ) or (
   id = 3 and (
     cast(airbyte_integer_column as {{ dbt_utils.type_string() }}) != '0'
     or nullable_airbyte_integer_column is not null
+    {#
     or cast(big_integer_column as {{ dbt_utils.type_string() }}) != '0'
     or nullable_big_integer_column is not null
+    #}
   )
 )
