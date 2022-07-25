@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
@@ -144,6 +146,23 @@ class TemporalClientTest {
       assertEquals(logPath, response.getMetadata().getLogPath());
     }
 
+    @Test
+    void testExecuteWithConnectorJobFailure() {
+      final Supplier<ConnectorJobOutput> supplier = mock(Supplier.class);
+      final FailureReason mockFailureReason = mock(FailureReason.class);
+      final ConnectorJobOutput connectorJobOutput = new ConnectorJobOutput()
+          .withFailureReason(mockFailureReason);
+      when(supplier.get()).thenReturn(connectorJobOutput);
+
+      final TemporalResponse<ConnectorJobOutput> response = temporalClient.execute(JOB_RUN_CONFIG, supplier);
+
+      assertNotNull(response);
+      assertTrue(response.getOutput().isPresent());
+      assertEquals(connectorJobOutput, response.getOutput().get());
+      assertFalse(response.getMetadata().isSucceeded());
+      assertEquals(logPath, response.getMetadata().getLogPath());
+    }
+
   }
 
   @Nested
@@ -226,22 +245,20 @@ class TemporalClientTest {
     }
 
     @Test
-    public void testSynchronousResetConnection() throws IOException {
+    void testSynchronousResetConnection() throws IOException {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
       final WorkflowState mWorkflowState = mock(WorkflowState.class);
       when(mConnectionManagerWorkflow.getState()).thenReturn(mWorkflowState);
       when(mWorkflowState.isDeleted()).thenReturn(false);
-      final long jobId1 = 1L;
-      final long jobId2 = 2L;
-      final long jobId3 = 3L;
+      final long resetJobId = 1L;
 
       when(mConnectionManagerWorkflow.getJobInformation()).thenReturn(
-          new JobInformation(jobId1, 0),
-          new JobInformation(jobId2, 0),
-          new JobInformation(jobId2, 0),
-          new JobInformation(jobId2, 0),
-          new JobInformation(jobId3, 0),
-          new JobInformation(jobId3, 0));
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(resetJobId, 0),
+          new JobInformation(resetJobId, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0),
+          new JobInformation(NON_RUNNING_JOB_ID, 0));
 
       doReturn(true).when(temporalClient).isWorkflowReachable(any(UUID.class));
 
@@ -253,7 +270,7 @@ class TemporalClientTest {
       verify(streamResetPersistence).createStreamResets(CONNECTION_ID, streamsToReset);
       verify(mConnectionManagerWorkflow).resetConnection();
 
-      assertEquals(manualOperationResult.getJobId().get(), jobId3);
+      assertEquals(manualOperationResult.getJobId().get(), resetJobId);
     }
 
   }
@@ -264,7 +281,7 @@ class TemporalClientTest {
 
     @DisplayName("Test that the migration is properly done if needed")
     @Test
-    public void migrateCalled() {
+    void migrateCalled() {
       final UUID nonMigratedId = UUID.randomUUID();
       final UUID migratedId = UUID.randomUUID();
 

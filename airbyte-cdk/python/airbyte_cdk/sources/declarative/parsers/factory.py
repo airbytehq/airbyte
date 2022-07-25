@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import copy
 import importlib
-from typing import Any, Mapping, Type, Union, get_type_hints
+from typing import Any, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
 from airbyte_cdk.sources.declarative.create_partial import create
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
@@ -27,7 +27,12 @@ class DeclarativeComponentFactory:
         :return: the object to create
         """
         kwargs = copy.deepcopy(component_definition)
-        class_name = kwargs.pop("class_name")
+        if "class_name" in kwargs:
+            class_name = kwargs.pop("class_name")
+        elif "type" in kwargs:
+            class_name = CLASS_TYPES_REGISTRY[kwargs.pop("type")]
+        else:
+            raise ValueError(f"Failed to create component because it has no class_name or type. Definition: {component_definition}")
         return self.build(class_name, config, **kwargs)
 
     def build(self, class_or_class_name: Union[str, Type], config, **kwargs):
@@ -41,7 +46,6 @@ class DeclarativeComponentFactory:
             kwargs["options"] = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs["options"].items()}
 
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_) for k, v in kwargs.items()}
-
         return create(class_, config=config, **updated_kwargs)
 
     @staticmethod
@@ -67,7 +71,6 @@ class DeclarativeComponentFactory:
         if self.is_object_definition_with_class_name(definition):
             # propagate kwargs to inner objects
             definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
-
             return self.create_component(definition, config)()
         elif self.is_object_definition_with_type(definition):
             # If type is set instead of class_name, get the class_name from the CLASS_TYPES_REGISTRY
@@ -79,7 +82,9 @@ class DeclarativeComponentFactory:
         elif isinstance(definition, dict):
             # Try to infer object type
             expected_type = self.get_default_type(key, parent_class)
-            if expected_type:
+            # if there is an expected type, and it's not a builtin type, then instantiate it
+            # We don't have to instantiate builtin types (eg string and dict) because definition is already going to be of that type
+            if expected_type and not self._is_builtin_type(expected_type):
                 definition["class_name"] = expected_type
                 definition["options"] = self._merge_dicts(kwargs.get("options", dict()), definition.get("options", dict()))
                 return self.create_component(definition, config)()
@@ -93,7 +98,13 @@ class DeclarativeComponentFactory:
                 for sub in definition
             ]
         else:
-            return definition
+            expected_type = self.get_default_type(key, parent_class)
+            if expected_type and not isinstance(definition, expected_type):
+                # call __init__(definition) if definition is not a dict and is not of the expected type
+                # for instance, to turn a string into an InterpolatedString
+                return expected_type(definition)
+            else:
+                return definition
 
     @staticmethod
     def is_object_definition_with_class_name(definition):
@@ -107,8 +118,23 @@ class DeclarativeComponentFactory:
     def get_default_type(parameter_name, parent_class):
         type_hints = get_type_hints(parent_class.__init__)
         interface = type_hints.get(parameter_name)
+        while True:
+            origin = get_origin(interface)
+            if origin:
+                # Unnest types until we reach the raw type
+                # List[T] -> T
+                # Optional[List[T]] -> T
+                args = get_args(interface)
+                interface = args[0]
+            else:
+                break
+
         expected_type = DEFAULT_IMPLEMENTATIONS_REGISTRY.get(interface)
-        return expected_type
+
+        if expected_type:
+            return expected_type
+        else:
+            return interface
 
     @staticmethod
     def _get_subcomponent_options(sub: Any):
@@ -116,3 +142,9 @@ class DeclarativeComponentFactory:
             return sub.get("options", {})
         else:
             return {}
+
+    @staticmethod
+    def _is_builtin_type(cls) -> bool:
+        if not cls:
+            return False
+        return cls.__module__ == "builtins"

@@ -28,7 +28,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class EmptyAirbyteSourceTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class EmptyAirbyteSourceTest {
 
   private EmptyAirbyteSource emptyAirbyteSource;
   private final AirbyteMessage EMPTY_MESSAGE =
@@ -42,26 +43,26 @@ public class EmptyAirbyteSourceTest {
           new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
 
   @BeforeEach
-  public void init() {
+  void init() {
     emptyAirbyteSource = new EmptyAirbyteSource(true);
   }
 
   @Test
-  public void testLegacy() throws Exception {
+  void testLegacy() throws Exception {
     emptyAirbyteSource.start(new WorkerSourceConfig(), null);
 
     legacyStateResult();
   }
 
   @Test
-  public void testLegacyWithEmptyConfig() throws Exception {
+  void testLegacyWithEmptyConfig() throws Exception {
     emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.emptyObject()), null);
 
     legacyStateResult();
   }
 
   @Test
-  public void testLegacyWithWrongConfigFormat() throws Exception {
+  void testLegacyWithWrongConfigFormat() throws Exception {
     emptyAirbyteSource.start(new WorkerSourceConfig().withSourceConnectionConfiguration(Jsons.jsonNode(
         Map.of("not", "expected"))), null);
 
@@ -69,7 +70,7 @@ public class EmptyAirbyteSourceTest {
   }
 
   @Test
-  public void testEmptyListOfStreams() throws Exception {
+  void testEmptyListOfStreams() throws Exception {
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
         .withStreamsToReset(new ArrayList<>());
     final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
@@ -82,14 +83,14 @@ public class EmptyAirbyteSourceTest {
   }
 
   @Test
-  public void nonStartedSource() {
+  void nonStartedSource() {
     final Throwable thrown = Assertions.catchThrowable(() -> emptyAirbyteSource.attemptRead());
     Assertions.assertThat(thrown)
         .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
-  public void testGlobal() throws Exception {
+  void testGlobal() throws Exception {
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
@@ -142,7 +143,7 @@ public class EmptyAirbyteSourceTest {
   }
 
   @Test
-  public void testGlobalPartial() throws Exception {
+  void testGlobalPartial() throws Exception {
     final String NOT_RESET_STREAM_NAME = "c";
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", NOT_RESET_STREAM_NAME));
@@ -181,10 +182,12 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
-  public void testGlobalNewStream() throws Exception {
+  void testGlobalNewStream() throws Exception {
     final String NEW_STREAM = "c";
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b"));
@@ -221,10 +224,12 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
-  public void testPerStream() throws Exception {
+  void testPerStream() throws Exception {
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
@@ -243,10 +248,12 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
-  public void testPerStreamWithExtraState() throws Exception {
+  void testPerStreamWithExtraState() throws Exception {
     // This should never happen but nothing keeps us from processing the reset and not fail
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b", "c", "d"));
 
@@ -266,10 +273,12 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   @Test
-  public void testPerStreamWithMissingState() throws Exception {
+  void testPerStreamWithMissingState() throws Exception {
     final String NEW_STREAM = "c";
 
     final List<StreamDescriptor> streamDescriptors = getProtocolStreamDescriptorFromName(Lists.newArrayList("a", "b"));
@@ -290,10 +299,14 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
+  // In the LEGACY state, if the list of streams passed in to be reset does not include every stream
+  // in the Catalog, then something has gone wrong and we should throw an error
   @Test
-  public void testLegacyWithNewConfigMissingStream() {
+  void testLegacyWithMissingCatalogStream() {
 
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
@@ -317,8 +330,85 @@ public class EmptyAirbyteSourceTest {
 
   }
 
+  // If there are extra streams to reset that do not exist in the Catalog, the reset should work
+  // properly with all streams being reset
   @Test
-  public void testLegacyWithNewConfig() throws Exception {
+  void testLegacyWithResettingExtraStreamNotInCatalog() throws Exception {
+    final List<StreamDescriptor> streamToResetWithExtra = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c", "d"));
+
+    final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
+        .withStreamsToReset(streamToResetWithExtra);
+    final ConfiguredAirbyteCatalog airbyteCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
+
+    final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
+        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
+        .withState(new State()
+            .withState(Jsons.emptyObject()))
+        .withCatalog(airbyteCatalog);
+
+    emptyAirbyteSource.start(workerSourceConfig, null);
+
+    final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
+    Assertions.assertThat(maybeMessage)
+        .isNotEmpty();
+
+    final AirbyteMessage message = maybeMessage.get();
+    Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
+
+    final AirbyteStateMessage stateMessage = message.getState();
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.LEGACY);
+    Assertions.assertThat(stateMessage.getData()).isEqualTo(Jsons.emptyObject());
+
+    Assertions.assertThat(emptyAirbyteSource.attemptRead())
+        .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
+
+  }
+
+  @Test
+  void testLegacyWithNewConfig() throws Exception {
+    final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
+
+    final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
+        .withStreamsToReset(streamToReset);
+    final ConfiguredAirbyteCatalog airbyteCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(Lists.newArrayList(
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b")),
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c"))));
+
+    final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
+        .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
+        .withState(new State()
+            .withState(Jsons.emptyObject()))
+        .withCatalog(airbyteCatalog);
+
+    emptyAirbyteSource.start(workerSourceConfig, null);
+
+    final Optional<AirbyteMessage> maybeMessage = emptyAirbyteSource.attemptRead();
+    Assertions.assertThat(maybeMessage)
+        .isNotEmpty();
+
+    final AirbyteMessage message = maybeMessage.get();
+    Assertions.assertThat(message.getType()).isEqualTo(Type.STATE);
+
+    final AirbyteStateMessage stateMessage = message.getState();
+    Assertions.assertThat(stateMessage.getType()).isEqualTo(AirbyteStateType.LEGACY);
+    Assertions.assertThat(stateMessage.getData()).isEqualTo(Jsons.emptyObject());
+
+    Assertions.assertThat(emptyAirbyteSource.attemptRead())
+        .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
+  }
+
+  @Test
+  void testLegacyWithNullState() throws Exception {
     final List<StreamDescriptor> streamToReset = getConfigStreamDescriptorFromName(Lists.newArrayList("a", "b", "c"));
 
     final ResetSourceConfiguration resetSourceConfiguration = new ResetSourceConfiguration()
@@ -331,8 +421,6 @@ public class EmptyAirbyteSourceTest {
 
     final WorkerSourceConfig workerSourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(Jsons.jsonNode(resetSourceConfiguration))
-        .withState(new State()
-            .withState(Jsons.emptyObject()))
         .withCatalog(airbyteCatalogWithExtraStream);
 
     emptyAirbyteSource.start(workerSourceConfig, null);
@@ -350,6 +438,8 @@ public class EmptyAirbyteSourceTest {
 
     Assertions.assertThat(emptyAirbyteSource.attemptRead())
         .isEmpty();
+
+    Assertions.assertThat(emptyAirbyteSource.isFinished()).isTrue();
   }
 
   private void testReceiveNullStreamState(final StreamDescriptor streamDescriptor) {

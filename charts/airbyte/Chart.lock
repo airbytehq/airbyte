@@ -1,12 +1,30 @@
 dependencies:
 - name: common
   repository: https://charts.bitnami.com/bitnami
-  version: 1.15.1
+  version: 1.16.1
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 10.16.2
 - name: minio
   repository: https://charts.bitnami.com/bitnami
-  version: 11.6.3
-digest: sha256:616b7b5af8ca1ac0bb11374a5589f7c00cad416faf5ac59a3484585be768fee3
-generated: "2022-06-02T18:25:41.835008+02:00"
+  version: 11.7.10
+- name: airbyte-bootloader
+  repository: https://xpuska513.github.io/aribyte-oss/
+  version: 0.43.3
+- name: temporal
+  repository: https://xpuska513.github.io/aribyte-oss/
+  version: 0.43.3
+- name: webapp
+  repository: https://xpuska513.github.io/aribyte-oss/
+  version: 0.43.3
+- name: server
+  repository: https://xpuska513.github.io/aribyte-oss/
+  version: 0.43.3
+- name: worker
+  repository: https://xpuska513.github.io/aribyte-oss/
+  version: 0.43.3
+- name: pod-sweeper
+  repository: https://xpuska513.github.io/aribyte-oss/
+  version: 0.43.3
+digest: sha256:d397eda06444da1d71b786c044713c3b1664a4f1998b596d43bdb5023c25b982
+generated: "2022-07-15T14:58:56.791383+03:00"

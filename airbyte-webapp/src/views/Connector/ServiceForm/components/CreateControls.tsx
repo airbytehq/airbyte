@@ -18,7 +18,6 @@ interface CreateControlProps {
 
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
-  isValid: boolean;
 }
 
 const ButtonContainer = styled.div`
@@ -41,7 +40,6 @@ const CreateControls: React.FC<CreateControlProps> = ({
   fetchingConnectorError,
   isLoadSchema,
   onCancelTesting,
-  isValid,
 }) => {
   if (isSubmitting) {
     return <TestingConnectionSpinner isCancellable={isTestConnectionInProgress} onCancelTesting={onCancelTesting} />;
@@ -55,7 +53,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <SubmitButton type="submit" disabled={isLoadSchema || !isValid}>
+      <SubmitButton type="submit" disabled={isLoadSchema}>
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
       </SubmitButton>
     </ButtonContainer>

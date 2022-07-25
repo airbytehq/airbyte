@@ -4,7 +4,7 @@
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
-false_values = {"False", "false", "{}", "[]", "()", "", "0", "0.0", "False", "false"}
+false_values = ["False", "false", "{}", "[]", "()", "", "0", "0.0", "False", "false", {}, False, [], (), set()]
 
 
 class InterpolatedBoolean:
