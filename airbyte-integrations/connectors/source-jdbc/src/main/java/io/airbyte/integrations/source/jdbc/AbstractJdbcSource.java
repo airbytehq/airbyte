@@ -319,8 +319,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   /**
-   * Retrieves connection_properties from config and also validates if custom
-   * jdbc_url parameters overlap with the default properties
+   * Retrieves connection_properties from config and also validates if custom jdbc_url parameters
+   * overlap with the default properties
    *
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of connection properties
@@ -340,7 +340,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @throws IllegalArgumentException
    */
   private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-      final Map<String, String> defaultParameters) {
+                                                                    final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
@@ -351,8 +351,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   /**
    * Retrieves default connection_properties from config
    *
-   * TODO: make this method abstract and add parity features to
-   * destination connectors
+   * TODO: make this method abstract and add parity features to destination connectors
+   *
    * @param config A configuration used to check Jdbc connection
    * @return A mapping of the default connection properties
    */

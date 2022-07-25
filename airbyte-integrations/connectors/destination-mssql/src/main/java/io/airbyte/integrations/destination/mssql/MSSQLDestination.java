@@ -15,7 +15,6 @@ import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -26,6 +25,7 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
   private static final Logger LOGGER = LoggerFactory.getLogger(MSSQLDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
+
   public MSSQLDestination() {
     super(DRIVER_CLASS, new MSSQLNameTransformer(), new SqlServerOperations());
   }
@@ -73,7 +73,8 @@ public class MSSQLDestination extends AbstractJdbcDestination implements Destina
         .put(JdbcUtils.SCHEMA_KEY, schema);
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
-      // configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
+      // configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY,
+      // config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
       configBuilder.put(JdbcUtils.JDBC_URL_PARAMS_KEY, config.get(JdbcUtils.JDBC_URL_PARAMS_KEY));
     }
 

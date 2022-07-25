@@ -18,7 +18,6 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstoreSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;

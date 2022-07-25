@@ -22,7 +22,6 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -73,11 +72,11 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(PSQL_DB.getContainerInfo()
-                .getNetworkSettings()
-                .getNetworks()
-                .entrySet().stream()
-                .findFirst()
-                .get().getValue().getIpAddress()))
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet().stream()
+            .findFirst()
+            .get().getValue().getIpAddress()))
         .put(JdbcUtils.PORT_KEY, PSQL_DB.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
