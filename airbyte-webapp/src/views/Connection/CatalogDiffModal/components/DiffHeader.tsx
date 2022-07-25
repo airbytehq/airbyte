@@ -1,6 +1,6 @@
 import { FormattedMessage } from "react-intl";
 
-import { DiffVerb } from "../utils/types";
+import { DiffVerb } from "../types";
 
 export type DiffType = "field" | "stream";
 

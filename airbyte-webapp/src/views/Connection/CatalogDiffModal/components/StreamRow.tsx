@@ -5,7 +5,7 @@ import classnames from "classnames";
 import { StreamTransform } from "core/request/AirbyteClient";
 
 import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
-import { DiffVerb } from "../utils/types";
+import { DiffVerb } from "../types";
 import styles from "./StreamRow.module.scss";
 
 interface StreamRowProps {

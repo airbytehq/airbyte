@@ -9,7 +9,7 @@ import { ModalBody, ModalFooter } from "../../../components/Modal";
 import styles from "./CatalogDiffModal.module.scss";
 import { DiffSection } from "./components/DiffSection";
 import { FieldSection } from "./components/FieldSection";
-import { getSortedDiff } from "./utils/utils";
+import { getSortedDiff } from "./utils";
 
 interface CatalogDiffModalProps {
   catalogDiff: CatalogDiff;
