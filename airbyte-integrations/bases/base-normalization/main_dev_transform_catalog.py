@@ -14,5 +14,8 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        msg = "Something went wrong while transforming the catalog in Normalization. See the logs for more details."
+        msg = (
+            "Something went wrong while normalizing the data moved in this sync "
+            + "(failed to transform catalog into dbt project). See the logs for more details."
+        )
         raise AirbyteTracedException(str(e), msg, exception=e)
