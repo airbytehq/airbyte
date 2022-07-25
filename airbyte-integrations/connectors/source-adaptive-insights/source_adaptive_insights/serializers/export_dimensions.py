@@ -12,7 +12,7 @@ import hashlib
 
 
 class Dimension:
-    def __init__(self):
+    def __init__(self, version: str):
         self.id = None
         self.dimension_id = None
         self.dimension_name = None
@@ -25,6 +25,7 @@ class Dimension:
         self.attribute_name = None
         self.attribute_value_id = None
         self.attribute_value = None
+        self.version = version
 
     def parse_dict(self, d: dict, _type: str) -> None:
         if _type == "dimension":
@@ -58,11 +59,12 @@ class Dimension:
             "attribute_id": self.attribute_id,
             "attribute_name": self.attribute_name,
             "attribute_value_id": self.attribute_value_id,
-            "attribute_value": self.attribute_value
+            "attribute_value": self.attribute_value,
+            "version": self.version
         }
 
 
-def handle_export_dimensions(data: str) -> Iterable[Mapping]:
+def handle_export_dimensions(data: str, version: str) -> Iterable[Mapping]:
 
     dimensions = data.get("response").get("output").get("dimensions").get("dimension")
 
@@ -82,7 +84,7 @@ def handle_export_dimensions(data: str) -> Iterable[Mapping]:
                         attributes = [attributes]
 
                     for attribute in attributes:
-                        d = Dimension()
+                        d = Dimension(version=version)
                         
                         d.parse_dict(dimension, _type="dimension")
                         d.parse_dict(value, _type="values")
@@ -90,14 +92,14 @@ def handle_export_dimensions(data: str) -> Iterable[Mapping]:
                         
                         dimensions_records.append(d.to_record())
                 else:
-                    d = Dimension()
+                    d = Dimension(version=version)
                         
                     d.parse_dict(dimension, _type="dimension")
                     d.parse_dict(value, _type="values")
                     
                     dimensions_records.append(d.to_record())
         else:
-            d = Dimension()       
+            d = Dimension(version=version)       
             d.parse_dict(dimension, _type="dimension")
             
             dimensions_records.append(d.to_record())

@@ -2,7 +2,7 @@ from collections.abc import MutableMapping
 
 
 class Level:
-    def __init__(self):
+    def __init__(self, version: str):
         self.id = None
         self.name = None
         self.currency = None
@@ -12,6 +12,7 @@ class Level:
         self.workflowStatus = None
         self.isImportable = None
         self.attributes = None
+        self.version = version
         # self.parent_level = None
 
     def parse_dict(self, d: dict) -> None:
@@ -61,32 +62,33 @@ class Level:
             "is_linked": self.isLinked,
             "workflow_status": self.workflowStatus,
             "is_important": self.isImportable,
-            "attributes": str(self.parse_attributes(self.attributes))
+            "attributes": str(self.parse_attributes(self.attributes)),
+            "version": self.version
         }
 
 
-def flatten_dict(d: MutableMapping, items: list) -> MutableMapping:
+def flatten_dict(d: MutableMapping, items: list, version:str) -> MutableMapping:
 
     if isinstance(d, list):
         for i in d:
-            flatten_dict(i, items)
+            flatten_dict(i, items, version)
     else:
         dict_keys = list(d.keys())
         if "level" in dict_keys:
-            flatten_dict(d["level"], items)
-            lvl = Level()
+            flatten_dict(d["level"], items, version)
+            lvl = Level(version=version)
             lvl.parse_dict(d)
             items.append(lvl.to_record())
         else:
-            lvl = Level()
+            lvl = Level(version=version)
             lvl.parse_dict(d)
             items.append(lvl.to_record())
     
     return items
 
 
-def handle_export_levels(d: MutableMapping) -> MutableMapping:
+def handle_export_levels(d: MutableMapping, version: str) -> MutableMapping:
     data = d.get("response").get("output").get("levels").get("level")
     items = []
 
-    return flatten_dict(data, items)
+    return flatten_dict(d=data, items=items, version=version)

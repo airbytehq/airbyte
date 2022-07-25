@@ -7,14 +7,18 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
+import textwrap
+import inspect
 from source_adaptive_insights.source import (
     AdaptiveInsightsStream,
     ExportDimensions,
     ExportLevels,
-    ExportAccounts
+    ExportAccounts,
+    ExportData
 )
 
 dimensions_expected = {
+    'id': 25707643020,
     'attribute_id': None,
     'attribute_name': None,
     'attribute_value': None,
@@ -25,7 +29,8 @@ dimensions_expected = {
     'value_description': '',
     'value_id': 2,
     'value_name': 'B',
-    'value_short_name': ''
+    'value_short_name': '',
+    'version': 'c',
 }
 
 levels_expected = {
@@ -37,7 +42,8 @@ levels_expected = {
     'is_linked': '0', 
     'workflow_status': 'I', 
     'is_important': '1', 
-    'attributes': [
+    'version': 'c',
+    'attributes': str([
         {
             'attributeId': '6', 
             'name': 'E', 
@@ -50,7 +56,7 @@ levels_expected = {
             'valueId': '12', 
             'value': 'H'
         }
-    ]
+    ])
 }
 
 accounts_expected = {
@@ -88,14 +94,29 @@ accounts_expected = {
     'enable_actuals': '1', 
     'is_group': '0', 
     'has_formula': '0', 
-    'attributes': [
+    'version': 'c',
+    'attributes': str([
         {
             'name': 'FF', 
             'value': 'ghjk', 
             'attributeId': '22', 
             'valueId': '11'
         }
-    ]
+    ])
+}
+
+data_expected = {
+    'account_code': 'b',
+    'account_name': 'a',
+    'amount': 1223.12,
+    'assignment': 123.12,
+    'contract': 'i',
+    'date': '2022-04-01',
+    'gl_account': 'e',
+    'id': 809651416006,
+    'level': 'c',
+    'location': 'g',
+    'version': 'c'
 }
 
 @pytest.fixture
@@ -107,14 +128,14 @@ def patch_base_class(mocker):
 
 
 def test_request_headers(patch_base_class):
-    stream = AdaptiveInsightsStream(username="a", password="b")
+    stream = AdaptiveInsightsStream(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     inputs = {}
     expected_headers = {'Content-Type': 'text/xml; charset=UTF-8'}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_parse_response_export_dimensions(patch_base_class, requests_mock):
-    stream = ExportDimensions(username="a", password="b")
+    stream = ExportDimensions(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     with open("unit_tests/sample_data/dimension_output.xml", "r") as fp:
         requests_data = fp.read()
     requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
@@ -124,19 +145,19 @@ def test_parse_response_export_dimensions(patch_base_class, requests_mock):
 
 
 def test_http_method_export_dimensions(patch_base_class):
-    stream = ExportDimensions(username="a", password="b")
+    stream = ExportDimensions(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_method = "POST"
     assert stream.http_method == expected_method
 
 
 def test_method_export_dimensions(patch_base_class):
-    stream = ExportDimensions(username="a", password="b")
+    stream = ExportDimensions(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_method = "exportDimensions"
     assert stream.method == expected_method
 
 
 def test_request_body_data_export_dimensions(patch_base_class):
-    stream = ExportDimensions(username="a", password="b")
+    stream = ExportDimensions(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_data = f"""<?xml version='1.0' encoding='UTF-8'?>
         <call method="{stream.method}" callerName="Airbyte - auto">
         <credentials login="a" password="b"/>
@@ -148,7 +169,7 @@ def test_request_body_data_export_dimensions(patch_base_class):
 
 
 def test_parse_response_export_levels(patch_base_class, requests_mock):
-    stream = ExportLevels(username="a", password="b")
+    stream = ExportLevels(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     with open("unit_tests/sample_data/levels_output.xml", "r") as fp:
         requests_data = fp.read()
     requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
@@ -158,19 +179,19 @@ def test_parse_response_export_levels(patch_base_class, requests_mock):
 
 
 def test_http_method_export_levels(patch_base_class):
-    stream = ExportLevels(username="a", password="b")
+    stream = ExportLevels(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_method = "POST"
     assert stream.http_method == expected_method
 
 
 def test_method_export_levels(patch_base_class):
-    stream = ExportLevels(username="a", password="b")
+    stream = ExportLevels(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_method = "exportLevels"
     assert stream.method == expected_method
 
 
 def test_request_body_data_export_levels(patch_base_class):
-    stream = ExportLevels(username="a", password="b")
+    stream = ExportLevels(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_data = f"""<?xml version='1.0' encoding='UTF-8'?>
         <call method="{stream.method}" callerName="Airbyte - auto">
         <credentials login="a" password="b"/>
@@ -182,7 +203,7 @@ def test_request_body_data_export_levels(patch_base_class):
 
 
 def test_parse_response_export_accounts(patch_base_class, requests_mock):
-    stream = ExportAccounts(username="a", password="b")
+    stream = ExportAccounts(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     with open("unit_tests/sample_data/accounts_output.xml", "r") as fp:
         requests_data = fp.read()
     requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
@@ -193,19 +214,19 @@ def test_parse_response_export_accounts(patch_base_class, requests_mock):
 
 
 def test_http_method_export_accounts(patch_base_class):
-    stream = ExportAccounts(username="a", password="b")
+    stream = ExportAccounts(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_method = "POST"
     assert stream.http_method == expected_method
 
 
 def test_method_export_accounts(patch_base_class):
-    stream = ExportAccounts(username="a", password="b")
+    stream = ExportAccounts(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_method = "exportAccounts"
     assert stream.method == expected_method
 
 
 def test_request_body_data_export_accounts(patch_base_class):
-    stream = ExportAccounts(username="a", password="b")
+    stream = ExportAccounts(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
     expected_data = f"""<?xml version='1.0' encoding='UTF-8'?>
         <call method="{stream.method}" callerName="Airbyte - auto">
         <credentials login="a" password="b"/>
@@ -214,3 +235,52 @@ def test_request_body_data_export_accounts(patch_base_class):
         """.encode('utf-8')
     inputs = {"stream_state": {}}
     assert stream.request_body_data(**inputs) == expected_data
+
+
+def test_parse_response_export_data(patch_base_class, requests_mock):
+    stream = ExportData(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
+    with open("unit_tests/sample_data/data_output.xml", "r") as fp:
+        requests_data = fp.read()
+    requests_mock.post("https://api.adaptiveinsights.com/api/v32", text=requests_data)
+    resp = requests.post("https://api.adaptiveinsights.com/api/v32")
+    inputs = {"response": resp}
+    print(next(stream.parse_response(**inputs)))
+    assert next(stream.parse_response(**inputs)) == data_expected
+
+
+def test_http_method_export_data(patch_base_class):
+    stream = ExportData(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
+    expected_method = "POST"
+    assert stream.http_method == expected_method
+
+
+def test_method_export_data(patch_base_class):
+    stream = ExportData(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
+    expected_method = "exportData"
+    assert stream.method == expected_method
+
+
+def test_request_body_data_export_data(patch_base_class):
+    stream = ExportData(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
+    expected_data = """<?xml version='1.0' encoding='UTF-8'?>
+        <call method="exportData" callerName="Airbyte - auto">
+        <credentials login="a" password="b"/>
+        <version name="c" isDefault="false"/>
+        <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
+        <filters>
+        <accounts><account code="e" isAssumption="false" includeDescendants="true"/><account code="f" isAssumption="false" includeDescendants="true"/></accounts>
+        <timeSpan start="01/2019" end="01/2019"/>
+        </filters>
+        <dimensions>
+        <dimension name="GL Account"/>
+        <dimension name="Location" />
+        <dimension name="Contract"/>
+        <dimension name="Assignment"/>
+        </dimensions>
+        <rules includeZeroRows="false" includeRollupAccounts="true" timeRollups="false">
+        <currency override="USD"/>
+        </rules>
+        </call>
+        """.encode('utf-8')
+    inputs = {}
+    assert stream.construct_xml_body(start_date="01/2019", end_date="01/2019") == expected_data

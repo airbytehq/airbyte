@@ -22,6 +22,6 @@ def test_streams(mocker):
     source = SourceAdaptiveInsights()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 3
+    expected_streams_number = 4
     assert len(streams) == expected_streams_number
     pass

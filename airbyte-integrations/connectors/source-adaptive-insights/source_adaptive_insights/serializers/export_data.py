@@ -9,7 +9,7 @@ import json
 
 
 class Data:
-    def __init__(self):
+    def __init__(self, version: str):
         self.id = None
         self.account_name = None
         self.account_code = None
@@ -20,6 +20,7 @@ class Data:
         self.location = None
         self.contract = None
         self.assignment = None
+        self.version = version
 
     @staticmethod
     def parse_date(date: str) -> str:
@@ -59,7 +60,8 @@ class Data:
             "contract": self.contract,
             "assignment": self.assignment,
             "date": self.date,
-            "amount": self.amount,
+            "version": self.version,
+            "amount": self.amount
         }
 
 class DataProcessor:
@@ -110,7 +112,7 @@ class DataProcessor:
         os.unlink(self.file_path)
 
 
-def handle_export_data(response: dict) -> list:
+def handle_export_data(response: dict, version: str) -> list:
     response = response.get("response").get("output")
 
     processor = DataProcessor()
@@ -119,7 +121,7 @@ def handle_export_data(response: dict) -> list:
     records = []
     try:
         for stream_item in processor.stream_file():
-            d = Data()
+            d = Data(version=version)
             d.parse_row(stream_item)
             records.append(d.to_record())
     except Exception as e:

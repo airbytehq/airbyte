@@ -28,6 +28,9 @@
     },
     "attributes": {
       "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
     }
   }
 }
