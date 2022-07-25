@@ -43,32 +43,32 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
         .put("ssl_mode", ImmutableMap.builder()
-            .put("mode", "verify-full")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build())
+                .put("mode", "verify-full")
+                .put("ca_certificate", certs.getCaCertificate())
+                .put("client_certificate", certs.getClientCertificate())
+                .put("client_key", certs.getClientKey())
+                .put("client_key_password", PASSWORD)
+                .build())
         .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("username", db.getUsername())
-        .put("password", "wrong password")
-        .put("schema", "public")
-        .put("port", db.getFirstMappedPort())
-        .put("database", db.getDatabaseName())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
   }
 
