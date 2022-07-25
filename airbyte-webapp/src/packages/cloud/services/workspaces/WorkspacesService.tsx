@@ -111,7 +111,6 @@ export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const workspace = useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
     service.get(workspaceId)
   );
-  workspace.trialExpiryTimestamp = 1658577284;
   return workspace;
 }
 

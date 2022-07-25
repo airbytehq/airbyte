@@ -50,9 +50,9 @@ const MainView: React.FC = (props) => {
     ].includes(cloudWorkspace.creditStatus) &&
     !cloudWorkspace.trialExpiryTimestamp;
 
-  const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : null;
+  const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
-  const generateAlert = useMemo(() => {
+  const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
       return formatMessage(
         { id: `credits.creditsProblem.${cloudWorkspace.creditStatus}` },
@@ -81,7 +81,7 @@ const MainView: React.FC = (props) => {
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
         <Content>
-          {alertToShow && <AlertBanner message={generateAlert} />}
+          {alertToShow && <AlertBanner message={alertMessage} />}
           <DataBlock hasBanner={!!alertToShow}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
