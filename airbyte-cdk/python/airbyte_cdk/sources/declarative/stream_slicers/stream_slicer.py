@@ -2,45 +2,43 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional, Union
+from abc import abstractmethod
+from typing import Iterable, Optional
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
+from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
-class StreamSlicer(ABC):
-    @abstractmethod
-    def update_cursor(self, stream_slice: Mapping[str, Any], last_record: Optional[Mapping[str, Any]]):
-        pass
+class StreamSlicer(RequestOptionsProvider):
+    """
+    Slices the stream into a subset of records.
+    Slices enable state checkpointing and data retrieval parallelization.
 
-    @abstractmethod
-    def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
-        pass
+    The stream slicer keeps track of the cursor state as a dict of cursor_field -> cursor_value
 
-    @abstractmethod
-    def path(self) -> Optional[str]:
-        pass
-
-    @abstractmethod
-    def request_params(self) -> Mapping[str, Any]:
-        pass
+    See the stream slicing section of the docs for more information.
+    """
 
     @abstractmethod
-    def request_headers(self) -> Mapping[str, Any]:
-        pass
+    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
+        """
+        Defines stream slices
+
+        :param sync_mode: The sync mode used the read data
+        :param stream_state: The current stream state
+        :return: List of stream slices
+        """
 
     @abstractmethod
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
-        pass
+    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
+        """
+        State setter, accept state serialized by state getter.
+
+        :param stream_slice: Current stream_slice
+        :param last_record: Last record read from the source
+        """
 
     @abstractmethod
-    def request_body_json(self) -> Optional[Mapping]:
-        pass
-
-    @abstractmethod
-    def set_state(self, stream_state: Mapping[str, Any]):
-        pass
-
-    @abstractmethod
-    def get_stream_state(self) -> Optional[Mapping[str, Any]]:
-        pass
+    def get_stream_state(self) -> StreamState:
+        """Returns the current stream state"""

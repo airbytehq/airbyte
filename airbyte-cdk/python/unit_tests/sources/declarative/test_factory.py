@@ -17,6 +17,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_han
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -24,6 +25,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
@@ -83,8 +85,7 @@ def test_list_based_stream_slicer_with_values_refd():
     stream_slicer:
       class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
       slice_values: "*ref(repositories)"
-      slice_definition:
-        repository: "{{ slice_value }}"
+      cursor_field: repository
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
@@ -94,14 +95,101 @@ def test_list_based_stream_slicer_with_values_refd():
 def test_list_based_stream_slicer_with_values_defined_in_config():
     content = """
     stream_slicer:
-      class_name: airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer.ListStreamSlicer
+      type: ListStreamSlicer
       slice_values: "{{config['repos']}}"
-      slice_definition:
-        repository: "{{ slice_value }}"
+      cursor_field: repository
+      request_option:
+        inject_into: header
+        field_name: repository
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+    assert stream_slicer._request_option._option_type == RequestOptionType.header
+    assert stream_slicer._request_option._field_name == "repository"
+
+
+def test_create_substream_slicer():
+    content = """
+    schema_loader:
+      file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+    retriever:
+      requester:
+        path: "/v3"
+      record_selector:
+        extractor:
+          transform: "_"
+    stream_A:
+      type: DeclarativeStream
+      options:
+        name: "A"
+        primary_key: "id"
+        retriever: "*ref(retriever)"
+        url_base: "https://airbyte.io"
+        schema_loader: "*ref(schema_loader)"
+    stream_B:
+      type: DeclarativeStream
+      options:
+        name: "B"
+        primary_key: "id"
+        retriever: "*ref(retriever)"
+        url_base: "https://airbyte.io"
+        schema_loader: "*ref(schema_loader)"
+    stream_slicer:
+      type: SubstreamSlicer
+      parent_streams_configs:
+        - stream: "*ref(stream_A)"
+          parent_key: id
+          stream_slice_field: repository_id
+          request_option:
+            inject_into: request_parameter
+            field_name: repository_id
+        - stream: "*ref(stream_B)"
+          parent_key: someid
+          stream_slice_field: word_id
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    parent_stream_configs = stream_slicer._parent_stream_configs
+    assert len(parent_stream_configs) == 2
+    assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
+    assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
+    assert stream_slicer._parent_stream_configs[0].parent_key == "id"
+    assert stream_slicer._parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert stream_slicer._parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert stream_slicer._parent_stream_configs[0].request_option._field_name == "repository_id"
+
+    assert stream_slicer._parent_stream_configs[1].parent_key == "someid"
+    assert stream_slicer._parent_stream_configs[1].stream_slice_field == "word_id"
+    assert stream_slicer._parent_stream_configs[1].request_option is None
+
+
+def test_create_cartesian_stream_slicer():
+    content = """
+    stream_slicer_A:
+      type: ListStreamSlicer
+      slice_values: "{{config['repos']}}"
+      cursor_field: repository
+    stream_slicer_B:
+      type: ListStreamSlicer
+      slice_values:
+        - hello
+        - world
+      cursor_field: words
+    stream_slicer:
+      type: CartesianProductStreamSlicer
+      stream_slicers:
+        - "*ref(stream_slicer_A)"
+        - "*ref(stream_slicer_B)"
+    """
+    config = parser.parse(content)
+    stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
+    underlying_slicers = stream_slicer._stream_slicers
+    assert len(underlying_slicers) == 2
+    assert isinstance(underlying_slicers[0], ListStreamSlicer)
+    assert isinstance(underlying_slicers[1], ListStreamSlicer)
+    assert ["airbyte", "airbyte-cloud"] == underlying_slicers[0]._slice_values
+    assert ["hello", "world"] == underlying_slicers[1]._slice_values
 
 
 def test_datetime_stream_slicer():
@@ -116,12 +204,11 @@ def test_datetime_stream_slicer():
           min_datetime: "{{ config['start_time'] + day_delta(2) }}"
         end_datetime: "{{ config['end_time'] }}"
         step: "10d"
-<<<<<<< HEAD
-        cursor_value: "created"
-        lookback_window: "5d"
-=======
         cursor_field: "created"
->>>>>>> alex/streamslicerRefactor
+        lookback_window: "5d"
+        start_time_option:
+          inject_into: request_parameter
+          field_name: created[gte]
     """
 
     config = parser.parse(content)
@@ -136,8 +223,10 @@ def test_datetime_stream_slicer():
     assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._cursor_field._string == "created"
     assert stream_slicer._lookback_window._string == "5d"
-    assert stream_slicer._cursor_field == "created"
+    assert stream_slicer._start_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream_slicer._start_time_option._field_name == "created[gte]"
 
 
 def test_full_config():
@@ -154,15 +243,15 @@ selector:
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
     type: "LimitPaginator"
-    limit_value: 10
+    page_size: 10
     limit_option:
-      option_type: request_parameter
+      inject_into: request_parameter
       field_name: page_size
     page_token_option:
-      option_type: path
+      inject_into: path
     pagination_strategy:
       type: "CursorPagination"
-      cursor_value: "{{ decoded_response._metadata.next }}"
+      cursor_value: "{{ response._metadata.next }}"
     url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
@@ -183,8 +272,6 @@ requester:
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
   name: "{{ options['name'] }}"
-  state:
-    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
@@ -203,7 +290,7 @@ list_stream:
     primary_key: "id"
     extractor:
       ref: "*ref(extractor)"
-      transform: ".result[]"
+      transform: "_.result"
   retriever:
     ref: "*ref(retriever)"
     requester:
@@ -238,7 +325,7 @@ check:
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._retriever._record_selector._extractor._transform == "_.result"
     assert type(stream._retriever._record_selector._record_filter) == RecordFilter
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -255,7 +342,7 @@ def test_create_record_selector():
     content = """
     extractor:
       type: JelloExtractor
-      transform: "_"
+      transform: "_.result"
     selector:
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
@@ -263,13 +350,13 @@ def test_create_record_selector():
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
         ref: "*ref(extractor)"
-        transform: "_"
+        transform: "_.result"
     """
     config = parser.parse(content)
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector._extractor, JelloExtractor)
-    assert selector._extractor._transform == "_"
+    assert selector._extractor._transform == "_.result"
     assert isinstance(selector._record_filter, RecordFilter)
 
 
@@ -308,7 +395,7 @@ def test_create_composite_error_handler():
           type: "CompositeErrorHandler"
           error_handlers:
             - response_filters:
-                - predicate: "{{ 'code' in decoded_response }}"
+                - predicate: "{{ 'code' in response }}"
                   action: RETRY
             - response_filters:
                 - http_codes: [ 403 ]
@@ -319,7 +406,7 @@ def test_create_composite_error_handler():
     assert len(component._error_handlers) == 2
     assert isinstance(component._error_handlers[0], DefaultErrorHandler)
     assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
-    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in response }}"
     assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
 
@@ -337,15 +424,15 @@ def test_config_with_defaults():
         retriever:
           paginator:
             type: "LimitPaginator"
-            limit_value: 10
+            page_size: 10
             limit_option:
-              option_type: request_parameter
+              inject_into: request_parameter
               field_name: page_size
             page_token_option:
-              option_type: path
+              inject_into: path
             pagination_strategy:
               type: "CursorPagination"
-              cursor_value: "{{ decoded_response._metadata.next }}"
+              cursor_value: "{{ response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
@@ -355,7 +442,7 @@ def test_config_with_defaults():
               page_size: 10
           record_selector:
             extractor:
-              transform: ".result[]"
+              transform: "_.result"
     streams:
       - "*ref(lists_stream)"
     """
@@ -370,13 +457,38 @@ def test_config_with_defaults():
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
-    assert stream._schema_loader._file_path._string == "./source_sendgrid/schemas/lists.yaml"
+
+    assert stream._retriever._record_selector._extractor._transform == "_.result"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
-    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._limit == 10
+    assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._page_size == 10
+
+
+def test_create_limit_paginator():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    paginator_config = config["paginator"]
+    paginator = factory.create_component(paginator_config, input_config)()
+    assert isinstance(paginator, LimitPaginator)
+    page_token_option = paginator._page_token_option
+    assert isinstance(page_token_option, RequestOption)
+    assert page_token_option.inject_into == RequestOptionType.path
 
 
 class TestCreateTransformations:
@@ -394,7 +506,7 @@ class TestCreateTransformations:
                       page_size: 10
                   record_selector:
                     extractor:
-                      transform: ".result[]"
+                      transform: "_.result"
     """
 
     def test_no_transformations(self):

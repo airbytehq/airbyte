@@ -25,7 +25,7 @@ class HttpRequester(Requester):
         *,
         name: str,
         url_base: InterpolatedString,
-        path: Optional[InterpolatedString],
+        path: InterpolatedString,
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         request_options_provider: Optional[RequestOptionsProvider] = None,
         authenticator: HttpAuthenticator = None,
@@ -54,8 +54,6 @@ class HttpRequester(Requester):
         return self._url_base.eval(self._config)
 
     def get_path(self, *, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any]) -> str:
-        if not self._path:
-            return None
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         path = self._path.eval(self._config, **kwargs)
         return path

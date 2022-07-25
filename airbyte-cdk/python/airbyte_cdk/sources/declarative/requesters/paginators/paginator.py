@@ -2,13 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
-from typing import Any, List, Mapping, Optional, Union
+from abc import abstractmethod
+from typing import Any, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 
 
-class Paginator(ABC):
+class Paginator(RequestOptionsProvider):
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
@@ -35,7 +36,7 @@ class Paginator(ABC):
         pass
 
     @abstractmethod
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self) -> Mapping[str, str]:
         """
 
         :return: the request headers to set to fetch the next page
@@ -43,7 +44,7 @@ class Paginator(ABC):
         pass
 
     @abstractmethod
-    def request_body_data(self) -> Union[Mapping[str, Any], str]:
+    def request_body_data(self) -> Mapping[str, Any]:
         """
 
         :return: the request body data to set to fetch the next page

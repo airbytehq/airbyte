@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import StreamState
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
@@ -25,7 +25,6 @@ class SimpleRetriever(Retriever, HttpStream):
         primary_key,
         requester: Requester,
         record_selector: HttpSelector,
-        config: Config,
         paginator: Optional[Paginator] = None,
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
     ):
@@ -35,10 +34,9 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
-        self._iterator = stream_slicer
+        self._stream_slicer = stream_slicer
         self._last_response = None
         self._last_records = None
-        self._config = config
 
     @property
     def name(self) -> str:
@@ -96,7 +94,25 @@ class SimpleRetriever(Retriever, HttpStream):
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_headers(self.state, stream_slice, next_page_token)
+        return self._get_request_options(stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers)
+
+    def _get_request_options(self, stream_slice: Mapping[str, Any], next_page_token: Mapping[str, Any], requester_method, paginator_method):
+        """
+        Get the request_option from the requester and from the paginator
+        Raise a ValueError if there's a key collision
+        Returned merged mapping otherwise
+        :param stream_slice:
+        :param next_page_token:
+        :param requester_method:
+        :param paginator_method:
+        :return:
+        """
+        requester_mapping = requester_method(self.state, stream_slice, next_page_token)
+        paginator_mapping = paginator_method()
+        keys_intersection = set(requester_mapping.keys()) & set(paginator_mapping.keys())
+        if keys_intersection:
+            raise ValueError(f"Duplicate keys found: {keys_intersection}")
+        return {**requester_mapping, **paginator_mapping}
 
     def request_body_data(
         self,
@@ -114,7 +130,18 @@ class SimpleRetriever(Retriever, HttpStream):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_body_data(self.state, stream_slice, next_page_token)
+        base_body_data = self._requester.request_body_data(self.state, stream_slice, next_page_token)
+        if isinstance(base_body_data, str):
+            paginator_body_data = self._paginator.request_body_data()
+            if paginator_body_data:
+                raise ValueError(
+                    f"Cannot combine requester's body data= {base_body_data} with paginator's body_data: {paginator_body_data}"
+                )
+            else:
+                return base_body_data
+        return self._get_request_options(
+            stream_slice, next_page_token, self._requester.request_body_data, self._paginator.request_body_data
+        )
 
     def request_body_json(
         self,
@@ -128,7 +155,9 @@ class SimpleRetriever(Retriever, HttpStream):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_body_json(self.state, stream_slice, next_page_token)
+        return self._get_request_options(
+            stream_slice, next_page_token, self._requester.request_body_json, self._paginator.request_body_json
+        )
 
     def request_kwargs(
         self,
@@ -157,19 +186,10 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         paginator_path = self._paginator.path()
-        stream_slicer_path = self._iterator.path()
-        if paginator_path and stream_slicer_path:
-            raise ValueError(f"Cannot process both paginator path and stream slicer path. Got {paginator_path} and {stream_slicer_path}")
         if paginator_path:
             return paginator_path
-        elif stream_slicer_path:
-            return stream_slicer_path
         else:
-            static_path = self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
-            if not static_path:
-                raise ValueError("Found no path to fetch")
-            else:
-                return static_path
+            return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def request_params(
         self,
@@ -183,10 +203,7 @@ class SimpleRetriever(Retriever, HttpStream):
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        static_request_params = self._requester.request_params(self.state, stream_slice, next_page_token)
-        paginator_request_params = self._paginator.request_params()
-        stream_slicer_request_params = self._iterator.request_params()
-        return {**static_request_params, **paginator_request_params, **stream_slicer_request_params}
+        return self._get_request_options(stream_slice, next_page_token, self._requester.request_params, self._paginator.request_params)
 
     @property
     def cache_filename(self):
@@ -252,11 +269,11 @@ class SimpleRetriever(Retriever, HttpStream):
         # Warning: use self.state instead of the stream_state passed as argument!
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
-            self._iterator.update_cursor(stream_slice, last_record=r)
+            self._stream_slicer.update_cursor(self.state, stream_slice, last_record=r)
             yield r
         else:
             last_record = self._last_records[-1] if self._last_records else None
-            self._iterator.update_cursor(stream_slice, last_record=last_record)
+            self._stream_slicer.update_cursor(self.state, stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
@@ -271,14 +288,13 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        slices = self._iterator.stream_slices(sync_mode, self.state)
-        return slices
+        return self._stream_slicer.stream_slices(sync_mode, self.state)
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return self._iterator.get_stream_state()
+        return self._stream_slicer.get_stream_state()
 
     @state.setter
-    def state(self, value: MutableMapping[str, Any]):
+    def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
-        self._iterator.set_state(value)
+        self._stream_slicer.update_cursor(value)
