@@ -48,11 +48,7 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diff
             return (
               <StreamRow
                 streamTransform={stream}
-                syncMode={
-                  !catalog || !stream.streamDescriptor
-                    ? undefined
-                    : calculateSyncModeString(catalog, stream.streamDescriptor)
-                }
+                syncMode={!catalog ? undefined : calculateSyncModeString(catalog, stream.streamDescriptor)}
                 diffVerb={diffVerb}
                 key={`${stream.streamDescriptor.namespace}.${stream.streamDescriptor.name}`}
               />
