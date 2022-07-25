@@ -10,9 +10,8 @@ import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.deprecated.base_source import ConfiguredAirbyteStream
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
