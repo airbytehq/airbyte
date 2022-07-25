@@ -39,7 +39,7 @@ connectionSpecification:
       description: >-
         latest-actuals: Get the latest version that matches the pattern LBEMMYY
         previous-actuals: Get the second to last version that matches the pattern LBEMMYY
-        prediction: Get the prediction version that matches the pattern AOPMMYY
+        prediction: Get the prediction version that matches the pattern AOPYYYY
       # enum:
       #   - latest-actuals
       #   - previous-actuals

@@ -95,7 +95,7 @@ class ExportDimensions(AdaptiveInsightsStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = xmltodict.parse(response.content)
         
-        yield from handle_export_dimensions(json_response)
+        yield from handle_export_dimensions(data=json_response, version=self.version_type)
 
 
 class ExportLevels(AdaptiveInsightsStream):
@@ -129,7 +129,7 @@ class ExportLevels(AdaptiveInsightsStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = xmltodict.parse(response.content)
         
-        yield from handle_export_levels(json_response)
+        yield from handle_export_levels(d=json_response, version=self.version_type)
 
 
 class ExportAccounts(AdaptiveInsightsStream):
@@ -163,7 +163,7 @@ class ExportAccounts(AdaptiveInsightsStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         json_response = xmltodict.parse(response.content)
         
-        yield from handle_export_accounts(json_response)
+        yield from handle_export_accounts(d=json_response, version=self.version_type)
 
 
 class ExportData(AdaptiveInsightsStream):
@@ -198,7 +198,7 @@ class ExportData(AdaptiveInsightsStream):
 
     def construct_xml_body(self, start_date: str, end_date: str) -> str:
 
-        body = f"""<?xml version='1.0' encoding='UTF-8'?>
+        return f"""<?xml version='1.0' encoding='UTF-8'?>
         <call method="{self.method}" callerName="Airbyte - auto">
         <credentials login="{self.username}" password="{self.password}"/>
         <version name="{self.version_type}" isDefault="false"/>
@@ -219,10 +219,6 @@ class ExportData(AdaptiveInsightsStream):
         </call>
         """.encode("utf-8")
 
-        holder = """
-        """
-
-        return body
 
     @staticmethod
     def add_one_month(date_str: str) -> str:
@@ -270,7 +266,7 @@ class ExportData(AdaptiveInsightsStream):
 
         json_response = xmltodict.parse(response.content)
         
-        yield from handle_export_data(json_response)
+        yield from handle_export_data(response=json_response, version=self.version_type)
 
 
 # Source

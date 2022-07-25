@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response success="true">
+  <output><![CDATA[Account Name,Account Code,Level Name,"GL Account Name","Location Name","Contract Name","Assignment Name",04/2022,05/2022
+"a","b","c","e","g","i",123.12,1223.12
+"a","b","d","f","h","j",-34.123,-334.123]]>
+</output>
+</response>
+
