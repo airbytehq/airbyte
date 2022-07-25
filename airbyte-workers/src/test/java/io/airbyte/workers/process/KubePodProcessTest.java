@@ -24,7 +24,7 @@ import org.testcontainers.shaded.com.google.common.io.Resources;
 
 // Disabled until we start minikube on the node.
 @Disabled
-public class KubePodProcessTest {
+class KubePodProcessTest {
 
   private static final KubernetesClient K8s = new DefaultKubernetesClient();
 
@@ -35,7 +35,7 @@ public class KubePodProcessTest {
   private static final String TEST_IMAGE_NO_VAR_NAME = "worker-test:no-var";
 
   @BeforeAll
-  public static void setup() {
+  static void setup() {
     final var varDockerfile = Resources.getResource(TEST_IMAGE_WITH_VAR_PATH);
     DockerUtils.buildImage(varDockerfile.getPath(), TEST_IMAGE_WITH_VAR_NAME);
 
@@ -48,13 +48,13 @@ public class KubePodProcessTest {
 
     @Test
     @DisplayName("Should error when the given pod does not exists.")
-    public void testGetPodIpNoPod() {
+    void testGetPodIpNoPod() {
       assertThrows(RuntimeException.class, () -> KubePodProcess.getPodIP(K8s, "pod-does-not-exist", "default"));
     }
 
     @Test
     @DisplayName("Should return the correct pod ip.")
-    public void testGetPodIpGoodPod() throws InterruptedException {
+    void testGetPodIpGoodPod() throws InterruptedException {
       final var sleep = new ContainerBuilder()
           .withImage("busybox")
           .withName("sleep")
