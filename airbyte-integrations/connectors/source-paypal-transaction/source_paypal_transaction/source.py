@@ -2,13 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import base64
 import json
 import logging
 import time
 from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-import base64
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -53,7 +53,7 @@ class PaypalHttpException(Exception):
 def get_endpoint(is_sandbox: bool = False) -> str:
     if is_sandbox:
         return "https://api-m.sandbox.paypal.com"
-    
+
     return "https://api-m.paypal.com"
 
 
@@ -170,7 +170,7 @@ class PaypalTransactionStream(HttpStream, ABC):
 
         # sleep for 1-2 secs to not reach rate limit: 50 requests per minute
         time.sleep(60 / self.requests_per_minute)
-   
+
     @staticmethod
     def unnest_field(record: Mapping[str, Any], unnest_from: Dict, cursor_field: str):
         """
@@ -178,7 +178,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         """
         if unnest_from in record.keys():
             record[cursor_field] = record.get(unnest_from).get(cursor_field)
-    
+
     @staticmethod
     def update_field(record: Mapping[str, Any], field_path: Union[List[str], str], update: Callable[[Any], None]):
         if not isinstance(field_path, List):
@@ -351,15 +351,15 @@ class Transactions(PaypalTransactionStream):
 
     data_field = "transaction_details"
     nested_object = "transaction_info"
-    
+
     primary_key = "transaction_id"
     cursor_field = "transaction_initiation_date"
-    
+
     unnest_cursor = True
     unnest_pk = True
-    
+
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization)
-    
+
     # TODO handle API error when 1 request returns more than 10000 records.
     # https://github.com/airbytehq/airbyte/issues/4404
     records_per_request = 10000
@@ -427,7 +427,6 @@ class Balances(PaypalTransactionStream):
 class PayPalOauth2Authenticator(Oauth2Authenticator):
     """Request example for API token extraction:
     For `old_config` scenario:
-    
         curl -v POST https://api-m.sandbox.paypal.com/v1/oauth2/token \
         -H "Accept: application/json" \
         -H "Accept-Language: en_US" \
@@ -450,14 +449,14 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         if "credentials" in config.keys():
             credentials = config.get("credentials")
             auth_type = credentials.get("auth_type")
-            self.auth_args.update(**{"client_id": credentials["client_id"],"client_secret": credentials["client_secret"]})
+            self.auth_args.update(**{"client_id": credentials["client_id"], "client_secret": credentials["client_secret"]})
             if auth_type == "oauth2.0":
                 self.auth_args["refresh_token"] = credentials["refresh_token"]
             elif auth_type == "private_oauth":
                 self.old_config = True
-            
+
         self.config = config
-        super().__init__(**self.auth_args) 
+        super().__init__(**self.auth_args)
 
     def get_headers(self):
         # support old configs
@@ -466,7 +465,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
         # new configs
         basic_auth = base64.b64encode(bytes(f"{self.client_id}:{self.client_secret}", "utf-8")).decode("utf-8")
         return {"Authorization": f"Basic {basic_auth}"}
-            
+
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         # support old configs
         if self.old_config:
@@ -493,7 +492,7 @@ class PayPalOauth2Authenticator(Oauth2Authenticator):
             return response_json["access_token"], response_json["expires_in"]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
-                
+
 
 class SourcePaypalTransaction(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
