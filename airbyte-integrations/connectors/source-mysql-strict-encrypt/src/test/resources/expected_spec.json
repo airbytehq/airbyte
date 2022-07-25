@@ -48,12 +48,40 @@
         "order": 5
       },
       "replication_method": {
-        "type": "string",
+        "type": "object",
         "title": "Replication Method",
-        "description": "Replication method which is used for data extraction from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+        "description": "Replication method to use for extracting data from the database.",
         "order": 7,
-        "default": "STANDARD",
-        "enum": ["STANDARD", "CDC"]
+        "oneOf": [
+          {
+            "title": "Standard",
+            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard",
+                "enum": ["Standard"],
+                "default": "Standard",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "CDC",
+            "description": "CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "CDC",
+                "enum": ["CDC"],
+                "default": "CDC",
+                "order": 0
+              }
+            }
+          }
+        ]
       }
     }
   }

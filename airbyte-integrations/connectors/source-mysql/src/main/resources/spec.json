@@ -58,11 +58,10 @@
         "type": "object",
         "title": "Replication Method",
         "description": "Replication method to use for extracting data from the database.",
-        "order": 8,
+        "order": 7,
         "oneOf": [
           {
             "title": "Standard",
-            "additionalProperties": false,
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
@@ -77,7 +76,6 @@
           },
           {
             "title": "CDC",
-            "additionalProperties": false,
             "description": "CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
             "required": ["method"],
             "properties": {
