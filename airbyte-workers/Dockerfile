@@ -1,5 +1,5 @@
-ARG JDK_VERSION=17.0.1
-ARG JDK_IMAGE=openjdk:${JDK_VERSION}-slim
+ARG JDK_VERSION=19-slim-bullseye
+ARG JDK_IMAGE=openjdk:${JDK_VERSION}
 FROM ${JDK_IMAGE} AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
@@ -27,7 +27,7 @@ RUN curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packa
 RUN echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
 RUN apt-get update && apt-get install -y kubectl
 
-ARG VERSION=0.39.38-alpha
+ARG VERSION=0.39.39-alpha
 
 ENV APPLICATION airbyte-workers
 ENV VERSION ${VERSION}
