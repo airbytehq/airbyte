@@ -5,7 +5,6 @@
     "title": "Cockroach Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": false,
     "properties": {
       "host": {
         "title": "Host",
