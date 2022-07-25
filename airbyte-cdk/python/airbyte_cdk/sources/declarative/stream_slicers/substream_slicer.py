@@ -3,7 +3,7 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
@@ -61,7 +61,7 @@ class SubstreamSlicer(StreamSlicer):
     def request_headers(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.header)
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_data)
 
     def request_body_json(self) -> Optional[Mapping]:

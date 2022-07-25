@@ -4,7 +4,7 @@
 
 import itertools
 from collections import ChainMap
-from typing import Any, Iterable, List, Mapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -43,7 +43,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
     def request_headers(self) -> Mapping[str, Any]:
         return dict(ChainMap(*[s.request_headers() for s in self._stream_slicers]))
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Mapping[str, Any]:
         return dict(ChainMap(*[s.request_body_data() for s in self._stream_slicers]))
 
     def request_body_json(self) -> Optional[Mapping]:

@@ -58,10 +58,10 @@ class ListStreamSlicer(StreamSlicer):
     def request_headers(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.header)
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_data)
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_json)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:

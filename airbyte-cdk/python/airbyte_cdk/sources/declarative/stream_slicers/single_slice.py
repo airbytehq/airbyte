@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
@@ -24,10 +24,10 @@ class SingleSlice(StreamSlicer):
     def request_headers(self) -> Mapping[str, Any]:
         return {}
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Mapping[str, Any]:
         return {}
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:

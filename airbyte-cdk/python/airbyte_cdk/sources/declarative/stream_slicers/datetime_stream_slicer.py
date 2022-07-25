@@ -4,7 +4,7 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional
 
 import dateutil
 from airbyte_cdk.models import SyncMode
@@ -209,10 +209,10 @@ class DatetimeStreamSlicer(StreamSlicer):
     def request_headers(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.header)
 
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_data)
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
     def _get_request_options(self, option_type):

@@ -3,7 +3,7 @@
 #
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -51,9 +51,9 @@ class StreamSlicer(ABC):
         """Specifies the request headers that should be set on an outgoing HTTP request given the inputs."""
 
     @abstractmethod
-    def request_body_data(self) -> Optional[Union[Mapping, str]]:
+    def request_body_data(self) -> Mapping[str, Any]:
         """Specifies how to populate the body of the request with a non-JSON payload."""
 
     @abstractmethod
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self) -> Mapping[str, Any]:
         """Specifies how to populate the body of the request with a JSON payload."""
