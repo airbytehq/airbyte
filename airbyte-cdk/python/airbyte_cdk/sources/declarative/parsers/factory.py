@@ -73,8 +73,8 @@ class DeclarativeComponentFactory:
     TopLevel(param=ParamType(k="v"))
     ```
 
-    Parameters can be passed down from a parent component to it's subcompoents using the $options key.
-    This can be used to avoid unecessary repetitions.
+    Parameters can be passed down from a parent component to its subcomponents using the $options key.
+    This can be used to avoid repetitions.
     ```
     outer:
       $options:
