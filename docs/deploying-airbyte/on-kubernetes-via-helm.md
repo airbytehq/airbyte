@@ -61,7 +61,7 @@ To install helm simply run:
 
 ### Adding Helm Repository
 
-From now charts are stroed in helm-repo thus there're no need to clone the repo each time you need to deploy the chart.
+From now charts are stored in helm-repo thus there're no need to clone the repo each time you need to deploy the chart.
 
 To add remote helm repo simply run: `helm repo add airbyte https://airbytehq.github.io/helm-charts`.
 
