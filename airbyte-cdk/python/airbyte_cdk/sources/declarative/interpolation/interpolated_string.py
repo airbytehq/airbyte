@@ -25,8 +25,6 @@ class InterpolatedString:
     def create(
         cls,
         string_or_interpolated: Union["InterpolatedString", str],
-        /,
-        default=None,
     ):
         """
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
@@ -35,6 +33,6 @@ class InterpolatedString:
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):
-            return InterpolatedString(string_or_interpolated, default=default)
+            return InterpolatedString(string_or_interpolated)
         else:
             return string_or_interpolated
