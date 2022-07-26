@@ -255,7 +255,7 @@ class ExportData(AdaptiveInsightsStream):
             for record in self.parse_response(response):
                 yield record
 
-            if datetime.strptime(start_date, "%m/%Y").strftime("%Y-%m") >= end_date:
+            if datetime.strptime(start_date, "%m/%Y") >= datetime.strptime(end_date, "%Y-%m"):
                 break
 
             start_date = self.add_one_month(start_date)
