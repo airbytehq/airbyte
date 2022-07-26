@@ -9,6 +9,8 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
@@ -45,6 +47,8 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "DefaultErrorHandler": DefaultErrorHandler,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
+    "InterpolatedBoolean": InterpolatedBoolean,
+    "InterpolatedString": InterpolatedString,
     "JelloExtractor": JelloExtractor,
     "JsonSchema": JsonSchema,
     "LimitPaginator": LimitPaginator,
