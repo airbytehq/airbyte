@@ -20,12 +20,12 @@ from source_facebook_marketing.utils import DATA_RETENTION_PERIOD, ValidationDat
     ],
     ids=["valid_date", f"date in the past by {DATA_RETENTION_PERIOD.months} months", "date in future"],
 )
-def test_validate_date_field(date, expected_massage, raise_error):
+def test_validate_date_field(date, expected_message, raise_error):
     field_name = "test_field_name"
 
     if raise_error:
         with pytest.raises(ValidationDateException) as error:
             assert validate_date_field(field_name, date)
-        assert str(error.value) == field_name + expected_massage
+        assert str(error.value) == field_name + expected_message
     else:
         assert validate_date_field(field_name, date)
