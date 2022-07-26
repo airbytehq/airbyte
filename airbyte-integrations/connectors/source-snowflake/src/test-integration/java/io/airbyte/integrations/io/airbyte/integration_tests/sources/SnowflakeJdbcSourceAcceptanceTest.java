@@ -60,6 +60,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(true)";
   }
 
   @BeforeEach
@@ -128,16 +130,6 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
-  }
-
-  @Override
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(true)",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
   }
 
 }

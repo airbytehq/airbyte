@@ -83,6 +83,11 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
 
   @BeforeAll
   static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
+
     container = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
         .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
         .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
@@ -171,25 +176,4 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
             ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
-
-  @Override
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
-  }
-
-  protected void createTableWithNullableTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();",
-              getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
-          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
-    });
-  }
-
 }

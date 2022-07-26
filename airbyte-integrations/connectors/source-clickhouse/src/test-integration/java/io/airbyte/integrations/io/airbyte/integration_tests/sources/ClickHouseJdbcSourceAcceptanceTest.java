@@ -8,17 +8,21 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
+
+import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -52,6 +56,13 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
         tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
             : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
                 + primaryKeyClause);
+  }
+  @BeforeAll
+  static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
   }
 
   @Override
@@ -104,25 +115,4 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
   }
-
-  @Override
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement().execute(String.format("CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s VALUES([12, 13, 0, 1]);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
-  }
-
-  protected void createTableWithNullableTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();",
-              getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
-          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
-    });
-  }
-
 }

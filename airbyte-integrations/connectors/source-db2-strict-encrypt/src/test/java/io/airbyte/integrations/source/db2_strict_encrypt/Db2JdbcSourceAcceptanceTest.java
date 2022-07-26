@@ -79,6 +79,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // The schema name must be in the catalog when attempting the DROP statement; otherwise an error is
     // returned.
     DROP_SCHEMA_QUERY = "DROP SCHEMA %s RESTRICT";
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(true)";
   }
 
   @BeforeEach
@@ -211,16 +213,6 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
-  }
-
-  @Override
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s boolean)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(true)",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
   }
 
 }
