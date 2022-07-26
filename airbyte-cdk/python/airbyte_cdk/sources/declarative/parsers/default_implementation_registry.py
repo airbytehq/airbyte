@@ -36,6 +36,10 @@ from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSl
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
 
+"""
+DEFAULT_IMPLEMENTATIONS_REGISTRY contains a mapping of interface -> subclass
+enabling the factory to instantiate a reasonable default class when no type or classname is specified
+"""
 DEFAULT_IMPLEMENTATIONS_REGISTRY: Mapping[Type, Type] = {
     ConnectionChecker: CheckStream,
     Decoder: JsonDecoder,
