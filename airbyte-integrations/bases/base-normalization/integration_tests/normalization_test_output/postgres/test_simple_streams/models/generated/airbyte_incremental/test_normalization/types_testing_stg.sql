@@ -9,10 +9,8 @@
 select
     {{ dbt_utils.surrogate_key([
         adapter.quote('id'),
-        'airbyte_integer',
-        'nullable_airbyte_integer',
-        'big_integer',
-        'nullable_big_integer',
+        'airbyte_integer_column',
+        'nullable_airbyte_integer_column',
     ]) }} as _airbyte_types_testing_hashid,
     tmp.*
 from {{ ref('types_testing_ab2') }} tmp

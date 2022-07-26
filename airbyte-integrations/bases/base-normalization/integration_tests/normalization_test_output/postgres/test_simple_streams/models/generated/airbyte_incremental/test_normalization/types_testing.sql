@@ -9,10 +9,8 @@
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},
-    airbyte_integer,
-    nullable_airbyte_integer,
-    big_integer,
-    nullable_big_integer,
+    airbyte_integer_column,
+    nullable_airbyte_integer_column,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at,

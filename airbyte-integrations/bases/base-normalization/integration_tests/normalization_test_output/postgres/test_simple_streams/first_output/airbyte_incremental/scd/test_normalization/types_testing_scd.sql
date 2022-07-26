@@ -18,10 +18,8 @@ scd_data as (
     select
       md5(cast(coalesce(cast("id" as text), '') as text)) as _airbyte_unique_key,
       "id",
-      airbyte_integer,
-      nullable_airbyte_integer,
-      big_integer,
-      nullable_big_integer,
+      airbyte_integer_column,
+      nullable_airbyte_integer_column,
       _airbyte_emitted_at as _airbyte_start_at,
       lag(_airbyte_emitted_at) over (
         partition by "id"
@@ -61,10 +59,8 @@ select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
     "id",
-    airbyte_integer,
-    nullable_airbyte_integer,
-    big_integer,
-    nullable_big_integer,
+    airbyte_integer_column,
+    nullable_airbyte_integer_column,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,
