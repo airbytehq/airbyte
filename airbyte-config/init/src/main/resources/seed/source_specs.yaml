@@ -87,7 +87,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.9"
+- dockerImage: "airbyte/source-amazon-ads:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -187,7 +187,7 @@
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             refresh_token:
               type: "string"
@@ -195,7 +195,7 @@
               - "refresh_token"
         complete_oauth_server_input_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               type: "string"
@@ -203,7 +203,7 @@
               type: "string"
         complete_oauth_server_output_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               type: "string"
