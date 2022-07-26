@@ -76,6 +76,10 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_3 = new BigDecimal(3);
     ID_VALUE_4 = new BigDecimal(4);
     ID_VALUE_5 = new BigDecimal(5);
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s CLOB)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(to_clob('clob data'))";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20))";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)')";
 
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
         .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
@@ -337,25 +341,6 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
 
     return false;
-  }
-
-  @Override
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s CLOB)", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement()
-          .execute(String.format("INSERT INTO %s VALUES(to_clob('clob data'))", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
-  }
-
-  protected void createTableWithNullableTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s VARCHAR(20))", getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)')",
-          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
-    });
   }
 
   @Test

@@ -91,7 +91,7 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String TABLE_NAME_WITHOUT_PK = "id_and_name_without_pk";
   public static String TABLE_NAME_COMPOSITE_PK = "full_name_composite_pk";
   public static String TABLE_NAME_WITHOUT_CURSOR_TYPE = "table_without_cursor_type";
-  public static String TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "table_with_nullable_cursor_type";
+  public static String TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "table_with_null_cursor_type";
 
   public static String COL_ID = "id";
   public static String COL_NAME = "name";
@@ -112,6 +112,10 @@ public abstract class JdbcSourceAcceptanceTest {
   public static String COLUMN_CLAUSE_WITH_COMPOSITE_PK =
       "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL";
 
+  public static String CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s bit NOT NULL);";
+  public static String INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(0);";
+  public static String CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s VARCHAR(20));";
+  public static String INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
   public JsonNode config;
   public DataSource dataSource;
   public JdbcDatabase database;
@@ -206,8 +210,8 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void createTableWithoutCursorTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s bit NOT NULL);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(0);",
+          .execute(String.format(CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format(INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
           getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
     });
   }
@@ -215,8 +219,8 @@ public abstract class JdbcSourceAcceptanceTest {
   protected void createTableWithNullableTypeField() throws SQLException {
     database.execute(connection -> {
       connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s VARCHAR(20));", getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES('Hello world :)');",
+          .execute(String.format(CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format(INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
           getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
     });
   }

@@ -156,6 +156,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     });
 
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s BIT(3) NOT NULL);";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(B'101');";
   }
 
   @Override
@@ -407,16 +409,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Override
   protected JdbcSourceOperations getSourceOperations() {
     return new PostgresSourceOperations();
-  }
-
-  @Override
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format("CREATE TABLE %s (%s BIT(3) NOT NULL);", getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format("INSERT INTO %s VALUES(B'101');",
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
   }
 
   @Override
