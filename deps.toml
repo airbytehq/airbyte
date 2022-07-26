@@ -86,6 +86,7 @@ otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
 otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha"}
 otel-sdk = {module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0"}
 otel-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha"}
+quartz-scheduler = {module="org.quartz-scheduler:quartz", version = "2.3.2"}
 
 [bundles]
 jackson = ["jackson-databind", "jackson-annotations", "jackson-dataformat", "jackson-datatype"]
