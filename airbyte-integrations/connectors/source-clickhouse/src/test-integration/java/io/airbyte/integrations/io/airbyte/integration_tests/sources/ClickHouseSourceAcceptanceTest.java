@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -25,9 +27,11 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.Duration;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -82,7 +86,9 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -99,6 +105,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+            ClickHouseSource.HTTP_PROTOCOL,
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));
