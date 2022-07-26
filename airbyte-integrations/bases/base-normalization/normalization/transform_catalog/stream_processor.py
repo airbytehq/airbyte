@@ -549,7 +549,7 @@ where 1 = 1
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
                 sql_type = jinja_call("type_date()")
-                return f"toDate(parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation}))) as {column_name}"
+                return f"parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
