@@ -43,7 +43,7 @@ class InterpolatedString:
     def create(
         cls,
         string_or_interpolated: Union["InterpolatedString", str],
-        /,
+        *,
         options: Mapping[str, Any],
     ):
         """
