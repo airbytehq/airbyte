@@ -82,6 +82,10 @@ class IncrementalOktaStream(OktaStream, ABC):
     def cursor_field(self) -> str:
         pass
 
+    def __init__(self, url_base, default_start_date: pendulum.Pendulum = None, **kwargs):
+        self.default_start_date = default_start_date
+        super().__init__(url_base=url_base, **kwargs)
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         lowest_date = str(pendulum.datetime.min)
         return {
@@ -134,7 +138,7 @@ class GroupMembers(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
+        params = IncrementalOktaStream.request_params(self, stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["after"] = latest_entry
@@ -180,9 +184,11 @@ class Logs(IncrementalOktaStream):
         # The log stream use a different params to get data
         # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
         stream_state = stream_state or {}
-        params = OktaStream.request_params(self, stream_state, stream_slice, next_page_token)
+        params = IncrementalOktaStream.request_params(self, stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
-        if latest_entry:
+        if self.default_start_date and not latest_entry:
+            params["since"] = self.default_start_date
+        elif latest_entry:
             params["since"] = latest_entry
             # [Test-driven Development] Set until When the cursor value from the stream state
             #   is abnormally large, otherwise the server side that sets now to until
@@ -311,14 +317,20 @@ class SourceOkta(AbstractSource):
         auth = self.initialize_authenticator(config)
         api_endpoint = self.get_api_endpoint(config)
 
+        default_start_date = pendulum.parse(config["start_date"]) if "start_date" in config else None
         initialization_params = {
             "authenticator": auth,
+            "url_base": api_endpoint
+        }
+        initialization_params_with_start_date = {
+            "authenticator": auth,
             "url_base": api_endpoint,
+            "default_start_date": default_start_date
         }
 
         return [
             Groups(**initialization_params),
-            Logs(**initialization_params),
+            Logs(**initialization_params_with_start_date),
             Users(**initialization_params),
             GroupMembers(**initialization_params),
             CustomRoles(**initialization_params),

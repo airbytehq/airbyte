@@ -55,7 +55,6 @@ class TestStatusCodes:
 
 
 class TestOktaStream:
-
     def test_okta_stream_request_params(self, patch_base_class, url_base):
         stream = OktaStream(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
@@ -139,7 +138,6 @@ class TestOktaStream:
 
 
 class TestNextPageToken:
-
     def test_next_page_token(self, patch_base_class, users_instance, url_base, api_url):
         stream = OktaStream(url_base=url_base)
         response = MagicMock(requests.Response)
@@ -169,7 +167,6 @@ class TestNextPageToken:
 
 
 class TestStreamUsers:
-
     def test_stream_users(self, requests_mock, patch_base_class, users_instance, url_base, api_url):
         stream = Users(url_base=url_base)
         requests_mock.get(f"{api_url}/users", json=[users_instance])
@@ -201,7 +198,6 @@ class TestStreamUsers:
 
 
 class TestStreamCustomRoles:
-
     def test_custom_roles(self, requests_mock, patch_base_class, custom_role_instance, url_base, api_url):
         stream = CustomRoles(url_base=url_base)
         record = {"roles": [custom_role_instance]}
@@ -217,7 +213,6 @@ class TestStreamCustomRoles:
 
 
 class TestStreamGroups:
-
     def test_groups(self, requests_mock, patch_base_class, groups_instance, url_base, api_url):
         stream = Groups(url_base=url_base)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
@@ -231,7 +226,6 @@ class TestStreamGroups:
 
 
 class TestStreamGroupMembers:
-
     def test_group_members(self, requests_mock, patch_base_class, group_members_instance, url_base, api_url):
         stream = GroupMembers(url_base=url_base)
         group_id = "test_group_id"
@@ -251,7 +245,12 @@ class TestStreamGroupMembers:
             "stream_state": {"id": "some_test_id"},
             "next_page_token": {"next_cursor": "123"},
         }
-        assert stream.request_params(**inputs) == {"limit": 200, "next_cursor": "123", "after": "some_test_id"}
+        assert stream.request_params(**inputs) == {
+            "limit": 200,
+            "next_cursor": "123",
+            "filter": 'id gt "some_test_id"',
+            "after": "some_test_id",
+        }
 
     def test_group_members_slice_stream(self, requests_mock, patch_base_class, group_members_instance, groups_instance, url_base, api_url):
         stream = GroupMembers(url_base=url_base)
@@ -267,7 +266,6 @@ class TestStreamGroupMembers:
 
 
 class TestStreamGroupRoleAssignment:
-
     def test_group_role_assignments(self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url):
         stream = GroupRoleAssignments(url_base=url_base)
         group_id = "test_group_id"
@@ -292,7 +290,6 @@ class TestStreamGroupRoleAssignment:
 
 
 class TestStreamLogs:
-
     def test_logs(self, requests_mock, patch_base_class, logs_instance, url_base, api_url):
         stream = Logs(url_base=url_base)
         requests_mock.get(f"{api_url}/logs?limit=200", json=[logs_instance])
@@ -307,17 +304,25 @@ class TestStreamLogs:
     def test_logs_request_params_for_since(self, patch_base_class, logs_instance, url_base):
         stream = Logs(url_base=url_base)
         inputs = {"stream_state": {"published": "2022-07-19T15:54:11.545Z"}, "stream_slice": None}
-        assert stream.request_params(**inputs) == {"limit": 200, "since": "2022-07-19T15:54:11.545Z"}
+        assert stream.request_params(**inputs) == {
+            "limit": 200,
+            "filter": 'published gt "2022-07-19T15:54:11.545Z"',
+            "since": "2022-07-19T15:54:11.545Z",
+        }
 
     def test_logs_request_params_for_until(self, patch_base_class, logs_instance, url_base):
         stream = Logs(url_base=url_base)
         testing_date = datetime.datetime.utcnow() + datetime.timedelta(days=10)
         inputs = {"stream_state": {"published": testing_date.isoformat()}, "stream_slice": None}
-        assert stream.request_params(**inputs) == {"limit": 200, "since": testing_date.isoformat(), "until": testing_date.isoformat()}
+        assert stream.request_params(**inputs) == {
+            "limit": 200,
+            "filter": f'published gt "{testing_date.isoformat()}"',
+            "since": testing_date.isoformat(),
+            "until": testing_date.isoformat(),
+        }
 
 
 class TestStreamUserRoleAssignment:
-
     def test_user_role_assignments(self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url):
         stream = UserRoleAssignments(url_base=url_base)
         user_id = "test_user_id"
