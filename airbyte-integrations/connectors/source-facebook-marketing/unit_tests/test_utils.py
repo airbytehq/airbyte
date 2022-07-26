@@ -14,7 +14,7 @@ from source_facebook_marketing.utils import ValidationDateException, validate_da
      (pendulum.now() - pendulum.duration(months=DATA_RETENTION_PERIOD.months + 1),
       f" cannot be beyond {DATA_RETENTION_PERIOD.months} months from the current date.", True),
      (pendulum.now() + pendulum.duration(months=1),
-      f" cannot be in the future. Please set today's date or later.", True)],
+      " cannot be in the future. Please set today's date or later.", True)],
     ids=["valid_date",
          f"date in the past by {DATA_RETENTION_PERIOD.months} months",
          "date in future"]
