@@ -1,8 +1,8 @@
 with table_row_counts as (
-    select distinct '_airbyte_raw_exchange_rate' as label, count(*) as row_count, 12 as expected_count
+    select distinct '_airbyte_raw_exchange_rate' as label, count(*) as row_count, 13 as expected_count
     from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
 union all
-    select distinct 'exchange_rate' as label, count(*) as row_count, 12 as expected_count
+    select distinct 'exchange_rate' as label, count(*) as row_count, 13 as expected_count
     from {{ ref('exchange_rate') }}
 
 union all
