@@ -40,7 +40,7 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
     `gcloud container clusters get-credentials CLUSTER_NAME --zone ZONE_NAME --project PROJECT_NAME`.
 
   * Use `kubectl config get-contexts` to show the contexts available.
-  * Run `kubectl config use-context <gke context>` to access the cluster from `kubectl`.
+  * Run `kubectl config use-context $GKE_CONTEXT` to access the cluster from `kubectl`.
 * For EKS
   * [Configure your AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
   * Install [eksctl](https://eksctl.io/introduction/)
