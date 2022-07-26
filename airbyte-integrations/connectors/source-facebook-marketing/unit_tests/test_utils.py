@@ -8,7 +8,7 @@ from source_facebook_marketing.utils import DATA_RETENTION_PERIOD, ValidationDat
 
 
 @pytest.mark.parametrize(
-    "date, expected_massage, raise_error",
+    "date, expected_message, raise_error",
     [
         (pendulum.now(), "", False),
         (
