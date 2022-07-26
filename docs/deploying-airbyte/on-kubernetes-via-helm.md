@@ -37,7 +37,7 @@ Configure `kubectl` to connect to your cluster by using `kubectl use-context my-
   * Configure `gcloud` with `gcloud auth login`.
   * On the Google Cloud Console, the cluster page will have a `Connect` button, which will give a command to run locally that looks like
 
-    `gcloud container clusters get-credentials CLUSTER_NAME --zone ZONE_NAME --project PROJECT_NAME`.
+    `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
 
   * Use `kubectl config get-contexts` to show the contexts available.
   * Run `kubectl config use-context $GKE_CONTEXT` to access the cluster from `kubectl`.
