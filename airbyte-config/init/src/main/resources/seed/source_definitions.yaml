@@ -179,7 +179,7 @@
   dockerRepository: airbyte/source-clickhouse
   dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
-  icon: cliskhouse.svg
+  icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
 - name: Close.com
@@ -1141,7 +1141,7 @@
   dockerRepository: airbyte/source-zendesk-chat
   dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-chat
-  icon: zendesk.svg
+  icon: zendeskchat.svg
   sourceType: api
   releaseStage: generally_available
 - name: Zendesk Sunshine
@@ -1149,7 +1149,7 @@
   dockerRepository: airbyte/source-zendesk-sunshine
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-sunshine
-  icon: zendesk.svg
+  icon: zendesksunshine.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Support
@@ -1157,7 +1157,7 @@
   dockerRepository: airbyte/source-zendesk-support
   dockerImageTag: 0.2.15
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-support
-  icon: zendesk.svg
+  icon: zendesksupport.svg
   sourceType: api
   releaseStage: generally_available
 - name: Zendesk Talk
@@ -1165,7 +1165,7 @@
   dockerRepository: airbyte/source-zendesk-talk
   dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.io/integrations/sources/zendesk-talk
-  icon: zendesk.svg
+  icon: zendesktalk.svg
   sourceType: api
   releaseStage: beta
 - name: Zenefits
