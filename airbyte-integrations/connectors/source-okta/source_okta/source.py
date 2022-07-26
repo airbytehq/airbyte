@@ -214,7 +214,10 @@ class Users(IncrementalOktaStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         status_filters = " or ".join([f'status eq "{status}"' for status in self.statuses])
-        params["filter"] = ("filter" in params and f'{params["filter"]} and ({status_filters})') or status_filters
+        if "filter" in params:
+            params["filter"] = f'{params["filter"]} and ({status_filters})'
+        else:
+            params["filter"] = status_filters
         return params
 
 
