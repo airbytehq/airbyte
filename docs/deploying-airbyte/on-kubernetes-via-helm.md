@@ -104,7 +104,7 @@ values.yaml example can be located in [charts/airbyte](https://github.com/airbyt
 
 After specifying your own configuration, proceed with chart deployment by running 
 ```text
-helm install -f path/to/values.yaml %release_name% airbyte/airbyte
+helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
 ## Migration from old chart to new ones
