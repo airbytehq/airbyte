@@ -1096,6 +1096,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
+            .set(CONNECTION.SCHEDULE_TYPE,
+                standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                        .orElseThrow())
+            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.UPDATED_AT, timestamp)
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
@@ -1130,6 +1135,11 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
                     io.airbyte.db.instance.configs.jooq.generated.enums.StatusType.class).orElseThrow())
             .set(CONNECTION.SCHEDULE, JSONB.valueOf(Jsons.serialize(standardSync.getSchedule())))
             .set(CONNECTION.MANUAL, standardSync.getManual())
+            .set(CONNECTION.SCHEDULE_TYPE,
+                standardSync.getScheduleType() == null ? null
+                    : Enums.toEnum(standardSync.getScheduleType().value(), io.airbyte.db.instance.configs.jooq.generated.enums.ScheduleType.class)
+                        .orElseThrow())
+            .set(CONNECTION.SCHEDULE_DATA, JSONB.valueOf(Jsons.serialize(standardSync.getScheduleData())))
             .set(CONNECTION.RESOURCE_REQUIREMENTS, JSONB.valueOf(Jsons.serialize(standardSync.getResourceRequirements())))
             .set(CONNECTION.SOURCE_CATALOG_ID, standardSync.getSourceCatalogId())
             .set(CONNECTION.CREATED_AT, timestamp)
