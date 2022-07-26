@@ -60,7 +60,7 @@ public class MetricClientFactory {
       LOGGER.warn("MetricClientFactory configuration has already been initialized using " + configs.getMetricClient());
     }
 
-    LOGGER.info("metric client is:");
+    LOGGER.info("getting metric client in initialize; metric client is:");
     LOGGER.info(configs.getMetricClient());
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
       if (configs.getDDAgentHost() == null || configs.getDDDogStatsDPort() == null) {

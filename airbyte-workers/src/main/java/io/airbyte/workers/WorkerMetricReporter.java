@@ -30,6 +30,8 @@ public class WorkerMetricReporter {
       "stream:" + stream
     };
     LOGGER.info("tracking record schema validation error");
+    LOGGER.info("metric client here");
+    LOGGER.info(String.valueOf(metricClient));
     metricClient.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
   }
 
