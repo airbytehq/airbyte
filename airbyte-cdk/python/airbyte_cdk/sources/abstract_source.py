@@ -149,9 +149,9 @@ class AbstractSource(Source, ABC):
         logger.debug(
             f"Syncing stream: {configured_stream.stream.name}",
             extra={
-                "sync_mode": configured_stream.sync_mode,
-                "primary_key": configured_stream.primary_key,
-                "cursor_field": configured_stream.cursor_field,
+                "sync_mode": stream_instance.sync_mode,
+                "primary_key": stream_instance.primary_key,
+                "cursor_field": stream_instance.cursor_field,
             },
         )
 
