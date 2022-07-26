@@ -28,6 +28,9 @@ from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
+"""
+CLASS_TYPES_REGISTRY contains a mapping of developer-friendly string -> class to abstract the specific class referred to
+"""
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "AddFields": AddFields,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,

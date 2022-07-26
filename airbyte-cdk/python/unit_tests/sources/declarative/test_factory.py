@@ -71,10 +71,10 @@ def test_interpolate_config():
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._client_id._string == "some_client_id"
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
     assert authenticator._client_secret._string == "some_client_secret"
-    assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
-    assert authenticator._refresh_token._string == "verysecrettoken"
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
@@ -194,24 +194,24 @@ partial_stream:
     file_path: "./source_sendgrid/schemas/{{ name }}.json"
   cursor_field: [ ]
 list_stream:
-  ref: "*ref(partial_stream)"
+  $ref: "*ref(partial_stream)"
   options:
     name: "lists"
     primary_key: "id"
     extractor:
-      ref: "*ref(extractor)"
+      $ref: "*ref(extractor)"
       transform: "_.result"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path:
-        ref: "*ref(next_page_url_from_token_partial)"
+        $ref: "*ref(next_page_url_from_token_partial)"
         default: "marketing/lists"
     paginator:
-      ref: "*ref(metadata_paginator)"
+      $ref: "*ref(metadata_paginator)"
     record_selector:
-      ref: "*ref(selector)"
+      $ref: "*ref(selector)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -235,7 +235,7 @@ check:
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
-    assert stream._retriever._record_selector._extractor._transform == "_.result"
+    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
     assert type(stream._retriever._record_selector._record_filter) == RecordFilter
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -259,14 +259,14 @@ def test_create_record_selector():
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
-        ref: "*ref(extractor)"
+        $ref: "*ref(extractor)"
         transform: "_.result"
     """
     config = parser.parse(content)
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector._extractor, JelloExtractor)
-    assert selector._extractor._transform == "_.result"
+    assert selector._extractor._transform.eval(input_config) == "_.result"
     assert isinstance(selector._record_filter, RecordFilter)
 
 
@@ -367,7 +367,7 @@ def test_config_with_defaults():
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
     assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert stream._retriever._record_selector._extractor._transform == "_.result"
+    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
     assert isinstance(stream._retriever._paginator, LimitPaginator)
 
