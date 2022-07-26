@@ -50,7 +50,7 @@ check:
   stream_names: ["customers_stream"]
 ```
 
-Let's fill this out these TODOs with the information found in the exchange rates api docs https://exchangeratesapi.io/documentation/
+Let's fill this out these TODOs with the information found in the [Exchange Rates API docs](https://exchangeratesapi.io/documentation/)
 
 1. First, let's rename the stream from `customers` to `rates.
 
@@ -72,7 +72,7 @@ check:
 ```
 
 2. Next we'll set the base url.
-   According to the API documentation, the base url is "https://api.exchangeratesapi.io/v1/".
+   According to the API documentation, the base url is `"https://api.exchangeratesapi.io/v1/"`.
    This can be set in the requester definition.
 
 ```
