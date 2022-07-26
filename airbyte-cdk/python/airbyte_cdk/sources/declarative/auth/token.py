@@ -46,7 +46,9 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
 class BearerAuthenticator(AbstractHeaderAuthenticator):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
-    `Authorization: Bearer <token>`
+
+    The header is of the form:
+    `"Authorization": "Bearer <token>"`
     """
 
     def __init__(self, token: Union[InterpolatedString, str], config: Config):
@@ -70,6 +72,9 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
+
+    The header is of the form
+    `"Authorization": "Basic <encoded_credentials>"`
     """
 
     def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = ""):
