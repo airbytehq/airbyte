@@ -10,7 +10,6 @@ MAIN_REQUIREMENTS = [
     "cached_property==1.5.2",
     "facebook_business==13.0.0",
     "pendulum>=2,<3",
-    "python-dateutil==2.8.2",
 ]
 
 TEST_REQUIREMENTS = [
