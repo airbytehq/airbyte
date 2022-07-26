@@ -6,7 +6,6 @@ from typing import Any, Iterable, List, Mapping
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 from airbyte_cdk.sources.declarative.states.dict_state import DictState
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.streams.core import Stream
@@ -21,7 +20,7 @@ class SubstreamSlicer(StreamSlicer):
     def __init__(self, parent_streams: List[Stream], state: DictState, slice_definition: Mapping[str, Any]):
         self._parent_streams = parent_streams
         self._state = state
-        self._interpolation = InterpolatedMapping(slice_definition, JinjaInterpolation())
+        self._interpolation = InterpolatedMapping(slice_definition)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
