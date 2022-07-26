@@ -182,7 +182,8 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
     final JsonNode config = getConfig();
 
     final DataSource dataSource =
-        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(), config.get(JdbcUtils.PASSWORD_KEY).asText(),
+            DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
                 config.get(JdbcUtils.HOST_KEY).asText(),
                 config.get(JdbcUtils.PORT_KEY).asInt(),

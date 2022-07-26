@@ -56,8 +56,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
-    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
-        EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+    final EncryptionConfig encryptionConfig =
+        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -121,8 +121,8 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    final EncryptionConfig encryptionConfig = config.has("uploading_method") ?
-        EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+    final EncryptionConfig encryptionConfig =
+        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     return new StagingConsumerFactory().create(
