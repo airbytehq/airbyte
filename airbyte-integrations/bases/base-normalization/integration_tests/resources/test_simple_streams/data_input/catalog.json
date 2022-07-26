@@ -34,6 +34,26 @@
             },
             "column`_'with\"_quotes": {
               "type": "string"
+            },
+            "datetime_tz": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_with_timezone"
+            },
+            "datetime_no_tz": {
+              "type": "string",
+              "format": "date-time",
+              "airbyte_type": "timestamp_without_timezone"
+            },
+            "time_tz": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_with_timezone"
+            },
+            "time_no_tz": {
+              "type": "string",
+              "format": "time",
+              "airbyte_type": "time_without_timezone"
             }
           }
         },
