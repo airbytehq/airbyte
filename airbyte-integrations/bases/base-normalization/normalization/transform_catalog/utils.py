@@ -63,15 +63,26 @@ def is_number(property_type) -> bool:
     return property_type == "number" or "number" in property_type
 
 
-def is_integer(property_type) -> bool:
+def is_big_integer(definition: dict) -> bool:
+    return "airbyte_type" in definition and definition["airbyte_type"] == "big_integer"
+
+
+def is_long(property_type, definition: dict) -> bool:
+    # Check specifically for {type: number, airbyte_type: integer}
+    if (
+        (property_type == "number" or "number" in property_type)
+        and "airbyte_type" in definition
+        and definition["airbyte_type"] == "integer"
+    ):
+        return True
     if is_string(property_type) or is_number(property_type):
         # Handle union type, give priority to wider scope types
         return False
     return property_type == "integer" or "integer" in property_type
 
 
-def is_boolean(property_type) -> bool:
-    if is_string(property_type) or is_number(property_type) or is_integer(property_type):
+def is_boolean(property_type, definition: dict) -> bool:
+    if is_string(property_type) or is_number(property_type) or is_big_integer(definition) or is_long(property_type, definition):
         # Handle union type, give priority to wider scope types
         return False
     return property_type == "boolean" or "boolean" in property_type
@@ -89,8 +100,18 @@ def is_airbyte_column(name: str) -> bool:
     return name.startswith("_airbyte_")
 
 
-def is_simple_property(property_type) -> bool:
-    return is_string(property_type) or is_integer(property_type) or is_number(property_type) or is_boolean(property_type)
+def is_simple_property(definition: dict) -> bool:
+    if "type" not in definition:
+        property_type = "object"
+    else:
+        property_type = definition["type"]
+    return (
+        is_string(property_type)
+        or is_big_integer(definition)
+        or is_long(property_type, definition)
+        or is_number(property_type)
+        or is_boolean(property_type, definition)
+    )
 
 
 def is_combining_node(properties: dict) -> Set[str]:
