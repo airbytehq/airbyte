@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(ReplicationJobOrchestrator.class);
 
   private final ProcessFactory processFactory;
