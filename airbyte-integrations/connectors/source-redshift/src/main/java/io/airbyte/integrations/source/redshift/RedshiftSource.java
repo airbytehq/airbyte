@@ -31,7 +31,6 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftSource.class);
   public static final String DRIVER_CLASS = DatabaseDriver.REDSHIFT.getDriverClassName();
-  private static final String SCHEMAS = "schemas";
   private List<String> schemas;
 
   // todo (cgardens) - clean up passing the dialect as null versus explicitly adding the case to the
@@ -44,16 +43,16 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
   public JsonNode toDatabaseConfig(final JsonNode redshiftConfig) {
     final List<String> additionalProperties = new ArrayList<>();
     final ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-        .put("username", redshiftConfig.get("username").asText())
-        .put("password", redshiftConfig.get("password").asText())
-        .put("jdbc_url", String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
-            redshiftConfig.get("host").asText(),
-            redshiftConfig.get("port").asInt(),
-            redshiftConfig.get("database").asText()));
+        .put(JdbcUtils.USERNAME_KEY, redshiftConfig.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.PASSWORD_KEY, redshiftConfig.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.REDSHIFT.getUrlFormatString(),
+            redshiftConfig.get(JdbcUtils.HOST_KEY).asText(),
+            redshiftConfig.get(JdbcUtils.PORT_KEY).asInt(),
+            redshiftConfig.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (redshiftConfig.has(SCHEMAS) && redshiftConfig.get(SCHEMAS).isArray()) {
+    if (redshiftConfig.has(JdbcUtils.SCHEMAS_KEY) && redshiftConfig.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : redshiftConfig.get(SCHEMAS)) {
+      for (final JsonNode schema : redshiftConfig.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
 
@@ -64,7 +63,7 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     addSsl(additionalProperties);
 
-    builder.put("connection_properties", String.join("&", additionalProperties));
+    builder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, String.join("&", additionalProperties));
 
     return Jsons.jsonNode(builder
         .build());
