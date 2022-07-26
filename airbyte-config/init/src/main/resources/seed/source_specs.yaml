@@ -7005,7 +7005,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-posthog:0.1.6"
+- dockerImage: "airbyte/source-posthog:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/posthog"
     connectionSpecification:
@@ -7015,7 +7015,6 @@
       required:
       - "api_key"
       - "start_date"
-      additionalProperties: false
       properties:
         start_date:
           title: "Start Date"
