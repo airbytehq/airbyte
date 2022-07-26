@@ -73,6 +73,8 @@ import io.temporal.workflow.ChildWorkflowOptions;
 import io.temporal.workflow.Workflow;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -134,6 +136,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Override
   public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
+    final List<MetricAttribute> metricAttributes = generateMetricAttributes(connectionUpdaterInput);
+    metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, 1L, metricAttributes.toArray(new MetricAttribute[] {}));
+
     try {
       try {
         cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
@@ -142,6 +147,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         // When a scope is cancelled temporal will throw a CanceledFailure as you can see here:
         // https://github.com/temporalio/sdk-java/blob/master/temporal-sdk/src/main/java/io/temporal/workflow/CancellationScope.java#L72
         // The naming is very misleading, it is not a failure but the expected behavior...
+        recordFailureMetric(connectionUpdaterInput, FailureCause.CANCELED);
       }
 
       if (workflowState.isDeleted()) {
@@ -167,14 +173,13 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     } catch (final Exception e) {
       log.error("The connection update workflow has failed, will create a new attempt.", e);
-      reportFailure(connectionUpdaterInput, null);
+      reportFailure(connectionUpdaterInput, null, FailureCause.UNKNOWN);
       prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
     }
   }
 
   private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
-      metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_ATTEMPT, 1L);
       connectionId = connectionUpdaterInput.getConnectionId();
 
       // workflow state is only ever set in test cases. for production cases, it will always be null.
@@ -221,28 +226,26 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         if (syncCheckConnectionFailure.isFailed()) {
           final StandardSyncOutput checkFailureOutput = syncCheckConnectionFailure.buildFailureOutput();
           workflowState.setFailed(getFailStatus(checkFailureOutput));
-          reportFailure(connectionUpdaterInput, checkFailureOutput);
+          reportFailure(connectionUpdaterInput, checkFailureOutput, FailureCause.CONNECTION);
         } else {
           standardSyncOutput = runChildWorkflow(jobInputs);
           workflowState.setFailed(getFailStatus(standardSyncOutput));
 
           if (workflowState.isFailed()) {
-            reportFailure(connectionUpdaterInput, standardSyncOutput);
+            reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.UNKNOWN);
           } else {
             reportSuccess(connectionUpdaterInput, standardSyncOutput);
           }
         }
 
         prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-        metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_SUCCESS, 1L);
       } catch (final ChildWorkflowFailure childWorkflowFailure) {
         // when we cancel a method, we call the cancel method of the cancellation scope. This will throw an
         // exception since we expect it, we just
         // silently ignore it.
         if (childWorkflowFailure.getCause() instanceof CanceledFailure) {
           // do nothing, cancellation handled by cancellationScope
-          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_FAILURE, 1L,
-              new MetricAttribute(MetricTags.RESET_WORKFLOW_FAILURE, "CANCELED"));
+          recordFailureMetric(connectionUpdaterInput, FailureCause.CANCELED);
         } else if (childWorkflowFailure.getCause()instanceof final ActivityFailure af) {
           // Allows us to classify unhandled failures from the sync workflow. e.g. If the normalization
           // activity throws an exception, for
@@ -253,18 +256,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               af.getCause(),
               workflowInternalState.getJobId(),
               workflowInternalState.getAttemptNumber()));
-          reportFailure(connectionUpdaterInput, standardSyncOutput);
+          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.ACTIVITY);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_FAILURE, 1L,
-              new MetricAttribute(MetricTags.RESET_WORKFLOW_FAILURE, "ACTIVITY"));
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                   workflowInternalState.getAttemptNumber()));
-          reportFailure(connectionUpdaterInput, standardSyncOutput);
+          reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.WORKFLOW);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
-          metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_RESTART_FAILURE, 1L,
-              new MetricAttribute(MetricTags.RESET_WORKFLOW_FAILURE, "WORKFLOW"));
         }
       }
     });
@@ -289,11 +288,16 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     deleteResetJobStreams();
 
+    // Record the success metric
+    final List<MetricAttribute> metricAttributes = generateMetricAttributes(connectionUpdaterInput);
+    metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_SUCCESS, 1L, metricAttributes.toArray(new MetricAttribute[] {}));
+
     resetNewConnectionInput(connectionUpdaterInput);
   }
 
   private void reportFailure(final ConnectionUpdaterInput connectionUpdaterInput,
-                             final StandardSyncOutput standardSyncOutput) {
+                             final StandardSyncOutput standardSyncOutput,
+                             final FailureCause failureCause) {
     final int attemptCreationVersion =
         Workflow.getVersion(RENAME_ATTEMPT_ID_TO_NUMBER_TAG, Workflow.DEFAULT_VERSION, RENAME_ATTEMPT_ID_TO_NUMBER_CURRENT_VERSION);
 
@@ -338,6 +342,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           log.info("Auto-disabled for constantly failing for Connection {}", connectionId);
         }
       }
+
+      // Record the failure metric
+      recordFailureMetric(connectionUpdaterInput, failureCause);
 
       resetNewConnectionInput(connectionUpdaterInput);
     }
@@ -808,6 +815,44 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
     runMandatoryActivity(streamResetActivity::deleteStreamResetRecordsForJob,
         new DeleteStreamResetRecordsForJobInput(connectionId, workflowInternalState.getJobId()));
+  }
+
+  /**
+   * Records a counter metric for a workflow execution failure.
+   *
+   * @param connectionUpdaterInput The {@link ConnectionUpdaterInput} that represents the workflow to
+   *        be executed.
+   * @param failureCause The cause of the workflow failure.
+   */
+  private void recordFailureMetric(final ConnectionUpdaterInput connectionUpdaterInput, final FailureCause failureCause) {
+    final List<MetricAttribute> metricAttributes = generateMetricAttributes(connectionUpdaterInput);
+    metricAttributes.add(new MetricAttribute(MetricTags.RESET_WORKFLOW_FAILURE_CAUSE, failureCause.name()));
+    metricClient.count(OssMetricsRegistry.TEMPORAL_WORKFLOW_FAILURE, 1L, metricAttributes.toArray(new MetricAttribute[] {}));
+  }
+
+  /**
+   * Generates the list of {@link MetricAttribute}s to be included when recording a metric.
+   *
+   * @param connectionUpdaterInput The {@link ConnectionUpdaterInput} that represents the workflow to
+   *        be executed.
+   * @return The list of {@link MetricAttribute}s to be included when recording a metric.
+   */
+  private List<MetricAttribute> generateMetricAttributes(final ConnectionUpdaterInput connectionUpdaterInput) {
+    final List<MetricAttribute> metricAttributes = new ArrayList<>();
+    metricAttributes.add(new MetricAttribute(MetricTags.CONNECTION_ID, String.valueOf(connectionUpdaterInput.getConnectionId())));
+    metricAttributes.add(new MetricAttribute(MetricTags.JOB_ID, String.valueOf(connectionUpdaterInput.getJobId())));
+    return metricAttributes;
+  }
+
+  /**
+   * Enumeration of workflow failure causes.
+   */
+  private enum FailureCause {
+    ACTIVITY,
+    CANCELED,
+    CONNECTION,
+    UNKNOWN,
+    WORKFLOW
   }
 
 }
