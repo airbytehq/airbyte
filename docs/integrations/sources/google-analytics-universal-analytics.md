@@ -167,6 +167,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.1.24  | 2022-07-26 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Update `additionalProperties` field to true from schemas                                     |
 | 0.1.23  | 2022-07-22 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add handle request daily quota error                                                         |
 | 0.1.22  | 2022-06-30 | [14298](https://github.com/airbytehq/airbyte/pull/14298) | Specify integer type for ga:dateHourMinute dimension                                         |
 | 0.1.21  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                             |
