@@ -262,6 +262,31 @@
       "cursor_field": [],
       "destination_sync_mode": "append_dedup",
       "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "types_testing",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "airbyte_integer_column": {
+              "type": "number",
+              "airbyte_type": "integer"
+            },
+            "nullable_airbyte_integer_column": {
+              "type": ["null", "number"],
+              "airbyte_type": "integer"
+            }
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     }
   ]
 }
