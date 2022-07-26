@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.mysql;
 
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION;
+
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
@@ -17,9 +20,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION;
-
 public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
 
   private static MySqlUtils.Certificate certs;
@@ -32,12 +32,12 @@ public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcce
     certs = MySqlUtils.getCertificate(container);
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "verify_identity")
-            .put("ca_certificate", certs.getCaCertificate())
-            .put("client_certificate", certs.getClientCertificate())
-            .put("client_key", certs.getClientKey())
-            .put("client_key_password", PASSWORD)
-            .build();
+        .put(JdbcUtils.MODE_KEY, "verify_identity")
+        .put("ca_certificate", certs.getCaCertificate())
+        .put("client_certificate", certs.getClientCertificate())
+        .put("client_key", certs.getClientKey())
+        .put("client_key_password", PASSWORD)
+        .build();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())

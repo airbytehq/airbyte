@@ -5,16 +5,15 @@
 package io.airbyte.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MySqlSslConnectionUtils {
 
@@ -65,7 +64,7 @@ public class MySqlSslConnectionUtils {
     Map<String, String> additionalParameters = new HashMap<>();
     try {
       convertAndImportFullCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(),
-              encryption.get(PARAM_CLIENT_CERTIFICATE).asText(), encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+          encryption.get(PARAM_CLIENT_CERTIFICATE).asText(), encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
@@ -96,17 +95,17 @@ public class MySqlSslConnectionUtils {
                                                       final String clientCertificate,
                                                       final String clientKey,
                                                       final String clientKeyPassword)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     createCaCertificate(caCertificate, clientKeyPassword, run);
     createCertificateFile(CLIENT_CERTIFICARE_NAME, clientCertificate);
     createCertificateFile(CLIENT_KEY_NAME, clientKey);
     // add client certificate to the custom keystore
     runProcess("keytool -alias client-certificate -keystore " + CUSTOM_TRUST_STORE
-            + " -import -file " + CLIENT_CERTIFICARE_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
+        + " -import -file " + CLIENT_CERTIFICARE_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
     // add client key to the custom keystore
     runProcess("keytool -alias client-key -keystore " + CUSTOM_TRUST_STORE
-            + " -import -file " + CLIENT_KEY_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
+        + " -import -file " + CLIENT_KEY_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
     runProcess("rm " + CLIENT_KEY_NAME, run);
 
     updateTrustStoreSystemProperty(clientKeyPassword);
@@ -114,7 +113,7 @@ public class MySqlSslConnectionUtils {
 
   private static void convertAndImportCaCertificate(final String caCertificate,
                                                     final String clientKeyPassword)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
     createCaCertificate(caCertificate, clientKeyPassword, run);
     updateTrustStoreSystemProperty(clientKeyPassword);
@@ -123,11 +122,11 @@ public class MySqlSslConnectionUtils {
   private static void createCaCertificate(final String caCertificate,
                                           final String clientKeyPassword,
                                           final Runtime run)
-          throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     createCertificateFile(ROOT_CERTIFICARE_NAME, caCertificate);
     // add CA certificate to the custom keystore
     runProcess("keytool -import -alias root-certificate -keystore " + CUSTOM_TRUST_STORE
-            + " -file " + ROOT_CERTIFICARE_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
+        + " -file " + ROOT_CERTIFICARE_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
   }
 
   private static void updateTrustStoreSystemProperty(final String clientKeyPassword) {

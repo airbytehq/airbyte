@@ -37,9 +37,7 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
-
 import java.time.Duration;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -163,7 +161,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         } else {
           additionalParameters.putAll(obtainConnectionOptions(config.get(JdbcUtils.SSL_MODE_KEY)));
           jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-                  .append(JdbcUtils.AMPERSAND);
+              .append(JdbcUtils.AMPERSAND);
           if (additionalParameters.isEmpty()) {
             jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
           } else {
@@ -172,7 +170,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
         }
       } else {
         jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
-                .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
+            .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
       }
     }
 

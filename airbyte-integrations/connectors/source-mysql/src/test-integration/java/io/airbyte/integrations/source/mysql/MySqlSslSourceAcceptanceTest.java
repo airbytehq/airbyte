@@ -27,8 +27,8 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
     container.start();
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "required")
-            .build();
+        .put(JdbcUtils.MODE_KEY, "required")
+        .build();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
