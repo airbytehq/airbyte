@@ -3,8 +3,8 @@
 #
 
 from datetime import datetime
-import pendulum
 
+import pendulum
 
 # Facebook store metrics maximum of 37 months old. Any time range that
 # older that 37 months from current date would result in 400 Bad request
