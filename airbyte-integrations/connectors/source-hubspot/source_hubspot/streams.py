@@ -1298,13 +1298,13 @@ class PropertyHistory(Stream):
     """
 
     more_key = "has-more"
-    url = "/contacts/v1/lists/recently_updated/contacts/recent"
+    url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
     entity = "contacts"
     data_field = "contacts"
-    page_field = "time-offset"
-    page_filter = "timeOffset"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
     denormalize_records = True
     limit_field = "count"
     limit = 100
