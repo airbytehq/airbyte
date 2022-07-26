@@ -29,7 +29,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         access_token_name: Union[InterpolatedString, str] = "access_token",
         expires_in_name: Union[InterpolatedString, str] = "expires_in",
         refresh_request_body: Optional[Mapping[str, Any]] = None,
-        kwargs=None,
+        **runtime_parameters: Optional[Mapping[str, Any]],
     ):
         """
         :param token_refresh_endpoint: The endpoint to refresh the access token
@@ -43,19 +43,18 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         :param expires_in_name:The field to extract expires_in from in the response
         :param refresh_request_body: The request body to send in the refresh request
         """
-        kwargs = kwargs or {}
         self.config = config
-        self.token_refresh_endpoint = InterpolatedString.create(token_refresh_endpoint, options=kwargs)
-        self.client_secret = InterpolatedString.create(client_secret, options=kwargs)
-        self.client_id = InterpolatedString.create(client_id, options=kwargs)
-        self.refresh_token = InterpolatedString.create(refresh_token, options=kwargs)
+        self.token_refresh_endpoint = InterpolatedString.create(token_refresh_endpoint, options=runtime_parameters)
+        self.client_secret = InterpolatedString.create(client_secret, options=runtime_parameters)
+        self.client_id = InterpolatedString.create(client_id, options=runtime_parameters)
+        self.refresh_token = InterpolatedString.create(refresh_token, options=runtime_parameters)
         self.scopes = scopes
-        self.access_token_name = InterpolatedString.create(access_token_name, options=kwargs)
-        self.expires_in_name = InterpolatedString.create(expires_in_name, options=kwargs)
-        self.refresh_request_body = InterpolatedMapping(refresh_request_body or {}, runtime_parameters=kwargs)
+        self.access_token_name = InterpolatedString.create(access_token_name, options=runtime_parameters)
+        self.expires_in_name = InterpolatedString.create(expires_in_name, options=runtime_parameters)
+        self.refresh_request_body = InterpolatedMapping(refresh_request_body or {}, runtime_parameters=runtime_parameters)
 
         self.token_expiry_date = (
-            pendulum.parse(InterpolatedString.create(token_expiry_date, options=kwargs).eval(self.config))
+            pendulum.parse(InterpolatedString.create(token_expiry_date, options=runtime_parameters).eval(self.config))
             if token_expiry_date
             else pendulum.now().subtract(days=1)
         )
