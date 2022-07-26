@@ -75,10 +75,10 @@ class AddFields(RecordTransformation):
           value: {{ 2 * 2 }}
     """
 
-    def __init__(self, fields: List[AddedFieldDefinition], **runtime_parameters: Optional[Mapping[str, Any]]):
+    def __init__(self, fields: List[AddedFieldDefinition], **options: Optional[Mapping[str, Any]]):
         """
         :param fields: Fields to add
-        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._fields: List[ParsedAddFieldDefinition] = []
         for field in fields:
@@ -89,9 +89,7 @@ class AddFields(RecordTransformation):
                 if not isinstance(field.value, str):
                     raise f"Expected a string value for the AddFields transformation: {field}"
                 else:
-                    self._fields.append(
-                        ParsedAddFieldDefinition(field.path, InterpolatedString.create(field.value, options=runtime_parameters))
-                    )
+                    self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString.create(field.value, options=options)))
             else:
                 self._fields.append(ParsedAddFieldDefinition(field.path, field.value))
 

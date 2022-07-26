@@ -21,31 +21,31 @@ class MinMaxDatetime:
         datetime_format: str = "",
         min_datetime: Union[InterpolatedString, str] = "",
         max_datetime: Union[InterpolatedString, str] = "",
-        **runtime_parameters: Optional[Mapping[str, Any]],
+        **options: Optional[Mapping[str, Any]],
     ):
-        self._datetime_interpolator = InterpolatedString.create(datetime, options=runtime_parameters)
+        self._datetime_interpolator = InterpolatedString.create(datetime, options=options)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=runtime_parameters) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=runtime_parameters) if max_datetime else None
+        self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=options) if min_datetime else None
+        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=options) if max_datetime else None
         """
         :param datetime: InterpolatedString or string representing the datetime in the format specified by `datetime_format`
         :param datetime_format: Format of the datetime passed as argument
         :param min_datetime: InterpolatedString or string representing the min datetime
         :param max_datetime: InterpolatedString or string representing the max datetime
-        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._datetime_interpolator = InterpolatedString.create(datetime, options=runtime_parameters)
+        self._datetime_interpolator = InterpolatedString.create(datetime, options=options)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=runtime_parameters) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=runtime_parameters) if max_datetime else None
+        self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=options) if min_datetime else None
+        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=options) if max_datetime else None
 
-    def get_datetime(self, config, **additional_runtime_parameters) -> dt.datetime:
+    def get_datetime(self, config, **additional_options) -> dt.datetime:
         """
         Evaluates and returns the datetime
         :param config: The user-provided configuration as specified by the source's spec
-        :param additional_runtime_parameters: Additional arguments to be passed to the strings for interpolation
+        :param additional_options: Additional arguments to be passed to the strings for interpolation
         :return: The evaluated datetime
         """
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
@@ -53,19 +53,19 @@ class MinMaxDatetime:
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = dt.datetime.strptime(self._datetime_interpolator.eval(config, **additional_runtime_parameters), datetime_format).replace(
+        time = dt.datetime.strptime(self._datetime_interpolator.eval(config, **additional_options), datetime_format).replace(
             tzinfo=self._timezone
         )
 
         if self._min_datetime_interpolator:
-            min_time = dt.datetime.strptime(
-                self._min_datetime_interpolator.eval(config, **additional_runtime_parameters), datetime_format
-            ).replace(tzinfo=self._timezone)
+            min_time = dt.datetime.strptime(self._min_datetime_interpolator.eval(config, **additional_options), datetime_format).replace(
+                tzinfo=self._timezone
+            )
             time = max(time, min_time)
         if self._max_datetime_interpolator:
-            max_time = dt.datetime.strptime(
-                self._max_datetime_interpolator.eval(config, **additional_runtime_parameters), datetime_format
-            ).replace(tzinfo=self._timezone)
+            max_time = dt.datetime.strptime(self._max_datetime_interpolator.eval(config, **additional_options), datetime_format).replace(
+                tzinfo=self._timezone
+            )
             time = min(time, max_time)
         return time
 

@@ -24,7 +24,7 @@ class ListStreamSlicer(StreamSlicer):
         elif isinstance(slice_values, InterpolatedString):
             slice_values = ast.literal_eval(slice_values.eval(config))
         assert isinstance(slice_values, list)
-        self._interpolation = InterpolatedMapping(slice_definition, runtime_parameters=kwargs)
+        self._interpolation = InterpolatedMapping(slice_definition, options=kwargs)
         self._slice_values = slice_values
         self._config = config
 

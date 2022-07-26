@@ -11,13 +11,13 @@ from airbyte_cdk.sources.declarative.types import Config
 class InterpolatedMapping:
     """Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated."""
 
-    def __init__(self, mapping: Mapping[str, Any], runtime_parameters: Mapping[str, Any]):
+    def __init__(self, mapping: Mapping[str, Any], options: Mapping[str, Any]):
         """
         :param mapping: Mapping[str, str] to be evaluated
-        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._mapping = mapping
-        self._options = runtime_parameters
+        self._options = options
         self._interpolation = JinjaInterpolation()
 
     def eval(self, config: Config, **kwargs):

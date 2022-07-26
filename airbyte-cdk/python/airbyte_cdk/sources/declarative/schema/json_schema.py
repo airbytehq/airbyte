@@ -13,7 +13,7 @@ from airbyte_cdk.sources.declarative.types import Config
 class JsonSchema(SchemaLoader):
     """Loads the schema from a json file"""
 
-    def __init__(self, file_path: InterpolatedString, config: Config, **runtime_parameters: Optional[Mapping[str, Any]]):
+    def __init__(self, file_path: InterpolatedString, config: Config, **options: Optional[Mapping[str, Any]]):
         """
         :param file_path: The path to the json file describing the schema
         :param config: The user-provided configuration as specified by the source's spec
@@ -21,7 +21,7 @@ class JsonSchema(SchemaLoader):
         """
         self._file_path = file_path
         self._config = config
-        self._kwargs = runtime_parameters
+        self._kwargs = options
 
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema_path = self._get_json_filepath()

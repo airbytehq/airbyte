@@ -15,7 +15,7 @@ def test():
     }
     config = {"c": "VALUE_FROM_CONFIG"}
     kwargs = {"a": "VALUE_FROM_KWARGS"}
-    mapping = InterpolatedMapping(d, runtime_parameters={})
+    mapping = InterpolatedMapping(d, options={})
 
     interpolated = mapping.eval(config, **{"kwargs": kwargs})
 

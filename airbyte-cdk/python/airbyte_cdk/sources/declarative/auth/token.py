@@ -29,16 +29,16 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
         header: Union[InterpolatedString, str],
         token: Union[InterpolatedString, str],
         config: Config,
-        **runtime_parameters: Optional[Mapping[str, Any]],
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param header: Header key to set on the HTTP requests
         :param token: Header value to set on the HTTP requests
         :param config: The user-provided configuration as specified by the source's spec
-        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._header = InterpolatedString.create(header, options=runtime_parameters)
-        self._token = InterpolatedString.create(token, options=runtime_parameters)
+        self._header = InterpolatedString.create(header, options=options)
+        self._token = InterpolatedString.create(token, options=options)
         self._config = config
 
     @property
@@ -58,13 +58,13 @@ class BearerAuthenticator(AbstractHeaderAuthenticator):
     `"Authorization": "Bearer <token>"`
     """
 
-    def __init__(self, token: Union[InterpolatedString, str], config: Config, **runtime_parameters: Optional[Mapping[str, Any]]):
+    def __init__(self, token: Union[InterpolatedString, str], config: Config, **options: Optional[Mapping[str, Any]]):
         """
         :param token: The bearer token
         :param config: The user-provided configuration as specified by the source's spec
-        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._token = InterpolatedString.create(token, options=runtime_parameters)
+        self._token = InterpolatedString.create(token, options=options)
         self._config = config
 
     @property
@@ -90,16 +90,16 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
         username: Union[InterpolatedString, str],
         config: Config,
         password: Union[InterpolatedString, str] = "",
-        **runtime_parameters: Optional[Mapping[str, Any]],
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param username: The username
         :param config: The user-provided configuration as specified by the source's spec
         :param password: The password
-        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._username = InterpolatedString.create(username, options=runtime_parameters)
-        self._password = InterpolatedString.create(password, options=runtime_parameters)
+        self._username = InterpolatedString.create(username, options=options)
+        self._password = InterpolatedString.create(password, options=options)
         self._config = config
 
     @property

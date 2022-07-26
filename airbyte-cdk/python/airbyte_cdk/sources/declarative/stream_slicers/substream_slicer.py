@@ -22,11 +22,11 @@ class SubstreamSlicer(StreamSlicer):
         parent_streams: List[Stream],
         state: DictState,
         slice_definition: Mapping[str, Any],
-        **runtime_parameters: Optional[Mapping[str, Any]],
+        **options: Optional[Mapping[str, Any]],
     ):
         self._parent_streams = parent_streams
         self._state = state
-        self._interpolation = InterpolatedMapping(slice_definition, runtime_parameters=runtime_parameters)
+        self._interpolation = InterpolatedMapping(slice_definition, options=options)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """
