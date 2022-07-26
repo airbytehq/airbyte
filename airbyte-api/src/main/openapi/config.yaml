@@ -2584,6 +2584,13 @@ components:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        sourceType:
+          type: string
+          enum:
+            - api
+            - file
+            - database
+            - custom
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     SourceDefinitionReadList:

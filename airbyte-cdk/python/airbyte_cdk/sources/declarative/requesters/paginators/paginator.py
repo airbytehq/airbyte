@@ -9,9 +9,17 @@ import requests
 
 
 class Paginator(ABC):
+    """
+    Defines the token to use to fetch the next page of records from the API.
+
+    If needed, the Paginator will set request options to be set on the HTTP request to fetch the next page of records.
+    If the next_page_token is the path to the next page of records, then it should be accessed through the `path` method
+    """
+
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         """
+        Returns the next_page_token to use to fetch the next page of records.
 
         :param response: the response to process
         :param last_records: the records extracted from the response
@@ -22,13 +30,18 @@ class Paginator(ABC):
     @abstractmethod
     def path(self) -> Optional[str]:
         """
-        :return: path to hit to fetch the next request. Returning None means the path does not need to be updated
+        Returns the URL path to hit to fetch the next page of records
+
+        e.g: if you wanted to hit https://myapi.com/v1/some_entity then this will return "some_entity"
+
+        :return: path to hit to fetch the next request. Returning None means the path is not defined by the next_page_token
         """
         pass
 
     @abstractmethod
     def request_params(self) -> Mapping[str, Any]:
         """
+        Specifies the query parameters that should be set on an outgoing HTTP request to fetch the next page of records.
 
         :return: the request parameters to set to fetch the next page
         """
@@ -37,6 +50,7 @@ class Paginator(ABC):
     @abstractmethod
     def request_headers(self) -> Mapping[str, str]:
         """
+        Specifies the request headers that should be set on an outgoing HTTP request to fetch the next page of records.
 
         :return: the request headers to set to fetch the next page
         """
@@ -45,6 +59,7 @@ class Paginator(ABC):
     @abstractmethod
     def request_body_data(self) -> Mapping[str, Any]:
         """
+        Specifies the body data that should be set on an outgoing HTTP request to fetch the next page of records.
 
         :return: the request body data to set to fetch the next page
         """
@@ -53,6 +68,7 @@ class Paginator(ABC):
     @abstractmethod
     def request_body_json(self) -> Mapping[str, Any]:
         """
+        Specifies the json content that should be set on an outgoing HTTP request to fetch the next page of records.
 
         :return: the request body to set (as a json object) to fetch the next page
         """
