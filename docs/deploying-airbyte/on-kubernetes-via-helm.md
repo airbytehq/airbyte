@@ -115,7 +115,7 @@ In most cases upgrade from older monolith chart to a new one should go without a
 
 ### Minio migration
 
-Since the latest release of bitnami/minio chart, they've changed the way of setting up the credentials for accessing the minio.
+Since the latest release of bitnami/minio chart, they've changed the way of setting up the credentials for accessing the minio. (written mid-2022)
 
 Going forward in new version you need to specify the following values in values yaml for user/password instead old one
 
