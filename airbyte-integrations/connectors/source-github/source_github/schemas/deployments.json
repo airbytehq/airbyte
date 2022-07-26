@@ -103,7 +103,8 @@
       "type": ["null", "string"]
     },
     "payload": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "object"],
+      "properties": {}
     },
     "transient_environment": {
       "type": ["null", "boolean"]
