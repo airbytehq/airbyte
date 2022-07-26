@@ -7,7 +7,7 @@ import os
 import time
 from copy import deepcopy
 from pathlib import Path
-from typing import Callable, List, Optional, Set, Type, Union
+from typing import Callable, List, Optional, Set, Tuple, Type, Union
 
 import airbyte_api_client
 import click
@@ -57,10 +57,6 @@ from .diff_helpers import compute_diff, hash_config
 from .yaml_loaders import EnvVarLoader
 
 
-class DuplicateResourceError(click.ClickException):
-    pass
-
-
 class NonExistingResourceError(click.ClickException):
     pass
 
@@ -79,10 +75,14 @@ class MissingStateError(click.ClickException):
 
 class ResourceState:
     def __init__(
-        self, configuration_path: str, workspace_id: Optional[str], resource_id: str, generation_timestamp: int, configuration_hash: str
+        self,
+        configuration_path: Union[str, Path],
+        workspace_id: Optional[str],
+        resource_id: str,
+        generation_timestamp: int,
+        configuration_hash: str,
     ):
         """This constructor is meant to be private. Construction shall be made with create or from_file class methods.
-
         Args:
             configuration_path (str): Path to the configuration this state relates to.
             workspace_id Optional(str): Id of the workspace the state relates to. #TODO mark this a not optional after the user base has upgraded to >= 0.39.18
@@ -90,7 +90,7 @@ class ResourceState:
             generation_timestamp (int): State generation timestamp.
             configuration_hash (str): Hash of the loaded configuration file.
         """
-        self.configuration_path = configuration_path
+        self.configuration_path = str(configuration_path)
         self.resource_id = resource_id
         self.generation_timestamp = generation_timestamp
         self.configuration_hash = configuration_hash
@@ -114,12 +114,10 @@ class ResourceState:
     @classmethod
     def create(cls, configuration_path: str, configuration_hash: str, workspace_id: str, resource_id: str) -> "ResourceState":
         """Create a state for a resource configuration.
-
         Args:
             configuration_path (str): Path to the YAML file defining the resource.
             configuration_hash (str): Hash of the loaded configuration fie.
             resource_id (str): UUID of the resource.
-
         Returns:
             ResourceState: state representing the resource.
         """
@@ -135,10 +133,8 @@ class ResourceState:
     @classmethod
     def from_file(cls, file_path: str) -> "ResourceState":
         """Deserialize a state from a YAML path.
-
         Args:
             file_path (str): Path to the YAML state.
-
         Returns:
             ResourceState: state deserialized from YAML.
         """
@@ -146,7 +142,8 @@ class ResourceState:
             raw_state = yaml.safe_load(f)
         return ResourceState(
             raw_state["configuration_path"],
-            raw_state.get("workspace_id"),  # TODO: workspace id should not be nullable after the user base has upgraded to >= 0.39.18
+            # TODO: workspace id should not be nullable after the user base has upgraded to >= 0.39.18
+            raw_state.get("workspace_id"),
             raw_state["resource_id"],
             raw_state["generation_timestamp"],
             raw_state["configuration_hash"],
@@ -165,11 +162,9 @@ class ResourceState:
     @classmethod
     def migrate(self, state_to_migrate_path: str, workspace_id: str) -> "ResourceState":
         """Create a per workspace state from a legacy state file and remove the legacy state file.
-
         Args:
             state_to_migrate_path (str): Path to the legacy state file to migrate.
             workspace_id (str): Workspace id for which the new state will be stored.
-
         Returns:
             ResourceState: The new state after migration.
         """
@@ -182,7 +177,8 @@ class ResourceState:
 
 
 class BaseResource(abc.ABC):
-    APPLY_PRIORITY = 0  # Priority of the resource during the apply. 0 means the resource is top priority.
+    # Priority of the resource during the apply. 0 means the resource is top priority.
+    APPLY_PRIORITY = 0
 
     @property
     @abc.abstractmethod
@@ -251,7 +247,6 @@ class BaseResource(abc.ABC):
         self, api_client: airbyte_api_client.ApiClient, workspace_id: str, raw_configuration: dict, configuration_path: str
     ) -> None:
         """Create a BaseResource object.
-
         Args:
             api_client (airbyte_api_client.ApiClient): the Airbyte API client.
             workspace_id (str): the workspace id.
@@ -280,7 +275,6 @@ class BaseResource(abc.ABC):
     def _deserialize_raw_configuration(self):
         """Deserialize a raw configuration into another object and perform extra validation if needed.
         The base implementation does nothing except extracting the configuration field and returning a copy of it.
-
         Returns:
             dict: Deserialized configuration
         """
@@ -289,12 +283,10 @@ class BaseResource(abc.ABC):
     @staticmethod
     def _check_for_invalid_configuration_keys(dict_to_check: dict, invalid_keys: Set[str], error_message: str):
         """Utils function to check if a configuration dictionnary has legacy keys that were removed/renamed after an octavia update.
-
         Args:
             dict_to_check (dict): The dictionnary for which keys should be checked
             invalid_keys (Set[str]): The set of invalid keys we want to check the existence
             error_message (str): The error message to display to the user
-
         Raises:
             InvalidConfigurationError: Raised if an invalid key was found in the dict_to_check
         """
@@ -321,7 +313,6 @@ class BaseResource(abc.ABC):
 
     def _get_remote_resource(self) -> Union[SourceRead, DestinationRead, ConnectionRead]:
         """Retrieve a resources on the remote Airbyte instance.
-
         Returns:
             Union[SourceReadList, DestinationReadList, ConnectionReadList]: Search results
         """
@@ -330,7 +321,6 @@ class BaseResource(abc.ABC):
     @staticmethod
     def _get_state_from_file(configuration_file: str, workspace_id: str) -> Optional[ResourceState]:
         """Retrieve a state object from a local YAML file if it exists.
-
         Returns:
             Optional[ResourceState]: the deserialized resource state if YAML file found.
         """
@@ -355,10 +345,8 @@ class BaseResource(abc.ABC):
 
     def get_diff_with_remote_resource(self) -> str:
         """Compute the diff between current resource and the remote resource.
-
         Raises:
             NonExistingResourceError: Raised if the remote resource does not exist.
-
         Returns:
             str: The prettyfied diff.
         """
@@ -377,7 +365,6 @@ class BaseResource(abc.ABC):
         ],
     ) -> Union[SourceRead, DestinationRead]:
         """Wrapper to trigger create or update of remote resource.
-
                 Args:
                     operation_fn (Callable): The API function to run.
                     payload (Union[SourceCreate, SourceUpdate, DestinationCreate, DestinationUpdate]): The payload to send to create or update the resource.
@@ -385,7 +372,6 @@ class BaseResource(abc.ABC):
                 Raises:
                     InvalidConfigurationError: Raised if the create or update payload is invalid.
                     ApiException: Raised in case of other API errors.
-
                 Returns:
                     Union[SourceRead, DestinationRead, ConnectionRead]: The created or updated resource.
         """
@@ -403,9 +389,23 @@ class BaseResource(abc.ABC):
             else:
                 raise api_error
 
+    def manage(
+        self, resource_id: str
+    ) -> Union[Tuple[SourceRead, ResourceState], Tuple[DestinationRead, ResourceState], Tuple[ConnectionRead, ResourceState]]:
+        """Declare a remote resource as locally managed by creating a local state
+
+        Args:
+            resource_id (str): Remote resource ID.
+
+        Returns:
+            Union[Tuple[SourceRead, ResourceState], Tuple[DestinationRead, ResourceState], Tuple[ConnectionRead, ResourceState]]: The remote resource model instance and its local state.
+        """
+        self.state = ResourceState.create(self.configuration_path, self.configuration_hash, self.workspace_id, resource_id)
+
+        return self.remote_resource, self.state
+
     def create(self) -> Union[SourceRead, DestinationRead, ConnectionRead]:
         """Public function to create the resource on the remote Airbyte instance.
-
         Returns:
             Union[SourceRead, DestinationRead, ConnectionRead]: The created resource.
         """
@@ -413,7 +413,6 @@ class BaseResource(abc.ABC):
 
     def update(self) -> Union[SourceRead, DestinationRead, ConnectionRead]:
         """Public function to update the resource on the remote Airbyte instance.
-
         Returns:
             Union[SourceRead, DestinationRead, ConnectionRead]: The updated resource.
         """
@@ -422,7 +421,6 @@ class BaseResource(abc.ABC):
     @property
     def resource_id(self) -> Optional[str]:
         """Exposes the resource UUID of the remote resource
-
         Returns:
             str: Remote resource's UUID
         """
@@ -486,10 +484,8 @@ class Source(SourceAndDestination):
     @property
     def source_discover_schema_request_body(self) -> SourceDiscoverSchemaRequestBody:
         """Creates SourceDiscoverSchemaRequestBody from resource id.
-
         Raises:
             NonExistingResourceError: raised if the resource id is None.
-
         Returns:
             SourceDiscoverSchemaRequestBody: The SourceDiscoverSchemaRequestBody model instance.
         """
@@ -500,7 +496,6 @@ class Source(SourceAndDestination):
     @property
     def catalog(self) -> AirbyteCatalog:
         """Retrieves the source's Airbyte catalog.
-
         Returns:
             AirbyteCatalog: The catalog issued by schema discovery.
         """
@@ -525,7 +520,6 @@ class Destination(SourceAndDestination):
     @property
     def create_payload(self) -> DestinationCreate:
         """Defines the payload to create the remote resource.
-
         Returns:
             DestinationCreate: The DestinationCreate model instance
         """
@@ -543,7 +537,6 @@ class Destination(SourceAndDestination):
     @property
     def update_payload(self) -> DestinationUpdate:
         """Defines the payload to update a remote resource.
-
         Returns:
             DestinationUpdate: The DestinationUpdate model instance.
         """
@@ -561,7 +554,8 @@ class Destination(SourceAndDestination):
 
 
 class Connection(BaseResource):
-    APPLY_PRIORITY = 1  # Set to 1 to create connection after source or destination.
+    # Set to 1 to create connection after source or destination.
+    APPLY_PRIORITY = 1
     api = web_backend_api.WebBackendApi
     create_function_name = "web_backend_create_connection"
     update_function_name = "web_backend_update_connection"
@@ -585,14 +579,14 @@ class Connection(BaseResource):
         "latest_sync_job_created_at",
     ]  # We do not allow local editing of these keys
 
-    remote_operation_level_keys_to_filter_out = ["workspace_id", "operation_id"]  # We do not allow local editing of these keys
+    # We do not allow local editing of these keys
+    remote_operation_level_keys_to_filter_out = ["workspace_id", "operation_id"]
 
     def _deserialize_raw_configuration(self):
         """Deserialize a raw configuration into another dict and perform serialization if needed.
         In this implementation we cast raw types to Airbyte API client models types for validation.
         Args:
             raw_configuration (dict): The raw configuration
-
         Returns:
             dict: Deserialized connection configuration
         """
@@ -603,17 +597,16 @@ class Connection(BaseResource):
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
         if "schedule" in configuration:
             configuration["schedule"] = ConnectionSchedule(**configuration["schedule"])
-        configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
+        if "resource_requirements" in configuration:
+            configuration["resource_requirements"] = ResourceRequirements(**configuration["resource_requirements"])
         configuration["status"] = ConnectionStatus(configuration["status"])
         return configuration
 
     @property
     def source_id(self):
         """Retrieve the source id from the source state file of the current workspace.
-
         Raises:
             MissingStateError: Raised if the state file of the current workspace is not found.
-
         Returns:
             str: source id
         """
@@ -630,10 +623,8 @@ class Connection(BaseResource):
     @property
     def destination_id(self):
         """Retrieve the destination id from the destination state file of the current workspace.
-
         Raises:
             MissingStateError: Raised if the state file of the current workspace is not found.
-
         Returns:
             str: destination id
         """
@@ -650,7 +641,6 @@ class Connection(BaseResource):
     @property
     def create_payload(self) -> WebBackendConnectionCreate:
         """Defines the payload to create the remote connection.
-
         Returns:
             WebBackendConnectionCreate: The WebBackendConnectionCreate model instance
         """
@@ -675,7 +665,6 @@ class Connection(BaseResource):
     @property
     def update_payload(self) -> WebBackendConnectionUpdate:
         """Defines the payload to update a remote connection.
-
         Returns:
             WebBackendConnectionUpdate: The DestinationUpdate model instance.
         """
@@ -694,10 +683,8 @@ class Connection(BaseResource):
     @staticmethod
     def _create_configured_catalog(sync_catalog: dict) -> AirbyteCatalog:
         """Deserialize a sync_catalog represented as dict to an AirbyteCatalog.
-
         Args:
             sync_catalog (dict): The sync catalog represented as a dict.
-
         Returns:
             AirbyteCatalog: The configured catalog.
         """
@@ -718,14 +705,11 @@ class Connection(BaseResource):
         self, operations: List[dict], outputModelClass: Union[Type[OperationCreate], Type[WebBackendOperationCreateOrUpdate]]
     ) -> List[Union[OperationCreate, WebBackendOperationCreateOrUpdate]]:
         """Deserialize operations to OperationCreate (to create connection) or WebBackendOperationCreateOrUpdate (to update connection) models.
-
         Args:
             operations (List[dict]): List of operations to deserialize
             outputModelClass (Union[Type[OperationCreate], Type[WebBackendOperationCreateOrUpdate]]): The model to which the operation dict will be deserialized
-
         Raises:
             ValueError: Raised if the operator type declared in the configuration is not supported
-
         Returns:
             List[Union[OperationCreate, WebBackendOperationCreateOrUpdate]]: Deserialized operations
         """
@@ -758,7 +742,6 @@ class Connection(BaseResource):
     def _check_for_legacy_connection_configuration_keys(self, configuration_to_check):
         """We changed connection configuration keys from camelCase to snake_case in 0.37.0.
         This function check if the connection configuration has some camelCase keys and display a meaningful error message.
-
         Args:
             configuration_to_check (dict): Configuration to validate
         """
@@ -801,15 +784,12 @@ class Connection(BaseResource):
 
 def factory(api_client: airbyte_api_client.ApiClient, workspace_id: str, configuration_path: str) -> Union[Source, Destination, Connection]:
     """Create resource object according to the definition type field in their YAML configuration.
-
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
         workspace_id (str): The current workspace id.
         configuration_path (str): Path to the YAML file with the configuration.
-
     Raises:
         NotImplementedError: Raised if the definition type found in the YAML is not a supported resource.
-
     Returns:
         Union[Source, Destination, Connection]: The resource object created from the YAML config.
     """

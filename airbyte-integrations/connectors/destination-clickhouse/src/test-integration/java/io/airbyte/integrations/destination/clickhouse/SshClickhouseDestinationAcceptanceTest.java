@@ -11,6 +11,7 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.Network;
 
 /**
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
@@ -32,6 +34,7 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   public abstract SshTunnel.TunnelMethod getTunnelMethod();
 
   private static final String DB_NAME = "default";
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -80,10 +83,10 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -122,8 +125,8 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws Exception {
     return SshTunnel.sshWrap(
         getConfig(),
-        ClickhouseDestination.HOST_KEY,
-        ClickhouseDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         mangledConfig -> {
           final JdbcDatabase database = getDatabase(mangledConfig);
           final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
@@ -147,19 +150,19 @@ public abstract class SshClickhouseDestinationAcceptanceTest extends Destination
   private static JdbcDatabase getDatabase(final JsonNode config) {
     return new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            config.get("username").asText(),
-            config.has("password") ? config.get("password").asText() : null,
+            config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
             ClickhouseDestination.DRIVER_CLASS,
             String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-                config.get("host").asText(),
-                config.get("port").asInt(),
-                config.get("database").asText())));
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
+                config.get(JdbcUtils.DATABASE_KEY).asText())));
   }
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) {
-    bastion.initAndStartBastion();
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server").withNetwork(bastion.getNetWork());
+    bastion.initAndStartBastion(network);
+    db = (ClickHouseContainer) new ClickHouseContainer("clickhouse/clickhouse-server:22.5").withNetwork(network);
     db.start();
   }
 

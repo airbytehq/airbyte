@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Optional
 
 import click
@@ -189,7 +190,7 @@ def test_get_anonymous_data_collection(mocker, mock_api_client):
     mock_api_instance = entrypoint.workspace_api.WorkspaceApi.return_value
     assert (
         entrypoint.get_anonymous_data_collection(mock_api_client, "my_workspace_id")
-        == mock_api_instance.get_workspace.return_value.anonymous_data_collection
+        == mock_api_instance.get_workspace.return_value.get.return_value
     )
     entrypoint.workspace_api.WorkspaceApi.assert_called_with(mock_api_client)
     mock_api_instance.get_workspace.assert_called_with(WorkspaceIdRequestBody("my_workspace_id"), _check_return_type=False)
@@ -203,7 +204,7 @@ def test_commands_in_octavia_group():
 
 @pytest.mark.parametrize(
     "command",
-    [entrypoint.delete, entrypoint._import],
+    [entrypoint.delete],
 )
 def test_not_implemented_commands(command):
     runner = CliRunner()
@@ -215,6 +216,8 @@ def test_not_implemented_commands(command):
 def test_available_commands():
     assert entrypoint.AVAILABLE_COMMANDS == [
         entrypoint.list_commands._list,
+        entrypoint.get_commands.get,
+        entrypoint.import_commands._import,
         entrypoint.init_commands.init,
         entrypoint.generate_commands.generate,
         entrypoint.apply_commands.apply,

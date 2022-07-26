@@ -37,7 +37,8 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -270,15 +271,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("RAW")
             .airbyteType(JsonSchemaType.STRING)
             .fullSourceDataType("RAW(200)")
-            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
-            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("LONG")
-            .airbyteType(JsonSchemaType.STRING)
-            .fullSourceDataType("LONG RAW")
             .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
             .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
             .build());

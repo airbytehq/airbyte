@@ -10,7 +10,7 @@ server {
     #charset koi8-r;
     #access_log  /var/log/nginx/host.access.log  main;
 
-    add_header Content-Security-Policy "script-src * 'unsafe-inline';";
+    add_header Content-Security-Policy "script-src * 'unsafe-inline'; worker-src self blob:;";
 
     location / {
         root   /usr/share/nginx/html;

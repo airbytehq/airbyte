@@ -58,7 +58,8 @@ class OracleSourceTest {
 
   @BeforeAll
   static void init() {
-    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 

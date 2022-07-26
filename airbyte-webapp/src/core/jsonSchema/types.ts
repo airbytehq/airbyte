@@ -15,12 +15,10 @@ export type AirbyteJSONSchema = {
   [Property in keyof JSONSchema7]+?: JSONSchema7[Property] extends boolean
     ? boolean
     : Property extends "properties" | "patternProperties" | "definitions"
-    ? {
-        [key: string]: AirbyteJSONSchemaDefinition;
-      }
+    ? Record<string, AirbyteJSONSchemaDefinition>
     : JSONSchema7[Property] extends JSONSchema7Definition
     ? AirbyteJSONSchemaDefinition
-    : JSONSchema7[Property] extends Array<JSONSchema7Definition>
+    : JSONSchema7[Property] extends JSONSchema7Definition[]
     ? AirbyteJSONSchemaDefinition[]
     : JSONSchema7[Property] extends JSONSchema7Definition | JSONSchema7Definition[]
     ? AirbyteJSONSchemaDefinition | AirbyteJSONSchemaDefinition[]

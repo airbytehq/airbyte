@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -77,7 +78,8 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     ID_VALUE_5 = new BigDecimal(5);
 
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
+        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 
@@ -113,6 +115,17 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     executeOracleStatement(
         String.format("DROP TABLE %s", getFullyQualifiedTableName(TABLE_NAME_COMPOSITE_PK)));
     Thread.sleep(1000);
+  }
+
+  protected void incrementalDateCheck() throws Exception {
+    // https://stackoverflow.com/questions/47712930/resultset-meta-data-return-timestamp-instead-of-date-oracle-jdbc
+    // Oracle DATE is a java.sql.Timestamp (java.sql.Types.TIMESTAMP) as far as JDBC (and the SQL
+    // standard) is concerned as it has both a date and time component.
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
   void cleanUpTables() throws SQLException {
@@ -271,15 +284,6 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
   }
 
   @Test
-  void testIncrementalTimestampCheckCursor() throws Exception {
-    incrementalCursorCheck(
-        COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
-        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
-  }
-
-  @Test
   void testReadOneTableIncrementallyTwice() throws Exception {
     final String namespace = getDefaultNamespace();
     final ConfiguredAirbyteCatalog configuredCatalog = getConfiguredCatalogWithOneStream(namespace);
@@ -329,6 +333,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
     expectedMessages.add(new AirbyteMessage()
         .withType(AirbyteMessage.Type.STATE)
         .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateMessage.AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()
@@ -339,9 +344,18 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertArrayEquals(expectedMessages.toArray(), actualMessagesSecondSync.toArray());
     assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
     assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
+  }
+
+  @Test
+  void testIncrementalTimestampCheckCursor() throws Exception {
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
 }

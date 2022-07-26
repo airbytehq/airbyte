@@ -56,7 +56,7 @@ const TagItem: React.FC<IProps> = ({ item, onDeleteTag, isSelected, disabled }) 
   return (
     <Tag isSelected={isSelected}>
       <Text>{item.value}</Text>
-      <Delete onClick={clickOnDeleteButton} disabled={disabled}></Delete>
+      <Delete onClick={clickOnDeleteButton} disabled={disabled} />
     </Tag>
   );
 };

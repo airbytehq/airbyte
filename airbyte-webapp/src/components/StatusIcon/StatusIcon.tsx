@@ -54,13 +54,16 @@ const Badge = styled(Container)<StatusIconProps>`
     height: 1em;
     vertical-align: -0.125em;
   }
+
+  > span {
+    vertical-align: ${({ status }) => (status === "inactive" ? "bottom" : "top")};
+  }
 `;
 
 const Value = styled.span`
   font-weight: 500;
   font-size: 12px;
   padding-left: 3px;
-  vertical-align: top;
 `;
 
 const StatusIcon: React.FC<StatusIconProps> = ({ title, status, ...props }) => {

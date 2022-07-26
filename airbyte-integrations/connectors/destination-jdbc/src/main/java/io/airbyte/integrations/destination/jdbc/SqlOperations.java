@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import java.util.List;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,10 +129,10 @@ public interface SqlOperations {
    * Redshift destination:
    *
    * @param database - Database that the connector is interacting with
-   * @param schemaNames - schemas will be discovered
+   * @param writeConfigs - schemas and tables (streams) will be discovered
    * @see io.airbyte.integrations.destination.redshift.RedshiftSqlOperations#onDestinationCloseOperations
    */
-  default void onDestinationCloseOperations(JdbcDatabase database, Set<String> schemaNames) {
+  default void onDestinationCloseOperations(final JdbcDatabase database, final List<WriteConfig> writeConfigs) {
     // do nothing
     LOGGER.info("No onDestinationCloseOperations required for this destination.");
   }

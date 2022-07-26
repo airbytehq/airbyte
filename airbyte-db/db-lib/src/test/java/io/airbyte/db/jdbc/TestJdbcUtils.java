@@ -5,6 +5,8 @@
 package io.airbyte.db.jdbc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +41,10 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
-public class TestJdbcUtils {
+@SuppressWarnings("PMD.CheckResultSet")
+class TestJdbcUtils {
+
+  private String dbName;
 
   private static final List<JsonNode> RECORDS_AS_JSON = Lists.newArrayList(
       Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
@@ -60,7 +65,7 @@ public class TestJdbcUtils {
 
   @BeforeEach
   void setup() throws Exception {
-    final String dbName = Strings.addRandomSuffix("db", "_", 10);
+    dbName = Strings.addRandomSuffix("db", "_", 10);
 
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
@@ -69,13 +74,13 @@ public class TestJdbcUtils {
     PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), PSQL_DB);
 
     dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()));
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     final JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
 
@@ -87,11 +92,23 @@ public class TestJdbcUtils {
 
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
+        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
+        .build());
+  }
+
+  // Takes in a generic sslValue because useSsl maps sslValue to a boolean
+  private <T> JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName, final T sslValue) {
+    return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", psqlDb.getHost())
         .put("port", psqlDb.getFirstMappedPort())
         .put("database", dbName)
         .put("username", psqlDb.getUsername())
         .put("password", psqlDb.getPassword())
+        .put("ssl", sslValue)
         .build());
   }
 
@@ -155,6 +172,41 @@ public class TestJdbcUtils {
       assertExpectedOutputValues(connection, expectedValues());
       assertExpectedOutputTypes(connection);
     }
+  }
+
+  @Test
+  void testUseSslWithSslNotSet() {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertTrue(sslSet);
+  }
+
+  @Test
+  void testUseSslWithSslSetAndValueStringFalse() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, "false");
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertFalse(sslSet);
+  }
+
+  @Test
+  void testUseSslWithSslSetAndValueIntegerFalse() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, 0);
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertFalse(sslSet);
+  }
+
+  @Test
+  void testUseSslWithSslSetAndValueStringTrue() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, "true");
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertTrue(sslSet);
+  }
+
+  @Test
+  void testUssSslWithSslSetAndValueIntegerTrue() {
+    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName, 3);
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertTrue(sslSet);
   }
 
   private static void createTableWithAllTypes(final Connection connection) throws SQLException {

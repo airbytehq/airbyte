@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import importlib.resources as pkg_resources
 import os
 from pathlib import Path

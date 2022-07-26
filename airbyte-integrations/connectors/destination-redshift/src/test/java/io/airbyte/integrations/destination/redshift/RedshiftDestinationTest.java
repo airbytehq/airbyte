@@ -58,4 +58,5 @@ public class RedshiftDestinationTest {
     s3StagingStub.put("secret_access_key", "test key");
     assertEquals(DestinationType.COPY_S3, RedshiftDestination.determineUploadMode(s3StagingStub));
   }
+
 }

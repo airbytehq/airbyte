@@ -1,4 +1,4 @@
-import { deleteConnection, resetConnection, syncConnection } from "../../request/AirbyteClient";
+import { deleteConnection, resetConnection, syncConnection, getState, getStateType } from "../../request/AirbyteClient";
 import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
 export class ConnectionService extends AirbyteRequestService {
@@ -12,5 +12,13 @@ export class ConnectionService extends AirbyteRequestService {
 
   public delete(connectionId: string) {
     return deleteConnection({ connectionId }, this.requestOptions);
+  }
+
+  public getState(connectionId: string) {
+    return getState({ connectionId }, this.requestOptions);
+  }
+
+  public getStateType(connectionId: string) {
+    return getStateType({ connectionId }, this.requestOptions);
   }
 }

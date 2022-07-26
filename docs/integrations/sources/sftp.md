@@ -57,4 +57,5 @@ More formats \(e.g. Apache Avro\) will be supported in the future.
 
 | Version | Date       | Pull Request | Subject         |
 |:--------|:-----------|:-------------|:----------------|
+| 0.1.2 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.0   | 2021-24-05 |              | Initial version |
