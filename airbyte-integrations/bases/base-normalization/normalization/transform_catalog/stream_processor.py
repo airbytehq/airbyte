@@ -28,6 +28,8 @@ from normalization.transform_catalog.utils import (
     is_object,
     is_simple_property,
     is_string,
+    is_time,
+    is_time_with_timezone,
     jinja_call,
     remove_jinja,
 )
@@ -522,21 +524,25 @@ where 1 = 1
                 # in this case [cast] operator is not needed as data already converted to timestamp type
                 if is_datetime_without_timezone(definition):
                     return self.generate_snowflake_timestamp_statement(column_name)
-                elif is_datetime_with_timezone(definition):
-                    return self.generate_snowflake_timestamp_tz_statement(column_name)
                 return self.generate_snowflake_timestamp_tz_statement(column_name)
+            if self.destination_type == DestinationType.MYSQL and is_datetime_without_timezone(definition):
+                # MySQL does not support [cast] and [nullif] functions together
+                return self.generate_mysql_datetime_format_statement(column_name)
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             if self.destination_type.value == DestinationType.MSSQL.value:
                 # in case of datetime, we don't need to use [cast] function, use try_parse instead.
-                sql_type = jinja_call("type_timestamp_with_timezone()")
+                if is_datetime_with_timezone(definition):
+                    sql_type = jinja_call("type_timestamp_with_timezone()")
+                else:
+                    sql_type = jinja_call("type_timestamp_without_timezone()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
-                sql_type = jinja_call("type_timestamp_with_timezone()")
                 return f"parseDateTime64BestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
             # in all other cases
-            sql_type = jinja_call("type_timestamp_with_timezone()")
-            if self.destination_type == DestinationType.MYSQL:
-                sql_type = f"{sql_type}(1024)"
+            if is_datetime_without_timezone(definition):
+                sql_type = jinja_call("type_timestamp_without_timezone()")
+            else:
+                sql_type = jinja_call("type_timestamp_with_timezone()")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_date(definition):
             if self.destination_type.value == DestinationType.MYSQL.value:
@@ -548,10 +554,22 @@ where 1 = 1
                 sql_type = jinja_call("type_date()")
                 return f"try_parse({replace_operation} as {sql_type}) as {column_name}"
             if self.destination_type == DestinationType.CLICKHOUSE:
-                sql_type = jinja_call("type_date()")
-                return f"parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation})) as {column_name}"
+                return f"toDate(parseDateTimeBestEffortOrNull(trim(BOTH '\"' from {replace_operation}))) as {column_name}"
             # in all other cases
             sql_type = jinja_call("type_date()")
+            return f"cast({replace_operation} as {sql_type}) as {column_name}"
+        elif is_time(definition):
+            if is_time_with_timezone(definition):
+                sql_type = jinja_call("type_time_with_timezone()")
+            else:
+                sql_type = jinja_call("type_time_without_timezone()")
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                sql_type = f"'{sql_type}'"
+                return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            if self.destination_type == DestinationType.MYSQL:
+                return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
+            replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif is_string(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_string()")
@@ -581,6 +599,18 @@ where 1 = 1
         """
         )
         return template.render(column_name=column_name)
+
+    @staticmethod
+    def generate_mysql_datetime_format_statement(column_name: str) -> Any:
+        regexp = r"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*"
+        template = Template(
+            """
+        case when {{column_name}} regexp '{{regexp}}' THEN STR_TO_DATE(SUBSTR({{column_name}}, 1, 19), '%Y-%m-%dT%H:%i:%S')
+        else cast(if({{column_name}} = '', NULL, {{column_name}}) as datetime)
+        end as {{column_name}}
+        """
+        )
+        return template.render(column_name=column_name, regexp=regexp)
 
     @staticmethod
     def generate_snowflake_timestamp_tz_statement(column_name: str) -> Any:

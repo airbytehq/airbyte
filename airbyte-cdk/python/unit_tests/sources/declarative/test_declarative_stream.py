@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 
 
-def test():
+def test_declarative_stream():
     name = "stream"
     primary_key = "pk"
     cursor_field = ["created_at"]
