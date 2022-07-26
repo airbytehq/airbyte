@@ -28,7 +28,7 @@ class InterpolatedRequestInputProvider:
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
-        Reuturns the request inputs to set on an outgoing HTTP request
+        Returns the request inputs to set on an outgoing HTTP request
         :param stream_state: The stream state
         :param stream_slice: The stream slice
         :param next_page_token: The pagination token

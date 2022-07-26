@@ -24,7 +24,7 @@ class InterpolatedString:
 
     def eval(self, config: Config, **kwargs):
         """
-        Interpolates the input string using the config, and kwargs passed as parameter.
+        Interpolates the input string using the config and other optional arguments passed as parameter.
 
         :param config: The user-provided configuration as specified by the source's spec
         :param kwargs: Optional parameters used for interpolation
@@ -41,17 +41,15 @@ class InterpolatedString:
     def create(
         cls,
         string_or_interpolated: Union["InterpolatedString", str],
-        default: Optional[str] = None,
     ):
         """
         Helper function to obtain an InterpolatedString from either a raw string or an InterpolatedString.
-
 
         :param string_or_interpolated: Either a raw string or an InterpolatedString.
         :param default: The default value to return if the evaluation returns an empty string
         :return: InterpolatedString representing the input string.
         """
         if isinstance(string_or_interpolated, str):
-            return InterpolatedString(string_or_interpolated, default=default)
+            return InterpolatedString(string_or_interpolated)
         else:
             return string_or_interpolated

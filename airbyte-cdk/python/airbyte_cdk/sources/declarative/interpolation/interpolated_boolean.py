@@ -26,7 +26,7 @@ class InterpolatedBoolean:
 
     def eval(self, config: Config, **kwargs):
         """
-        Interpolates the condition predicate condition string using the config, and kwargs passed as parameter.
+        Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
 
         :param config: The user-provided configuration as specified by the source's spec
         :param kwargs: Optional parameters used for interpolation

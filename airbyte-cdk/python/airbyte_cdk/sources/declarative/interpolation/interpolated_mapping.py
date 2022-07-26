@@ -22,7 +22,7 @@ class InterpolatedMapping:
 
     def eval(self, config: Config, **kwargs):
         """
-        Interpolates the mapping using the config, and kwargs passed as parameter.
+        Wrapper around a Mapping[str, str] that allows for both keys and values to be interpolated.
 
         :param config: The user-provided configuration as specified by the source's spec
         :param kwargs: Optional parameters used for interpolation

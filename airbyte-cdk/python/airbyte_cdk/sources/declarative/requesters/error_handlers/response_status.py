@@ -55,7 +55,7 @@ class ResponseStatus:
 
 """Response is successful. No need to retry"""
 SUCCESS: Final[ResponseStatus] = ResponseStatus(ResponseAction.SUCCESS)
-"""Response is failed. The failure needs to be handled"""
+"""Response is unsuccessful. The failure needs to be handled"""
 FAIL: Final[ResponseStatus] = ResponseStatus(ResponseAction.FAIL)
-"""Response is failed, but can be ignored. No need to retry"""
+"""Response is unsuccessful, but can be ignored. No need to retry"""
 IGNORE: Final[ResponseStatus] = ResponseStatus(ResponseAction.IGNORE)
