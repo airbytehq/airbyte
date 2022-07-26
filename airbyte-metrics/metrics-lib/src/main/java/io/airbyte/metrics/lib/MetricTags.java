@@ -16,7 +16,6 @@ public class MetricTags {
   public static final String RELEASE_STAGE = "release_stage";
   public static final String FAILURE_ORIGIN = "failure_origin";
   public static final String JOB_STATUS = "job_status";
-
   public static final String RESET_WORKFLOW_FAILURE = "cause";
 
   public static String getReleaseStage(final ReleaseStage stage) {
