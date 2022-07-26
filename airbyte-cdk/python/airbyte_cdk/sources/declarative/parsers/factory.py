@@ -49,7 +49,7 @@ class DeclarativeComponentFactory:
     the factory will lookup the `CLASS_TYPES_REGISTRY` and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
     and instantiate the object from the resulting mapping
 
-    If the component definition is a mapping with neighter a "class_name" nor a "type" field,
+    If the component definition is a mapping with neither a "class_name" nor a "type" field,
     the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
     If the type hint is an interface present in `DEFAULT_IMPLEMENTATIONS_REGISTRY`,
     then the factory will create an object of it's default implementation.
@@ -72,6 +72,28 @@ class DeclarativeComponentFactory:
     ```
     TopLevel(param=ParamType(k="v"))
     ```
+
+    Parameters can be passed down from a parent component to it's subcompoents using the $options key.
+    This can be used to avoid unecessary repetitions.
+    ```
+    outer:
+      $options:
+        MyKey: MyValue
+      inner:
+       k2: v2
+    ```
+    This the example above, if both outer and inner are types with a "MyKey" field, both of them will evaluate to "MyValue".
+
+    The value can also be used for string interpolation:
+    ```
+    outer:
+      $options:
+        MyKey: MyValue
+      inner:
+       k2: "MyKey is {{ options.MyKey }}"
+    ```
+    In this example, outer.inner.k2 will evaluate to "MyValue"
+
     """
 
     def __init__(self):
