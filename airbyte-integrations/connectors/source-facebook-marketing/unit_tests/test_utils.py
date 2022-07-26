@@ -19,7 +19,7 @@ from source_facebook_marketing.utils import ValidationDateException, validate_da
          f"date in the past by {DATA_RETENTION_PERIOD.months} months",
          "date in future"]
 )
-def test_validate_date_field(date, expected_massage, raise_error):
+def test_validate_date_field(date, expected_message, raise_error):
     field_name = "test_field_name"
 
     if raise_error:
