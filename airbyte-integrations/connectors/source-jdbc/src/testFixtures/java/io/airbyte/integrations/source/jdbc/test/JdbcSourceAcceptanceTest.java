@@ -339,7 +339,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   @Test
-  void testDiscoverWithNonCursorFields() throws Exception {
+  protected void testDiscoverWithNonCursorFields() throws Exception {
     createTableWithoutCursorTypeField();
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     AirbyteStream stream =
@@ -351,7 +351,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   @Test
-  void testDiscoverWithNullableCursorFields() throws Exception {
+  protected void testDiscoverWithNullableCursorFields() throws Exception {
     createTableWithNullableTypeField();
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     AirbyteStream stream =
