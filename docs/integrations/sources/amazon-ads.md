@@ -90,7 +90,7 @@ Information about expected report generation waiting time you may find [here](ht
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                           |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
-| 0.1.10 | 2022-07-26 | [00000](https://github.com/airbytehq/airbyte/pull/00000)    | Update `additionalProperties` field to true from schemas                                                          |
+| 0.1.10 | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042)    | Update `additionalProperties` field to true from schemas                                                          |
 | 0.1.9  | 2022-05-08 | [12541](https://github.com/airbytehq/airbyte/pull/12541)    | Improve documentation for Beta                                                                                    |
 | 0.1.8  | 2022-05-04 | [12482](https://github.com/airbytehq/airbyte/pull/12482)    | Update input configuration copy                                                                                   |
 | 0.1.7  | 2022-04-27 | [11730](https://github.com/airbytehq/airbyte/pull/11730)    | Update fields in source-connectors specifications                                                                 |
