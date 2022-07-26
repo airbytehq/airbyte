@@ -207,24 +207,6 @@ public abstract class JdbcSourceAcceptanceTest {
     return "&";
   }
 
-  protected void createTableWithoutCursorTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format(CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format(INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
-          getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
-    });
-  }
-
-  protected void createTableWithNullableTypeField() throws SQLException {
-    database.execute(connection -> {
-      connection.createStatement()
-          .execute(String.format(CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
-      connection.createStatement().execute(String.format(INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
-          getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
-    });
-  }
-
   public void setup() throws Exception {
     source = getSource();
     config = getConfig();
@@ -344,7 +326,12 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   protected void testDiscoverWithNonCursorFields() throws Exception {
-    createTableWithoutCursorTypeField();
+    database.execute(connection -> {
+      connection.createStatement()
+              .execute(String.format(CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format(INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY,
+              getFullyQualifiedTableName(TABLE_NAME_WITHOUT_CURSOR_TYPE)));
+    });
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     AirbyteStream stream =
         actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITHOUT_CURSOR_TYPE)).findFirst().orElse(null);
@@ -356,7 +343,12 @@ public abstract class JdbcSourceAcceptanceTest {
 
   @Test
   protected void testDiscoverWithNullableCursorFields() throws Exception {
-    createTableWithNullableTypeField();
+    database.execute(connection -> {
+      connection.createStatement()
+              .execute(String.format(CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY, getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE), COL_CURSOR));
+      connection.createStatement().execute(String.format(INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY,
+              getFullyQualifiedTableName(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)));
+    });
     final AirbyteCatalog actual = filterOutOtherSchemas(source.discover(config));
     AirbyteStream stream =
         actual.getStreams().stream().filter(s -> s.getName().equalsIgnoreCase(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE)).findFirst().orElse(null);
@@ -1131,5 +1123,4 @@ public abstract class JdbcSourceAcceptanceTest {
       throw new IllegalStateException("Failed to set environment variable", e);
     }
   }
-
 }
