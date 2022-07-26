@@ -32,7 +32,7 @@ class SnipeitStream(HttpStream, ABC):
     """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.limit_per_page: int = 10000
+        self.limit_per_page: int = 500
         self.total: int = 0
         self.offset: int = 0
 
