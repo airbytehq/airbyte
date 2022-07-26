@@ -30,12 +30,11 @@ class DeclarativeStream(Stream):
         checkpoint_interval: Optional[int] = None,
     ):
         """
-
         :param name: stream name
         :param primary_key: the primary key of the stream
-        :param schema_loader:
-        :param retriever:
-        :param cursor_field:
+        :param schema_loader: The schema loader
+        :param retriever: The retriever
+        :param cursor_field: The cursor field
         :param transformations: A list of transformations to be applied to each output record in the stream. Transformations are applied
         in the order in which they are defined.
         """
@@ -117,7 +116,6 @@ class DeclarativeStream(Stream):
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-        # TODO show an example of using pydantic to define the JSON schema, or reading an OpenAPI spec
         return self._schema_loader.get_json_schema()
 
     def stream_slices(
