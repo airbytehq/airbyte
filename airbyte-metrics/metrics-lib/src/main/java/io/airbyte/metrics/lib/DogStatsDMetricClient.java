@@ -21,9 +21,15 @@ import lombok.extern.slf4j.Slf4j;
  * Open source users are free to turn this on and consume the same metrics.
  * <p>
  * This class is intended to be used in conjunction with {@link Configs#getPublishMetrics()}.
+ * <p>
+ * Any {@link MetricAttribute}s provided with the metric data are sent as tags created by joining
+ * the {@code key} and {@code value} property of each {@link MetricAttribute} with a
+ * {@link #TAG_DELIMITER} delimiter.
  */
 @Slf4j
 public class DogStatsDMetricClient implements MetricClient {
+
+  private static final String TAG_DELIMITER = ":";
 
   private boolean instancePublish = false;
   private StatsDClient statsDClient;
@@ -122,7 +128,7 @@ public class DogStatsDMetricClient implements MetricClient {
    * @return An array of tag values.
    */
   private String[] toTags(final MetricAttribute... attributes) {
-    return Stream.of(attributes).map(a -> a.value()).collect(Collectors.toList()).toArray(new String[] {});
+    return Stream.of(attributes).map(a -> String.join(TAG_DELIMITER, a.key(), a.value())).collect(Collectors.toList()).toArray(new String[] {});
   }
 
 }

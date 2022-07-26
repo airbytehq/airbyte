@@ -54,7 +54,7 @@ public enum ToEmit {
     for (Pair<JobStatus, Double> pair : times) {
       MetricClientFactory.getMetricClient().distribution(
           OssMetricsRegistry.OVERALL_JOB_RUNTIME_IN_LAST_HOUR_BY_TERMINAL_STATE_SECS, pair.getRight(),
-          new MetricAttribute("job_status", MetricTags.getJobStatus(pair.getLeft())));
+          new MetricAttribute(MetricTags.JOB_STATUS, MetricTags.getJobStatus(pair.getLeft())));
     }
   }), 1, TimeUnit.HOURS);
 

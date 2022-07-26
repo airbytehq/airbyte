@@ -53,8 +53,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndStatusUpdateActivity {
 
-  private static final String RELEASE_STAGE_ATTRIBUTE_KEY = "release_stage";
-
   private final SyncJobFactory jobFactory;
   private final JobPersistence jobPersistence;
   private final TemporalWorkerRunFactory temporalWorkerRunFactory;
@@ -123,7 +121,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1,
-            new MetricAttribute(RELEASE_STAGE_ATTRIBUTE_KEY, MetricTags.getReleaseStage(stage)));
+            new MetricAttribute(MetricTags.RELEASE_STAGE, MetricTags.getReleaseStage(stage)));
       }
     }
   }
@@ -233,7 +231,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            new MetricAttribute("failure_origin", MetricTags.getFailureOrigin(reason.getFailureOrigin())));
+            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
       }
 
     } catch (final IOException e) {
@@ -333,7 +331,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
         MetricClientFactory.getMetricClient().count(metric, 1,
-            new MetricAttribute(RELEASE_STAGE_ATTRIBUTE_KEY, MetricTags.getReleaseStage(stage)));
+            new MetricAttribute(MetricTags.RELEASE_STAGE, MetricTags.getReleaseStage(stage)));
       }
     }
   }

@@ -98,15 +98,15 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "overall job runtime - scheduling and execution for all attempts - for jobs that reach terminal states in the last hour. tagged by terminal states."),
 
   TEMPORAL_WORKFLOW_RESTART_ATTEMPT(MetricEmittingApps.WORKER,
-      "temporal.workflow.restart.attempt",
+      "temporal_workflow_restart_attempt",
       "count of number of attempts to restart a workflow"),
 
   TEMPORAL_WORKFLOW_RESTART_SUCCESS(MetricEmittingApps.WORKER,
-      "temporal.workflow.restart.success",
+      "temporal_workflow_restart_success",
       "count of number of successful restarts performed by the workflow connection manager."),
 
   TEMPORAL_WORKFLOW_RESTART_FAILURE(MetricEmittingApps.WORKER,
-      "temporal.workflow.restart.failure",
+      "temporal_workflow_restart_failure",
       "count of the number of workflow restart failures");
 
   private final MetricEmittingApp application;
