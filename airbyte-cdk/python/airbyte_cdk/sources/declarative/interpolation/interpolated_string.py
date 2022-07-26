@@ -17,6 +17,7 @@ class InterpolatedString:
         """
         :param string: The string to evalute
         :param default: The default value to return if the evaluation returns an empty string
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._string = string
         self._default = default or string

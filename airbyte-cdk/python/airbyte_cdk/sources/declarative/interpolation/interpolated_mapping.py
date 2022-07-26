@@ -14,7 +14,6 @@ class InterpolatedMapping:
     def __init__(self, mapping: Mapping[str, Any], runtime_parameters: Mapping[str, Any]):
         """
         :param mapping: Mapping[str, str] to be evaluated
-        :param runtime_parameters: Interpolation parameters propagated by parent component
         :param runtime_parameters: Additional runtime parameters to be used for string interpolation
         """
         self._mapping = mapping
