@@ -215,6 +215,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               : new DefaultAirbyteSource(workerConfigs, sourceLauncher);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
+      LOGGER.info("metric client is:");
+      LOGGER.info(String.valueOf(metricClient));
 
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),

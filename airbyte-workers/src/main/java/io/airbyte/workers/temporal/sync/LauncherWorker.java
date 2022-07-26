@@ -36,6 +36,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Coordinates configuring and managing the state of an async process. This is tied to the (job_id,
@@ -63,6 +65,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(LauncherWorker.class);
+
   public LauncherWorker(final UUID connectionId,
                         final String application,
                         final String podNamePrefix,
@@ -72,6 +76,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final ResourceRequirements resourceRequirements,
                         final Class<OUTPUT> outputClass,
                         final Supplier<ActivityExecutionContext> activityContext) {
+
     this.connectionId = connectionId;
     this.application = application;
     this.podNamePrefix = podNamePrefix;
@@ -94,6 +99,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         final Map<String, String> fileMap = new HashMap<>(additionalFileMap);
+        LOGGER.info("env map of vars to transfer");
+        LOGGER.info(String.valueOf(envMap));
         fileMap.putAll(Map.of(
             OrchestratorConstants.INIT_FILE_APPLICATION, application,
             OrchestratorConstants.INIT_FILE_JOB_RUN_CONFIG, Jsons.serialize(jobRunConfig),
