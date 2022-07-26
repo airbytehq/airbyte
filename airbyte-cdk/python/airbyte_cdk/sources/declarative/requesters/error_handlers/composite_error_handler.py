@@ -13,6 +13,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 
 class CompositeErrorHandler(ErrorHandler):
     """
+    Error handler that sequentially iterates over a list of `ErrorHandler`s
+
     Sample config chaining 2 different retriers:
         error_handler:
           type: "CompositeErrorHandler"
@@ -33,7 +35,6 @@ class CompositeErrorHandler(ErrorHandler):
 
     def __init__(self, error_handlers: List[ErrorHandler]):
         """
-
         :param error_handlers: list of error handlers
         """
         self._error_handlers = error_handlers

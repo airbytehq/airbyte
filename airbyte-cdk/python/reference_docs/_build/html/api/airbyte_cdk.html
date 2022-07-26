@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subpackages &mdash; Airbyte Connector Development Kit  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/airbyte_new_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Destinations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html#module-airbyte_cdk.destinations.destination">airbyte_cdk.destinations.destination module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html#module-airbyte_cdk.destinations">Module contents</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html#module-airbyte_cdk.models.airbyte_protocol">airbyte_cdk.models.airbyte_protocol module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html#module-airbyte_cdk.models">Module contents</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Sources</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html">Subpackages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#submodules">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.abstract_source">airbyte_cdk.sources.abstract_source module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.config">airbyte_cdk.sources.config module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.source">airbyte_cdk.sources.source module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources">Module contents</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utils</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.airbyte_secrets_utils">airbyte_cdk.utils.airbyte_secrets_utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.event_timing">airbyte_cdk.utils.event_timing module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.traced_exception">airbyte_cdk.utils.traced_exception module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils">Module contents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Airbyte Connector Development Kit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Subpackages</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/airbyte_cdk.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="subpackages">
+<h1>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html#module-airbyte_cdk.destinations.destination">airbyte_cdk.destinations.destination module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html#module-airbyte_cdk.destinations">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html#module-airbyte_cdk.models.airbyte_protocol">airbyte_cdk.models.airbyte_protocol module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html#module-airbyte_cdk.models">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html">Subpackages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.checks.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.checks.html#module-airbyte_cdk.sources.declarative.checks.check_stream">airbyte_cdk.sources.declarative.checks.check_stream module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.checks.html#module-airbyte_cdk.sources.declarative.checks.connection_checker">airbyte_cdk.sources.declarative.checks.connection_checker module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.checks.html#module-airbyte_cdk.sources.declarative.checks">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.datetime.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.datetime.html#module-airbyte_cdk.sources.declarative.datetime.min_max_datetime">airbyte_cdk.sources.declarative.datetime.min_max_datetime module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.datetime.html#module-airbyte_cdk.sources.declarative.datetime">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.decoders.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.decoders.html#module-airbyte_cdk.sources.declarative.decoders.decoder">airbyte_cdk.sources.declarative.decoders.decoder module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.decoders.html#module-airbyte_cdk.sources.declarative.decoders.json_decoder">airbyte_cdk.sources.declarative.decoders.json_decoder module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.decoders.html#module-airbyte_cdk.sources.declarative.decoders">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.extractors.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.extractors.html#module-airbyte_cdk.sources.declarative.extractors.http_selector">airbyte_cdk.sources.declarative.extractors.http_selector module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.extractors.html#module-airbyte_cdk.sources.declarative.extractors.jello">airbyte_cdk.sources.declarative.extractors.jello module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.extractors.html#module-airbyte_cdk.sources.declarative.extractors.record_filter">airbyte_cdk.sources.declarative.extractors.record_filter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.extractors.html#module-airbyte_cdk.sources.declarative.extractors.record_selector">airbyte_cdk.sources.declarative.extractors.record_selector module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.extractors.html#module-airbyte_cdk.sources.declarative.extractors">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html#module-airbyte_cdk.sources.declarative.interpolation.interpolated_boolean">airbyte_cdk.sources.declarative.interpolation.interpolated_boolean module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html#module-airbyte_cdk.sources.declarative.interpolation.interpolated_mapping">airbyte_cdk.sources.declarative.interpolation.interpolated_mapping module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html#module-airbyte_cdk.sources.declarative.interpolation.interpolated_string">airbyte_cdk.sources.declarative.interpolation.interpolated_string module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html#module-airbyte_cdk.sources.declarative.interpolation.interpolation">airbyte_cdk.sources.declarative.interpolation.interpolation module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html#module-airbyte_cdk.sources.declarative.interpolation.jinja">airbyte_cdk.sources.declarative.interpolation.jinja module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.interpolation.html#module-airbyte_cdk.sources.declarative.interpolation">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers.class_types_registry">airbyte_cdk.sources.declarative.parsers.class_types_registry module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers.config_parser">airbyte_cdk.sources.declarative.parsers.config_parser module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers.default_implementation_registry">airbyte_cdk.sources.declarative.parsers.default_implementation_registry module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers.factory">airbyte_cdk.sources.declarative.parsers.factory module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers.undefined_reference_exception">airbyte_cdk.sources.declarative.parsers.undefined_reference_exception module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers.yaml_parser">airbyte_cdk.sources.declarative.parsers.yaml_parser module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.parsers.html#module-airbyte_cdk.sources.declarative.parsers">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.html">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#airbyte-cdk-sources-declarative-requesters-paginators-conditional-paginator-module">airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#airbyte-cdk-sources-declarative-requesters-paginators-interpolated-paginator-module">airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#airbyte-cdk-sources-declarative-requesters-paginators-next-page-url-paginator-module">airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#module-airbyte_cdk.sources.declarative.requesters.paginators.no_pagination">airbyte_cdk.sources.declarative.requesters.paginators.no_pagination module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#airbyte-cdk-sources-declarative-requesters-paginators-offset-paginator-module">airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#module-airbyte_cdk.sources.declarative.requesters.paginators.paginator">airbyte_cdk.sources.declarative.requesters.paginators.paginator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.paginators.html#module-airbyte_cdk.sources.declarative.requesters.paginators">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_headers.html">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_headers.html#module-airbyte_cdk.sources.declarative.requesters.request_headers.interpolated_request_header_provider">airbyte_cdk.sources.declarative.requesters.request_headers.interpolated_request_header_provider module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_headers.html#module-airbyte_cdk.sources.declarative.requesters.request_headers.request_header_provider">airbyte_cdk.sources.declarative.requesters.request_headers.request_header_provider module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_headers.html#module-airbyte_cdk.sources.declarative.requesters.request_headers">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_options.html">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_options.html#module-airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider">airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_options.html#module-airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider">airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.request_options.html#module-airbyte_cdk.sources.declarative.requesters.request_options">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.retriers.html">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.retriers.html#airbyte-cdk-sources-declarative-requesters-retriers-default-retrier-module">airbyte_cdk.sources.declarative.requesters.retriers.default_retrier module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.retriers.html#airbyte-cdk-sources-declarative-requesters-retriers-retrier-module">airbyte_cdk.sources.declarative.requesters.retriers.retrier module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.retriers.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.html#module-airbyte_cdk.sources.declarative.requesters.http_requester">airbyte_cdk.sources.declarative.requesters.http_requester module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.html#module-airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider">airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.html#module-airbyte_cdk.sources.declarative.requesters.requester">airbyte_cdk.sources.declarative.requesters.requester module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.requesters.html#module-airbyte_cdk.sources.declarative.requesters">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.retrievers.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.retrievers.html#module-airbyte_cdk.sources.declarative.retrievers.retriever">airbyte_cdk.sources.declarative.retrievers.retriever module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.retrievers.html#module-airbyte_cdk.sources.declarative.retrievers.simple_retriever">airbyte_cdk.sources.declarative.retrievers.simple_retriever module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.retrievers.html#module-airbyte_cdk.sources.declarative.retrievers">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.schema.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.schema.html#module-airbyte_cdk.sources.declarative.schema.json_schema">airbyte_cdk.sources.declarative.schema.json_schema module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.schema.html#module-airbyte_cdk.sources.declarative.schema.schema_loader">airbyte_cdk.sources.declarative.schema.schema_loader module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.schema.html#module-airbyte_cdk.sources.declarative.schema">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.states.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.states.html#module-airbyte_cdk.sources.declarative.states.dict_state">airbyte_cdk.sources.declarative.states.dict_state module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.states.html#module-airbyte_cdk.sources.declarative.states.state">airbyte_cdk.sources.declarative.states.state module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.states.html#module-airbyte_cdk.sources.declarative.states">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer">airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer">airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer">airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers.single_slice">airbyte_cdk.sources.declarative.stream_slicers.single_slice module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers.stream_slicer">airbyte_cdk.sources.declarative.stream_slicers.stream_slicer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers.substream_slicer">airbyte_cdk.sources.declarative.stream_slicers.substream_slicer module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.declarative.stream_slicers.html#module-airbyte_cdk.sources.declarative.stream_slicers">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.create_partial">airbyte_cdk.sources.declarative.create_partial module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.declarative_source">airbyte_cdk.sources.declarative.declarative_source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.declarative_stream">airbyte_cdk.sources.declarative.declarative_stream module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.types">airbyte_cdk.sources.declarative.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.yaml_declarative_source">airbyte_cdk.sources.declarative.yaml_declarative_source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html#module-airbyte_cdk.sources.deprecated.base_source">airbyte_cdk.sources.deprecated.base_source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html#module-airbyte_cdk.sources.deprecated.client">airbyte_cdk.sources.deprecated.client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html#module-airbyte_cdk.sources.deprecated">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html#module-airbyte_cdk.sources.singer.singer_helpers">airbyte_cdk.sources.singer.singer_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html#module-airbyte_cdk.sources.singer.source">airbyte_cdk.sources.singer.source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html#module-airbyte_cdk.sources.singer">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.html">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth.core">airbyte_cdk.sources.streams.http.auth.core module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth.oauth">airbyte_cdk.sources.streams.http.auth.oauth module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth.token">airbyte_cdk.sources.streams.http.auth.token module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth">Module contents</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html#module-airbyte_cdk.sources.streams.http.requests_native_auth.oauth">airbyte_cdk.sources.streams.http.requests_native_auth.oauth module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html#module-airbyte_cdk.sources.streams.http.requests_native_auth.token">airbyte_cdk.sources.streams.http.requests_native_auth.token module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html#module-airbyte_cdk.sources.streams.http.requests_native_auth">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.exceptions">airbyte_cdk.sources.streams.http.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.http">airbyte_cdk.sources.streams.http.http module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.rate_limiting">airbyte_cdk.sources.streams.http.rate_limiting module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.html#module-airbyte_cdk.sources.streams.core">airbyte_cdk.sources.streams.core module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.html#module-airbyte_cdk.sources.streams">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.casing">airbyte_cdk.sources.utils.casing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.catalog_helpers">airbyte_cdk.sources.utils.catalog_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.schema_helpers">airbyte_cdk.sources.utils.schema_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.schema_models">airbyte_cdk.sources.utils.schema_models module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.transform">airbyte_cdk.sources.utils.transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#submodules">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.abstract_source">airbyte_cdk.sources.abstract_source module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.config">airbyte_cdk.sources.config module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.source">airbyte_cdk.sources.source module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources">Module contents</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.airbyte_secrets_utils">airbyte_cdk.utils.airbyte_secrets_utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.event_timing">airbyte_cdk.utils.event_timing module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.traced_exception">airbyte_cdk.utils.traced_exception module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils">Module contents</a></li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h1>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h1>
+</section>
+<section id="module-airbyte_cdk.connector">
+<span id="airbyte-cdk-connector-module"></span><h1>airbyte_cdk.connector module<a class="headerlink" href="#module-airbyte_cdk.connector" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.AirbyteSpec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.connector.</span></span><span class="sig-name descname"><span class="pre">AirbyteSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.connector.AirbyteSpec" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.AirbyteSpec.from_file">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.connector.AirbyteSpec.from_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.connector.</span></span><span class="sig-name descname"><span class="pre">BaseConnector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">airbyte_cdk.connector.TConfig</span></code>]</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector.check">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">logging.Logger</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">airbyte_cdk.connector.TConfig</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus" title="airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus"><span class="pre">airbyte_cdk.models.airbyte_protocol.AirbyteConnectionStatus</span></a></span></span><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector.check" title="Permalink to this definition"></a></dt>
+<dd><p>Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
+to the Stripe API.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector.check_config_against_spec">
+<span class="sig-name descname"><span class="pre">check_config_against_spec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector.check_config_against_spec" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector.configure">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">airbyte_cdk.connector.TConfig</span></span></span><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector.configure" title="Permalink to this definition"></a></dt>
+<dd><p>Persist config in temporary directory to run the Source job</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector.read_config">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">airbyte_cdk.connector.TConfig</span></span></span><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector.read_config" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector.spec">
+<span class="sig-name descname"><span class="pre">spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">logging.Logger</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.ConnectorSpecification" title="airbyte_cdk.models.airbyte_protocol.ConnectorSpecification"><span class="pre">airbyte_cdk.models.airbyte_protocol.ConnectorSpecification</span></a></span></span><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector.spec" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
+required to run this integration. By default, this will be loaded from a “spec.yaml” or a “spec.json” in the package root.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.BaseConnector.write_config">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">airbyte_cdk.connector.TConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.connector.BaseConnector.write_config" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.Connector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.connector.</span></span><span class="sig-name descname"><span class="pre">Connector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.connector.Connector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#airbyte_cdk.connector.DefaultConnectorMixin" title="airbyte_cdk.connector.DefaultConnectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">airbyte_cdk.connector.DefaultConnectorMixin</span></code></a>, <a class="reference internal" href="#airbyte_cdk.connector.BaseConnector" title="airbyte_cdk.connector.BaseConnector"><code class="xref py py-class docutils literal notranslate"><span class="pre">airbyte_cdk.connector.BaseConnector</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.DefaultConnectorMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.connector.</span></span><span class="sig-name descname"><span class="pre">DefaultConnectorMixin</span></span><a class="headerlink" href="#airbyte_cdk.connector.DefaultConnectorMixin" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.DefaultConnectorMixin.configure">
+<span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.connector.DefaultConnectorMixin.configure" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.connector.load_optional_package_file">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.connector.</span></span><span class="sig-name descname"><span class="pre">load_optional_package_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.connector.load_optional_package_file" title="Permalink to this definition"></a></dt>
+<dd><p>Gets a resource from a package, returning None if it does not exist</p>
+</dd></dl>
+
+</section>
+<section id="module-airbyte_cdk.entrypoint">
+<span id="airbyte-cdk-entrypoint-module"></span><h1>airbyte_cdk.entrypoint module<a class="headerlink" href="#module-airbyte_cdk.entrypoint" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.entrypoint.AirbyteEntrypoint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.entrypoint.</span></span><span class="sig-name descname"><span class="pre">AirbyteEntrypoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.sources.html#airbyte_cdk.sources.source.Source" title="airbyte_cdk.sources.source.Source"><span class="pre">airbyte_cdk.sources.source.Source</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.entrypoint.AirbyteEntrypoint" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.entrypoint.AirbyteEntrypoint.parse_args">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">argparse.Namespace</span></span></span><a class="headerlink" href="#airbyte_cdk.entrypoint.AirbyteEntrypoint.parse_args" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.entrypoint.AirbyteEntrypoint.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parsed_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">argparse.Namespace</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.entrypoint.AirbyteEntrypoint.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.entrypoint.launch">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.entrypoint.</span></span><span class="sig-name descname"><span class="pre">launch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.sources.html#airbyte_cdk.sources.source.Source" title="airbyte_cdk.sources.source.Source"><span class="pre">airbyte_cdk.sources.source.Source</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.entrypoint.launch" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.entrypoint.main">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.entrypoint.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.entrypoint.main" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-airbyte_cdk.exception_handler">
+<span id="airbyte-cdk-exception-handler-module"></span><h1>airbyte_cdk.exception_handler module<a class="headerlink" href="#module-airbyte_cdk.exception_handler" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.exception_handler.init_uncaught_exception_handler">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.exception_handler.</span></span><span class="sig-name descname"><span class="pre">init_uncaught_exception_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">logging.Logger</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#airbyte_cdk.exception_handler.init_uncaught_exception_handler" title="Permalink to this definition"></a></dt>
+<dd><p>Handles uncaught exceptions by emitting an AirbyteTraceMessage and making sure they are not
+printed to the console without having secrets removed.</p>
+</dd></dl>
+
+</section>
+<section id="module-airbyte_cdk.logger">
+<span id="airbyte-cdk-logger-module"></span><h1>airbyte_cdk.logger module<a class="headerlink" href="#module-airbyte_cdk.logger" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogFormatter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.logger.</span></span><span class="sig-name descname"><span class="pre">AirbyteLogFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogFormatter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">logging.Formatter</span></code></p>
+<p>Output log records using AirbyteMessage</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogFormatter.extract_extra_args_from_record">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extract_extra_args_from_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">logging.LogRecord</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogFormatter.extract_extra_args_from_record" title="Permalink to this definition"></a></dt>
+<dd><p>The python logger conflates default args with extra args. We use an empty log record and set operations
+to isolate fields passed to the log record via extra by the developer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogFormatter.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">logging.LogRecord</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogFormatter.format" title="Permalink to this definition"></a></dt>
+<dd><p>Return a JSON representation of the log message</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogFormatter.level_mapping">
+<span class="sig-name descname"><span class="pre">level_mapping</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{10:</span> <span class="pre">'DEBUG',</span> <span class="pre">20:</span> <span class="pre">'INFO',</span> <span class="pre">30:</span> <span class="pre">'WARN',</span> <span class="pre">40:</span> <span class="pre">'ERROR',</span> <span class="pre">50:</span> <span class="pre">'FATAL'}</span></em><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogFormatter.level_mapping" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.logger.</span></span><span class="sig-name descname"><span class="pre">AirbyteLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.debug">
+<span class="sig-name descname"><span class="pre">debug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.debug" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.exception">
+<span class="sig-name descname"><span class="pre">exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.exception" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.fatal">
+<span class="sig-name descname"><span class="pre">fatal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.fatal" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.info">
+<span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.log">
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.log" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.trace">
+<span class="sig-name descname"><span class="pre">trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.trace" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.AirbyteLogger.warn">
+<span class="sig-name descname"><span class="pre">warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.AirbyteLogger.warn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.init_logger">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.logger.</span></span><span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.logger.init_logger" title="Permalink to this definition"></a></dt>
+<dd><p>Initial set up of logger</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.logger.log_by_prefix">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.logger.</span></span><span class="sig-name descname"><span class="pre">log_by_prefix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.logger.log_by_prefix" title="Permalink to this definition"></a></dt>
+<dd><p>Custom method, which takes log level from first word of message</p>
+</dd></dl>
+
+</section>
+<section id="module-airbyte_cdk">
+<span id="module-contents"></span><h1>Module contents<a class="headerlink" href="#module-airbyte_cdk" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteEntrypoint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.</span></span><span class="sig-name descname"><span class="pre">AirbyteEntrypoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.sources.html#airbyte_cdk.sources.source.Source" title="airbyte_cdk.sources.source.Source"><span class="pre">airbyte_cdk.sources.source.Source</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteEntrypoint" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteEntrypoint.parse_args">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_args</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">argparse.Namespace</span></span></span><a class="headerlink" href="#airbyte_cdk.AirbyteEntrypoint.parse_args" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteEntrypoint.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parsed_args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">argparse.Namespace</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.AirbyteEntrypoint.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.</span></span><span class="sig-name descname"><span class="pre">AirbyteLogger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.debug">
+<span class="sig-name descname"><span class="pre">debug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.debug" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.error" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.exception">
+<span class="sig-name descname"><span class="pre">exception</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.exception" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.fatal">
+<span class="sig-name descname"><span class="pre">fatal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.fatal" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.info">
+<span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.info" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.log">
+<span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.log" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.trace">
+<span class="sig-name descname"><span class="pre">trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.trace" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteLogger.warn">
+<span class="sig-name descname"><span class="pre">warn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteLogger.warn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteSpec">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.</span></span><span class="sig-name descname"><span class="pre">AirbyteSpec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec_string</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteSpec" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.AirbyteSpec.from_file">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.AirbyteSpec.from_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.Connector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.</span></span><span class="sig-name descname"><span class="pre">Connector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.Connector" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#airbyte_cdk.connector.DefaultConnectorMixin" title="airbyte_cdk.connector.DefaultConnectorMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">airbyte_cdk.connector.DefaultConnectorMixin</span></code></a>, <a class="reference internal" href="#airbyte_cdk.connector.BaseConnector" title="airbyte_cdk.connector.BaseConnector"><code class="xref py py-class docutils literal notranslate"><span class="pre">airbyte_cdk.connector.BaseConnector</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Airbyte.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -3,22 +3,26 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Union
+from typing import List, Optional, Union
 
 import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, FieldPointer, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, FieldPointer, Record, StreamSlice, StreamState
 
 
 @dataclass(frozen=True)
 class AddedFieldDefinition:
+    """Defines the field to add on a record"""
+
     path: FieldPointer
     value: Union[InterpolatedString, str]
 
 
 @dataclass(frozen=True)
 class ParsedAddFieldDefinition:
+    """Defines the field to add on a record"""
+
     path: FieldPointer
     value: InterpolatedString
 
@@ -86,8 +90,12 @@ class AddFields(RecordTransformation):
                 self._fields.append(ParsedAddFieldDefinition(field.path, field.value))
 
     def transform(
-        self, record: Mapping[str, Any], config: Config = None, stream_state: StreamState = None, stream_slice: StreamSlice = None
-    ) -> Mapping[str, Any]:
+        self,
+        record: Record,
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Record:
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for field in self._fields:
             value = field.value.eval(config, **kwargs)

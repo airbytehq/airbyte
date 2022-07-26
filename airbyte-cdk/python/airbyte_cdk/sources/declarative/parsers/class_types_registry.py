@@ -9,6 +9,8 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import ConstantBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.exponential_backoff_strategy import (
     ExponentialBackoffStrategy,
@@ -28,6 +30,9 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 
+"""
+CLASS_TYPES_REGISTRY contains a mapping of developer-friendly string -> class to abstract the specific class referred to
+"""
 CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "AddFields": AddFields,
     "ApiKeyAuthenticator": ApiKeyAuthenticator,
@@ -42,6 +47,8 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "DefaultErrorHandler": DefaultErrorHandler,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
+    "InterpolatedBoolean": InterpolatedBoolean,
+    "InterpolatedString": InterpolatedString,
     "JelloExtractor": JelloExtractor,
     "JsonSchema": JsonSchema,
     "LimitPaginator": LimitPaginator,

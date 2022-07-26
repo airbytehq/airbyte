@@ -19,6 +19,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 class DefaultErrorHandler(ErrorHandler):
     """
     Default error handler.
+
     By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.
 
     If the response is successful, then return SUCCESS

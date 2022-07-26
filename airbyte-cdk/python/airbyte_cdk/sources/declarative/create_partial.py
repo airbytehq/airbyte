@@ -9,13 +9,12 @@ OPTIONS_STR = "$options"
 
 def create(func, /, *args, **keywords):
     """
-    Create a partial while propagating parent component $options.
-
+    Create a partial on steroids.
     Returns a partial object which when called will behave like func called with the arguments supplied.
     Parameters will be interpolated before the creation of the object
     The interpolation will take in kwargs, and config as parameters that can be accessed through interpolating.
     If any of the parameters are also create functions, they will also be created.
-    parent $options are propagated to the recursive method calls
+    kwargs are propagated to the recursive method calls
 
     :param func: Function
     :param args:
@@ -31,8 +30,8 @@ def create(func, /, *args, **keywords):
         config = all_keywords.pop("config", None)
 
         # $options is a special keyword used for interpolation and propagation
-        if "$options" in all_keywords:
-            options = all_keywords.get("$options")
+        if OPTIONS_STR in all_keywords:
+            options = all_keywords.get(OPTIONS_STR)
         else:
             options = dict()
 

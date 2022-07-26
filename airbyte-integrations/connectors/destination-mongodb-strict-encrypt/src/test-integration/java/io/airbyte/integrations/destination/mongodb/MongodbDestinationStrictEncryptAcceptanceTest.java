@@ -89,7 +89,10 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace, final JsonNode streamSchema) {
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema) {
     final var collection = mongoDatabase.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
     final List<JsonNode> result = new ArrayList<>();
     try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {

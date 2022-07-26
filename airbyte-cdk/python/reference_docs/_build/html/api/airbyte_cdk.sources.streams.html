@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subpackages &mdash; Airbyte Connector Development Kit  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Subpackages" href="airbyte_cdk.sources.streams.http.html" />
+    <link rel="prev" title="Submodules" href="airbyte_cdk.sources.singer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html">
+            <img src="../_static/airbyte_new_logo.svg" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Destinations</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html#module-airbyte_cdk.destinations.destination">airbyte_cdk.destinations.destination module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.destinations.html#module-airbyte_cdk.destinations">Module contents</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Models</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html#module-airbyte_cdk.models.airbyte_protocol">airbyte_cdk.models.airbyte_protocol module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.models.html#module-airbyte_cdk.models">Module contents</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Sources</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="airbyte_cdk.sources.html">Subpackages</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html">Subpackages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.create_partial">airbyte_cdk.sources.declarative.create_partial module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.declarative_source">airbyte_cdk.sources.declarative.declarative_source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.declarative_stream">airbyte_cdk.sources.declarative.declarative_stream module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.types">airbyte_cdk.sources.declarative.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative.yaml_declarative_source">airbyte_cdk.sources.declarative.yaml_declarative_source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.declarative.html#module-airbyte_cdk.sources.declarative">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html#module-airbyte_cdk.sources.deprecated.base_source">airbyte_cdk.sources.deprecated.base_source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html#module-airbyte_cdk.sources.deprecated.client">airbyte_cdk.sources.deprecated.client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.deprecated.html#module-airbyte_cdk.sources.deprecated">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html#module-airbyte_cdk.sources.singer.singer_helpers">airbyte_cdk.sources.singer.singer_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html#module-airbyte_cdk.sources.singer.source">airbyte_cdk.sources.singer.source module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.singer.html#module-airbyte_cdk.sources.singer">Module contents</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html">Subpackages</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.exceptions">airbyte_cdk.sources.streams.http.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.http">airbyte_cdk.sources.streams.http.http module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.rate_limiting">airbyte_cdk.sources.streams.http.rate_limiting module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-airbyte_cdk.sources.streams.core">airbyte_cdk.sources.streams.core module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-airbyte_cdk.sources.streams">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.casing">airbyte_cdk.sources.utils.casing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.catalog_helpers">airbyte_cdk.sources.utils.catalog_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.schema_helpers">airbyte_cdk.sources.utils.schema_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.schema_models">airbyte_cdk.sources.utils.schema_models module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils.transform">airbyte_cdk.sources.utils.transform module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.utils.html#module-airbyte_cdk.sources.utils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#submodules">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.abstract_source">airbyte_cdk.sources.abstract_source module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.config">airbyte_cdk.sources.config module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources.source">airbyte_cdk.sources.source module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.html#module-airbyte_cdk.sources">Module contents</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utils</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.airbyte_secrets_utils">airbyte_cdk.utils.airbyte_secrets_utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.event_timing">airbyte_cdk.utils.event_timing module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils.traced_exception">airbyte_cdk.utils.traced_exception module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.utils.html#module-airbyte_cdk.utils">Module contents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Airbyte Connector Development Kit</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="airbyte_cdk.sources.html">Subpackages</a> &raquo;</li>
+      <li>Subpackages</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/airbyte_cdk.sources.streams.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="subpackages">
+<h1>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html">Subpackages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth.core">airbyte_cdk.sources.streams.http.auth.core module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth.oauth">airbyte_cdk.sources.streams.http.auth.oauth module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth.token">airbyte_cdk.sources.streams.http.auth.token module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.auth.html#module-airbyte_cdk.sources.streams.http.auth">Module contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html#module-airbyte_cdk.sources.streams.http.requests_native_auth.oauth">airbyte_cdk.sources.streams.http.requests_native_auth.oauth module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html#module-airbyte_cdk.sources.streams.http.requests_native_auth.token">airbyte_cdk.sources.streams.http.requests_native_auth.token module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="airbyte_cdk.sources.streams.http.requests_native_auth.html#module-airbyte_cdk.sources.streams.http.requests_native_auth">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#submodules">Submodules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.exceptions">airbyte_cdk.sources.streams.http.exceptions module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.http">airbyte_cdk.sources.streams.http.http module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http.rate_limiting">airbyte_cdk.sources.streams.http.rate_limiting module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="airbyte_cdk.sources.streams.http.html#module-airbyte_cdk.sources.streams.http">Module contents</a></li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h1>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h1>
+</section>
+<section id="module-airbyte_cdk.sources.streams.core">
+<span id="airbyte-cdk-sources-streams-core-module"></span><h1>airbyte_cdk.sources.streams.core module<a class="headerlink" href="#module-airbyte_cdk.sources.streams.core" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.IncrementalMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.sources.streams.core.</span></span><span class="sig-name descname"><span class="pre">IncrementalMixin</span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.IncrementalMixin" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Mixin to make stream incremental.</p>
+<dl>
+<dt>class IncrementalStream(Stream, IncrementalMixin):</dt><dd><p>&#64;property
+def state(self):</p>
+<blockquote>
+<div><p>return self._state</p>
+</div></blockquote>
+<p>&#64;state.setter
+def state(self, value):</p>
+<blockquote>
+<div><p>self._state[self.cursor_field] = value[self.cursor_field]</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.IncrementalMixin.state">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MutableMapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.IncrementalMixin.state" title="Permalink to this definition"></a></dt>
+<dd><p>State getter, should return state in form that can serialized to a string and send to the output
+as a STATE AirbyteMessage.</p>
+<dl>
+<dt>A good example of a state is a cursor_value:</dt><dd><blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>self.cursor_field: “cursor_value”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>State should try to be as small as possible but at the same time descriptive enough to restore
+syncing process from the point where it stopped.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.sources.streams.core.</span></span><span class="sig-name descname"><span class="pre">Stream</span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Base abstract class for an Airbyte Stream. Makes no assumption of the Stream’s underlying transport protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.as_airbyte_stream">
+<span class="sig-name descname"><span class="pre">as_airbyte_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.AirbyteStream" title="airbyte_cdk.models.airbyte_protocol.AirbyteStream"><span class="pre">airbyte_cdk.models.airbyte_protocol.AirbyteStream</span></a></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.as_airbyte_stream" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.cursor_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cursor_field</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.cursor_field" title="Permalink to this definition"></a></dt>
+<dd><p>Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+:return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.get_error_display_message">
+<span class="sig-name descname"><span class="pre">get_error_display_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.get_error_display_message" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the user-friendly display message that corresponds to an exception.
+This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.</p>
+<p>The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>exception</strong> – The exception that was raised</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A user-friendly message that indicates the cause of the error</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.get_json_schema">
+<span class="sig-name descname"><span class="pre">get_json_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.get_json_schema" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dict of the JSON schema representing this stream.</p>
+</dd>
+</dl>
+<p>The default implementation of this method looks for a JSONSchema file with the same name as this stream’s “name” property.
+Override as needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.get_updated_state">
+<span class="sig-name descname"><span class="pre">get_updated_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_stream_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MutableMapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latest_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.get_updated_state" title="Permalink to this definition"></a></dt>
+<dd><p>Override to extract state from the latest record. Needed to implement incremental sync.</p>
+<p>Inspects the latest record extracted from the data source and the current state object and return an updated state object.</p>
+<p>For example: if the state object is based on created_at timestamp, and the current state is {‘created_at’: 10}, and the latest_record is
+{‘name’: ‘octavia’, ‘created_at’: 20 } then this method would return {‘created_at’: 20} to indicate state should be updated to this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_stream_state</strong> – The stream’s current state object</p></li>
+<li><p><strong>latest_record</strong> – The latest record extracted from the stream</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An updated state object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.logger">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.name" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Stream name. By default this is the implementing class name, but it can be overridden as needed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.namespace">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">namespace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.namespace" title="Permalink to this definition"></a></dt>
+<dd><p>Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+:return: A string containing the name of the namespace.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.primary_key">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">primary_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.primary_key" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+If the stream has no primary keys, return None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.read_records">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sync_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.SyncMode" title="airbyte_cdk.models.airbyte_protocol.SyncMode"><span class="pre">airbyte_cdk.models.airbyte_protocol.SyncMode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cursor_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.read_records" title="Permalink to this definition"></a></dt>
+<dd><p>This method should be overridden by subclasses to read records based on the inputs</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.source_defined_cursor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_defined_cursor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.source_defined_cursor" title="Permalink to this definition"></a></dt>
+<dd><p>Return False if the cursor can be configured by the user.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.state_checkpoint_interval">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state_checkpoint_interval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.state_checkpoint_interval" title="Permalink to this definition"></a></dt>
+<dd><p>Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.</p>
+<p>Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.</p>
+<p>return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.stream_slices">
+<span class="sig-name descname"><span class="pre">stream_slices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.SyncMode" title="airbyte_cdk.models.airbyte_protocol.SyncMode"><span class="pre">airbyte_cdk.models.airbyte_protocol.SyncMode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cursor_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.stream_slices" title="Permalink to this definition"></a></dt>
+<dd><p>Override to define the slices for this stream. See the stream slicing section of the docs for more information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sync_mode</strong> – </p></li>
+<li><p><strong>cursor_field</strong> – </p></li>
+<li><p><strong>stream_state</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.supports_incremental">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supports_incremental</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.supports_incremental" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if this stream supports incrementally reading data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.Stream.transformer">
+<span class="sig-name descname"><span class="pre">transformer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="airbyte_cdk.sources.utils.html#airbyte_cdk.sources.utils.transform.TypeTransformer" title="airbyte_cdk.sources.utils.transform.TypeTransformer"><span class="pre">airbyte_cdk.sources.utils.transform.TypeTransformer</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;airbyte_cdk.sources.utils.transform.TypeTransformer</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.core.Stream.transformer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.core.package_name_from_class">
+<span class="sig-prename descclassname"><span class="pre">airbyte_cdk.sources.streams.core.</span></span><span class="sig-name descname"><span class="pre">package_name_from_class</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.core.package_name_from_class" title="Permalink to this definition"></a></dt>
+<dd><p>Find the package name given a class name</p>
+</dd></dl>
+
+</section>
+<section id="module-airbyte_cdk.sources.streams">
+<span id="module-contents"></span><h1>Module contents<a class="headerlink" href="#module-airbyte_cdk.sources.streams" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.IncrementalMixin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.sources.streams.</span></span><span class="sig-name descname"><span class="pre">IncrementalMixin</span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.IncrementalMixin" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Mixin to make stream incremental.</p>
+<dl>
+<dt>class IncrementalStream(Stream, IncrementalMixin):</dt><dd><p>&#64;property
+def state(self):</p>
+<blockquote>
+<div><p>return self._state</p>
+</div></blockquote>
+<p>&#64;state.setter
+def state(self, value):</p>
+<blockquote>
+<div><p>self._state[self.cursor_field] = value[self.cursor_field]</p>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.IncrementalMixin.state">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">MutableMapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.IncrementalMixin.state" title="Permalink to this definition"></a></dt>
+<dd><p>State getter, should return state in form that can serialized to a string and send to the output
+as a STATE AirbyteMessage.</p>
+<dl>
+<dt>A good example of a state is a cursor_value:</dt><dd><blockquote>
+<div><dl class="simple">
+<dt>{</dt><dd><p>self.cursor_field: “cursor_value”</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>State should try to be as small as possible but at the same time descriptive enough to restore
+syncing process from the point where it stopped.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">airbyte_cdk.sources.streams.</span></span><span class="sig-name descname"><span class="pre">Stream</span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Base abstract class for an Airbyte Stream. Makes no assumption of the Stream’s underlying transport protocol.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.as_airbyte_stream">
+<span class="sig-name descname"><span class="pre">as_airbyte_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.AirbyteStream" title="airbyte_cdk.models.airbyte_protocol.AirbyteStream"><span class="pre">airbyte_cdk.models.airbyte_protocol.AirbyteStream</span></a></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.as_airbyte_stream" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.cursor_field">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cursor_field</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.cursor_field" title="Permalink to this definition"></a></dt>
+<dd><p>Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
+:return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.get_error_display_message">
+<span class="sig-name descname"><span class="pre">get_error_display_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exception</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">BaseException</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.get_error_display_message" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the user-friendly display message that corresponds to an exception.
+This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.</p>
+<p>The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>exception</strong> – The exception that was raised</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A user-friendly message that indicates the cause of the error</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.get_json_schema">
+<span class="sig-name descname"><span class="pre">get_json_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.get_json_schema" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A dict of the JSON schema representing this stream.</p>
+</dd>
+</dl>
+<p>The default implementation of this method looks for a JSONSchema file with the same name as this stream’s “name” property.
+Override as needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.get_updated_state">
+<span class="sig-name descname"><span class="pre">get_updated_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_stream_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">MutableMapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latest_record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.get_updated_state" title="Permalink to this definition"></a></dt>
+<dd><p>Override to extract state from the latest record. Needed to implement incremental sync.</p>
+<p>Inspects the latest record extracted from the data source and the current state object and return an updated state object.</p>
+<p>For example: if the state object is based on created_at timestamp, and the current state is {‘created_at’: 10}, and the latest_record is
+{‘name’: ‘octavia’, ‘created_at’: 20 } then this method would return {‘created_at’: 20} to indicate state should be updated to this object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_stream_state</strong> – The stream’s current state object</p></li>
+<li><p><strong>latest_record</strong> – The latest record extracted from the stream</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An updated state object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.logger">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.logger" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.name" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Stream name. By default this is the implementing class name, but it can be overridden as needed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.namespace">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">namespace</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.namespace" title="Permalink to this definition"></a></dt>
+<dd><p>Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+:return: A string containing the name of the namespace.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.primary_key">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">primary_key</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.primary_key" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+If the stream has no primary keys, return None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.read_records">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_records</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sync_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.SyncMode" title="airbyte_cdk.models.airbyte_protocol.SyncMode"><span class="pre">airbyte_cdk.models.airbyte_protocol.SyncMode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cursor_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.read_records" title="Permalink to this definition"></a></dt>
+<dd><p>This method should be overridden by subclasses to read records based on the inputs</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.source_defined_cursor">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">source_defined_cursor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.source_defined_cursor" title="Permalink to this definition"></a></dt>
+<dd><p>Return False if the cursor can be configured by the user.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.state_checkpoint_interval">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state_checkpoint_interval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.state_checkpoint_interval" title="Permalink to this definition"></a></dt>
+<dd><p>Decides how often to checkpoint state (i.e: emit a STATE message). E.g: if this returns a value of 100, then state is persisted after reading
+100 records, then 200, 300, etc.. A good default value is 1000 although your mileage may vary depending on the underlying data source.</p>
+<p>Checkpointing a stream avoids re-reading records in the case a sync is failed or cancelled.</p>
+<p>return None if state should not be checkpointed e.g: because records returned from the underlying data source are not returned in
+ascending order with respect to the cursor field. This can happen if the source does not support reading records in ascending order of
+created_at date (or whatever the cursor is). In those cases, state must only be saved once the full stream has been read.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.stream_slices">
+<span class="sig-name descname"><span class="pre">stream_slices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="airbyte_cdk.models.html#airbyte_cdk.models.airbyte_protocol.SyncMode" title="airbyte_cdk.models.airbyte_protocol.SyncMode"><span class="pre">airbyte_cdk.models.airbyte_protocol.SyncMode</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">cursor_field</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stream_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.stream_slices" title="Permalink to this definition"></a></dt>
+<dd><p>Override to define the slices for this stream. See the stream slicing section of the docs for more information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sync_mode</strong> – </p></li>
+<li><p><strong>cursor_field</strong> – </p></li>
+<li><p><strong>stream_state</strong> – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.supports_incremental">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">supports_incremental</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.supports_incremental" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>True if this stream supports incrementally reading data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="airbyte_cdk.sources.streams.Stream.transformer">
+<span class="sig-name descname"><span class="pre">transformer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="airbyte_cdk.sources.utils.html#airbyte_cdk.sources.utils.transform.TypeTransformer" title="airbyte_cdk.sources.utils.transform.TypeTransformer"><span class="pre">airbyte_cdk.sources.utils.transform.TypeTransformer</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;airbyte_cdk.sources.utils.transform.TypeTransformer</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#airbyte_cdk.sources.streams.Stream.transformer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="airbyte_cdk.sources.singer.html" class="btn btn-neutral float-left" title="Submodules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="airbyte_cdk.sources.streams.http.html" class="btn btn-neutral float-right" title="Subpackages" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Airbyte.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

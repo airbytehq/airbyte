@@ -12,16 +12,22 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abtract_token import 
 
 class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
     """
-    ApiKeyAuth sets a request header on the HTTP requests sent
+    ApiKeyAuth sets a request header on the HTTP requests sent.
 
-    Adds a request header to outgoing HTTP requests of the form
-    "<header_key>: "<token>"
+    The header is of the form:
+    `"<header>": "<token>"`
+
+    For example,
+    `ApiKeyAuthenticator("Authorization", "Bearer hello")`
+    will result in the following header set on the HTTP request
+    `"Authorization": "Bearer hello"`
+
     """
 
     def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config, **kwargs):
         """
-        :param header: The header key to set on the HTTP requests
-        :param token: The header value to set on the HTTP requests
+        :param header: Header key to set on the HTTP requests
+        :param token: Header value to set on the HTTP requests
         :param config: The user-provided configuration as specified by the source's spec
         """
         self._header = InterpolatedString.create(header, options=kwargs)
@@ -30,12 +36,10 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
 
     @property
     def auth_header(self) -> str:
-        """The header key to set on the outgoing HTTP request"""
         return self._header.eval(self._config)
 
     @property
     def token(self) -> str:
-        """The header value to set on the outgoing HTTP request"""
         return self._token.eval(self._config)
 
 
@@ -43,7 +47,8 @@ class BearerAuthenticator(AbstractHeaderAuthenticator):
     """
     Authenticator that sets the Authorization header on the HTTP requests sent.
 
-    `Authorization: Bearer <token>`
+    The header is of the form:
+    `"Authorization": "Bearer <token>"`
     """
 
     def __init__(self, token: Union[InterpolatedString, str], config: Config, **kwargs):
@@ -67,13 +72,16 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
     """
     Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using bas64
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
+
+    The header is of the form
+    `"Authorization": "Basic <encoded_credentials>"`
     """
 
     def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = "", **kwargs):
         """
         :param username: The username
         :param config: The user-provided configuration as specified by the source's spec
-        :param password: The password. Defaults to "".
+        :param password: The password
         """
         self._username = InterpolatedString.create(username, options=kwargs)
         self._password = InterpolatedString.create(password, options=kwargs)

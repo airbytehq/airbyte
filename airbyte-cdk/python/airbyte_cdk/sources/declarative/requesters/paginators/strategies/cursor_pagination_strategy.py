@@ -23,11 +23,10 @@ class CursorPaginationStrategy(PaginationStrategy):
         cursor_value: Union[InterpolatedString, str],
         config: Config,
         stop_condition: Optional[InterpolatedBoolean] = None,
-        decoder: Decoder = None,
+        decoder: Optional[Decoder] = None,
         **kwargs,
     ):
         """
-
         :param cursor_value: template string evaluating to the cursor value
         :param config: connection config
         :param stop_condition: template string evaluating when to stop paginating
