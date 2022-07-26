@@ -7,7 +7,7 @@ package io.airbyte.workers.process;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ProcessFactoryTest {
+class ProcessFactoryTest {
 
   @Test
   void getPodNameNormal() {

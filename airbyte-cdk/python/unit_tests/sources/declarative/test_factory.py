@@ -4,6 +4,7 @@
 
 import datetime
 
+from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
@@ -16,7 +17,8 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_h
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator import NextPageUrlPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator import LimitPaginator
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
     InterpolatedRequestOptionsProvider,
 )
@@ -26,7 +28,6 @@ from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
-from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 
 factory = DeclarativeComponentFactory()
 
@@ -70,10 +71,11 @@ def test_interpolate_config():
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._client_id._string == "some_client_id"
+    assert authenticator._client_id.eval(input_config) == "some_client_id"
     assert authenticator._client_secret._string == "some_client_secret"
-    assert authenticator._token_refresh_endpoint._string == "https://api.sendgrid.com/v3/auth"
-    assert authenticator._refresh_token._string == "verysecrettoken"
+
+    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
@@ -149,9 +151,17 @@ selector:
     class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
     condition: "{{ record['id'] > stream_state['id'] }}"
 metadata_paginator:
-  class_name: "airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator.NextPageUrlPaginator"
-  next_page_token_template:
-    "next_page_url": "{{ decoded_response['_metadata']['next'] }}"
+    type: "LimitPaginator"
+    page_size: 10
+    limit_option:
+      inject_into: request_parameter
+      field_name: page_size
+    page_token_option:
+      inject_into: path
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response._metadata.next }}"
+    url_base: "https://api.sendgrid.com/v3/"
 next_page_url_from_token_partial:
   class_name: "airbyte_cdk.sources.declarative.interpolation.interpolated_string.InterpolatedString"
   string: "{{ next_page_token['next_page_url'] }}"
@@ -163,7 +173,7 @@ requester:
   url_base: "https://api.sendgrid.com/v3/"
   http_method: "GET"
   authenticator:
-    class_name: airbyte_cdk.sources.streams.http.requests_native_auth.token.TokenAuthenticator
+    type: BearerAuthenticator
     token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
   error_handler:
@@ -185,24 +195,24 @@ partial_stream:
     file_path: "./source_sendgrid/schemas/{{ name }}.json"
   cursor_field: [ ]
 list_stream:
-  ref: "*ref(partial_stream)"
+  $ref: "*ref(partial_stream)"
   options:
     name: "lists"
     primary_key: "id"
     extractor:
-      ref: "*ref(extractor)"
-      transform: ".result[]"
+      $ref: "*ref(extractor)"
+      transform: "_.result"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path:
-        ref: "*ref(next_page_url_from_token_partial)"
+        $ref: "*ref(next_page_url_from_token_partial)"
         default: "marketing/lists"
     paginator:
-      ref: "*ref(metadata_paginator)"
+      $ref: "*ref(metadata_paginator)"
     record_selector:
-      ref: "*ref(selector)"
+      $ref: "*ref(selector)"
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
@@ -222,11 +232,11 @@ check:
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
+    assert stream._retriever._requester._authenticator._token.eval(input_config) == "verysecrettoken"
     assert type(stream._retriever._record_selector) == RecordSelector
     assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
 
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
     assert type(stream._retriever._record_selector._record_filter) == RecordFilter
     assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
@@ -243,21 +253,21 @@ def test_create_record_selector():
     content = """
     extractor:
       type: JelloExtractor
-      transform: "_"
+      transform: "_.result"
     selector:
       class_name: airbyte_cdk.sources.declarative.extractors.record_selector.RecordSelector
       record_filter:
         class_name: airbyte_cdk.sources.declarative.extractors.record_filter.RecordFilter
         condition: "{{ record['id'] > stream_state['id'] }}"
       extractor:
-        ref: "*ref(extractor)"
-        transform: "_"
+        $ref: "*ref(extractor)"
+        transform: "_.result"
     """
     config = parser.parse(content)
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector._extractor, JelloExtractor)
-    assert selector._extractor._transform == "_"
+    assert selector._extractor._transform.eval(input_config) == "_.result"
     assert isinstance(selector._record_filter, RecordFilter)
 
 
@@ -266,11 +276,13 @@ def test_create_requester():
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
-    name: lists
+    options:
+        name: lists
     url_base: "https://api.sendgrid.com"
     authenticator:
-      type: "TokenAuthenticator"
-      token: "{{ config.apikey }}"
+      type: "BasicHttpAuthenticator"
+      username: "{{ config.apikey }}"
+      password: "{{ config.apikey }}"
     request_options_provider:
       request_parameters:
         page_size: 10
@@ -283,7 +295,9 @@ def test_create_requester():
     assert isinstance(component._error_handler, DefaultErrorHandler)
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
-    assert isinstance(component._authenticator, TokenAuthenticator)
+    assert isinstance(component._authenticator, BasicHttpAuthenticator)
+    assert component._authenticator._username.eval(input_config) == "verysecrettoken"
+    assert component._authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
     assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"
@@ -296,7 +310,7 @@ def test_create_composite_error_handler():
           type: "CompositeErrorHandler"
           error_handlers:
             - response_filters:
-                - predicate: "{{ 'code' in decoded_response }}"
+                - predicate: "{{ 'code' in response }}"
                   action: RETRY
             - response_filters:
                 - http_codes: [ 403 ]
@@ -307,7 +321,7 @@ def test_create_composite_error_handler():
     assert len(component._error_handlers) == 2
     assert isinstance(component._error_handlers[0], DefaultErrorHandler)
     assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
-    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in decoded_response }}"
+    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in response }}"
     assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
 
@@ -324,19 +338,26 @@ def test_config_with_defaults():
           file_path: "./source_sendgrid/schemas/{{name}}.yaml"
         retriever:
           paginator:
-            type: "NextPageUrlPaginator"
-            next_page_token_template:
-                next_page_token: "{{ decoded_response.metadata.next}}"
+            type: "LimitPaginator"
+            page_size: 10
+            limit_option:
+              inject_into: request_parameter
+              field_name: page_size
+            page_token_option:
+              inject_into: path
+            pagination_strategy:
+              type: "CursorPagination"
+              cursor_value: "{{ response._metadata.next }}"
           requester:
             path: "/v3/marketing/lists"
             authenticator:
-              type: "TokenAuthenticator"
+              type: "BearerAuthenticator"
               token: "{{ config.apikey }}"
             request_parameters:
               page_size: 10
           record_selector:
             extractor:
-              transform: ".result[]"
+              transform: "_.result"
     streams:
       - "*ref(lists_stream)"
     """
@@ -350,14 +371,39 @@ def test_config_with_defaults():
     assert type(stream._schema_loader) == JsonSchema
     assert type(stream._retriever) == SimpleRetriever
     assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._tokens == ["verysecrettoken"]
-    assert stream._retriever._record_selector._extractor._transform == ".result[]"
+
+    assert stream._retriever._requester._authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
     assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
-    assert isinstance(stream._retriever._paginator, NextPageUrlPaginator)
-    assert stream._retriever._paginator._url_base == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._interpolated_paginator._next_page_token_template._mapping == {
-        "next_page_token": "{{ decoded_response.metadata.next}}"
-    }
+    assert isinstance(stream._retriever._paginator, LimitPaginator)
+
+    assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
+    assert stream._retriever._paginator._page_size == 10
+
+
+def test_create_limit_paginator():
+    content = """
+      paginator:
+        type: "LimitPaginator"
+        page_size: 10
+        url_base: "https://airbyte.io"
+        limit_option:
+          inject_into: request_parameter
+          field_name: page_size
+        page_token_option:
+          inject_into: path
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response._metadata.next }}"
+    """
+    config = parser.parse(content)
+
+    paginator_config = config["paginator"]
+    paginator = factory.create_component(paginator_config, input_config)()
+    assert isinstance(paginator, LimitPaginator)
+    page_token_option = paginator._page_token_option
+    assert isinstance(page_token_option, RequestOption)
+    assert page_token_option.inject_into == RequestOptionType.path
 
 
 class TestCreateTransformations:
@@ -367,7 +413,7 @@ class TestCreateTransformations:
                 primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
-                  file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+                  file_path: "./source_sendgrid/schemas/{{name}}.yaml"
                 retriever:
                   requester:
                     path: "/v3/marketing/lists"
@@ -375,7 +421,7 @@ class TestCreateTransformations:
                       page_size: 10
                   record_selector:
                     extractor:
-                      transform: ".result[]"
+                      transform: "_.result"
     """
 
     def test_no_transformations(self):

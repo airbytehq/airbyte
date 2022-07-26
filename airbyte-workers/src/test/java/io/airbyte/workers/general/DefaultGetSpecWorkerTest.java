@@ -49,7 +49,7 @@ class DefaultGetSpecWorkerTest {
   private JobGetSpecConfig config;
 
   @BeforeEach
-  public void setup() throws IOException, WorkerException {
+  void setup() throws IOException, WorkerException {
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "");
     config = new JobGetSpecConfig().withDockerImage(DUMMY_IMAGE_NAME);
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
@@ -61,7 +61,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testSuccessfulRun() throws IOException, InterruptedException, WorkerException {
+  void testSuccessfulRun() throws IOException, InterruptedException, WorkerException {
     final String expectedSpecString = MoreResources.readResource("valid_spec.json");
 
     final AirbyteMessage message = new AirbyteMessage()
@@ -80,7 +80,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnInvalidSpec() throws InterruptedException {
+  void testFailureOnInvalidSpec() throws InterruptedException {
     final String expectedSpecString = "{\"key\":\"value\"}";
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(expectedSpecString.getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
@@ -95,7 +95,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnNonzeroExitCode() throws InterruptedException, IOException {
+  void testFailureOnNonzeroExitCode() throws InterruptedException, IOException {
     final String expectedSpecString = MoreResources.readResource("valid_spec.json");
 
     final AirbyteMessage message = new AirbyteMessage()
@@ -115,7 +115,7 @@ class DefaultGetSpecWorkerTest {
   }
 
   @Test
-  public void testFailureOnNonzeroExitCodeWithTraceMessage() throws WorkerException, InterruptedException {
+  void testFailureOnNonzeroExitCodeWithTraceMessage() throws WorkerException, InterruptedException {
     final AirbyteMessage message = AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0);
 
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));

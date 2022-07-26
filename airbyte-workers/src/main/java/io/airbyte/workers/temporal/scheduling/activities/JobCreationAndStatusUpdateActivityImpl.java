@@ -113,7 +113,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
     final var releaseStages = configRepository.getSrcIdAndDestIdToReleaseStages(srcId, dstId);
-    if (releaseStages == null || releaseStages.size() == 0) {
+    if (releaseStages == null || releaseStages.isEmpty()) {
       return;
     }
 
@@ -322,7 +322,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitJobIdToReleaseStagesMetric(final OssMetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getJobIdToReleaseStages(jobId);
-    if (releaseStages == null || releaseStages.size() == 0) {
+    if (releaseStages == null || releaseStages.isEmpty()) {
       return;
     }
 

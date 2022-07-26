@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JsonSchemasTest {
 
   @Test

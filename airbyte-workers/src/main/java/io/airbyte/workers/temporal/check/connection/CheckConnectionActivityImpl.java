@@ -56,6 +56,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
+  @Override
   public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
@@ -78,6 +79,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
     return temporalAttemptExecution.get();
   }
 
+  @Override
   public StandardCheckConnectionOutput run(final CheckConnectionInput args) {
     final ConnectorJobOutput output = runWithJobOutput(args);
     if (output.getFailureReason() != null) {

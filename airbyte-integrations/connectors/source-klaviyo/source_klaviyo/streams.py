@@ -9,7 +9,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import pendulum
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
-from source_klaviyo.schemas import Campaign, Event, Flow, GlobalExclusion, Metric, PersonList
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -22,11 +21,6 @@ class KlaviyoStream(HttpStream, ABC):
     def __init__(self, api_key: str, **kwargs):
         super().__init__(**kwargs)
         self._api_key = api_key
-
-    @property
-    @abstractmethod
-    def schema(self):
-        """Pydantic model that represents stream schema"""
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -59,10 +53,6 @@ class KlaviyoStream(HttpStream, ABC):
         response_json = response.json()
         for record in response_json.get("data", []):  # API returns records in a container array "data"
             yield record
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        """Use Pydantic schema"""
-        return self.schema.schema()
 
 
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
@@ -203,8 +193,6 @@ class ReverseIncrementalKlaviyoStream(KlaviyoStream, ABC):
 class Campaigns(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-campaigns"""
 
-    schema = Campaign
-
     def path(self, **kwargs) -> str:
         return "campaigns"
 
@@ -212,7 +200,6 @@ class Campaigns(KlaviyoStream):
 class Lists(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-lists"""
 
-    schema = PersonList
     max_retries = 10
 
     def path(self, **kwargs) -> str:
@@ -222,7 +209,6 @@ class Lists(KlaviyoStream):
 class GlobalExclusions(ReverseIncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-global-exclusions"""
 
-    schema = GlobalExclusion
     page_size = 5000  # the maximum value allowed by API
     cursor_field = "timestamp"
     primary_key = "email"
@@ -234,8 +220,6 @@ class GlobalExclusions(ReverseIncrementalKlaviyoStream):
 class Metrics(KlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/get-metrics"""
 
-    schema = Metric
-
     def path(self, **kwargs) -> str:
         return "metrics"
 
@@ -243,7 +227,6 @@ class Metrics(KlaviyoStream):
 class Events(IncrementalKlaviyoStream):
     """Docs: https://developers.klaviyo.com/en/reference/metrics-timeline"""
 
-    schema = Event
     cursor_field = "timestamp"
 
     def path(self, **kwargs) -> str:
@@ -266,7 +249,6 @@ class Events(IncrementalKlaviyoStream):
 
 
 class Flows(ReverseIncrementalKlaviyoStream):
-    schema = Flow
     cursor_field = "created"
 
     def path(self, **kwargs) -> str:
