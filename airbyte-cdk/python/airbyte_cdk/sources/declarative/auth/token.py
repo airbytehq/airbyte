@@ -28,7 +28,7 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
         """
         :param header: Header key to set on the HTTP requests
         :param token: Header value to set on the HTTP requests
-        :param config: connection config
+        :param config: The user-provided configuration as specified by the source's spec
         """
         self._header = InterpolatedString.create(header)
         self._token = InterpolatedString.create(token)
@@ -53,8 +53,8 @@ class BearerAuthenticator(AbstractHeaderAuthenticator):
 
     def __init__(self, token: Union[InterpolatedString, str], config: Config):
         """
-        :param token:
-        :param config:
+        :param token: The bearer token
+        :param config: The user-provided configuration as specified by the source's spec
         """
         self._token = InterpolatedString.create(token)
         self._config = config
@@ -79,9 +79,9 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
 
     def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = ""):
         """
-        :param username:
-        :param config:
-        :param password:
+        :param username: The username
+        :param config: The user-provided configuration as specified by the source's spec
+        :param password: The password
         """
         self._username = InterpolatedString.create(username)
         self._password = InterpolatedString.create(password)
