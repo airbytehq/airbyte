@@ -4,12 +4,10 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
-import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION;
-
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
+import io.airbyte.db.MySqlUtils;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -19,15 +17,26 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
 
-public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
+import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION;
+
+public class MySqlSslFullCertificateSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
+
+  private static MySqlUtils.Certificate certs;
+  private static final String PASSWORD = "Passw0rd";
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
+    certs = MySqlUtils.getCertificate(container);
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "required")
+            .put(JdbcUtils.MODE_KEY, "verify_identity")
+            .put("ca_certificate", certs.getCaCertificate())
+            .put("client_certificate", certs.getClientCertificate())
+            .put("client_key", certs.getClientKey())
+            .put("client_key_password", PASSWORD)
             .build();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -50,7 +59,7 @@ public class MySqlSslSourceAcceptanceTest extends MySqlSourceAcceptanceTest {
             config.get(JdbcUtils.PORT_KEY).asText(),
             config.get(JdbcUtils.DATABASE_KEY).asText(),
             String.join("&", SSL_PARAMETERS),
-            String.join("&", SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION)),
+            String.join("&", SSL_PARAMETERS_WITH_CERTIFICATE_VALIDATION)),
         SQLDialect.MYSQL)) {
       final Database database = new Database(dslContext);
 

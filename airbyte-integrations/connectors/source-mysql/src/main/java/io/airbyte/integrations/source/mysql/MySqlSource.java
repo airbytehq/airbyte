@@ -7,6 +7,8 @@ package io.airbyte.integrations.source.mysql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.DISABLE;
+import static io.airbyte.integrations.util.MySqlSslConnectionUtils.obtainConnectionOptions;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,11 +37,9 @@ import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
+
 import java.time.Duration;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,9 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -155,17 +152,18 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
     // in the setJsonField method in MySqlSourceOperations.java
     jdbcUrl.append("&yearIsDateType=true");
     if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
-      jdbcUrl.append("&").append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
+      jdbcUrl.append(JdbcUtils.AMPERSAND).append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
     Map<String, String> additionalParameters = new HashMap<>();
     // assume ssl if not explicitly mentioned.
     if (!config.has(JdbcUtils.SSL_KEY) || config.get(JdbcUtils.SSL_KEY).asBoolean()) {
-      if (config.has("ssl_mode")) {
-        if ("disable".equals(config.get("ssl_mode").get("mode").asText())) {
-          jdbcUrl.append("&").append("sslMode=DISABLE");
+      if (config.has(JdbcUtils.SSL_MODE_KEY)) {
+        if (DISABLE.equals(config.get(JdbcUtils.SSL_MODE_KEY).get(JdbcUtils.MODE_KEY).asText())) {
+          jdbcUrl.append(JdbcUtils.AMPERSAND).append("sslMode=DISABLE");
         } else {
-          additionalParameters.putAll(obtainConnectionOptions(config.get("ssl_mode")));
-          jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS)).append("&");
+          additionalParameters.putAll(obtainConnectionOptions(config.get(JdbcUtils.SSL_MODE_KEY)));
+          jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+                  .append(JdbcUtils.AMPERSAND);
           if (additionalParameters.isEmpty()) {
             jdbcUrl.append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
           } else {
@@ -173,7 +171,8 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
           }
         }
       } else {
-        jdbcUrl.append("&").append(String.join("&", SSL_PARAMETERS));
+        jdbcUrl.append(JdbcUtils.AMPERSAND).append(String.join(JdbcUtils.AMPERSAND, SSL_PARAMETERS))
+                .append(JdbcUtils.AMPERSAND).append(SSL_PARAMETERS_WITHOUT_CERTIFICATE_VALIDATION);
       }
     }
 
@@ -240,120 +239,6 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public enum ReplicationMethod {
     STANDARD,
     CDC
-  }
-
-  /* Helpers */
-
-  public static Map<String, String> obtainConnectionOptions(final JsonNode encryption) {
-    Map<String, String> additionalParameters = new HashMap<>();
-    if (!encryption.isNull()) {
-      final var method = encryption.get("mode").asText().toUpperCase();
-      String sslPassword = encryption.has("client_key_password") ? encryption.get("client_key_password").asText() : "";
-      var keyStorePassword = RandomStringUtils.randomAlphanumeric(10);
-      if (!sslPassword.isEmpty()) {
-        keyStorePassword = sslPassword;
-      }
-      switch (method) {
-        case "VERIFY_CA" -> {
-          additionalParameters.putAll(obtainConnectionCaOptions(encryption, method, keyStorePassword));
-        }
-        case "VERIFY_IDENTITY" -> {
-          additionalParameters.putAll(obtainConnectionFullOptions(encryption, method, keyStorePassword));
-        }
-      }
-    }
-    return additionalParameters;
-  }
-
-  private static Map<String, String> obtainConnectionFullOptions(final JsonNode encryption,
-                                                                 final String method,
-                                                                 final String clientKeyPassword) {
-    Map<String, String> additionalParameters = new HashMap<>();
-    try {
-      convertAndImportFullCertificate(encryption.get("ca_certificate").asText(),
-              encryption.get("client_certificate").asText(), encryption.get("client_key").asText(), clientKeyPassword);
-    } catch (final IOException | InterruptedException e) {
-      throw new RuntimeException("Failed to import certificate into Java Keystore");
-    }
-    additionalParameters.put("trustCertificateKeyStoreUrl", "customtruststore");
-    additionalParameters.put("trustCertificateKeyStorePassword", clientKeyPassword);
-    additionalParameters.put("clientCertificateKeyStoreUrl", "customkeystore");
-    additionalParameters.put("clientCertificateKeyStorePassword", clientKeyPassword);
-    additionalParameters.put("sslMode", method.toUpperCase());
-    return additionalParameters;
-  }
-
-  private static Map<String, String> obtainConnectionCaOptions(final JsonNode encryption,
-                                                               final String method,
-                                                               final String clientKeyPassword) {
-    Map<String, String> additionalParameters = new HashMap<>();
-    try {
-      convertAndImportCaCertificate(encryption.get("ca_certificate").asText(), clientKeyPassword);
-    } catch (final IOException | InterruptedException e) {
-      throw new RuntimeException("Failed to import certificate into Java Keystore");
-    }
-    additionalParameters.put("trustCertificateKeyStoreUrl", "customtruststore");
-    additionalParameters.put("trustCertificateKeyStorePassword", clientKeyPassword);
-    additionalParameters.put("sslMode", method.toUpperCase());
-    return additionalParameters;
-  }
-
-  private static void convertAndImportFullCertificate(final String caCertificate,
-                                                      final String clientCertificate,
-                                                      final String clientKey,
-                                                      final String clientKeyPassword)
-          throws IOException, InterruptedException {
-    final Runtime run = Runtime.getRuntime();
-    createCaCertificate(caCertificate, clientKeyPassword, run);
-    createCertificateFile("client-cert.pem", clientCertificate);
-    createCertificateFile("client-key.pem", clientKey);
-    // add client certificate to the custom keystore
-    runProcess("keytool -alias client-certificate -keystore customkeystore"
-            + " -import -file client-cert.pem -storepass " + clientKeyPassword + " -noprompt", run);
-    // add client key to the custom keystore
-    runProcess("keytool -alias client-key -keystore customkeystore"
-            + " -import -file client-key.pem -storepass " + clientKeyPassword + " -noprompt", run);
-    runProcess("rm client-key.pem", run);
-
-    updateTrustStoreSystemProperty(clientKeyPassword);
-  }
-
-  private static void convertAndImportCaCertificate(final String caCertificate,
-                                                    final String clientKeyPassword)
-          throws IOException, InterruptedException {
-    final Runtime run = Runtime.getRuntime();
-    createCaCertificate(caCertificate, clientKeyPassword, run);
-    updateTrustStoreSystemProperty(clientKeyPassword);
-  }
-
-  private static void createCaCertificate(final String caCertificate,
-                                          final String clientKeyPassword,
-                                          final Runtime run)
-          throws IOException, InterruptedException {
-    createCertificateFile("ca.pem", caCertificate);
-    // add CA certificate to the custom keystore
-    runProcess("keytool -import -alias root-certificate -keystore customtruststore"
-            + " -file ca.pem -storepass " + clientKeyPassword + " -noprompt", run);
-  }
-
-  private static void updateTrustStoreSystemProperty(final String clientKeyPassword) {
-    String result = System.getProperty("user.dir") + "/customtruststore";
-    System.setProperty("javax.net.ssl.trustStore", result);
-    System.setProperty("javax.net.ssl.trustStorePassword", clientKeyPassword);
-  }
-
-  private static void createCertificateFile(String fileName, String fileValue) throws IOException {
-    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
-      out.print(fileValue);
-    }
-  }
-
-  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
-    final Process pr = run.exec(cmd);
-    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
-      pr.destroy();
-      throw new RuntimeException("Timeout while executing: " + cmd);
-    }
   }
 
 }
