@@ -129,16 +129,20 @@ public class ConnectionManagerUtils {
     }
   }
 
-  static void safeTerminateWorkflow(final WorkflowClient client, final UUID connectionId, final String reason) {
-    log.info("Attempting to terminate existing workflow for connection {}.", connectionId);
+  static void safeTerminateWorkflow(final WorkflowClient client, final String workflowId, final String reason) {
+    log.info("Attempting to terminate existing workflow for workflowId {}.", workflowId);
     try {
-      client.newUntypedWorkflowStub(getConnectionManagerName(connectionId)).terminate(reason);
+      client.newUntypedWorkflowStub(workflowId).terminate(reason);
     } catch (final Exception e) {
       log.warn(
           "Could not terminate temporal workflow due to the following error; "
               + "this may be because there is currently no running workflow for this connection.",
           e);
     }
+  }
+
+  static void safeTerminateWorkflow(final WorkflowClient client, final UUID connectionId, final String reason) {
+    safeTerminateWorkflow(client, getConnectionManagerName(connectionId), reason);
   }
 
   static ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {

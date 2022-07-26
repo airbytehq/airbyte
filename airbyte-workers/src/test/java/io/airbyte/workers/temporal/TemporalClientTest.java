@@ -11,9 +11,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,6 +62,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,6 +70,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 class TemporalClientTest {
@@ -726,6 +730,32 @@ class TemporalClientTest {
       verify(mConnectionManagerWorkflow, times(0)).resetConnection();
     }
 
+  }
+
+  @Nested
+  class RestartPerStatus {
+    @Test
+    public void testRestartFailed() {
+      final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
+      final WorkflowState mWorkflowState = mock(WorkflowState.class);
+
+      when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
+      final UUID connectionId = UUID.fromString("ebbfdc4c-295b-48a0-844f-88551dfad3db");
+      final String connectionManagerWorkflowId = ConnectionManagerUtils.getConnectionManagerName(connectionId);
+      final Set<String> workflowIds = Set.of(connectionManagerWorkflowId);
+      doReturn(workflowIds)
+          .when(temporalClient).fetchWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+      doReturn(workflowIds)
+          .when(temporalClient).filterOutRunningWorkspaceId(workflowIds);
+      mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+      try (final MockedStatic mConnectionManagerUtils = mockStatic(ConnectionManagerUtils.class)) {
+        temporalClient.restartWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+
+        mConnectionManagerUtils.verify( () -> ConnectionManagerUtils.safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
+            anyString()));
+        mConnectionManagerUtils.verify( () -> ConnectionManagerUtils.startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId)));
+      }
+    }
   }
 
   @Test

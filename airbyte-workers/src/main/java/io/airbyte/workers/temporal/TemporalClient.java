@@ -29,8 +29,12 @@ import io.airbyte.workers.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.workers.temporal.spec.SpecWorkflow;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.temporal.api.common.v1.WorkflowType;
+import io.temporal.api.enums.v1.WorkflowExecutionStatus;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsRequest;
 import io.temporal.api.workflowservice.v1.ListOpenWorkflowExecutionsResponse;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsRequest;
+import io.temporal.api.workflowservice.v1.ListWorkflowExecutionsResponse;
 import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.io.IOException;
@@ -51,6 +55,7 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
@@ -444,6 +449,79 @@ public class TemporalClient {
     return new ManualOperationResult(
         Optional.empty(),
         Optional.of(resetJobId), Optional.empty());
+  }
+
+  public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+    final Set<String> workflowExecutionInfos = fetchWorkflowByStatus(executionStatus);
+
+    final Set<String> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
+
+    nonRunningWorkflow.forEach(workflowId -> {
+      final Optional<UUID> maybeConnectionId = extractConnectionIdFromWorkflowId(workflowId);
+      log.error(workflowId);
+      if (maybeConnectionId.isPresent()) {
+        ConnectionManagerUtils.safeTerminateWorkflow(client, maybeConnectionId.get(), "Terminating workflow in "
+            + "unreachable state before starting a new workflow for this connection");
+        ConnectionManagerUtils.startConnectionManagerNoSignal(client, maybeConnectionId.get());
+      } else {
+        log.error("Malformated workflow id, won't terminate of restart");
+      }
+    });
+  }
+
+  /**
+   * This should be in the class {@li}
+   * @param workflowId
+   * @return
+   */
+  Optional<UUID> extractConnectionIdFromWorkflowId(final String workflowId) {
+    if (!workflowId.startsWith("connection_manager_")) {
+      return Optional.empty();
+    }
+    System.err.println(workflowId);
+    System.err.println(StringUtils.removeStart(workflowId, "connection_manager_"));
+    System.err.flush();
+    return Optional.ofNullable(StringUtils.removeStart(workflowId, "connection_manager_"))
+        .map(
+            stringUUID ->
+                UUID.fromString(stringUUID));
+  }
+
+  Set<String> fetchWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+    ByteString token;
+    ListWorkflowExecutionsRequest workflowExecutionsRequest =
+        ListWorkflowExecutionsRequest.newBuilder()
+            .setNamespace(client.getOptions().getNamespace())
+            .build();
+
+    final Set<String> workflowExecutionInfos = new HashSet<>();
+    do {
+      final ListWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
+          service.blockingStub().listWorkflowExecutions(workflowExecutionsRequest);
+      final WorkflowType connectionManagerWorkflowType = WorkflowType.newBuilder().setName(ConnectionManagerWorkflow.class.getSimpleName()).build();
+      workflowExecutionInfos.addAll(listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
+          .filter(workflowExecutionInfo -> workflowExecutionInfo.getType() == connectionManagerWorkflowType ||
+              workflowExecutionInfo.getStatus() == executionStatus)
+          .map((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId()))
+          .collect(Collectors.toSet()));
+      token = listOpenWorkflowExecutionsRequest.getNextPageToken();
+
+      workflowExecutionsRequest =
+          ListWorkflowExecutionsRequest.newBuilder()
+              .setNamespace(client.getOptions().getNamespace())
+              .setNextPageToken(token)
+              .build();
+
+    } while (token != null && token.size() > 0);
+
+    return workflowExecutionInfos;
+  }
+
+  @VisibleForTesting
+  Set<String> filterOutRunningWorkspaceId(final Set<String> workflowIds) {
+    refreshRunningWorkflow();
+
+    return workflowIds.stream().filter(workflowId -> !workflowNames.contains(workflowId)).collect(Collectors.toSet());
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
