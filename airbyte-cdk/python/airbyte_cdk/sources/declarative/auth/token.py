@@ -12,7 +12,16 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.abtract_token import 
 
 class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
     """
-    ApiKeyAuth sets a request header on the HTTP requests sent
+    ApiKeyAuth sets a request header on the HTTP requests sent.
+
+    The header is of the form:
+    `"<header>": "<token>"`
+
+    For example,
+    `ApiKeyAuthenticator("Authorization", "Bearer hello")`
+    will result in the following header set on the HTTP request
+    `"Authorization": "Bearer hello"`
+
     """
 
     def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config):
