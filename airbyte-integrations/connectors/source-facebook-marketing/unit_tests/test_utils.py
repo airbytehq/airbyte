@@ -25,6 +25,6 @@ def test_validate_date_field(date, expected_message, raise_error):
     if raise_error:
         with pytest.raises(ValidationDateException) as error:
             assert validate_date_field(field_name, date)
-        assert str(error.value) == field_name + expected_massage
+        assert str(error.value) == field_name + expected_message
     else:
         assert validate_date_field(field_name, date)
