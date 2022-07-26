@@ -24,4 +24,4 @@ For this walkthrough, we'll refer to our source as `exchange-rates-tutorial`. Th
 
 ## Next steps
 
-Next, [we'll install dependencies required to run the connector](./2-install-dependencies.md)
+Next, [we'll install dependencies required to run the connector](2-install-dependencies.md)

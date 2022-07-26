@@ -36,7 +36,7 @@ The module's generated `README.md` contains more details on the supported comman
 
 ## Next steps
 
-Next, we'll [connect to the API source](./3-connecting.md)
+Next, we'll [connect to the API source](3-connecting.md)
 
 ## More readings
 
