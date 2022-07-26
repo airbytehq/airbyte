@@ -11,6 +11,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests.exceptions import HTTPError
 
 from .graphql import get_query_pull_requests, get_query_reviews
@@ -1000,6 +1001,8 @@ class Deployments(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
     """
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/deployments"

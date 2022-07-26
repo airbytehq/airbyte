@@ -46,7 +46,10 @@
     },
     "pull_requests": {
       "type": "array",
-      "items": {}
+      "items": {
+        "type": ["null", "object"],
+        "properties": {}
+      }
     },
     "created_at": {
       "type": ["null", "string"]
