@@ -176,7 +176,7 @@ class PaypalTransactionStream(HttpStream, ABC):
         """
         Unnest cursor_field to the root level of the record.
         """
-        if unnest_from in record.keys():
+        if unnest_from in record:
             record[cursor_field] = record.get(unnest_from).get(cursor_field)
 
     @staticmethod
