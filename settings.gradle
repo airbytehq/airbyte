@@ -11,16 +11,21 @@ gradleEnterprise {
     }
 }
 
-sourceControl {
-    gitRepository("https://github.com/airbytehq/json-avro-converter.git") {
-        producesModule("tech.allegro.schema.json2avro:converter")
+rootProject.name = 'airbyte'
+
+// definition for dependency resolution
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+        }
     }
-    gitRepository("https://github.com/airbytehq/jsongenerator.git") {
-        producesModule("net.jimblackler:jsongenerator")
+    versionCatalogs {
+        libs {
+            from(files("deps.toml"))
+        }
     }
 }
-
-rootProject.name = 'airbyte'
 
 // SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, ALL_CONNECTORS and OCTAVIA_CLI. Blank is equivalent to all.
 if (!System.getenv().containsKey("SUB_BUILD")) {
@@ -40,23 +45,23 @@ include ':airbyte-commons'
 include ':airbyte-api'
 include ':airbyte-commons-cli'
 include ':airbyte-commons-docker'
-include ':airbyte-config:models' // reused by acceptance tests in connector base.
-include ':airbyte-db:lib' // reused by acceptance tests in connector base.
+include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
+include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
-include ':airbyte-metrics:lib'
+include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
-include ':airbyte-protocol:models'
+include ':airbyte-protocol:protocol-models'
 include ':airbyte-queue'
 include ':airbyte-test-utils'
 
 // airbyte-workers has a lot of dependencies.
 include ':airbyte-workers' // reused by acceptance tests in connector base.
 include ':airbyte-analytics' // transitively used by airbyte-workers.
-include ':airbyte-config:persistence' // transitively used by airbyte-workers.
+include ':airbyte-config:config-persistence' // transitively used by airbyte-workers.
 include ':airbyte-db:jooq' // transitively used by airbyte-workers.
 include ':airbyte-notification' // transitively used by airbyte-workers.
-include ':airbyte-scheduler:models' // transitively used by airbyte-workers.
-include ':airbyte-scheduler:persistence' // used by airbyte-workers.
+include ':airbyte-scheduler:scheduler-models' // transitively used by airbyte-workers.
+include ':airbyte-scheduler:scheduler-persistence' // used by airbyte-workers.
 
 // platform
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
@@ -66,7 +71,6 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
     include ':airbyte-config:specs'
     include ':airbyte-container-orchestrator'
     include ':airbyte-metrics:reporter'
-    include ':airbyte-scheduler:app'
     include ':airbyte-scheduler:client'
     include ':airbyte-server'
     include ':airbyte-temporal'
@@ -78,19 +82,16 @@ if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD"
 // connectors base
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "CONNECTORS_BASE" || System.getenv().get("SUB_BUILD") == "ALL_CONNECTORS") {
     include ':airbyte-cdk:python'
-    include ':airbyte-integrations:bases:airbyte-protocol'
     include ':airbyte-integrations:bases:base'
     include ':airbyte-integrations:bases:base-java'
     include ':airbyte-integrations:bases:base-normalization'
-    include ':airbyte-integrations:bases:base-python'
-    include ':airbyte-integrations:bases:base-python-test'
-    include ':airbyte-integrations:bases:base-singer'
     include ':airbyte-integrations:bases:base-standard-source-test-file'
     include ':airbyte-integrations:bases:source-acceptance-test'
     include ':airbyte-integrations:bases:standard-destination-test'
     include ':airbyte-integrations:bases:standard-source-test'
     include ':airbyte-integrations:connector-templates:generator'
-    include ':airbyte-integrations:bases:debezium'
+    include ':airbyte-integrations:bases:debezium-v1-4-2'
+    include ':airbyte-integrations:bases:debezium-v1-9-2'
 
     // Needed by normalization integration tests
     include ':airbyte-integrations:connectors:destination-bigquery'

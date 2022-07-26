@@ -51,6 +51,18 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Create the image pull secrets
+*/}}
+{{- define "common.imagePullSecrets" -}}
+{{- if .Values.imagePullSecrets }}
+{{- printf "imagePullSecrets:" }}
+  {{- range .Values.imagePullSecrets }}
+    {{- printf "- name: %s" . | nindent 2 }}
+  {{- end }}
+{{- end }}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "airbyte.serviceAccountName" -}}
@@ -177,13 +189,6 @@ Returns the GCP credentials path
 {{- else -}}
     {{- printf "%s" .Values.logs.gcs.credentials -}}
 {{- end -}}
-{{- end -}}
-
-{{/*
-Returns the Airbyte Scheduler Image
-*/}}
-{{- define "airbyte.schedulerImage" -}}
-{{- include "common.images.image" (dict "imageRoot" .Values.scheduler.image "global" .Values.global) -}}
 {{- end -}}
 
 {{/*

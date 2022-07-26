@@ -7,7 +7,7 @@ import { Feature, FeatureItem, FeatureServiceApi } from "./types";
 
 const featureServiceContext = React.createContext<FeatureServiceApi | null>(null);
 
-export function FeatureService({ children }: { children: React.ReactNode }) {
+export const FeatureService = ({ children }: { children: React.ReactNode }) => {
   const [additionFeatures, setAdditionFeatures] = useState<Feature[]>([]);
   const { features: instanceWideFeatures } = useConfig();
 
@@ -38,7 +38,7 @@ export function FeatureService({ children }: { children: React.ReactNode }) {
   );
 
   return <featureServiceContext.Provider value={featureService}>{children}</featureServiceContext.Provider>;
-}
+};
 
 export const useFeatureService: () => FeatureServiceApi = () => {
   const featureService = useContext(featureServiceContext);
@@ -57,13 +57,14 @@ export const useFeatureRegisterValues = (props?: Feature[] | null): void => {
   const { registerFeature, unregisterFeature } = useFeatureService();
 
   useDeepCompareEffect(() => {
-    if (props) {
-      registerFeature(props);
-
-      return () => unregisterFeature(props.map((feature: Feature) => feature.id));
+    if (!props) {
+      return;
     }
 
-    return;
+    registerFeature(props);
+
+    return () => unregisterFeature(props.map((feature: Feature) => feature.id));
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };

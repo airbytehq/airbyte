@@ -1,36 +1,29 @@
+import classnames from "classnames";
 import React from "react";
-import styled from "styled-components";
 
-const Content = styled.div`
-  overflow-y: auto;
-  padding-top: 17px;
-  height: 100%;
-`;
-
-const Page = styled.div`
-  overflow-y: hidden;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-`;
+import styles from "./MainPageWithScroll.module.scss";
 
 /**
  * @param headTitle the title shown in the browser toolbar
  * @param pageTitle the title shown on the page
  */
-type IProps = {
+interface MainPageWithScrollProps {
+  error?: React.ReactNode;
   headTitle?: React.ReactNode;
   pageTitle?: React.ReactNode;
   children?: React.ReactNode;
-};
+}
 
-const MainPageWithScroll: React.FC<IProps> = ({ headTitle, pageTitle, children }) => {
+const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ error, headTitle, pageTitle, children }) => {
   return (
-    <Page>
-      {headTitle}
-      {pageTitle}
-      <Content>{children}</Content>
-    </Page>
+    <div className={styles.page}>
+      {error}
+      <div className={classnames({ [styles.headerError]: !!error })}>
+        {headTitle}
+        {pageTitle}
+      </div>
+      <div className={styles.content}>{children}</div>
+    </div>
   );
 };
 

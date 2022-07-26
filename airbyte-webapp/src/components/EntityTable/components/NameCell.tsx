@@ -41,11 +41,11 @@ const Image = styled(ConnectorIcon)`
 `;
 
 const NameCell: React.FC<Props> = ({ value, enabled, status, icon, img }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const statusIconStatus = useMemo<StatusIconStatus | undefined>(
     () =>
       status === Status.EMPTY
-        ? "empty"
+        ? "sleep"
         : status === Status.ACTIVE
         ? "success"
         : status === Status.INACTIVE

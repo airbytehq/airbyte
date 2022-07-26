@@ -6,13 +6,17 @@
   "login.loginTitle": "Sign in to Airbyte",
   "login.resendEmail": "Didn’t receive the email? Send it again",
   "login.yourEmail": "Your work email*",
-  "login.yourEmail.placeholder": "christophersmith@gmail.com",
+  "login.inviteEmail": "For security, re-enter your invite email*",
+  "login.yourEmail.placeholder": "work.email@example.com",
+  "login.yourEmail.notFound": "User not found",
+  "login.unknownError": "An unknown error has occurred",
   "login.password": "Enter your password*",
   "login.password.placeholder": "Enter a strong password",
   "login.yourPassword": "Enter your password*",
   "login.yourPassword.placeholder": "Your password",
   "login.forgotPassword": "Forgot your password",
   "login.backLogin": "Back to Log in",
+  "login.createPassword": "Create a password*",
   "login.resetPassword": "Reset your password",
   "login.resetPassword.emailSent": "A password reset email has been sent to you",
   "login.activateAccess": "Activate your 14-day free trial",
@@ -23,6 +27,9 @@
   "login.companyName.placeholder": "Acme Inc.",
   "login.subscribe": "Receive community and feature updates. You can unsubscribe any time. ",
   "login.security": "By using the service, you agree to to our <terms>Terms of Service</terms> and <privacy>Privacy\u00a0Policy</privacy>.",
+  "login.inviteTitle": "Invite access",
+  "login.inviteLinkExpired": "This invite link expired. A new invite link was sent to your email.",
+  "login.inviteLinkInvalid": "This invite link is no longer valid.",
 
   "confirmResetPassword.newPassword": "Enter a new password",
   "confirmResetPassword.success": "Your password has been reset. Please log in with the new password.",
@@ -113,8 +120,11 @@
   "email.duplicate": "Email already exists",
   "email.notfound": "Email not found",
   "email.disabled": "Your account is disabled",
+  "email.inviteMismatch": "This email does not match the email address sent to this invite.",
   "password.validation": "Your password is too weak",
   "password.invalid": "Invalid password",
 
-  "verifyEmail.notification": "You successfully verified your email. Thank you."
+  "verifyEmail.notification": "You successfully verified your email. Thank you.",
+
+  "webapp.cannotReachServer": "Cannot reach server."
 }

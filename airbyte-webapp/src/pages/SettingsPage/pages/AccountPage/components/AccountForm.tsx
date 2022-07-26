@@ -44,22 +44,23 @@ const accountValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
 });
 
-type AccountFormProps = {
+interface AccountFormProps {
   email: string;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
   onSubmit: (data: { email: string }) => void;
-};
+}
 
 const AccountForm: React.FC<AccountFormProps> = ({ email, onSubmit, successMessage, errorMessage }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <Formik
       initialValues={{ email }}
-      validateOnBlur={true}
+      validateOnBlur
       validateOnChange={false}
       validationSchema={accountValidationSchema}
+      enableReinitialize
       onSubmit={onSubmit}
     >
       {({ isSubmitting, dirty, values }) => (

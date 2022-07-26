@@ -1,0 +1,89 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api libs.hikaricp
+    api libs.jooq.meta
+    api libs.jooq
+    api libs.postgresql
+
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-config:config-models')
+    implementation libs.flyway.core
+
+    // Mark as compile only to avoid leaking transitively to connectors
+    compileOnly libs.platform.testcontainers.postgresql
+
+    // These are required because gradle might be using lower version of Jna from other
+    // library transitive dependency. Can be removed if we can figure out which library is the cause.
+    // Refer: https://github.com/testcontainers/testcontainers-java/issues/3834#issuecomment-825409079
+    implementation 'net.java.dev.jna:jna:5.8.0'
+    implementation 'net.java.dev.jna:jna-platform:5.8.0'
+
+    testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.apache.commons:commons-lang3:3.11'
+    testImplementation libs.platform.testcontainers.postgresql
+
+    // Big Query
+    implementation('com.google.cloud:google-cloud-bigquery:1.133.1')
+
+    // Lombok
+    implementation 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor('org.projectlombok:lombok:1.18.20')
+
+    // MongoDB
+    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+}
+
+task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'configs', 'create'
+}
+
+task(runConfigsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'configs', 'migrate'
+}
+
+task(dumpConfigsSchema, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'configs', 'dump_schema'
+}
+
+task(newJobsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'jobs', 'create'
+}
+
+task(runJobsMigration, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'jobs', 'migrate'
+}
+
+task(dumpJobsSchema, dependsOn: 'classes', type: JavaExec) {
+    main = 'io.airbyte.db.instance.development.MigrationDevCenter'
+    classpath = sourceSets.main.runtimeClasspath
+    args 'jobs', 'dump_schema'
+}
+
+task copyInitSql(type: Copy) {
+    dependsOn copyDocker
+
+    from('src/main/resources') {
+        include 'init.sql'
+    }
+    into 'build/docker/bin'
+}
+
+Task dockerBuildTask = getDockerBuildTask("db", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
+dockerBuildTask.dependsOn(copyInitSql)
+assemble.dependsOn(dockerBuildTask)
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

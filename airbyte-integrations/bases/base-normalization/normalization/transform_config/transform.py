@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -267,6 +267,11 @@ class TransformConfig:
     def transform_mssql(config: Dict[str, Any]):
         print("transform_mssql")
         # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+            config["host"] = "127.0.0.1"  # localhost is not supported by dbt-sqlserver.
+
         dbt_config = {
             "type": "sqlserver",
             "driver": "ODBC Driver 17 for SQL Server",

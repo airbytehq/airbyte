@@ -8,7 +8,7 @@ The Airbyte Python CDK is a framework for rapidly developing production-grade Ai
 
 The CDK provides an improved developer experience by providing basic implementation structure and abstracting away low-level glue boilerplate.
 
-This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-specification) before proceeding.
+This document is a general introduction to the CDK. Readers should have basic familiarity with the [Airbyte Specification](https://docs.airbyte.io/architecture/airbyte-protocol) before proceeding.
 
 If you have any issues with troubleshooting or want to learn more about the CDK from the Airbyte team, head to the \#connector-development channel in [our Slack](https://airbytehq.slack.com/ssb/redirect) to inquire further!
 
@@ -76,7 +76,7 @@ Setup a virtual env:
 ```text
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]" # [dev] installs development-only dependencies
+pip install -e ".[tests]" # [tests] installs test-only dependencies
 ```
 
 #### Iteration

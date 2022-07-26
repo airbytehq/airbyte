@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.oracle;
@@ -12,7 +12,10 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
@@ -21,6 +24,8 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
+import org.jooq.DSLContext;
 import org.junit.Test;
 
 public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAcceptanceTest {
@@ -116,29 +121,33 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName)
       throws SQLException {
-    final List<org.jooq.Record> result = getDatabase(config)
-        .query(ctx -> ctx.fetch(
-            String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
-                OracleDestination.COLUMN_NAME_EMITTED_AT))
-            .stream()
-            .collect(Collectors.toList()));
-    return result
-        .stream()
-        .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-        .map(Jsons::deserialize)
-        .collect(Collectors.toList());
+    try (final DSLContext dslContext = getDSLContext(config)) {
+      final List<org.jooq.Record> result = getDatabase(dslContext)
+          .query(ctx -> ctx.fetch(
+              String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName,
+                  OracleDestination.COLUMN_NAME_EMITTED_AT))
+              .stream()
+              .collect(Collectors.toList()));
+      return result
+          .stream()
+          .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
+          .map(Jsons::deserialize)
+          .collect(Collectors.toList());
+    }
   }
 
-  private static Database getDatabase(final JsonNode config) {
-    return Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
+  private static DSLContext getDSLContext(final JsonNode config) {
+    return DSLContextFactory.create(
+        config.get("username").asText(), config.get("password").asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+        String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
-            config.get("port").asText(),
+            config.get("port").asInt(),
             config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver",
         null);
+  }
+
+  private static Database getDatabase(final DSLContext dslContext) {
+    return new Database(dslContext);
   }
 
   @Override
@@ -152,14 +161,14 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
 
     config = getConfig(db);
 
-    final Database database = getDatabase(config);
-    database.query(
-        ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
-    database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
+    try (final DSLContext dslContext = getDSLContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(
+          ctx -> ctx.fetch(String.format("CREATE USER %s IDENTIFIED BY %s", schemaName, schemaName)));
+      database.query(ctx -> ctx.fetch(String.format("GRANT ALL PRIVILEGES TO %s", schemaName)));
 
-    database.close();
-
-    ((ObjectNode) config).put("schema", dbName);
+      ((ObjectNode) config).put("schema", dbName);
+    }
   }
 
   @Override
@@ -172,17 +181,17 @@ public class UnencryptedOracleDestinationAcceptanceTest extends DestinationAccep
   public void testNoneEncryption() throws SQLException {
     final JsonNode config = getConfig();
 
-    final JdbcDatabase database = Databases.createJdbcDatabase(config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:oracle:thin:@//%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("sid").asText()),
-        "oracle.jdbc.driver.OracleDriver");
+    final DataSource dataSource =
+        DataSourceFactory.create(config.get("username").asText(), config.get("password").asText(), DatabaseDriver.ORACLE.getDriverClassName(),
+            String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
+                config.get("host").asText(),
+                config.get("port").asInt(),
+                config.get("sid").asText()));
+    final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    final String network_service_banner =
+    final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
-    final List<JsonNode> collect = database.unsafeQuery(network_service_banner).collect(Collectors.toList());
+    final List<JsonNode> collect = database.queryJsons(networkServiceBanner);
 
     assertTrue(collect.get(1).get("NETWORK_SERVICE_BANNER").asText()
         .contains("Oracle Advanced Security: encryption"));

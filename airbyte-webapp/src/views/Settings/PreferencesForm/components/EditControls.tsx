@@ -5,14 +5,14 @@ import styled from "styled-components";
 import { Button } from "components";
 import Spinner from "components/Spinner";
 
-type IProps = {
+interface IProps {
   isSubmitting: boolean;
   isValid: boolean;
   dirty: boolean;
   resetForm: () => void;
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const Controls = styled.div`
   margin-top: 34px;
@@ -64,7 +64,7 @@ const EditControls: React.FC<IProps> = ({ isSubmitting, isValid, dirty, resetFor
       </Button>
       <ButtonContainer>
         <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={resetForm}>
-          <FormattedMessage id={`form.cancel`} />
+          <FormattedMessage id="form.cancel" />
         </Button>
       </ButtonContainer>
       {showStatusMessage()}

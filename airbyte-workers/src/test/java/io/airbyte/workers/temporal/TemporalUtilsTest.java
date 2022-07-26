@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.concurrency.VoidCallable;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityCancellationType;
 import io.temporal.activity.ActivityExecutionContext;
@@ -100,16 +100,18 @@ class TemporalUtilsTest {
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
     final Supplier<WorkflowServiceStubs> serviceSupplier = mock(Supplier.class);
+    final String namespace = "default";
 
-    when(namespaceInfo.getName()).thenReturn("default");
+    when(namespaceInfo.isInitialized()).thenReturn(true);
+    when(namespaceInfo.getName()).thenReturn(namespace);
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
     when(serviceSupplier.get())
         .thenThrow(RuntimeException.class)
         .thenReturn(workflowServiceStubs);
-    when(workflowServiceStubs.blockingStub().listNamespaces(any()).getNamespacesList())
+    when(workflowServiceStubs.blockingStub().describeNamespace(any()))
         .thenThrow(RuntimeException.class)
-        .thenReturn(List.of(describeNamespaceResponse));
-    getTemporalClientWhenConnected(Duration.ofMillis(10), Duration.ofSeconds(1), Duration.ofSeconds(0), serviceSupplier);
+        .thenReturn(describeNamespaceResponse);
+    getTemporalClientWhenConnected(Duration.ofMillis(10), Duration.ofSeconds(1), Duration.ofSeconds(0), serviceSupplier, namespace);
   }
 
   @Test
@@ -118,8 +120,9 @@ class TemporalUtilsTest {
     final DescribeNamespaceResponse describeNamespaceResponse = mock(DescribeNamespaceResponse.class);
     final NamespaceInfo namespaceInfo = mock(NamespaceInfo.class);
     final Supplier<WorkflowServiceStubs> serviceSupplier = mock(Supplier.class);
+    final String namespace = "default";
 
-    when(namespaceInfo.getName()).thenReturn("default");
+    when(namespaceInfo.getName()).thenReturn(namespace);
     when(describeNamespaceResponse.getNamespaceInfo()).thenReturn(namespaceInfo);
     when(serviceSupplier.get())
         .thenThrow(RuntimeException.class)
@@ -128,7 +131,7 @@ class TemporalUtilsTest {
         .thenThrow(RuntimeException.class)
         .thenReturn(List.of(describeNamespaceResponse));
     assertThrows(RuntimeException.class, () -> {
-      getTemporalClientWhenConnected(Duration.ofMillis(100), Duration.ofMillis(10), Duration.ofSeconds(0), serviceSupplier);
+      getTemporalClientWhenConnected(Duration.ofMillis(100), Duration.ofMillis(10), Duration.ofSeconds(0), serviceSupplier, namespace);
     });
   }
 

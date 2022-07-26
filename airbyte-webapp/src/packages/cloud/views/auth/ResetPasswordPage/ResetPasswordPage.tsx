@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
 import { LoadingButton, LabeledInput, Link } from "components";
+import HeadTitle from "components/HeadTitle";
 
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -19,10 +20,11 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordPage: React.FC = () => {
   const { requirePasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
   return (
     <div>
+      <HeadTitle titles={[{ id: "login.resetPassword" }]} />
       <FormTitle bold>
         <FormattedMessage id="login.resetPassword" />
       </FormTitle>
@@ -32,15 +34,21 @@ const ResetPasswordPage: React.FC = () => {
           email: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={async ({ email }) => {
-          await requirePasswordReset(email);
-          registerNotification({
-            id: "resetPassword.emailSent",
-            title: formatMessage({ id: "login.resetPassword.emailSent" }),
-            isError: false,
-          });
+        onSubmit={async ({ email }, FormikBag) => {
+          try {
+            await requirePasswordReset(email);
+            registerNotification({
+              id: "resetPassword.emailSent",
+              title: formatMessage({ id: "login.resetPassword.emailSent" }),
+              isError: false,
+            });
+          } catch (err) {
+            err.message.includes("user-not-found")
+              ? FormikBag.setFieldError("email", "login.yourEmail.notFound")
+              : FormikBag.setFieldError("email", "login.unknownError");
+          }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (

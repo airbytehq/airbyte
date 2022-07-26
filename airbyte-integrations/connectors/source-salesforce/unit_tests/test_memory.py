@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,6 +9,12 @@ import pytest
 import requests_mock
 from conftest import generate_stream
 from source_salesforce.streams import BulkIncrementalSalesforceStream
+
+
+@pytest.fixture(autouse=True)
+def time_sleep_mock(mocker):
+    time_mock = mocker.patch("time.sleep", lambda x: None)
+    yield time_mock
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
@@ -82,7 +82,8 @@ class AutoDisableConnectionActivityTest {
   private final StandardSync standardSync = new StandardSync();
 
   @BeforeEach
-  void setUp() throws IOException {
+  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
+    Mockito.when(mConfigRepository.getStandardSync(CONNECTION_ID)).thenReturn(standardSync);
     standardSync.setStatus(Status.ACTIVE);
     Mockito.when(mFeatureFlags.autoDisablesFailingConnections()).thenReturn(true);
     Mockito.when(mConfigs.getMaxDaysOfOnlyFailedJobsBeforeConnectionDisable()).thenReturn(MAX_DAYS_OF_ONLY_FAILED_JOBS);

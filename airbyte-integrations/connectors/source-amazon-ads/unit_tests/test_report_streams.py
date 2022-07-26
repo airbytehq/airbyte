@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import re
@@ -13,7 +13,6 @@ from freezegun import freeze_time
 from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
-from source_amazon_ads.spec import AmazonAdsConfig
 from source_amazon_ads.streams import (
     SponsoredBrandsReportStream,
     SponsoredBrandsVideoReportStream,
@@ -105,14 +104,13 @@ def make_profiles(profile_type="seller"):
 
 
 @responses.activate
-def test_display_report_stream(test_config):
+def test_display_report_stream(config):
     setup_responses(
         init_response=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
 
-    config = AmazonAdsConfig(**test_config)
     profiles = make_profiles()
 
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -130,14 +128,13 @@ def test_display_report_stream(test_config):
 
 
 @responses.activate
-def test_products_report_stream(test_config):
+def test_products_report_stream(config):
     setup_responses(
         init_response_products=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
 
-    config = AmazonAdsConfig(**test_config)
     profiles = make_profiles(profile_type="vendor")
 
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -147,14 +144,13 @@ def test_products_report_stream(test_config):
 
 
 @responses.activate
-def test_brands_report_stream(test_config):
+def test_brands_report_stream(config):
     setup_responses(
         init_response_brands=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
 
-    config = AmazonAdsConfig(**test_config)
     profiles = make_profiles()
 
     stream = SponsoredBrandsReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -164,14 +160,13 @@ def test_brands_report_stream(test_config):
 
 
 @responses.activate
-def test_brands_video_report_stream(test_config):
+def test_brands_video_report_stream(config):
     setup_responses(
         init_response_brands=REPORT_INIT_RESPONSE,
         status_response=REPORT_STATUS_RESPONSE,
         metric_response=METRIC_RESPONSE,
     )
 
-    config = AmazonAdsConfig(**test_config)
     profiles = make_profiles()
 
     stream = SponsoredBrandsVideoReportStream(config, profiles, authenticator=mock.MagicMock())
@@ -181,8 +176,7 @@ def test_brands_video_report_stream(test_config):
 
 
 @responses.activate
-def test_display_report_stream_init_failure(mocker, test_config):
-    config = AmazonAdsConfig(**test_config)
+def test_display_report_stream_init_failure(mocker, config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -199,9 +193,8 @@ def test_display_report_stream_init_failure(mocker, test_config):
 
 
 @responses.activate
-def test_display_report_stream_init_http_exception(mocker, test_config):
+def test_display_report_stream_init_http_exception(mocker, config):
     mocker.patch("time.sleep", lambda x: None)
-    config = AmazonAdsConfig(**test_config)
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -213,9 +206,8 @@ def test_display_report_stream_init_http_exception(mocker, test_config):
 
 
 @responses.activate
-def test_display_report_stream_init_too_many_requests(mocker, test_config):
+def test_display_report_stream_init_too_many_requests(mocker, config):
     mocker.patch("time.sleep", lambda x: None)
-    config = AmazonAdsConfig(**test_config)
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
     stream_slice = {"reportDate": "20210725"}
@@ -269,7 +261,7 @@ def test_display_report_stream_init_too_many_requests(mocker, test_config):
     ],
 )
 @responses.activate
-def test_display_report_stream_backoff(mocker, test_config, modifiers, expected):
+def test_display_report_stream_backoff(mocker, config, modifiers, expected):
     mocker.patch("time.sleep")
     setup_responses(init_response=REPORT_INIT_RESPONSE, metric_response=METRIC_RESPONSE)
 
@@ -292,7 +284,6 @@ def test_display_report_stream_backoff(mocker, test_config, modifiers, expected)
 
         callback = StatusCallback()
         responses.add_callback(responses.GET, re.compile(r"https://advertising-api.amazon.com/v2/reports/[^/]+$"), callback=callback)
-        config = AmazonAdsConfig(**test_config)
         profiles = make_profiles()
         stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
         stream_slice = {"reportDate": "20210725"}
@@ -307,8 +298,7 @@ def test_display_report_stream_backoff(mocker, test_config, modifiers, expected)
 
 @freeze_time("2021-07-30 04:26:08")
 @responses.activate
-def test_display_report_stream_slices_full_refresh(test_config):
-    config = AmazonAdsConfig(**test_config)
+def test_display_report_stream_slices_full_refresh(config):
     stream = SponsoredDisplayReportStream(config, None, authenticator=mock.MagicMock())
     slices = stream.stream_slices(SyncMode.full_refresh, cursor_field=stream.cursor_field)
     assert slices == [{"reportDate": "20210730"}]
@@ -316,8 +306,7 @@ def test_display_report_stream_slices_full_refresh(test_config):
 
 @freeze_time("2021-07-30 04:26:08")
 @responses.activate
-def test_display_report_stream_slices_incremental(test_config):
-    config = AmazonAdsConfig(**test_config)
+def test_display_report_stream_slices_incremental(config):
     stream = SponsoredDisplayReportStream(config, None, authenticator=mock.MagicMock())
     stream_state = {"reportDate": "20210726"}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)

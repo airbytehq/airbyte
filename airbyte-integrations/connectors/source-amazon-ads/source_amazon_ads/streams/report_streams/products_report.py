@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -266,7 +266,7 @@ class SponsoredProductsReportStream(ReportStream):
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
 
-# adId is automatically added to the report by amazon and requesting adId causes an amazon error
+        # adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if "adId" in metrics_list:
             metrics_list.remove("adId")
 

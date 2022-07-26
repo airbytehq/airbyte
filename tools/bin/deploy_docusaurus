@@ -43,10 +43,18 @@ pwd
 
 # Yarn check (which is commonly used to check for program existance)
 # -s/--silent doesn't exist in cloud's Ubuntu
-if ! which yarn > /dev/null; then
-  echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
+if ! which brew > /dev/null; then
+  echo -e "$red_text""homebrew not found HALP!!\n\n""$default_text"
+  echo -e "$red_text""try this:  https://brew.sh\n\n""$default_text"
   exit 1
 fi
+
+if ! which yarn > /dev/null; then
+  echo -e "$red_text""yarn not found HALP!!\n\n""$default_text"
+  echo -e "$red_text""try this:  brew install yarn\n\n""$default_text"
+  exit 1
+fi
+
 
 set -o xtrace
 
@@ -65,7 +73,10 @@ pwd
 yarn install
 
 # generate static content
-yarn build
+if ! yarn build; then
+  echo -e  "$red_text""yarn build has failed.  Documentation probably has broken links""$default_text"
+  echo -e  "$red_text""please fix the links, commit, and try again""$default_text"
+fi
 
 # Check tty for local/remote deploys (we expect cloud to be non-interactive)
 # results like /dev/ttys000 || not a tty
@@ -114,10 +125,11 @@ echo "docs.airbyte.com" > CNAME
 
 git add CNAME
 
-git commit --message "Adds CNAME to deploy for $revision"
+# Skip pre-commit hooks fire_elmo.jpg
+PRE_COMMIT_ALLOW_NO_CONFIG=1 git commit --message "Adds CNAME to deploy for $revision"
 
 # non functional. for debugging
-git branch
+git rev-parse --abbrev-ref HEAD
 
 if test "$(tty)" == "not a tty"; then
   # note that this is NOT airbyte repo

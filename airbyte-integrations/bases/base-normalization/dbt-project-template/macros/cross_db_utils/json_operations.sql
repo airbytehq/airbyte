@@ -236,3 +236,18 @@
 {% macro clickhouse__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
     JSONExtractArrayRaw(assumeNotNull({{ json_column }}), {{ format_json_path(json_path_list) }})
 {%- endmacro %}
+
+{# json_extract_string_array -------------------------------------------------     #}
+
+{% macro json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    {{ adapter.dispatch('json_extract_string_array')(json_column, json_path_list, normalized_json_path) }}
+{%- endmacro %}
+
+{% macro default__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    {{ json_extract_array(json_column, json_path_list, normalized_json_path) }}
+{%- endmacro %}
+
+# https://cloud.google.com/bigquery/docs/reference/standard-sql/json_functions#json_extract_string_array
+{% macro bigquery__json_extract_string_array(json_column, json_path_list, normalized_json_path) -%}
+    json_extract_string_array({{ json_column }}, {{ format_json_path(normalized_json_path) }})
+{%- endmacro %}

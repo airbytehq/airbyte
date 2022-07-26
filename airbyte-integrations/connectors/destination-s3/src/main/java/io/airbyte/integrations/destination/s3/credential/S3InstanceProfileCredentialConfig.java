@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.credential;
@@ -11,7 +11,7 @@ public class S3InstanceProfileCredentialConfig implements S3CredentialConfig {
 
   @Override
   public S3CredentialType getCredentialType() {
-    return S3CredentialType.INSTANCE_PROFILE;
+    return S3CredentialType.DEFAULT_PROFILE;
   }
 
   @Override

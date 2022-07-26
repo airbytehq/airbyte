@@ -13,24 +13,33 @@ import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 
+import { DestinationDefinitionSpecificationRead } from "../../../core/request/AirbyteClient";
 import { ServiceFormValues } from "./types";
 
 function upgradeSchemaLegacyAuth(
   connectorSpecification: Required<
-    Pick<ConnectorDefinitionSpecification, "authSpecification" | "connectionSpecification">
+    Pick<DestinationDefinitionSpecificationRead, "authSpecification" | "connectionSpecification">
   >
 ) {
   const spec = connectorSpecification.authSpecification.oauth2Specification;
-  return applyFuncAt(connectorSpecification.connectionSpecification, spec.rootObject ?? [], (schema) => {
-    // Very hacky way to allow placing button within section
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (schema as any).is_auth = true;
-    const schemaWithoutPaths = removeNestedPaths(schema, spec.oauthFlowInitParameters ?? [], false);
+  return applyFuncAt(
+    connectorSpecification.connectionSpecification as JSONSchema7Definition,
+    (spec?.rootObject ?? []) as Array<string | number>,
+    (schema) => {
+      // Very hacky way to allow placing button within section
+      // @ts-expect-error json schema
+      schema.is_auth = true;
+      const schemaWithoutPaths = removeNestedPaths(schema, spec?.oauthFlowInitParameters ?? [], false);
 
-    const schemaWithoutOutputPats = removeNestedPaths(schemaWithoutPaths, spec.oauthFlowOutputParameters ?? [], false);
+      const schemaWithoutOutputPats = removeNestedPaths(
+        schemaWithoutPaths,
+        spec?.oauthFlowOutputParameters ?? [],
+        false
+      );
 
-    return schemaWithoutOutputPats;
-  });
+      return schemaWithoutOutputPats;
+    }
+  );
 }
 
 function useBuildInitialSchema(
@@ -42,13 +51,13 @@ function useBuildInitialSchema(
     if (hasFeature(FeatureItem.AllowOAuthConnector)) {
       if (connectorSpecification?.authSpecification && !connectorSpecification?.advancedAuth) {
         return upgradeSchemaLegacyAuth({
-          connectionSpecification: connectorSpecification.connectionSpecification,
+          connectionSpecification: connectorSpecification?.connectionSpecification,
           authSpecification: connectorSpecification.authSpecification,
         });
       }
     }
 
-    return connectorSpecification?.connectionSpecification;
+    return connectorSpecification?.connectionSpecification as JSONSchema7Definition | undefined;
   }, [hasFeature, connectorSpecification]);
 }
 

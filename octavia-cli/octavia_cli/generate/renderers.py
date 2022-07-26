@@ -1,14 +1,18 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import abc
 import os
+from pathlib import Path
 from typing import Any, Callable, List
 
+import click
 import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
 from jinja2 import Environment, PackageLoader, Template, select_autoescape
 from octavia_cli.apply import resources
+from slugify import slugify
 
 from .definitions import BaseDefinition, ConnectionDefinition
 from .yaml_dumpers import CatalogDumper
@@ -19,7 +23,6 @@ JINJA_ENV = Environment(loader=PackageLoader(__package__), autoescape=select_aut
 class FieldToRender:
     def __init__(self, name: str, required: bool, field_metadata: dict) -> None:
         """Initialize a FieldToRender instance
-
         Args:
             name (str): name of the field
             required (bool): whether it's a required field or not
@@ -44,10 +47,8 @@ class FieldToRender:
 
     def __getattr__(self, name: str) -> Any:
         """Map field_metadata keys to attributes of Field.
-
         Args:
             name (str): attribute name
-
         Returns:
             [Any]: attribute value
         """
@@ -77,7 +78,6 @@ class FieldToRender:
 
     def _get_array_items(self) -> List["FieldToRender"]:
         """If the field is an array of objects, retrieve fields of these objects.
-
         Returns:
             [list]: List of fields
         """
@@ -146,44 +146,73 @@ class BaseRenderer(abc.ABC):
     def __init__(self, resource_name: str) -> None:
         self.resource_name = resource_name
 
-    def _get_output_path(self, project_path: str, definition_type: str) -> str:
+    @classmethod
+    def get_output_path(cls, project_path: str, definition_type: str, resource_name: str) -> Path:
         """Get rendered file output path
-
         Args:
             project_path (str): Current project path.
             definition_type (str): Current definition_type.
-
+            resource_name (str): Current resource_name.
         Returns:
-            str: Full path to the output path.
+            Path: Full path to the output path.
         """
-        directory = os.path.join(project_path, f"{definition_type}s", self.resource_name)
+        directory = os.path.join(project_path, f"{definition_type}s", slugify(resource_name, separator="_"))
         if not os.path.exists(directory):
             os.makedirs(directory)
-        return os.path.join(directory, "configuration.yaml")
+        return Path(os.path.join(directory, "configuration.yaml"))
+
+    @staticmethod
+    def _confirm_overwrite(output_path):
+        """User input to determine if the configuration paqth should be overwritten.
+        Args:
+            output_path (str): Path of the configuration file to overwrite
+        Returns:
+            bool: Boolean representing if the configuration file is to be overwritten
+        """
+        overwrite = True
+        if output_path.is_file():
+            overwrite = click.confirm(
+                f"The configuration octavia-cli is about to create already exists, do you want to replace it? ({output_path})"
+            )
+        return overwrite
 
     @abc.abstractmethod
     def _render(self):  # pragma: no cover
         """Runs the template rendering.
-
         Raises:
             NotImplementedError: Must be implemented on subclasses.
         """
         raise NotImplementedError
 
-    def write_yaml(self, project_path: str) -> str:
+    def write_yaml(self, project_path: Path) -> str:
         """Write rendered specification to a YAML file in local project path.
-
         Args:
             project_path (str): Path to directory hosting the octavia project.
-
         Returns:
             str: Path to the rendered specification.
         """
-        output_path = self._get_output_path(project_path, self.definition.type)
-        rendered = self._render()
+        output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
+        if self._confirm_overwrite(output_path):
+            with open(output_path, "w") as f:
+                rendered_yaml = self._render()
+                f.write(rendered_yaml)
+        return output_path
 
-        with open(output_path, "w") as f:
-            f.write(rendered)
+    def import_configuration(self, project_path: str, configuration: dict) -> Path:
+        """Import the resource configuration. Save the yaml file to disk and return its path.
+        Args:
+            project_path (str): Current project path.
+            configuration (dict): The configuration of the resource.
+        Returns:
+            Path: Path to the resource configuration.
+        """
+        rendered = self._render()
+        data = yaml.safe_load(rendered)
+        data["configuration"] = configuration
+        output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
+        if self._confirm_overwrite(output_path):
+            with open(output_path, "wb") as f:
+                yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
         return output_path
 
 
@@ -192,7 +221,6 @@ class ConnectorSpecificationRenderer(BaseRenderer):
 
     def __init__(self, resource_name: str, definition: BaseDefinition) -> None:
         """Connector specification renderer constructor.
-
         Args:
             resource_name (str): Name of the source or destination.
             definition (BaseDefinition): The definition related to a source or a destination.
@@ -202,7 +230,6 @@ class ConnectorSpecificationRenderer(BaseRenderer):
 
     def _parse_connection_specification(self, schema: dict) -> List[List["FieldToRender"]]:
         """Create a renderable structure from the specification schema
-
         Returns:
             List[List["FieldToRender"]]: List of list of fields to render.
         """
@@ -227,10 +254,23 @@ class ConnectionRenderer(BaseRenderer):
 
     TEMPLATE = JINJA_ENV.get_template("connection.yaml.j2")
     definition = ConnectionDefinition
+    KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION = [
+        "connection_id",
+        "name",
+        "source_id",
+        "destination_id",
+        "latest_sync_job_created_at",
+        "latest_sync_job_status",
+        "source",
+        "destination",
+        "is_syncing",
+        "operation_ids",
+        "catalog_id",
+        "catalog_diff",
+    ]
 
     def __init__(self, connection_name: str, source: resources.Source, destination: resources.Destination) -> None:
         """Connection renderer constructor.
-
         Args:
             connection_name (str): Name of the connection to render.
             source (resources.Source): Connection's source.
@@ -241,25 +281,48 @@ class ConnectionRenderer(BaseRenderer):
         self.destination = destination
 
     @staticmethod
-    def catalog_to_yaml(catalog: dict) -> str:
+    def catalog_to_yaml(catalog: AirbyteCatalog) -> str:
         """Convert the source catalog to a YAML string.
-        Convert camel case to snake case.
-
         Args:
-            catalog (dict): Source's catalog.
-
+            catalog (AirbyteCatalog): Source's catalog.
         Returns:
             str: Catalog rendered as yaml.
         """
-        return yaml.dump(catalog, Dumper=CatalogDumper, default_flow_style=False)
+        return yaml.dump(catalog.to_dict(), Dumper=CatalogDumper, default_flow_style=False)
 
     def _render(self) -> str:
         yaml_catalog = self.catalog_to_yaml(self.source.catalog)
         return self.TEMPLATE.render(
             {
                 "connection_name": self.resource_name,
-                "source_id": self.source.resource_id,
-                "destination_id": self.destination.resource_id,
+                "source_configuration_path": self.source.configuration_path,
+                "destination_configuration_path": self.destination.configuration_path,
                 "catalog": yaml_catalog,
+                "supports_normalization": self.destination.definition.supports_normalization,
+                "supports_dbt": self.destination.definition.supports_dbt,
             }
         )
+
+    def import_configuration(self, project_path: Path, configuration: dict) -> Path:
+        """Import the connection configuration. Save the yaml file to disk and return its path.
+        Args:
+            project_path (str): Current project path.
+            configuration (dict): The configuration of the connection.
+        Returns:
+            Path: Path to the connection configuration.
+        """
+        rendered = self._render()
+        data = yaml.safe_load(rendered)
+        data["configuration"] = {k: v for k, v in configuration.items() if k not in self.KEYS_TO_REMOVE_FROM_REMOTE_CONFIGURATION}
+        if "operations" in data["configuration"] and len(data["configuration"]["operations"]) == 0:
+            data["configuration"].pop("operations")
+        [
+            operation.pop(field_to_remove, "")
+            for field_to_remove in ["workspace_id", "operation_id"]
+            for operation in data["configuration"].get("operations", {})
+        ]
+        output_path = self.get_output_path(project_path, self.definition.type, self.resource_name)
+        if self._confirm_overwrite(output_path):
+            with open(output_path, "wb") as f:
+                yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
+        return output_path

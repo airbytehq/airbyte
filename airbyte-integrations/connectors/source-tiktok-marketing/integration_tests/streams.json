@@ -1,0 +1,149 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [{
+        "name": "advertisers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      }, {
+        "name": "ads",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["ad_id"]]
+      }, {
+        "name": "ad_groups",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["adgroup_id"]]
+      }, {
+        "name": "campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["campaign_id"]]
+      }, {
+        "name": "ads_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "ads_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "ads_reports_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      }, {
+        "name": "ad_groups_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "ad_groups_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "ad_groups_reports_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      }, {
+        "name": "campaigns_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "campaigns_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "campaigns_reports_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      }, {
+        "name": "advertisers_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "advertisers_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "advertisers_reports_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      }, {
+        "name": "advertisers_audience_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "advertisers_audience_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "advertisers_audience_reports_lifetime",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      }, {
+        "name": "ads_audience_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "ads_audience_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "ad_group_audience_reports_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "ad_group_audience_reports_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }, {
+        "name": "campaigns_audience_reports_by_country_hourly",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_hour"]
+      }, {
+        "name": "campaigns_audience_reports_by_country_daily",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["dimensions", "stat_time_day"]
+      }
+    ]
+  }
+}

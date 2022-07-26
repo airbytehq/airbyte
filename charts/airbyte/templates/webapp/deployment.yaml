@@ -19,6 +19,9 @@ spec:
         {{- include "common.tplvalues.render" (dict "value" .Values.webapp.podAnnotations "context" $) | nindent 8 }}
       {{- end }}
     spec:
+      {{- if .Values.imagePullSecrets }}
+        {{- include "common.imagePullSecrets" . | nindent 6 }}
+      {{- end }}
       {{- if .Values.webapp.nodeSelector }}
       nodeSelector: {{- include "common.tplvalues.render" (dict "value" .Values.webapp.nodeSelector "context" $) | nindent 8 }}
       {{- end }}

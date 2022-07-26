@@ -16,20 +16,26 @@ import { FormSection } from "./FormSection";
 const GroupLabel = styled(Label)`
   width: auto;
   margin-right: 8px;
+  padding-top: 8px;
   display: inline-block;
+  padding-bottom: 0px;
+  vertical-align: middle;
 `;
 
 const ConditionControls = styled.div`
   padding-top: 25px;
 `;
 
+interface ConditionSectionProps {
+  formField: FormConditionItem;
+  path?: string;
+  disabled?: boolean;
+}
+
 /**
  * ConditionSection is responsible for handling oneOf sections of form
  */
-export const ConditionSection: React.FC<{
-  formField: FormConditionItem;
-  path?: string;
-}> = ({ formField, path }) => {
+export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, path, disabled }) => {
   const { widgetsInfo, setUiWidgetsInfo } = useServiceForm();
   const { values, setValues } = useFormikContext<ServiceFormValues>();
 
@@ -80,12 +86,18 @@ export const ConditionSection: React.FC<{
             onChange={onOptionChange}
             value={currentlySelectedCondition}
             name={formField.path}
+            isDisabled={disabled}
           />
         </>
       }
     >
       <ConditionControls>
-        <FormSection blocks={formField.conditions[currentlySelectedCondition]} path={path} skipAppend />
+        <FormSection
+          blocks={formField.conditions[currentlySelectedCondition]}
+          path={path}
+          disabled={disabled}
+          skipAppend
+        />
       </ConditionControls>
     </GroupControls>
   );

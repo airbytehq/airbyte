@@ -1,2 +1,2 @@
+export { StripeService } from "./StripeService";
 export * from "./types";
-export { StripeService } from "./StripService";

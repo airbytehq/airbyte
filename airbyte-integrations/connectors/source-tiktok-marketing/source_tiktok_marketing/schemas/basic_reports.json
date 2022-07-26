@@ -127,6 +127,10 @@
           "type": ["null", "string"],
           "format": "date-time"
         },
+        "stat_time_hour": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "campaign_id": {
           "type": ["null", "integer"]
         },

@@ -1,7 +1,7 @@
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
 import { Button } from "components";
@@ -23,31 +23,32 @@ const Content = styled.div`
   }
 `;
 
-const Delete = styled(FontAwesomeIcon)`
-  color: ${({ theme }) => theme.greyColor55};
-  font-weight: 300;
-  font-size: 14px;
-  line-height: 24px;
+const DeleteButton = styled(Button)`
   margin-left: 7px;
-  cursor: pointer;
 `;
 
-type EditorRowProps = {
+interface EditorRowProps {
   name: string;
   id: number;
   onEdit: (id: number) => void;
   onRemove: (id: number) => void;
-};
+  disabled?: boolean;
+}
 
-const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove }) => {
+const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove, disabled }) => {
+  const { formatMessage } = useIntl();
+  const buttonLabel = formatMessage({ id: "form.delete" });
+
   return (
     <Content>
       <div>{name || id}</div>
       <div>
-        <Button secondary onClick={() => onEdit(id)} type="button">
+        <Button secondary onClick={() => onEdit(id)} type="button" disabled={disabled}>
           <FormattedMessage id="form.edit" />
         </Button>
-        <Delete icon={faTimes} onClick={() => onRemove(id)} />
+        <DeleteButton iconOnly onClick={() => onRemove(id)} disabled={disabled} aria-label={buttonLabel}>
+          <FontAwesomeIcon icon={faTimes} />
+        </DeleteButton>
       </div>
     </Content>
   );

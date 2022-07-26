@@ -8,7 +8,7 @@ import { FeatureItem, useFeatureService } from "hooks/services/Feature";
 import { ServiceFormValues } from "./types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
-type Context = {
+interface Context {
   formType: "source" | "destination";
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   widgetsInfo: WidgetConfigMap;
@@ -23,7 +23,7 @@ type Context = {
   isEditMode?: boolean;
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
-};
+}
 
 const FormWidgetContext = React.createContext<Context | null>(null);
 
@@ -58,7 +58,7 @@ const ServiceFormContextProvider: React.FC<{
   const { values } = useFormikContext<ServiceFormValues>();
   const { hasFeature } = useFeatureService();
 
-  const serviceType = values.serviceType;
+  const { serviceType } = values;
   const selectedService = useMemo(
     () => availableServices.find((s) => Connector.id(s) === serviceType),
     [availableServices, serviceType]
@@ -69,7 +69,7 @@ const ServiceFormContextProvider: React.FC<{
       hasFeature(FeatureItem.AllowOAuthConnector) &&
       selectedConnector?.advancedAuth &&
       selectedConnector?.advancedAuth.predicateValue ===
-        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey)),
+        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? [])),
     [selectedConnector, hasFeature, values, getValues]
   );
 

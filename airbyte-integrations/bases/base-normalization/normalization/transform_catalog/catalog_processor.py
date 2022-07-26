@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,7 +9,7 @@ import re
 from typing import Any, Dict, List, Set
 
 import yaml
-from airbyte_protocol.models.airbyte_protocol import DestinationSyncMode, SyncMode
+from airbyte_cdk.models import DestinationSyncMode, SyncMode
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer

@@ -1,7 +1,19 @@
+export type UserStatus = "invited" | "registered" | "disabled";
+
 export interface User {
   email: string;
   name: string;
   userId: string;
-  status?: "invited" | "registered" | "disabled";
+  status?: UserStatus;
   intercomHash: string;
+}
+
+export interface UserUpdate {
+  userId: string;
+  authUserId: string;
+  name?: string;
+  defaultWorkspaceId?: string;
+  status?: UserStatus;
+  email?: string;
+  news?: boolean;
 }

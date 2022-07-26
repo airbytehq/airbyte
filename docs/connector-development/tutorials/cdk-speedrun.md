@@ -17,8 +17,11 @@ If you are a visual learner and want to see a video version of this guide going 
 #### Generate the Template
 
 ```bash
-$ cd airbyte-integrations/connector-templates/generator # start from repo root
-$ ./generate.sh
+# # clone the repo if you havent already
+# git clone -–depth 1 https://github.com/airbytehq/airbyte/ 
+# cd airbyte # start from repo root
+cd airbyte-integrations/connector-templates/generator 
+./generate.sh
 ```
 
 Select the `Python HTTP API Source` and name it `python-http-example`.
@@ -68,18 +71,25 @@ Ok, let's write a function that checks the inputs we just defined. Nuke the `sou
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import logging
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from . import pokemon_list
 
+logger = logging.getLogger("airbyte")
+
 class SourcePythonHttpExample(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        logger.info("Checking Pokemon API connection...")
         input_pokemon = config["pokemon_name"]
         if input_pokemon not in pokemon_list.POKEMON_LIST:
-            return False, f"Input Pokemon {input_pokemon} is invalid. Please check your spelling and input a valid Pokemon."
+            result = f"Input Pokemon {input_pokemon} is invalid. Please check your spelling and input a valid Pokemon."
+            logger.info(f"PokeAPI connection failed: {result}")
+            return False, result
         else:
+            logger.info(f"PokeAPI connection success: {input_pokemon} is a valid Pokemon")
             return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -228,3 +238,6 @@ docker build . -t airbyte/source-python-http-example:dev
 
 You're done. Stop the clock :\)
 
+## Further reading
+
+If you have enjoyed the above example, and would like to explore the Python CDK in even more detail, you may be interested looking at [how to build a connector to extract data from the Webflow API](https://airbyte.com/tutorials/extract-data-from-the-webflow-api)

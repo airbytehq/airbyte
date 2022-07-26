@@ -5,142 +5,114 @@
     "title": "Bing Ads Spec",
     "type": "object",
     "required": [
-      "accounts",
-      "client_id",
-      "client_secret",
-      "customer_id",
       "developer_token",
+      "client_id",
       "refresh_token",
-      "user_id",
-      "reports_start_date",
-      "hourly_reports",
-      "daily_reports",
-      "weekly_reports",
-      "monthly_reports"
+      "reports_start_date"
     ],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
-      "accounts": {
-        "title": "Accounts",
-        "type": "object",
-        "description": "Account selection.",
-        "oneOf": [
-          {
-            "title": "All accounts assigned to your user",
-            "additionalProperties": false,
-            "description": "Fetch data for all available accounts.",
-            "required": ["selection_strategy"],
-            "properties": {
-              "selection_strategy": {
-                "type": "string",
-                "enum": ["all"],
-                "const": "all"
-              }
-            }
-          },
-          {
-            "title": "Subset of your accounts",
-            "additionalProperties": false,
-            "description": "Fetch data for subset of account IDs.",
-            "required": ["ids", "selection_strategy"],
-            "properties": {
-              "selection_strategy": {
-                "type": "string",
-                "enum": ["subset"],
-                "const": "subset"
-              },
-              "ids": {
-                "type": "array",
-                "title": "IDs",
-                "description": "List of accounts from which data will be fetched.",
-                "items": {
-                  "type": "string"
-                },
-                "minItems": 1,
-                "uniqueItems": true
-              }
-            }
-          }
-        ]
+      "auth_method": {
+        "type": "string",
+        "const": "oauth2.0"
+      },
+      "tenant_id": {
+        "type": "string",
+        "title": "Tenant ID",
+        "description": "The Tenant ID of your Microsoft Advertising developer application. Set this to \"common\" unless you know you need a different value.",
+        "airbyte_secret": true,
+        "default": "common",
+        "order": 0
       },
       "client_id": {
         "type": "string",
         "title": "Client ID",
         "description": "The Client ID of your Microsoft Advertising developer application.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 1
       },
       "client_secret": {
         "type": "string",
         "title": "Client Secret",
         "description": "The Client Secret of your Microsoft Advertising developer application.",
-        "airbyte_secret": true
-      },
-      "customer_id": {
-        "type": "string",
-        "title": "Customer ID",
-        "description": "User's Customer ID. Go to your Accounts and Billing page. Your Customer ID will be listed on the Accounts tab under the heading Customer."
-      },
-      "developer_token": {
-        "type": "string",
-        "title": "Developer Token",
-        "description": "Developer token associated with user.",
-        "airbyte_secret": true
-      },
-      "tenant_id": {
-        "type": "string",
-        "title": "Tenant ID",
-        "description": "The Tenant ID of your Microsoft Advertising developer application.",
+        "default": "",
         "airbyte_secret": true,
-        "default": "common"
-      },
-      "redirect_uri": {
-        "type": "string",
-        "title": "Redirect URI",
-        "description": "The Redirect URI of your Microsoft Advertising developer application.",
-        "airbyte_secret": true,
-        "default": ""
+        "order": 2
       },
       "refresh_token": {
         "type": "string",
         "title": "Refresh Token",
         "description": "Refresh Token to renew the expired Access Token.",
-        "airbyte_secret": true
+        "airbyte_secret": true,
+        "order": 3
       },
-      "user_id": {
+      "developer_token": {
         "type": "string",
-        "title": "Account ID",
-        "description": "Bing Ads Account ID. You can find Account ID by going to your profile and selecting Accounts and Billing."
+        "title": "Developer Token",
+        "description": "Developer token associated with user. See more info <a href=\"https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token\"> in the docs</a>.",
+        "airbyte_secret": true,
+        "order": 4
       },
       "reports_start_date": {
         "type": "string",
-        "title": "Reports Start Date",
+        "title": "Reports replication start date",
         "format": "date",
         "default": "2020-01-01",
-        "description": "UTC date in YYYY-MM-DD format. Any reports before this date will not be replicated."
+        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
+        "order": 5
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["auth_method"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["refresh_token"]
+          }
+        }
       },
-      "hourly_reports": {
-        "title": "Hourly reports",
-        "type": "boolean",
-        "description": "The report data will be aggregated by each hour of the day.",
-        "default": false
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
       },
-      "daily_reports": {
-        "title": "Daily reports",
-        "type": "boolean",
-        "description": "The report data will be aggregated by each day.",
-        "default": false
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["client_secret"]
+          }
+        }
       },
-      "weekly_reports": {
-        "title": "Weekly reports",
-        "type": "boolean",
-        "description": "The report data will be aggregated by each week running from Sunday through Saturday.",
-        "default": false
-      },
-      "monthly_reports": {
-        "title": "Monthly reports",
-        "type": "boolean",
-        "description": "The report data will be aggregated by each month.",
-        "default": false
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "path_in_connector_config": ["tenant_id"]
+          }
+        }
       }
     }
   }

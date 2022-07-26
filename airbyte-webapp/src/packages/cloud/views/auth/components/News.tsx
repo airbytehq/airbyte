@@ -48,12 +48,11 @@ const News: React.FC = () => {
           <NewsItemStyled key={i} {...n} />
         ))}
       </div>
-      <GitLink href={config.ui.gitLink} target="_blank">
+      <GitLink href={config.links.gitLink} target="_blank">
         <H2>
           <FormattedMessage id="login.selfhosting" />
         </H2>
         <GitBlock>
-          {/*@ts-ignore github icon fails here*/}
           <GitIcon icon={faGithub} />
           <div>
             <H4>
