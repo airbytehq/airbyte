@@ -215,6 +215,7 @@ class Users(IncrementalOktaStream):
         params = super().request_params(stream_state, stream_slice, next_page_token)
         status_filters = " or ".join([f'status eq "{status}"' for status in self.statuses])
         if "filter" in params:
+            # add status_filters to existing filters
             params["filter"] = f'{params["filter"]} and ({status_filters})'
         else:
             params["filter"] = status_filters
