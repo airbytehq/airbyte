@@ -58,6 +58,7 @@ class DefaultSynchronousSchedulerClientTest {
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID UUID1 = UUID.randomUUID();
   private static final UUID UUID2 = UUID.randomUUID();
+  private static final String UNCHECKED = "unchecked";
   private static final JsonNode CONFIGURATION = Jsons.jsonNode(ImmutableMap.builder()
       .put("username", "airbyte")
       .put("password", "abc")
@@ -99,7 +100,7 @@ class DefaultSynchronousSchedulerClientTest {
   @DisplayName("Test execute method.")
   class ExecuteSynchronousJob {
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteJobSuccess() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -124,7 +125,7 @@ class DefaultSynchronousSchedulerClientTest {
       verifyNoInteractions(jobErrorReporter);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteMappedOutput() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -145,7 +146,7 @@ class DefaultSynchronousSchedulerClientTest {
       assertEquals(LOG_PATH, response.getMetadata().getLogPath());
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteJobFailure() {
       final UUID sourceDefinitionId = UUID.randomUUID();
@@ -170,7 +171,7 @@ class DefaultSynchronousSchedulerClientTest {
       verifyNoInteractions(jobErrorReporter);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     @Test
     void testExecuteRuntimeException() {
       final UUID sourceDefinitionId = UUID.randomUUID();
