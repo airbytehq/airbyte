@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 from typing import Any, BinaryIO, Iterator, Mapping, TextIO, Union
 
 import pyarrow as pa
@@ -33,19 +34,25 @@ class JsonlParser(AbstractFileParser):
         """
         return {**{"block_size": self.format.block_size, "use_threads": True}}
 
-    def _parse_options(self) -> Mapping[str, str]:
+    def _parse_options(self, json_schema: Mapping[str, Any] = None) -> Mapping[str, str]:
         """
         https://arrow.apache.org/docs/python/generated/pyarrow.json.ParseOptions.html
-         build ParseOptions object like: pa.json.ParseOptions(**self._parse_options())
+        build ParseOptions object like: pa.json.ParseOptions(**self._parse_options())
+        :param json_schema: if this is passed in, pyarrow will attempt to enforce this schema on read, defaults to None
         """
         parse_options = {
             "newlines_in_values": self.format.newlines_in_values,
             "unexpected_field_behavior": self.format.unexpected_field_behavior,
         }
+        if json_schema:
+            parse_options["explicit_schema"] = pa.schema(self.json_schema_to_pyarrow_schema(json_schema))
+
         return parse_options
 
-    def _read_table(self, file: Union[TextIO, BinaryIO]) -> pa.Table:
-        return pa_json.read_json(file, pa.json.ReadOptions(**self._read_options()), pa.json.ParseOptions(**self._parse_options()))
+    def _read_table(self, file: Union[TextIO, BinaryIO], json_schema: Mapping[str, Any] = None) -> pa.Table:
+        return pa_json.read_json(
+            file, pa.json.ReadOptions(**self._read_options()), pa.json.ParseOptions(**self._parse_options(json_schema))
+        )
 
     def get_inferred_schema(self, file: Union[TextIO, BinaryIO]) -> Mapping[str, Any]:
         """
@@ -62,5 +69,5 @@ class JsonlParser(AbstractFileParser):
         https://arrow.apache.org/docs/python/generated/pyarrow.json.read_json.html
 
         """
-        table = self._read_table(file)
+        table = self._read_table(file, self._master_schema)
         yield from table.to_pylist()
