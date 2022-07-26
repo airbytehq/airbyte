@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, List, Mapping
+from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
@@ -17,10 +17,16 @@ class SubstreamSlicer(StreamSlicer):
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
     """
 
-    def __init__(self, parent_streams: List[Stream], state: DictState, slice_definition: Mapping[str, Any], **kwargs):
+    def __init__(
+        self,
+        parent_streams: List[Stream],
+        state: DictState,
+        slice_definition: Mapping[str, Any],
+        **runtime_parameters: Optional[Mapping[str, Any]],
+    ):
         self._parent_streams = parent_streams
         self._state = state
-        self._interpolation = InterpolatedMapping(slice_definition, options=kwargs)
+        self._interpolation = InterpolatedMapping(slice_definition, runtime_parameters=runtime_parameters)
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         """

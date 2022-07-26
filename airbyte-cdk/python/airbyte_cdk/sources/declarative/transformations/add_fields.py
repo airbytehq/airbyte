@@ -3,7 +3,7 @@
 #
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
 import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -75,7 +75,11 @@ class AddFields(RecordTransformation):
           value: {{ 2 * 2 }}
     """
 
-    def __init__(self, fields: List[AddedFieldDefinition], **kwargs):
+    def __init__(self, fields: List[AddedFieldDefinition], **runtime_parameters: Optional[Mapping[str, Any]]):
+        """
+        :param fields: Fields to add
+        :param runtime_parameters: Additional runtime parameters to be used for string interpolation
+        """
         self._fields: List[ParsedAddFieldDefinition] = []
         for field in fields:
             if len(field.path) < 1:
@@ -85,7 +89,9 @@ class AddFields(RecordTransformation):
                 if not isinstance(field.value, str):
                     raise f"Expected a string value for the AddFields transformation: {field}"
                 else:
-                    self._fields.append(ParsedAddFieldDefinition(field.path, InterpolatedString.create(field.value, options=kwargs)))
+                    self._fields.append(
+                        ParsedAddFieldDefinition(field.path, InterpolatedString.create(field.value, options=runtime_parameters))
+                    )
             else:
                 self._fields.append(ParsedAddFieldDefinition(field.path, field.value))
 

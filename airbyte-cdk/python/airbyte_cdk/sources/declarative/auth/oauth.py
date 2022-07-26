@@ -52,7 +52,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         self.scopes = scopes
         self.access_token_name = InterpolatedString.create(access_token_name, options=kwargs)
         self.expires_in_name = InterpolatedString.create(expires_in_name, options=kwargs)
-        self.refresh_request_body = InterpolatedMapping(refresh_request_body or {}, options=kwargs)
+        self.refresh_request_body = InterpolatedMapping(refresh_request_body or {}, runtime_parameters=kwargs)
 
         self.token_expiry_date = (
             pendulum.parse(InterpolatedString.create(token_expiry_date, options=kwargs).eval(self.config))

@@ -22,7 +22,7 @@ class InterpolatedRequestInputProvider:
         if isinstance(request_inputs, str):
             self._interpolator = InterpolatedString(request_inputs, default="", options=kwargs)
         else:
-            self._interpolator = InterpolatedMapping(request_inputs, options=kwargs)
+            self._interpolator = InterpolatedMapping(request_inputs, runtime_parameters=kwargs)
 
     def request_inputs(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
