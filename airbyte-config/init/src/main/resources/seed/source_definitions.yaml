@@ -17,7 +17,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -327,7 +327,7 @@
 - name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -612,7 +612,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
