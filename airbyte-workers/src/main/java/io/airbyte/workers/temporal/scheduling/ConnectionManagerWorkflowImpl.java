@@ -744,7 +744,6 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
     if (normalizationSummary != null && normalizationSummary.getFailures() != null &&
         !normalizationSummary.getFailures().isEmpty()) {
       workflowInternalState.getFailures().addAll(normalizationSummary.getFailures());
-      workflowInternalState.setPartialSuccess(true); // fail at normalization means replication successful (?)
       return true;
     }
 

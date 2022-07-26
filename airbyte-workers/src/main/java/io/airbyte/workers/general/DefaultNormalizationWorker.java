@@ -8,6 +8,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.normalization.NormalizationRunner;
@@ -66,11 +67,13 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
           input.getResourceRequirements())) {
         normalizationRunner.getTraceMessages()
+            .filter(traceMessage -> traceMessage.getType() == AirbyteTraceMessage.Type.ERROR)
             .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
         failed = true;
       }
     } catch (final Exception e) {
       normalizationRunner.getTraceMessages()
+          .filter(traceMessage -> traceMessage.getType() == AirbyteTraceMessage.Type.ERROR)
           .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
       failed = true;
     }
