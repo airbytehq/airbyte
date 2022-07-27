@@ -353,6 +353,7 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date | Pull Request | Subject |
 |:----------------| :--- | :--- | :--- | :--- |
+|                 | 0.2.11 | 2022-07-27 | [\#14792](https://github.com/airbytehq/airbyte/pull/14790) | Add and persist job failures from normalization |
 |                 | 0.2.10 | 2022-07-18 | [\#14792](https://github.com/airbytehq/airbyte/pull/14792) | Add support for key pair auth for snowflake |
 |                 | 0.2.9 | 2022-07-06 | [\#14485](https://github.com/airbytehq/airbyte/pull/14485) | BigQuery partition pruning otimization |
 |                 | 0.2.8 | 2022-07-13 | [\#14522](https://github.com/airbytehq/airbyte/pull/14522) | BigQuery replaces `NULL` array entries with the string value `"NULL"` |

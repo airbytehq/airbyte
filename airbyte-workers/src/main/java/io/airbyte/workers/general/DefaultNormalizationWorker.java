@@ -32,6 +32,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   private final int attempt;
   private final NormalizationRunner normalizationRunner;
   private final WorkerEnvironment workerEnvironment;
+  private final List<FailureReason> traceFailureReasons = new ArrayList<>();
+  private boolean failed = false;
 
   private final AtomicBoolean cancelled;
 
@@ -51,9 +53,6 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
   public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
 
-    boolean failed = false;
-    List<FailureReason> traceFailureReasons = new ArrayList<>();
-
     try (normalizationRunner) {
       LOGGER.info("Running normalization.");
       normalizationRunner.start();
@@ -66,16 +65,10 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
 
       if (!normalizationRunner.normalize(jobId, attempt, normalizationRoot, input.getDestinationConfiguration(), input.getCatalog(),
           input.getResourceRequirements())) {
-        normalizationRunner.getTraceMessages()
-            .filter(traceMessage -> traceMessage.getType() == AirbyteTraceMessage.Type.ERROR)
-            .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
-        failed = true;
+        buildFailureReasonsAndSetFailure();
       }
     } catch (final Exception e) {
-      normalizationRunner.getTraceMessages()
-          .filter(traceMessage -> traceMessage.getType() == AirbyteTraceMessage.Type.ERROR)
-          .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
-      failed = true;
+      buildFailureReasonsAndSetFailure();
     }
 
     if (cancelled.get()) {
@@ -101,6 +94,13 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     LOGGER.info("Normalization summary: {}", summary);
 
     return summary;
+  }
+
+  private void buildFailureReasonsAndSetFailure() {
+    normalizationRunner.getTraceMessages()
+        .filter(traceMessage -> traceMessage.getType() == AirbyteTraceMessage.Type.ERROR)
+        .forEach(traceMessage -> traceFailureReasons.add(FailureHelper.normalizationFailure(traceMessage, Long.valueOf(jobId), attempt)));
+    failed = true;
   }
 
   @Override

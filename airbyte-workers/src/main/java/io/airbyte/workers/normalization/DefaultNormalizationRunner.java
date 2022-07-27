@@ -201,10 +201,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   @Override
   public Stream<AirbyteTraceMessage> getTraceMessages() {
-    if (airbyteMessagesByType != null) {
-      return airbyteMessagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream().map(AirbyteMessage::getTrace);
+    if (airbyteMessagesByType != null && airbyteMessagesByType.get(Type.TRACE) != null) {
+      return airbyteMessagesByType.get(Type.TRACE).stream().map(AirbyteMessage::getTrace);
     }
-    return Stream.of();
+    return Stream.empty();
   }
 
   @VisibleForTesting
