@@ -35,6 +35,8 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This process allows creating and managing a pod outside the lifecycle of the launching
@@ -50,6 +52,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AsyncOrchestratorPodProcess implements KubePod {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AsyncOrchestratorPodProcess.class);
 
   public static final String KUBE_POD_INFO = "KUBE_POD_INFO";
   public static final String NO_OP = "NO_OP";
@@ -283,9 +287,14 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
+    LOGGER.info("getting metric client env var in async orchestrator pod process");
     final EnvConfigs envConfigs = new EnvConfigs();
     final String metricClient = envConfigs.getMetricClient();
-    envVars.add(new EnvVar("METRIC_CLIENT", metricClient, null));
+    LOGGER.info("metric client in async orchestrator pod process");
+    LOGGER.info(metricClient);
+
+    envVars.add(new EnvVar(EnvConfigs.METRIC_CLIENT, metricClient, null));
+    LOGGER.info("added env var");
     envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));
