@@ -133,7 +133,6 @@ definitions:
     description: "the state data"
     additionalProperties: true
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
-
   AirbyteLogMessage:
     type: object
     additionalProperties: true
@@ -430,6 +429,7 @@ definitions:
             "$ref": "#/definitions/OAuthConfigSpecification"
   OAuthConfigSpecification:
     type: object
+    additionalProperties: true
     properties:
       oauth_user_input_from_connector_config_specification:
         description: |-
