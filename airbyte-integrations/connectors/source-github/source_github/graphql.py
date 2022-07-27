@@ -104,7 +104,7 @@ class QueryReactions:
     AVERAGE_REACTIONS = 2
 
     def get_query_root_repository(self, owner, name, first, after=None):
-        op = sgqlc.operation.Operation(_schema_root.query_type)
+        op = self._get_operation()
         repository = op.repository(owner=owner, name=name)
         repository.name()
         repository.owner.login()
@@ -123,7 +123,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_pull_request(self, node_id, first, after):
-        op = sgqlc.operation.Operation(_schema_root.query_type)
+        op = self._get_operation()
         pull_request = op.node(id=node_id).__as__(_schema_root.PullRequest)
         pull_request.id(__alias__="node_id")
         pull_request.repository.name()
@@ -135,7 +135,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_review(self, node_id, first, after):
-        op = sgqlc.operation.Operation(_schema_root.query_type)
+        op = self._get_operation()
         review = op.node(id=node_id).__as__(_schema_root.PullRequestReview)
         review.id(__alias__="node_id")
         review.repository.name()
@@ -146,7 +146,7 @@ class QueryReactions:
         return str(op)
 
     def get_query_root_comment(self, node_id, first, after):
-        op = sgqlc.operation.Operation(_schema_root.query_type)
+        op = self._get_operation()
         comment = op.node(id=node_id).__as__(_schema_root.PullRequestReviewComment)
         comment.id(__alias__="node_id")
         comment.database_id(__alias__="id")
@@ -187,6 +187,9 @@ class QueryReactions:
         reviews.nodes.id(__alias__="node_id")
         reviews.nodes.database_id(__alias__="id")
         return reviews
+
+    def _get_operation(self):
+        return sgqlc.operation.Operation(_schema_root.query_type)
 
 
 class CursorStorage:
