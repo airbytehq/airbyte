@@ -48,7 +48,8 @@
       "type": "array",
       "items": {
         "type": ["null", "object"],
-        "properties": {}
+        "properties": {},
+        "additionalProperties": true
       }
     },
     "created_at": {

@@ -43,7 +43,8 @@
     },
     "parent": {
       "type": ["null", "object"],
-      "properties": {}
+      "properties": {},
+      "additionalProperties": true
     }
   }
 }
