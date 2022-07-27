@@ -10,7 +10,6 @@ class SourceDiscord(AbstractSource):
 
     def check_connection(self, _, config) -> Tuple[bool, Any]:
         url = "https://discord.com/api/users/@me"
-        headers = {"Authorization": "Bot {}".format(config["server_token"])}
         headers = {"Authorization": f"Bot {config['server_token']}"}
         response = requests.get(url, headers=headers)
         j_response = response.json()
