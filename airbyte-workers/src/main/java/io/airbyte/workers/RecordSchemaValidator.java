@@ -69,7 +69,7 @@ public class RecordSchemaValidator {
       }
 
       throw new RecordSchemaValidationException(validationMessagesToDisplay,
-          String.format("Record schema validation failed for %s", messageStream));
+          String.format("Record schema validation failed for %s", messageStream), e);
     }
   }
 

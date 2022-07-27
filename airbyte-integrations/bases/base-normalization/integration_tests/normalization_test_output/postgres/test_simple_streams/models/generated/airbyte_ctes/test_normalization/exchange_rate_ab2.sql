@@ -16,6 +16,10 @@ select
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,
     cast(usd as {{ dbt_utils.type_float() }}) as usd,
     cast({{ adapter.quote('column`_\'with""_quotes') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('column`_\'with""_quotes') }},
+    cast({{ empty_string_to_null('datetime_tz') }} as {{ type_timestamp_with_timezone() }}) as datetime_tz,
+    cast({{ empty_string_to_null('datetime_no_tz') }} as {{ type_timestamp_without_timezone() }}) as datetime_no_tz,
+    cast({{ empty_string_to_null('time_tz') }} as {{ type_time_with_timezone() }}) as time_tz,
+    cast({{ empty_string_to_null('time_no_tz') }} as {{ type_time_without_timezone() }}) as time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at

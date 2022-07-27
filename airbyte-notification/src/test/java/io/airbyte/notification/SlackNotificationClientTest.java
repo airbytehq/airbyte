@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SlackNotificationClientTest {
+class SlackNotificationClientTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackNotificationClientTest.class);
   private static final UUID WORKSPACE_ID = UUID.randomUUID();

@@ -13,7 +13,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
@@ -57,9 +56,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
     try {
       final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
-      AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
+      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
+      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
@@ -91,10 +89,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
     return DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         getConnectionProperties(config));
   }
 

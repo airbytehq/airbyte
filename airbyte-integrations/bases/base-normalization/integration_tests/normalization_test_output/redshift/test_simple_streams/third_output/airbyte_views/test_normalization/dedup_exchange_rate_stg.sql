@@ -1,11 +1,11 @@
 
 
-  create view "integrationtests"._airbyte_test_normalization."dedup_exchange_rate_stg__dbt_tmp" as (
+  create view "integrationtests"._airbyte_test_normalization_bhhpj."dedup_exchange_rate_stg__dbt_tmp" as (
     
 with __dbt__cte__dedup_exchange_rate_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate
+-- depends_on: "integrationtests".test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate
 select
     case when _airbyte_data."id" != '' then _airbyte_data."id" end as id,
     case when _airbyte_data."currency" != '' then _airbyte_data."currency" end as currency,
@@ -18,7 +18,7 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
-from "integrationtests".test_normalization._airbyte_raw_dedup_exchange_rate as table_alias
+from "integrationtests".test_normalization_bhhpj._airbyte_raw_dedup_exchange_rate as table_alias
 -- dedup_exchange_rate
 where 1 = 1
 
