@@ -8,6 +8,7 @@ import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.read_exception import ReadException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
@@ -136,7 +137,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
         try:
             retriever.parse_response(response, stream_state={})
             assert False
-        except requests.exceptions.HTTPError:
+        except ReadException:
             pass
     else:
         records = retriever.parse_response(response, stream_state={})
