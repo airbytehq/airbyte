@@ -308,7 +308,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           sourceConfig);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
-        LOGGER.warn("Saved offset if before Replication slot LSN, Airbyte will trigger sync from scratch");
+        LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
       }
 
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,

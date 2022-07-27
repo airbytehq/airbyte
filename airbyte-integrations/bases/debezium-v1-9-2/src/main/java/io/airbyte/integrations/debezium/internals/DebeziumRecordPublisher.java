@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The purpose of this class is to initialize and spawn the debezium engine with the right properties
- * to fetch records
+ * The purpose of this class is to initialize and spawn the debezium engine with the right
+ * properties to fetch records
  */
 public class DebeziumRecordPublisher implements AutoCloseable {
 
