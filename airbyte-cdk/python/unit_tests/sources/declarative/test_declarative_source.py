@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from collections import defaultdict
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
