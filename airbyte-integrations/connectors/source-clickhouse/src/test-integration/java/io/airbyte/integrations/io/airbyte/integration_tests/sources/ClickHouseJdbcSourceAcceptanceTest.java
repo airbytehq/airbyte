@@ -8,15 +8,12 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.util.HostPortResolver;
-
-import java.math.BigDecimal;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -57,6 +54,7 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
             : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
                 + primaryKeyClause);
   }
+
   @BeforeAll
   static void init() {
     CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
@@ -115,4 +113,5 @@ public class ClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new ClickHouseSource();
   }
+
 }

@@ -28,7 +28,6 @@ import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.sql.JDBCType;
 import java.time.Duration;
-import java.sql.SQLException;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -176,4 +175,5 @@ public class ClickHouseStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceA
             ConnectorSpecification.class));
     assertEquals(expected, actual);
   }
+
 }

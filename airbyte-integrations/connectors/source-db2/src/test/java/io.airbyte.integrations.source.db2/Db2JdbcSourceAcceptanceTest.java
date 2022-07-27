@@ -12,7 +12,6 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import java.sql.JDBCType;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
 import org.junit.jupiter.api.AfterAll;

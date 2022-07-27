@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
