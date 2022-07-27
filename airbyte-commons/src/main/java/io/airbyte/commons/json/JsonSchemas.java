@@ -189,7 +189,7 @@ public class JsonSchemas {
             // hit every node.
             traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
           } else {
-            log.warn("The array is missing an items field. The traversal is silently stopped.");
+            log.warn("The array is missing an items field. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
         case OBJECT_TYPE -> {
