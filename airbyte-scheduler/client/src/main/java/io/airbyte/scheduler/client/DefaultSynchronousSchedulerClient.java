@@ -17,6 +17,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_error_reporter.ConnectorJobReportingContext;
 import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,11 +64,14 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
 
+    final UUID jobId = UUID.randomUUID();
+    final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
+
     return execute(
         ConfigType.CHECK_CONNECTION_SOURCE,
-        jobCheckConnectionConfig,
+        jobReportingContext,
         source.getSourceDefinitionId(),
-        jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
+        () -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
         ConnectorJobOutput::getCheckConnection,
         source.getWorkspaceId());
   }
@@ -83,11 +88,14 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(destinationConfiguration)
         .withDockerImage(dockerImage);
 
+    final UUID jobId = UUID.randomUUID();
+    final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
+
     return execute(
         ConfigType.CHECK_CONNECTION_DESTINATION,
-        jobCheckConnectionConfig,
+        jobReportingContext,
         destination.getDestinationDefinitionId(),
-        jobId -> temporalClient.submitCheckConnection(UUID.randomUUID(), 0, jobCheckConnectionConfig),
+        () -> temporalClient.submitCheckConnection(jobId, 0, jobCheckConnectionConfig),
         ConnectorJobOutput::getCheckConnection,
         destination.getWorkspaceId());
   }
@@ -103,11 +111,14 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         .withConnectionConfiguration(sourceConfiguration)
         .withDockerImage(dockerImage);
 
+    final UUID jobId = UUID.randomUUID();
+    final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
+
     return execute(
         ConfigType.DISCOVER_SCHEMA,
-        jobDiscoverCatalogConfig,
+        jobReportingContext,
         source.getSourceDefinitionId(),
-        jobId -> temporalClient.submitDiscoverSchema(UUID.randomUUID(), 0, jobDiscoverCatalogConfig),
+        () -> temporalClient.submitDiscoverSchema(jobId, 0, jobDiscoverCatalogConfig),
         ConnectorJobOutput::getDiscoverCatalog,
         source.getWorkspaceId());
   }
@@ -116,27 +127,30 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   public SynchronousResponse<ConnectorSpecification> createGetSpecJob(final String dockerImage) throws IOException {
     final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(dockerImage);
 
+    final UUID jobId = UUID.randomUUID();
+    final ConnectorJobReportingContext jobReportingContext = new ConnectorJobReportingContext(jobId, dockerImage);
+
     return execute(
         ConfigType.GET_SPEC,
-        jobSpecConfig,
+        jobReportingContext,
         null,
-        jobId -> temporalClient.submitGetSpec(UUID.randomUUID(), 0, jobSpecConfig),
+        () -> temporalClient.submitGetSpec(jobId, 0, jobSpecConfig),
         ConnectorJobOutput::getSpec,
         null);
   }
 
   @VisibleForTesting
-  <T, U, V> SynchronousResponse<T> execute(final ConfigType configType,
-                                           final V jobConfig,
-                                           @Nullable final UUID connectorDefinitionId,
-                                           final Function<UUID, TemporalResponse<U>> executor,
-                                           final Function<U, T> outputMapper,
-                                           final UUID workspaceId) {
+  <T, U> SynchronousResponse<T> execute(final ConfigType configType,
+                                        final ConnectorJobReportingContext jobContext,
+                                        @Nullable final UUID connectorDefinitionId,
+                                        final Supplier<TemporalResponse<U>> executor,
+                                        final Function<U, T> outputMapper,
+                                        final UUID workspaceId) {
     final long createdAt = Instant.now().toEpochMilli();
-    final UUID jobId = UUID.randomUUID();
+    final UUID jobId = jobContext.jobId();
     try {
       track(jobId, configType, connectorDefinitionId, workspaceId, JobState.STARTED, null);
-      final TemporalResponse<U> temporalResponse = executor.apply(jobId);
+      final TemporalResponse<U> temporalResponse = executor.get();
       final Optional<U> jobOutput = temporalResponse.getOutput();
       final T mappedOutput = jobOutput.map(outputMapper).orElse(null);
       final JobState outputState = temporalResponse.getMetadata().isSucceeded() ? JobState.SUCCEEDED : JobState.FAILED;
@@ -144,7 +158,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
       track(jobId, configType, connectorDefinitionId, workspaceId, outputState, mappedOutput);
 
       if (outputState == JobState.FAILED && jobOutput.isPresent()) {
-        reportError(configType, jobConfig, jobOutput.get(), connectorDefinitionId, workspaceId);
+        reportError(configType, jobContext, jobOutput.get(), connectorDefinitionId, workspaceId);
       }
 
       final long endedAt = Instant.now().toEpochMilli();
@@ -195,7 +209,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
   }
 
   private <S, T> void reportError(final ConfigType configType,
-                                  final S jobConfig,
+                                  final ConnectorJobReportingContext jobContext,
                                   final T jobOutput,
                                   final UUID connectorDefinitionId,
                                   final UUID workspaceId) {
@@ -205,20 +219,20 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
             connectorDefinitionId,
             workspaceId,
             ((ConnectorJobOutput) jobOutput).getFailureReason(),
-            (JobCheckConnectionConfig) jobConfig);
+            jobContext);
         case CHECK_CONNECTION_DESTINATION -> jobErrorReporter.reportDestinationCheckJobFailure(
             connectorDefinitionId,
             workspaceId,
             ((ConnectorJobOutput) jobOutput).getFailureReason(),
-            (JobCheckConnectionConfig) jobConfig);
+            jobContext);
         case DISCOVER_SCHEMA -> jobErrorReporter.reportDiscoverJobFailure(
             connectorDefinitionId,
             workspaceId,
             ((ConnectorJobOutput) jobOutput).getFailureReason(),
-            (JobDiscoverCatalogConfig) jobConfig);
+            jobContext);
         case GET_SPEC -> jobErrorReporter.reportSpecJobFailure(
             ((ConnectorJobOutput) jobOutput).getFailureReason(),
-            (JobGetSpecConfig) jobConfig);
+            jobContext);
         default -> LOGGER.error("Tried to report job failure for type {}, but this job type is not supported", configType);
       }
     });

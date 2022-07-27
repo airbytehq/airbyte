@@ -11,9 +11,6 @@ import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
-import io.airbyte.config.JobCheckConnectionConfig;
-import io.airbyte.config.JobDiscoverCatalogConfig;
-import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Metadata;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -34,6 +31,7 @@ import org.mockito.Mockito;
 
 public class JobErrorReporterTest {
 
+  private static final UUID JOB_ID = UUID.randomUUID();
   private static final UUID WORKSPACE_ID = UUID.randomUUID();
   private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final String CONNECTION_URL = "http://localhost:8000/connection/my_connection";
@@ -181,8 +179,7 @@ public class JobErrorReporterTest {
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
-    final JobCheckConnectionConfig mJobCheckConfig = Mockito.mock(JobCheckConnectionConfig.class);
-    Mockito.when(mJobCheckConfig.getDockerImage()).thenReturn(SOURCE_DOCKER_IMAGE);
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
 
     Mockito.when(configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID))
         .thenReturn(new StandardSourceDefinition()
@@ -195,9 +192,10 @@ public class JobErrorReporterTest {
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
     Mockito.when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(mWorkspace);
 
-    jobErrorReporter.reportSourceCheckJobFailure(SOURCE_DEFINITION_ID, WORKSPACE_ID, failureReason, mJobCheckConfig);
+    jobErrorReporter.reportSourceCheckJobFailure(SOURCE_DEFINITION_ID, WORKSPACE_ID, failureReason, jobContext);
 
     final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry("job_id", JOB_ID.toString()),
         Map.entry("workspace_id", WORKSPACE_ID.toString()),
         Map.entry("deployment_mode", DEPLOYMENT_MODE.name()),
         Map.entry("airbyte_version", AIRBYTE_VERSION),
@@ -220,8 +218,7 @@ public class JobErrorReporterTest {
         .withFailureOrigin(FailureOrigin.DESTINATION)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
-    final JobCheckConnectionConfig mJobCheckConfig = Mockito.mock(JobCheckConnectionConfig.class);
-    Mockito.when(mJobCheckConfig.getDockerImage()).thenReturn(DESTINATION_DOCKER_IMAGE);
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, DESTINATION_DOCKER_IMAGE);
 
     Mockito.when(configRepository.getStandardDestinationDefinition(DESTINATION_DEFINITION_ID))
         .thenReturn(new StandardDestinationDefinition()
@@ -234,9 +231,10 @@ public class JobErrorReporterTest {
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
     Mockito.when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(mWorkspace);
 
-    jobErrorReporter.reportDestinationCheckJobFailure(DESTINATION_DEFINITION_ID, WORKSPACE_ID, failureReason, mJobCheckConfig);
+    jobErrorReporter.reportDestinationCheckJobFailure(DESTINATION_DEFINITION_ID, WORKSPACE_ID, failureReason, jobContext);
 
     final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry("job_id", JOB_ID.toString()),
         Map.entry("workspace_id", WORKSPACE_ID.toString()),
         Map.entry("deployment_mode", DEPLOYMENT_MODE.name()),
         Map.entry("airbyte_version", AIRBYTE_VERSION),
@@ -259,8 +257,7 @@ public class JobErrorReporterTest {
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
-    final JobDiscoverCatalogConfig mJobDiscoverConfig = Mockito.mock(JobDiscoverCatalogConfig.class);
-    Mockito.when(mJobDiscoverConfig.getDockerImage()).thenReturn(SOURCE_DOCKER_IMAGE);
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
 
     Mockito.when(configRepository.getStandardSourceDefinition(SOURCE_DEFINITION_ID))
         .thenReturn(new StandardSourceDefinition()
@@ -273,9 +270,10 @@ public class JobErrorReporterTest {
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
     Mockito.when(configRepository.getStandardWorkspace(WORKSPACE_ID, true)).thenReturn(mWorkspace);
 
-    jobErrorReporter.reportDiscoverJobFailure(SOURCE_DEFINITION_ID, WORKSPACE_ID, failureReason, mJobDiscoverConfig);
+    jobErrorReporter.reportDiscoverJobFailure(SOURCE_DEFINITION_ID, WORKSPACE_ID, failureReason, jobContext);
 
     final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry("job_id", JOB_ID.toString()),
         Map.entry("workspace_id", WORKSPACE_ID.toString()),
         Map.entry("deployment_mode", DEPLOYMENT_MODE.name()),
         Map.entry("airbyte_version", AIRBYTE_VERSION),
@@ -298,12 +296,12 @@ public class JobErrorReporterTest {
         .withFailureOrigin(FailureOrigin.SOURCE)
         .withFailureType(FailureType.SYSTEM_ERROR);
 
-    final JobGetSpecConfig mJobSpecConfig = Mockito.mock(JobGetSpecConfig.class);
-    Mockito.when(mJobSpecConfig.getDockerImage()).thenReturn(SOURCE_DOCKER_IMAGE);
+    final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(JOB_ID, SOURCE_DOCKER_IMAGE);
 
-    jobErrorReporter.reportSpecJobFailure(failureReason, mJobSpecConfig);
+    jobErrorReporter.reportSpecJobFailure(failureReason, jobContext);
 
     final Map<String, String> expectedMetadata = Map.ofEntries(
+        Map.entry("job_id", JOB_ID.toString()),
         Map.entry("deployment_mode", DEPLOYMENT_MODE.name()),
         Map.entry("airbyte_version", AIRBYTE_VERSION),
         Map.entry("failure_origin", "source"),
