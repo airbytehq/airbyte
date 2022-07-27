@@ -11,7 +11,6 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
-import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
@@ -70,30 +69,32 @@ public class JobErrorReporter {
    *
    * @param connectionId - connection that had the failure
    * @param failureSummary - final attempt failure summary
-   * @param jobSyncConfig - config for the sync job
+   * @param jobContext - sync job reporting context
    */
-  public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final JobSyncConfig jobSyncConfig) {
+  public void reportSyncJobFailure(final UUID connectionId, final AttemptFailureSummary failureSummary, final SyncJobReportingContext jobContext) {
     Exceptions.swallow(() -> {
       final List<FailureReason> traceMessageFailures = failureSummary.getFailures().stream()
           .filter(failure -> failure.getMetadata() != null && failure.getMetadata().getAdditionalProperties().containsKey(FROM_TRACE_MESSAGE))
           .toList();
 
       final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionId, true);
-      final Map<String, String> connectionMetadata = getConnectionMetadata(workspace.getWorkspaceId(), connectionId);
+      final Map<String, String> commonMetadata = MoreMaps.merge(
+          Map.of(JOB_ID_KEY, String.valueOf(jobContext.jobId())),
+          getConnectionMetadata(workspace.getWorkspaceId(), connectionId));
 
       for (final FailureReason failureReason : traceMessageFailures) {
         final FailureOrigin failureOrigin = failureReason.getFailureOrigin();
 
         if (failureOrigin == FailureOrigin.SOURCE) {
           final StandardSourceDefinition sourceDefinition = configRepository.getSourceDefinitionFromConnection(connectionId);
-          final String dockerImage = jobSyncConfig.getSourceDockerImage();
-          final Map<String, String> metadata = MoreMaps.merge(connectionMetadata, getSourceMetadata(sourceDefinition));
+          final String dockerImage = jobContext.sourceDockerImage();
+          final Map<String, String> metadata = MoreMaps.merge(commonMetadata, getSourceMetadata(sourceDefinition));
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         } else if (failureOrigin == FailureOrigin.DESTINATION) {
           final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
-          final String dockerImage = jobSyncConfig.getDestinationDockerImage();
-          final Map<String, String> metadata = MoreMaps.merge(connectionMetadata, getDestinationMetadata(destinationDefinition));
+          final String dockerImage = jobContext.destinationDockerImage();
+          final Map<String, String> metadata = MoreMaps.merge(commonMetadata, getDestinationMetadata(destinationDefinition));
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }

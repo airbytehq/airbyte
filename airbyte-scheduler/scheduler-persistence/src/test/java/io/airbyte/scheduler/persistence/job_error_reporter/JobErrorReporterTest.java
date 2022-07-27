@@ -11,7 +11,6 @@ import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
-import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Metadata;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
@@ -81,9 +80,11 @@ public class JobErrorReporterTest {
     Mockito.when(mFailureSummary.getFailures())
         .thenReturn(List.of(sourceFailureReason, destinationFailureReason, nonTraceMessageFailureReason, replicationFailureReason));
 
-    final JobSyncConfig mJobSyncConfig = Mockito.mock(JobSyncConfig.class);
-    Mockito.when(mJobSyncConfig.getSourceDockerImage()).thenReturn(SOURCE_DOCKER_IMAGE);
-    Mockito.when(mJobSyncConfig.getDestinationDockerImage()).thenReturn(DESTINATION_DOCKER_IMAGE);
+    final long syncJobId = 1L;
+    final SyncJobReportingContext jobReportingContext = new SyncJobReportingContext(
+        syncJobId,
+        SOURCE_DOCKER_IMAGE,
+        DESTINATION_DOCKER_IMAGE);
 
     Mockito.when(webUrlHelper.getConnectionUrl(WORKSPACE_ID, CONNECTION_ID)).thenReturn(CONNECTION_URL);
 
@@ -105,9 +106,10 @@ public class JobErrorReporterTest {
     Mockito.when(mWorkspace.getWorkspaceId()).thenReturn(WORKSPACE_ID);
     Mockito.when(configRepository.getStandardWorkspaceFromConnection(CONNECTION_ID, true)).thenReturn(mWorkspace);
 
-    jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, mJobSyncConfig);
+    jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, jobReportingContext);
 
     final Map<String, String> expectedSourceMetadata = Map.ofEntries(
+        Map.entry("job_id", String.valueOf(syncJobId)),
         Map.entry("workspace_id", WORKSPACE_ID.toString()),
         Map.entry("connection_id", CONNECTION_ID.toString()),
         Map.entry("connection_url", CONNECTION_URL),
@@ -121,6 +123,7 @@ public class JobErrorReporterTest {
         Map.entry("connector_release_stage", SOURCE_RELEASE_STAGE.toString()));
 
     final Map<String, String> expectedDestinationMetadata = Map.ofEntries(
+        Map.entry("job_id", String.valueOf(syncJobId)),
         Map.entry("workspace_id", WORKSPACE_ID.toString()),
         Map.entry("connection_id", CONNECTION_ID.toString()),
         Map.entry("connection_url", CONNECTION_URL),
@@ -142,7 +145,7 @@ public class JobErrorReporterTest {
   @Test
   void testReportSyncJobFailureDoesNotThrow() {
     final AttemptFailureSummary mFailureSummary = Mockito.mock(AttemptFailureSummary.class);
-    final JobSyncConfig mJobSyncConfig = Mockito.mock(JobSyncConfig.class);
+    final SyncJobReportingContext jobContext = new SyncJobReportingContext(1L, SOURCE_DOCKER_IMAGE, DESTINATION_DOCKER_IMAGE);
 
     final FailureReason sourceFailureReason = new FailureReason()
         .withMetadata(new Metadata().withAdditionalProperty("from_trace_message", true))
@@ -167,7 +170,7 @@ public class JobErrorReporterTest {
         .when(jobErrorReportingClient)
         .reportJobFailureReason(Mockito.any(), Mockito.eq(sourceFailureReason), Mockito.any(), Mockito.any());
 
-    Assertions.assertDoesNotThrow(() -> jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, mJobSyncConfig));
+    Assertions.assertDoesNotThrow(() -> jobErrorReporter.reportSyncJobFailure(CONNECTION_ID, mFailureSummary, jobContext));
     Mockito.verify(jobErrorReportingClient, Mockito.times(1))
         .reportJobFailureReason(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any());
   }
