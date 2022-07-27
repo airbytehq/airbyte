@@ -431,6 +431,14 @@ class FbaReplacementsReports(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_CUSTOMER_SHIPMENT_REPLACEMENT_DATA"
 
 
+class RestockInventoryReports(ReportsAmazonSPStream):
+    """
+    Field definitions: 	https://sellercentral.amazon.com/help/hub/reference/202105670
+    """
+
+    name = "GET_RESTOCK_INVENTORY_RECOMMENDATIONS_REPORT"
+
+
 class VendorInventoryHealthReports(ReportsAmazonSPStream):
     name = "GET_VENDOR_INVENTORY_HEALTH_AND_PLANNING_REPORT"
 

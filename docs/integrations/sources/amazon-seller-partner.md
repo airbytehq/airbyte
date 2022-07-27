@@ -65,6 +65,7 @@ This source is capable of syncing the following tables and their data:
 - [FBA Shipments Reports](https://sellercentral.amazon.com/gp/help/help.html?itemID=200989100)
 - [FBA Replacements Reports](https://sellercentral.amazon.com/help/hub/reference/200453300)
 - [FBA Storage Fees Report](https://sellercentral.amazon.com/help/hub/reference/G202086720)
+- [Restock Inventory Reports](https://sellercentral.amazon.com/help/hub/reference/202105670)
 - [Flat File Open Listings Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference)
 - [Flat File Orders Reports By Last Update](https://developer-docs.amazon.com/sp-api/docs/reports-api-v2021-06-30-reference) \(incremental\)
