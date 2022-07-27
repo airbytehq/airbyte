@@ -282,9 +282,9 @@ class BasicAcceptanceTests {
 
     final AirbyteCatalog actual = testHarness.discoverSourceSchema(sourceId);
 
-    final Map<String, Map<String, DataType>> fields = ImmutableMap.of(
-        COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER),
-        COLUMN_NAME, ImmutableMap.of("type", DataType.STRING));
+    final Map<String, Map<String, String>> fields = ImmutableMap.of(
+        COLUMN_ID, ImmutableMap.of("type", DataType.NUMBER.getValue(), "airbyte_type", "integer"),
+        COLUMN_NAME, ImmutableMap.of("type", DataType.STRING.getValue()));
     final JsonNode jsonSchema = Jsons.jsonNode(ImmutableMap.builder()
         .put("type", "object")
         .put("properties", fields)
