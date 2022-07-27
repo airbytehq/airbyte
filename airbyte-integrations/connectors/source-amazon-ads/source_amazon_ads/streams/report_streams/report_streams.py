@@ -97,6 +97,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
+    DATE_FORMAT = "YYYY-MM-DD"
+    STATE_START_DATE_KEY = "start_date"
     cursor_field = "reportDate"
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
@@ -108,7 +110,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Set start date from config file
         self._start_date = config.get("start_date")
         if self._start_date:
-            self._start_date = pendulum.from_format(self._start_date, "YYYY-MM-DD").date()
+            self._start_date = pendulum.from_format(self._start_date, self.DATE_FORMAT).date()
         super().__init__(config, profiles)
 
     @property
@@ -168,7 +170,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         return wrapped
 
     @backoff_max_tries
-    def _init_and_try_read_records(self, profile, report_date):
+    def _init_and_try_read_records(self, profile: Profile, report_date):
         report_infos = self._init_reports(profile, report_date)
         logger.info(f"Waiting for {len(report_infos)} report(s) to be generated")
         self._try_read_records(report_infos)
@@ -265,38 +267,56 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             raise TooManyRequests()
         return response
 
-    @staticmethod
-    def get_report_date_ranges(start_report_date: Date, end_report_date: Date) -> Iterable[str]:
+    def get_report_date_ranges(self, start_report_date: Date, end_report_date: Date) -> Iterable[str]:
         for days in range((end_report_date - start_report_date).days + 1):
             yield start_report_date.add(days=days).format(ReportStream.REPORT_DATE_FORMAT)
+
+    def get_start_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Date:
+        today = pendulum.today(tz=profile.timezone).date()
+        if self._start_date:
+            return max(self._start_date, today.subtract(days=60))
+        start_date = stream_state.get(self.STATE_START_DATE_KEY)
+        if start_date:
+            start_date = pendulum.from_format(start_date, self.DATE_FORMAT).date()
+            return max(start_date, today.subtract(days=60))
+        return today
+
+    def get_saved_date(self, profile: Profile, stream_state: Mapping[str, Any]):
+        saved_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
+        if saved_date:
+            saved_date = pendulum.from_format(saved_date, self.REPORT_DATE_FORMAT).date()
+            today = pendulum.today(tz=profile.timezone).date()
+            if today.subtract(days=self.LOOK_BACK_WINDOW) < saved_date <= today:
+                return today.subtract(days=self.LOOK_BACK_WINDOW)
+            return saved_date
+
+    def get_start_report_date(self, profile: Profile, stream_state: Mapping[str, Any]):
+        start_date = self.get_start_date(profile, stream_state)
+        saved_date = self.get_saved_date(profile, stream_state)
+        if saved_date:
+            return max(start_date, saved_date)
+        return start_date
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
+        stream_state = stream_state or {}
         res = []
+
         for profile in self._profiles:
-
-            if not self._start_date:
-                start_date = pendulum.now(tz=profile.timezone).date()
-
-            start_report_date = max(start_date, pendulum.now(profile.timezone).date().subtract(days=60))
-
-            state_start_date = stream_state and stream_state.get(profile.profileId)
-            if state_start_date:
-                state_start_date = pendulum.from_format(state_start_date, ReportStream.REPORT_DATE_FORMAT, tz=profile.timezone).date()
-                state_start_date = min(state_start_date, pendulum.now(profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW))
-                start_report_date = max(state_start_date, start_report_date)
-
-            for report_date in self.get_report_date_ranges(start_report_date, pendulum.now(tz=profile.timezone).date()):
+            today = pendulum.today(tz=profile.timezone).date()
+            start_report_date = self.get_start_report_date(profile, stream_state)
+            for report_date in self.get_report_date_ranges(start_report_date, today):
                 res.append({"profile": profile, self.cursor_field: report_date})
-
         if not res:
             return [None]
+
         return res
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
-        current_stream_state[latest_data["profileId"]] = latest_data["reportDate"]
+        profileId = str(latest_data["profileId"])
+        current_stream_state.setdefault(profileId, {})[self.cursor_field] = latest_data[self.cursor_field]
         return current_stream_state
 
     @abstractmethod
@@ -310,16 +330,14 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         ReportInitFailure,
         max_tries=5,
     )
-    def _init_reports(self, profile, report_date: str) -> List[ReportInfo]:
+    def _init_reports(self, profile: Profile, report_date: str) -> List[ReportInfo]:
         """
         Send report generation requests for all profiles and for all record types for specific day.
         :report_date - date for generating metric report.
         :return List of ReportInfo objects each of them has reportId field to check report status.
         """
-
         report_infos = []
         for record_type, metrics in self.metrics_map.items():
-
             report_init_body = self._get_init_report_body(report_date, record_type, profile)
             if not report_init_body:
                 continue
