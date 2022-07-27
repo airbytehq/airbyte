@@ -17,7 +17,7 @@
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
   dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.1.10
   documentationUrl: https://docs.airbyte.io/integrations/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
@@ -96,7 +96,7 @@
 - name: BigQuery
   sourceDefinitionId: bfd1ddf8-ae8a-4620-b1d7-55597d2ba08c
   dockerRepository: airbyte/source-bigquery
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/bigquery
   icon: bigquery.svg
   sourceType: database
@@ -152,7 +152,7 @@
 - name: ClickHouse
   sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   dockerRepository: airbyte/source-clickhouse
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.io/integrations/sources/clickhouse
   icon: cliskhouse.svg
   sourceType: database
@@ -248,7 +248,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.56
+  dockerImageTag: 0.2.58
   documentationUrl: https://docs.airbyte.io/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -316,6 +316,14 @@
   icon: gitlab.svg
   sourceType: api
   releaseStage: alpha
+- name: Glassfrog
+  sourceDefinitionId: cf8ff320-6272-4faa-89e6-4402dc17e5d5
+  dockerRepository: airbyte/source-glassfrog
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.io/integrations/sources/glassfrog
+  icon: glassfrog.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
@@ -327,7 +335,7 @@
 - name: Google Analytics
   sourceDefinitionId: eff3616a-f9c3-11eb-9a03-0242ac130003
   dockerRepository: airbyte/source-google-analytics-v4
-  dockerImageTag: 0.1.23
+  dockerImageTag: 0.1.24
   documentationUrl: https://docs.airbyte.io/integrations/sources/google-analytics-v4
   icon: google-analytics.svg
   sourceType: api
@@ -406,7 +414,7 @@
 - name: HubSpot
   sourceDefinitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
   dockerRepository: airbyte/source-hubspot
-  dockerImageTag: 0.1.75
+  dockerImageTag: 0.1.77
   documentationUrl: https://docs.airbyte.io/integrations/sources/hubspot
   icon: hubspot.svg
   sourceType: api
@@ -470,7 +478,7 @@
 - name: Klaviyo
   sourceDefinitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   dockerRepository: airbyte/source-klaviyo
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/klaviyo
   icon: klaviyo.svg
   sourceType: api
@@ -604,7 +612,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.5.17
+  dockerImageTag: 0.6.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -612,7 +620,7 @@
 - name: Notion
   sourceDefinitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
   dockerRepository: airbyte/source-notion
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/notion
   icon: notion.svg
   sourceType: api
@@ -746,7 +754,7 @@
 - name: PostHog
   sourceDefinitionId: af6d50ee-dddf-4126-a8ee-7faee990774f
   dockerRepository: airbyte/source-posthog
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.1.7
   documentationUrl: https://docs.airbyte.io/integrations/sources/posthog
   icon: posthog.svg
   sourceType: api
@@ -754,7 +762,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.37
+  dockerImageTag: 0.4.38
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -961,7 +969,7 @@
 - name: TiDB
   sourceDefinitionId: 0dad1a35-ccf8-4d03-b73e-6788c00b13ae
   dockerRepository: airbyte/source-tidb
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/tidb
   icon: tidb.svg
   sourceType: database
