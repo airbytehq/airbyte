@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.tidb;
 
-import static com.mysql.cj.MysqlType.*;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mysql.cj.MysqlType;
