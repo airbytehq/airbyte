@@ -7,13 +7,12 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.http_selector import HttpSelector
+from airbyte_cdk.sources.declarative.read_exception import ReadException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.requester import Requester
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.states.dict_state import DictState
-from airbyte_cdk.sources.declarative.states.state import State
 from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSlice
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
@@ -41,7 +40,6 @@ class SimpleRetriever(Retriever, HttpStream):
         record_selector: HttpSelector,
         paginator: Optional[Paginator] = None,
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
-        state: Optional[State] = None,
     ):
         """
         :param name: The stream's name
@@ -58,8 +56,7 @@ class SimpleRetriever(Retriever, HttpStream):
         self._requester = requester
         self._record_selector = record_selector
         super().__init__(self._requester.get_authenticator())
-        self._iterator = stream_slicer
-        self._state: State = (state or DictState()).deep_copy()
+        self._stream_slicer = stream_slicer
         self._last_response = None
         self._last_records = None
 
@@ -263,7 +260,7 @@ class SimpleRetriever(Retriever, HttpStream):
         # else -> delegate to record selector
         response_status = self._requester.should_retry(response)
         if response_status.action == ResponseAction.FAIL:
-            response.raise_for_status()
+            raise ReadException(f"Request {response.request} failed with response {response}")
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
             return []
@@ -299,12 +296,14 @@ class SimpleRetriever(Retriever, HttpStream):
         stream_state: Optional[StreamState] = None,
     ) -> Iterable[Mapping[str, Any]]:
         # Warning: use self.state instead of the stream_state passed as argument!
+        stream_slice = stream_slice or {}  # None-check
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
-            self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_response=self._last_response, last_record=r)
+            self._stream_slicer.update_cursor(stream_slice, last_record=r)
             yield r
         else:
-            self._state.update_state(stream_slice=stream_slice, stream_state=self.state, last_reponse=self._last_response)
+            last_record = self._last_records[-1] if self._last_records else None
+            self._stream_slicer.update_cursor(stream_slice, last_record=last_record)
             yield from []
 
     def stream_slices(
@@ -319,13 +318,13 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._iterator.stream_slices(sync_mode, self.state)
+        return self._stream_slicer.stream_slices(sync_mode, self.state)
 
     @property
-    def state(self) -> StreamState:
-        return self._state.get_stream_state()
+    def state(self) -> MutableMapping[str, Any]:
+        return self._stream_slicer.get_stream_state()
 
     @state.setter
     def state(self, value: StreamState):
         """State setter, accept state serialized by state getter."""
-        self._state.set_state(value)
+        self._stream_slicer.update_cursor(value)

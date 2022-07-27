@@ -28,5 +28,9 @@ class NoPagination(Paginator):
     def request_body_json(self) -> Mapping[str, Any]:
         return {}
 
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
+
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Mapping[str, Any]:
         return {}
