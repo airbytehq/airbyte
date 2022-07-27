@@ -8,6 +8,19 @@ import pytest
 pytestmark = pytest.mark.integration
 
 
+def test_source_definition_lifecycle(source_definition, workspace_id):
+    assert not source_definition.was_created
+    source_definition.create()
+    source_definition.state = source_definition._get_state_from_file(source_definition.configuration_path, workspace_id)
+    assert source_definition.was_created
+    assert not source_definition.get_diff_with_remote_resource()
+    source_definition.raw_configuration["configuration"]["docker_image_tag"] = "test"
+    source_definition.configuration = source_definition._deserialize_raw_configuration()
+    assert 'changed from "dev" to "test"' in source_definition.get_diff_with_remote_resource()
+    source_definition.update()
+    assert not source_definition.get_diff_with_remote_resource()
+
+
 def test_source_lifecycle(source, workspace_id):
     assert not source.was_created
     source.create()
@@ -20,6 +33,23 @@ def test_source_lifecycle(source, workspace_id):
     source.update()
     assert not source.get_diff_with_remote_resource()
     assert source.catalog["streams"][0]["config"]["alias_name"] == "pokemon"
+
+
+def test_source_lifecycle_with_custom_definition(source_definition, source_custom_definition, workspace_id):
+    assert source_definition.was_created
+    assert not source_custom_definition.was_created
+    source_custom_definition.create()
+    source_custom_definition.state = source_custom_definition._get_state_from_file(
+        source_custom_definition.configuration_path, workspace_id
+    )
+    assert source_custom_definition.was_created
+    assert not source_custom_definition.get_diff_with_remote_resource()
+    source_custom_definition.raw_configuration["configuration"]["pokemon_name"] = "snorlax"
+    source_custom_definition.configuration = source_custom_definition._deserialize_raw_configuration()
+    assert 'changed from "ditto" to "snorlax"' in source_custom_definition.get_diff_with_remote_resource()
+    source_custom_definition.update()
+    assert not source_custom_definition.get_diff_with_remote_resource()
+    assert source_custom_definition.catalog["streams"][0]["config"]["alias_name"] == "pokemon"
 
 
 def test_destination_lifecycle(destination, workspace_id):
@@ -67,16 +97,3 @@ def test_connection_lifecycle_with_normalization(source, destination, connection
     assert 'changed from "active" to "inactive"' in connection_with_normalization.get_diff_with_remote_resource()
     connection_with_normalization.update()
     assert not connection_with_normalization.get_diff_with_remote_resource()
-
-
-def test_source_definition_lifecycle(source_definition, workspace_id):
-    assert not source_definition.was_created
-    source_definition.create()
-    source_definition.state = source_definition._get_state_from_file(source_definition.configuration_path, workspace_id)
-    assert source_definition.was_created
-    assert not source_definition.get_diff_with_remote_resource()
-    source_definition.raw_configuration["configuration"]["docker_image_tag"] = "test"
-    source_definition.configuration = source_definition._deserialize_raw_configuration()
-    assert 'changed from "dev" to "test"' in source_definition.get_diff_with_remote_resource()
-    source_definition.update()
-    assert not source_definition.get_diff_with_remote_resource()

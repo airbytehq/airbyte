@@ -72,6 +72,35 @@ def source(api_client, workspace_id, source_configuration_and_path, source_state
 
 
 @pytest.fixture(scope="session")
+def source_custom_definition_state_path(octavia_test_project_directory, workspace_id):
+    state_path = f"{octavia_test_project_directory}/sources/poke_custom/state_{workspace_id}.yaml"
+    silent_remove(state_path)
+    yield state_path
+    silent_remove(state_path)
+
+
+def updated_source_configuration_and_path(octavia_test_project_directory, source_definition):
+    path = f"{octavia_test_project_directory}/sources/poke_custom/configuration.yaml"
+    edited_path = f"{octavia_test_project_directory}/sources/poke_custom/updated_configuration.yaml"
+    with open(path, "r") as dumb_local_configuration_file:
+        local_configuration = yaml.safe_load(dumb_local_configuration_file)
+    local_configuration["source_definition_configuration_path"] = source_definition.configuration_path
+    with open(edited_path, "w") as updated_configuration_file:
+        yaml.dump(local_configuration, updated_configuration_file)
+    return local_configuration, edited_path
+
+
+@pytest.fixture(scope="session")
+def source_custom_definition(
+    api_client, workspace_id, octavia_test_project_directory, source_custom_definition_state_path, source_definition
+):
+    configuration, configuration_path = updated_source_configuration_and_path(octavia_test_project_directory, source_definition)
+    source = Source(api_client, workspace_id, configuration, configuration_path)
+    yield source
+    source.api_instance.delete_source(source.get_payload)
+
+
+@pytest.fixture(scope="session")
 def destination_configuration_and_path(octavia_test_project_directory):
     path = f"{octavia_test_project_directory}/destinations/postgres/configuration.yaml"
     return open_yaml_configuration(path)

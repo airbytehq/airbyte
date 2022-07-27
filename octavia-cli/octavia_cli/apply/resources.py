@@ -456,7 +456,7 @@ class SourceAndDestination(BaseResource):
 
     @property
     def definition_id(self):
-        return self.raw_configuration["definition_id"] or self._get_definition_id_from_state()
+        return self.raw_configuration.get("definition_id") or self._get_definition_id_from_state()
 
     @property
     def definition_image(self):

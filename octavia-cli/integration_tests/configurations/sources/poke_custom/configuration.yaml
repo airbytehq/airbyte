@@ -1,0 +1,7 @@
+resource_name: poke
+definition_type: source
+source_definition_configuration_path: TO_UPDATE_FROM_TEST
+
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+  pokemon_name: ditto
