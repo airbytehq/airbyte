@@ -205,8 +205,7 @@ public class JsonSchemas {
               traverseJsonSchemaInternal(arrayItem, path, consumer);
             }
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema object type, must have one of the following fields: properties, oneOf, allOf, anyOf in " + jsonSchemaNode);
+            log.warn("The object is a properties key or a combo keyword. The traversal is silently stopped. Current schema: " + jsonSchemaNode);
           }
         }
       }
