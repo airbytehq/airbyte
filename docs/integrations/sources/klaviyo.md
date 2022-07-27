@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the Klaviyo sou
 
 Please follow these [steps](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3) to obtain Private API Key for your account.
 
-### Step 2: Set up the <connector name> connector in Airbyte
+### Step 2: Set up the Klaviyo connector in Airbyte
 
 ### For Airbyte Cloud:
 
