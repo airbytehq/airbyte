@@ -7,6 +7,7 @@ models:
           expression: "\"column`_'with\"\"_quotes\" is not null"
     columns:
       - name: '"HKD@spéçiäl & characters"'
+        quote: true
         # description: check special charactesrs
         #  Use special characters in column names and make sure they are correctly parsed in the JSON blob and populated
         tests:
