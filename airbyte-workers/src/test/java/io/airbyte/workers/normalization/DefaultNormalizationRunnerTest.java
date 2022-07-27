@@ -222,7 +222,8 @@ class DefaultNormalizationRunnerTest {
   void testFailureWithDbtErrorJsonFormat() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    String dbtErrorString = """
+    String dbtErrorString =
+        """
         {"code": "Q035", "data": {"description": "table model public.start_products", "execution_time": 0.1729569435119629, "index": 1, "status": "error", "total": 2}, "invocation_id": "6ada8ee5-11c1-4239-8bd0-7e45178217c5", "level": "error", "log_version": 1, "msg": "1 of 2 ERROR creating table model public.start_products................................................................. [\\u001b[31mERROR\\u001b[0m in 0.17s]", "node_info": {"materialized": "table", "node_finished_at": null, "node_name": "start_products", "node_path": "generated/airbyte_incremental/public/start_products.sql", "node_started_at": "2022-07-18T15:04:27.036328", "node_status": "compiling", "resource_type": "model", "type": "node_status", "unique_id": "model.airbyte_utils.start_products"}, "pid": 14, "thread_name": "Thread-1", "ts": "2022-07-18T15:04:27.215077Z", "type": "log_line"}
         """;
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));

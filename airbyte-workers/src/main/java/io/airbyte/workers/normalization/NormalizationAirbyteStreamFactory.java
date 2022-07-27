@@ -87,7 +87,8 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
       // valid JSON but not an AirbyteMessage, so we assume this is a dbt json log
       try {
         final String logLevel = (jsonLine.getNodeType() == JsonNodeType.NULL || jsonLine.get("level").isNull())
-            ? "" : jsonLine.get("level").asText();
+            ? ""
+            : jsonLine.get("level").asText();
         final String logMsg = jsonLine.get("msg").isNull() ? "" : jsonLine.get("msg").asText();
         try (final var mdcScope = containerLogMdcBuilder.build()) {
           switch (logLevel) {
@@ -95,7 +96,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
             case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
             case "error" -> logAndCollectErrorMessage(logMsg);
-            default -> logger.info(jsonLine.asText());  // this shouldn't happen but logging it to avoid hiding unexpected lines.
+            default -> logger.info(jsonLine.asText()); // this shouldn't happen but logging it to avoid hiding unexpected lines.
           }
         }
       } catch (final Exception e) {
