@@ -44,6 +44,7 @@ class DeclarativeSource(AbstractSource):
         connector_state: MutableMapping[str, Any],
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
+        # Emit a state message even if no records are read, which happens if data was requested for a date range in the future.
         generator = super()._read_incremental(logger, stream_instance, configured_stream, connector_state, internal_config)
         at_least_one_record_was_read = False
         for record in generator:
