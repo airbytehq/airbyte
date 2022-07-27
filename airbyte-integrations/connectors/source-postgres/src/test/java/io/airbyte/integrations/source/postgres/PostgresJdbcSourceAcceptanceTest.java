@@ -61,6 +61,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
+  @Override
   @BeforeEach
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
@@ -217,6 +218,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
     return getTestMessages()
         .stream()
@@ -233,6 +235,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
     return getTestMessages()
         .stream()
@@ -316,6 +319,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
   }
 
+  @Override
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
     database.execute(connection -> {
       connection.createStatement().execute(
@@ -333,25 +337,25 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+                TABLE_NAME,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
+                Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+                Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+                Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+                TABLE_NAME_WITHOUT_PK,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
+                Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+                Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+                Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(

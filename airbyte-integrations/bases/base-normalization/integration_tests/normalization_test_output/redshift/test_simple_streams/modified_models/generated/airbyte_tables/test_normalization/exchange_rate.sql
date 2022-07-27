@@ -1,7 +1,7 @@
 {{ config(
     sort = "_airbyte_emitted_at",
     unique_key = '_airbyte_ab_id',
-    schema = "test_normalization",
+    schema = "test_normalization_bhhpj",
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
@@ -21,6 +21,6 @@ select
     {{ current_timestamp() }} as _airbyte_normalized_at,
     _airbyte_exchange_rate_hashid
 from {{ ref('exchange_rate_ab3') }}
--- exchange_rate from {{ source('test_normalization', '_airbyte_raw_exchange_rate') }}
+-- exchange_rate from {{ source('test_normalization_bhhpj', '_airbyte_raw_exchange_rate') }}
 where 1 = 1
 
