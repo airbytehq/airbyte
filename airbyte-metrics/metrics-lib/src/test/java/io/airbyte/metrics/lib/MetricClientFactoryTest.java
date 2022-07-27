@@ -6,6 +6,7 @@ package io.airbyte.metrics.lib;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -41,6 +42,12 @@ public class MetricClientFactoryTest {
       MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
       MetricClientFactory.initialize(MetricEmittingApps.METRICS_REPORTER);
     });
+  }
+
+  @Test
+  @DisplayName("Should not return null if metric client not specified;")
+  public void testMicroMeterRegistryRuturnsNullForEmptyClientConfig() {
+    assertNull(MetricClientFactory.getMeterRegistry());
   }
 
 }

@@ -6,6 +6,10 @@ package io.airbyte.metrics.lib;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.statsd.StatsdConfig;
+import io.micrometer.statsd.StatsdMeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +69,45 @@ public class MetricClientFactory {
       LOGGER.warn(
           "MetricClient was not recognized or not provided. Accepted values are `datadog` or `otel`. ");
     }
+  }
+
+  private static StatsdConfig getDatadogStatsDConfig() {
+    return new StatsdConfig() {
+
+      /**
+       * @return
+       */
+      @Override
+      public String host() {
+        return configs.getDDAgentHost();
+      }
+
+      /**
+       * @param key Key to lookup in the config.
+       * @return
+       */
+      @Override
+      public String get(String key) {
+        return null;
+      }
+
+    };
+  }
+
+  /**
+   *
+   * Returns a meter registry to be consumed by temporal configs.
+   *
+   */
+  public static MeterRegistry getMeterRegistry() {
+
+    if (configs.getMetricClient().equals(DATADOG_METRIC_CLIENT)) {
+      StatsdConfig config = getDatadogStatsDConfig();
+      return new StatsdMeterRegistry(config, Clock.SYSTEM);
+    }
+
+    // We do not support open telemetry yet.
+    return null;
   }
 
   private static DogStatsDMetricClient initializeDatadogMetricClient(

@@ -11,7 +11,7 @@ import com.uber.m3.tally.StatsReporter;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.metrics.lib.MicroMeterRegistryFactory;
+import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.temporal.activity.ActivityExecutionContext;
@@ -106,7 +106,7 @@ public class TemporalUtils {
       throw new RuntimeException(e);
     }
 
-    MeterRegistry registry = MicroMeterRegistryFactory.getMeterRegistry();
+    MeterRegistry registry = MetricClientFactory.getMeterRegistry();
     if (registry != null) {
       StatsReporter reporter = new MicrometerClientStatsReporter(registry);
       Scope scope = new RootScopeBuilder()
