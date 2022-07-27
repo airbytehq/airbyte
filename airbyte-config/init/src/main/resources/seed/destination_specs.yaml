@@ -2763,7 +2763,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.4"
+- dockerImage: "airbyte/destination-mongodb:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:
