@@ -4,33 +4,7 @@
 
 package io.airbyte.integrations.source.tidb;
 
-import static com.mysql.cj.MysqlType.BIGINT;
-import static com.mysql.cj.MysqlType.BIGINT_UNSIGNED;
-import static com.mysql.cj.MysqlType.CHAR;
-import static com.mysql.cj.MysqlType.DATE;
-import static com.mysql.cj.MysqlType.DATETIME;
-import static com.mysql.cj.MysqlType.DECIMAL;
-import static com.mysql.cj.MysqlType.DECIMAL_UNSIGNED;
-import static com.mysql.cj.MysqlType.DOUBLE;
-import static com.mysql.cj.MysqlType.DOUBLE_UNSIGNED;
-import static com.mysql.cj.MysqlType.FLOAT;
-import static com.mysql.cj.MysqlType.FLOAT_UNSIGNED;
-import static com.mysql.cj.MysqlType.INT;
-import static com.mysql.cj.MysqlType.INT_UNSIGNED;
-import static com.mysql.cj.MysqlType.LONGTEXT;
-import static com.mysql.cj.MysqlType.MEDIUMINT;
-import static com.mysql.cj.MysqlType.MEDIUMINT_UNSIGNED;
-import static com.mysql.cj.MysqlType.MEDIUMTEXT;
-import static com.mysql.cj.MysqlType.SMALLINT;
-import static com.mysql.cj.MysqlType.SMALLINT_UNSIGNED;
-import static com.mysql.cj.MysqlType.TEXT;
-import static com.mysql.cj.MysqlType.TIME;
-import static com.mysql.cj.MysqlType.TIMESTAMP;
-import static com.mysql.cj.MysqlType.TINYINT;
-import static com.mysql.cj.MysqlType.TINYINT_UNSIGNED;
-import static com.mysql.cj.MysqlType.TINYTEXT;
-import static com.mysql.cj.MysqlType.VARCHAR;
-import static com.mysql.cj.MysqlType.YEAR;
+import static com.mysql.cj.MysqlType.*;
 import static io.airbyte.db.jdbc.JdbcConstants.*;
 
 import com.fasterxml.jackson.databind.JsonNode;

@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.List;
-import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
