@@ -146,13 +146,16 @@
           "value": {
             "oneOf": [
               {
-                "type": ["null", "array"],
+                "type": "array",
                 "items": {
                   "type": ["null", "string"]
                 }
               },
               {
-                "type": ["null", "string"]
+                "type": "string"
+              },
+              {
+                "type": "null"
               }
             ]
           },
