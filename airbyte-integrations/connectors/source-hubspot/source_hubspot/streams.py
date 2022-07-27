@@ -16,9 +16,10 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from requests import codes
+from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
 
@@ -111,7 +112,12 @@ class API:
     def is_oauth2(self) -> bool:
         credentials_title = self.credentials.get("credentials_title")
 
-        return credentials_title == "OAuth Credentials"
+        return credentials_title == OAUTH_CREDENTIALS
+
+    def is_private_app(self) -> bool:
+        credentials_title = self.credentials.get("credentials_title")
+
+        return credentials_title == PRIVATE_APP_CREDENTIALS
 
     def get_authenticator(self) -> Optional[Oauth2Authenticator]:
         if self.is_oauth2():
@@ -121,6 +127,8 @@ class API:
                 client_secret=self.credentials["client_secret"],
                 refresh_token=self.credentials["refresh_token"],
             )
+        elif self.is_private_app():
+            return TokenAuthenticator(token=self.credentials["access_token"])
         else:
             return None
 
@@ -129,9 +137,9 @@ class API:
         self.credentials = credentials
         credentials_title = credentials.get("credentials_title")
 
-        if self.is_oauth2():
+        if self.is_oauth2() or self.is_private_app():
             self._session.auth = self.get_authenticator()
-        elif credentials_title == "API Key Credentials":
+        elif credentials_title == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
@@ -242,7 +250,7 @@ class Stream(HttpStream, ABC):
         self._api: API = api
         self._start_date = pendulum.parse(start_date)
 
-        if credentials["credentials_title"] == "API Key Credentials":
+        if credentials["credentials_title"] == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
@@ -1290,13 +1298,13 @@ class PropertyHistory(Stream):
     """
 
     more_key = "has-more"
-    url = "/contacts/v1/lists/recently_updated/contacts/recent"
+    url = "/contacts/v1/lists/all/contacts/all"
     updated_at_field = "timestamp"
     created_at_field = "timestamp"
     entity = "contacts"
     data_field = "contacts"
-    page_field = "time-offset"
-    page_filter = "timeOffset"
+    page_field = "vid-offset"
+    page_filter = "vidOffset"
     denormalize_records = True
     limit_field = "count"
     limit = 100

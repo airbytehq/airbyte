@@ -38,7 +38,6 @@ import io.airbyte.api.client.model.generated.StreamDescriptor;
 import io.airbyte.api.client.model.generated.StreamState;
 import io.airbyte.api.client.model.generated.SyncMode;
 import io.airbyte.api.client.model.generated.WebBackendConnectionUpdate;
-import io.airbyte.api.client.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
@@ -82,7 +81,8 @@ import org.slf4j.LoggerFactory;
  */
 @DisabledIfEnvironmentVariable(named = "KUBE",
                                matches = "true")
-public class CdcAcceptanceTests {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class CdcAcceptanceTests {
 
   record DestinationCdcRecordMatcher(JsonNode sourceRecord, Instant minUpdatedAt, Optional<Instant> minDeletedAt) {}
 
@@ -116,7 +116,7 @@ public class CdcAcceptanceTests {
   private AirbyteAcceptanceTestHarness testHarness;
 
   @BeforeAll
-  public static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
+  static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
@@ -143,19 +143,19 @@ public class CdcAcceptanceTests {
   }
 
   @BeforeEach
-  public void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
+  void setup() throws URISyntaxException, IOException, InterruptedException, ApiException, SQLException {
     testHarness = new AirbyteAcceptanceTestHarness(apiClient, workspaceId, POSTGRES_INIT_SQL_FILE);
     testHarness.setup();
   }
 
   @AfterEach
-  public void end() {
+  void end() {
     testHarness.cleanup();
     testHarness.stopDbAndContainers();
   }
 
   @Test
-  public void testIncrementalCdcSync(TestInfo testInfo) throws Exception {
+  void testIncrementalCdcSync(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -174,7 +174,7 @@ public class CdcAcceptanceTests {
     List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
     assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
 
-    List<StreamDescriptor> expectedStreams = List.of(
+    final List<StreamDescriptor> expectedStreams = List.of(
         new StreamDescriptor().namespace(SCHEMA_NAME).name(ID_AND_NAME_TABLE),
         new StreamDescriptor().namespace(SCHEMA_NAME).name(COLOR_PALETTE_TABLE));
     assertGlobalStateContainsStreams(connectionId, expectedStreams);
@@ -251,7 +251,7 @@ public class CdcAcceptanceTests {
   // tests that incremental syncs still work properly even when using a destination connector that was
   // built on the old protocol that did not have any per-stream state fields
   @Test
-  public void testIncrementalCdcSyncWithLegacyDestinationConnector(TestInfo testInfo) throws Exception {
+  void testIncrementalCdcSyncWithLegacyDestinationConnector(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
     final UUID postgresDestDefId = testHarness.getPostgresDestinationDefinitionId();
     // Fetch the current/most recent source definition version
@@ -272,7 +272,7 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testDeleteRecordCdcSync(TestInfo testInfo) throws Exception {
+  void testDeleteRecordCdcSync(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -284,7 +284,7 @@ public class CdcAcceptanceTests {
     LOGGER.info("state after sync 1: {}", apiClient.getConnectionApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)));
 
     final Database source = testHarness.getSourceDatabase();
-    List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    final List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
 
     final Instant beforeDelete = Instant.now();
@@ -293,7 +293,7 @@ public class CdcAcceptanceTests {
     // delete a record
     source.query(ctx -> ctx.execute("DELETE FROM id_and_name WHERE id=1"));
 
-    Map<String, Object> deletedRecordMap = new HashMap<>();
+    final Map<String, Object> deletedRecordMap = new HashMap<>();
     deletedRecordMap.put(COLUMN_ID, 1);
     deletedRecordMap.put(COLUMN_NAME, null);
     expectedIdAndNameRecords.add(new DestinationCdcRecordMatcher(
@@ -311,7 +311,7 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromSchemaUpdate(TestInfo testInfo) throws Exception {
+  void testPartialResetFromSchemaUpdate(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -323,14 +323,14 @@ public class CdcAcceptanceTests {
 
     final Database source = testHarness.getSourceDatabase();
 
-    List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    final List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
 
-    List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
+    final List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
     assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
 
-    StreamDescriptor idAndNameStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(ID_AND_NAME_TABLE);
-    StreamDescriptor colorPaletteStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(COLOR_PALETTE_TABLE);
+    final StreamDescriptor idAndNameStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(ID_AND_NAME_TABLE);
+    final StreamDescriptor colorPaletteStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(COLOR_PALETTE_TABLE);
     assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
 
     LOGGER.info("Removing color palette table");
@@ -338,14 +338,14 @@ public class CdcAcceptanceTests {
 
     LOGGER.info("Refreshing schema and updating connection");
     final ConnectionRead connectionRead = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    UUID sourceId = createCdcSource().getSourceId();
-    AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
+    final UUID sourceId = createCdcSource().getSourceId();
+    final AirbyteCatalog refreshedCatalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Refreshed catalog: {}", refreshedCatalog);
-    WebBackendConnectionUpdate update = getUpdateInput(connectionRead, refreshedCatalog, operationRead);
+    final WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, refreshedCatalog, operationRead);
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to complete");
-    JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
+    final JobRead syncFromTheUpdate = testHarness.waitUntilTheNextJobIsStarted(connectionId);
     waitForSuccessfulJob(apiClient.getJobsApi(), syncFromTheUpdate);
 
     // We do not check that the source and the dest are in sync here because removing a stream doesn't
@@ -354,7 +354,7 @@ public class CdcAcceptanceTests {
   }
 
   @Test
-  public void testPartialResetFromStreamSelection(TestInfo testInfo) throws Exception {
+  void testPartialResetFromStreamSelection(final TestInfo testInfo) throws Exception {
     LOGGER.info("Starting {}", testInfo.getDisplayName());
 
     final UUID connectionId = createCdcConnection();
@@ -366,14 +366,14 @@ public class CdcAcceptanceTests {
 
     final Database source = testHarness.getSourceDatabase();
 
-    List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
+    final List<DestinationCdcRecordMatcher> expectedIdAndNameRecords = getCdcRecordMatchersFromSource(source, ID_AND_NAME_TABLE);
     assertDestinationMatches(ID_AND_NAME_TABLE, expectedIdAndNameRecords);
 
-    List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
+    final List<DestinationCdcRecordMatcher> expectedColorPaletteRecords = getCdcRecordMatchersFromSource(source, COLOR_PALETTE_TABLE);
     assertDestinationMatches(COLOR_PALETTE_TABLE, expectedColorPaletteRecords);
 
-    StreamDescriptor idAndNameStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(ID_AND_NAME_TABLE);
-    StreamDescriptor colorPaletteStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(COLOR_PALETTE_TABLE);
+    final StreamDescriptor idAndNameStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(ID_AND_NAME_TABLE);
+    final StreamDescriptor colorPaletteStreamDescriptor = new StreamDescriptor().namespace(SCHEMA_NAME).name(COLOR_PALETTE_TABLE);
     assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
 
     LOGGER.info("Removing color palette stream from configured catalog");
@@ -384,11 +384,11 @@ public class CdcAcceptanceTests {
     // filter out color_palette stream
     final List<AirbyteStreamAndConfiguration> updatedStreams = streams
         .stream()
-        .filter(stream -> !stream.getStream().getName().equals(COLOR_PALETTE_TABLE))
+        .filter(stream -> !COLOR_PALETTE_TABLE.equals(stream.getStream().getName()))
         .toList();
     catalog.setStreams(updatedStreams);
     LOGGER.info("Updated catalog: {}", catalog);
-    WebBackendConnectionUpdate update = getUpdateInput(connectionRead, catalog, operationRead);
+    WebBackendConnectionUpdate update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
@@ -403,7 +403,7 @@ public class CdcAcceptanceTests {
     LOGGER.info("Adding color palette stream back to configured catalog");
     catalog = testHarness.discoverSourceSchema(sourceId);
     LOGGER.info("Updated catalog: {}", catalog);
-    update = getUpdateInput(connectionRead, catalog, operationRead);
+    update = testHarness.getUpdateInput(connectionRead, catalog, operationRead);
     webBackendApi.webBackendUpdateConnectionNew(update);
 
     LOGGER.info("Waiting for sync job after update to start");
@@ -447,8 +447,8 @@ public class CdcAcceptanceTests {
     assertGlobalStateContainsStreams(connectionId, List.of(idAndNameStreamDescriptor, colorPaletteStreamDescriptor));
   }
 
-  private List<DestinationCdcRecordMatcher> getCdcRecordMatchersFromSource(Database source, String tableName) throws SQLException {
-    List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, tableName);
+  private List<DestinationCdcRecordMatcher> getCdcRecordMatchersFromSource(final Database source, final String tableName) throws SQLException {
+    final List<JsonNode> sourceRecords = testHarness.retrieveSourceRecords(source, tableName);
     return new ArrayList<>(sourceRecords
         .stream()
         .map(sourceRecord -> new DestinationCdcRecordMatcher(sourceRecord, Instant.EPOCH, Optional.empty()))
@@ -458,7 +458,7 @@ public class CdcAcceptanceTests {
   private UUID createCdcConnection() throws ApiException {
     final SourceRead sourceRead = createCdcSource();
     final UUID sourceId = sourceRead.getSourceId();
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
 
     operationRead = testHarness.createOperation();
     final UUID operationId = operationRead.getOperationId();
@@ -500,7 +500,8 @@ public class CdcAcceptanceTests {
         Jsons.jsonNode(sourceDbConfigMap));
   }
 
-  private void assertDestinationMatches(String streamName, List<DestinationCdcRecordMatcher> expectedDestRecordMatchers) throws Exception {
+  private void assertDestinationMatches(final String streamName, final List<DestinationCdcRecordMatcher> expectedDestRecordMatchers)
+      throws Exception {
     final List<JsonNode> destRecords = testHarness.retrieveRawDestinationRecords(new SchemaTableNamePair(SCHEMA_NAME, streamName));
     if (destRecords.size() != expectedDestRecordMatchers.size()) {
       final String errorMessage = String.format(
@@ -512,22 +513,22 @@ public class CdcAcceptanceTests {
       throw new IllegalStateException(errorMessage);
     }
 
-    for (DestinationCdcRecordMatcher recordMatcher : expectedDestRecordMatchers) {
+    for (final DestinationCdcRecordMatcher recordMatcher : expectedDestRecordMatchers) {
       final List<JsonNode> matchingDestRecords = destRecords.stream().filter(destRecord -> {
-        Map<String, Object> sourceRecordMap = Jsons.object(recordMatcher.sourceRecord, Map.class);
-        Map<String, Object> destRecordMap = Jsons.object(destRecord, Map.class);
+        final Map<String, Object> sourceRecordMap = Jsons.object(recordMatcher.sourceRecord, Map.class);
+        final Map<String, Object> destRecordMap = Jsons.object(destRecord, Map.class);
 
-        boolean sourceRecordValuesMatch = sourceRecordMap.keySet()
+        final boolean sourceRecordValuesMatch = sourceRecordMap.keySet()
             .stream()
             .allMatch(column -> Objects.equals(sourceRecordMap.get(column), destRecordMap.get(column)));
 
         final Object cdcUpdatedAtValue = destRecordMap.get(CDC_UPDATED_AT_COLUMN);
         // use epoch millis to guarantee the two values are at the same precision
-        boolean cdcUpdatedAtMatches = cdcUpdatedAtValue != null
+        final boolean cdcUpdatedAtMatches = cdcUpdatedAtValue != null
             && Instant.parse(String.valueOf(cdcUpdatedAtValue)).toEpochMilli() >= recordMatcher.minUpdatedAt.toEpochMilli();
 
         final Object cdcDeletedAtValue = destRecordMap.get(CDC_DELETED_AT_COLUMN);
-        boolean cdcDeletedAtMatches;
+        final boolean cdcDeletedAtMatches;
         if (recordMatcher.minDeletedAt.isPresent()) {
           cdcDeletedAtMatches = cdcDeletedAtValue != null
               && Instant.parse(String.valueOf(cdcDeletedAtValue)).toEpochMilli() >= recordMatcher.minDeletedAt.get().toEpochMilli();
@@ -538,7 +539,7 @@ public class CdcAcceptanceTests {
         return sourceRecordValuesMatch && cdcUpdatedAtMatches && cdcDeletedAtMatches;
       }).toList();
 
-      if (matchingDestRecords.size() == 0) {
+      if (matchingDestRecords.isEmpty()) {
         throw new IllegalStateException(String.format(
             "Could not find a matching CDC destination record for record matcher %s. Destination records: %s", recordMatcher, destRecords));
       }
@@ -567,33 +568,8 @@ public class CdcAcceptanceTests {
     assertNull(state.getGlobalState());
   }
 
-  private WebBackendConnectionUpdate getUpdateInput(final ConnectionRead connection, final AirbyteCatalog catalog, final OperationRead operation) {
-    final SyncMode syncMode = SyncMode.INCREMENTAL;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.APPEND;
-    catalog.getStreams().forEach(s -> s.getConfig()
-        .syncMode(syncMode)
-        .cursorField(List.of(COLUMN_ID))
-        .destinationSyncMode(destinationSyncMode));
-
-    return new WebBackendConnectionUpdate()
-        .connectionId(connection.getConnectionId())
-        .name(connection.getName())
-        .operationIds(connection.getOperationIds())
-        .operations(List.of(new WebBackendOperationCreateOrUpdate()
-            .name(operation.getName())
-            .operationId(operation.getOperationId())
-            .workspaceId(operation.getWorkspaceId())
-            .operatorConfiguration(operation.getOperatorConfiguration())))
-        .namespaceDefinition(connection.getNamespaceDefinition())
-        .namespaceFormat(connection.getNamespaceFormat())
-        .syncCatalog(catalog)
-        .schedule(connection.getSchedule())
-        .sourceCatalogId(connection.getSourceCatalogId())
-        .status(connection.getStatus())
-        .prefix(connection.getPrefix());
-  }
-
   // can be helpful for debugging
+  @SuppressWarnings("PMD.UnusedPrivateMethod")
   private void printDbs() throws SQLException {
     final Database sourceDb = testHarness.getSourceDatabase();
     Set<SchemaTableNamePair> pairs = testHarness.listAllTables(sourceDb);

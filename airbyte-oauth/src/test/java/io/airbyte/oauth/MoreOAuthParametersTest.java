@@ -16,7 +16,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class MoreOAuthParametersTest {
+class MoreOAuthParametersTest {
 
   @Test
   void testFlattenConfig() {
