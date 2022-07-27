@@ -583,6 +583,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
 
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = {"sort_by": self.cursor_field, "sort_order": "desc", "limit": self.page_size}

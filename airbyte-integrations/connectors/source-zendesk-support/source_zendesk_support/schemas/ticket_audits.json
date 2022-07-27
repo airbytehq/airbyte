@@ -144,10 +144,17 @@
             "type": ["null", "integer"]
           },
           "value": {
-            "type": ["null", "string", "array"],
-            "items": {
-              "type": ["null", "string"]
-            }
+            "oneOf": [
+              {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "string"]
+                }
+              },
+              {
+                "type": ["null", "string"]
+              }
+            ]
           },
           "author_id": {
             "type": ["null", "integer"]
