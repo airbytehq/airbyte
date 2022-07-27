@@ -135,12 +135,23 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
             return {"pageToken": next_page}
 
     def should_retry(self, response: requests.Response) -> bool:
-        """When the connector gets a custom report which has unknown metric(s) or dimension(s)
+        """
+        When the connector gets a custom report which has unknown metric(s) or dimension(s)
         and API returns an error with 400 code, the connector ignores an error with 400 code
-        to finish successfully sync and inform the user about an error in logs with an error message."""
+        to finish successfully sync and inform the user about an error in logs with an error message.
+
+        When the daily request limit reached, the connector ignores an error with 429 code and
+        'has exceeded the daily request limit' error massage to finish successfully sync and
+        inform the user about an error in logs with an error message and link to google analytics docs.
+        """
 
         if response.status_code == 400:
             self.logger.info(f"{response.json()['error']['message']}")
+            self._raise_on_http_errors = False
+
+        elif response.status_code == 429 and "has exceeded the daily request limit" in response.json()["error"]["message"]:
+            rate_limit_docs_url = "https://developers.google.com/analytics/devguides/reporting/core/v4/limits-quotas"
+            self.logger.info(f"{response.json()['error']['message']}. More info: {rate_limit_docs_url}")
             self._raise_on_http_errors = False
 
         result: bool = HttpStream.should_retry(self, response)
@@ -181,7 +192,7 @@ class GoogleAnalyticsV4Stream(HttpStream, ABC):
         schema: Dict[str, Any] = {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": ["null", "object"],
-            "additionalProperties": False,
+            "additionalProperties": True,
             "properties": {
                 "view_id": {"type": ["string"]},
             },

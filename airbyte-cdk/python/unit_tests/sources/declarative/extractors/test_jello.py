@@ -40,7 +40,7 @@ decoder = JsonDecoder()
     ],
 )
 def test(test_name, transform, body, expected_records):
-    extractor = JelloExtractor(transform, decoder, config, kwargs=kwargs)
+    extractor = JelloExtractor(transform, config, decoder, kwargs=kwargs)
 
     response = create_response(body)
     actual_records = extractor.extract_records(response)

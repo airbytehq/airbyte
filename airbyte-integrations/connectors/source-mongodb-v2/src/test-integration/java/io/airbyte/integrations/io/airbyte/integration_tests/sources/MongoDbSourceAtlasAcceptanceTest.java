@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -66,17 +67,17 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
 
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put("user", credentialsJson.get("user").asText())
-        .put("password", credentialsJson.get("password").asText())
+        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
         .put("instance_type", instanceConfig)
-        .put("database", DATABASE_NAME)
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put("auth_source", "admin")
         .build());
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
         config.get("user").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get("instance_type").get("cluster_url").asText(),
-        config.get("database").asText());
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 
@@ -101,7 +102,7 @@ public class MongoDbSourceAtlasAcceptanceTest extends MongoDbSourceAbstractAccep
   }
 
   @Override
-  protected void verifyCatalog(AirbyteCatalog catalog) {
+  protected void verifyCatalog(final AirbyteCatalog catalog) {
     final List<AirbyteStream> streams = catalog.getStreams();
     // only one stream is expected; the schema that should be ignored
     // must not be included in the retrieved catalog

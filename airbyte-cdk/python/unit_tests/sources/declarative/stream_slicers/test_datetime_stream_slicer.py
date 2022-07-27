@@ -231,6 +231,7 @@ def mock_datetime_now(monkeypatch):
     ],
 )
 def test_stream_slices(mock_datetime_now, test_name, stream_state, start, end, cursor, step, lookback_window, expected_slices):
+    lookback_window = InterpolatedString(lookback_window) if lookback_window else None
     slicer = DatetimeStreamSlicer(
         start_datetime=start,
         end_datetime=end,
