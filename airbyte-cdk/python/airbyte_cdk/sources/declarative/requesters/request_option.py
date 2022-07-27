@@ -38,11 +38,14 @@ class RequestOption:
 
     @property
     def inject_into(self) -> RequestOptionType:
+        """Describes where in the HTTP request to inject the parameter"""
         return self._option_type
 
     @property
     def field_name(self) -> Optional[str]:
+        """Describes the name of the parameter to inject"""
         return self._field_name
 
-    def is_path(self):
+    def is_path(self) -> bool:
+        """Returns true if the parameter is the path to send the request to"""
         return self._option_type == RequestOptionType.path
