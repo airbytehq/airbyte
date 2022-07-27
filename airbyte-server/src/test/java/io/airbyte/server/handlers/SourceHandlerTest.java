@@ -35,6 +35,7 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
@@ -321,7 +322,7 @@ class SourceHandlerTest {
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(sourceConnection.getSourceId());
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(sourceConnection.getSourceId());
-    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
     final ConnectionReadList connectionReadList = new ConnectionReadList().connections(Collections.singletonList(connectionRead));
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(sourceConnection.getWorkspaceId());
 

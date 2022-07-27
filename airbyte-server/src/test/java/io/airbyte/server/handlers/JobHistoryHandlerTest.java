@@ -23,6 +23,7 @@ import io.airbyte.scheduler.models.AttemptStatus;
 import io.airbyte.scheduler.models.Job;
 import io.airbyte.scheduler.models.JobStatus;
 import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
 import io.airbyte.server.helpers.DestinationHelpers;
@@ -232,7 +233,7 @@ class JobHistoryHandlerTest {
     destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
-    connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
     when(connectionsHandler.getConnection(UUID.fromString(testJob.getScope()))).thenReturn(connectionRead);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();

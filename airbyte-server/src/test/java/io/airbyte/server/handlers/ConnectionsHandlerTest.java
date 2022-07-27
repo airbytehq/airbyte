@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
@@ -24,7 +25,6 @@ import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionStatus;
-import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationSearch;
 import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.NamespaceDefinitionType;
@@ -196,7 +196,7 @@ class ConnectionsHandlerTest {
 
       final ConnectionRead actualConnectionRead = connectionsHandler.createConnection(connectionCreate);
 
-      final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+      final ConnectionRead expectedConnectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
 
       assertEquals(expectedConnectionRead, actualConnectionRead);
 
@@ -303,7 +303,7 @@ class ConnectionsHandlerTest {
           .connectionId(standardSync.getConnectionId())
           .operationIds(standardSync.getOperationIds())
           .status(ConnectionStatus.INACTIVE)
-          .schedule(null)
+          .schedule(new ConnectionSchedule().manual(true))
           .syncCatalog(catalog)
           .name(standardSync.getName())
           .resourceRequirements(new ResourceRequirements()
@@ -337,12 +337,8 @@ class ConnectionsHandlerTest {
 
       final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
 
-      final ConnectionRead expectedConnectionRead = ConnectionHelpers.generateExpectedConnectionRead(
-          standardSync.getConnectionId(),
-          standardSync.getSourceId(),
-          standardSync.getDestinationId(),
-          standardSync.getOperationIds(),
-          newSourceCatalogId)
+      final ConnectionRead expectedConnectionRead = ApiPojoConverters.internalToConnectionRead(standardSync)
+          .sourceCatalogId(newSourceCatalogId)
           .schedule(null)
           .syncCatalog(catalog)
           .status(ConnectionStatus.INACTIVE);
@@ -351,6 +347,50 @@ class ConnectionsHandlerTest {
 
       verify(configRepository).writeStandardSync(updatedStandardSync);
 
+      verify(eventRunner).update(connectionUpdate.getConnectionId());
+    }
+
+    @Test
+    void testUpdateConnectionWithPartialUpdate() throws JsonValidationException, ConfigNotFoundException, IOException {
+      // set up a custom namespace format that we expect to remain after the partial update
+      standardSync.setNamespaceDefinition(JobSyncConfig.NamespaceDefinitionType.CUSTOMFORMAT);
+      standardSync.setNamespaceFormat("my_custom_format");
+
+      // only update status and schedule
+      final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
+          .connectionId(standardSync.getConnectionId()) // always need to provide a connectionId
+          .status(ConnectionStatus.INACTIVE)
+          .schedule(new ConnectionSchedule().manual(true));
+
+      System.err.println("connectionUpdate in test: " + connectionUpdate);
+
+      final StandardSync updatedStandardSync = new StandardSync()
+          .withConnectionId(standardSync.getConnectionId())
+          .withName(standardSync.getName())
+          .withNamespaceDefinition(standardSync.getNamespaceDefinition())
+          .withNamespaceFormat(standardSync.getNamespaceFormat())
+          .withPrefix(standardSync.getPrefix())
+          .withSourceId(standardSync.getSourceId())
+          .withDestinationId(standardSync.getDestinationId())
+          .withOperationIds(standardSync.getOperationIds())
+          .withCatalog(standardSync.getCatalog())
+          .withResourceRequirements(standardSync.getResourceRequirements())
+          .withSourceCatalogId(standardSync.getSourceCatalogId())
+          .withStatus(StandardSync.Status.INACTIVE) // updated from ACTIVE to INACTIVE
+          .withManual(true); // updated from generateBasicSchedule to manual
+
+      when(configRepository.getStandardSync(standardSync.getConnectionId()))
+          .thenReturn(standardSync)
+          .thenReturn(updatedStandardSync);
+
+      final ConnectionRead actualConnectionRead = connectionsHandler.updateConnection(connectionUpdate);
+
+      final ConnectionRead expectedConnectionRead = ApiPojoConverters.internalToConnectionRead(standardSync)
+          .schedule(null)
+          .status(ConnectionStatus.INACTIVE);
+
+      assertEquals(expectedConnectionRead, actualConnectionRead);
+      verify(configRepository).writeStandardSync(updatedStandardSync);
       verify(eventRunner).update(connectionUpdate.getConnectionId());
     }
 
@@ -374,7 +414,7 @@ class ConnectionsHandlerTest {
 
       final ConnectionRead actualConnectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
 
-      assertEquals(ConnectionHelpers.generateExpectedConnectionRead(standardSync), actualConnectionRead);
+      assertEquals(ApiPojoConverters.internalToConnectionRead(standardSync), actualConnectionRead);
     }
 
     @Test
@@ -388,7 +428,7 @@ class ConnectionsHandlerTest {
       final ConnectionReadList actualConnectionReadList = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody);
       assertEquals(1, actualConnectionReadList.getConnections().size());
       assertEquals(
-          ConnectionHelpers.generateExpectedConnectionRead(standardSync),
+          ApiPojoConverters.internalToConnectionRead(standardSync),
           actualConnectionReadList.getConnections().get(0));
 
       final ConnectionReadList actualConnectionReadListWithDeleted = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody, true);
@@ -411,13 +451,13 @@ class ConnectionsHandlerTest {
       final ConnectionReadList actualConnectionReadList = connectionsHandler.listConnections();
 
       assertEquals(
-          ConnectionHelpers.generateExpectedConnectionRead(standardSync),
+          ApiPojoConverters.internalToConnectionRead(standardSync),
           actualConnectionReadList.getConnections().get(0));
     }
 
     @Test
     void testSearchConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
-      final ConnectionRead connectionRead1 = ConnectionHelpers.connectionReadFromStandardSync(standardSync);
+      final ConnectionRead connectionRead1 = ApiPojoConverters.internalToConnectionRead(standardSync);
       final StandardSync standardSync2 = new StandardSync()
           .withConnectionId(UUID.randomUUID())
           .withName("test connection")
@@ -431,7 +471,7 @@ class ConnectionsHandlerTest {
           .withOperationIds(List.of(operationId))
           .withManual(true)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS);
-      final ConnectionRead connectionRead2 = ConnectionHelpers.connectionReadFromStandardSync(standardSync2);
+      final ConnectionRead connectionRead2 = ApiPojoConverters.internalToConnectionRead(standardSync2);
       final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
           .withName("source-test")
           .withSourceDefinitionId(UUID.randomUUID());

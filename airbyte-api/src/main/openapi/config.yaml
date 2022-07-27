@@ -1298,7 +1298,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ConnectionUpdate"
-        required: true
+      #        required: true  TODO apparently this causes the operationIds list to be instantiated as a new ArrayList() instead of null, not sure why... https://github.com/OpenAPITools/openapi-generator/blob/7f36f2642209c6d7070e1d76209ba1928d816922/modules/openapi-generator/src/main/resources/JavaJaxRS/pojo.mustache#L24-L29
       responses:
         "200":
           description: Successful operation
@@ -3273,7 +3273,6 @@ components:
         namespaceFormat:
           type: string
           description: Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'.
-          default: null
           example: "${SOURCE_NAMESPACE}"
         name:
           type: string
@@ -3322,6 +3321,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OperationId"
+          nullable: true
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
         schedule:
@@ -3479,7 +3479,6 @@ components:
     NamespaceDefinitionType:
       type: string
       description: Method used for computing final namespace in destination
-      default: source
       enum:
         - source
         - destination

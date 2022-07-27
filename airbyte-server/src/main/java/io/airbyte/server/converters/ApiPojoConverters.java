@@ -4,11 +4,11 @@
 
 package io.airbyte.server.converters;
 
+import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.ActorDefinitionResourceRequirements;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSchedule;
 import io.airbyte.api.model.generated.ConnectionStatus;
-import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
 import io.airbyte.api.model.generated.ResourceRequirements;

@@ -30,14 +30,16 @@ task generateApiServer(type: GenerateTask) {
             'StreamJsonSchema'                  : 'com.fasterxml.jackson.databind.JsonNode',
             'StateBlob'                         : 'com.fasterxml.jackson.databind.JsonNode',
             'FieldSchema'                       : 'com.fasterxml.jackson.databind.JsonNode',
+            'ConnectionUpdate'                  : 'io.airbyte.api.client.generated.ConnectionUpdate' // hack to use the ConnectionUpdate generated with Java instead of JaxRS-spec
     ]
 
     generateApiDocumentation = false
 
     configOptions = [
-            dateLibrary  : "java8",
-            generatePom  : "false",
-            interfaceOnly: "true",
+            dateLibrary                   : "java8",
+            generatePom                   : "false",
+            interfaceOnly                 : "true",
+            openApiNullable               : "true",
             /*
             JAX-RS generator does not respect nullable properties defined in the OpenApi Spec.
             It means that if a field is not nullable but not set it is still returning a null value for this field in the serialized json.
@@ -46,6 +48,7 @@ task generateApiServer(type: GenerateTask) {
             Feel free to read the conversation on https://github.com/airbytehq/airbyte/pull/13370 for more details.
             */
             additionalModelTypeAnnotations: "\n@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)"
+
     ]
 }
 compileJava.dependsOn tasks.generateApiServer

@@ -5,6 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
+import io.airbyte.api.client.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckOperationRead;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
@@ -16,7 +17,6 @@ import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionSearch;
 import io.airbyte.api.model.generated.ConnectionState;
 import io.airbyte.api.model.generated.ConnectionStateType;
-import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
 import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;

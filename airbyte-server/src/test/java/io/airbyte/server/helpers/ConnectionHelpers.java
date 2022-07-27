@@ -10,11 +10,7 @@ import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
-import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionSchedule;
-import io.airbyte.api.model.generated.ConnectionSchedule.TimeUnitEnum;
-import io.airbyte.api.model.generated.ConnectionStatus;
-import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.commons.text.Names;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
@@ -28,7 +24,6 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -98,88 +93,6 @@ public class ConnectionHelpers {
     return new Schedule()
         .withTimeUnit(TimeUnit.fromValue(BASIC_SCHEDULE_TIME_UNIT))
         .withUnits(BASIC_SCHEDULE_UNITS);
-  }
-
-  public static ConnectionRead generateExpectedConnectionRead(final UUID connectionId,
-                                                              final UUID sourceId,
-                                                              final UUID destinationId,
-                                                              final List<UUID> operationIds,
-                                                              final UUID sourceCatalogId) {
-
-    return new ConnectionRead()
-        .connectionId(connectionId)
-        .sourceId(sourceId)
-        .destinationId(destinationId)
-        .operationIds(operationIds)
-        .name("presto to hudi")
-        .namespaceDefinition(io.airbyte.api.model.generated.NamespaceDefinitionType.SOURCE)
-        .namespaceFormat(null)
-        .prefix("presto_to_hudi")
-        .status(ConnectionStatus.ACTIVE)
-        .schedule(generateBasicConnectionSchedule())
-        .syncCatalog(ConnectionHelpers.generateBasicApiCatalog())
-        .resourceRequirements(new ResourceRequirements()
-            .cpuRequest(TESTING_RESOURCE_REQUIREMENTS.getCpuRequest())
-            .cpuLimit(TESTING_RESOURCE_REQUIREMENTS.getCpuLimit())
-            .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
-            .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
-        .sourceCatalogId(sourceCatalogId);
-  }
-
-  public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
-    final ConnectionRead connectionRead = generateExpectedConnectionRead(
-        standardSync.getConnectionId(),
-        standardSync.getSourceId(),
-        standardSync.getDestinationId(),
-        standardSync.getOperationIds(),
-        standardSync.getSourceCatalogId());
-
-    if (standardSync.getSchedule() == null) {
-      connectionRead.schedule(null);
-    } else {
-      connectionRead.schedule(new ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
-    }
-
-    return connectionRead;
-  }
-
-  public static ConnectionRead connectionReadFromStandardSync(final StandardSync standardSync) {
-    final ConnectionRead connectionRead = new ConnectionRead();
-    connectionRead
-        .connectionId(standardSync.getConnectionId())
-        .sourceId(standardSync.getSourceId())
-        .destinationId(standardSync.getDestinationId())
-        .operationIds(standardSync.getOperationIds())
-        .name(standardSync.getName())
-        .namespaceFormat(standardSync.getNamespaceFormat())
-        .prefix(standardSync.getPrefix())
-        .sourceCatalogId(standardSync.getSourceCatalogId());
-
-    if (standardSync.getNamespaceDefinition() != null) {
-      connectionRead
-          .namespaceDefinition(io.airbyte.api.model.generated.NamespaceDefinitionType.fromValue(standardSync.getNamespaceDefinition().value()));
-    }
-    if (standardSync.getStatus() != null) {
-      connectionRead.status(io.airbyte.api.model.generated.ConnectionStatus.fromValue(standardSync.getStatus().value()));
-    }
-    if (standardSync.getSchedule() != null) {
-      connectionRead.schedule(new io.airbyte.api.model.generated.ConnectionSchedule()
-          .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
-          .units(standardSync.getSchedule().getUnits()));
-    }
-    if (standardSync.getCatalog() != null) {
-      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
-    }
-    if (standardSync.getResourceRequirements() != null) {
-      connectionRead.resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
-          .cpuLimit(standardSync.getResourceRequirements().getCpuLimit())
-          .cpuRequest(standardSync.getResourceRequirements().getCpuRequest())
-          .memoryLimit(standardSync.getResourceRequirements().getMemoryLimit())
-          .memoryRequest(standardSync.getResourceRequirements().getMemoryRequest()));
-    }
-    return connectionRead;
   }
 
   public static JsonNode generateBasicJsonSchema() {
