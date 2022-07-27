@@ -124,7 +124,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
 
             # Even though the API is on DATE level, we still filter items compared to state cursor
-            if stream_state["date"] <= item["time"]:
+            if not "date" in stream_state or stream_state["date"] <= item["time"]:
                 yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:
