@@ -18,4 +18,4 @@ if __name__ == "__main__":
             "Something went wrong while normalizing the data moved in this sync "
             + "(failed to transform catalog into dbt project). See the logs for more details."
         )
-        raise AirbyteTracedException(str(e), msg, exception=e)
+        raise AirbyteTracedException.from_exception(e, message=msg)
