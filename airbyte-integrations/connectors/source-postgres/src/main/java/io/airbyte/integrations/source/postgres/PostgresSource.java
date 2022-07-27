@@ -34,8 +34,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.PostgresLSNUtil;
+import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -212,6 +211,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     }
   }
 
+  private List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
+    try {
+      return database.queryJsons(connection -> {
+        final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
+        final PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, config.get("replication_method").get("replication_slot").asText());
+        ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
+        ps.setString(3, config.get(JdbcUtils.DATABASE_KEY).asText());
+
+        LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
+
+        return ps;
+      }, sourceOperations::rowToJson);
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations(final JsonNode config)
       throws Exception {
@@ -220,17 +237,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
     if (PostgresUtils.isCdc(config)) {
       checkOperations.add(database -> {
-        final List<JsonNode> matchingSlots = database.queryJsons(connection -> {
-          final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";
-          final PreparedStatement ps = connection.prepareStatement(sql);
-          ps.setString(1, config.get("replication_method").get("replication_slot").asText());
-          ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
-          ps.setString(3, config.get(JdbcUtils.DATABASE_KEY).asText());
-
-          LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
-
-          return ps;
-        }, sourceOperations::rowToJson);
+        final List<JsonNode> matchingSlots = getReplicationSlot(database, config);
 
         if (matchingSlots.size() != 1) {
           throw new RuntimeException(
@@ -287,15 +294,18 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
 
-      PostgresLSNUtil postgresLSNUtil = new PostgresLSNUtil(database, sourceConfig);
-      JsonNode state =
+      final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
+      final JsonNode state =
           (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
               : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
-      boolean savedOffsetAfterReplicationSlotLSN = postgresLSNUtil.isSavedOffsetAfterReplicationSlotLSN(
+      final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
           catalog,
-          AirbyteFileOffsetBackingStore.initializeState(state),
-          sourceOperations::rowToJson);
+          state,
+          // We can assume that there will be only 1 replication slot cause before the sync starts for Postgres CDC,
+          // we run all the check operations and one of the check validates that the replication slot exists and has only 1 entry
+          getReplicationSlot(database, sourceConfig).get(0),
+          sourceConfig);
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset if before Replication slot LSN, Airbyte will trigger sync from scratch");

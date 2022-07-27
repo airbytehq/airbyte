@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import io.airbyte.commons.json.Jsons;
@@ -24,6 +28,5 @@ public class PostgresCustomLoader extends Loader {
   public Map<String, ?> getRawOffset() {
     return Collections.unmodifiableMap(offset);
   }
-
 
 }

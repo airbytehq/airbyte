@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,10 +24,10 @@ public class DebeziumPropertiesManager {
   private final ConfiguredAirbyteCatalog catalog;
 
   public DebeziumPropertiesManager(final Properties properties,
-      final JsonNode config,
-      final ConfiguredAirbyteCatalog catalog,
-      final AirbyteFileOffsetBackingStore offsetManager,
-      final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
+                                   final JsonNode config,
+                                   final ConfiguredAirbyteCatalog catalog,
+                                   final AirbyteFileOffsetBackingStore offsetManager,
+                                   final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     this.properties = properties;
     this.config = config;
     this.catalog = catalog;
@@ -91,7 +95,7 @@ public class DebeziumPropertiesManager {
         .map(ConfiguredAirbyteStream::getStream)
         .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[]{','}, "\\,"))
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
   }
 
