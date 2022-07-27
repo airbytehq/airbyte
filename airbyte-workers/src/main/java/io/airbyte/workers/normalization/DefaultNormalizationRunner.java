@@ -30,7 +30,6 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -157,7 +156,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         // picks up error logs from dbt
         String dbtErrorStack = String.join("\n\t", streamFactory.getDbtErrors());
 
-        if (!dbtErrorStack.equals("")) {
+        if (!"".equals(dbtErrorStack)) {
           AirbyteMessage dbtTraceMessage = new AirbyteMessage()
               .withType(Type.TRACE)
               .withTrace(new AirbyteTraceMessage()

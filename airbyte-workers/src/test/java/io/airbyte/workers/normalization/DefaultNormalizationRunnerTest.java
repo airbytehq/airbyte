@@ -39,8 +39,12 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class DefaultNormalizationRunnerTest {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunnerTest.class);
 
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
@@ -52,7 +56,7 @@ class DefaultNormalizationRunnerTest {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
       LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
     } catch (final IOException e) {
-      e.printStackTrace();
+      LOGGER.error(e.getMessage());
     }
   }
 
@@ -137,7 +141,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testClose() throws Exception {
+  void testClose() throws Exception {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
     final NormalizationRunner runner =
@@ -150,7 +154,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testFailure() throws Exception {
+  void testFailure() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
     final NormalizationRunner runner =
@@ -164,7 +168,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testFailureWithTraceMessage() throws Exception {
+  void testFailureWithTraceMessage() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
     String errorTraceString = """
@@ -188,7 +192,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testFailureWithDbtError() throws Exception {
+  void testFailureWithDbtError() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
     String dbtErrorString = """
@@ -215,7 +219,7 @@ class DefaultNormalizationRunnerTest {
   }
 
   @Test
-  public void testFailureWithDbtErrorJsonFormat() throws Exception {
+  void testFailureWithDbtErrorJsonFormat() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
     String dbtErrorString = """

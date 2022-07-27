@@ -95,7 +95,7 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
             case "info" -> logger.info(logMsg);
             case "warn" -> logger.warn(logMsg);
             case "error" -> logAndCollectErrorMessage(logMsg);
-            case "" -> logger.info(jsonLine.asText());  // this shouldn't happen but logging it to avoid hiding unexpected lines.
+            default -> logger.info(jsonLine.asText());  // this shouldn't happen but logging it to avoid hiding unexpected lines.
           }
         }
       } catch (final Exception e) {
@@ -118,9 +118,9 @@ public class NormalizationAirbyteStreamFactory implements AirbyteStreamFactory {
     switch (logMessage.getLevel()) {
       case FATAL, ERROR -> logger.error(logMessage.getMessage());
       case WARN -> logger.warn(logMessage.getMessage());
-      case INFO -> logger.info(logMessage.getMessage());
       case DEBUG -> logger.debug(logMessage.getMessage());
       case TRACE -> logger.trace(logMessage.getMessage());
+      default -> logger.info(logMessage.getMessage());
     }
   }
 
