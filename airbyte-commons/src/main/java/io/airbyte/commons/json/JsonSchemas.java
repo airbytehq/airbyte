@@ -189,8 +189,7 @@ public class JsonSchemas {
             // hit every node.
             traverseJsonSchemaInternal(jsonSchemaNode.get(JSON_SCHEMA_ITEMS_KEY), newPath, consumer);
           } else {
-            throw new IllegalArgumentException(
-                "malformed JsonSchema array type, must have items field in " + jsonSchemaNode);
+            log.warn("The array is missing an items field. The traversal is silently stopped.");
           }
         }
         case OBJECT_TYPE -> {
