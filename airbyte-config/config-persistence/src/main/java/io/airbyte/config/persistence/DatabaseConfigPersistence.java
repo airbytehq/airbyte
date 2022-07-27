@@ -47,6 +47,7 @@ import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.WorkspaceServiceAccount;
+import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -617,6 +618,9 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
     final List<ConfigWithMetadata<StandardSync>> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final StandardSync standardSync = DbConverter.buildStandardSync(record, connectionOperationIds(record.get(CONNECTION.ID)));
+      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
+        throw new RuntimeException("unexpected schedule type mismatch");
+      }
       standardSyncs.add(new ConfigWithMetadata<>(
           record.get(CONNECTION.ID).toString(),
           ConfigSchema.STANDARD_SYNC.name(),
@@ -1079,6 +1083,10 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
       final boolean isExistingConfig = ctx.fetchExists(select()
           .from(CONNECTION)
           .where(CONNECTION.ID.eq(standardSync.getConnectionId())));
+
+      if (ScheduleHelpers.isScheduleTypeMismatch(standardSync)) {
+        throw new RuntimeException("unexpected schedule type mismatch");
+      }
 
       if (isExistingConfig) {
         ctx.update(CONNECTION)
