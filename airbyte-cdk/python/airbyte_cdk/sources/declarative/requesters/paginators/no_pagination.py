@@ -9,6 +9,10 @@ from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Pagi
 
 
 class NoPagination(Paginator):
+    """
+    Pagination implementation that never returns a next page.
+    """
+
     def path(self) -> Optional[str]:
         return None
 
