@@ -9,7 +9,7 @@ import pyarrow as pa
 from pyarrow import json as pa_json
 
 from .abstract_file_parser import AbstractFileParser
-from .json_spec import JsonlFormat
+from .jsonl_spec import JsonlFormat
 
 
 class JsonlParser(AbstractFileParser):
