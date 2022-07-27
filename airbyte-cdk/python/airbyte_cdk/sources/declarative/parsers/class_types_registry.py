@@ -27,6 +27,7 @@ from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
 from airbyte_cdk.sources.declarative.transformations import RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddFields
 
@@ -59,4 +60,5 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "RecordSelector": RecordSelector,
     "RemoveFields": RemoveFields,
     "SimpleRetriever": SimpleRetriever,
+    "SubstreamSlicer": SubstreamSlicer,
 }
