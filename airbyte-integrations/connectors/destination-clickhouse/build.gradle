@@ -27,4 +27,5 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-workers')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestJavaImplementation libs.connectors.destination.testcontainers.clickhouse
+    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }
