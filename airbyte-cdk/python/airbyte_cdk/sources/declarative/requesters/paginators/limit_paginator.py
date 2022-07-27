@@ -16,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 class LimitPaginator(Paginator):
     """
-    Limit paginator.
-    Requests pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
     Examples:
         1.
@@ -128,7 +127,7 @@ class LimitPaginator(Paginator):
     def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
-    def _get_request_options(self, option_type) -> Mapping[str, Any]:
+    def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
         if self._page_token_option.inject_into == option_type:
             if option_type != RequestOptionType.path and self._token:

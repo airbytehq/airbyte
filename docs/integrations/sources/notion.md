@@ -75,6 +75,7 @@ The Notion connector should not run into Notion API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
+| 0.1.7   | 2022-07-26 | [15042](https://github.com/airbytehq/airbyte/pull/15042) | Update `additionalProperties` field to true from shared schemas |
 | 0.1.6   | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from schemas and spec |
 | 0.1.5   | 2022-07-14 | [14706](https://github.com/airbytehq/airbyte/pull/14706) | Added OAuth2.0 authentication                             |
 | 0.1.4   | 2022-07-07 | [14505](https://github.com/airbytehq/airbyte/pull/14505) | Fixed bug when normalization didn't run through           |
