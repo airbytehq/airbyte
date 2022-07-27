@@ -34,6 +34,8 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
+import io.airbyte.integrations.debezium.internals.PostgresLSNUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -73,14 +75,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
 
-  public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String DATABASE_KEY = "database";
-  public static final String HOST_KEY = "host";
-  public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String PASSWORD_KEY = "password";
-  public static final String PORT_KEY = "port";
-  public static final String SCHEMAS_KEY = "schemas";
-  public static final String USERNAME_KEY = "username";
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -293,17 +287,31 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
       LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
 
+      PostgresLSNUtil postgresLSNUtil = new PostgresLSNUtil(database, sourceConfig);
+      JsonNode state =
+          (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null) ? null
+              : Jsons.clone(stateManager.getCdcStateManager().getCdcState().getState());
+      boolean savedOffsetAfterReplicationSlotLSN = postgresLSNUtil.isSavedOffsetAfterReplicationSlotLSN(
+          Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
+          catalog,
+          AirbyteFileOffsetBackingStore.initializeState(state),
+          sourceOperations::rowToJson);
+
+      if (!savedOffsetAfterReplicationSlotLSN) {
+        LOGGER.warn("Saved offset if before Replication slot LSN, Airbyte will trigger sync from scratch");
+      }
+
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
           PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
-          new PostgresCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
+          new PostgresCdcSavedInfoFetcher(savedOffsetAfterReplicationSlotLSN ? stateManager.getCdcStateManager().getCdcState() : null),
           postgresCdcStateHandler,
           new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig),
           emittedAt);
-      if (streamsToSnapshot.isEmpty()) {
+      if (!savedOffsetAfterReplicationSlotLSN || streamsToSnapshot.isEmpty()) {
         return Collections.singletonList(incrementalIteratorSupplier.get());
       }
 
