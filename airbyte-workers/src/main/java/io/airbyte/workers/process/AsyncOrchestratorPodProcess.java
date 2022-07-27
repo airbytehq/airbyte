@@ -7,6 +7,7 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.workers.WorkerApp;
@@ -282,6 +283,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
+    final EnvConfigs envConfigs = new EnvConfigs();
+    final String metricClient = envConfigs.getMetricClient();
+    envVars.add(new EnvVar("METRIC_CLIENT", metricClient, null));
     envVars.add(new EnvVar(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, Boolean.toString(useStreamCapableState), null));
     final List<ContainerPort> containerPorts = KubePodProcess.createContainerPortList(portMap);
     containerPorts.add(new ContainerPort(WorkerApp.KUBE_HEARTBEAT_PORT, null, null, null, null));
