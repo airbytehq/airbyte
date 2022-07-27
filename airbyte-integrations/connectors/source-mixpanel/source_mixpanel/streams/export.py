@@ -84,7 +84,7 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "export"
 
-    def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def process_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """Export API return response in JSONL format but each line is a valid JSON object
         Raw item example:
             {
@@ -123,7 +123,9 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             if item.get("time") and item["time"].isdigit():
                 item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
 
-            yield item
+            # Even though the API is on DATE level, we still filter items compared to state cursor
+            if not "date" in stream_state or stream_state["date"] <= item["time"]:
+                yield item
 
     def get_json_schema(self) -> Mapping[str, Any]:
         """

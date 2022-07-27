@@ -407,7 +407,7 @@ def export_response():
         {
             "event": "Viewed E-commerce Page",
             "properties": {
-                "time": 1623860880,
+                "time": 1623860880, # 2021-06-16T16:28:00
                 "distinct_id": "1d694fd9-31a5-4b99-9eef-ae63112063ed",
                 "$browser": "Chrome",
                 "$browser_version": "91.0.4472.101",
@@ -426,10 +426,15 @@ def test_export_stream(requests_mock, export_response):
 
     stream = Export(authenticator=MagicMock())
     requests_mock.register_uri("GET", get_url_to_mock(stream), export_response)
-
+    stream_state = {"date" : "2021-06-16T17:00:00"}
     stream_slice = {"start_date": "2017-01-25T00:00:00Z", "end_date": "2017-02-25T00:00:00Z"}
     # read records for single slice
     records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
 
     records_length = sum(1 for _ in records)
     assert records_length == 1
+
+    # no records should be returned when state older than the record
+    records = stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice, stream_state=stream_state)
+    records_length = sum(1 for _ in records)
+    assert records_length == 0
