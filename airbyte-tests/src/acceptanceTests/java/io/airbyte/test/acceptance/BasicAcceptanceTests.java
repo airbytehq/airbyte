@@ -956,7 +956,7 @@ class BasicAcceptanceTests {
     // Force an older version of the Postgres connector that is not using per stream
     testHarness.updateSourceDefinitionVersion(source.getSourceDefinitionId(), POSTGRES_SOURCE_LEGACY_CONNECTOR_VERSION);
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(source.getSourceId());
-    final UUID destinationId = testHarness.createDestination().getDestinationId();
+    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final OperationRead operation = testHarness.createOperation();
     final String name = "test_reset_when_schema_is_modified_" + UUID.randomUUID();
 
