@@ -143,7 +143,7 @@ public class MySqlSslConnectionUtils {
 
   private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
     final Process pr = run.exec(cmd);
-    if (!pr.waitFor(120, TimeUnit.SECONDS)) {
+    if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);
     }
