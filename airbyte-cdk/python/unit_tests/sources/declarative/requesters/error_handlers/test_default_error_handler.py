@@ -102,6 +102,15 @@ SOME_BACKOFF_TIME = 60
             None,
         ),
         (
+            "test_200_fail_with_predicate",
+            HTTPStatus.OK,
+            HttpResponseFilter(action=ResponseAction.FAIL, error_message_contain="found"),
+            None,
+            {},
+            response_status.FAIL,
+            None,
+        ),
+        (
             "test_retry_403",
             HTTPStatus.FORBIDDEN,
             HttpResponseFilter(action=ResponseAction.RETRY, http_codes={HTTPStatus.FORBIDDEN}),
