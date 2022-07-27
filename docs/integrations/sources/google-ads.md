@@ -140,7 +140,8 @@ This source is constrained by whatever API limits are set for the Google Ads tha
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                      |
 |:---------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
-| `0.1.43` | 2022-07-12 | [14614](https://github.com/airbytehq/airbyte/pull/14614) | Update API version to `v11`, update `google-ads` to 17.0.0                                     |
+| `0.1.44` | 2022-07-27 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix data type `ad_group_criterion.topic.path` in `display_topics_performance_report`         |
+| `0.1.43` | 2022-07-12 | [14614](https://github.com/airbytehq/airbyte/pull/14614) | Update API version to `v11`, update `google-ads` to 17.0.0                                   |
 | `0.1.42` | 2022-06-08 | [13624](https://github.com/airbytehq/airbyte/pull/13624) | Update `google-ads` to 15.1.1, pin `protobuf==3.20.0` to work on MacOS M1 machines (AMD)     |
 | `0.1.41` | 2022-06-08 | [13618](https://github.com/airbytehq/airbyte/pull/13618) | Add missing dependency                                                                       |
 | `0.1.40` | 2022-06-02 | [13423](https://github.com/airbytehq/airbyte/pull/13423) | Fix the missing data [issue](https://github.com/airbytehq/airbyte/issues/12999)              |
