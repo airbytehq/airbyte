@@ -68,14 +68,14 @@ class BaseListing(abc.ABC):
 
 class SourceConnectorsDefinitions(BaseListing):
     api = source_definition_api.SourceDefinitionApi
-    fields_to_display = ["name", "dockerRepository", "dockerImageTag", "sourceDefinitionId"]
+    fields_to_display = ["name", "dockerRepository", "dockerImageTag", "sourceDefinitionId", "releaseStage"]
     list_field_in_response = "source_definitions"
     list_function_name = "list_source_definitions"
 
 
 class DestinationConnectorsDefinitions(BaseListing):
     api = destination_definition_api.DestinationDefinitionApi
-    fields_to_display = ["name", "dockerRepository", "dockerImageTag", "destinationDefinitionId"]
+    fields_to_display = ["name", "dockerRepository", "dockerImageTag", "destinationDefinitionId", "releaseStage"]
     list_field_in_response = "destination_definitions"
     list_function_name = "list_destination_definitions"
 

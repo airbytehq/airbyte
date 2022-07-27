@@ -19,6 +19,7 @@ from octavia_cli.get.resources import Source as UnmanagedSource
 from octavia_cli.get.resources import SourceDefinition as UnmanagedSourceDefinition
 from octavia_cli.list.listings import Connections as UnmanagedConnections
 from octavia_cli.list.listings import Destinations as UnmanagedDestinations
+from octavia_cli.list.listings import SourceConnectorsDefinitions as UnmanagedSourceDefinitions
 from octavia_cli.list.listings import Sources as UnmanagedSources
 
 
@@ -36,7 +37,7 @@ def build_help_message(resource_type: str) -> str:
     return f"Import an existing {resource_type} to manage it with octavia-cli."
 
 
-def import_source_definition_or_destination_definition(
+def import_source_or_destination_definition(
     api_client: airbyte_api_client.ApiClient,
     workspace_id: str,
     ResourceClass: Type[Union[UnmanagedSourceDefinition, UnmanagedDestinationDefinition]],
@@ -188,7 +189,7 @@ def connection(ctx: click.Context, resource: str):
 @requires_init
 def source_definition(ctx: click.Context, resource: str):
     click.echo(
-        import_source_definition_or_destination_definition(
+        import_source_or_destination_definition(
             ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSourceDefinition, resource, "source_definition"
         )
     )
@@ -200,9 +201,7 @@ def source_definition(ctx: click.Context, resource: str):
 @requires_init
 def destination_definition(ctx: click.Context, resource: str):
     click.echo(
-        import_source_definition_or_destination_definition(
-            ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedDestinationDefinition, resource
-        )
+        import_source_or_destination_definition(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedDestinationDefinition, resource)
     )
 
 
@@ -211,6 +210,9 @@ def destination_definition(ctx: click.Context, resource: str):
 @requires_init
 def all(ctx: click.Context):
     api_client, workspace_id = ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"]
+    for _, _, _, resource_id, release_stage in UnmanagedSourceDefinitions(api_client).get_listing():
+        if release_stage == "custom":
+            import_source_or_destination_definition(api_client, workspace_id, UnmanagedSourceDefinition, resource_id, "source_definition")
     for _, _, resource_id in UnmanagedSources(api_client, workspace_id).get_listing():
         import_source_or_destination(api_client, workspace_id, UnmanagedSource, resource_id)
     for _, _, resource_id in UnmanagedDestinations(api_client, workspace_id).get_listing():

@@ -81,7 +81,13 @@ class TestSourceConnectorsDefinitions:
         assert SourceConnectorsDefinitions.__base__ == BaseListing
         source_connectors_definition = SourceConnectorsDefinitions(mock_api_client)
         assert source_connectors_definition.api == source_definition_api.SourceDefinitionApi
-        assert source_connectors_definition.fields_to_display == ["name", "dockerRepository", "dockerImageTag", "sourceDefinitionId"]
+        assert source_connectors_definition.fields_to_display == [
+            "name",
+            "dockerRepository",
+            "dockerImageTag",
+            "sourceDefinitionId",
+            "releaseStage",
+        ]
         assert source_connectors_definition.list_field_in_response == "source_definitions"
         assert source_connectors_definition.list_function_name == "list_source_definitions"
 
@@ -96,6 +102,7 @@ class TestDestinationConnectorsDefinitions:
             "dockerRepository",
             "dockerImageTag",
             "destinationDefinitionId",
+            "releaseStage",
         ]
         assert destination_connectors_definition.list_field_in_response == "destination_definitions"
         assert destination_connectors_definition.list_function_name == "list_destination_definitions"

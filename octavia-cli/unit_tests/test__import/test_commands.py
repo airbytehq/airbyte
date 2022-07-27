@@ -26,6 +26,71 @@ def test_build_help_message():
     assert commands.build_help_message("source") == "Import an existing source to manage it with octavia-cli."
 
 
+@pytest.mark.parametrize(
+    "ResourceClass, resource_type",
+    [(commands.UnmanagedSourceDefinition, "source_definition"), (commands.UnmanagedDestinationDefinition, "destination_definition")],
+)
+def test_import_source_or_destination_definition(mocker, context_object, ResourceClass, resource_type):
+    mocker.patch.object(commands.click, "style")
+    mocker.patch.object(commands.click, "echo")
+    mocker.patch.object(commands, "get_json_representation")
+    mocker.patch.object(
+        commands.json,
+        "loads",
+        mocker.Mock(
+            return_value={
+                "name": "foo",
+                "docker_repository": "bar",
+                "docker_image_tag": "test_tag",
+                "documentation_url": "test_url",
+                f"{resource_type}_id": f"my_{resource_type}_id",
+            }
+        ),
+    )
+    mocker.patch.object(commands.definitions, "factory")
+    mocker.patch.object(commands.renderers, "DefinitionSpecificationRenderer")
+    expected_managed_resource, expected_state = (mocker.Mock(), mocker.Mock())
+    mocker.patch.object(
+        commands.resources,
+        "factory",
+        mocker.Mock(return_value=mocker.Mock(manage=mocker.Mock(return_value=(expected_managed_resource, expected_state)))),
+    )
+    commands.import_source_or_destination_definition(
+        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_get", resource_type
+    )
+    commands.get_json_representation.assert_called_with(
+        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], ResourceClass, "resource_to_get"
+    )
+    commands.json.loads.assert_called_with(commands.get_json_representation.return_value)
+    remote_configuration = commands.json.loads.return_value
+    commands.definitions.factory.assert_called_with(
+        resource_type, context_object["API_CLIENT"], context_object["WORKSPACE_ID"], remote_configuration[f"{resource_type}_id"]
+    )
+    commands.renderers.DefinitionSpecificationRenderer.assert_called_with("foo", commands.definitions.factory.return_value)
+    renderer = commands.renderers.DefinitionSpecificationRenderer.return_value
+
+    configuration = {
+        "docker_repository": remote_configuration["docker_repository"],
+        "docker_image_tag": remote_configuration["docker_image_tag"],
+        "documentation_url": remote_configuration["documentation_url"],
+    }
+
+    renderer.import_configuration.assert_called_with(project_path=".", configuration=configuration)
+    commands.resources.factory.assert_called_with(
+        context_object["API_CLIENT"], context_object["WORKSPACE_ID"], renderer.import_configuration.return_value
+    )
+    commands.resources.factory.return_value.manage.assert_called_with(remote_configuration[f"{resource_type}_id"])
+    commands.click.style.assert_has_calls(
+        [
+            mocker.call(
+                f"✅ - Imported {resource_type} {expected_managed_resource.name} in {renderer.import_configuration.return_value}. State stored in {expected_state.path}",
+                fg="green",
+            )
+        ]
+    )
+    assert commands.click.echo.call_count == 1
+
+
 @pytest.mark.parametrize("ResourceClass", [commands.UnmanagedSource, commands.UnmanagedDestination])
 def test_import_source_or_destination(mocker, context_object, ResourceClass):
     resource_type = ResourceClass.__name__.lower()
@@ -201,8 +266,14 @@ def test_import_commands(mocker, context_object, ResourceClass, command, import_
 def test_import_all(mocker, context_object):
     runner = CliRunner()
     mock_manager = mocker.Mock()
+    mocker.patch.object(commands, "import_source_or_destination_definition", mock_manager.import_source_or_destination_definition)
     mocker.patch.object(commands, "import_source_or_destination", mock_manager.import_source_or_destination)
     mocker.patch.object(commands, "import_connection", mock_manager.import_connection)
+    mocker.patch.object(
+        commands,
+        "UnmanagedSourceDefinitions",
+        return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "_", "_", "source_definition_resource_id", "custom")])),
+    )
     mocker.patch.object(
         commands, "UnmanagedSources", return_value=mocker.Mock(get_listing=mocker.Mock(return_value=[("_", "_", "source_resource_id")]))
     )
@@ -218,16 +289,24 @@ def test_import_all(mocker, context_object):
     )
     result = runner.invoke(commands.all, obj=context_object)
 
+    commands.UnmanagedSourceDefinitions.return_value.get_listing.assert_called_once()
     commands.UnmanagedSources.return_value.get_listing.assert_called_once()
     commands.UnmanagedDestinations.return_value.get_listing.assert_called_once()
     commands.UnmanagedConnections.return_value.get_listing.assert_called_once()
     assert result.exit_code == 0
-    assert mock_manager.mock_calls[0] == mocker.call.import_source_or_destination(
-        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedSource, "source_resource_id"
+    assert mock_manager.mock_calls[0] == mocker.call.import_source_or_destination_definition(
+        context_object["API_CLIENT"],
+        "workspace_id",
+        commands.UnmanagedSourceDefinition,
+        "source_definition_resource_id",
+        "source_definition",
     )
     assert mock_manager.mock_calls[1] == mocker.call.import_source_or_destination(
+        context_object["API_CLIENT"], "workspace_id", commands.UnmanagedSource, "source_resource_id"
+    )
+    assert mock_manager.mock_calls[2] == mocker.call.import_source_or_destination(
         context_object["API_CLIENT"], "workspace_id", commands.UnmanagedDestination, "destination_resource_id"
     )
-    assert mock_manager.mock_calls[2] == mocker.call.import_connection(
+    assert mock_manager.mock_calls[3] == mocker.call.import_connection(
         context_object["API_CLIENT"], "workspace_id", "connection_resource_id"
     )

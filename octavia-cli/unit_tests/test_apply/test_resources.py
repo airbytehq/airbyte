@@ -348,7 +348,7 @@ class TestSource:
         assert source.resource_id_field == "source_id"
         assert source.update_function_name == "update_source"
         assert source.resource_type == "source"
-        assert source.APPLY_PRIORITY == 0
+        assert source.APPLY_PRIORITY == 1
         assert source.create_payload == resources.SourceCreate(
             source.definition_id, source.configuration, source.workspace_id, source.resource_name
         )
@@ -409,7 +409,7 @@ class TestDestination:
         assert destination.resource_id_field == "destination_id"
         assert destination.update_function_name == "update_destination"
         assert destination.resource_type == "destination"
-        assert destination.APPLY_PRIORITY == 0
+        assert destination.APPLY_PRIORITY == 1
         assert destination.create_payload == resources.DestinationCreate(
             destination.workspace_id, destination.resource_name, destination.definition_id, destination.configuration
         )
@@ -575,7 +575,7 @@ class TestConnection:
         assert connection.update_function_name == "web_backend_update_connection"
         assert connection.resource_id_field == "connection_id"
         assert connection.resource_type == "connection"
-        assert connection.APPLY_PRIORITY == 1
+        assert connection.APPLY_PRIORITY == 2
 
         assert connection.update_payload == resources.WebBackendConnectionUpdate(
             connection_id=connection.resource_id, **connection.configuration

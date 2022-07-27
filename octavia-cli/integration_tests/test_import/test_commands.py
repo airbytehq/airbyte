@@ -166,11 +166,14 @@ def test_import_source_definition(expected_source_definition, context_object):
     assert source_definition.state.path in str(expected_state_path)
 
 
-def test_import_all(expected_source, expected_destination, expected_connection, context_object):
+def test_import_all(expected_source_definition, expected_source, expected_destination, expected_connection, context_object):
+    _, source_definition_expected_configuration_path, source_definition_expected_state_path = expected_source_definition
     _, source_expected_configuration_path, source_expected_state_path = expected_source
     _, destination_expected_configuration_path, destination_expected_state_path = expected_destination
     _, connection_expected_configuration_path, connection_expected_state_path = expected_connection
     paths_to_first_delete_and_then_check_existence = [
+        source_definition_expected_configuration_path,
+        source_definition_expected_state_path,
         source_expected_configuration_path,
         source_expected_state_path,
         destination_expected_configuration_path,

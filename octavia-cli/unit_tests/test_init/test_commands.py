@@ -11,7 +11,7 @@ from octavia_cli.init.commands import create_api_headers_configuration_file
 
 
 def test_directories_to_create():
-    assert commands.DIRECTORIES_TO_CREATE == {"connections", "destinations", "sources"}
+    assert commands.DIRECTORIES_TO_CREATE == {"connections", "destinations", "sources", "source_definitions", "destination_definitions"}
 
 
 @pytest.fixture
