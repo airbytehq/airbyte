@@ -2,3 +2,5 @@
 !Dockerfile
 !build
 !javabase.sh
+!newrelic.jar
+!newrelic.yml

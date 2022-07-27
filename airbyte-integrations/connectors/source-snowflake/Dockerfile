@@ -13,6 +13,9 @@ FROM airbyte/integration-base-java:dev
 WORKDIR /airbyte
 
 ENV APPLICATION source-snowflake
+ENV NEW_RELIC_APP_NAME=AIRBYTE
+ENV NEW_RELIC_LICENSE_KEY=f60a92f364d78b433e3c4b6b29115457FFFFNRAL
+ENV NEW_RELIC_LOG_FILE_NAME=STDOUT
 
 COPY --from=build /airbyte /airbyte
 

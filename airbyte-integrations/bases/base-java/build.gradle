@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'airbyte-docker'
+    id "de.undercouch.download" version "5.1.0"
 }
 
 dependencies {
@@ -25,4 +26,14 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base').airbyteDocker.outputs)
 
     testImplementation 'commons-lang:commons-lang:2.6'
+}
+
+task downloadZipFile(type: Download) {
+    src 'https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip'
+    dest new File(buildDir, 'newrelic-java')
+}
+
+task downloadAndUnzipFile(dependsOn: downloadZipFile, type: Copy) {
+    from zipTree(downloadZipFile.dest)
+    into buildDir
 }

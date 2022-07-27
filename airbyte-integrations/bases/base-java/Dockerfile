@@ -5,6 +5,8 @@ COPY --from=airbyte/integration-base:dev /airbyte /airbyte
 WORKDIR /airbyte
 
 COPY javabase.sh .
+COPY newrelic.jar .
+COPY newrelic.yml .
 
 # airbyte base commands
 ENV AIRBYTE_SPEC_CMD "/airbyte/javabase.sh --spec"
