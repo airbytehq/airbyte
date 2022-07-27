@@ -6,6 +6,7 @@ package io.airbyte.scheduler.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobCheckConnectionConfig;
@@ -198,28 +199,29 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
                                   final T jobOutput,
                                   final UUID connectorDefinitionId,
                                   final UUID workspaceId) {
-
-    switch (configType) {
-      case CHECK_CONNECTION_SOURCE -> jobErrorReporter.reportSourceCheckJobFailure(
-          connectorDefinitionId,
-          workspaceId,
-          ((ConnectorJobOutput) jobOutput).getFailureReason(),
-          (JobCheckConnectionConfig) jobConfig);
-      case CHECK_CONNECTION_DESTINATION -> jobErrorReporter.reportDestinationCheckJobFailure(
-          connectorDefinitionId,
-          workspaceId,
-          ((ConnectorJobOutput) jobOutput).getFailureReason(),
-          (JobCheckConnectionConfig) jobConfig);
-      case DISCOVER_SCHEMA -> jobErrorReporter.reportDiscoverJobFailure(
-          connectorDefinitionId,
-          workspaceId,
-          ((ConnectorJobOutput) jobOutput).getFailureReason(),
-          (JobDiscoverCatalogConfig) jobConfig);
-      case GET_SPEC -> jobErrorReporter.reportSpecJobFailure(
-          ((ConnectorJobOutput) jobOutput).getFailureReason(),
-          (JobGetSpecConfig) jobConfig);
-      default -> LOGGER.error("Tried to report job failure for type {}, but this job type is not supported", configType);
-    }
+    Exceptions.swallow(() -> {
+      switch (configType) {
+        case CHECK_CONNECTION_SOURCE -> jobErrorReporter.reportSourceCheckJobFailure(
+            connectorDefinitionId,
+            workspaceId,
+            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            (JobCheckConnectionConfig) jobConfig);
+        case CHECK_CONNECTION_DESTINATION -> jobErrorReporter.reportDestinationCheckJobFailure(
+            connectorDefinitionId,
+            workspaceId,
+            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            (JobCheckConnectionConfig) jobConfig);
+        case DISCOVER_SCHEMA -> jobErrorReporter.reportDiscoverJobFailure(
+            connectorDefinitionId,
+            workspaceId,
+            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            (JobDiscoverCatalogConfig) jobConfig);
+        case GET_SPEC -> jobErrorReporter.reportSpecJobFailure(
+            ((ConnectorJobOutput) jobOutput).getFailureReason(),
+            (JobGetSpecConfig) jobConfig);
+        default -> LOGGER.error("Tried to report job failure for type {}, but this job type is not supported", configType);
+      }
+    });
   }
 
 }

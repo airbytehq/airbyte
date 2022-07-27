@@ -18,8 +18,11 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.scheduler.persistence.WebUrlHelper;
+import io.airbyte.validation.json.JsonValidationException;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,13 +113,12 @@ public class JobErrorReporter {
   public void reportSourceCheckJobFailure(final UUID sourceDefinitionId,
                                           final UUID workspaceId,
                                           final FailureReason failureReason,
-                                          final JobCheckConnectionConfig jobCheckConfig) {
-    Exceptions.swallow(() -> {
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-      final Map<String, String> metadata = MoreMaps.merge(getSourceMetadata(sourceDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "check"));
-      reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.SOURCE), jobCheckConfig.getDockerImage(), metadata);
-    });
+                                          final JobCheckConnectionConfig jobCheckConfig)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final Map<String, String> metadata = MoreMaps.merge(getSourceMetadata(sourceDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "check"));
+    reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.SOURCE), jobCheckConfig.getDockerImage(), metadata);
   }
 
   /**
@@ -130,13 +132,12 @@ public class JobErrorReporter {
   public void reportDestinationCheckJobFailure(final UUID destinationDefinitionId,
                                                final UUID workspaceId,
                                                final FailureReason failureReason,
-                                               final JobCheckConnectionConfig jobCheckConfig) {
-    Exceptions.swallow(() -> {
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
-      final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
-      final Map<String, String> metadata = MoreMaps.merge(getDestinationMetadata(destinationDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "check"));
-      reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.DESTINATION), jobCheckConfig.getDockerImage(), metadata);
-    });
+                                               final JobCheckConnectionConfig jobCheckConfig)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
+    final Map<String, String> metadata = MoreMaps.merge(getDestinationMetadata(destinationDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "check"));
+    reportJobFailureReason(workspace, failureReason.withFailureOrigin(FailureOrigin.DESTINATION), jobCheckConfig.getDockerImage(), metadata);
   }
 
   /**
@@ -149,13 +150,12 @@ public class JobErrorReporter {
   public void reportDiscoverJobFailure(final UUID sourceDefinitionId,
                                        final UUID workspaceId,
                                        final FailureReason failureReason,
-                                       final JobDiscoverCatalogConfig jobDiscoverConfig) {
-    Exceptions.swallow(() -> {
-      final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
-      final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
-      final Map<String, String> metadata = MoreMaps.merge(getSourceMetadata(sourceDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "discover"));
-      reportJobFailureReason(workspace, failureReason, jobDiscoverConfig.getDockerImage(), metadata);
-    });
+                                       final JobDiscoverCatalogConfig jobDiscoverConfig)
+      throws JsonValidationException, ConfigNotFoundException, IOException {
+    final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
+    final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
+    final Map<String, String> metadata = MoreMaps.merge(getSourceMetadata(sourceDefinition), Map.of(CONNECTOR_COMMAND_META_KEY, "discover"));
+    reportJobFailureReason(workspace, failureReason, jobDiscoverConfig.getDockerImage(), metadata);
   }
 
   /**
@@ -165,14 +165,12 @@ public class JobErrorReporter {
    * @param jobSpecConfig - config for the Spec job
    */
   public void reportSpecJobFailure(final FailureReason failureReason, final JobGetSpecConfig jobSpecConfig) {
-    Exceptions.swallow(() -> {
-      final String dockerImage = jobSpecConfig.getDockerImage();
-      final String connectorRepository = dockerImage.split(":")[0];
-      final Map<String, String> metadata = Map.of(
-          CONNECTOR_REPOSITORY_META_KEY, connectorRepository,
-          CONNECTOR_COMMAND_META_KEY, "spec");
-      reportJobFailureReason(null, failureReason, dockerImage, metadata);
-    });
+    final String dockerImage = jobSpecConfig.getDockerImage();
+    final String connectorRepository = dockerImage.split(":")[0];
+    final Map<String, String> metadata = Map.of(
+        CONNECTOR_REPOSITORY_META_KEY, connectorRepository,
+        CONNECTOR_COMMAND_META_KEY, "spec");
+    reportJobFailureReason(null, failureReason, dockerImage, metadata);
   }
 
   private Map<String, String> getConnectionMetadata(final UUID workspaceId, final UUID connectionId) {
