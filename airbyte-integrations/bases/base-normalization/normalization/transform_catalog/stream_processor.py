@@ -17,13 +17,14 @@ from normalization.transform_catalog.table_name_registry import TableNameRegistr
 from normalization.transform_catalog.utils import (
     is_airbyte_column,
     is_array,
+    is_big_integer,
     is_boolean,
     is_combining_node,
     is_date,
     is_datetime,
     is_datetime_with_timezone,
     is_datetime_without_timezone,
-    is_integer,
+    is_long,
     is_number,
     is_object,
     is_simple_property,
@@ -458,11 +459,11 @@ where 1 = 1
         if "type" in definition:
             if is_array(definition["type"]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
-                if is_simple_property(definition.get("items", {"type": "object"}).get("type", "object")):
+                if is_simple_property(definition.get("items", {"type": "object"})):
                     json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif is_object(definition["type"]):
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
-            elif is_simple_property(definition["type"]):
+            elif is_simple_property(definition):
                 json_extract = jinja_call(f"json_extract_scalar({json_column_name}, {json_path}, {normalized_json_path})")
 
         return f"{json_extract} as {column_name}"
@@ -511,10 +512,12 @@ where 1 = 1
         elif is_object(definition["type"]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif is_boolean(definition["type"]):
+        elif is_boolean(definition["type"], definition):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
-        elif is_integer(definition["type"]):
+        elif is_big_integer(definition):
+            sql_type = jinja_call("type_very_large_integer()")
+        elif is_long(definition["type"], definition):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif is_number(definition["type"]):
             sql_type = jinja_call("dbt_utils.type_float()")
@@ -713,7 +716,7 @@ where 1 = 1
 
         if "type" not in definition:
             col = column_name
-        elif is_boolean(definition["type"]):
+        elif is_boolean(definition["type"], definition):
             col = f"boolean_to_string({column_name})"
         elif is_array(definition["type"]):
             col = f"array_to_string({column_name})"
@@ -1460,7 +1463,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
         elif "properties" in properties:
             # we found a properties object
             return {current: properties["properties"]}
-        elif "type" in properties and is_simple_property(properties["type"]):
+        elif "type" in properties and is_simple_property(properties):
             # we found a basic type
             return {current: {}}
         elif isinstance(properties, dict):

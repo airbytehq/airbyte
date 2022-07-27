@@ -37,6 +37,10 @@ union all
 union all
     select distinct 'pos_dedup_cdcx' as label, count(*) as row_count, 3 as expected_count
     from {{ ref('pos_dedup_cdcx') }}
+
+union all
+    select distinct 'types_testing' as label, count(*) as row_count, 3 as expected_count
+    from {{ ref('types_testing') }}
 )
 select *
 from table_row_counts

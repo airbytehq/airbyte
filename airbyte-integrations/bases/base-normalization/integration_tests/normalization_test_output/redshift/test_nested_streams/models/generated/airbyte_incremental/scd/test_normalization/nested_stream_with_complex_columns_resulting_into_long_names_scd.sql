@@ -1,7 +1,7 @@
 {{ config(
     sort = ["_airbyte_active_row", "_airbyte_unique_key_scd", "_airbyte_emitted_at"],
     unique_key = "_airbyte_unique_key_scd",
-    schema = "test_normalization",
+    schema = "test_normalization_xjvlg",
     post_hook = ["
                     {%
                     set final_table_relation = adapter.get_relation(
@@ -48,7 +48,7 @@
                     -- We have to have a non-empty query, so just do a noop delete
                     delete from {{ this }} where 1=0
                     {% endif %}
-                    ","drop view _airbyte_test_normalization.nested_stream_with_complex_columns_resulting_into_long_names_stg"],
+                    ","drop view _airbyte_test_normalization_xjvlg.nested_stream_with_complex_columns_resulting_into_long_names_stg"],
     tags = [ "top-level" ]
 ) }}
 -- depends_on: ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')
@@ -59,7 +59,7 @@ new_data as (
     select
         *
     from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')  }}
-    -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
+    -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization_xjvlg', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
     where 1 = 1
     {{ incremental_clause('_airbyte_emitted_at', this) }}
 ),
@@ -95,7 +95,7 @@ input_data as (
 input_data as (
     select *
     from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_stg')  }}
-    -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
+    -- nested_stream_with_complex_columns_resulting_into_long_names from {{ source('test_normalization_xjvlg', '_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names') }}
 ),
 {% endif %}
 scd_data as (

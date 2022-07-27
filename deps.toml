@@ -8,7 +8,7 @@ log4j = "2.17.1"
 slf4j = "1.7.30"
 lombok = "1.18.22"
 jooq = "3.13.4"
-junit-jupiter = "5.7.2"
+junit-jupiter = "5.8.2"
 postgresql = "42.3.5"
 connectors-testcontainers = "1.15.3"
 connectors-testcontainers-cassandra = "1.16.0"
@@ -79,7 +79,7 @@ junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.re
 junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit-jupiter" }
 mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version = "4.0.0" }
 assertj-core = { module = "org.assertj:assertj-core", version = "3.21.0" }
-junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.6.2" }
+junit-pioneer = { module = "org.junit-pioneer:junit-pioneer", version = "1.7.1" }
 findsecbugs-plugin = { module = "com.h3xstream.findsecbugs:findsecbugs-plugin", version = "1.11.0" }
 spotbugs-annotations = { module = "com.github.spotbugs:spotbugs-annotations", version = "4.6.0" }
 otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
