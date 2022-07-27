@@ -1,0 +1,7 @@
+definition_type: source_definition
+resource_name: pokeapi
+
+configuration:
+  docker_repository: airbyte/source-pokeapi
+  docker_image_tag: dev
+  documentation_url: "airbyte/source-pokeapi"

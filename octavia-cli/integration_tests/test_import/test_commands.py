@@ -18,6 +18,7 @@ from octavia_cli._import.commands import all as octavia_import_all
 from octavia_cli._import.commands import connection as octavia_import_connection
 from octavia_cli._import.commands import destination as octavia_import_destination
 from octavia_cli._import.commands import source as octavia_import_source
+from octavia_cli._import.commands import source_definition as octavia_import_source_definition
 from octavia_cli.apply.commands import apply as octavia_apply
 from octavia_cli.apply.resources import ResourceState
 from octavia_cli.apply.resources import factory as resource_factory
@@ -65,13 +66,23 @@ def initialized_project_directory(context_object):
                 resource.configuration_path,
                 ResourceState._get_path_from_configuration_and_workspace_id(resource.configuration_path, context_object["WORKSPACE_ID"]),
             )
+        if resource.resource_type == "source_definition":
+            source_definition_id, source_definition_configuration_path, source_definition_expected_state_path = (
+                resource.resource_id,
+                resource.configuration_path,
+                ResourceState._get_path_from_configuration_and_workspace_id(resource.configuration_path, context_object["WORKSPACE_ID"]),
+            )
         os.remove(configuration_file)
         os.remove(resource.state.path)
     yield (source_id, source_expected_configuration_path, source_expected_state_path), (
         destination_id,
         destination_expected_configuration_path,
         destination_expected_state_path,
-    ), (connection_id, connection_configuration_path, connection_expected_state_path)
+    ), (connection_id, connection_configuration_path, connection_expected_state_path), (
+        source_definition_id,
+        source_definition_configuration_path,
+        source_definition_expected_state_path,
+    )
     os.chdir(cwd)
     shutil.rmtree(dir_path)
 
@@ -103,6 +114,11 @@ def expected_connection(initialized_project_directory, context_object, expected_
     source.api_instance.delete_source(source.get_payload)
     destination = resource_factory(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], expected_destination[1])
     destination.api_instance.delete_destination(destination.get_payload)
+
+
+@pytest.fixture(scope="module")
+def expected_source_definition(initialized_project_directory):
+    yield initialized_project_directory[3]
 
 
 def test_import_source(expected_source, context_object):
@@ -137,6 +153,17 @@ def test_import_connection(expected_connection, context_object):
     assert connection.was_created  # Check if the remote resource is considered as managed by octavia and exists remotely
     assert connection.get_diff_with_remote_resource() == ""
     assert connection.state.path in str(expected_state_path)
+
+
+def test_import_source_definition(expected_source_definition, context_object):
+    source_definition_id, expected_configuration_path, expected_state_path = expected_source_definition
+    result = click_runner.invoke(octavia_import_source_definition, source_definition_id, obj=context_object)
+    assert result.exit_code == 0
+    assert Path(expected_configuration_path).is_file() and Path(expected_state_path).is_file()
+    source_definition = resource_factory(context_object["API_CLIENT"], context_object["WORKSPACE_ID"], expected_configuration_path)
+    assert source_definition.was_created  # Check if the remote resource is considered as managed by octavia and exists remotely
+    assert source_definition.get_diff_with_remote_resource() == ""
+    assert source_definition.state.path in str(expected_state_path)
 
 
 def test_import_all(expected_source, expected_destination, expected_connection, context_object):

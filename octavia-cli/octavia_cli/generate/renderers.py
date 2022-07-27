@@ -326,3 +326,18 @@ class ConnectionRenderer(BaseRenderer):
             with open(output_path, "wb") as f:
                 yaml.safe_dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True, encoding="utf-8")
         return output_path
+
+
+class DefinitionSpecificationRenderer(BaseRenderer):
+    TEMPLATE = JINJA_ENV.get_template("source_or_destination_definition.yaml.j2")
+
+    def __init__(self, resource_name: str, definition: BaseDefinition) -> None:
+        """Connector specification renderer constructor.
+        Args:
+            resource_name (str): Name of the source or destination definition.
+        """
+        super().__init__(resource_name)
+        self.definition = definition
+
+    def _render(self) -> str:
+        return self.TEMPLATE.render({"resource_name": self.resource_name, "definition": self.definition})

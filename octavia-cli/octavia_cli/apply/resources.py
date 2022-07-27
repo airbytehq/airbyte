@@ -14,6 +14,7 @@ import click
 import yaml
 from airbyte_api_client.api import (
     destination_api,
+    destination_definition_api,
     destination_definition_specification_api,
     source_api,
     source_definition_api,
@@ -27,9 +28,14 @@ from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamC
 from airbyte_api_client.model.connection_read import ConnectionRead
 from airbyte_api_client.model.connection_schedule import ConnectionSchedule
 from airbyte_api_client.model.connection_status import ConnectionStatus
+from airbyte_api_client.model.custom_source_definition_create import CustomSourceDefinitionCreate
+from airbyte_api_client.model.custom_source_definition_update import CustomSourceDefinitionUpdate
 from airbyte_api_client.model.destination_create import DestinationCreate
+from airbyte_api_client.model.destination_definition_create import DestinationDefinitionCreate
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
 from airbyte_api_client.model.destination_definition_id_with_workspace_id import DestinationDefinitionIdWithWorkspaceId
 from airbyte_api_client.model.destination_definition_specification_read import DestinationDefinitionSpecificationRead
+from airbyte_api_client.model.destination_definition_update import DestinationDefinitionUpdate
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
@@ -442,9 +448,15 @@ class SourceAndDestination(BaseResource):
     ):  # pragma: no cover
         pass
 
+    @abc.abstractmethod
+    def _get_definition_id_from_state(
+        self,
+    ) -> str:  # pragma: no cover
+        raise NotImplementedError
+
     @property
     def definition_id(self):
-        return self.raw_configuration["definition_id"]
+        return self.raw_configuration["definition_id"] or self._get_definition_id_from_state()
 
     @property
     def definition_image(self):
@@ -515,6 +527,17 @@ class Source(SourceAndDestination):
         payload = SourceDefinitionIdWithWorkspaceId(source_definition_id=self.definition_id, workspace_id=self.workspace_id)
         return api_instance.get_source_definition_specification(payload)
 
+    def _get_definition_id_from_state(self) -> str:
+        try:
+            source_definition_state = ResourceState.from_configuration_path_and_workspace(
+                self.raw_configuration["source_definition_configuration_path"], self.workspace_id
+            )
+        except FileNotFoundError:
+            raise MissingStateError(
+                f"Could not find the source definition state file for configuration {self.raw_configuration['source_definition_configuration_path']}."
+            )
+        return source_definition_state.resource_id
+
 
 class Destination(SourceAndDestination):
     api = destination_api.DestinationApi
@@ -559,9 +582,20 @@ class Destination(SourceAndDestination):
         payload = DestinationDefinitionIdWithWorkspaceId(destination_definition_id=self.definition_id, workspace_id=self.workspace_id)
         return api_instance.get_destination_definition_specification(payload)
 
+    def _get_definition_id_from_state(self) -> str:
+        try:
+            destination_definition_state = ResourceState.from_configuration_path_and_workspace(
+                self.raw_configuration["destination_definition_configuration_path"], self.workspace_id
+            )
+        except FileNotFoundError:
+            raise MissingStateError(
+                f"Could not find the destination definition state file for configuration {self.raw_configuration['destination_definition_configuration_path']}."
+            )
+        return destination_definition_state.resource_id
+
 
 class Connection(BaseResource):
-    # Set to 1 to create connection after source or destination.
+    # Set to 2 to create connection after source or destination.
     APPLY_PRIORITY = 2
     api = web_backend_api.WebBackendApi
     create_function_name = "web_backend_create_connection"
@@ -791,13 +825,6 @@ class Connection(BaseResource):
 
 class SourceAndDestinationDefinition(BaseResource):
     @property
-    @abc.abstractmethod
-    def definition(
-        self,
-    ):  # pragma: no cover
-        pass
-
-    @property
     def docker_repository(self):
         return self.configuration["docker_repository"]
 
@@ -819,15 +846,16 @@ class SourceAndDestinationDefinition(BaseResource):
 class SourceDefinition(SourceAndDestinationDefinition):
 
     api = source_definition_api.SourceDefinitionApi
-    create_function_name = "create_source_definition"
+    create_function_name = "create_custom_source_definition"
     resource_id_field = "source_definition_id"
     get_function_name = "get_source_definition"
-    update_function_name = "update_source_definition"
+    update_function_name = "update_custom_source_definition"
     resource_type = "source_definition"
 
     @property
     def create_payload(self):
-        return SourceDefinitionCreate(self.resource_name, self.docker_repository, self.docker_image_tag, self.documentation_url)
+        definition = SourceDefinitionCreate(self.resource_name, self.docker_repository, self.docker_image_tag, self.documentation_url)
+        return CustomSourceDefinitionCreate(self.workspace_id, definition)
 
     @property
     def get_payload(self) -> Optional[SourceDefinitionIdRequestBody]:
@@ -840,16 +868,40 @@ class SourceDefinition(SourceAndDestinationDefinition):
 
     @property
     def update_payload(self):
-        return SourceDefinitionUpdate(source_definition_id=self.resource_id, docker_image_tag=self.docker_image_tag)
+        definition = SourceDefinitionUpdate(source_definition_id=self.resource_id, docker_image_tag=self.docker_image_tag)
+        return CustomSourceDefinitionUpdate(self.workspace_id, definition)
+
+
+class DestinationDefinition(SourceAndDestinationDefinition):
+
+    api = destination_definition_api.DestinationDefinitionApi
+    create_function_name = "create_destination_definition"
+    resource_id_field = "destination_definition_id"
+    get_function_name = "get_destination_definition"
+    update_function_name = "update_destination_definition"
+    resource_type = "destination_definition"
 
     @property
-    def definition(self):
-        pass
+    def create_payload(self):
+        return DestinationDefinitionCreate(self.resource_name, self.docker_repository, self.docker_image_tag, self.documentation_url)
+
+    @property
+    def get_payload(self) -> Optional[DestinationDefinitionIdRequestBody]:
+        """Defines the payload to retrieve the remote source definition if a state exists.
+        Returns:
+            DestinationDefinitionIdRequestBody: The DestinationDefinitionIdRequestBody payload.
+        """
+        if self.state is not None:
+            return DestinationDefinitionIdRequestBody(self.state.resource_id)
+
+    @property
+    def update_payload(self):
+        return DestinationDefinitionUpdate(destination_definition_id=self.resource_id, docker_image_tag=self.docker_image_tag)
 
 
 def factory(
     api_client: airbyte_api_client.ApiClient, workspace_id: str, configuration_path: str
-) -> Union[Source, Destination, Connection, SourceDefinition]:
+) -> Union[Source, Destination, Connection, SourceDefinition, DestinationDefinition]:
     """Create resource object according to the definition type field in their YAML configuration.
     Args:
         api_client (airbyte_api_client.ApiClient): The Airbyte API client.
@@ -870,5 +922,7 @@ def factory(
         return Connection(api_client, workspace_id, raw_configuration, configuration_path)
     if raw_configuration["definition_type"] == "source_definition":
         return SourceDefinition(api_client, workspace_id, raw_configuration, configuration_path)
+    if raw_configuration["definition_type"] == "destination_definition":
+        return DestinationDefinition(api_client, workspace_id, raw_configuration, configuration_path)
     else:
         raise NotImplementedError(f"Resource {raw_configuration['definition_type']} was not yet implemented")

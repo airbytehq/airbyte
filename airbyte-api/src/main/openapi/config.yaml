@@ -410,6 +410,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CustomSourceDefinitionCreate"
+        required: true
       responses:
         "200":
           description: Successful operation
@@ -453,6 +454,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CustomSourceDefinitionUpdate"
+        required: true
       responses:
         "200":
           description: Successful operation

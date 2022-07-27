@@ -14,7 +14,9 @@ from octavia_cli.generate import definitions, renderers
 from octavia_cli.get.commands import get_json_representation
 from octavia_cli.get.resources import Connection as UnmanagedConnection
 from octavia_cli.get.resources import Destination as UnmanagedDestination
+from octavia_cli.get.resources import DestinationDefinition as UnmanagedDestinationDefinition
 from octavia_cli.get.resources import Source as UnmanagedSource
+from octavia_cli.get.resources import SourceDefinition as UnmanagedSourceDefinition
 from octavia_cli.list.listings import Connections as UnmanagedConnections
 from octavia_cli.list.listings import Destinations as UnmanagedDestinations
 from octavia_cli.list.listings import Sources as UnmanagedSources
@@ -27,11 +29,37 @@ class MissingResourceDependencyError(click.UsageError):
 def build_help_message(resource_type: str) -> str:
     """Helper function to build help message consistently for all the commands in this module.
     Args:
-        resource_type (str): source, destination or connection
+        resource_type (str): source, destination, connection, source_definition or destination_definition
     Returns:
         str: The generated help message.
     """
     return f"Import an existing {resource_type} to manage it with octavia-cli."
+
+
+def import_source_definition_or_destination_definition(
+    api_client: airbyte_api_client.ApiClient,
+    workspace_id: str,
+    ResourceClass: Type[Union[UnmanagedSourceDefinition, UnmanagedDestinationDefinition]],
+    resource_to_get: str,
+    resource_type: str,
+) -> str:
+    remote_configuration = json.loads(get_json_representation(api_client, workspace_id, ResourceClass, resource_to_get))
+
+    definition = definitions.factory(resource_type, api_client, workspace_id, remote_configuration[f"{resource_type}_id"])
+    renderer = renderers.DefinitionSpecificationRenderer(remote_configuration["name"], definition)
+
+    configuration = {
+        "docker_repository": remote_configuration["docker_repository"],
+        "docker_image_tag": remote_configuration["docker_image_tag"],
+        "documentation_url": remote_configuration["documentation_url"],
+    }
+
+    new_configuration_path = renderer.import_configuration(project_path=".", configuration=configuration)
+    managed_resource, state = resources.factory(api_client, workspace_id, new_configuration_path).manage(
+        remote_configuration[f"{resource_type}_id"]
+    )
+    message = f"✅ - Imported {resource_type} {managed_resource.name} in {new_configuration_path}. State stored in {state.path}"
+    click.echo(click.style(message, fg="green"))
 
 
 def import_source_or_destination(
@@ -154,6 +182,30 @@ def connection(ctx: click.Context, resource: str):
     click.echo(import_connection(ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], resource))
 
 
+@_import.command(cls=OctaviaCommand, name="source_definition", help=build_help_message("source_definition"))
+@click.argument("resource", type=click.STRING)
+@click.pass_context
+@requires_init
+def source_definition(ctx: click.Context, resource: str):
+    click.echo(
+        import_source_definition_or_destination_definition(
+            ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedSourceDefinition, resource, "source_definition"
+        )
+    )
+
+
+@_import.command(cls=OctaviaCommand, name="destination_definition", help=build_help_message("destination_definition"))
+@click.argument("resource", type=click.STRING)
+@click.pass_context
+@requires_init
+def destination_definition(ctx: click.Context, resource: str):
+    click.echo(
+        import_source_definition_or_destination_definition(
+            ctx.obj["API_CLIENT"], ctx.obj["WORKSPACE_ID"], UnmanagedDestinationDefinition, resource
+        )
+    )
+
+
 @_import.command(cls=OctaviaCommand, name="all", help=build_help_message("all"))
 @click.pass_context
 @requires_init
@@ -167,7 +219,7 @@ def all(ctx: click.Context):
         import_connection(api_client, workspace_id, resource_id)
 
 
-AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection]
+AVAILABLE_COMMANDS: List[click.Command] = [source, destination, connection, source_definition]
 
 
 def add_commands_to_list():

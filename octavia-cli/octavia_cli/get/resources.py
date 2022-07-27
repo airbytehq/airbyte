@@ -8,9 +8,13 @@ from typing import Optional, Union
 
 import airbyte_api_client
 import click
-from airbyte_api_client.api import destination_api, source_api, web_backend_api
+from airbyte_api_client.api import destination_api, destination_definition_api, source_api, source_definition_api, web_backend_api
+from airbyte_api_client.model.destination_definition_id_request_body import DestinationDefinitionIdRequestBody
+from airbyte_api_client.model.destination_definition_read import DestinationDefinitionRead
 from airbyte_api_client.model.destination_id_request_body import DestinationIdRequestBody
 from airbyte_api_client.model.destination_read import DestinationRead
+from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
+from airbyte_api_client.model.source_definition_read import SourceDefinitionRead
 from airbyte_api_client.model.source_id_request_body import SourceIdRequestBody
 from airbyte_api_client.model.source_read import SourceRead
 from airbyte_api_client.model.web_backend_connection_read import WebBackendConnectionRead
@@ -94,7 +98,7 @@ class BaseResource(abc.ABC):
 
     def _find_by_resource_name(
         self,
-    ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
+    ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead, SourceDefinitionRead, DestinationDefinitionRead]:
         """Retrieve a remote resource from its name by listing the available resources on the Airbyte instance.
 
         Raises:
@@ -102,7 +106,7 @@ class BaseResource(abc.ABC):
             DuplicateResourceError:  Raised if multiple resources were found with the current resource_name.
 
         Returns:
-            Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
+            Union[WebBackendConnectionRead, SourceRead, DestinationRead, SourceDefinitionRead, DestinationDefinitionRead]: The remote resource model instance.
         """
 
         api_response = self._list_for_workspace_fn(self.api_instance, self.list_for_workspace_payload)
@@ -120,19 +124,21 @@ class BaseResource(abc.ABC):
 
     def _find_by_resource_id(
         self,
-    ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
+    ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead, SourceDefinitionRead, DestinationDefinitionRead]:
         """Retrieve a remote resource from its id by calling the get endpoint of the resource type.
 
         Returns:
-            Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
+            Union[WebBackendConnectionRead, SourceRead, DestinationRead, SourceDefinitionRead, DestinationDefinitionRead]: The remote resource model instance.
         """
         return self._get_fn(self.api_instance, self.get_payload)
 
-    def get_remote_resource(self) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead]:
+    def get_remote_resource(
+        self,
+    ) -> Union[WebBackendConnectionRead, SourceRead, DestinationRead, SourceDefinitionRead, DestinationDefinitionRead]:
         """Retrieve a remote resource with a resource_name or a resource_id
 
         Returns:
-            Union[WebBackendConnectionRead, SourceRead, DestinationRead]: The remote resource model instance.
+            Union[WebBackendConnectionRead, SourceRead, DestinationRead, SourceDefinitionRead, DestinationDefinitionRead]: The remote resource model instance.
         """
         if self.resource_id is not None:
             return self._find_by_resource_id()
@@ -191,3 +197,33 @@ class Connection(BaseResource):
             WebBackendConnectionRequestBody: The WebBackendConnectionRequestBody payload.
         """
         return WebBackendConnectionRequestBody(with_refreshed_catalog=False, connection_id=self.resource_id)
+
+
+class SourceDefinition(BaseResource):
+    name = "source_definition"
+    api = source_definition_api.SourceDefinitionApi
+    get_function_name = "get_source_definition"
+    list_for_workspace_function_name = "list_source_definitions_for_workspace"
+
+    @property
+    def get_payload(self) -> Optional[SourceDefinitionIdRequestBody]:
+        """Defines the payload to retrieve the remote source definition according to its resource_id.
+        Returns:
+            SourceDefinitionIdRequestBody: The SourceDefinitionIdRequestBody payload.
+        """
+        return SourceDefinitionIdRequestBody(self.resource_id)
+
+
+class DestinationDefinition(BaseResource):
+    name = "destination_definition"
+    api = destination_definition_api.DestinationDefinitionApi
+    get_function_name = "get_destination_definition"
+    list_for_workspace_function_name = "list_destination_definitions_for_workspace"
+
+    @property
+    def get_payload(self) -> Optional[DestinationDefinitionIdRequestBody]:
+        """Defines the payload to retrieve the remote destination definition according to its resource_id.
+        Returns:
+            DestinationDefinitionIdRequestBody: The DestinationDefinitionIdRequestBody payload.
+        """
+        return DestinationDefinitionIdRequestBody(self.resource_id)

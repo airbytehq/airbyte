@@ -120,7 +120,7 @@ class DefinitionSpecification(BaseDefinition):
 
 class SourceDefinitionSpecification(DefinitionSpecification):
     api = source_definition_specification_api.SourceDefinitionSpecificationApi
-    type = "source"
+    type = "source_definition"
     get_function_name = "get_source_definition_specification"
 
     @property
@@ -130,7 +130,7 @@ class SourceDefinitionSpecification(DefinitionSpecification):
 
 class DestinationDefinitionSpecification(DefinitionSpecification):
     api = destination_definition_specification_api.DestinationDefinitionSpecificationApi
-    type = "destination"
+    type = "destination_definition"
     get_function_name = "get_destination_definition_specification"
 
     @property
@@ -144,10 +144,13 @@ def factory(
     if definition_type == "source":
         definition = SourceDefinition(api_client, definition_id)
         specification = SourceDefinitionSpecification(api_client, workspace_id, definition_id)
+        definition.specification = specification
     elif definition_type == "destination":
         definition = DestinationDefinition(api_client, definition_id)
         specification = DestinationDefinitionSpecification(api_client, workspace_id, definition_id)
+        definition.specification = specification
+    elif definition_type == "source_definition":
+        definition = SourceDefinitionSpecification
     else:
         raise ValueError(f"{definition_type} does not exist")
-    definition.specification = specification
     return definition
