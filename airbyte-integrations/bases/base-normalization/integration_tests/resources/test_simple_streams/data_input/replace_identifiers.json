@@ -43,8 +43,10 @@
     { "!= HKD_special___characters": "!= \"HKD_special___characters\"" }
   ],
   "clickhouse": [
-    { "HKD_special___characters": "HKD_special___characters_1" },
     { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" },
-    { "HKD@spéçiäl & characters": "hkd_special___characters" }
+    { "HKD@spéçiäl & characters": "HKD_special___characters" },
+    {
+      "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "column___with__quotes is not null"
+    }
   ]
 }
