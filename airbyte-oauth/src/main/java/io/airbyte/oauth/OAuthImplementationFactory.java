@@ -63,6 +63,7 @@ public class OAuthImplementationFactory {
         .put("airbyte/destination-google-sheets", new DestinationGoogleSheetsOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-snowflake", new SourceSnowflakeOAuthFlow(configRepository, httpClient))
         .put("airbyte/source-okta", new OktaOAuthFlow(configRepository, httpClient))
+        .put("airbyte/source-paypal-transaction", new PayPalTransactionOAuthFlow(configRepository, httpClient))
         .build();
   }
 
