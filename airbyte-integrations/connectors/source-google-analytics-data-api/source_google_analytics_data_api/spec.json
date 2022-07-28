@@ -13,7 +13,6 @@
       "date_ranges_start_date",
       "date_ranges_end_date"
     ],
-    "additionalProperties": false,
     "properties": {
       "property_id": {
         "type": "string",
