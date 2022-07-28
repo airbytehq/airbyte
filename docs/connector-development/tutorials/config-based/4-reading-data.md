@@ -25,49 +25,6 @@ The configured catalog declares the sync modes supported by the stream \(full re
 See the [catalog tutorial](https://docs.airbyte.io/understanding-airbyte/beginners-guide-to-catalog) for more information.
 
 Let's define the stream schema in `source-exchange-rates-tutorial/source_exchange_rates_tutorial/schemas/rates.json`
-Note that the code sample below only contains CAD, EUR, and USD for simplicity. Other currencies can be added to the schema as needed.
-
-```
-{
-  "type": "object",
-  "required": [
-    "base",
-    "date",
-    "rates"
-  ],
-  "properties": {
-    "base": {
-      "type": "string"
-    },
-    "date": {
-      "type": "string"
-    },
-    "rates": {
-      "type": "object",
-      "properties": {
-        "CAD": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "EUR": {
-          "type": [
-            "null",
-            "number"
-          ]
-        },
-        "USD": {
-          "type": [
-            "null",
-            "number"
-          ]
-        }
-      }
-    }
-  }
-}
-```
 
 You can download the JSON file describing the output schema with all currencies [here](https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-cdk/python/docs/tutorials/http_api_source_assets/exchange_rates.json) for convenience and place it in `schemas/`.
 
@@ -109,7 +66,7 @@ Here is the complete connector definition for convenience:
 ```
 schema_loader:
   type: JsonSchema
-  file_path: "./source_exchange_rates_tutorial/schemas/{{ name }}.json"
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
   extractor:
@@ -124,30 +81,25 @@ requester:
     request_parameters:
       access_key: "{{ config.access_key }}"
       base: "{{ config.base }}"
-  authenticator:
-    type: TokenAuthenticator
-    token: "{{ config['api_key'] }}"
 retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
-    ref: "*ref(selector)"
+    $ref: "*ref(selector)"
   paginator:
     type: NoPagination
-  state:
-    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 rates_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "rates"
   primary_key: "date"
   schema_loader:
-    ref: "*ref(schema_loader)"
+    $ref: "*ref(schema_loader)"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path: "/latest"
 streams:
   - "*ref(rates_stream)"

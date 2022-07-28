@@ -26,28 +26,27 @@ retriever:
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
-    ref: "*ref(selector)"
+    $ref: "*ref(selector)"
   paginator:
     type: NoPagination
-  state:
-    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 customers_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "customers"
   primary_key: "id"
   schema_loader:
-    ref: "*ref(schema_loader)"
+    $ref: "*ref(schema_loader)"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path: TODO "your_endpoint_path"
 streams:
   - "*ref(customers_stream)"
 check:
   type: CheckStream
   stream_names: ["customers_stream"]
+
 ```
 
 Let's fill this out these TODOs with the information found in the [Exchange Rates API docs](https://exchangeratesapi.io/documentation/)
@@ -136,7 +135,7 @@ connectionSpecification:
   required:
     - access_key
     - base
-  additionalProperties: false
+  additionalProperties: true
   properties:
     access_key:
       type: string

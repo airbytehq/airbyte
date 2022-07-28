@@ -19,7 +19,7 @@ connectionSpecification:
     - start_date
     - access_key
     - base
-  additionalProperties: false
+  additionalProperties: true
   properties:
     start_date:
       type: string
@@ -59,7 +59,7 @@ retriever:
   requester:
       path:
         type: "InterpolatedString"
-        string: "{{ stream_slice.start_date }}"
+        string: "{{ config.start_date }}"
         default: "/latest"
 ```
 
@@ -114,15 +114,17 @@ And we'll update the path to point to the `stream_slice`'s start_date
 ```
 requester:
   ref: "*ref(requester)"
-  path: "{{ stream_slice.start_date }}"
+  path:
+    type: "InterpolatedString"
+    string: "{{ stream_slice.start_date }}"
+    default: "/latest"
 ```
 
 The full connector definition should now look like `./source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`:
 
 ```
 schema_loader:
-  class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-  name: "rates"
+  type: JsonSchema
   file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
@@ -148,15 +150,16 @@ stream_slicer:
     datetime_format: "%Y-%m-%d %H:%M:%S.%f"
   step: "1d"
   datetime_format: "%Y-%m-%d"
-  cursor_field: "{{ options.cursor_field }}"
 retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
-    ref: "*ref(selector)"
+    $ref: "*ref(selector)"
   paginator:
     type: NoPagination
+  stream_slicer:
+    $ref: "*ref(stream_slicer)"
 rates_stream:
   type: DeclarativeStream
   $options:
@@ -164,13 +167,11 @@ rates_stream:
     cursor_field: "date"
   primary_key: "date"
   schema_loader:
-    ref: "*ref(schema_loader)"
+    $ref: "*ref(schema_loader)"
   retriever:
-    ref: "*ref(retriever)"
-    stream_slicer:
-      ref: "*ref(stream_slicer)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path:
         type: "InterpolatedString"
         string: "{{ stream_slice.start_date }}"
@@ -252,4 +253,4 @@ There shouldn't be any data read if the state is today's date:
 
 ## Next steps:
 
-Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com/connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte).
+Next, we'll run the [Source Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
