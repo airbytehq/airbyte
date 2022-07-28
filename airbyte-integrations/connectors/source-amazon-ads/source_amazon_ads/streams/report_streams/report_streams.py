@@ -14,6 +14,7 @@ from urllib.parse import urljoin
 
 import backoff
 import pendulum
+import pytz
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -277,7 +278,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return max(self._start_date, today.subtract(days=60))
         start_date = stream_state.get(self.STATE_START_DATE_KEY)
         if start_date:
-            start_date = pendulum.from_format(start_date, self.DATE_FORMAT).date()
+            start_date = pendulum.parse(start_date).astimezone(pytz.timezone(profile.timezone)).date()
             return max(start_date, today.subtract(days=60))
         return today
 
@@ -316,7 +317,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         profileId = str(latest_data["profileId"])
-        current_stream_state.setdefault(profileId, {})[self.cursor_field] = latest_data[self.cursor_field]
+        updated_state = latest_data[self.cursor_field]
+        stream_state_value = current_stream_state.get(profileId, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(profileId, {})[self.cursor_field] = updated_state
+
+        # store "start_date" in state
+        if not self._start_date and not current_stream_state.get(self.STATE_START_DATE_KEY):
+            current_stream_state[self.STATE_START_DATE_KEY] = pendulum.now("UTC").replace(microsecond=0).to_iso8601_string()
+
         return current_stream_state
 
     @abstractmethod
