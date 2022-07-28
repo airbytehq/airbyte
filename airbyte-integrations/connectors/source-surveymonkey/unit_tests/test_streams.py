@@ -70,30 +70,6 @@ def test_user_defined_retry(requests_mock):
     assert list(records) == records_survey_ids
 
 
-# def test_cache_usage(requests_mock):
-#     cache_file_name = source_surveymonkey.streams.cache_file.name
-#     requests_mock.get("https://api.surveymonkey.com/v3/surveys", [
-#           {'status_code': 200,
-#           'headers': {'X-Ratelimit-App-Global-Minute-Remaining': '100'},
-#           'json': response_survey_ids}
-#     ])
-#
-#     stream = SurveyIds(**args_mock)
-#     records = stream.read_records(sync_mode=SyncMode.full_refresh)
-#     assert list(records) == records_survey_ids
-#
-#     records = stream.read_records(sync_mode=SyncMode.full_refresh)
-#     assert list(records) == records_survey_ids
-#
-#     assert requests_mock.call_count == 2
-#
-#
-#     with vcr.use_cassette(cache_file_name, record_mode=None, serializer="json", decode_compressed_response=True) as cass:
-#         # assert cass.requests == 0
-#         # assert cass.responses == 0
-#         assert cass.responses_of('https://api.surveymonkey.com/v3/surveys') == 0
-
-
 def test_slices_from_survey_ids(requests_mock):
     requests_mock.get("https://api.surveymonkey.com/v3/surveys", json=response_survey_ids)
     stream_slices = Surveys(**args_mock).stream_slices()
