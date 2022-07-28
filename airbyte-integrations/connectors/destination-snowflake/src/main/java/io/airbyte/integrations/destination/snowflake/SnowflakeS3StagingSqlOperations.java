@@ -19,7 +19,6 @@ import io.airbyte.integrations.destination.staging.StagingOperations;
 import java.util.Base64;
 import java.util.Base64.Encoder;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;

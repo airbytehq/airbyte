@@ -19,6 +19,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 class DefaultErrorHandler(ErrorHandler):
     """
     Default error handler.
+
     By default, the handler will only retry server errors (HTTP 5XX) and too many requests (HTTP 429) with exponential backoff.
 
     If the response is successful, then return SUCCESS
@@ -111,13 +112,11 @@ class DefaultErrorHandler(ErrorHandler):
 
     def should_retry(self, response: requests.Response) -> ResponseStatus:
         request = response.request
-        if response.ok:
-            return response_status.SUCCESS
+
         if request not in self._last_request_to_attempt_count:
             self._last_request_to_attempt_count = {request: 1}
         else:
             self._last_request_to_attempt_count[request] += 1
-
         for response_filter in self._response_filters:
             filter_action = response_filter.matches(response)
             if filter_action is not None:
@@ -125,6 +124,8 @@ class DefaultErrorHandler(ErrorHandler):
                     return ResponseStatus(ResponseAction.RETRY, self._backoff_time(response, self._last_request_to_attempt_count[request]))
                 else:
                     return ResponseStatus(filter_action)
+        if response.ok:
+            return response_status.SUCCESS
         # Fail if the response matches no filters
         return response_status.FAIL
 
