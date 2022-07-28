@@ -43,7 +43,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
                     MinMaxDatetime(datetime="2021-01-01", datetime_format="%Y-%m-%d"),
                     MinMaxDatetime(datetime="2021-01-03", datetime_format="%Y-%m-%d"),
                     "1d",
-                    InterpolatedString(""),
+                    InterpolatedString.create("", options={}),
                     "%Y-%m-%d",
                     None,
                 ),

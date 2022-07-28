@@ -48,6 +48,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         stream_state_field_start: Optional[str] = None,
         stream_state_field_end: Optional[str] = None,
         lookback_window: Optional[InterpolatedString] = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param start_datetime:
@@ -61,6 +62,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         :param stream_state_field_start: stream slice start time field
         :param stream_state_field_end: stream slice end time field
         :param lookback_window: how many days before start_datetime to read data for
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
@@ -70,11 +72,11 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._end_datetime = end_datetime
         self._step = self._parse_timedelta(step)
         self._config = config
-        self._cursor_field = InterpolatedString.create(cursor_field)
+        self._cursor_field = InterpolatedString.create(cursor_field, options=options)
         self._start_time_option = start_time_option
         self._end_time_option = end_time_option
-        self._stream_slice_field_start = InterpolatedString.create(stream_state_field_start or "start_date")
-        self._stream_slice_field_end = InterpolatedString.create(stream_state_field_end or "end_date")
+        self._stream_slice_field_start = InterpolatedString.create(stream_state_field_start or "start_date", options=options)
+        self._stream_slice_field_end = InterpolatedString.create(stream_state_field_end or "end_date", options=options)
         self._cursor = None  # tracks current datetime
         self._cursor_end = None  # tracks end of current stream slice
         self._lookback_window = lookback_window
