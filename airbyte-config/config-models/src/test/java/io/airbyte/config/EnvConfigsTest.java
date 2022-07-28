@@ -358,7 +358,9 @@ class EnvConfigsTest {
   @Test
   @DisplayName("Should parse constant tags")
   void testDDConstantTags() {
-    assertTrue(config.getDDConstantTags().isEmpty());
+    assertEquals(List.of(), config.getDDConstantTags());
+
+    envMap.put(EnvConfigs.DD_CONSTANT_TAGS, " ");
     assertEquals(List.of(), config.getDDConstantTags());
 
     envMap.put(EnvConfigs.DD_CONSTANT_TAGS,"airbyte_instance:dev,k8s-cluster:eks-dev");
