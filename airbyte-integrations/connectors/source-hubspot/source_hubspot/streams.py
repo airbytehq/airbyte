@@ -855,9 +855,9 @@ class CRMSearchStream(IncrementalStream, ABC):
 
         return list(stream_records.values()), raw_response
 
-    def _read_associations(self, records: Iterable, identifiers: Iterable[Union[int, str]]) -> Iterable[Mapping[str, Any]]:
+    def _read_associations(self, records: Iterable) -> Iterable[Mapping[str, Any]]:
         records_by_pk = {record[self.primary_key]: record for record in records}
-        identifiers = list(identifiers)
+        identifiers = list(map(lambda x: x[self.primary_key], records))
         associations_stream = AssociationsStream(
             api=self._api, start_date=self._start_date, credentials=self._credentials, parent_stream=self, identifiers=identifiers
         )
@@ -892,8 +892,7 @@ class CRMSearchStream(IncrementalStream, ABC):
                     stream_state=stream_state,
                     stream_slice=stream_slice,
                 )
-                identifiers = map(lambda x: x[self.primary_key], records)
-                records = self._read_associations(records, identifiers)
+                records = self._read_associations(records)
             else:
                 records, raw_response = self._read_stream_records(
                     stream_slice=stream_slice,
