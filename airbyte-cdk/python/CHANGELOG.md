@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.68
+- Replace parse-time string interpolation with run-time interpolation in YAML-based sources
+
 ## 0.1.67
 - Add support declarative token authenticator.
 
