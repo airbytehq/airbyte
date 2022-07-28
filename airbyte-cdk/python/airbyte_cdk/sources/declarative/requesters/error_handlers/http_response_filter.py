@@ -11,6 +11,10 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 
 
 class HttpResponseFilter:
+    """
+    Filter to select HttpResponses
+    """
+
     TOO_MANY_REQUESTS_ERRORS = {429}
     DEFAULT_RETRIABLE_ERRORS = set([x for x in range(500, 600)]).union(TOO_MANY_REQUESTS_ERRORS)
 
@@ -18,7 +22,6 @@ class HttpResponseFilter:
         self, action: Union[ResponseAction, str], *, http_codes: Set[int] = None, error_message_contain: str = None, predicate: str = ""
     ):
         """
-
         :param action: action to execute if a request matches
         :param http_codes: http code of matching requests
         :param error_message_contain: error substring of matching requests
@@ -32,10 +35,16 @@ class HttpResponseFilter:
         self._action = action
 
     @property
-    def action(self):
+    def action(self) -> ResponseAction:
+        """The ResponseAction to execute when a response matches the filter"""
         return self._action
 
     def matches(self, response: requests.Response) -> Optional[ResponseAction]:
+        """
+        Apply the filter on the response and return the action to execute if it matches
+        :param response: The HTTP response to evaluate
+        :return: The action to execute. None if the response does not match the filter
+        """
         if (
             response.status_code in self._http_codes
             or (self._response_matches_predicate(response))
@@ -52,4 +61,5 @@ class HttpResponseFilter:
         if not self._error_message_contains:
             return False
         else:
-            return self._error_message_contains in HttpStream.parse_response_error_message(response)
+            error_message = HttpStream.parse_response_error_message(response)
+            return error_message and self._error_message_contains in error_message
