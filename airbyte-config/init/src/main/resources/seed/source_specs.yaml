@@ -2955,9 +2955,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.24"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.25"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Analytics V4 Spec"
@@ -3085,9 +3085,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.0.1"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.0.2"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Analytics Data API Spec"
@@ -3100,7 +3100,6 @@
       - "metrics"
       - "date_ranges_start_date"
       - "date_ranges_end_date"
-      additionalProperties: false
       properties:
         property_id:
           type: "string"
