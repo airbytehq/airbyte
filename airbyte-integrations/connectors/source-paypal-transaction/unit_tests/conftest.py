@@ -6,7 +6,7 @@ import json
 import pathlib
 
 import pytest
-from source_paypal_transaction.source import PayPalOauth2Authenticator
+from source_paypal_transaction.source import PayPalOauth2Authenticator, SourcePaypalTransaction
 
 
 @pytest.fixture()
@@ -95,3 +95,8 @@ def authenticator_instance(prod_config):
 @pytest.fixture()
 def new_format_authenticator_instance(new_prod_config):
     return PayPalOauth2Authenticator(new_prod_config)
+
+
+@pytest.fixture()
+def source_instance():
+    return SourcePaypalTransaction()
