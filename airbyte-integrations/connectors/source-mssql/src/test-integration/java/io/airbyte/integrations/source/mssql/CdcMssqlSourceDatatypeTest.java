@@ -42,7 +42,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         .put(JdbcUtils.DATABASE_KEY, DB_NAME)
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication", replicationConfig)
+        .put("replication_method", replicationConfig)
         .build());
 
     dslContext = DSLContextFactory.create(

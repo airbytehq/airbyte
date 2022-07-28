@@ -27,11 +27,11 @@ class MssqlCdcHelperTest {
     assertTrue(MssqlCdcHelper.isCdc(LEGACY_CDC_CONFIG));
 
     // new replication method config since version 0.4.0
-    final JsonNode newNonCdc = Jsons.jsonNode(Map.of("replication",
+    final JsonNode newNonCdc = Jsons.jsonNode(Map.of("replication_method",
         Jsons.jsonNode(Map.of("replication_type", "STANDARD"))));
     assertFalse(MssqlCdcHelper.isCdc(newNonCdc));
 
-    final JsonNode newCdc = Jsons.jsonNode(Map.of("replication",
+    final JsonNode newCdc = Jsons.jsonNode(Map.of("replication_method",
         Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "Existing and New",
