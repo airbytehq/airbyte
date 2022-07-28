@@ -24,7 +24,7 @@ class CursorPaginationStrategy(PaginationStrategy):
         config: Config,
         stop_condition: Optional[InterpolatedBoolean] = None,
         decoder: Optional[Decoder] = None,
-        **options,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param cursor_value: template string evaluating to the cursor value
