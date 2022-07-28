@@ -463,6 +463,7 @@ public interface Configs {
 
   /**
    * Set constant tags to be attached to all metrics. Useful for distinguishing between environments.
+   * Example: airbyte_instance:dev,k8s-cluster:aws-dev
    */
   List<String> getDDConstantTags();
 

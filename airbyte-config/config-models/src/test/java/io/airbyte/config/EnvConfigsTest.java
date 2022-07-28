@@ -355,7 +355,16 @@ class EnvConfigsTest {
     envMap.put(EnvConfigs.PUBLISH_METRICS, "");
     assertFalse(config.getPublishMetrics());
   }
+  @Test
+  @DisplayName("Should parse constant tags")
+  void testDDConstantTags() {
+    assertTrue(config.getDDConstantTags().isEmpty());
 
+    envMap.put(EnvConfigs.DD_CONSTANT_TAGS,"airbyte_instance:dev,k8s-cluster:eks-dev");
+    assertTrue(config.getDDConstantTags().contains("airbyte_instance:dev"));
+    assertTrue(config.getDDConstantTags().contains("k8s-cluster:eks-dev"));
+    assertEquals(2, config.getDDConstantTags().size());
+  }
   @Nested
   @DisplayName("CheckJobResourceSettings")
   class CheckJobResourceSettings {
