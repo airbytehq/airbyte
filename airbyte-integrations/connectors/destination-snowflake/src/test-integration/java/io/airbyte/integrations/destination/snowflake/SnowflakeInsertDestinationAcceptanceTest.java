@@ -23,6 +23,7 @@ import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -186,6 +187,13 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     ((ObjectNode) deprecatedStyleConfig).set("password", password);
 
     assertEquals(Status.SUCCEEDED, runCheckWithCatchedException(deprecatedStyleConfig));
+  }
+
+  @Test
+  void testCheckWithKeyPairAuth() throws Exception {
+    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
+    final AirbyteConnectionStatus check = new SnowflakeDestination().check(credentialsJsonString);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
   }
 
   /**
