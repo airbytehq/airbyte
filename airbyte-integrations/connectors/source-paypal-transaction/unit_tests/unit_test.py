@@ -2,28 +2,31 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json
-import pathlib
 from datetime import datetime, timedelta
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from dateutil.parser import isoparse
-from pytest import fixture, raises
-from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions
+from pytest import raises
+from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions, PayPalOauth2Authenticator
 
 
-@fixture(autouse=True)
-def time_sleep_mock(mocker):
-    time_mock = mocker.patch("time.sleep", lambda x: None)
-    yield time_mock
+def test_minimum_allowed_start_date():
+    start_date = now() - timedelta(days=10 * 365)
+    stream = Transactions(authenticator=NoAuth(), start_date=start_date)
+    assert stream.start_date != start_date
 
 
-@fixture(autouse=True)
-def transactions(request):
-    file = pathlib.Path(request.node.fspath.strpath)
-    transaction = file.with_name("transaction.json")
-    with transaction.open() as fp:
-        return json.load(fp)
+def test_transactions_transform_function():
+    start_date = now() - timedelta(days=10 * 365)
+    stream = Transactions(authenticator=NoAuth(), start_date=start_date)
+    transformer = stream.transformer
+    input_data = {"transaction_amount": "123.45", "transaction_id": "111", "transaction_status": "done"}
+    schema = stream.get_json_schema()
+    schema['properties'] = {"transaction_amount": {"type": "number"}, "transaction_id": {"type": "integer"}, "transaction_status": {"type": "string"}}
+    transformer.transform(input_data, schema)
+    expected_data = {"transaction_amount": 123.45, "transaction_id": 111, "transaction_status": "done"}
+    assert input_data == expected_data
 
 
 def test_get_field():
@@ -309,3 +312,12 @@ def test_max_records_in_response_reached(transactions, requests_mock):
     one_day_slice = {"start_date": "2021-07-01T12:00:00+00:00", "end_date": "2021-07-01T12:00:00+00:00"}
     with raises(Exception):
         assert next(balance.read_records(sync_mode="any", stream_slice=one_day_slice))
+
+
+def test_get_last_refreshed_datetime(requests_mock, prod_config, api_endpoint):
+    authenticator = PayPalOauth2Authenticator(prod_config)
+    stream = Balances(authenticator=authenticator, **prod_config)
+    requests_mock.post(f"{api_endpoint}/v1/oauth2/token", json={"access_token": "test_access_token", "expires_in": 12345})
+    url = f'{api_endpoint}/v1/reporting/balances' + '?as_of_time=2021-07-01T00%3A00%3A00%2B00%3A00'
+    requests_mock.get(url, json={})
+    assert not stream.get_last_refreshed_datetime(SyncMode.full_refresh)
