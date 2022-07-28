@@ -11,6 +11,7 @@ import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
@@ -31,10 +32,16 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SourceHandler {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(SourceHandler.class);
 
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
@@ -44,6 +51,7 @@ public class SourceHandler {
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
+  private final BackwardCompatibilityHandler backwardCompatibilityHandler = new BackwardCompatibilityHandler();
 
   SourceHandler(final ConfigRepository configRepository,
                 final SecretsRepositoryReader secretsRepositoryReader,
@@ -276,6 +284,35 @@ public class SourceHandler {
   private void validateSource(final ConnectorSpecification spec, final JsonNode implementationJson)
       throws JsonValidationException {
     validator.ensure(spec.getConnectionSpecification(), implementationJson);
+  }
+
+  public void validateAndUpdateSourceConnections(SourceDefinitionUpdate sourceDefinitionUpdate, StandardSourceDefinition newSource)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
+        .stream()
+        .filter(x -> x.getSourceDefinitionId().equals(sourceDefinitionUpdate.getSourceDefinitionId()))
+        .collect(Collectors.toList());
+    final String dockerRepository = newSource.getDockerRepository();
+    final String dockerImageTag = newSource.getDockerImageTag();
+
+    for (SourceConnection sourceConnection : sourceConnections) {
+      final JsonNode configuration = sourceConnection.getConfiguration();
+      final JsonNode fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(sourceConnection.getSourceId()).getConfiguration();
+      final JsonNode connectionSpecification = newSource.getSpec().getConnectionSpecification();
+      final Set<String> validationResult = validator.validate(connectionSpecification, fullConfig);
+
+      if (!validationResult.isEmpty()) {
+        LOGGER.warn(String.format("Verification error(s) occurred during source definition update for %s:%s. Errors: %s ", dockerRepository,
+            dockerImageTag, validationResult));
+        try {
+          backwardCompatibilityHandler.updateSourceConnectionForBackwardCompatibility(dockerRepository, sourceConnection, configuration,
+              connectionSpecification, validationResult, configRepository);
+        } catch (JsonValidationException | IOException e) {
+          LOGGER.error(String.format("Failed to update source connection for %s. Errors: %s ", sourceConnection.getName(), e));
+          throw new RuntimeException(e);
+        }
+      }
+    }
   }
 
   private ConnectorSpecification getSpecFromSourceId(final UUID sourceId)

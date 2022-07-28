@@ -54,21 +54,21 @@
         "order": 7,
         "oneOf": [
           {
-            "title": "Standard",
+            "title": "STANDARD",
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
             "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
-                "const": "Standard",
-                "enum": ["Standard"],
-                "default": "Standard",
+                "const": "STANDARD",
+                "enum": ["STANDARD"],
+                "default": "STANDARD",
                 "order": 0
               }
             }
           },
           {
-            "title": "CDC",
+            "title": "Logical Replication (CDC)",
             "description": "CDC uses the Binlog to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
             "required": ["method"],
             "properties": {
