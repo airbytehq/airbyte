@@ -23,11 +23,6 @@ class MinMaxDatetime:
         max_datetime: Union[InterpolatedString, str] = "",
         **options: Optional[Mapping[str, Any]],
     ):
-        self._datetime_interpolator = InterpolatedString.create(datetime, options=options)
-        self._datetime_format = datetime_format
-        self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=options) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=options) if max_datetime else None
         """
         :param datetime: InterpolatedString or string representing the datetime in the format specified by `datetime_format`
         :param datetime_format: Format of the datetime passed as argument
