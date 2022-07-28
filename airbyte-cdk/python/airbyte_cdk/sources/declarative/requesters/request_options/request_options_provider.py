@@ -20,14 +20,13 @@ class RequestOptionsProvider(ABC):
     """
 
     @abstractmethod
-    def request_params(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
+        pass
 
     @abstractmethod
     def request_headers(
