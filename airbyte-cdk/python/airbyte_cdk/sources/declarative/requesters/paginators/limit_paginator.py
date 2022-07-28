@@ -127,6 +127,10 @@ class LimitPaginator(Paginator):
     def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
+
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
         if self._page_token_option.inject_into == option_type:
