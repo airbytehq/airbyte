@@ -129,6 +129,7 @@ Now that you have set up the HubSpot source connector, check out the following H
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.78  | 2022-07-28 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fix to fetch associations when using incremental mode                                                                                          |
 | 0.1.77  | 2022-07-26 | [15035](https://github.com/airbytehq/airbyte/pull/15035) | Make PropertyHistory stream read historic data not limited to 30 days                                                                          |
 | 0.1.76  | 2022-07-25 | [14999](https://github.com/airbytehq/airbyte/pull/14999) | Partially revert changes made in v0.1.75                                                                                                       |
 | 0.1.75  | 2022-07-18 | [14744](https://github.com/airbytehq/airbyte/pull/14744) | Remove override of private CDK method                                                                                                          |
