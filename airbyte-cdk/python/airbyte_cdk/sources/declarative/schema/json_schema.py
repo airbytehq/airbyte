@@ -17,7 +17,7 @@ class JsonSchema(SchemaLoader):
         """
         :param file_path: The path to the json file describing the schema
         :param config: The user-provided configuration as specified by the source's spec
-        :param kwargs: Additional arguments to pass to the string interpolation if needed
+        :param options: Additional arguments to pass to the string interpolation if needed
         """
         self._file_path = file_path
         self._config = config
