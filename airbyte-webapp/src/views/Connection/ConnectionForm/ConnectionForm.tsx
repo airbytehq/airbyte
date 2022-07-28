@@ -5,7 +5,7 @@ import { useToggle } from "react-use";
 import { useDebounce } from "react-use";
 import styled from "styled-components";
 
-import { ControlLabels, DropDown, DropDownRow, H5, Input, Label } from "components";
+import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
 import { FormChangeTracker } from "components/FormChangeTracker";
 
 import { ConnectionSchedule, NamespaceDefinitionType, WebBackendConnectionRead } from "core/request/AirbyteClient";
@@ -27,10 +27,6 @@ import {
   useFrequencyDropdownData,
   useInitialValues,
 } from "./formConfig";
-
-const EditLaterMessage = styled(Label)`
-  margin: -20px 0 29px;
-`;
 
 const ConnectorLabel = styled(ControlLabels)`
   max-width: 328px;
@@ -54,36 +50,49 @@ export const FlexRow = styled.div`
 `;
 
 export const LeftFieldCol = styled.div`
-  width: 470px;
+  flex: 1;
+  max-width: 640px;
+  padding-right: 30px;
 `;
 
 export const RightFieldCol = styled.div`
-  width: 300px;
+  flex: 1;
+  max-width: 300px;
 `;
 
 const StyledSection = styled.div`
-  padding: 15px 20px;
+  padding: 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 
-  & > div:not(:last-child) {
-    margin-bottom: 20px;
+  &:not(:last-child) {
+    box-shadow: 0 1px 0 rgba(139, 139, 160, 0.25);
   }
 `;
 
-const Header = styled(H5)`
-  margin-bottom: 16px;
+interface SectionProps {
+  title?: React.ReactNode;
+}
+
+const LabelHeading = styled(H5)`
+  line-height: 16px;
+  display: inline;
 `;
 
-const Section: React.FC<{ title: React.ReactNode }> = (props) => (
-  <StyledSection>
-    <Header bold>{props.title}</Header>
-    {props.children}
-  </StyledSection>
+const Section: React.FC<SectionProps> = ({ title, children }) => (
+  <Card>
+    <StyledSection>
+      {title && <H5 bold>{title}</H5>}
+      {children}
+    </StyledSection>
+  </Card>
 );
 
 const FormContainer = styled(Form)`
-  & > ${StyledSection}:not(:last-child) {
-    box-shadow: 0 1px 0 rgba(139, 139, 160, 0.25);
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 export interface ConnectionFormSubmitResult {
@@ -193,7 +202,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           <FormChangeTracker changed={dirty} formId={formId} />
           <FormValuesChangeTracker onChangeValues={onChangeValues} />
           {!isEditMode && (
-            <StyledSection>
+            <Section>
               <Field name="name">
                 {({ field, meta }: FieldProps<string>) => (
                   <FlexRow>
@@ -201,9 +210,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                       <ConnectorLabel
                         nextLine
                         error={!!meta.error && meta.touched}
-                        label={formatMessage({
-                          id: "form.connectionName",
-                        })}
+                        label={
+                          <LabelHeading bold>
+                            <FormattedMessage id="form.connectionName" />
+                          </LabelHeading>
+                        }
                         message={formatMessage({
                           id: "form.connectionName.message",
                         })}
@@ -223,7 +234,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
                   </FlexRow>
                 )}
               </Field>
-            </StyledSection>
+            </Section>
           )}
           <Section title={<FormattedMessage id="connection.transfer" />}>
             <Field name="schedule">
@@ -256,104 +267,113 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
               )}
             </Field>
           </Section>
-          <Section title={<FormattedMessage id="connection.streams" />}>
-            <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
-              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
-            </span>
-            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
-              <Field name="namespaceFormat">
-                {({ field, meta }: FieldProps<string>) => (
+          <Card>
+            <StyledSection>
+              <H5 bold>
+                <FormattedMessage id="connection.streams" />
+              </H5>
+              <span style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+              </span>
+              {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
+                <Field name="namespaceFormat">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <FlexRow>
+                      <LeftFieldCol>
+                        <NamespaceFormatLabel
+                          nextLine
+                          error={!!meta.error}
+                          label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
+                          message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        />
+                      </LeftFieldCol>
+                      <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                        <Input
+                          {...field}
+                          error={!!meta.error}
+                          placeholder={formatMessage({
+                            id: "connectionForm.namespaceFormat.placeholder",
+                          })}
+                        />
+                      </RightFieldCol>
+                    </FlexRow>
+                  )}
+                </Field>
+              )}
+              <Field name="prefix">
+                {({ field }: FieldProps<string>) => (
                   <FlexRow>
                     <LeftFieldCol>
-                      <NamespaceFormatLabel
+                      <ControlLabels
                         nextLine
-                        error={!!meta.error}
-                        label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                        label={formatMessage({
+                          id: "form.prefix",
+                        })}
+                        message={formatMessage({
+                          id: "form.prefix.message",
+                        })}
                       />
                     </LeftFieldCol>
-                    <RightFieldCol style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+                    <RightFieldCol>
                       <Input
                         {...field}
-                        error={!!meta.error}
+                        type="text"
                         placeholder={formatMessage({
-                          id: "connectionForm.namespaceFormat.placeholder",
+                          id: `form.prefix.placeholder`,
                         })}
+                        data-testid="prefixInput"
+                        style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                       />
                     </RightFieldCol>
                   </FlexRow>
                 )}
               </Field>
-            )}
-            <Field name="prefix">
-              {({ field }: FieldProps<string>) => (
-                <FlexRow>
-                  <LeftFieldCol>
-                    <ControlLabels
-                      nextLine
-                      label={formatMessage({
-                        id: "form.prefix",
-                      })}
-                      message={formatMessage({
-                        id: "form.prefix.message",
-                      })}
-                    />
-                  </LeftFieldCol>
-                  <RightFieldCol>
-                    <Input
-                      {...field}
-                      type="text"
-                      placeholder={formatMessage({
-                        id: `form.prefix.placeholder`,
-                      })}
-                      data-testid="prefixInput"
-                      style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
-                    />
-                  </RightFieldCol>
-                </FlexRow>
-              )}
-            </Field>
-            <Field
-              name="syncCatalog.streams"
-              destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
-              additionalControl={additionalSchemaControl}
-              component={SchemaField}
-              mode={mode}
+            </StyledSection>
+            <StyledSection>
+              <Field
+                name="syncCatalog.streams"
+                destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}
+                additionalControl={additionalSchemaControl}
+                component={SchemaField}
+                mode={mode}
+              />
+            </StyledSection>
+          </Card>
+          {mode === "edit" && (
+            <EditControls
+              isSubmitting={isSubmitting}
+              dirty={dirty}
+              resetForm={() => {
+                resetForm();
+                onCancel?.();
+              }}
+              successMessage={successMessage}
+              errorMessage={errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null}
+              enableControls={canSubmitUntouchedForm}
             />
-            {mode === "edit" && (
-              <EditControls
+          )}
+          {mode === "create" && (
+            <>
+              <OperationsSection
+                wrapper={({ children }) => (
+                  <Card>
+                    <StyledSection>{children}</StyledSection>
+                  </Card>
+                )}
+                destDefinition={destDefinition}
+                onStartEditTransformation={toggleEditingTransformation}
+                onEndEditTransformation={toggleEditingTransformation}
+              />
+              <CreateControls
+                additionBottomControls={additionBottomControls}
                 isSubmitting={isSubmitting}
-                dirty={dirty}
-                resetForm={() => {
-                  resetForm();
-                  onCancel?.();
-                }}
-                successMessage={successMessage}
+                isValid={isValid && !editingTransformation}
                 errorMessage={
                   errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
                 }
-                enableControls={canSubmitUntouchedForm}
               />
-            )}
-            {mode === "create" && (
-              <>
-                <OperationsSection
-                  destDefinition={destDefinition}
-                  onStartEditTransformation={toggleEditingTransformation}
-                  onEndEditTransformation={toggleEditingTransformation}
-                />
-                <EditLaterMessage message={<FormattedMessage id="form.dataSync.message" />} />
-                <CreateControls
-                  additionBottomControls={additionBottomControls}
-                  isSubmitting={isSubmitting}
-                  isValid={isValid && !editingTransformation}
-                  errorMessage={
-                    errorMessage || !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                  }
-                />
-              </>
-            )}
-          </Section>
+            </>
+          )}
         </FormContainer>
       )}
     </Formik>
