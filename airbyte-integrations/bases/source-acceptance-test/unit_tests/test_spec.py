@@ -8,6 +8,8 @@ import pytest
 from airbyte_cdk.models import ConnectorSpecification
 from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
+from .conftest import does_not_raise
+
 
 @pytest.mark.parametrize(
     "connector_spec, should_fail",
@@ -567,3 +569,39 @@ def test_validate_oauth_flow(connector_spec, expected_error):
             t.test_oauth_flow_parameters(connector_spec)
     else:
         t.test_oauth_flow_parameters(connector_spec)
+
+
+@pytest.mark.parametrize(
+    "connector_spec, expectation",
+    [
+        (ConnectorSpecification(connectionSpecification={}), does_not_raise()),
+        (ConnectorSpecification(connectionSpecification={"type": "object", "additionalProperties": True}), does_not_raise()),
+        (ConnectorSpecification(connectionSpecification={"type": "object", "additionalProperties": False}), pytest.raises(AssertionError)),
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "additionalProperties": True,
+                    "properties": {"my_object": {"type": "object", "additionalProperties": "foo"}},
+                }
+            ),
+            pytest.raises(AssertionError),
+        ),
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "additionalProperties": True,
+                    "properties": {
+                        "my_oneOf_object": {"type": "object", "oneOf": [{"additionalProperties": True}, {"additionalProperties": False}]}
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+        ),
+    ],
+)
+def test_additional_properties_is_true(connector_spec, expectation):
+    t = _TestSpec()
+    with expectation:
+        t.test_additional_properties_is_true(connector_spec)

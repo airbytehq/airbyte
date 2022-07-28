@@ -5,6 +5,11 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
+import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -13,6 +18,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -20,6 +27,7 @@ import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.IntegrationRunner;
@@ -30,6 +38,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -47,6 +56,7 @@ import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,46 +73,75 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
 
+  public static final String CDC_LSN = "_ab_cdc_lsn";
+  public static final String DATABASE_KEY = "database";
+  public static final String HOST_KEY = "host";
+  public static final String JDBC_URL_KEY = "jdbc_url";
+  public static final String PASSWORD_KEY = "password";
+  public static final String PORT_KEY = "port";
+  public static final String SCHEMAS_KEY = "schemas";
+  public static final String USERNAME_KEY = "username";
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
+      "ssl", "true",
+      "sslmode", "require");
   private List<String> schemas;
+  private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
-    return new SshWrappedSource(new PostgresSource(), List.of("host"), List.of("port"));
+    return new SshWrappedSource(new PostgresSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   PostgresSource() {
+
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
+    this.featureFlags = new EnvVariableFeatureFlags();
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    if (JdbcUtils.useSsl(config)) {
+      return SSL_JDBC_PARAMETERS;
+    } else {
+      return Collections.emptyMap();
+    }
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    return toDatabaseConfigStatic(config);
-  }
-
-  // todo (cgardens) - restructure AbstractJdbcSource so to take this function in the constructor. the
-  // current structure forces us to declarehave a bunch of pure function methods as instance members
-  // when they could be static.
-  public JsonNode toDatabaseConfigStatic(final JsonNode config) {
     final List<String> additionalParameters = new ArrayList<>();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get("database").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText()));
 
-    if (config.get("jdbc_url_params") != null && !config.get("jdbc_url_params").asText().isEmpty()) {
-      jdbcUrl.append(config.get("jdbc_url_params").asText()).append("&");
+    if (config.get(JdbcUtils.JDBC_URL_PARAMS_KEY) != null && !config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText().isEmpty()) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText()).append("&");
     }
 
     // assume ssl if not explicitly mentioned.
-    if (!config.has("ssl") || config.get("ssl").asBoolean()) {
-      additionalParameters.add("ssl=true");
-      additionalParameters.add("sslmode=require");
+    if (!config.has(PARAM_SSL) || config.get(PARAM_SSL).asBoolean()) {
+      if (config.has(PARAM_SSL_MODE)) {
+        if (DISABLE.equals(config.get(PARAM_SSL_MODE).get(PARAM_MODE).asText())) {
+          additionalParameters.add("sslmode=disable");
+        } else {
+          final var parametersList = obtainConnectionOptions(config.get(PARAM_SSL_MODE))
+              .entrySet()
+              .stream()
+              .map(e -> e.getKey() + "=" + e.getValue())
+              .toList();
+          additionalParameters.addAll(parametersList);
+        }
+      } else {
+        additionalParameters.add("ssl=true");
+        additionalParameters.add("sslmode=require");
+      }
     }
 
-    if (config.has("schemas") && config.get("schemas").isArray()) {
+    if (config.has(JdbcUtils.SCHEMAS_KEY) && config.get(JdbcUtils.SCHEMAS_KEY).isArray()) {
       schemas = new ArrayList<>();
-      for (final JsonNode schema : config.get("schemas")) {
+      for (final JsonNode schema : config.get(JdbcUtils.SCHEMAS_KEY)) {
         schemas.add(schema.asText());
       }
     }
@@ -114,11 +153,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     additionalParameters.forEach(x -> jdbcUrl.append(x).append("&"));
 
     final Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl.toString());
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl.toString());
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());
@@ -192,7 +231,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           final PreparedStatement ps = connection.prepareStatement(sql);
           ps.setString(1, config.get("replication_method").get("replication_slot").asText());
           ps.setString(2, PostgresUtils.getPluginValue(config.get("replication_method")));
-          ps.setString(3, config.get("database").asText());
+          ps.setString(3, config.get(JdbcUtils.DATABASE_KEY).asText());
 
           LOGGER.info("Attempting to find the named replication slot using the query: {}", ps);
 
@@ -244,16 +283,18 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(
-                                                                             final JdbcDatabase database,
+  public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
                                                                              final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
     if (PostgresUtils.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+      final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
+      LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          PostgresCdcTargetPosition.targetPosition(database), false);
+          PostgresCdcTargetPosition.targetPosition(database), false, firstRecordWaitTime);
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
       final List<ConfiguredAirbyteStream> streamsToSnapshot = identifyStreamsToSnapshot(catalog, stateManager);
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
@@ -269,7 +310,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       final AutoCloseableIterator<AirbyteMessage> snapshotIterator = handler.getSnapshotIterators(
           new ConfiguredAirbyteCatalog().withStreams(streamsToSnapshot), new PostgresCdcConnectorMetadataInjector(),
           PostgresCdcProperties.getSnapshotProperties(), postgresCdcStateHandler, emittedAt);
-      return Collections.singletonList(AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
+      return Collections.singletonList(
+          AutoCloseableIterators.concatWithEagerClose(snapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier)));
 
     } else {
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);
@@ -325,12 +367,12 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @VisibleForTesting
   static String getUsername(final JsonNode databaseConfig) {
-    final String jdbcUrl = databaseConfig.get("jdbc_url").asText();
-    final String username = databaseConfig.get("username").asText();
+    final String jdbcUrl = databaseConfig.get(JdbcUtils.JDBC_URL_KEY).asText();
+    final String username = databaseConfig.get(JdbcUtils.USERNAME_KEY).asText();
 
     // Azure Postgres server has this username pattern: <username>@<host>.
     // Inside Postgres, the true username is just <username>.
-    // The jdbc_url is constructed in the toDatabaseConfigStatic method.
+    // The jdbc_url is constructed in the toDatabaseConfig method.
     if (username.contains("@") && jdbcUrl.contains("azure.com:")) {
       final String[] tokens = username.split("@");
       final String postgresUsername = tokens[0];
@@ -350,6 +392,11 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   // state
   @Override
   protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return List.of(new AirbyteStateMessage()
+          .withType(AirbyteStateType.LEGACY)
+          .withData(Jsons.jsonNode(new DbState())));
+    }
     if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
       final AirbyteGlobalState globalState = new AirbyteGlobalState()
           .withSharedState(Jsons.jsonNode(new CdcState()))
@@ -364,6 +411,9 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected AirbyteStateType getSupportedStateType(final JsonNode config) {
+    if (!featureFlags.useStreamCapableState()) {
+      return AirbyteStateType.LEGACY;
+    }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
   }
 

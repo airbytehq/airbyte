@@ -1,15 +1,18 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-analytics-v4",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Analytics Data API Spec",
     "type": "object",
     "required": [
-      "property_id", "json_credentials", "report_name",
-      "dimensions", "metrics", "date_ranges_start_date",
+      "property_id",
+      "json_credentials",
+      "report_name",
+      "dimensions",
+      "metrics",
+      "date_ranges_start_date",
       "date_ranges_end_date"
     ],
-    "additionalProperties": false,
     "properties": {
       "property_id": {
         "type": "string",

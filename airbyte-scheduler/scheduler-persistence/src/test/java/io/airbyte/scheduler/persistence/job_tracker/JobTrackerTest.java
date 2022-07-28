@@ -64,6 +64,7 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JobTrackerTest {
 
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -241,7 +242,7 @@ class JobTrackerTest {
     when(configRepository.getStandardWorkspace(WORKSPACE_ID, true))
         .thenReturn(new StandardWorkspace().withWorkspaceId(WORKSPACE_ID).withName(WORKSPACE_NAME));
     assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, WORKSPACE_ID, jobState), metadata);
-    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata, false);
+    assertCorrectMessageForEachState((jobState) -> jobTracker.trackDiscover(JOB_ID, UUID1, null, jobState), metadata);
   }
 
   @Test
@@ -344,47 +345,35 @@ class JobTrackerTest {
 
   void testAsynchronousAttemptWithFailures(final ConfigType configType, final Map<String, Object> additionalExpectedMetadata)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    final JsonNode configFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
+    final LinkedHashMap<String, Object> linkedHashMap = new LinkedHashMap<>();
+    linkedHashMap.put("failureOrigin", "source");
+    linkedHashMap.put("failureType", "config_error");
+    linkedHashMap.put("internalMessage", "Internal config error error msg");
+    linkedHashMap.put("externalMessage", "Config error related msg");
+    linkedHashMap.put("metadata", ImmutableMap.of("some", "metadata"));
+    linkedHashMap.put("retryable", true);
+    linkedHashMap.put("timestamp", 1010);
+    final JsonNode configFailureJson = Jsons.jsonNode(linkedHashMap);
 
-      {
-        put("failureOrigin", "source");
-        put("failureType", "config_error");
-        put("internalMessage", "Internal config error error msg");
-        put("externalMessage", "Config error related msg");
-        put("metadata", ImmutableMap.of("some", "metadata"));
-        put("retryable", true);
-        put("timestamp", 1010);
-      }
+    final LinkedHashMap<String, Object> linkedHashMap1 = new LinkedHashMap<>();
+    linkedHashMap1.put("failureOrigin", "replication");
+    linkedHashMap1.put("failureType", "system_error");
+    linkedHashMap1.put("internalMessage", "Internal system error error msg");
+    linkedHashMap1.put("externalMessage", "System error related msg");
+    linkedHashMap1.put("metadata", ImmutableMap.of("some", "metadata"));
+    linkedHashMap1.put("retryable", true);
+    linkedHashMap1.put("timestamp", 1100);
+    final JsonNode systemFailureJson = Jsons.jsonNode(linkedHashMap1);
 
-    });
-
-    final JsonNode systemFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
-
-      {
-        put("failureOrigin", "replication");
-        put("failureType", "system_error");
-        put("internalMessage", "Internal system error error msg");
-        put("externalMessage", "System error related msg");
-        put("metadata", ImmutableMap.of("some", "metadata"));
-        put("retryable", true);
-        put("timestamp", 1100);
-      }
-
-    });
-
-    final JsonNode unknownFailureJson = Jsons.jsonNode(new LinkedHashMap<String, Object>() {
-
-      {
-        put("failureOrigin", null);
-        put("failureType", null);
-        put("internalMessage", "Internal unknown error error msg");
-        put("externalMessage", "Unknown error related msg");
-        put("metadata", ImmutableMap.of("some", "metadata"));
-        put("retryable", true);
-        put("timestamp", 1110);
-      }
-
-    });
+    final LinkedHashMap<String, Object> linkedHashMap2 = new LinkedHashMap<>();
+    linkedHashMap2.put("failureOrigin", null);
+    linkedHashMap2.put("failureType", null);
+    linkedHashMap2.put("internalMessage", "Internal unknown error error msg");
+    linkedHashMap2.put("externalMessage", "Unknown error related msg");
+    linkedHashMap2.put("metadata", ImmutableMap.of("some", "metadata"));
+    linkedHashMap2.put("retryable", true);
+    linkedHashMap2.put("timestamp", 1110);
+    final JsonNode unknownFailureJson = Jsons.jsonNode(linkedHashMap2);
 
     final Map<String, Object> failureMetadata = ImmutableMap.of(
         "failure_reasons", Jsons.arrayNode().addAll(Arrays.asList(configFailureJson, systemFailureJson, unknownFailureJson)).toString(),
@@ -600,10 +589,6 @@ class JobTrackerTest {
     }
   }
 
-  private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer, final Map<String, Object> expectedMetadata) {
-    assertCorrectMessageForEachState(jobStateConsumer, expectedMetadata, true);
-  }
-
   /**
    * Tests that the tracker emits the correct message for when the job starts, succeeds, and fails.
    *
@@ -612,8 +597,7 @@ class JobTrackerTest {
    * @param expectedMetadata - expected metadata (except job state).
    */
   private void assertCorrectMessageForEachState(final Consumer<JobState> jobStateConsumer,
-                                                final Map<String, Object> expectedMetadata,
-                                                final boolean workspaceSet) {
+                                                final Map<String, Object> expectedMetadata) {
     jobStateConsumer.accept(JobState.STARTED);
     assertCorrectMessageForStartedState(expectedMetadata);
     jobStateConsumer.accept(JobState.SUCCEEDED);
