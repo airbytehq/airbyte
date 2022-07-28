@@ -14,7 +14,6 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -25,20 +24,13 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDestination.class);
 
   public static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
-  public static final String DATABASE_KEY = "database";
-  public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String PASSWORD_KEY = "password";
-  public static final String USERNAME_KEY = "username";
-  public static final String SCHEMA_KEY = "schema";
 
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
+      JdbcUtils.SSL_KEY, "true",
       "sslmode", "require");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new PostgresDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new PostgresDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public PostgresDestination() {
@@ -57,20 +49,20 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final String schema = Optional.ofNullable(config.get("schema")).map(JsonNode::asText).orElse("public");
+    final String schema = Optional.ofNullable(config.get(JdbcUtils.SCHEMA_KEY)).map(JsonNode::asText).orElse("public");
 
     final String jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get("host").asText(),
-        config.get("port").asText(),
-        config.get(DATABASE_KEY).asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put(USERNAME_KEY, config.get(USERNAME_KEY).asText())
-        .put(JDBC_URL_KEY, jdbcUrl)
-        .put(SCHEMA_KEY, schema);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl)
+        .put(JdbcUtils.SCHEMA_KEY, schema);
 
-    if (config.has(PASSWORD_KEY)) {
-      configBuilder.put(PASSWORD_KEY, config.get(PASSWORD_KEY).asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
@@ -79,7 +71,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
 
     return Jsons.jsonNode(configBuilder.build());
   }
-
 
   public static void main(final String[] args) throws Exception {
     final Destination destination = PostgresDestination.sshWrappedDestination();

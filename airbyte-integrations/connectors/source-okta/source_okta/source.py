@@ -199,9 +199,27 @@ class Logs(IncrementalOktaStream):
 class Users(IncrementalOktaStream):
     cursor_field = "lastUpdated"
     primary_key = "id"
+    # Should add all statuses to filter. Considering Okta documentation https://developer.okta.com/docs/reference/api/users/#list-all-users,
+    # users with "DEPROVISIONED" status are not returned by default.
+    statuses = ["ACTIVE", "DEPROVISIONED", "LOCKED_OUT", "PASSWORD_EXPIRED", "PROVISIONED", "RECOVERY", "STAGED", "SUSPENDED"]
 
     def path(self, **kwargs) -> str:
         return "users"
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        status_filters = " or ".join([f'status eq "{status}"' for status in self.statuses])
+        if "filter" in params:
+            # add status_filters to existing filters
+            params["filter"] = f'{params["filter"]} and ({status_filters})'
+        else:
+            params["filter"] = status_filters
+        return params
 
 
 class CustomRoles(OktaStream):
@@ -261,11 +279,11 @@ class SourceOkta(AbstractSource):
 
         creds = config.get("credentials")
         if not creds:
-            raise "Config validation error. `credentials` not specified."
+            raise Exception("Config validation error. `credentials` not specified.")
 
         auth_type = creds.get("auth_type")
         if not auth_type:
-            raise "Config validation error. `auth_type` not specified."
+            raise Exception("Config validation error. `auth_type` not specified.")
 
         if auth_type == "api_token":
             return TokenAuthenticator(creds["api_token"], auth_method="SSWS")

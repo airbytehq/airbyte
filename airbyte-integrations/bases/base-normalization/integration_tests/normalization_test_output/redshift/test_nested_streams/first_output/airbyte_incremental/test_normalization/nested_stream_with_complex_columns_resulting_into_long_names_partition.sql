@@ -2,7 +2,7 @@
       
 
   create  table
-    "integrationtests"."test_normalization"."nested_stream_with_complex_columns_resulting_into_long_names_partition__dbt_tmp"
+    "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_partition"
     
     
       compound sortkey(_airbyte_emitted_at)
@@ -12,7 +12,7 @@
 with __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_scd"
+-- depends_on: "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_scd"
 select
     _airbyte_nested_stream_with_complex_columns_resulting_into_long_names_hashid,
     "partition"."double_array_data" as double_array_data,
@@ -20,7 +20,7 @@ select
     _airbyte_ab_id,
     _airbyte_emitted_at,
     getdate() as _airbyte_normalized_at
-from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_scd" as table_alias
+from "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_scd" as table_alias
 -- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition
 where 1 = 1
 and "partition" is not null
@@ -62,7 +62,7 @@ select
     getdate() as _airbyte_normalized_at,
     _airbyte_partition_hashid
 from __dbt__cte__nested_stream_with_complex_columns_resulting_into_long_names_partition_ab3
--- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition from "integrationtests".test_normalization."nested_stream_with_complex_columns_resulting_into_long_names_scd"
+-- partition at nested_stream_with_complex_columns_resulting_into_long_names/partition from "integrationtests".test_normalization_xjvlg."nested_stream_with_complex_columns_resulting_into_long_names_scd"
 where 1 = 1
 
   );
