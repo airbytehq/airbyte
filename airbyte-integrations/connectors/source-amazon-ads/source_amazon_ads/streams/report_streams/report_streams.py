@@ -303,17 +303,16 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     ) -> Iterable[Optional[Mapping[str, Any]]]:
 
         stream_state = stream_state or {}
-        res = []
 
+        slices = []
         for profile in self._profiles:
             today = pendulum.today(tz=profile.timezone).date()
             start_report_date = self.get_start_report_date(profile, stream_state)
             for report_date in self.get_report_date_ranges(start_report_date, today):
-                res.append({"profile": profile, self.cursor_field: report_date})
-        if not res:
+                slices.append({"profile": profile, self.cursor_field: report_date})
+        if not slices:
             return [None]
-
-        return res
+        return slices
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         profileId = str(latest_data["profileId"])
