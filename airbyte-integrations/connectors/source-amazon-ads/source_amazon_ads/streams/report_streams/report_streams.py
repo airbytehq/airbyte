@@ -282,7 +282,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             return max(start_date, today.subtract(days=60))
         return today
 
-    def get_saved_date(self, profile: Profile, stream_state: Mapping[str, Any]):
+    def get_saved_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Optional[Date]:
         saved_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
         if saved_date:
             saved_date = pendulum.from_format(saved_date, self.REPORT_DATE_FORMAT).date()
@@ -291,7 +291,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                 return today.subtract(days=self.LOOK_BACK_WINDOW)
             return saved_date
 
-    def get_start_report_date(self, profile: Profile, stream_state: Mapping[str, Any]):
+    def get_start_report_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Date:
         start_date = self.get_start_date(profile, stream_state)
         saved_date = self.get_saved_date(profile, stream_state)
         if saved_date:
