@@ -78,15 +78,17 @@ class LimitPaginator(Paginator):
         config: Config,
         url_base: str,
         decoder: Decoder = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
-        :param page_size: the number of records to request
-        :param limit_option: the request option to set the limit. Cannot be injected in the path.
-        :param page_token_option: the request option to set the page token
-        :param pagination_strategy: Strategy defining how to get the next page token
-        :param config: connection config
-        :param url_base: endpoint's base url
-        :param decoder: decoder to decode the response
+        :param page_size: The number of records to request
+        :param limit_option: The request option to set the limit. Cannot be injected in the path.
+        :param page_token_option: The request option to set the page token
+        :param pagination_strategy: The strategy defining how to get the next page token
+        :param config: The user-provided configuration as specified by the source's spec
+        :param url_base: The endpoint's base url
+        :param decoder: The decoder to decode the response
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if limit_option.inject_into == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
@@ -97,7 +99,7 @@ class LimitPaginator(Paginator):
         self._pagination_strategy = pagination_strategy
         self._token = None
         if isinstance(url_base, str):
-            url_base = InterpolatedString(url_base)
+            url_base = InterpolatedString.create(url_base, options=options)
         self._url_base = url_base
         self._decoder = decoder or JsonDecoder()
 

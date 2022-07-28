@@ -34,8 +34,8 @@ class JinjaInterpolation(Interpolation):
         self._environment = Environment()
         self._environment.globals.update(**macros)
 
-    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **kwargs):
-        context = {"config": config, **kwargs}
+    def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):
+        context = {"config": config, **additional_options}
         try:
             if isinstance(input_str, str):
                 result = self._eval(input_str, context)
