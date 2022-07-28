@@ -1,5 +1,4 @@
 import React, { Suspense, useMemo, useState } from "react";
-import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
@@ -32,7 +31,6 @@ interface CreateConnectionContentProps {
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
-  noTitles?: boolean;
 }
 
 const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
@@ -40,7 +38,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   destination,
   afterSubmitConnection,
   additionBottomControls,
-  noTitles,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
   const trackNewConnectionAction = useTrackAction(
@@ -108,7 +105,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
+      <ContentCard>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
@@ -118,23 +115,19 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     );
   }
 
-  return (
-    <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
-      {isLoading ? (
-        <LoadingSchema />
-      ) : (
-        <Suspense fallback={<LoadingSchema />}>
-          <ConnectionForm
-            mode="create"
-            connection={connection}
-            additionBottomControls={additionBottomControls}
-            onDropDownSelect={onSelectFrequency}
-            onSubmit={onSubmitConnectionStep}
-            onChangeValues={setConnectionFormValues}
-          />
-        </Suspense>
-      )}
-    </ContentCard>
+  return isLoading ? (
+    <LoadingSchema />
+  ) : (
+    <Suspense fallback={<LoadingSchema />}>
+      <ConnectionForm
+        mode="create"
+        connection={connection}
+        additionBottomControls={additionBottomControls}
+        onDropDownSelect={onSelectFrequency}
+        onSubmit={onSubmitConnectionStep}
+        onChangeValues={setConnectionFormValues}
+      />
+    </Suspense>
   );
 };
 
