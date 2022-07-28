@@ -59,6 +59,13 @@ public class DateTimeConverter {
     return localTime.format(TIME_FORMATTER);
   }
 
+  /**
+   * This method converts '-YYYY-mm-dd' to 'YYYY-mm-dd BC' if date is before current era.
+   *
+   * @param date local date
+   * @param value formatted date
+   * @return value with era indicator if date is before current era
+   */
   public static String resolveEra(LocalDate date, String value) {
     return isBCE(date) ? value.substring(1) + " BC" : value;
   }

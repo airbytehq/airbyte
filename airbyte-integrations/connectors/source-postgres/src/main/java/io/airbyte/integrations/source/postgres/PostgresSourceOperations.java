@@ -184,7 +184,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
         case "hstore" -> putHstoreAsJson(json, columnName, resultSet, colIndex);
         case "circle" -> putObject(json, columnName, resultSet, colIndex, PGcircle.class);
         case "box" -> putObject(json, columnName, resultSet, colIndex, PGbox.class);
-        case "double precision", "float", "float8" -> putFloat8(json, columnName, resultSet, colIndex);
+        case "double precision", "float", "float8" -> putDouble(json, columnName, resultSet, colIndex);
         case "line" -> putObject(json, columnName, resultSet, colIndex, PGline.class);
         case "lseg" -> putObject(json, columnName, resultSet, colIndex, PGlseg.class);
         case "path" -> putObject(json, columnName, resultSet, colIndex, PGpath.class);
