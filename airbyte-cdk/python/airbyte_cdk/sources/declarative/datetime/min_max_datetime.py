@@ -39,7 +39,6 @@ class MinMaxDatetime:
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
         self._min_datetime_interpolator = InterpolatedString.create(min_datetime, options=options) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString.create(max_datetime, options=options) if max_datetime else None
 
     def get_datetime(self, config, **additional_options) -> dt.datetime:
         """
