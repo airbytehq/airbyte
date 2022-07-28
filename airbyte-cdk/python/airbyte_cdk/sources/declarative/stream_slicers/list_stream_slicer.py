@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import ast
 from typing import Any, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
@@ -24,17 +23,19 @@ class ListStreamSlicer(StreamSlicer):
         cursor_field: Union[InterpolatedString, str],
         config: Config,
         request_option: Optional[RequestOption] = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param slice_values: The values to iterate over
         :param cursor_field: The name of the cursor field
         :param config: The user-provided configuration as specified by the source's spec
         :param request_option: The request option to configure the HTTP request
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if isinstance(slice_values, str):
-            slice_values = ast.literal_eval(slice_values)
+            slice_values = InterpolatedString.create(slice_values, options=options).eval(config)
         if isinstance(cursor_field, str):
-            cursor_field = InterpolatedString(cursor_field)
+            cursor_field = InterpolatedString(cursor_field, options=options)
         self._cursor_field = cursor_field
         self._slice_values = slice_values
         self._config = config
