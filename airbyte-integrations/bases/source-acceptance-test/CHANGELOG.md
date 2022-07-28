@@ -1,6 +1,9 @@
 # Changelog
 
 ## 0.1.56
+Run connector from its image `working_dir` instead of from `/data`.
+
+## 0.1.56
 Add test case in `TestDiscovery` and `TestConnection` to assert `additionalProperties` fields are set to true if they are declared [#14878](https://github.com/airbytehq/airbyte/pull/14878/).
 
 ## 0.1.55
