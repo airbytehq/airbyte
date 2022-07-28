@@ -21,7 +21,7 @@ class JsonSchema(SchemaLoader):
         """
         self._file_path = file_path
         self._config = config
-        self._kwargs = options
+        self._options = options
 
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema_path = self._get_json_filepath()
@@ -29,4 +29,4 @@ class JsonSchema(SchemaLoader):
             return json.loads(f.read())
 
     def _get_json_filepath(self):
-        return self._file_path.eval(self._config, **self._kwargs)
+        return self._file_path.eval(self._config, **self._options)

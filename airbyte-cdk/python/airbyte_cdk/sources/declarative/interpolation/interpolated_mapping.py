@@ -20,16 +20,18 @@ class InterpolatedMapping:
         self._options = options
         self._interpolation = JinjaInterpolation()
 
-    def eval(self, config: Config, **kwargs):
+    def eval(self, config: Config, **additional_options):
         """
         Wrapper around a Mapping[str, str] that allows for both keys and values to be interpolated.
 
         :param config: The user-provided configuration as specified by the source's spec
-        :param kwargs: Optional parameters used for interpolation
+        :param additional_options: Optional parameters used for interpolation
         :return: The interpolated string
         """
         interpolated_values = {
-            self._interpolation.eval(name, config, options=self._options, **kwargs): self._eval(value, config, **kwargs)
+            self._interpolation.eval(name, config, options=self._options, **additional_options): self._eval(
+                value, config, **additional_options
+            )
             for name, value in self._mapping.items()
         }
         return interpolated_values

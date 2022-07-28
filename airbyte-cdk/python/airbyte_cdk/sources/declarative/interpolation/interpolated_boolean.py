@@ -24,18 +24,18 @@ class InterpolatedBoolean:
         self._default = "False"
         self._interpolation = JinjaInterpolation()
 
-    def eval(self, config: Config, **kwargs):
+    def eval(self, config: Config, **additional_options):
         """
         Interpolates the predicate condition string using the config and other optional arguments passed as parameter.
 
         :param config: The user-provided configuration as specified by the source's spec
-        :param kwargs: Optional parameters used for interpolation
+        :param additional_options: Optional parameters used for interpolation
         :return: The interpolated string
         """
         if isinstance(self._condition, bool):
             return self._condition
         else:
-            evaluated = self._interpolation.eval(self._condition, config, self._default, **kwargs)
+            evaluated = self._interpolation.eval(self._condition, config, self._default, **additional_options)
             if evaluated in FALSE_VALUES:
                 return False
             # The presence of a value is generally regarded as truthy, so we treat it as such
