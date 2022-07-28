@@ -151,6 +151,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
                     profileId=report_info.profile_id,
                     recordType=report_info.record_type,
                     reportDate=report_date,
+                    updatedAt=pendulum.now(tz=profile.timezone).replace(microsecond=0).to_iso8601_string(),
                     metric=metric_object,
                 ).dict()
 
