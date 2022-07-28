@@ -61,6 +61,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
+  @Override
   @BeforeEach
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
@@ -72,13 +73,13 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME, SCHEMA_NAME2))
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -91,11 +92,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
-        jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
@@ -217,6 +218,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
     return getTestMessages()
         .stream()
@@ -233,6 +235,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
     return getTestMessages()
         .stream()
@@ -316,6 +319,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
   }
 
+  @Override
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
     database.execute(connection -> {
       connection.createStatement().execute(
@@ -333,25 +337,25 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+                TABLE_NAME,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
+                Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+                Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+                Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+                TABLE_NAME_WITHOUT_PK,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
+                Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+                Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+                Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
