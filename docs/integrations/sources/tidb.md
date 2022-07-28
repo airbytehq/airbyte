@@ -120,6 +120,9 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | ------- |
+| 0.2.0 | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
+| 0.1.5 | 2022-07-25 | [14996](https://github.com/airbytehq/airbyte/pull/14996) | Removed additionalProperties:false from spec |
+| 0.1.4 | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
 | 0.1.3 | 2022-07-04 | [14243](https://github.com/airbytehq/airbyte/pull/14243) | Update JDBC string builder |
 | 0.1.2 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 0.1.1   | 2022-04-29 | [12480](https://github.com/airbytehq/airbyte/pull/12480) | Query tables with adaptive fetch size to optimize JDBC memory consumption |

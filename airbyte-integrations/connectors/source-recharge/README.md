@@ -26,8 +26,7 @@ If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 
 Note that while we are installing dependencies from `requirements.txt`, you should only edit `setup.py` for your dependencies. `requirements.txt` is
 used for editable installs (`pip install -e`) to pull in Python dependencies from the monorepo and will call `setup.py`.
-If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything
-should work as you expect.
+If this is mumbo jumbo to you, don't worry about it, just put your deps in `setup.py` but install using `pip install -r requirements.txt` and everything should work as you expect.
 
 #### Building via Gradle
 You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
@@ -101,7 +100,8 @@ Customize `acceptance-test-config.yml` file to configure tests. See [Source Acce
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```
-python -m pytest integration_tests -p integration_tests.acceptance
+docker build . --no-cache -t airbyte/source-recharge:dev \
+&& python -m pytest -p integration_tests.acceptance
 ```
 To run your integration tests with docker
 
