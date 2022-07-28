@@ -66,6 +66,13 @@ class TransformConfig:
         return base_profile
 
     @staticmethod
+    def create_file(name, content):
+        f = open(name, "x")
+        f.write(content)
+        f.close()
+        return os.path.abspath(f.name)
+
+    @staticmethod
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
         tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
         if (
@@ -176,22 +183,13 @@ class TransformConfig:
                 TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
                 dbt_config["sslrootcert"] = "ca.crt"
             elif ssl_mode["mode"] == "verify-full":
-                TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
-                TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
-                TransformConfig.create_file("client.key", ssl_mode["client_key"])
-                dbt_config["sslrootcert"] = "ca.crt"
-                dbt_config["sslcert"] = "client.crt"
+                dbt_config["sslrootcert"] = TransformConfig.create_file("ca.crt", ssl_mode["ca_certificate"])
+                dbt_config["sslcert"] = TransformConfig.create_file("client.crt", ssl_mode["client_certificate"])
+                client_key = TransformConfig.create_file("client.key", ssl_mode["client_key"])
                 subprocess.call("openssl pkcs8 -topk8 -inform PEM -in client.key -outform DER -out client.pk8 -nocrypt", shell=True)
-                subprocess.call("rm client.key", shell=True)
-                dbt_config["sslkey"] = "client.pk8"
+                dbt_config["sslkey"] = client_key.replace("client.key", "client.pk8")
 
         return dbt_config
-
-    @staticmethod
-    def create_file(name, content):
-        f = open(name, "x")
-        f.write(content)
-        f.close()
 
     @staticmethod
     def transform_redshift(config: Dict[str, Any]):
