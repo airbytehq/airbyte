@@ -121,7 +121,6 @@ class SourceGoogleAds(AbstractSource):
             AdGroups(**incremental_config),
             AdGroupLabels(google_api, customers=customers),
             Accounts(**incremental_config),
-            Campaigns(**incremental_config),
             CampaignLabels(google_api, customers=customers),
             ClickView(**incremental_config),
         ]
@@ -129,6 +128,7 @@ class SourceGoogleAds(AbstractSource):
         if non_manager_accounts:
             streams.extend(
                 [
+                    Campaigns(**non_manager_incremental_config),
                     UserLocationReport(**non_manager_incremental_config),
                     AccountPerformanceReport(**non_manager_incremental_config),
                     DisplayTopicsPerformanceReport(**non_manager_incremental_config),
