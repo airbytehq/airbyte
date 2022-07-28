@@ -314,6 +314,16 @@ def test_max_records_in_response_reached(transactions, requests_mock):
         assert next(balance.read_records(sync_mode="any", stream_slice=one_day_slice))
 
 
+def test_unnest_field():
+    record = {"transaction_info": {"transaction_id": "123", "transaction_initiation_date": "2014-07-11T04:03:52+0000"}}
+    # check the cursor is not on the root level
+    assert Transactions.cursor_field not in record.keys()
+
+    PaypalTransactionStream.unnest_field(record, Transactions.nested_object, Transactions.cursor_field)
+    # check the cursor now on the root level
+    assert Transactions.cursor_field in record.keys()
+
+
 def test_get_last_refreshed_datetime(requests_mock, prod_config, api_endpoint):
     authenticator = PayPalOauth2Authenticator(prod_config)
     stream = Balances(authenticator=authenticator, **prod_config)
