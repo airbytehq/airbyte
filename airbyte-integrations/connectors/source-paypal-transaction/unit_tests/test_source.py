@@ -8,7 +8,6 @@ from source_paypal_transaction.source import (
     PayPalOauth2Authenticator,
     SourcePaypalTransaction,
     get_endpoint,
-    PaypalTransactionStream,
 )
 
 
