@@ -87,6 +87,12 @@ def auth_token_config():
 
 
 @pytest.fixture()
+def user_status_filter():
+    statuses = ["ACTIVE", "DEPROVISIONED", "LOCKED_OUT", "PASSWORD_EXPIRED", "PROVISIONED", "RECOVERY", "STAGED", "SUSPENDED"]
+    return " or ".join([f'status eq "{status}"' for status in statuses])
+
+
+@pytest.fixture()
 def users_instance(api_url):
     """
     Users instance object response
