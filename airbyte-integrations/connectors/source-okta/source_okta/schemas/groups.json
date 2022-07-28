@@ -1,9 +1,6 @@
 {
   "properties": {
     "_links": {
-      "additionalProperties": {
-        "type": ["array", "object", "null"]
-      },
       "type": ["object", "null"]
     },
     "created": {

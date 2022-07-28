@@ -544,7 +544,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       Workflow.continueAsNew(newWorkflowInput);
 
       throw new IllegalStateException("This statement should never be reached, as the ConnectionManagerWorkflow for connection "
-          + connectionId + " was continued as new.");
+          + connectionId + " was continued as new.", e);
     }
   }
 
