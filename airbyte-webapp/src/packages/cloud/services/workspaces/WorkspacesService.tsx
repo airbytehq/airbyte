@@ -108,10 +108,7 @@ export function useRemoveWorkspace() {
 export function useGetCloudWorkspace(workspaceId: string): CloudWorkspace {
   const service = useGetWorkspaceService();
 
-  const workspace = useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () =>
-    service.get(workspaceId)
-  );
-  return workspace;
+  return useSuspenseQuery<CloudWorkspace>([workspaceKeys.detail(workspaceId)], () => service.get(workspaceId));
 }
 
 export function useInvalidateCloudWorkspace(workspaceId: string): () => Promise<void> {
