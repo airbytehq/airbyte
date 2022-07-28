@@ -15,12 +15,14 @@ interface OperationsSectionProps {
   destDefinition: DestinationDefinitionSpecificationRead;
   onStartEditTransformation?: () => void;
   onEndEditTransformation?: () => void;
+  wrapper: React.ComponentType;
 }
 
 export const OperationsSection: React.FC<OperationsSectionProps> = ({
   destDefinition,
   onStartEditTransformation,
   onEndEditTransformation,
+  wrapper: Wrapper,
 }) => {
   const { formatMessage } = useIntl();
 
@@ -29,8 +31,12 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
 
   const defaultTransformation = useDefaultTransformation();
 
+  if (!supportsNormalization && !supportsTransformations) {
+    return null;
+  }
+
   return (
-    <>
+    <Wrapper>
       {supportsNormalization || supportsTransformations ? (
         <H5 bold>
           {[
@@ -54,6 +60,6 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
           )}
         </FieldArray>
       )}
-    </>
+    </Wrapper>
   );
 };

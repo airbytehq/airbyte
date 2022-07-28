@@ -354,15 +354,16 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
           )}
           {mode === "create" && (
             <>
-              <Card>
-                <StyledSection>
-                  <OperationsSection
-                    destDefinition={destDefinition}
-                    onStartEditTransformation={toggleEditingTransformation}
-                    onEndEditTransformation={toggleEditingTransformation}
-                  />
-                </StyledSection>
-              </Card>
+              <OperationsSection
+                wrapper={({ children }) => (
+                  <Card>
+                    <StyledSection>{children}</StyledSection>
+                  </Card>
+                )}
+                destDefinition={destDefinition}
+                onStartEditTransformation={toggleEditingTransformation}
+                onEndEditTransformation={toggleEditingTransformation}
+              />
               <CreateControls
                 additionBottomControls={additionBottomControls}
                 isSubmitting={isSubmitting}
