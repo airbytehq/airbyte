@@ -10,6 +10,7 @@ import pytest
 import responses
 from airbyte_cdk.models import SyncMode
 from freezegun import freeze_time
+from pendulum import Date
 from pytest import raises
 from requests.exceptions import ConnectionError
 from source_amazon_ads.schemas.profile import AccountInfo, Profile
@@ -336,3 +337,25 @@ def test_display_report_stream_slices_incremental(config):
 
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=None, stream_state={})
     assert slices == [{"profile": profiles[0], "reportDate": "20210729"}]
+
+
+@freeze_time("2021-08-01 04:00:00")
+def test_get_start_report_date(config):
+    profiles = make_profiles()
+
+    config["start_date"] = "2021-07-10"
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {}) == Date(2021, 7, 10)
+    config["start_date"] = "2021-05-10"
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {}) == Date(2021, 6, 1)
+
+    config.pop("start_date")
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {}) == Date(2021, 7, 31)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-06-02T08:00:00Z"}) == Date(2021, 6, 2)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-06-02T06:00:00Z"}) == Date(2021, 6, 1)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-05-02T06:00:00Z"}) == Date(2021, 6, 1)
