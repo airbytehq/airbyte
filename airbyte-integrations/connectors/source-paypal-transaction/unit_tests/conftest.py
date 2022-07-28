@@ -61,6 +61,24 @@ def sandbox_config():
 
 
 @pytest.fixture()
+def new_prod_config():
+    """
+    Credentials for oauth2.0 authorization
+    """
+    return {
+        "credentials": {
+            "auth_type": "oauth2.0",
+            "client_id": "some_client_id",
+            "client_secret": "some_client_secret",
+            "refresh_token": "some_refresh_token"
+        },
+        "start_date": "2021-07-01T00:00:00+00:00",
+        "end_date": "2021-07-10T00:00:00+00:00",
+        "is_sandbox": False
+    }
+
+
+@pytest.fixture()
 def error_while_refreshing_access_token():
     """
     Error raised when using incorrect access token

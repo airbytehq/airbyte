@@ -37,6 +37,12 @@ class TestAuthentication:
         except Exception as e:
             assert e.args[0] == error_while_refreshing_access_token
 
+    def test_new_oauth2_refresh_token_ok(self, requests_mock, new_prod_config, api_endpoint):
+        authenticator_instance = PayPalOauth2Authenticator(new_prod_config)
+        requests_mock.post(f"{api_endpoint}/v1/oauth2/token", json={"access_token": "test_access_token", "expires_in": 12345})
+        result = authenticator_instance.refresh_access_token()
+        assert result == ("test_access_token", 12345)
+
     def test_streams_count(self, prod_config):
         source = SourcePaypalTransaction()
         assert len(source.streams(prod_config)) == 2

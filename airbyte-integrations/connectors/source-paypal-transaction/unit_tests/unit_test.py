@@ -331,3 +331,19 @@ def test_get_last_refreshed_datetime(requests_mock, prod_config, api_endpoint):
     url = f'{api_endpoint}/v1/reporting/balances' + '?as_of_time=2021-07-01T00%3A00%3A00%2B00%3A00'
     requests_mock.get(url, json={})
     assert not stream.get_last_refreshed_datetime(SyncMode.full_refresh)
+
+
+def test_get_updated_state(transactions):
+    start_date = "2021-06-01T10:00:00+00:00"
+    stream = Transactions(
+        authenticator=NoAuth(),
+        start_date=isoparse(start_date),
+        end_date=isoparse("2021-06-04T12:00:00+00:00"),
+    )
+    state = stream.get_updated_state(current_stream_state={}, latest_record={})
+    assert state == {"date": start_date}
+
+    record = transactions[stream.data_field][0][stream.nested_object]
+    expected_state = {"date": now().isoformat()}
+    state = stream.get_updated_state(current_stream_state=expected_state, latest_record=record)
+    assert state == expected_state
