@@ -5,6 +5,8 @@
 package io.airbyte.integrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +31,7 @@ public class MySqlSslConnectionUtils {
   public static final String CLIENT_KEY_STORE_URL = "clientCertificateKeyStoreUrl";
   public static final String CLIENT_KEY_STORE_PASS = "clientCertificateKeyStorePassword";
   public static final String CUSTOM_TRUST_STORE = "customtruststore";
+  public static final String CUSTOM_KEY_STORE = "customkeystore";
   public static final String SSL_MODE = "sslMode";
   public static final String DISABLE = "disable";
   public static final String VERIFY_CA = "VERIFY_CA";
@@ -64,13 +67,14 @@ public class MySqlSslConnectionUtils {
     Map<String, String> additionalParameters = new HashMap<>();
     try {
       convertAndImportFullCertificate(encryption.get(PARAM_CA_CERTIFICATE).asText(),
-          encryption.get(PARAM_CLIENT_CERTIFICATE).asText(), encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
+          encryption.get(PARAM_CLIENT_CERTIFICATE).asText(),
+              encryption.get(PARAM_CLIENT_KEY).asText(), clientKeyPassword);
     } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
     additionalParameters.put(TRUST_KEY_STORE_URL, CUSTOM_TRUST_STORE);
     additionalParameters.put(TRUST_KEY_STORE_PASS, clientKeyPassword);
-    additionalParameters.put(CLIENT_KEY_STORE_URL, CUSTOM_TRUST_STORE);
+    additionalParameters.put(CLIENT_KEY_STORE_URL, CUSTOM_KEY_STORE);
     additionalParameters.put(CLIENT_KEY_STORE_PASS, clientKeyPassword);
     additionalParameters.put(SSL_MODE, method.toUpperCase());
     return additionalParameters;
@@ -97,26 +101,36 @@ public class MySqlSslConnectionUtils {
                                                       final String clientKeyPassword)
       throws IOException, InterruptedException {
     final Runtime run = Runtime.getRuntime();
-    createCaCertificate(caCertificate, clientKeyPassword, run);
-    createCertificateFile(CLIENT_CERTIFICARE_NAME, clientCertificate);
-    createCertificateFile(CLIENT_KEY_NAME, clientKey);
-    // add client certificate to the custom keystore
-    runProcess("keytool -alias client-certificate -keystore " + CUSTOM_TRUST_STORE
-        + " -import -file " + CLIENT_CERTIFICARE_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
-    // add client key to the custom keystore
-    runProcess("keytool -alias client-key -keystore " + CUSTOM_TRUST_STORE
-        + " -import -file " + CLIENT_KEY_NAME + " -storepass " + clientKeyPassword + " -noprompt", run);
-    runProcess("rm " + CLIENT_KEY_NAME, run);
+    convertAndImportCaCertificate(caCertificate, clientKeyPassword);
+    LOGGER.error("==>> check if KEY store exist");
+    File f = new File(System.getProperty("user.dir") + "/" + CUSTOM_KEY_STORE);
+    if (!f.exists()) {
+      LOGGER.error("==> need create KEY store!!");
+      createCertificateFile(CLIENT_CERTIFICARE_NAME, clientCertificate);
+      createCertificateFile(CLIENT_KEY_NAME, clientKey);
+      // add client certificate to the custom keystore
+      runProcess("openssl pkcs12 -export -in client-cert.pem -inkey client-key.pem -out certificate.p12 -name \"certificate\" -passout pass:Passw0rd", run);
+      // add client key to the custom keystore
+      runProcess("keytool -importkeystore -srckeystore certificate.p12 -srcstoretype pkcs12 -destkeystore customkeystore -srcstorepass Passw0rd -deststoretype JKS -deststorepass Passw0rd", run);
+      runProcess("rm " + CLIENT_KEY_NAME, run);
 
-    updateTrustStoreSystemProperty(clientKeyPassword);
+      String result = System.getProperty("user.dir") + "/" + CUSTOM_KEY_STORE;
+      System.setProperty("javax.net.ssl.keyStore", result);
+      System.setProperty("javax.net.ssl.keyStorePassword", clientKeyPassword);
+    }
   }
 
   private static void convertAndImportCaCertificate(final String caCertificate,
                                                     final String clientKeyPassword)
       throws IOException, InterruptedException {
-    final Runtime run = Runtime.getRuntime();
-    createCaCertificate(caCertificate, clientKeyPassword, run);
-    updateTrustStoreSystemProperty(clientKeyPassword);
+    LOGGER.error("==>> check if TRUST store exist");
+    File f = new File(System.getProperty("user.dir") + "/" + CUSTOM_TRUST_STORE);
+    if (!f.exists()) {
+      LOGGER.error("==> need create TRUST tore!!");
+      final Runtime run = Runtime.getRuntime();
+      createCaCertificate(caCertificate, clientKeyPassword, run);
+      updateTrustStoreSystemProperty(clientKeyPassword);
+    }
   }
 
   private static void createCaCertificate(final String caCertificate,
