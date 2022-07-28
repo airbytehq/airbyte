@@ -106,7 +106,9 @@ public class MetricClientFactory {
       return new StatsdMeterRegistry(config, Clock.SYSTEM);
     }
 
-    // We do not support open telemetry yet.
+    // To support open telemetry, we need to use a different type of Config. For now we simply return
+    // null - in this case, we do not register any metric emitting mechanism in temporal and thus
+    // users will not receive temporal related metrics.
     return null;
   }
 

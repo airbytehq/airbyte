@@ -46,7 +46,7 @@ class MetricClientFactoryTest {
 
   @Test
   @DisplayName("Should not return null if metric client not specified;")
-  public void testMicroMeterRegistryRuturnsNullForEmptyClientConfig() {
+  void testMicroMeterRegistryRuturnsNullForEmptyClientConfig() {
     assertNull(MetricClientFactory.getMeterRegistry());
   }
 
