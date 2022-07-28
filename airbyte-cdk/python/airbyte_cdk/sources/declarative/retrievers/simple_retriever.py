@@ -43,6 +43,7 @@ class SimpleRetriever(Retriever, HttpStream):
         paginator: Optional[Paginator] = None,
         stream_slicer: Optional[StreamSlicer] = SingleSlice(),
         state: Optional[State] = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param name: The stream's name
@@ -52,6 +53,7 @@ class SimpleRetriever(Retriever, HttpStream):
         :param paginator: The paginator
         :param stream_slicer: The stream slicer
         :param state: The stream state
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._name = name
         self._primary_key = primary_key
