@@ -3,6 +3,7 @@
 #
 
 import datetime as dt
+from typing import Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 
@@ -16,18 +17,30 @@ class MinMaxDatetime:
 
     def __init__(
         self,
-        datetime: str,
+        datetime: Union[InterpolatedString, str],
         datetime_format: str = "",
-        min_datetime: str = "",
-        max_datetime: str = "",
+        min_datetime: Union[InterpolatedString, str] = "",
+        max_datetime: Union[InterpolatedString, str] = "",
     ):
-        self._datetime_interpolator = InterpolatedString(datetime)
+        """
+        :param datetime: InterpolatedString or string representing the datetime in the format specified by `datetime_format`
+        :param datetime_format: Format of the datetime passed as argument
+        :param min_datetime: InterpolatedString or string representing the min datetime
+        :param max_datetime: InterpolatedString or string representing the max datetime
+        """
+        self._datetime_interpolator = InterpolatedString.create(datetime)
         self._datetime_format = datetime_format
         self._timezone = dt.timezone.utc
-        self._min_datetime_interpolator = InterpolatedString(min_datetime) if min_datetime else None
-        self._max_datetime_interpolator = InterpolatedString(max_datetime) if max_datetime else None
+        self._min_datetime_interpolator = InterpolatedString.create(min_datetime) if min_datetime else None
+        self._max_datetime_interpolator = InterpolatedString.create(max_datetime) if max_datetime else None
 
     def get_datetime(self, config, **kwargs) -> dt.datetime:
+        """
+        Evaluates and returns the datetime
+        :param config: The user-provided configuration as specified by the source's spec
+        :param kwargs: Additional arguments to be passed to the strings for interpolation
+        :return: The evaluated datetime
+        """
         # We apply a default datetime format here instead of at instantiation, so it can be set by the parent first
         datetime_format = self._datetime_format
         if not datetime_format:
@@ -48,9 +61,11 @@ class MinMaxDatetime:
         return time
 
     @property
-    def datetime_format(self):
+    def datetime_format(self) -> str:
+        """The format of the string representing the datetime"""
         return self._datetime_format
 
     @datetime_format.setter
-    def datetime_format(self, value):
+    def datetime_format(self, value: str):
+        """Setter for the datetime format"""
         self._datetime_format = value

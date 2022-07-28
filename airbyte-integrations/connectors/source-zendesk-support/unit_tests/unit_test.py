@@ -92,7 +92,7 @@ def test_token_authenticator():
     # we expect base64 from creds input
     expected = "dGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="
     result = BasicApiTokenAuthenticator("test@airbyte.io", "api_token")
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -113,7 +113,7 @@ def test_convert_config2stream_args(config):
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
     result = SourceZendeskSupport().get_authenticator(config=config)
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
