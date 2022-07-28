@@ -101,7 +101,7 @@ public class MetricClientFactory {
    */
   public static MeterRegistry getMeterRegistry() {
 
-    if (configs.getMetricClient().equals(DATADOG_METRIC_CLIENT)) {
+    if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
       StatsdConfig config = getDatadogStatsDConfig();
       return new StatsdMeterRegistry(config, Clock.SYSTEM);
     }
