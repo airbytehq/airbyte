@@ -8,7 +8,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from dateutil.parser import isoparse
 from pytest import raises
-from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions, PayPalOauth2Authenticator
+from source_paypal_transaction.source import Balances, PaypalTransactionStream, Transactions
 
 
 def test_minimum_allowed_start_date():
@@ -325,8 +325,7 @@ def test_unnest_field():
 
 
 def test_get_last_refreshed_datetime(requests_mock, prod_config, api_endpoint):
-    authenticator = PayPalOauth2Authenticator(prod_config)
-    stream = Balances(authenticator=authenticator, **prod_config)
+    stream = Balances(authenticator=NoAuth(), **prod_config)
     requests_mock.post(f"{api_endpoint}/v1/oauth2/token", json={"access_token": "test_access_token", "expires_in": 12345})
     url = f'{api_endpoint}/v1/reporting/balances' + '?as_of_time=2021-07-01T00%3A00%3A00%2B00%3A00'
     requests_mock.get(url, json={})

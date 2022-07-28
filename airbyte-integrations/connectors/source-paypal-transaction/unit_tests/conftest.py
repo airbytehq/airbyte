@@ -6,6 +6,7 @@ import json
 import pathlib
 
 import pytest
+from source_paypal_transaction.source import PayPalOauth2Authenticator
 
 
 @pytest.fixture()
@@ -85,3 +86,12 @@ def error_while_refreshing_access_token():
     """
     return "Error while refreshing access token: 'access_token'"
 
+
+@pytest.fixture()
+def authenticator_instance(prod_config):
+    return PayPalOauth2Authenticator(prod_config)
+
+
+@pytest.fixture()
+def new_format_authenticator_instance(new_prod_config):
+    return PayPalOauth2Authenticator(new_prod_config)
