@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Kustomer Singer Spec",
     "type": "object",
-    "required": ["api_token", "start_date"],
+    "required": ["api_token", "start_date", "user_agent"],
     "additionalProperties": true,
     "properties": {
       "api_token": {
@@ -18,6 +18,12 @@
         "type": "string",
         "description": "The date from which you'd like to replicate the data",
         "examples": ["2019-01-01T00:00:00Z"]
+      },
+      "user_agent": {
+        "type": "string",
+        "title": "User Agent",
+        "description": "Kustomer API User Agent",
+        "examples": ["tap-kustomer <api_user_email@your_company.com>"]
       }
     }
   }

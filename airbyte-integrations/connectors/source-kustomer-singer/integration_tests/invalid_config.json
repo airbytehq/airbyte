@@ -1,4 +1,5 @@
 {
   "api_token": "invalid_api_token",
-  "start_date": "0000-01-01T00:00:00Z"
+  "start_date": "0000-01-01T00:00:00Z",
+  "user_agent": "tap-kustomer <test@test.com>"
 }
