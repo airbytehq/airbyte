@@ -50,4 +50,4 @@ def test_string_interpolation_through_kwargs():
     options = {"name": "airbyte"}
     partial = create(InterpolatedString, string=s, options=options)
     interpolated_string = partial()
-    assert interpolated_string._string == "airbyte"
+    assert interpolated_string.eval({}) == "airbyte"
