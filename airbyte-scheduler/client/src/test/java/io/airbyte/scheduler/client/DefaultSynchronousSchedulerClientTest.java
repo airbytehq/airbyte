@@ -107,8 +107,9 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<String, String> mapperFunction = output -> output;
       when(function.get()).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, mock(ConnectorJobReportingContext.class), sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
@@ -131,8 +132,9 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<Integer, String> mapperFunction = Object::toString;
       when(function.get()).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, mock(ConnectorJobReportingContext.class), sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("42", response.getOutput());
@@ -151,8 +153,9 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<String, String> mapperFunction = output -> output;
       when(function.get()).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, mock(ConnectorJobReportingContext.class), sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertNull(response.getOutput());
@@ -175,9 +178,10 @@ class DefaultSynchronousSchedulerClientTest {
       final Function<String, String> mapperFunction = output -> output;
       when(function.get()).thenThrow(new RuntimeException());
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       assertThrows(
           RuntimeException.class,
-          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, mock(ConnectorJobReportingContext.class), sourceDefinitionId, function,
+          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function,
               mapperFunction, WORKSPACE_ID));
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
