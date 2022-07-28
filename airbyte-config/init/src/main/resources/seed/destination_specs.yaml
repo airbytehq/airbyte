@@ -4396,7 +4396,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.33"
+- dockerImage: "airbyte/destination-snowflake:0.4.34"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/snowflake"
     connectionSpecification:
@@ -4465,8 +4465,8 @@
           description: ""
           type: "object"
           oneOf:
-          - type: "object"
-            title: "OAuth2.0"
+          - title: "OAuth2.0"
+            type: "object"
             order: 0
             required:
             - "access_token"
@@ -4499,11 +4499,37 @@
                 title: "Refresh Token"
                 description: "Enter your application's Refresh Token"
                 airbyte_secret: true
+          - title: "Key Pair Authentication"
+            type: "object"
+            order: 1
+            required:
+            - "private_key"
+            properties:
+              auth_type:
+                type: "string"
+                const: "Key Pair Authentication"
+                enum:
+                - "Key Pair Authentication"
+                default: "Key Pair Authentication"
+                order: 0
+              private_key:
+                type: "string"
+                title: "Private Key"
+                description: "RSA Private key to use for Snowflake connection. See\
+                  \ the <a href=\"https://docs.airbyte.io/integrations/destinations/snowflake\"\
+                  >docs</a> for more information on how to obtain this key."
+                multiline: true
+                airbyte_secret: true
+              private_key_password:
+                type: "string"
+                title: "Passphrase (Optional)"
+                description: "Passphrase for private key"
+                airbyte_secret: true
           - title: "Username and Password"
             type: "object"
             required:
             - "password"
-            order: 1
+            order: 2
             properties:
               password:
                 description: "Enter the password associated with the username."
