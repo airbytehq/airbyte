@@ -98,7 +98,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
-    DATE_FORMAT = "YYYY-MM-DD"
+    CONFIG_DATE_FORMAT = "YYYY-MM-DD"
     STATE_START_DATE_KEY = "start_date"
     cursor_field = "reportDate"
 
@@ -111,7 +111,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         # Set start date from config file
         self._start_date = config.get("start_date")
         if self._start_date:
-            self._start_date = pendulum.from_format(self._start_date, self.DATE_FORMAT).date()
+            self._start_date = pendulum.from_format(self._start_date, self.CONFIG_DATE_FORMAT).date()
         super().__init__(config, profiles)
 
     @property
