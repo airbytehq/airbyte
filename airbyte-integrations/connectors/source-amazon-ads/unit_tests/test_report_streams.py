@@ -370,3 +370,12 @@ def test_get_start_report_date(config):
     assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210725"}}) == Date(2021, 7, 25)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210515"}}) == Date(2021, 6, 1)
+
+
+@freeze_time("2021-08-01 04:00:00")
+def test_stream_slices_different_timezones(config):
+    profile1 = Profile(profileId=1, timezone="America/Los_Angeles", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+    profile2 = Profile(profileId=2, timezone="UTC", accountInfo=AccountInfo(marketplaceStringId="", id="", type="seller"))
+    stream = SponsoredProductsReportStream(config, [profile1, profile2], authenticator=mock.MagicMock())
+    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state={})
+    assert slices == [{"profile": profile1, "reportDate": "20210731"}, {"profile": profile2, "reportDate": "20210801"}]
