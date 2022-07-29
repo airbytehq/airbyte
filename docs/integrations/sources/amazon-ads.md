@@ -69,7 +69,7 @@ This source is capable of syncing the following streams:
 
 ## Connector-specific features and highlights
 
-All the reports are generated for the day before relatively to the target profile' timezone
+All the reports are generated relative to the target profile' timezone.
 
 ## Performance considerations
 
