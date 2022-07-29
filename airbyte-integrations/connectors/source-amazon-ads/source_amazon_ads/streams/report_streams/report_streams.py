@@ -5,7 +5,6 @@
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import timedelta
 from enum import Enum
 from gzip import decompress
 from http import HTTPStatus
@@ -106,7 +105,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         self._authenticator = authenticator
         self._session = requests.Session()
         self._model = self._generate_model()
-        self.report_wait_timeout = timedelta(minutes=config.get("report_wait_timeout", 30)).total_seconds
+        self.report_wait_timeout = config.get("report_wait_timeout", 30)
         self.report_generation_maximum_retries = config.get("report_generation_max_retries", 5)
         # Set start date from config file
         self._start_date = config.get("start_date")
@@ -157,7 +156,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout)(func)(
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60)(func)(
                 self, *args, **kwargs
             )
 
@@ -395,3 +394,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         response.raise_for_status()
         raw_string = decompress(response.content).decode("utf")
         return json.loads(raw_string)
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, ReportGenerationInProgress):
+            return f'Report(s) generation time took more than {self.report_wait_timeout} minutes, please increase the "report_wait_timeout" parameter in configuration.'
