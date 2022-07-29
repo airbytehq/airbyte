@@ -2798,7 +2798,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.43"
+- dockerImage: "airbyte/source-google-ads:0.1.44"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2955,9 +2955,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.24"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.25"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Analytics V4 Spec"
@@ -3085,9 +3085,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.0.1"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.0.2"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Analytics Data API Spec"
@@ -3100,7 +3100,6 @@
       - "metrics"
       - "date_ranges_start_date"
       - "date_ranges_end_date"
-      additionalProperties: false
       properties:
         property_id:
           type: "string"
@@ -3706,7 +3705,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.77"
+- dockerImage: "airbyte/source-hubspot:0.1.78"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6028,7 +6027,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.8"
+- dockerImage: "airbyte/source-okta:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
@@ -6708,7 +6707,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.7"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -6716,21 +6715,58 @@
       title: "Paypal Transaction Search"
       type: "object"
       required:
-      - "client_id"
-      - "secret"
       - "start_date"
       - "is_sandbox"
       additionalProperties: true
       properties:
-        client_id:
-          title: "Client ID"
-          type: "string"
-          description: "The Client ID of your Paypal developer application."
-        secret:
-          title: "Client Secret"
-          type: "string"
-          description: "The Client Secret of your Paypal developer application."
-          airbyte_secret: true
+        credentials:
+          title: "Authenticate using"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "auth_type"
+            - "refresh_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Paypal developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client secret"
+                description: "The Client Secret of your Paypal developer application."
+                airbyte_secret: true
+              refresh_token:
+                type: "string"
+                title: "Refresh token"
+                description: "The key to refresh the expired access token."
+                airbyte_secret: true
+          - title: "Private OAuth Creds"
+            type: "object"
+            required:
+            - "auth_type"
+            - "client_id"
+            - "client_secret"
+            properties:
+              auth_type:
+                type: "string"
+                const: "private_oauth"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Paypal developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client secret"
+                description: "The Client Secret of your Paypal developer application."
+                airbyte_secret: true
         start_date:
           type: "string"
           title: "Start Date"
@@ -6748,6 +6784,17 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject:
+        - "credentials"
+        - "0"
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "refresh_token"
 - dockerImage: "airbyte/source-paystack:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paystack"
@@ -10250,7 +10297,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.13"
+- dockerImage: "airbyte/source-zendesk-support:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:
