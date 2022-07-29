@@ -37,7 +37,7 @@ class DiscordMessagesStream(HttpStream, IncrementalMixin):
     def request_headers(self, **_) -> Mapping[str, Any]:
         return {'Authorization': "Bot " + self.server_token}
 
-    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **_) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **_) -> MutableMapping[str, Any]:
         if not next_page_token:
             return None
         return next_page_token
@@ -66,20 +66,19 @@ class DiscordMessagesStream(HttpStream, IncrementalMixin):
     def read_records(self, stream_state: Mapping[str, Any] = None, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
 
         if stream_state:
-            state_timestamp = string_to_timestamp(stream_state["timestamp"])
+            self.latest_stream_timestamp = string_to_timestamp(stream_state["timestamp"])
         else:
-            state_timestamp = self.initial_timestamp
-
-        self.latest_stream_timestamp = state_timestamp
+            self.latest_stream_timestamp = self.initial_timestamp
 
         for record in super().read_records(*args, **kwargs):
-            raw_latest_timestamp = record["timestamp"]
-            latest_timestamp = string_to_timestamp(raw_latest_timestamp)
-            if latest_timestamp <= state_timestamp:
+            record_timestamp = string_to_timestamp(record["timestamp"])
+
+            # End execution in case we retrive a message already processed
+            if record_timestamp <= self.latest_stream_timestamp:
                 return
             if self._cursor_value is None:
-                self._cursor_value = latest_timestamp
-            self._cursor_value = max(self._cursor_value, latest_timestamp)
+                self._cursor_value = record_timestamp
+            self._cursor_value = max(self._cursor_value, record_timestamp)
             yield record
 
 
