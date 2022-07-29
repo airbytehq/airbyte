@@ -1,12 +1,65 @@
 # Okta
 
-## Sync overview
+Okta is the complete identity solution for all your apps and people that’s universal, reliable, and easy
 
-This source can sync data for the [Okta API](https://developer.okta.com/docs/reference/). It supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
+* Created Okta account with added application on [Add Application Page](https://<okta-domain>.okta.com/enduser/catalog) page. 
 
-### Output schema
+## Airbyte OSS
+* Name
+* Okta-Domain
+* Start Date
+* Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
 
-This Source is capable of syncing the following core Streams:
+## Airbyte Cloud
+* Name
+* Start Date
+* Client ID (received when application was added).
+* Client Secret (received when application was added).
+* Refresh Token (received when application was added)
+
+## Setup guide
+### Step 1: Set up Okta
+
+1. Create account on Okta by following link [signup](https://www.okta.com/free-trial/)
+2. Confirm your Email
+3. Choose authorization method (Application or SMS)
+4. Add application in your [Dashboard](https://<okta-domain>.okta.com/app/UserHome)
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
+4. Add **Name**
+5. Add **Okta-Domain**
+6. Add **Start date**
+7. Choose the method of authentication
+8. If you select Token authentication - fill the field  **Personal Api Token** 
+9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
+10. Click `Set up source`.
+
+### For Airbyte OSS:
+
+1. Go to local Airbyte page.
+2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/). 
+3. Go to local Airbyte page.
+4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+5. On the Set up the source page select **Okta** from the Source type dropdown. 
+6. Add **Name**
+7. Add **Okta-Domain**
+8. Add **Start date**
+9. Paste all data to required fields fill the fields **Client ID**, **Client Secret**, **Refresh Token**
+10. Click `Set up source`.
+
+
+## Supported sync modes
+
+The Okta source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+ - Full Refresh
+ - Incremental
+
+## Supported Streams
 
 - [Users](https://developer.okta.com/docs/reference/api/users/#list-users)
 - [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user)
@@ -16,51 +69,15 @@ This Source is capable of syncing the following core Streams:
 - [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
 - [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
 
-### Data type mapping
-
-| Integration Type | Airbyte Type | Notes |
-| :--------------- | :----------- | :---- |
-| `string`         | `string`     |       |
-| `number`         | `number`     |       |
-| `array`          | `array`      |       |
-| `object`         | `object`     |       |
-
-### Features
-
-| Feature           | Supported?\(Yes/No\) | Notes |
-| :---------------- | :------------------- | :---- |
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | Yes                  |       |
-| Namespaces        | No                   |       |
-
-### Performance considerations
+## Performance considerations
 
 The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
-
-## Getting started
-
-### Requirements
-
-You can use [OAuth2.0](https://developer.okta.com/docs/guides/implement-grant-type/authcodepkce/main/) 
-or an [API token](https://developer.okta.com/docs/guides/create-an-api-token/overview/) to authenticate your Okta account. 
-If you choose to authenticate with OAuth2.0, [register](https://dev-01177082-admin.okta.com/admin/apps/active) your Okta application.
-
-### Setup guide
-
-1. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/). 
-2. Go to local Airbyte page.
-3. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-4. On the Set up the source page select **Okta** from the Source type dropdown. 
-5. Paste all data to required fields.
-6. Click `Set up source`.
-
-**Note:**
-Different Okta APIs require different admin privilege levels. API tokens inherit the privilege level of the admin account used to create them
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.10  | 2022-07-29 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Added parameter 'start_date' for Logs stream                                   |
 | 0.1.9   | 2022-07-25 | [15001](https://github.com/airbytehq/airbyte/pull/15001) | Return deprovisioned users                                                     |
 | 0.1.8   | 2022-07-19 | [14710](https://github.com/airbytehq/airbyte/pull/14710) | Implement OAuth2.0 authorization method                                        |
 | 0.1.7   | 2022-07-13 | [14556](https://github.com/airbytehq/airbyte/pull/14556) | add User_Role_Assignments and Group_Role_Assignments streams (full fetch only) |
