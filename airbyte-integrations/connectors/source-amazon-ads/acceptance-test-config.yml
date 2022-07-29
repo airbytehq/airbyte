@@ -22,7 +22,7 @@ tests:
         extra_records: no
     - config_path: "secrets/config_report.json"
       configured_catalog_path: "integration_tests/configured_catalog_report.json"
-      timeout_seconds: 1200
+      timeout_seconds: 2400
   incremental:
     - config_path: "secrets/config_report.json"
       configured_catalog_path: "integration_tests/configured_catalog_report.json"
@@ -36,4 +36,4 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog_report.json"
       ignored_fields:
         "sponsored_products_report_stream": ["updatedAt"]
-      timeout_seconds: 2400
+      timeout_seconds: 3600
