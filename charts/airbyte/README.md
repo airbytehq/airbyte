@@ -1,6 +1,6 @@
 # airbyte
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.23-alpha](https://img.shields.io/badge/AppVersion-0.39.23--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.37--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte
 

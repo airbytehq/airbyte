@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -26,10 +28,12 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.Duration;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -100,7 +104,10 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
   }
 
   private void initAndStartJdbcContainer() {
-    db = (ClickHouseContainer) new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine").withNetwork(network);
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+        .withNetwork(network)
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
   }
 
@@ -110,6 +117,7 @@ public abstract class AbstractSshClickHouseSourceAcceptanceTest extends SourceAc
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
+            ClickHouseSource.HTTP_PROTOCOL,
             config.get(JdbcUtils.HOST_KEY).asText(),
             config.get(JdbcUtils.PORT_KEY).asInt(),
             config.get(JdbcUtils.DATABASE_KEY).asText()));

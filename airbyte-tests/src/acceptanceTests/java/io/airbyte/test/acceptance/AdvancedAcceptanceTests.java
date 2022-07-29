@@ -219,7 +219,7 @@ class AdvancedAcceptanceTests {
         apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
         Charset.defaultCharset());
 
-    assertTrue(serverLogLines.size() > 0);
+    assertFalse(serverLogLines.isEmpty());
 
     boolean hasRedacted = false;
 

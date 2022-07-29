@@ -16,8 +16,7 @@ from airbyte_cdk.sources.declarative.types import Config
 
 class LimitPaginator(Paginator):
     """
-    Limit paginator.
-    Requests pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    Limit paginator to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
 
     Examples:
         1.
@@ -79,15 +78,17 @@ class LimitPaginator(Paginator):
         config: Config,
         url_base: str,
         decoder: Decoder = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
-        :param page_size: the number of records to request
-        :param limit_option: the request option to set the limit. Cannot be injected in the path.
-        :param page_token_option: the request option to set the page token
-        :param pagination_strategy: Strategy defining how to get the next page token
-        :param config: connection config
-        :param url_base: endpoint's base url
-        :param decoder: decoder to decode the response
+        :param page_size: The number of records to request
+        :param limit_option: The request option to set the limit. Cannot be injected in the path.
+        :param page_token_option: The request option to set the page token
+        :param pagination_strategy: The strategy defining how to get the next page token
+        :param config: The user-provided configuration as specified by the source's spec
+        :param url_base: The endpoint's base url
+        :param decoder: The decoder to decode the response
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if limit_option.inject_into == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
@@ -98,7 +99,7 @@ class LimitPaginator(Paginator):
         self._pagination_strategy = pagination_strategy
         self._token = None
         if isinstance(url_base, str):
-            url_base = InterpolatedString(url_base)
+            url_base = InterpolatedString.create(url_base, options=options)
         self._url_base = url_base
         self._decoder = decoder or JsonDecoder()
 
@@ -128,7 +129,11 @@ class LimitPaginator(Paginator):
     def request_body_json(self) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
-    def _get_request_options(self, option_type) -> Mapping[str, Any]:
+    def request_kwargs(self) -> Mapping[str, Any]:
+        # Never update kwargs
+        return {}
+
+    def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
         if self._page_token_option.inject_into == option_type:
             if option_type != RequestOptionType.path and self._token:

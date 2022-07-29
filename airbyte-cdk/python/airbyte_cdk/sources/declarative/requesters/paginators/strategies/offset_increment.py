@@ -14,6 +14,9 @@ class OffsetIncrement(PaginationStrategy):
     """
 
     def __init__(self, page_size: int):
+        """
+        :param page_size: the number of records to request
+        """
         self._offset = 0
         self._page_size = page_size
 
