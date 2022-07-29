@@ -359,3 +359,14 @@ def test_get_start_report_date(config):
     assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-06-02T06:00:00Z"}) == Date(2021, 6, 1)
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
     assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-05-02T06:00:00Z"}) == Date(2021, 6, 1)
+
+    profile_id = str(profiles[0].profileId)
+    config["start_date"] = "2021-04-10"
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210810"}}) == Date(2021, 8, 10)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210730"}}) == Date(2021, 7, 28)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210725"}}) == Date(2021, 7, 25)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210515"}}) == Date(2021, 6, 1)
