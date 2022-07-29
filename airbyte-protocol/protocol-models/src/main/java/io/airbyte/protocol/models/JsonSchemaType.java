@@ -23,12 +23,16 @@ public class JsonSchemaType {
   public static final String CONTENT_ENCODING = "contentEncoding";
   public static final String BASE_64 = "base64";
   public static final String AIRBYTE_TYPE = "airbyte_type";
+  public static final String ITEMS = "items";
+  public static final String STRING_TYPE = "string";
+
 
   public static final JsonSchemaType STRING = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build();
   public static final JsonSchemaType NUMBER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).build();
   public static final JsonSchemaType INTEGER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).withAirbyteType(AIRYBTE_INT_TYPE).build();
   public static final JsonSchemaType BOOLEAN = JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN).build();
   public static final JsonSchemaType OBJECT = JsonSchemaType.builder(JsonSchemaPrimitive.OBJECT).build();
+  public static final JsonSchemaType ARRAY_WITH_STRING_ITEMS = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).withItems(STRING_TYPE).build();
   public static final JsonSchemaType ARRAY = JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY).build();
   public static final JsonSchemaType NULL = JsonSchemaType.builder(JsonSchemaPrimitive.NULL).build();
   public static final JsonSchemaType STRING_BASE_64 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withContentEncoding(BASE_64).build();
@@ -52,9 +56,9 @@ public class JsonSchemaType {
       .withFormat(DATE).build();
   public static final JsonSchemaType NUMBER_BIGINT = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType("big_integer").build();
 
-  private final Map<String, String> jsonSchemaTypeMap;
+  private final Map<String, Object> jsonSchemaTypeMap;
 
-  private JsonSchemaType(final Map<String, String> jsonSchemaTypeMap) {
+  private JsonSchemaType(final Map<String, Object> jsonSchemaTypeMap) {
     this.jsonSchemaTypeMap = jsonSchemaTypeMap;
   }
 
@@ -62,13 +66,13 @@ public class JsonSchemaType {
     return new Builder(type);
   }
 
-  public Map<String, String> getJsonSchemaTypeMap() {
+  public Map<String, Object> getJsonSchemaTypeMap() {
     return jsonSchemaTypeMap;
   }
 
   public static class Builder {
 
-    private final ImmutableMap.Builder<String, String> typeMapBuilder;
+    private final ImmutableMap.Builder<String, Object> typeMapBuilder;
 
     private Builder(final JsonSchemaPrimitive type) {
       typeMapBuilder = ImmutableMap.builder();
@@ -87,6 +91,14 @@ public class JsonSchemaType {
 
     public Builder withAirbyteType(final String value) {
       typeMapBuilder.put(AIRBYTE_TYPE, value);
+      return this;
+    }
+
+    public Builder withItems(final String value) {
+      ImmutableMap.Builder<String, Object> itemsMapBuilder = new ImmutableMap.Builder<>();
+      itemsMapBuilder.put(TYPE, value);
+      ImmutableMap<String, Object> nestedType = itemsMapBuilder.build();
+      typeMapBuilder.put(ITEMS,  nestedType);
       return this;
     }
 

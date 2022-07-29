@@ -247,7 +247,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
       case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
       case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
-      case ARRAY -> JsonSchemaType.ARRAY;
+      case ARRAY -> JsonSchemaType.ARRAY_WITH_STRING_ITEMS;
       case DATE -> JsonSchemaType.STRING_DATE;
       case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
       case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
