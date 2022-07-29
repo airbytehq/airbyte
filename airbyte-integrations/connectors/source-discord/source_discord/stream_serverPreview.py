@@ -17,9 +17,11 @@ class DiscordServerPreviewStream(HttpStream):
         return {'Authorization': "Bot " + self.server_token}
 
     def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
+        if response.status_code != 200:
+            return []
         yield from [response.json()]
 
-    def next_page_token(self, _) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
 

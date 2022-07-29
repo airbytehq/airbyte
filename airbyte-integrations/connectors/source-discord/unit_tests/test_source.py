@@ -14,6 +14,7 @@ def test_check_connection_does_not_contain_id():
     logger_mock, config_mock = MagicMock(), MagicMock()
     response = source.check_connection(logger_mock, config_mock) == (False, "missing id")
 
+
 def test_check_connection_id_do_not_match():
     url = "https://discord.com/api/users/@me"
     config = {
@@ -27,6 +28,7 @@ def test_check_connection_id_do_not_match():
         logger_mock = MagicMock()
         assert source.check_connection(logger_mock, config) == (False, "wrong id")
 
+
 def test_check_connection_id_matches():
     url = "https://discord.com/api/users/@me"
     config = {
@@ -39,6 +41,7 @@ def test_check_connection_id_matches():
         source = SourceDiscord()
         logger_mock = MagicMock()
         assert source.check_connection(logger_mock, config) == (True, "accepted")
+
 
 def test_streams():
     config = {
