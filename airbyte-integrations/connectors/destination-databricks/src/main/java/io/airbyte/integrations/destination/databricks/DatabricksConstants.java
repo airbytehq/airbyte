@@ -14,7 +14,8 @@ public class DatabricksConstants {
 
   public static final Set<String> DEFAULT_TBL_PROPERTIES = Set.of(
       "delta.autoOptimize.optimizeWrite = true",
-      "delta.autoOptimize.autoCompact = true");
+      "delta.autoOptimize.autoCompact = true",
+      "delta.columnMapping.mode = 'name'");
 
   private DatabricksConstants() {}
 
