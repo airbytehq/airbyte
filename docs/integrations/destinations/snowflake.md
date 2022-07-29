@@ -250,7 +250,6 @@ Now that you have set up the Snowflake destination connector, check out the foll
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                             |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.4.34  | 2022-07-21 | [\#14876](https://github.com/airbytehq/airbyte/pull/14876) | Support for OPENSSH key format in ssh tunnelling  |
 | 0.4.33  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                               |
 | 0.4.32  | 2022-07-14 | [\#14618](https://github.com/airbytehq/airbyte/pull/14618) | Removed additionalProperties: false from JDBC destination connectors                                                                                |
 | 0.4.31  | 2022-07-07 | [\#13729](https://github.com/airbytehq/airbyte/pull/13729) | Improve configuration field description                                                                                                             |
