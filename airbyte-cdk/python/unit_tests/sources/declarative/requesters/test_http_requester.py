@@ -41,8 +41,8 @@ def test_http_requester():
 
     requester = HttpRequester(
         name=name,
-        url_base=InterpolatedString("{{ config['url'] }}"),
-        path=InterpolatedString("v1/{{ stream_slice['id'] }}"),
+        url_base=InterpolatedString.create("{{ config['url'] }}", options={}),
+        path=InterpolatedString.create("v1/{{ stream_slice['id'] }}", options={}),
         http_method=http_method,
         request_options_provider=request_options_provider,
         authenticator=authenticator,
@@ -58,3 +58,4 @@ def test_http_requester():
     assert requester.request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
     assert requester.request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.should_retry(requests.Response()) == should_retry
+    assert {} == requester.request_kwargs(stream_state={}, stream_slice=None, next_page_token=None)

@@ -190,7 +190,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
                 .withStream(CatalogHelpers.createAirbyteStream(
                     String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", getNameSpace()),
-                    Field.of(getIdColumnName(), JsonSchemaType.NUMBER),
+                    Field.of(getIdColumnName(), JsonSchemaType.INTEGER),
                     Field.of(getTestColumnName(), test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))

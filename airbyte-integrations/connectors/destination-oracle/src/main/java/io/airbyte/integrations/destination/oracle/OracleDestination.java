@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -40,6 +39,8 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
   protected static final String KEY_STORE_FILE_PATH = "clientkeystore.jks";
   private static final String KEY_STORE_PASS = RandomStringUtils.randomAlphanumeric(8);
   public static final String ENCRYPTION_METHOD_KEY = "encryption_method";
+
+  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
 
   enum Protocol {
     TCP,
@@ -99,6 +100,9 @@ public class OracleDestination extends AbstractJdbcDestination implements Destin
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+    if (config.has(JDBC_URL_PARAMS_KEY)) {
+      configBuilder.put(JDBC_URL_PARAMS_KEY, config.get(JDBC_URL_PARAMS_KEY));
     }
 
     return Jsons.jsonNode(configBuilder.build());
