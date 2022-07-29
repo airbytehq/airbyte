@@ -122,7 +122,7 @@ def test_create_substream_slicer():
           transform: "_"
     stream_A:
       type: DeclarativeStream
-      options:
+      $options:
         name: "A"
         primary_key: "id"
         retriever: "*ref(retriever)"
@@ -130,7 +130,7 @@ def test_create_substream_slicer():
         schema_loader: "*ref(schema_loader)"
     stream_B:
       type: DeclarativeStream
-      options:
+      $options:
         name: "B"
         primary_key: "id"
         retriever: "*ref(retriever)"
@@ -197,7 +197,7 @@ def test_datetime_stream_slicer():
     content = """
     stream_slicer:
         type: DatetimeStreamSlicer
-        options:
+        $options:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         start_datetime:
           type: MinMaxDatetime
@@ -282,11 +282,11 @@ partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    file_path: "./source_sendgrid/schemas/{{ name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
   cursor_field: [ ]
 list_stream:
   $ref: "*ref(partial_stream)"
-  options:
+  $options:
     name: "lists"
     primary_key: "id"
     extractor:
@@ -366,12 +366,12 @@ def test_create_requester():
   requester:
     type: HttpRequester
     path: "/v3/marketing/lists"
-    options:
+    $options:
         name: lists
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuthenticator"
-      username: "{{ config.apikey }}"
+      username: "{{ options.name }}"
       password: "{{ config.apikey }}"
     request_options_provider:
       request_parameters:
@@ -386,7 +386,7 @@ def test_create_requester():
     assert component._path._string == "/v3/marketing/lists"
     assert component._url_base._string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, BasicHttpAuthenticator)
-    assert component._authenticator._username.eval(input_config) == "verysecrettoken"
+    assert component._authenticator._username.eval(input_config) == "lists"
     assert component._authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
@@ -420,12 +420,12 @@ def test_config_with_defaults():
     content = """
     lists_stream:
       type: "DeclarativeStream"
-      options:
+      $options:
         name: "lists"
         primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
-          file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+          file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
         retriever:
           paginator:
             type: "LimitPaginator"
@@ -518,7 +518,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            options:
+            $options:
                 {self.base_options}
         """
         config = parser.parse(content)
@@ -530,7 +530,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             type: DeclarativeStream
-            options:
+            $options:
                 {self.base_options}
                 transformations:
                     - type: RemoveFields
@@ -548,7 +548,7 @@ class TestCreateTransformations:
         content = f"""
         the_stream:
             class_name: airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream
-            options:
+            $options:
                 {self.base_options}
                 transformations:
                     - type: AddFields
