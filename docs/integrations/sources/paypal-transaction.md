@@ -57,7 +57,6 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
-| 0.1.9   | 2022-07-28 | [15098](https://github.com/airbytehq/airbyte/pull/15098) | Add unit tests                                                                                                               |
 | 0.1.8   | 2022-07-25 | [15000](https://github.com/airbytehq/airbyte/pull/15000) | Added support of `OAuth2.0` authentication, fixed bug when normalization couldn't handle nested cursor field and primary key |
 | 0.1.7   | 2022-07-18 | [14804](https://github.com/airbytehq/airbyte/pull/14804) | Adding `RESULTSET_TOO_LARGE` error validation                                                                                |
 | 0.1.6   | 2022-06-10 | [13682](https://github.com/airbytehq/airbyte/pull/13682) | Update paypal transaction schema                                                                                             |
