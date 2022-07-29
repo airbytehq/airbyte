@@ -3,7 +3,7 @@
 Okta is the complete identity solution for all your apps and people that’s universal, reliable, and easy
 
 ## Prerequisites
-* Created Okta account with added application on [Add Application Page](https://<okta-domain>.okta.com/enduser/catalog) page. 
+* Created Okta account with added application on [Add Application Page](https://okta-domain.okta.com/enduser/catalog) page. (change okta-domain to you'r domain received after complete registration)
 
 ## Airbyte OSS
 * Name
@@ -24,7 +24,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 1. Create account on Okta by following link [signup](https://www.okta.com/free-trial/)
 2. Confirm your Email
 3. Choose authorization method (Application or SMS)
-4. Add application in your [Dashboard](https://<okta-domain>.okta.com/app/UserHome)
+4. Add application in your [Dashboard](https://okta-domain.okta.com/app/UserHome)
 
 ### For Airbyte Cloud:
 
