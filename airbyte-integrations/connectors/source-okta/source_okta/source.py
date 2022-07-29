@@ -138,7 +138,7 @@ class GroupMembers(IncrementalOktaStream):
         stream_slice: Mapping[str, any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params = IncrementalOktaStream.request_params(self, stream_state, stream_slice, next_page_token)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if latest_entry:
             params["after"] = latest_entry
@@ -184,7 +184,7 @@ class Logs(IncrementalOktaStream):
         # The log stream use a different params to get data
         # https://developer.okta.com/docs/reference/api/system-log/#datetime-filter
         stream_state = stream_state or {}
-        params = IncrementalOktaStream.request_params(self, stream_state, stream_slice, next_page_token)
+        params = super().request_params(stream_state, stream_slice, next_page_token)
         latest_entry = stream_state.get(self.cursor_field)
         if self.default_start_date and not latest_entry:
             params["since"] = self.default_start_date
