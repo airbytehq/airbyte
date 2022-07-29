@@ -11,11 +11,7 @@ export class AnalyticsService {
 
   reset = (): void => this.getSegmentAnalytics()?.reset?.();
 
-  track = <N extends Namespace, A extends Action>(
-    namespace: N,
-    action: A,
-    params: EventParams & { actionDescription?: string }
-  ) => {
+  track = (namespace: Namespace, action: Action, params: EventParams & { actionDescription?: string }) => {
     this.getSegmentAnalytics()?.track(`Airbyte.UI.${namespace}.${action}`, {
       ...params,
       ...this.context,
