@@ -55,7 +55,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "taxRegistrationType": {
                 "type": ["null", "string"]
@@ -157,7 +157,7 @@
           "type": ["null", "array"],
           "items": {
             "type": ["null", "object"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "taxRegistrationType": {
                 "type": ["null", "string"]
@@ -218,7 +218,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "object"],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "packageIdentifier": {
             "type": ["null", "string"]
