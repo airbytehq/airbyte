@@ -734,6 +734,7 @@ class TemporalClientTest {
 
   @Nested
   class RestartPerStatus {
+
     @Test
     public void testRestartFailed() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
@@ -751,11 +752,12 @@ class TemporalClientTest {
       try (final MockedStatic mConnectionManagerUtils = mockStatic(ConnectionManagerUtils.class)) {
         temporalClient.restartWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
 
-        mConnectionManagerUtils.verify( () -> ConnectionManagerUtils.safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
+        mConnectionManagerUtils.verify(() -> ConnectionManagerUtils.safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
             anyString()));
-        mConnectionManagerUtils.verify( () -> ConnectionManagerUtils.startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId)));
+        mConnectionManagerUtils.verify(() -> ConnectionManagerUtils.startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId)));
       }
     }
+
   }
 
   @Test

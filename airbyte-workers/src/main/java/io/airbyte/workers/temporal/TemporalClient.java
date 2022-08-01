@@ -471,6 +471,7 @@ public class TemporalClient {
 
   /**
    * This should be in the class {@li}
+   *
    * @param workflowId
    * @return
    */
@@ -483,8 +484,7 @@ public class TemporalClient {
     System.err.flush();
     return Optional.ofNullable(StringUtils.removeStart(workflowId, "connection_manager_"))
         .map(
-            stringUUID ->
-                UUID.fromString(stringUUID));
+            stringUUID -> UUID.fromString(stringUUID));
   }
 
   Set<String> fetchWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {

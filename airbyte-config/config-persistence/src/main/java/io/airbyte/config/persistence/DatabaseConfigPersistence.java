@@ -99,8 +99,6 @@ public class DatabaseConfigPersistence implements ConfigPersistence {
    */
   public static ConfigPersistence createWithValidation(final Database database,
                                                        final JsonSecretsProcessor jsonSecretsProcessor) {
-    final Map<String, List<String>> test = new HashMap<>();
-    Stream.<String>empty();
     return new ValidatingConfigPersistence(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
   }
 
