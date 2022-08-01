@@ -87,7 +87,7 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
-## View the sync log summary
+## View the Sync Log Summary
 The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
  
 To view the sync log summary:
@@ -140,11 +140,11 @@ The log summary for a successful sync shows the following data.
  </tr>
 </table>
  
-:::note
-   In a successful sync, the number of emitted records and committed records should be the same.
  
-::: 
- 
+ :::note
+In a successful sync, the number of emitted records and committed records should be the same.
+:::  
+
  
 ### Cancelled
 The log summary for a cancelled sync may show the following data.
@@ -186,14 +186,14 @@ The log summary for a cancelled sync may show the following data.
   <td>The cause of the sync cancellation.
   </td>
  </tr>
-</table>
- 
-:::note
-   Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
- 
-::: 
- 
- 
+</table>  
+
+    :::note 
+    
+    Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
+    
+    :::
+
 ### Failed
 The log summary for a failed sync may show the following data.
  
@@ -235,7 +235,7 @@ The log summary for a failed sync may show the following data.
   </td>
  </tr>
 </table>
- 
+
 ### Running
 The sync log summary displays Running when the sync is actively running.
 
