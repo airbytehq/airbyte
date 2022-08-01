@@ -33,7 +33,7 @@
   "login.inviteLinkExpired": "This invite link expired. A new invite link was sent to your email.",
   "login.inviteLinkInvalid": "This invite link is no longer valid.",
   "login.rightSideFrameTitle": "More about Airbyte",
-  "login.quoteText": "Airbyte has cut <b>months of man hours off</b> of our ELT pipeline development and delivered usable data to us in hours instead of weeks. We are excited for the future of Airbyte, enthusiastic about their approach, and optimistic about our future together.",
+  "login.quoteText": "Airbyte has cut <b>months of employee hours off</b> of our ELT pipeline development and delivered usable data to us in hours instead of weeks. We are excited for the future of Airbyte, enthusiastic about their approach, and optimistic about our future together.",
   "login.quoteAuthor": "Micah Mangione",
   "login.quoteAuthorJobTitle": "Director of Technology",
 
