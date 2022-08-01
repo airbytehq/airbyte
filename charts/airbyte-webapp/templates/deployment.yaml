@@ -114,6 +114,9 @@ spec:
         {{- if .Values.extraVolumeMounts }}
   {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
+      {{- if .Values.extraContainers }}
+      {{ toyaml .Values.extraInitContainers | indent 8 }}
+      {{- end }}
       volumes:
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}

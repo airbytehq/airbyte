@@ -109,6 +109,9 @@ spec:
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
         {{- end }}
+        {{- if .Values.extraContainers }}
+        {{ toyaml .Values.extraInitContainers | indent 8 }}
+        {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig
         configMap:
