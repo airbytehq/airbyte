@@ -22,7 +22,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          TIME_LIMIT=10800 # 3 hours
+          export TIME_LIMIT=10800 # 3 hours
 
           aws configure set default.region us-east-2
 
