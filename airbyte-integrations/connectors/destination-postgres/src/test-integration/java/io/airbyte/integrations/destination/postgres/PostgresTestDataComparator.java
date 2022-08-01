@@ -19,6 +19,7 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
   private static final String POSTGRES_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+  private static final String POSTGRES_ALT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
   private static final String POSTGRES_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
   @Override
@@ -36,7 +37,10 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
 
   private LocalDate parseLocalDate(String dateTimeValue) {
     if (dateTimeValue != null) {
+      System.out.println("dtVal = " + dateTimeValue);
       var format = (dateTimeValue.matches(".+Z") ? POSTGRES_DATETIME_FORMAT : AIRBYTE_DATETIME_FORMAT);
+      format = (dateTimeValue.matches(".+[.][0-9]") ? POSTGRES_ALT_DATETIME_FORMAT : format);
+      System.out.println("format = " + format); // DEBUG
       return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
     } else {
       return null;
