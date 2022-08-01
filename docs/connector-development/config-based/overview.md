@@ -20,7 +20,7 @@ A source is defined by 2 components:
 
 ## Stream
 
-Streams define the schema of the data of interest, as well as how to read it from the underlying API source.
+Streams define the schema of the data to sync, as well as how to read it from the underlying API source.
 A stream generally corresponds to a resource within the API. They are analogous to tables for a RDMS source.
 
 A stream is defined by:
@@ -39,7 +39,7 @@ More details on cursor fields, and checkpointing can be found in the [incrementa
 ## Data retriever
 
 The data retriever defines how to read the data from an API source, and acts as an orchestrator for the data retrieval flow.
-The is currently only one implementation, the `SimpleRetriever`, which is defined by
+There is currently only one implementation, the `SimpleRetriever`, which is defined by
 
 1. Requester: describes how to submit requests to the API source
 2. Paginator[^1]: describes how to navigate through the API's pages
@@ -61,9 +61,9 @@ The `SimpleRetriever`'s data flow can be described as follows:
     2. Select the records from the response
     3. Repeat for as long as the paginator points to a next page
 
-More details on the paginator can be found in the [pagination section](pagination.md)
 More details on the record selector can be found in the [record selector section](record-selector.md)
 More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md)
+More details on the paginator can be found in the [pagination section](pagination.md)
 
 ## Requester
 

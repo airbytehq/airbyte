@@ -1,6 +1,6 @@
 # Error handling
 
-By default, only retry server errors (HTTP 5XX) and too many requests (HTTP 429) will be retried up to 5 times with exponential backoff.
+By default, only server errors (HTTP 5XX) and too many requests (HTTP 429) will be retried up to 5 times with exponential backoff.
 Other HTTP errors will result in a failed read.
 
 Other behaviors can be configured through the `Requester`'s `error_handler` field.
