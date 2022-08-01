@@ -63,8 +63,8 @@ def previous_connector_spec_fixture(
         spec_messages = filter_output(output, Type.SPEC)
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         spec = spec_messages[0].spec
-        request.previous_spec_cache = spec
-    return request.previous_spec_cache
+        request.instance.previous_spec_cache = spec
+    return request.instance.previous_spec_cache
 
 
 @pytest.mark.default_timeout(10)
