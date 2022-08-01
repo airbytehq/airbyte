@@ -86,6 +86,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'mccabe:0.6.1'
             // flake8 doesn't support pyproject.toml files
             // and thus there is the wrapper "pyproject-flake8" for this
+            pip 'flake8:4.0.1'
             pip 'pyproject-flake8:0.0.1a2'
             pip 'black:22.3.0'
             pip 'mypy:0.930'
