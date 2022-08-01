@@ -62,6 +62,8 @@ class DestinationNameTransformer:
             return False
         if self.destination_type.value == DestinationType.ORACLE.value and input_name.startswith("_"):
             return True
+        if self.destination_type.value == DestinationType.CLICKHOUSE.value:
+            return True
         doesnt_start_with_alphaunderscore = match("[^A-Za-z_]", input_name[0]) is not None
         contains_non_alphanumeric = match(".*[^A-Za-z0-9_].*", input_name) is not None
         return doesnt_start_with_alphaunderscore or contains_non_alphanumeric
@@ -164,13 +166,19 @@ class DestinationNameTransformer:
         if truncate:
             result = self.truncate_identifier_name(input_name=result, conflict=conflict, conflict_level=conflict_level)
         if self.needs_quotes(result):
-            if self.destination_type.value != DestinationType.MYSQL.value:
-                result = result.replace('"', '""')
-            else:
+            if self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                result = result.replace('"', "_")
                 result = result.replace("`", "_")
-            result = result.replace("'", "\\'")
-            result = self.__normalize_identifier_case(result, is_quoted=True)
-            result = self.apply_quote(result)
+                result = result.replace("'", "_")
+            else:
+                if self.destination_type.value != DestinationType.MYSQL.value:
+                    result = result.replace('"', '""')
+                else:
+                    result = result.replace("`", "_")
+                result = result.replace("'", "\\'")
+                result = self.__normalize_identifier_case(result, is_quoted=True)
+                result = self.apply_quote(result)
+
             if not in_jinja:
                 result = jinja_call(result)
             return result
