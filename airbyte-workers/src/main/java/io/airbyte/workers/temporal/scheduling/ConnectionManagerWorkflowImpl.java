@@ -837,8 +837,8 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * @param metricAttributes Additional metric attributes.
    */
   private void recordWorkflowCountMetric(final ConnectionUpdaterInput connectionUpdaterInput,
-                                 final OssMetricsRegistry metricName,
-                                 final MetricAttribute... metricAttributes) {
+                                         final OssMetricsRegistry metricName,
+                                         final MetricAttribute... metricAttributes) {
     final List<MetricAttribute> baseMetricAttributes = generateMetricAttributes(connectionUpdaterInput);
     if (metricAttributes != null) {
       baseMetricAttributes.addAll(Stream.of(metricAttributes).collect(Collectors.toList()));
