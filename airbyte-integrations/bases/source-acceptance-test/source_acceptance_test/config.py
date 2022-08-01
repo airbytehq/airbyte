@@ -27,7 +27,9 @@ class BackwardCompatibilityTestsConfig(BaseConfig):
     previous_connector_version: str = Field(
         default="latest", description="Previous connector version to use for backward compatibility tests."
     )
-    run_backward_compatibility_tests: bool = Field(default=True, description="Flag to run or skip backward compatibility tests.")
+    disable_backward_compatibility_tests_for_version: Optional[str] = Field(
+        default=None, description="Disable backward compatibility tests for a specific connector version."
+    )
 
 
 class SpecTestConfig(BaseConfig):

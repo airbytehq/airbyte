@@ -202,8 +202,13 @@ class TestSpec(BaseTest):
         self, inputs: SpecTestConfig, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification
     ):
         """Run multiple checks to make sure the actual_connector_spec is backward compatible with the previous_connector_spec"""
-        if not inputs.backward_compatibility_tests_config.run_backward_compatibility_tests:
-            pytest.skip("Backward compatibility tests are disabled.")
+        if (
+            inputs.backward_compatibility_tests_config.disable_backward_compatibility_tests_for_version
+            == inputs.backward_compatibility_tests_config.previous_connector_version
+        ):
+            pytest.skip(
+                f"Backward compatibility tests are disabled for version {inputs.backward_compatibility_tests_config.disable_backward_compatibility_tests_for_version}."
+            )
         if previous_connector_spec is None:
             pytest.skip("The previous connector spec could not be retrieved.")
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
