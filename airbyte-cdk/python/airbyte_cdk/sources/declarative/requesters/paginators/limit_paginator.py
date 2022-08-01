@@ -24,7 +24,7 @@ class LimitPaginator(Paginator):
         * updates the request path with  "{{ response._metadata.next }}"
           paginator:
             type: "LimitPaginator"
-            limit_value: 10
+            page_size: 10
             limit_option:
               option_type: request_parameter
               field_name: page_size
@@ -41,7 +41,7 @@ class LimitPaginator(Paginator):
         `
           paginator:
             type: "LimitPaginator"
-            limit_value: 5
+            page_size: 5
             limit_option:
               option_type: header
               field_name: page_size
@@ -58,7 +58,7 @@ class LimitPaginator(Paginator):
         `
           paginator:
             type: "LimitPaginator"
-            limit_value: 5
+            page_size: 5
             limit_option:
               option_type: request_parameter
               field_name: page_size

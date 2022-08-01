@@ -1,6 +1,6 @@
 # Step 3: Reading data
 
-Now that we're able to authenticate to the source API, we'll want to extract data from the responses.
+Now that we're able to authenticate to the source API, we'll want to select data from the HTTP responses.
 Let's first add the stream to the configured catalog in `source-exchange_rates-tutorial/integration_tests/configured_catalog.json`
 
 ```
@@ -130,3 +130,12 @@ The `--debug` flag can be set to print out debug information, including the outg
 We now have a working implementation of a connector reading the latest exchange rates for a given currency.
 We're however limited to only reading the latest exchange rate value.
 Next, we'll ([enhance the connector to read data for a given date, which will enable us to backfill the stream with historical data.](5-incremental-reads.md)
+
+## More readings
+
+- record selectors
+- catalog tutorial
+- jello
+- read operation
+- primary key
+- declarative stream

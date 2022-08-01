@@ -256,6 +256,17 @@ def mock_datetime_now(monkeypatch):
             ],
         ),
         (
+            "test_docs",
+            None,
+            MinMaxDatetime("2021-02-01T00:00:00.000000+0000"),
+            MinMaxDatetime("2021-03-01T00:00:00.000000+0000"),
+            "1d",
+            cursor_field,
+            "31d",
+            datetime_format,
+            [],
+        ),
+        (
             "test_start_is_after_stream_state",
             {cursor_field: "2021-01-05T00:00:00.000000+0000"},
             MinMaxDatetime("2021-01-01T00:00:00.000000+0000"),

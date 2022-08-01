@@ -7,7 +7,7 @@ The code generator already created a boilerplate connector definition in  `sourc
 ```
 schema_loader:
   type: JsonSchema
-  file_path: "./source_exchange_rates_tutorial/schemas/{{ name }}.json"
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
   extractor:
@@ -177,3 +177,15 @@ which should now succeed with logs similar to:
 ## Next steps
 
 Next, we'll [extract the records from the response](4-reading-data.md)
+
+## More readings
+
+- <connector_definition_yaml_file.yaml>
+- declarative stream
+- check stream
+- http requester
+- authentication
+- request options providers
+- config
+- spec file
+- check operation

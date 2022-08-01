@@ -254,3 +254,15 @@ There shouldn't be any data read if the state is today's date:
 ## Next steps:
 
 Next, we'll run the [Source Acceptance Tests suite to ensure the connector invariants are respected](6-testing.md).
+
+## More readings
+
+- incrementals (general guide)
+- incrementals (low-code specific
+- spec file
+- config
+- stream slicer
+- datetime stream slicer
+- cursor
+- options
+- requester
