@@ -65,6 +65,13 @@ def azblob_credentials() -> Mapping:
         return json.load(json_file)
 
 
+@pytest.fixture(scope="session")
+def box_credentials() -> Mapping:
+    filename = HERE.parent / "secrets/box.json"
+    with open(filename) as json_file:
+        return json.load(json_file)
+
+
 def is_ssh_ready(ip, port):
     try:
         with SSHClient() as ssh:
@@ -211,3 +218,8 @@ def private_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_publ
 def public_azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data):
     for yld in azblob_file(azblob_credentials, cloud_bucket_name, download_gcs_public_data, public=True):
         yield yld
+
+
+@pytest.fixture(scope="session")
+def private_box_file():
+    return "https://app.box.com/file/988255065024?s=mtg6nwx23mfufmqaiuiec8hql9oyefik"

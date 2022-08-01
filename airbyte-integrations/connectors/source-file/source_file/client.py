@@ -20,6 +20,8 @@ from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
 from google.oauth2 import service_account
 
+from .box_client import BoxURLDownload
+
 
 class ConfigurationError(Exception):
     """Client mis-configured"""
@@ -91,6 +93,8 @@ class URLFile:
             return self._open_aws_url(binary=binary)
         elif storage == "azure://":
             return self._open_azblob_url(binary=binary)
+        elif storage == "box://":
+            return self._open_box_url(binary=binary)
         elif storage == "webhdfs://":
             host = self._provider["host"]
             port = self._provider["port"]
@@ -139,6 +143,8 @@ class URLFile:
             return "s3://"
         elif storage_name == "AZBLOB":
             return "azure://"
+        elif storage_name == "BOX":
+            return "box://"
         elif storage_name == "HTTPS":
             return "https://"
         elif storage_name == "SSH" or storage_name == "SCP":
@@ -210,6 +216,15 @@ class URLFile:
             client = BlobServiceClient(account_url=storage_acc_url)
 
         result = smart_open.open(f"{self.storage_scheme}{self.url}", transport_params=dict(client=client), mode=mode)
+        return result
+
+    def _open_box_url(self, binary):
+        mode = "rb" if binary else "r"
+        box_developer_access_token = self._provider.get("box_developer_access_token")
+
+        download_client = BoxURLDownload(raw_url=self.url, developer_access_token=box_developer_access_token)
+        url = download_client.get_download_url()
+        result = smart_open.open(url, mode=mode)
         return result
 
 
