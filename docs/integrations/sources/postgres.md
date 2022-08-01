@@ -1,16 +1,16 @@
 # Postgres
 
-This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows. 
+This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
 
-- You need a record of deletions 
+- You need a record of deletions
 - Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (`updated_at`). CDC allows you to sync your table incrementally
- 
+
 If your goal is to maintain a snapshot of your table in the destination but the limitations prevent you from using CDC, consider using [non-CDC incremental sync](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) and occasionally reset the data and re-sync.
- 
+
 If your dataset is small and you just want a snapshot of your table in the destination, consider using [Full Refresh replication](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite) for your table instead of CDC.
 
 ## Prerequisites
@@ -51,12 +51,12 @@ Allow user to see tables created in the future:
 
 ```
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
-``` 
+```
 
-Additionally, if you plan to configure CDC for the Postgres source connector, grant `REPLICATION` and `LOGIN` permissions to the user: 
+Additionally, if you plan to configure CDC for the Postgres source connector, grant `REPLICATION` and `LOGIN` permissions to the user:
 
 ```
-CREATE ROLE <role_name> REPLICATION LOGIN; 
+CREATE ROLE <role_name> REPLICATION LOGIN;
 ```
 
 and grant that role to the user:
@@ -64,8 +64,8 @@ and grant that role to the user:
 ```
 GRANT <role_name> to <user_name>;
 ```
- 
-**Syncing a subset of columns​** 
+
+**Syncing a subset of columns​**
 
 Currently, there is no way to sync a subset of columns using the Postgres source connector:
 
@@ -91,12 +91,12 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 3. On the Set up the source page, select **Postgres** from the Source type dropdown.
 4. Enter a name for your source.
 5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your Postgres database.
-6. List the **Schemas** you want to sync. 
+6. List the **Schemas** you want to sync.
     :::note
     The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be used at one time. No schemas set explicitly - will sync all of existing.
     :::
 7. For **User** and **Password**, enter the username and password you created in [Step 1](#step-1-optional-create-a-dedicated-read-only-user).
-8. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://jdbc.postgresql.org/documentation/head/connect.html) as key-value pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field. 
+8. To customize the JDBC connection beyond common options, specify additional supported [JDBC URL parameters](https://jdbc.postgresql.org/documentation/head/connect.html) as key-value pairs separated by the symbol & in the **JDBC URL Parameters (Advanced)** field.
 
     Example: key1=value1&key2=value2&key3=value3
 
@@ -104,8 +104,8 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
     **Note:** Do not use the following keys in JDBC URL Params field as they will be overwritten by Airbyte:
     `currentSchema`, `user`, `password`, `ssl`, and `sslmode`.
-    
-    :::warning 
+
+    :::warning
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
 
@@ -120,7 +120,7 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
 ### Connect via SSH Tunnel​
 
-You can connect to a Postgres instance via an SSH tunnel. 
+You can connect to a Postgres instance via an SSH tunnel.
 
 When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
@@ -129,13 +129,13 @@ To connect to a Postgres instance via an SSH tunnel:
 1. While [setting up](#setup-guide) the Postgres source connector, from the SSH tunnel dropdown, select:
     - SSH Key Authentication to use an RSA Private as your secret for establishing the SSH tunnel
     - Password Authentication to use a password as your secret for establishing the SSH Tunnel
-2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to. 
-3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22. 
-4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the Postgres username. 
-5. For authentication: 
-    - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [RSA Private Key](#generating-an-rsa-private-key​) that you are using to create the SSH connection. 
-    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the Postgres password. 
- 
+2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
+3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
+4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the Postgres username.
+5. For authentication:
+    - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [RSA Private Key](#generating-an-rsa-private-key​) that you are using to create the SSH connection.
+    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the Postgres password.
+
 #### Generating an RSA Private Key​
 The connector expects an RSA key in PEM format. To generate this key, run:
 
@@ -145,7 +145,7 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 
 The command produces the private key in PEM format and the public key remains in the standard format used by the `authorized_keys` file on your bastion server. Add the public key to your bastion host to the user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen to allow it to log into the bastion server.
 
-## Configuring Postgres connector with Change Data Capture (CDC) 
+## Configuring Postgres connector with Change Data Capture (CDC)
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/)
 
@@ -185,7 +185,7 @@ To enable logical replication on AWS Postgres RDS or Aurora​:
 To enable logical replication on Azure Database for Postgres​:
 
 Change the replication mode of your Postgres DB on Azure to `logical` using the **Replication** menu of your PostgreSQL instance in the Azure Portal. Alternatively, use the  Azure CLI to run the following command:
- 
+
 ```
 az postgres server configuration set --resource-group group --server-name server --name azure.replication_support --value logical
 ```
@@ -213,7 +213,7 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'wal2json');
 
 #### Step 4: Create publications and replication identities for tables​
 
-For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first: 
+For each table you want to replicate with CDC, add the replication identity (the method of distinguishing between rows) first:
 
 To use primary keys to distinguish between rows, run:
 
@@ -253,19 +253,19 @@ The Postgres source connector supports the following [sync modes](https://docs.a
 
 ## Supported cursors
 
-- `TIMESTAMP` 
-- `TIMESTAMP_WITH_TIMEZONE` 
-- `TIME` 
-- `TIME_WITH_TIMEZONE` 
-- `DATE` 
-- `BIT` 
-- `BOOLEAN` 
-- `TINYINT/SMALLINT` 
+- `TIMESTAMP`
+- `TIMESTAMP_WITH_TIMEZONE`
+- `TIME`
+- `TIME_WITH_TIMEZONE`
+- `DATE`
+- `BIT`
+- `BOOLEAN`
+- `TINYINT/SMALLINT`
 - `INTEGER`
-- `BIGINT` 
-- `FLOAT/DOUBLE` 
+- `BIGINT`
+- `FLOAT/DOUBLE`
 - `REAL`
-- `NUMERIC/DECIMAL` 
+- `NUMERIC/DECIMAL`
 - `CHAR/NCHAR/NVARCHAR/VARCHAR/LONGVARCHAR`
 - `BINARY/BLOB`
 
