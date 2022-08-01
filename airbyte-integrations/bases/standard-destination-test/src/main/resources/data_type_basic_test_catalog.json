@@ -77,17 +77,6 @@
       }
     },
     {
-      "name": "big_integer_test_1",
-      "json_schema": {
-        "properties": {
-          "data": {
-            "type": "string",
-            "airbyte_type": "big_integer"
-          }
-        }
-      }
-    },
-    {
       "name": "boolean_test_1",
       "json_schema": {
         "properties": {

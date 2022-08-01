@@ -387,9 +387,9 @@ class TemporalUtilsTest {
             new AtomicReference<>(null),
             () -> {
               if (timesReachedEnd.get() == 0) {
-                if (arg.equals("runtime")) {
+                if ("runtime".equals(arg)) {
                   throw new RuntimeException("failed");
-                } else if (arg.equals("timeout")) {
+                } else if ("timeout".equals(arg)) {
                   Thread.sleep(10000);
                   return null;
                 } else {
