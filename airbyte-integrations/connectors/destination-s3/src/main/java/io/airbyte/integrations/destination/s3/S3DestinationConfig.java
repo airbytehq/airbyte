@@ -136,7 +136,7 @@ public class S3DestinationConfig {
   }
 
   private static String resolveBucketName(String originalBucketName) {
-    return originalBucketName.contains("/") ? originalBucketName.replaceAll("/","-") : originalBucketName;
+    return originalBucketName.replaceAll("/","-");
   }
 
   public String getEndpoint() {
