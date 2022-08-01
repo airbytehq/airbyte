@@ -18,7 +18,7 @@ connectionSpecification:
     row_batch_size:
       type: integer
       title: Row Batch Size
-      description: Number of rows fetched when making a google sheet API call
+      description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
       default: 200
     credentials:
       type: object

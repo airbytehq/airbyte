@@ -25,6 +25,8 @@ from .helpers import Helpers
 from .models.spreadsheet import Spreadsheet
 from .models.spreadsheet_values import SpreadsheetValues
 
+# set default batch read size
+ROW_BATCH_SIZE = 200
 # override default socket timeout to be 10 mins instead of 60 sec.
 # on behalf of https://github.com/airbytehq/oncall/issues/242
 DEFAULT_SOCKET_TIMEOUT: int = 600
@@ -130,7 +132,7 @@ class GoogleSheetsSource(Source):
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
-        row_batch_size = config['row_batch_size']
+        row_batch_size = config.get('row_batch_size', ROW_BATCH_SIZE)
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
