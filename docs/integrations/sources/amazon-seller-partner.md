@@ -4,7 +4,7 @@ This page guides you through the process of setting up the Amazon Seller Partner
 
 :::caution
 
-Authenticating this Alpha connector is currently blocked. This is a known issue being traacked here: https://github.com/airbytehq/airbyte/issues/14734
+Authenticating this Alpha connector is currently blocked. This is a known issue being tracked here: https://github.com/airbytehq/airbyte/issues/14734
 
 :::
 
