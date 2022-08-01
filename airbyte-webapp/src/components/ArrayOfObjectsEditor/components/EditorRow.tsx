@@ -25,7 +25,6 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
       <div className={styles.name}>{name || id}</div>
       <div className={styles.actions}>
         <Button
-          className={styles.iconButton}
           type="button"
           iconOnly
           arial-label={formatMessage({ id: "form.edit" })}
@@ -35,7 +34,6 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
           <PencilIcon />
         </Button>
         <Button
-          className={styles.iconButton}
           type="button"
           iconOnly
           aria-label={formatMessage({ id: "form.delete" })}

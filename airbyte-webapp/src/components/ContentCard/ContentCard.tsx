@@ -15,7 +15,6 @@ const Title = styled(H5)<{ light?: boolean; roundedBottom?: boolean }>`
   padding: ${({ light }) => (light ? "19px 20px 20px" : "25px 25px 22px")};
   color: ${({ theme }) => theme.darkPrimaryColor};
   border-bottom: ${({ light }) => (light ? "none" : "#e8e8ed 1px solid")};
-  margin-bottom: 1px;
   font-weight: 600;
   letter-spacing: 0.008em;
   border-radius: ${({ roundedBottom }) => (roundedBottom ? "10px 10px 0px 0px" : "10px 10px 10px 10px")};
