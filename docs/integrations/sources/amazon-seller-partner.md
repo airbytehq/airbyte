@@ -2,7 +2,7 @@
 
 This page guides you through the process of setting up the Amazon Seller Partner source connector.
 
-::: caution
+:::caution
 
 Known blocking issue with this connector tracked here: https://github.com/airbytehq/airbyte/issues/14734
 
