@@ -16,7 +16,6 @@ spec_path: str = Field(
 )
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
-previous_connector_version: str = Field(default="latest", description="Previous connector version to use for backward compatibility tests.")
 
 
 class BaseConfig(BaseModel):
@@ -24,11 +23,20 @@ class BaseConfig(BaseModel):
         extra = "forbid"
 
 
+class BackwardCompatibilityTestsConfig(BaseConfig):
+    previous_connector_version: str = Field(
+        default="latest", description="Previous connector version to use for backward compatibility tests."
+    )
+    run_backward_compatibility_tests: bool = Field(default=True, description="Flag to run or skip backward compatibility tests.")
+
+
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
-    previous_connector_version: str = previous_connector_version
+    backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+    )
 
 
 class ConnectionTestConfig(BaseConfig):

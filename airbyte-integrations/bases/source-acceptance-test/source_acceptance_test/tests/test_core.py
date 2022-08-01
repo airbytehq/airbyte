@@ -8,7 +8,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
 
 import dpath.util
 import jsonschema
@@ -27,7 +27,7 @@ from airbyte_cdk.models import (
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
 from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
@@ -50,7 +50,9 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRun
 
 
 @pytest.fixture(name="previous_connector_spec")
-def previous_connector_spec_fixture(request: BaseTest, previous_connector_docker_runner: ConnectorRunner) -> ConnectorSpecification:
+def previous_connector_spec_fixture(
+    request: BaseTest, previous_connector_docker_runner: ConnectorRunner
+) -> Optional[ConnectorSpecification]:
     if previous_connector_docker_runner is None:
         logging.warning(
             "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
@@ -196,8 +198,12 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)  # Pulling the previous connector image can take more than 10 sec.
     @pytest.mark.spec_backward_compatibility
-    def test_backward_compatibility(self, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
+    def test_backward_compatibility(
+        self, inputs: SpecTestConfig, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification
+    ):
         """Run multiple checks to make sure the actual_connector_spec is backward compatible with the previous_connector_spec"""
+        if not inputs.backward_compatibility_tests_config.run_backward_compatibility_tests:
+            pytest.skip("Backward compatibility tests are disabled.")
         if previous_connector_spec is None:
             pytest.skip("The previous connector spec could not be retrieved.")
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
