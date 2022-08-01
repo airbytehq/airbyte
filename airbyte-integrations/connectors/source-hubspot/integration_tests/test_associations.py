@@ -37,8 +37,10 @@ def configured_catalog(config, source):
     }
 
 
-def test_incremental_read_fetches_associations(config, configured_catalog, source, associations):
-    messages = source.read(logging.getLogger("airbyte"), config, ConfiguredAirbyteCatalog.parse_obj(configured_catalog), {})
+@pytest.mark.parametrize("auth", ("api_key", "oauth"))
+def test_incremental_read_fetches_associations(auth, config, oauth_config, configured_catalog, source, associations):
+    configuration = oauth_config if auth == "oauth" else config
+    messages = source.read(logging.getLogger("airbyte"), configuration, ConfiguredAirbyteCatalog.parse_obj(configured_catalog), {})
 
     association_found = False
     for message in messages:
