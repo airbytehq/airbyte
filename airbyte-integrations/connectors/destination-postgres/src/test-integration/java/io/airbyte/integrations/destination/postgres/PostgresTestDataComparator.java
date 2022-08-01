@@ -37,10 +37,8 @@ public class PostgresTestDataComparator extends AdvancedTestDataComparator {
 
   private LocalDate parseLocalDate(String dateTimeValue) {
     if (dateTimeValue != null) {
-      System.out.println("dtVal = " + dateTimeValue);
       var format = (dateTimeValue.matches(".+Z") ? POSTGRES_DATETIME_FORMAT : AIRBYTE_DATETIME_FORMAT);
       format = (dateTimeValue.matches(".+[.][0-9]") ? POSTGRES_ALT_DATETIME_FORMAT : format);
-      System.out.println("format = " + format); // DEBUG
       return LocalDate.parse(dateTimeValue, DateTimeFormatter.ofPattern(format));
     } else {
       return null;
