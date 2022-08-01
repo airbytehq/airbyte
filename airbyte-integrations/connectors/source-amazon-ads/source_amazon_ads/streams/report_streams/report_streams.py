@@ -156,7 +156,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def backoff_max_time(func):
         def wrapped(self, *args, **kwargs):
-            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60)(func)(
+            return backoff.on_exception(backoff.constant, RetryableException, max_time=self.report_wait_timeout * 60, interval=10)(func)(
                 self, *args, **kwargs
             )
 
@@ -256,7 +256,7 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             requests.exceptions.ConnectionError,
             TooManyRequests,
         ),
-        max_tries=5,
+        max_tries=10,
     )
     def _send_http_request(self, url: str, profile_id: int, json: dict = None):
         headers = self._get_auth_headers(profile_id)
