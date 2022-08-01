@@ -13,7 +13,7 @@ jobs:
   terminate:
     runs-on: ubuntu-latest
     steps:
-      - name: List and Terminate Instances Older Than 3 Hours
+      - name: List and Terminate Instances Older Than 4 Hours
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -22,7 +22,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          export TIME_LIMIT=10800 # 3 hours
+          export TIME_LIMIT=14400 # 4 hours
 
           aws configure set default.region us-east-2
 
