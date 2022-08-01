@@ -1,7 +1,11 @@
 @use "../../../scss/colors";
 @use "../../../scss/variables";
 
-.container {
+.container + .container {
+  border-top: 1px solid colors.$white;
+}
+
+.body {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -12,10 +16,6 @@
   line-height: 17px;
   padding: variables.$spacing-md 8px;
   gap: variables.$spacing-md;
-
-  & + .container {
-    border-top: 1px solid colors.$white;
-  }
 }
 
 .name {

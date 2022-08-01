@@ -20,8 +20,8 @@ interface EditorRowProps {
 export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
   const { formatMessage } = useIntl();
 
-  const row = (
-    <div className={styles.container}>
+  const body = (
+    <div className={styles.body}>
       <div className={styles.name}>{name || id}</div>
       <div className={styles.actions}>
         <Button
@@ -46,5 +46,5 @@ export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onE
     </div>
   );
 
-  return description ? <ToolTip control={row}>{description}</ToolTip> : row;
+  return <div className={styles.container}>{description ? <ToolTip control={body}>{description}</ToolTip> : body}</div>;
 };

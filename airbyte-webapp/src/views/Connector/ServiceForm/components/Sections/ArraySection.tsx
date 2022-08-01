@@ -16,10 +16,14 @@ interface ArraySectionProps {
   disabled?: boolean;
 }
 
-const getItemName = (item: Record<string, string>): string => {
+const getItemName = (item: Record<string, string>, properties: FormBlock[]): string => {
   return Object.keys(item)
     .sort()
-    .map((key) => `${key}: ${item[key]}`)
+    .map((key) => {
+      const property = properties.find(({ fieldKey }) => fieldKey === key);
+      const name = property?.title ?? key;
+      return `${name}: ${item[key]}`;
+    })
     .join(" | ");
 };
 
@@ -57,7 +61,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     const { properties } = formField.properties as FormGroupItem;
 
     const details = items.map((item: Record<string, string>) => {
-      const name = getItemName(item);
+      const name = getItemName(item, properties);
       const description = getItemDescription(item, properties);
       return {
         name,
