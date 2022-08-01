@@ -95,6 +95,19 @@ public class JobErrorReporter {
           final Map<String, String> metadata = MoreMaps.merge(connectionMetadata, getDestinationMetadata(destinationDefinition));
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+        } else if (failureOrigin == FailureOrigin.NORMALIZATION) {
+          // TODO: we want to catch source schema change errors on platform before normalization
+            // so don't need sourceDefinition
+
+          // We want destination details to work out whether issues are destination-specific or span multi/all normalization
+          final StandardDestinationDefinition destinationDefinition = configRepository.getDestinationDefinitionFromConnection(connectionId);
+
+          // TODO: how do we get normalization docker image?
+//          final String dockerImage = jobSyncConfig.getDestinationDockerImage();
+//          final Map<String, String> metadata = MoreMaps.merge(connectionMetadata, getDestinationMetadata(destinationDefinition));
+//
+//          reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
+
         }
       }
     });
@@ -191,6 +204,14 @@ public class JobErrorReporter {
   }
 
   private Map<String, String> getSourceMetadata(final StandardSourceDefinition sourceDefinition) {
+    return Map.ofEntries(
+        Map.entry(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString()),
+        Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
+        Map.entry(CONNECTOR_REPOSITORY_META_KEY, sourceDefinition.getDockerRepository()),
+        Map.entry(CONNECTOR_RELEASE_STAGE_META_KEY, sourceDefinition.getReleaseStage().value()));
+  }
+
+  private Map<String, String> getNormalizationMetadata() {
     return Map.ofEntries(
         Map.entry(CONNECTOR_DEFINITION_ID_META_KEY, sourceDefinition.getSourceDefinitionId().toString()),
         Map.entry(CONNECTOR_NAME_META_KEY, sourceDefinition.getName()),
