@@ -20,6 +20,7 @@ MAIN_REQUIREMENTS = [
     "dpath~=2.0.1",
     "jsonschema~=3.2.0",
     "jsonref==0.2",
+    "deepdiff~=5.8.0",
 ]
 
 setuptools.setup(
