@@ -252,7 +252,6 @@
   "sources.settings": "Settings",
   "sources.syncHistory": "Sync History",
   "sources.syncNow": "Sync now",
-  "sources.syncingNow": "Syncing now!",
   "sources.source": "Source",
   "sources.noSync": "No sync yet",
   "sources.emptySchema": "Schema is empty",
