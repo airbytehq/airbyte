@@ -87,6 +87,158 @@ Understanding the following limitations will help you better manage Airbyte Clou
 * Shortest sync schedule: Every 60 min
 * Schedule accuracy: +/- 30 min
 
+## View the sync log summary
+The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
+ 
+To view the sync log summary:
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**. 
+The Connections page displays.
+2. Click a connection in the list to view its sync history.
+3. Under Sync History, a list of syncs for that connection is displayed.
+The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](<https://docs.airbyte.com/cloud/managing-airbyte-cloud#sync-log-summary>).
+4. For more information about a sync, click the sync log dropdown.
+ 
+## Sync Log Summary
+### Succeeded
+The log summary for a successful sync shows the following data.
+<table>
+ <tr>
+  <td><strong>Log</strong>
+  </td>
+  <td><strong>Description</strong>
+  </td>
+ </tr>
+ <tr>
+  <td>x GB (also measured in KB, MB)
+  </td>
+  <td>Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.
+  </td>
+ </tr>
+ <tr>
+  <td>x emitted records
+  </td>
+  <td>Number of records read from the source during the sync.
+  </td>
+ </tr>
+ <tr>
+  <td>x committed records
+  </td>
+  <td>Number of records the destination confirmed it received.
+  </td>
+ </tr>
+ <tr>
+  <td>xh xm xs
+  </td>
+  <td>Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.
+  </td>
+ </tr>
+ <tr>
+  <td>Sync or Reset
+  </td>
+  <td>The action that was performed (either a sync or a [reset](https://docs.airbyte.com/operator-guides/reset/)).
+  </td>
+ </tr>
+</table>
+ 
+:::note
+   In a successful sync, the number of emitted records and committed records should be the same.
+ 
+::: 
+ 
+ 
+### Cancelled
+The log summary for a cancelled sync may show the following data.
+ 
+<table>
+ <tr>
+  <td><strong>Log</strong>
+  </td>
+  <td><strong>Description</strong>
+  </td>
+ </tr>
+ <tr>
+  <td>NaN Bytes
+  </td>
+  <td>Since the sync was cancelled, the log does not show how much data was moved before cancelling.
+  </td>
+ </tr>
+ <tr>
+  <td>No records
+  </td>
+  <td>Since the sync was cancelled, the log does not show emitted or committed records.
+  </td>
+ </tr>
+ <tr>
+  <td>xh xm xs
+  </td>
+  <td>Total time (hours, minutes, seconds) between the beginning of sync and when it was cancelled.
+  </td>
+ </tr>
+ <tr>
+  <td>Sync or Reset
+  </td>
+  <td>The action that was performed (either a sync or a reset).
+  </td>
+ </tr>
+ <tr>
+  <td>Failure Origin
+  </td>
+  <td>The cause of the sync cancellation.
+  </td>
+ </tr>
+</table>
+ 
+:::note
+   Airbyte will try to sync your data three times. After a third failure, it will stop attempting to sync.
+ 
+::: 
+ 
+ 
+### Failed
+The log summary for a failed sync may show the following data.
+ 
+<table>
+ <tr>
+  <td><strong>Log</strong>
+  </td>
+  <td><strong>Description</strong>
+  </td>
+ </tr>
+ <tr>
+  <td>NaN Bytes
+  </td>
+  <td>Since the sync failed, the amount of data is zero.
+  </td>
+ </tr>
+ <tr>
+  <td>No records
+  </td>
+  <td>Since the sync failed, there are no emitted or committed records.
+  </td>
+ </tr>
+ <tr>
+  <td>xh xm xs
+  </td>
+  <td>Total time (hours, minutes, seconds) between the beginning of the sync and when it failed.
+  </td>
+ </tr>
+ <tr>
+  <td>Sync or Reset
+  </td>
+  <td>The action that was performed (either a sync or a reset).
+  </td>
+ </tr>
+ <tr>
+  <td>Failure Origin
+  </td>
+  <td>The cause of the sync failure.
+  </td>
+ </tr>
+</table>
+ 
+### Running
+The sync log summary displays Running when the sync is actively running.
+
 ## Buy Credits
 
 This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://docs.airbyte.com/cloud/core-concepts/#credits) is a unit of measure used to pay for Airbyte resources when you run a sync. See [Pricing](https://airbyte.com/pricing) for more information.
