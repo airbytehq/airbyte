@@ -117,7 +117,7 @@ public class MongodbRecordConsumer extends FailureTrackingAirbyteMessageConsumer
     try {
       final AirbyteRecordMessage recordMessage = message.getRecord();
       final Map<String, Object> result = objectMapper.convertValue(recordMessage.getData(), new TypeReference<>() {});
-      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.md5Hex(Jsons.toBytes(recordMessage.getData())).getBytes(
+      final var newDocumentDataHashCode = UUID.nameUUIDFromBytes(DigestUtils.sha256Hex(Jsons.toBytes(recordMessage.getData())).getBytes(
           Charset.defaultCharset())).toString();
       final var newDocument = new Document();
       newDocument.put(AIRBYTE_DATA, new Document(result));
