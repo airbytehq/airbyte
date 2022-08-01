@@ -138,7 +138,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         return DebeziumConverterUtils.convertDefaultValue(field);
       } else if (x instanceof Double) {
         final BigDecimal result = BigDecimal.valueOf((Double) x);
-        return Double.toString(result.doubleValue());
+        if (result.compareTo(new BigDecimal("999999999999999")) == 1
+            || result.compareTo(new BigDecimal("-999999999999999")) == -1) {
+          return null;
+        }
+        return result.toString();
       } else {
         return x.toString();
       }
