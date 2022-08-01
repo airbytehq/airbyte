@@ -1,5 +1,4 @@
 import React, { Suspense, useMemo, useState } from "react";
-import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { ContentCard } from "components";
@@ -7,9 +6,10 @@ import { IDataItem } from "components/base/DropDown/components/Option";
 import { JobItem } from "components/JobItem/JobItem";
 import LoadingSchema from "components/LoadingSchema";
 
+import { Action, Namespace } from "core/analytics";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useCreateConnection, ValuesProps } from "hooks/services/useConnectionHook";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import ConnectionForm from "views/Connection/ConnectionForm";
 import { ConnectionFormProps } from "views/Connection/ConnectionForm/ConnectionForm";
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
@@ -32,7 +32,6 @@ interface CreateConnectionContentProps {
   source: SourceRead;
   destination: DestinationRead;
   afterSubmitConnection?: (connection: WebBackendConnectionRead) => void;
-  noTitles?: boolean;
 }
 
 const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
@@ -40,13 +39,9 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   destination,
   afterSubmitConnection,
   additionBottomControls,
-  noTitles,
 }) => {
   const { mutateAsync: createConnection } = useCreateConnection();
-  const trackNewConnectionAction = useTrackAction(
-    TrackActionNamespace.CONNECTION,
-    TrackActionLegacyType.NEW_CONNECTION
-  );
+  const analyticsService = useAnalyticsService();
 
   const { schema, isLoading, schemaErrorStatus, catalogId, onDiscoverSchema } = useDiscoverSchema(source.sourceId);
 
@@ -93,7 +88,8 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     const enabledStreams = connection.syncCatalog.streams.filter((stream) => stream.config?.selected).length;
 
     if (item) {
-      trackNewConnectionAction("Select a frequency", TrackActionType.FREQUENCY, {
+      analyticsService.track(Namespace.CONNECTION, Action.FREQUENCY, {
+        actionDescription: "Frequency selected",
         frequency: item.label,
         connector_source_definition: source?.sourceName,
         connector_source_definition_id: source?.sourceDefinitionId,
@@ -108,7 +104,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
   if (schemaErrorStatus) {
     const job = LogsRequestError.extractJobInfo(schemaErrorStatus);
     return (
-      <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
+      <ContentCard>
         <TryAfterErrorBlock
           onClick={onDiscoverSchema}
           additionControl={<SkipButton>{additionBottomControls}</SkipButton>}
@@ -118,23 +114,19 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
     );
   }
 
-  return (
-    <ContentCard title={noTitles ? null : <FormattedMessage id="onboarding.setConnection" />}>
-      {isLoading ? (
-        <LoadingSchema />
-      ) : (
-        <Suspense fallback={<LoadingSchema />}>
-          <ConnectionForm
-            mode="create"
-            connection={connection}
-            additionBottomControls={additionBottomControls}
-            onDropDownSelect={onSelectFrequency}
-            onSubmit={onSubmitConnectionStep}
-            onChangeValues={setConnectionFormValues}
-          />
-        </Suspense>
-      )}
-    </ContentCard>
+  return isLoading ? (
+    <LoadingSchema />
+  ) : (
+    <Suspense fallback={<LoadingSchema />}>
+      <ConnectionForm
+        mode="create"
+        connection={connection}
+        additionBottomControls={additionBottomControls}
+        onDropDownSelect={onSelectFrequency}
+        onSubmit={onSubmitConnectionStep}
+        onChangeValues={setConnectionFormValues}
+      />
+    </Suspense>
   );
 };
 
