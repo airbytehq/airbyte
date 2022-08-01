@@ -1,6 +1,6 @@
 # server
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.23-alpha](https://img.shields.io/badge/AppVersion-0.39.23--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte-server
 
@@ -17,6 +17,7 @@ Helm chart to deploy airbyte-server
 | affinity | object | `{}` |  |
 | containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
+| extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
@@ -45,7 +46,6 @@ Helm chart to deploy airbyte-server
 | global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"airbyte/server"` |  |
-| image.tag | string | `"0.39.23-alpha"` |  |
 | livenessProbe.enabled | bool | `true` |  |
 | livenessProbe.failureThreshold | int | `3` |  |
 | livenessProbe.initialDelaySeconds | int | `30` |  |
