@@ -268,8 +268,24 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
   }
 
+  /**
+   * Modifies a string representation of a date/timestamp and normalizes its era indicator.
+   * Specifically, if the LocalDate represents a BCE value:
+   * <ul>
+   *   <li>The leading negative sign will be removed if present</li>
+   *   <li>The "BC" suffix will be appended, if not already present</li>
+   * </ul>
+   */
   protected String resolveEra(LocalDate date, String value) {
-    return isBCE(date) ? value.substring(1) + " BC" : value;
+    if (isBCE(date)) {
+      if (value.startsWith("-")) {
+        value = value.substring(1);
+      }
+      if (!value.endsWith(" BC")) {
+        value += " BC";
+      }
+    }
+    return value;
   }
 
   public static boolean isBCE(LocalDate date) {
