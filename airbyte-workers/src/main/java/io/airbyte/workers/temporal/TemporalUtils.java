@@ -69,6 +69,7 @@ public class TemporalUtils {
       .setInitialInterval(Duration.ofSeconds(configs.getInitialDelayBetweenActivityAttemptsSeconds()))
       .setMaximumInterval(Duration.ofSeconds(configs.getMaxDelayBetweenActivityAttemptsSeconds()))
       .build();
+  private static final double REPORT_INTERVAL_SECONDS = 10.0;
 
   public static WorkflowServiceStubs createTemporalService(final WorkflowServiceStubsOptions options, final String namespace) {
     return getTemporalClientWhenConnected(
@@ -106,15 +107,19 @@ public class TemporalUtils {
       throw new RuntimeException(e);
     }
 
+    configureTemporalMeterRegistry(optionBuilder);
+    return optionBuilder.build();
+  }
+
+  private static void configureTemporalMeterRegistry(WorkflowServiceStubsOptions.Builder optionalBuilder) {
     MeterRegistry registry = MetricClientFactory.getMeterRegistry();
     if (registry != null) {
       StatsReporter reporter = new MicrometerClientStatsReporter(registry);
       Scope scope = new RootScopeBuilder()
           .reporter(reporter)
-          .reportEvery(com.uber.m3.util.Duration.ofSeconds(10));
-      optionBuilder.setMetricsScope(scope);
+          .reportEvery(com.uber.m3.util.Duration.ofSeconds(REPORT_INTERVAL_SECONDS));
+      optionalBuilder.setMetricsScope(scope);
     }
-    return optionBuilder.build();
   }
 
   @VisibleForTesting

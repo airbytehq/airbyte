@@ -71,6 +71,10 @@ public class MetricClientFactory {
     }
   }
 
+  /**
+   * A statsd config for micrometer. We override host to be the datadog agent address, while keeping
+   * other settings default.
+   */
   private static StatsdConfig getDatadogStatsDConfig() {
     return new StatsdConfig() {
 
@@ -83,8 +87,7 @@ public class MetricClientFactory {
       }
 
       /**
-       * @param key Key to lookup in the config.
-       * @return
+       * Returning null for default get function because the host has been overridden above.
        */
       @Override
       public String get(String key) {
