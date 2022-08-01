@@ -1,6 +1,6 @@
 # airbyte-bootloader
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.23-alpha](https://img.shields.io/badge/AppVersion-0.39.23--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
 
 Helm chart to deploy airbyte-bootloader
 
@@ -23,7 +23,6 @@ Helm chart to deploy airbyte-bootloader
 | global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"airbyte/bootloader"` |  |
-| image.tag | string | `"0.39.23-alpha"` |  |
 | nodeSelector | object | `{}` |  |
 | podAnnotations | object | `{}` |  |
 | resources.limits | object | `{}` |  |
