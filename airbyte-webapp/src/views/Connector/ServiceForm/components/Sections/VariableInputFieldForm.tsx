@@ -26,7 +26,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
   onDone,
   onCancel,
 }) => {
-  const hiddenPath = `__hidden_${path}`;
+  const hiddenPath = `__variableInputField`;
   const [field, , fieldHelper] = useField(hiddenPath);
   const { validationSchema } = useServiceForm();
 
@@ -61,7 +61,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
           secondary
           onClick={() => {
             onCancel();
-            fieldHelper.setValue(undefined);
+            fieldHelper.setValue(undefined, false);
           }}
         >
           <FormattedMessage id="form.cancel" />
@@ -71,7 +71,7 @@ export const VariableInputFieldForm: React.FC<VariableInputFormProps> = ({
           disabled={disabled || !isValid}
           onClick={() => {
             onDone(field.value);
-            fieldHelper.setValue(undefined);
+            fieldHelper.setValue(undefined, false);
           }}
         >
           <FormattedMessage id="form.done" />
