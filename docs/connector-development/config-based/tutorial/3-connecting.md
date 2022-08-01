@@ -181,11 +181,6 @@ Next, we'll [extract the records from the response](4-reading-data.md)
 ## More readings
 
 - <connector_definition_yaml_file.yaml>
-- declarative stream
-- check stream
-- http requester
-- authentication
-- request options providers
-- config
-- spec file
-- check operation
+- [Config-based connectors overview](../overview.md)
+- [Authentication](../authentication.md)
+- [Request options providers](../request-options.md)

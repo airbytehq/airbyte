@@ -257,12 +257,6 @@ Next, we'll run the [Source Acceptance Tests suite to ensure the connector invar
 
 ## More readings
 
-- incrementals (general guide)
-- incrementals (low-code specific
-- spec file
-- config
-- stream slicer
-- datetime stream slicer
-- cursor
-- options
-- requester
+- [Incremental reads](../../cdk-python/incremental-stream.md)
+- [Stream slicers](../stream-slicers.md)
+- [Stream slices](../cdk-python/stream-slices.md)

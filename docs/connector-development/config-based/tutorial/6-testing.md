@@ -95,14 +95,5 @@ Next, we'll add the connector to the [Airbyte platform](https://docs.airbyte.com
 
 ## Read more:
 
-- acceptance tests
-- check operation
-- building the image
-- error handling
-- interpolation
-
-missing:
-
-- custom code
-- pagination
-- transformation
+- [Error handling](../error-handling.md)
+- [Pagination](../pagination.md)

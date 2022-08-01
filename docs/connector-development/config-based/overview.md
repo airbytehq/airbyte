@@ -49,9 +49,6 @@ The is currently only one implementation, the `SimpleRetriever`, which is define
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integrations they are building against.
 
-More details on the paginator can be found in the [pagination section](pagination.md)
-More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md)
-
 ### Data flow
 
 The retriever acts as a coordinator, moving the data between its components before emitting `AirbyteMessage`s that can be read by the platform.
@@ -63,6 +60,10 @@ The `SimpleRetriever`'s data flow can be described as follows:
     1. Submit a request as defined by the requester
     2. Select the records from the response
     3. Repeat for as long as the paginator points to a next page
+
+More details on the paginator can be found in the [pagination section](pagination.md)
+More details on the record selector can be found in the [record selector section](record-selector.md)
+More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md)
 
 ## Requester
 

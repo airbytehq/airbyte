@@ -133,9 +133,4 @@ Next, we'll ([enhance the connector to read data for a given date, which will en
 
 ## More readings
 
-- record selectors
-- catalog tutorial
-- jello
-- read operation
-- primary key
-- declarative stream
+- [Record selector](../record-selector.md)

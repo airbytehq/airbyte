@@ -162,4 +162,9 @@ retriever:
         stream_slice_field: "repository"
 ```
 
-[^1] This is a slight oversimplification. See update cursor section for more details on how the cursor is updated 
+[^1] This is a slight oversimplification. See update cursor section for more details on how the cursor is updated
+
+## More readings
+
+- [Incremental streams](../cdk-python/incremental-stream.md)
+- [Stream slices](../cdk-python/stream-slices.md)

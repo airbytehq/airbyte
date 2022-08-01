@@ -40,10 +40,3 @@ This can be done by signing up for the Free tier plan on [Exchange Rates API](ht
 ## Next Steps
 
 Next, we'll [create a Source using the connector generator.](1-create-source.md)
-
-## More readings
-
-- Source
-- Stream
-- Schema
-- 
