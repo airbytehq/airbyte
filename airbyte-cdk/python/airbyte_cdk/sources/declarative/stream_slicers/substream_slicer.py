@@ -35,17 +35,16 @@ class SubstreamSlicer(StreamSlicer):
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
     """
 
-    def __init__(
-        self,
-        parent_streams_configs: List[ParentStreamConfig],
-    ):
+    def __init__(self, parent_streams_configs: List[ParentStreamConfig], **options: Optional[Mapping[str, Any]]):
         """
         :param parent_streams_configs: parent streams to iterate over and their config
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if not parent_streams_configs:
             raise ValueError("SubstreamSlicer needs at least 1 parent stream")
         self._parent_stream_configs = parent_streams_configs
         self._cursor = None
+        self._options = options
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         cursor = {}
