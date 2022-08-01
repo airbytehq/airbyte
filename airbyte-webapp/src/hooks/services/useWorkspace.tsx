@@ -1,5 +1,6 @@
 import { useMutation } from "react-query";
 
+import { Action, Namespace } from "core/analytics";
 import { NotificationService } from "core/domain/notification/NotificationService";
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -29,11 +30,10 @@ const useWorkspace = () => {
   const analyticsService = useAnalyticsService();
 
   const finishOnboarding = async (skipStep?: string) => {
-    if (skipStep) {
-      analyticsService.track("Skip Onboarding", {
-        step: skipStep,
-      });
-    }
+    analyticsService.track(Namespace.ONBOARDING, Action.SKIP, {
+      actionDescription: "Skip Onboarding",
+      step: skipStep,
+    });
 
     await updateWorkspace({
       workspaceId: workspace.workspaceId,
@@ -54,7 +54,8 @@ const useWorkspace = () => {
     source: SourceRead;
     destination: DestinationRead;
   }) => {
-    analyticsService.track("Onboarding Feedback", {
+    analyticsService.track(Namespace.ONBOARDING, Action.FEEDBACK, {
+      actionDescription: "Onboarding Feedback",
       feedback,
       connector_source_definition: source?.sourceName,
       connector_source_definition_id: source?.sourceDefinitionId,
@@ -76,7 +77,8 @@ const useWorkspace = () => {
       ...data,
     });
 
-    analyticsService.track("Specified Preferences", {
+    analyticsService.track(Namespace.ONBOARDING, Action.PREFERENCES, {
+      actionDescription: "Setup preferences set",
       email: data.email,
       anonymized: data.anonymousDataCollection,
       subscribed_newsletter: data.news,
