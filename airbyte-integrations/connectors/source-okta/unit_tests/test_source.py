@@ -19,7 +19,6 @@ from source_okta.source import (
 
 
 class TestAuthentication:
-
     def test_init_token_authentication_init(self, token_config, auth_token_config):
         source_okta = SourceOkta()
         token_authenticator_instance = source_okta.initialize_authenticator(config=token_config)
