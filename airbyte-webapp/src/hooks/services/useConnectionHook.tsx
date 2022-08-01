@@ -98,7 +98,7 @@ export const useSyncConnection = () => {
       actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequency?.type,
     });

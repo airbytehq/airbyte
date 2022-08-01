@@ -53,7 +53,7 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ connection, disabled, f
       actionDescription: `${trackableAction} connection`,
       connector_source: connection.source?.sourceName,
       connector_source_definition_id: connection.source?.sourceDefinitionId,
-      connector_destination: connection.destination?.name,
+      connector_destination: connection.destination?.destinationName,
       connector_destination_definition_id: connection.destination?.destinationDefinitionId,
       frequency: frequencyType,
     });
