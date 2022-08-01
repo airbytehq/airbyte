@@ -4,6 +4,13 @@ plugins {
 
 dependencies {
     api project(':airbyte-db:db-lib')
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-workers')
+
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation 'io.temporal:temporal-sdk:1.8.1'
+
+
     api libs.junit.jupiter.api
 
     // Mark as compile only to avoid leaking transitively to connectors
@@ -15,3 +22,5 @@ dependencies {
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation libs.platform.testcontainers.cockroachdb
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -144,7 +144,6 @@ public class ConnectionManagerUtils {
   static ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {
     final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
     final ConnectionUpdaterInput input = buildStartWorkflowInput(connectionId);
-
     WorkflowClient.start(connectionManagerWorkflow::run, input);
 
     return connectionManagerWorkflow;
@@ -206,9 +205,10 @@ public class ConnectionManagerUtils {
 
   static WorkflowExecutionStatus getConnectionManagerWorkflowStatus(final WorkflowClient workflowClient, final UUID connectionId) {
     final DescribeWorkflowExecutionRequest describeWorkflowExecutionRequest = DescribeWorkflowExecutionRequest.newBuilder()
-        .setExecution(WorkflowExecution.newBuilder().setWorkflowId(getConnectionManagerName(connectionId)).build())
-        .setNamespace(workflowClient.getOptions().getNamespace())
-        .build();
+        .setExecution(WorkflowExecution.newBuilder()
+            .setWorkflowId(getConnectionManagerName(connectionId))
+            .build())
+        .setNamespace(workflowClient.getOptions().getNamespace()).build();
 
     final DescribeWorkflowExecutionResponse describeWorkflowExecutionResponse = workflowClient.getWorkflowServiceStubs().blockingStub()
         .describeWorkflowExecution(describeWorkflowExecutionRequest);
@@ -234,7 +234,7 @@ public class ConnectionManagerUtils {
     return "connection_manager_" + connectionId;
   }
 
-  static ConnectionUpdaterInput buildStartWorkflowInput(final UUID connectionId) {
+  public static ConnectionUpdaterInput buildStartWorkflowInput(final UUID connectionId) {
     return ConnectionUpdaterInput.builder()
         .connectionId(connectionId)
         .jobId(null)

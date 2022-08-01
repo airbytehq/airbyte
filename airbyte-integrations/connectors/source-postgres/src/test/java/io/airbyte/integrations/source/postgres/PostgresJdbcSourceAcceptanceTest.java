@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
@@ -26,13 +27,11 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
@@ -69,8 +68,10 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
+    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
+  @Override
   @BeforeEach
   public void setup() throws Exception {
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
@@ -82,13 +83,13 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         "first_name VARCHAR(200), last_name VARCHAR(200), updated_at DATE, wakeup_at TIMETZ, last_visited_at TIMESTAMPTZ, last_comment_at TIMESTAMP";
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", PSQL_DB.getHost())
-        .put("port", PSQL_DB.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME, SCHEMA_NAME2))
-        .put("username", PSQL_DB.getUsername())
-        .put("password", PSQL_DB.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME, SCHEMA_NAME2))
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final String initScriptName = "init_" + dbName.concat(".sql");
@@ -101,11 +102,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     streamName = TABLE_NAME;
 
     dataSource = DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         getDriverClass(),
-        jdbcConfig.get("jdbc_url").asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, "connection_properties", getJdbcParameterDelimiter()));
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
+        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
 
     database = new StreamingJdbcDatabase(dataSource,
         JdbcUtils.getDefaultSourceOperations(),
@@ -185,7 +186,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected ArrayList<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(ConfiguredAirbyteStream streamWithSpaces) {
+  protected ArrayList<AirbyteMessage> getAirbyteMessagesCheckCursorSpaceInColumnName(final ConfiguredAirbyteStream streamWithSpaces) {
     final AirbyteMessage firstMessage = getTestMessages().get(0);
     firstMessage.getRecord().setStream(streamWithSpaces.getStream().getName());
     ((ObjectNode) firstMessage.getRecord().getData()).remove(COL_UPDATED_AT);
@@ -210,7 +211,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(String streamName2) {
+  protected List<AirbyteMessage> getAirbyteMessagesSecondSync(final String streamName2) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
@@ -227,7 +228,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(String streamName2) {
+  @Override
+  protected List<AirbyteMessage> getAirbyteMessagesSecondStreamWithNamespace(final String streamName2) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
@@ -243,7 +245,8 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         .collect(Collectors.toList());
   }
 
-  protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(ConfiguredAirbyteStream streamForTableWithSpaces) {
+  @Override
+  protected List<AirbyteMessage> getAirbyteMessagesForTablesWithQuoting(final ConfiguredAirbyteStream streamForTableWithSpaces) {
     return getTestMessages()
         .stream()
         .map(Jsons::clone)
@@ -326,6 +329,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                         COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
   }
 
+  @Override
   protected void executeStatementReadIncrementallyTwice() throws SQLException {
     database.execute(connection -> {
       connection.createStatement().execute(
@@ -343,25 +347,25 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   protected AirbyteCatalog getCatalog(final String defaultNamespace) {
     return new AirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+                TABLE_NAME,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
+                Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+                Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+                Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
-            TABLE_NAME_WITHOUT_PK,
-            defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.NUMBER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+                TABLE_NAME_WITHOUT_PK,
+                defaultNamespace,
+                Field.of(COL_ID, JsonSchemaType.INTEGER),
+                Field.of(COL_NAME, JsonSchemaType.STRING),
+                Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
+                Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
+                Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
+                Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
@@ -420,7 +424,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(String namespace) {
+  protected List<AirbyteMessage> getExpectedAirbyteMessagesSecondSync(final String namespace) {
     final List<AirbyteMessage> expectedMessages = new ArrayList<>();
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
@@ -440,17 +444,18 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",
                     COL_LAST_VISITED_AT, "2006-10-19T17:23:54.123456Z",
                     COL_LAST_COMMENT_AT, "2006-01-01T17:23:54.123456")))));
-    expectedMessages.add(new AirbyteMessage()
-        .withType(AirbyteMessage.Type.STATE)
-        .withState(new AirbyteStateMessage()
-            .withData(Jsons.jsonNode(new DbState()
-                .withCdc(false)
-                .withStreams(Lists.newArrayList(new DbStreamState()
-                    .withStreamName(streamName)
-                    .withStreamNamespace(namespace)
-                    .withCursorField(ImmutableList.of(COL_ID))
-                    .withCursor("5")))))));
+    final DbStreamState state = new DbStreamState()
+        .withStreamName(streamName)
+        .withStreamNamespace(namespace)
+        .withCursorField(ImmutableList.of(COL_ID))
+        .withCursor("5");
+    expectedMessages.addAll(createExpectedTestMessages(List.of(state)));
     return expectedMessages;
+  }
+
+  @Override
+  protected boolean supportsPerStream() {
+    return true;
   }
 
   @Test

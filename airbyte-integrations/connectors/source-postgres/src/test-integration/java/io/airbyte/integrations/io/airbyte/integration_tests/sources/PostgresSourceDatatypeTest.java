@@ -10,9 +10,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Set;
@@ -35,23 +37,23 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("method", "Standard")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            container.getHost(),
+            container.getFirstMappedPort(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
@@ -108,7 +110,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .build());
@@ -116,7 +118,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigserial")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .build());
@@ -270,7 +272,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "1001", "-2147483648", "2147483647")
               .addExpectedValues(null, "1001", "-2147483648", "2147483647")
               .build());
@@ -415,7 +417,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "-32768", "32767")
               .addExpectedValues(null, "-32768", "32767")
               .build());
@@ -425,7 +427,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "32767", "0", "-32767")
               .addExpectedValues("1", "32767", "0", "-32767")
               .build());
@@ -435,7 +437,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "2147483647", "0", "-2147483647")
               .addExpectedValues("1", "2147483647", "0", "-2147483647")
               .build());
@@ -449,8 +451,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
-              .addExpectedValues(null, "13:00:01", "13:00:02", "13:00:03", "13:00:04", "13:00:05", "13:00:06")
+              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
+              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
+                  "13:00:00.000000")
               .build());
     }
 
@@ -461,10 +464,11 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
+              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01-07:00", "13:00:02+08:00", "13:00:03-08:00", "13:00:04Z", "13:00:05-08:00", "13:00:06+08:00")
+              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
+                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
               .build());
     }
 
@@ -475,8 +479,8 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-              .addExpectedValues("2004-10-19T10:23:54", "2004-10-19T10:23:54.123456", null)
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
+              .addExpectedValues("2004-10-19T10:23:00.000000", "2004-10-19T10:23:54.123456", null)
               .build());
     }
 
@@ -487,9 +491,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
               .sourceType("timestamptz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
               // 2004-10-19T10:23:54Z-8 = 2004-10-19T17:23:54Z
-              .addExpectedValues("2004-10-19T17:23:54Z", "2004-10-19T17:23:54.123456Z", null)
+              .addExpectedValues("2004-10-19T17:23:00.000000Z", "2004-10-19T17:23:54.123456Z", null)
               .build());
     }
 

@@ -35,8 +35,6 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
 
-  public static final String JDBC_URL_PARAMS_KEY = "jdbc_url_params";
-
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
   private final SqlOperations sqlOperations;
@@ -63,9 +61,8 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
 
     try {
       final JdbcDatabase database = getDatabase(dataSource);
-      final String outputSchema = namingResolver.getIdentifier(config.get("schema").asText());
-      AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations));
+      final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
+      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
@@ -113,10 +110,10 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   protected DataSource getDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toJdbcConfig(config);
     return DataSourceFactory.create(
-        jdbcConfig.get("username").asText(),
-        jdbcConfig.has("password") ? jdbcConfig.get("password").asText() : null,
+        jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText(),
+        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
-        jdbcConfig.get("jdbc_url").asText(),
+        jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         getConnectionProperties(config));
   }
 
@@ -125,7 +122,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   }
 
   protected Map<String, String> getConnectionProperties(final JsonNode config) {
-    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JDBC_URL_PARAMS_KEY);
+    final Map<String, String> customProperties = JdbcUtils.parseJdbcParameters(config, JdbcUtils.JDBC_URL_PARAMS_KEY);
     final Map<String, String> defaultProperties = getDefaultConnectionProperties(config);
     assertCustomParametersDontOverwriteDefaultParameters(customProperties, defaultProperties);
     return MoreMaps.merge(customProperties, defaultProperties);

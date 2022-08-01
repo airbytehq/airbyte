@@ -207,8 +207,43 @@
       "additionalProperties": false
     },
     "session": {
-      "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "end_date": {
+          "format": "date-time",
+          "type": ["null", "string"]
+        },
+        "country_code": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "browser": {
+          "type": ["null", "string"]
+        },
+        "ip": {
+          "type": ["null", "string"]
+        },
+        "country_name": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "region": {
+          "type": ["null", "string"]
+        },
+        "platform": {
+          "type": ["null", "string"]
+        },
+        "user_agent": {
+          "type": ["null", "string"]
+        },
+        "start_date": {
+          "format": "date-time",
+          "type": ["null", "string"]
+        }
+      }
     },
     "started_by": {
       "type": ["null", "string"]

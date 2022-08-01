@@ -109,6 +109,10 @@
           "type": ["null", "string"],
           "format": "date-time"
         },
+        "stat_time_hour": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
         "country_code": {
           "type": ["null", "string"]
         },

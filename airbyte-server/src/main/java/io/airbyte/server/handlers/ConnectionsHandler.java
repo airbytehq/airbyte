@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.AirbyteCatalog;
+import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.ConnectionCreate;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionReadList;
@@ -19,6 +21,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSearch;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceSearch;
+import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -33,10 +36,12 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.persistence.WorkspaceHelper;
 import io.airbyte.server.converters.ApiPojoConverters;
+import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
@@ -47,10 +52,13 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -256,6 +264,66 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
+  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+    return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
+        CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)))
+        .stream()
+        .map(CatalogDiffConverters::streamTransformToApi)
+        .toList());
+  }
+
+  /**
+   * Returns the list of the streamDescriptor that have their config updated.
+   *
+   * @param oldCatalog the old catalog
+   * @param newCatalog the new catalog
+   * @return the list of StreamDescriptor that have their configuration changed
+   */
+  public Set<StreamDescriptor> getConfigurationDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+    final Map<StreamDescriptor, AirbyteStreamConfiguration> oldStreams = catalogToPerStreamConfiguration(oldCatalog);
+    final Map<StreamDescriptor, AirbyteStreamConfiguration> newStreams = catalogToPerStreamConfiguration(newCatalog);
+
+    final Set<StreamDescriptor> streamWithDifferentConf = new HashSet<>();
+
+    newStreams.forEach(((streamDescriptor, airbyteStreamConfiguration) -> {
+      final AirbyteStreamConfiguration oldConfig = oldStreams.get(streamDescriptor);
+
+      if (oldConfig == null) {
+        // The stream is a new one, the config has not change and it needs to be in the schema change list.
+      } else {
+        if (haveConfigChange(oldConfig, airbyteStreamConfiguration)) {
+          streamWithDifferentConf.add(streamDescriptor);
+        }
+      }
+    }));
+
+    return streamWithDifferentConf;
+  }
+
+  private boolean haveConfigChange(final AirbyteStreamConfiguration oldConfig, final AirbyteStreamConfiguration newConfig) {
+    final List<String> oldCursors = oldConfig.getCursorField();
+    final List<String> newCursors = newConfig.getCursorField();
+    final boolean hasCursorChanged = !(oldCursors.equals(newCursors));
+
+    final boolean hasSyncModeChanged = !oldConfig.getSyncMode().equals(newConfig.getSyncMode());
+
+    final boolean hasDestinationSyncModeChanged = !oldConfig.getDestinationSyncMode().equals(newConfig.getDestinationSyncMode());
+
+    final Set<List<String>> convertedOldPrimaryKey = new HashSet<>(oldConfig.getPrimaryKey());
+    final Set<List<String>> convertedNewPrimaryKey = new HashSet<>(newConfig.getPrimaryKey());
+    final boolean hasPrimaryKeyChanged = !(convertedOldPrimaryKey.equals(convertedNewPrimaryKey));
+
+    return hasCursorChanged || hasSyncModeChanged || hasDestinationSyncModeChanged || hasPrimaryKeyChanged;
+  }
+
+  private Map<StreamDescriptor, AirbyteStreamConfiguration> catalogToPerStreamConfiguration(final AirbyteCatalog catalog) {
+    return catalog.getStreams().stream().collect(Collectors.toMap(stream -> new StreamDescriptor()
+        .name(stream.getStream().getName())
+        .namespace(stream.getStream().getNamespace()),
+        stream -> stream.getConfig()));
+  }
+
   public Optional<AirbyteCatalog> getConnectionAirbyteCatalog(final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync connection = configRepository.getStandardSync(connectionId);
@@ -303,7 +371,7 @@ public class ConnectionsHandler {
         matchSearch(connectionSearch.getDestination(), destinationRead);
   }
 
-  // todo (cgardens) - make this static. requires removing one bad dependence in SourceHandlerTest
+  // todo (cgardens) - make this static. requires removing one bad dependency in SourceHandlerTest
   public boolean matchSearch(final SourceSearch sourceSearch, final SourceRead sourceRead) {
     final SourceMatcher sourceMatcher = new SourceMatcher(sourceSearch);
     final SourceRead sourceReadFromSearch = sourceMatcher.match(sourceRead);
@@ -311,7 +379,7 @@ public class ConnectionsHandler {
     return (sourceReadFromSearch == null || sourceReadFromSearch.equals(sourceRead));
   }
 
-  // todo (cgardens) - make this static. requires removing one bad dependence in
+  // todo (cgardens) - make this static. requires removing one bad dependency in
   // DestinationHandlerTest
   public boolean matchSearch(final DestinationSearch destinationSearch, final DestinationRead destinationRead) {
     final DestinationMatcher destinationMatcher = new DestinationMatcher(destinationSearch);

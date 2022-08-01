@@ -8,6 +8,7 @@ import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCO
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_ACCOUNT_IS_LOCKED;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,6 +29,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
@@ -83,7 +85,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     ID_VALUE_5 = new BigDecimal(5);
 
     ORACLE_DB = new OracleContainer("epiclabs/docker-oracle-xe-11g")
-        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD");
+        .withEnv("NLS_DATE_FORMAT", "YYYY-MM-DD")
+        .withEnv("RELAX_SECURITY", "1");
     ORACLE_DB.start();
   }
 
@@ -102,6 +105,17 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     cleanUpTables();
 
     super.setup();
+  }
+
+  protected void incrementalDateCheck() throws Exception {
+    // https://stackoverflow.com/questions/47712930/resultset-meta-data-return-timestamp-instead-of-date-oracle-jdbc
+    // Oracle DATE is a java.sql.Timestamp (java.sql.Types.TIMESTAMP) as far as JDBC (and the SQL
+    // standard) is concerned as it has both a date and time component.
+    incrementalCursorCheck(
+        COL_UPDATED_AT,
+        "2005-10-18T00:00:00.000000Z",
+        "2006-10-19T00:00:00.000000Z",
+        Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
   @AfterEach
@@ -222,6 +236,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()
+            .withType(AirbyteStateType.LEGACY)
             .withData(Jsons.jsonNode(new DbState()
                 .withCdc(false)
                 .withStreams(Lists.newArrayList(new DbStreamState()
@@ -232,7 +247,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     setEmittedAtToNull(actualMessagesSecondSync);
 
-    assertTrue(expectedMessages.size() == actualMessagesSecondSync.size());
+    assertArrayEquals(expectedMessages.toArray(), actualMessagesSecondSync.toArray());
     assertTrue(expectedMessages.containsAll(actualMessagesSecondSync));
     assertTrue(actualMessagesSecondSync.containsAll(expectedMessages));
   }

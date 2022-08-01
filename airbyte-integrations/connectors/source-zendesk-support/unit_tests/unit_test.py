@@ -15,7 +15,7 @@ import pytz
 import requests
 from airbyte_cdk import AirbyteLogger
 from source_zendesk_support.source import BasicApiTokenAuthenticator, SourceZendeskSupport
-from source_zendesk_support.streams import (  # streams
+from source_zendesk_support.streams import (
     DATETIME_FORMAT,
     END_OF_STREAM_KEY,
     LAST_END_TIME_KEY,
@@ -42,6 +42,7 @@ from source_zendesk_support.streams import (  # streams
     UserSettingsStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
+from utils import read_full_refresh
 
 # prepared config
 STREAM_ARGS = {
@@ -91,7 +92,7 @@ def test_token_authenticator():
     # we expect base64 from creds input
     expected = "dGVzdEBhaXJieXRlLmlvL3Rva2VuOmFwaV90b2tlbg=="
     result = BasicApiTokenAuthenticator("test@airbyte.io", "api_token")
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -112,7 +113,7 @@ def test_convert_config2stream_args(config):
 def test_get_authenticator(config, expected):
     # we expect base64 from creds input
     result = SourceZendeskSupport().get_authenticator(config=config)
-    assert result._tokens[0] == expected
+    assert result._token == expected
 
 
 @pytest.mark.parametrize(
@@ -406,17 +407,13 @@ class TestSourceZendeskSupportStream:
             (Macros, None),
             (Organizations, None),
             (Groups, None),
-            (SatisfactionRatings, None),
             (TicketFields, None),
-            (TicketMetrics, None),
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
-            "SatisfactionRatings",
             "TicketFields",
-            "TicketMetrics",
         ],
     )
     def test_next_page_token(self, stream_cls, expected):
@@ -430,17 +427,13 @@ class TestSourceZendeskSupportStream:
             (Macros, {"start_time": 1622505600}),
             (Organizations, {"start_time": 1622505600}),
             (Groups, {"start_time": 1622505600}),
-            (SatisfactionRatings, {"start_time": 1622505600, "sort_by": "asc"}),
             (TicketFields, {"start_time": 1622505600}),
-            (TicketMetrics, {"start_time": 1622505600}),
         ],
         ids=[
             "Macros",
             "Organizations",
             "Groups",
-            "SatisfactionRatings",
             "TicketFields",
-            "TicketMetrics",
         ],
     )
     def test_request_params(self, stream_cls, expected):
@@ -555,12 +548,16 @@ class TestSourceZendeskSupportCursorPaginationStream:
             (TicketForms),
             (TicketMetricEvents),
             (TicketAudits),
+            (TicketMetrics),
+            (SatisfactionRatings),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
+            "TicketMetrics",
+            "SatisfactionRatings",
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls):
@@ -594,16 +591,20 @@ class TestSourceZendeskSupportCursorPaginationStream:
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
-            (GroupMemberships, {"start_time": 1622505600}),
+            (GroupMemberships, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
             (TicketForms, {"start_time": 1622505600}),
             (TicketMetricEvents, {"start_time": 1622505600}),
             (TicketAudits, {"sort_by": "created_at", "sort_order": "desc", "limit": 1000}),
+            (SatisfactionRatings, {"page": 1, "per_page": 100, "sort_by": "asc", "start_time": 1622505600}),
+            (TicketMetrics, {"page": 1, "per_page": 100, "start_time": 1622505600}),
         ],
         ids=[
             "GroupMemberships",
             "TicketForms",
             "TicketMetricEvents",
             "TicketAudits",
+            "SatisfactionRatings",
+            "TicketMetrics",
         ],
     )
     def test_request_params(self, stream_cls, expected):
@@ -803,3 +804,38 @@ class TestSourceZendeskSupportTicketEventsExportStream:
         stream = stream_cls(**STREAM_ARGS)
         result = stream.event_type
         assert result == expected
+
+
+def test_read_tickets_stream(requests_mock):
+    requests_mock.get(
+        "https://subdomain.zendesk.com/api/v2/incremental/tickets.json",
+        json={
+            "tickets": [
+                {"custom_fields": []},
+                {},
+                {
+                    "custom_fields": [
+                        {"id": 360023382300, "value": None},
+                        {"id": 360004841380, "value": "customer_tickets"},
+                        {"id": 360022469240, "value": "5"},
+                        {"id": 360023712840, "value": False},
+                    ]
+                },
+            ]
+        },
+    )
+
+    stream = Tickets(subdomain="subdomain", start_date="2020-01-01T00:00:00Z")
+    records = read_full_refresh(stream)
+    assert records == [
+        {"custom_fields": []},
+        {},
+        {
+            "custom_fields": [
+                {"id": 360023382300, "value": None},
+                {"id": 360004841380, "value": "customer_tickets"},
+                {"id": 360022469240, "value": "5"},
+                {"id": 360023712840, "value": "False"},
+            ]
+        },
+    ]

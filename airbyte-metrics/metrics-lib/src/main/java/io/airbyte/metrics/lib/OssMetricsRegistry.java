@@ -79,6 +79,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.METRICS_REPORTER,
       "num_running_jobs",
       "number of running jobs"),
+  NUM_ORPHAN_RUNNING_JOBS(
+      MetricEmittingApps.METRICS_REPORTER,
+      "num_orphan_running_jobs",
+      "number of jobs reported as running that as associated to connection inactive or deprecated"),
   NUM_ACTIVE_CONN_PER_WORKSPACE(
       MetricEmittingApps.METRICS_REPORTER,
       "num_active_conn_per_workspace",

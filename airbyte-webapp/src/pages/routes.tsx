@@ -93,7 +93,7 @@ export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ 
   return (
     <Navigate
       to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
-      replace={true}
+      replace
     />
   );
 };

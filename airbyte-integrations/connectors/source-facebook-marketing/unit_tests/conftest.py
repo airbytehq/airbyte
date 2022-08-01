@@ -54,15 +54,3 @@ def api_fixture(some_config, requests_mock, fb_account_response):
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts", [fb_account_response])
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{some_config['account_id']}/", [fb_account_response])
     return api
-
-
-@fixture
-def set_today(mocker, monkeypatch):
-    def inner(date: str):
-        today = pendulum.parse(date)
-        yesterday = today - pendulum.duration(days=1)
-        monkeypatch.setattr(pendulum, "today", mocker.MagicMock(return_value=today))
-        monkeypatch.setattr(pendulum, "yesterday", mocker.MagicMock(return_value=yesterday))
-        return yesterday, today
-
-    return inner

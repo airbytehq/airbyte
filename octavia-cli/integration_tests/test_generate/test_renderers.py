@@ -107,9 +107,11 @@ def test_expected_output_connection_renderer(octavia_tmp_project_directory, mock
         alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
     )
     catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
-    mock_source = mocker.Mock(resource_id="my_source_id", catalog=catalog)
+    mock_source = mocker.Mock(resource_id="my_source_id", configuration_path="source_configuration_path", catalog=catalog)
     mock_destination = mocker.Mock(
-        resource_id="my_destination_id", definition=mocker.Mock(supports_dbt=with_normalization, supports_normalization=with_normalization)
+        resource_id="my_destination_id",
+        configuration_path="destination_configuration_path",
+        definition=mocker.Mock(supports_dbt=with_normalization, supports_normalization=with_normalization),
     )
 
     renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)

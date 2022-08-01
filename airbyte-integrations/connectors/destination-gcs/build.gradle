@@ -26,9 +26,9 @@ dependencies {
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
     // parquet
-    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.0'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.0'
-    implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.0'
+    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: '3.3.3'
+    implementation group: 'org.apache.hadoop', name: 'hadoop-aws', version: '3.3.3'
+    implementation group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: '3.3.3'
     implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.12.0'
     implementation group: 'com.github.airbytehq', name: 'json-avro-converter', version: '1.0.1'
 

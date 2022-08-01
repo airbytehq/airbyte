@@ -64,7 +64,7 @@ const EditControls: React.FC<IProps> = ({ isSubmitting, isValid, dirty, resetFor
       </Button>
       <ButtonContainer>
         <Button type="button" secondary disabled={isSubmitting || !dirty} onClick={resetForm}>
-          <FormattedMessage id={`form.cancel`} />
+          <FormattedMessage id="form.cancel" />
         </Button>
       </ButtonContainer>
       {showStatusMessage()}

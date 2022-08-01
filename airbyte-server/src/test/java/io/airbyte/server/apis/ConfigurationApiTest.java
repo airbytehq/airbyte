@@ -18,6 +18,7 @@ import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.db.Database;
 import io.airbyte.scheduler.client.EventRunner;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
@@ -27,7 +28,7 @@ import java.nio.file.Path;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 
-public class ConfigurationApiTest {
+class ConfigurationApiTest {
 
   @Test
   void testImportDefinitions() {
@@ -45,6 +46,7 @@ public class ConfigurationApiTest {
         mock(FileTtlManager.class),
         mock(Database.class),
         mock(Database.class),
+        mock(StatePersistence.class),
         mock(TrackingClient.class),
         WorkerEnvironment.DOCKER,
         LogConfigs.EMPTY,
@@ -54,7 +56,7 @@ public class ConfigurationApiTest {
         mock(EventRunner.class),
         mock(Flyway.class),
         mock(Flyway.class));
-    assertTrue(configurationApi.canImportDefinitons());
+    assertTrue(configurationApi.canImportDefinitions());
   }
 
 }

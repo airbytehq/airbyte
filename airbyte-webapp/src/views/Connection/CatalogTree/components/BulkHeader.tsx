@@ -125,7 +125,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <HeaderCell>
         {pkType && (
           <PathPopout
-            isMulti={true}
+            isMulti
             onPathChange={(path) => onChangeOption({ primaryKey: path })}
             pathType={pkType}
             paths={paths}

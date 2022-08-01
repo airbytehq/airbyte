@@ -11,9 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = [
-    "pytest~=6.1",
-]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock"]
 
 setup(
     name="source_twilio",

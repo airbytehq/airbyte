@@ -120,6 +120,7 @@ function main() {
     openssh "${PROJECT_DIR}/ssh.json"
     trap 'closessh' EXIT
 
+    set +e # allow script to continue running even if next commands fail to run properly
     # We don't run dbt 1.0.x on all destinations (because their plugins don't support it yet)
     # So we need to only pass `--event-buffer-size` if it's supported by DBT.
     check_dbt_event_buffer_size
@@ -130,7 +131,6 @@ function main() {
       dbt_additional_args=""
     fi
 
-    set +e # allow script to continue running even if next commands fail to run properly
     # Run dbt to compile and execute the generated normalization models
     dbt ${dbt_additional_args} run --profiles-dir "${PROJECT_DIR}" --project-dir "${PROJECT_DIR}"
     DBT_EXIT_CODE=$?

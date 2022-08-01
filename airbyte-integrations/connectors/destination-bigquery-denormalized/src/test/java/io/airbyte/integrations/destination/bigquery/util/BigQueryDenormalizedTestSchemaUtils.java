@@ -26,6 +26,10 @@ public class BigQueryDenormalizedTestSchemaUtils {
     return getTestDataFromResourceJson("schemaWithDateTime.json");
   }
 
+  public static JsonNode getSchemaWithBigInteger() {
+    return getTestDataFromResourceJson("schemaWithBigInteger.json");
+  }
+
   public static JsonNode getSchemaWithInvalidArrayType() {
     return getTestDataFromResourceJson("schemaWithInvalidArrayType.json");
   }
