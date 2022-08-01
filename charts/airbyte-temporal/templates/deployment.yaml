@@ -65,7 +65,7 @@ spec:
             value: "config/dynamicconfig/development.yaml"
         {{- end }}
         {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 8 }}
+        {{ .Values.extraEnv | toYaml | nindent 10 }}
         {{- end }}
         ports:
         - containerPort: 7233
