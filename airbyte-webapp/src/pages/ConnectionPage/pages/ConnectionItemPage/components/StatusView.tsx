@@ -123,9 +123,10 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
                     </ToolTip>
                   </>
                 )}
-                {jobRunningOrPending && (
+                {jobRunningOrPending && !jobCancelling && cancelJobBtn}
+                {jobRunningOrPending && jobCancelling && (
                   <ToolTip control={cancelJobBtn} cursor="not-allowed">
-                    <FormattedMessage id="connection.pendingSync" />
+                    <FormattedMessage id="form.canceling" />
                   </ToolTip>
                 )}
               </div>
