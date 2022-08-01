@@ -276,7 +276,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    *   <li>The "BC" suffix will be appended, if not already present</li>
    * </ul>
    */
-  protected String resolveEra(LocalDate date, String value) {
+  public static String resolveEra(LocalDate date, String value) {
     if (isBCE(date)) {
       if (value.startsWith("-")) {
         value = value.substring(1);

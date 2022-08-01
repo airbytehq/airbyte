@@ -8,7 +8,7 @@ import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMESTAMP_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
 import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
-import static io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations.isBCE;
+import static io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations.resolveEra;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -57,17 +57,6 @@ public class DateTimeConverter {
   public static String convertToTime(Object time) {
     LocalTime localTime = LocalTime.parse(time.toString());
     return localTime.format(TIME_FORMATTER);
-  }
-
-  /**
-   * This method converts '-YYYY-mm-dd' to 'YYYY-mm-dd BC' if date is before current era.
-   *
-   * @param date local date
-   * @param value formatted date
-   * @return value with era indicator if date is before current era
-   */
-  public static String resolveEra(LocalDate date, String value) {
-    return isBCE(date) ? value.substring(1) + " BC" : value;
   }
 
   private static Instant toInstant(Object timestamp) {
