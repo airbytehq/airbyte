@@ -1,4 +1,4 @@
-# Authenticator
+# Authentication
 
 The `Authenticator` defines how to configure outgoing HTTP requests to authenticate on the API source.
 

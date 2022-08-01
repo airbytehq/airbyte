@@ -9,7 +9,7 @@ When a stream is read incrementally, a state message will be output by the conne
 At the beginning of a `read` operation, the `StreamSlicer` will compute the slices to sync given the connection config and the stream's current state,
 As the `Retriever` reads data from the `Source`, the `StreamSlicer` keeps track of the `Stream`'s state, which will be emitted after reading each stream slice.
 
-More information of stream slicing can be found in the [stream-slices section](../../../cdk-python/stream-slices.md)
+More information of stream slicing can be found in the [stream-slices section](../cdk-python/stream-slices.md)
 
 ## Implementations
 

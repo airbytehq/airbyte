@@ -1,7 +1,13 @@
 # Config-based connectors overview
 
 The goal of this document is to give enough technical specifics to understand how config-based connectors work.
-When you're ready to start building a connector, you can start with [the tutorial](../0-getting-started.md) or dive into the [reference documentation](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
+When you're ready to start building a connector, you can start with [the tutorial](../../../config-based/tutorial/0-getting-started.md) or dive into the [reference documentation](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.html)
+
+## Overview
+
+Config-based connectors work by parsing a YAML configuration describing the Source, then running the configured connector using a Python backend.
+
+The process then submits HTTP requests to the API endpoint, and extracts records out of the response.
 
 ## Source
 
@@ -27,12 +33,12 @@ A stream is defined by:
 6. A set of transformations to be applied on the records read from the source before emitting them to the destination
 7. A checkpoint interval: defines when to checkpoint syncs.
 
-More details on streams and sources can be found in the [basic concepts section](../../../../../airbyte-cdk/python/docs/concepts/basic-concepts.md).
-More details on cursor fields, and checkpointing can be found in the [incremental-stream section](../../../../../airbyte-cdk/python/docs/concepts/incremental-stream.md)
+More details on streams and sources can be found in the [basic concepts section](../cdk-python/basic-concepts.md).
+More details on cursor fields, and checkpointing can be found in the [incremental-stream section](../cdk-python/incremental-stream.md)
 
 ## Data retriever
 
-The data retriever defines how to read the data from an API source.
+The data retriever defines how to read the data from an API source, and acts as an orchestrator for the data retrieval flow.
 The is currently only one implementation, the `SimpleRetriever`, which is defined by
 
 1. Requester: describes how to submit requests to the API source
@@ -42,6 +48,9 @@ The is currently only one implementation, the `SimpleRetriever`, which is define
 
 Each of those components (and their subcomponents) are defined by an explicit interface and one or many implementations.
 The developer can choose and configure the implementation they need depending on specifications of the integrations they are building against.
+
+More details on the paginator can be found in the [pagination section](pagination.md)
+More details on the stream slicers can be found in the [stream slicers section](stream-slicers.md)
 
 ### Data flow
 
@@ -66,6 +75,9 @@ There currently is only one implementation, the `HttpRequester`, which is define
 4. A request options provider: defines the request parameters and headers to set on outgoing HTTP requests
 5. An authenticator: defines how to authenticate to the source
 6. An error handler: defines how to handle errors
+
+More details on authentication can be found in the [authentication section](authentication.md).
+More details on error handling can be found in the [error handling section](error-handling.md)
 
 ## Connection Checker
 
