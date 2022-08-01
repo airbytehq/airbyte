@@ -80,7 +80,7 @@ This issue is tracked in [\#9771](https://github.com/airbytehq/airbyte/issues/97
 ### <a name="jdbc-url-params"></a>3. (Advanced) Configure Additional JDBC URL Parameters
 
 This is an advanced configuration option. Users are advised to use it with caution. If you need to customize the JDBC connection beyond common options you can specify additional JDBC URL parameters in `JDBC URL Params` field. The value of `JDBC URL Params` field
-should have the form of key-value pairs separated by the symbol `&`. 
+should have the form of key-value pairs separated by the symbol `&`.
 
 E.g. `key1=value1&key2=value2&key3=value3`
 
@@ -177,7 +177,16 @@ SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 
 If you would like to use `wal2json` plugin, please change `pgoutput` to `wal2json` value in the above query.
 
-#### 6. Start syncing
+#### <a name="initial-waiting-time"></a>6. [Optional] Set up initial waiting time
+The Postgres connector may need some time to start processing the data under the CDC modes. There are two reasons for that:
+- When the connection is set up for the first time and a snapshot is needed;
+- When there is a lot of change logs to process.
+
+The connector will always wait for at least this amount of time to make sure there is no new data to sync. So don't set waiting time to be too long. On the other hand, if this parameter is too short, the connector may not have enough time to create the initial snapshot, or read through the change logs.
+
+The default initial waiting time for Postgres is 5 minutes (300 seconds). The connector will adjust this time automatically in the future. Usually you don't need to change it. However, if there are known changes in the database, but the connector is not able to read those changes, the root cause may be insufficient waiting time, and you can increase this waiting time (e.g. set to 600 seconds) to test if it is the root cause.
+
+#### 7. Start syncing
 
 When configuring the source, select CDC and provide the replication slot and publication you just created. You should be ready to sync data with CDC!
 
@@ -327,6 +336,9 @@ One optimization on the Airbyte side is to break one large and long sync into mu
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
+| 0.5.0   | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
+| 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
+| 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
 | 0.4.34  | 2022-07-17 | [13840](https://github.com/airbytehq/airbyte/pull/13840) | Added the ability to connect using different SSL modes and SSL certificates.                                      |
 | 0.4.33  | 2022-07-14 | [14586](https://github.com/airbytehq/airbyte/pull/14586) | Validate source JDBC url parameters                                                                               |

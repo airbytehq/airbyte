@@ -86,7 +86,7 @@ SOME_BACKOFF_TIME = 60
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in decoded_response }}"),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'code' in response }}"),
             None,
             {},
             ResponseStatus.retry(10),
@@ -95,7 +95,16 @@ SOME_BACKOFF_TIME = 60
         (
             "test_403_with_predicate",
             HTTPStatus.FORBIDDEN,
-            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in decoded_response }}"),
+            HttpResponseFilter(action=ResponseAction.RETRY, predicate="{{ 'some_absent_field' in response }}"),
+            None,
+            {},
+            response_status.FAIL,
+            None,
+        ),
+        (
+            "test_200_fail_with_predicate",
+            HTTPStatus.OK,
+            HttpResponseFilter(action=ResponseAction.FAIL, error_message_contain="found"),
             None,
             {},
             response_status.FAIL,
