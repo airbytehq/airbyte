@@ -11,9 +11,11 @@ import subprocess
 import sys
 import time
 import uuid
+from functools import lru_cache
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
+import yaml
 
 ORGANIZATION = "airbytehq"
 REPOSITORY = "airbyte"
@@ -23,6 +25,9 @@ BRANCH = "master"
 WORKFLOW_PATH = ".github/workflows/test-command.yml"
 RUN_UUID_REGEX = re.compile("^UUID ([0-9a-f-]+)$")
 SLEEP = 1200
+SOURCE_DEFINITIONS = "airbyte-config/init/src/main/resources/seed/source_definitions.yaml"
+DESTINATION_DEFINITIONS = "./airbyte-config/init/src/main/resources/seed/destination_definitions.yaml"
+STAGES = ["alpha", "beta", "generally_available"]
 
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
@@ -91,9 +96,9 @@ def workflow_dispatch(owner, repo, workflow_id, connector):
     return run_uuid
 
 
-def get_connector_names():
+@lru_cache
+def get_gradlew_integrations():
     process = subprocess.run(["./gradlew", "integrationTest", "--dry-run"], check=True, capture_output=True, universal_newlines=True)
-
     res = []
     for line in process.stdout.splitlines():
         parts = line.split(":")
@@ -104,6 +109,50 @@ def get_connector_names():
             and parts[-1] == "integrationTest SKIPPED"
         ):
             res.append(parts[3])
+    return res
+
+
+@lru_cache
+def get_definitions(definition_type):
+    assert definition_type in ["source", "destination"]
+    filename = SOURCE_DEFINITIONS
+    if definition_type == "destination":
+        filename = DESTINATION_DEFINITIONS
+    with open(filename) as fp:
+        return yaml.safe_load(fp)
+
+
+def normalize_stage(stage):
+    stage = stage.lower()
+    if stage == "ga":
+        stage = "generally_available"
+    return stage
+
+
+def get_integrations(names):
+    res = set()
+    for name in names:
+        parts = name.split(":")
+        if len(parts) == 2:
+            definition_type, stage = parts
+            stage = normalize_stage(stage)
+            if stage == "all":
+                for integration in get_gradlew_integrations():
+                    if integration.startswith(definition_type + "-"):
+                        res.add(integration)
+            elif stage in STAGES:
+                for definition in get_definitions(definition_type):
+                    if definition.get("releaseStage", "alpha") == stage:
+                        res.add(definition["dockerRepository"].partition("/")[2])
+            else:
+                logging.warning(f"unknown stage: '{stage}'")
+        else:
+            integration = parts[0]
+            airbyte_integrations = get_gradlew_integrations()
+            if integration in airbyte_integrations:
+                res.add(integration)
+            else:
+                logging.warning(f"integration not found: {integration}")
     return res
 
 
@@ -161,12 +210,12 @@ def main():
         logging.error(f"Cannot find workflow path '{WORKFLOW_PATH}'")
         sys.exit(1)
 
-    connector_names = get_connector_names()
+    integration_names = get_integrations(sys.argv[1:])
     run_uuid_to_name = {}
-    for connector_name in connector_names:
-        run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
-        logging.info(f"Dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
-        run_uuid_to_name[run_uuid] = connector_name
+    for integration_name in integration_names:
+        run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, integration_name)
+        logging.info(f"Dispatch workflow for connector {integration_name}, UUID: {run_uuid}")
+        run_uuid_to_name[run_uuid] = integration_name
         # to avoid overloading system
         time.sleep(1)
 
@@ -175,9 +224,9 @@ def main():
 
     run_uuids = search_failed_workflow_runs(ORGANIZATION, REPOSITORY, workflow_id, run_uuid_to_name.keys())
     for run_uuid in run_uuids:
-        connector_name = run_uuid_to_name[run_uuid]
-        run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, connector_name)
-        logging.info(f"Re-dispatch workflow for connector {connector_name}, UUID: {run_uuid}")
+        integration_name = run_uuid_to_name[run_uuid]
+        run_uuid = workflow_dispatch(ORGANIZATION, REPOSITORY, workflow_id, integration_name)
+        logging.info(f"Re-dispatch workflow for connector {integration_name}, UUID: {run_uuid}")
 
 
 if __name__ == "__main__":
