@@ -19,7 +19,7 @@ requester:
         action: RETRY
 ```
 
-Response filters can be used to specify HTTP errors to ignore instead of retrying.
+Response filters can be used to specify HTTP errors to ignore.
 For instance, this example will configure the handler to ignore responses with 404 error:
 
 ```
@@ -45,7 +45,7 @@ requester:
 
 This can also be done through a more generic string interpolation strategy with the following parameters:
 
-- response:
+- response: the decoded response
 
 This example ignores errors where the response contains a "code" field:
 
@@ -99,7 +99,7 @@ requester:
         header: "wait_time"
 ```
 
-Optionally, a regex can be configured to extract the wait time from the header value.
+Optionally, a regular expression can be configured to extract the wait time from the header value.
 
 ```
 requester:
@@ -129,7 +129,7 @@ requester:
         min_wait: 5
 ```
 
-The strategy accepts an optional regex to extract the time from the header value, and a minimum time to wait.
+The strategy accepts an optional regular expression to extract the time from the header value, and a minimum time to wait.
 
 ## Advanced error handling
 
