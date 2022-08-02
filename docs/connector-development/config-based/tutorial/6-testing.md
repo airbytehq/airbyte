@@ -93,33 +93,22 @@ Here is the full connector definition for reference:
 
 ```
 schema_loader:
-  class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
+  type: JsonSchema
   file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
   extractor:
     type: JelloExtractor
-    transform: "[_]"
+    transform: "_"
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
-  url_base: "https://api.exchangeratesapi.io/v1/"
+  url_base: https://api.exchangeratesapi.io/v1/
   http_method: "GET"
   request_options_provider:
     request_parameters:
       access_key: "{{ config.access_key }}"
       base: "{{ config.base }}"
-stream_slicer:
-  type: "DatetimeStreamSlicer"
-  start_datetime:
-    datetime: "{{ config.start_date }}"
-    datetime_format: "%Y-%m-%d"
-  end_datetime:
-    datetime: "{{ now_local() }}"
-    datetime_format: "%Y-%m-%d %H:%M:%S.%f"
-  step: "1d"
-  datetime_format: "%Y-%m-%d"
-  cursor_field: "{{ options.cursor_field }}"
 retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
@@ -132,30 +121,19 @@ rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-    cursor_field: "date"
-  primary_key: "date"
+  primary_key: "id"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:
     $ref: "*ref(retriever)"
-    stream_slicer:
-      $ref: "*ref(stream_slicer)"
     requester:
       $ref: "*ref(requester)"
-      path:
-        type: "InterpolatedString"
-        string: "{{ stream_slice.start_date }}"
-        default: "/latest"
-      error_handler:
-        response_filters:
-          - predicate: "{{'error' in response}}"
-            action: FAIL
+      path: /latest
 streams:
   - "*ref(rates_stream)"
 check:
   type: CheckStream
   stream_names: [ "rates" ]
-
 ```
 
 ## Next steps:
