@@ -21,10 +21,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
@@ -42,8 +40,6 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final IMqttAsyncClient client;
 
-  private AirbyteMessage lastStateMessage = null;
-
   public MqttRecordConsumer(final MqttDestinationConfig mqttDestinationConfig,
                             final ConfiguredAirbyteCatalog catalog,
                             final Consumer<AirbyteMessage> outputRecordCollector) {
@@ -57,7 +53,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private IMqttAsyncClient buildMqttClient() {
     try {
       return new MqttAsyncClient(config.getServerUri(), config.getClientId(), new MemoryPersistence());
-    } catch (MqttException e) {
+    } catch (final MqttException e) {
       throw new RuntimeException("Error creating MQTT client", e);
     }
   }
@@ -66,7 +62,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void startTracked() {
     try {
       client.connect(config.getMqttConnectOptions()).waitForCompletion();
-    } catch (MqttException e) {
+    } catch (final MqttException e) {
       throw new RuntimeException("Error connecting to MQTT broker", e);
     }
     topicMap.putAll(buildTopicMap());
@@ -75,7 +71,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
       final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
@@ -108,11 +104,11 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private void sendRecord(final String topic, final MqttMessage message) {
     try {
-      final IMqttDeliveryToken token = client.publish(topic, message, null, new MessageActionListener(outputRecordCollector, lastStateMessage));
+      final IMqttDeliveryToken token = client.publish(topic, message);
       if (config.isSync()) {
         token.waitForCompletion();
       }
-    } catch (MqttException e) {
+    } catch (final MqttException e) {
       LOGGER.error("Error sending message to topic '{}'.", topic, e);
       throw new RuntimeException("Cannot send message to MQTT. Error: " + e.getMessage(), e);
     }
@@ -122,34 +118,5 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) {
     Exceptions.swallow(client::disconnectForcibly);
     Exceptions.swallow(client::close);
-
-    if (lastStateMessage != null) {
-      outputRecordCollector.accept(lastStateMessage);
-    }
   }
-
-  private static class MessageActionListener implements IMqttActionListener {
-
-    private final AirbyteMessage lastStateMessage;
-    private final Consumer<AirbyteMessage> outputRecordCollector;
-
-    MessageActionListener(Consumer<AirbyteMessage> outputRecordCollector, AirbyteMessage lastStateMessage) {
-      this.outputRecordCollector = outputRecordCollector;
-      this.lastStateMessage = lastStateMessage;
-    }
-
-    @Override
-    public void onSuccess(IMqttToken asyncActionToken) {
-      if (lastStateMessage != null) {
-        outputRecordCollector.accept(lastStateMessage);
-      }
-    }
-
-    @Override
-    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-      throw new RuntimeException("Cannot deliver message with ID '" + asyncActionToken.getMessageId() + "'", exception);
-    }
-
-  }
-
 }

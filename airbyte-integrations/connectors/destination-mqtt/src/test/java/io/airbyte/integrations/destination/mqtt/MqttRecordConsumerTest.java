@@ -74,7 +74,7 @@ public class MqttRecordConsumerTest extends PerStreamStateMessageTest {
             namespace,
             Field.of("id", JsonSchemaType.NUMBER),
             Field.of("name", JsonSchemaType.STRING))));
-    consumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
+    consumer = new MqttRecordConsumer(config, catalog, outputRecordCollector);
   }
 
   @ParameterizedTest

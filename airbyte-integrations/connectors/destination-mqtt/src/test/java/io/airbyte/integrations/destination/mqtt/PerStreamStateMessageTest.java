@@ -22,8 +22,8 @@ public abstract class PerStreamStateMessageTest {
   @Test
   void runATest() throws Exception {
     final AirbyteMessage airbyteMessage1 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
-    final AirbyteMessage airbyteMessage2 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
-    final AirbyteMessage airbyteMessage3 = AirbyteMessageCreator.createStreamStateMessage("name_one", "state_one");
+    final AirbyteMessage airbyteMessage2 = AirbyteMessageCreator.createStreamStateMessage("name_two", "state_two");
+    final AirbyteMessage airbyteMessage3 = AirbyteMessageCreator.createStreamStateMessage("name_three", "state_three");
     final FailureTrackingAirbyteMessageConsumer messageConsumer = getMessageConsumer();
 
     messageConsumer.accept(airbyteMessage1);
