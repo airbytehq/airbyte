@@ -196,27 +196,25 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   return (
     <Content>
-      <Card>
-        {!isRefreshingCatalog && connection ? (
-          <ConnectionForm
-            mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
-            connection={connection}
-            onSubmit={onSubmitForm}
-            successMessage={saved && <FormattedMessage id="form.changesSaved" />}
-            onCancel={onCancelConnectionFormEdit}
-            canSubmitUntouchedForm={activeUpdatingSchemaMode}
-            additionalSchemaControl={
-              <Button onClick={onRefreshSourceSchema} type="button" secondary>
-                <TryArrow icon={faSyncAlt} />
-                <FormattedMessage id="connection.updateSchema" />
-              </Button>
-            }
-            onChangeValues={setConnectionFormValues}
-          />
-        ) : (
-          <LoadingSchema />
-        )}
-      </Card>
+      {!isRefreshingCatalog && connection ? (
+        <ConnectionForm
+          mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
+          connection={connection}
+          onSubmit={onSubmitForm}
+          successMessage={saved && <FormattedMessage id="form.changesSaved" />}
+          onCancel={onCancelConnectionFormEdit}
+          canSubmitUntouchedForm={activeUpdatingSchemaMode}
+          additionalSchemaControl={
+            <Button onClick={onRefreshSourceSchema} type="button" secondary>
+              <TryArrow icon={faSyncAlt} />
+              <FormattedMessage id="connection.updateSchema" />
+            </Button>
+          }
+          onChangeValues={setConnectionFormValues}
+        />
+      ) : (
+        <LoadingSchema />
+      )}
     </Content>
   );
 };
