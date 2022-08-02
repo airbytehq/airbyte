@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
@@ -52,7 +53,8 @@ class SyncWorkflowTest {
   // TEMPORAL
 
   private TestWorkflowEnvironment testEnv;
-  private Worker syncWorker;
+  private Worker syncWorkflowWorker;
+  private Worker syncActivityWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
@@ -87,8 +89,10 @@ class SyncWorkflowTest {
   @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    syncWorkflowWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
+    syncWorkflowWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+
+    syncActivityWorker = testEnv.newWorker(EnvConfigs.DEFAULT_SYNC_ACTIVITY_TASK_QUEUE);
 
     client = testEnv.getWorkflowClient();
 
@@ -115,7 +119,7 @@ class SyncWorkflowTest {
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncActivityWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());

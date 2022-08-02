@@ -131,6 +131,10 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
 
+  // Control/Data plane configs
+  private static final String SHOULD_HANDLE_SYNC_WORKFLOW_TASKS = "SHOULD_HANDLE_SYNC_WORKFLOW_TASKS";
+  private static final String SYNC_ACTIVITY_TASK_QUEUES = "SYNC_ACTIVITY_TASK_QUEUES";
+
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
 
@@ -187,6 +191,8 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
+  public static final String DEFAULT_SYNC_ACTIVITY_TASK_QUEUE = "SYNC_ACTIVITIES";
+
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
       AIRBYTE_ROLE, EnvConfigs::getAirbyteRole,
@@ -219,6 +225,8 @@ public class EnvConfigs implements Configs {
     this.getAllEnvKeys = envMap::keySet;
     this.logConfigs = new LogConfigs(getLogConfiguration().orElse(null));
     this.stateStorageCloudConfigs = getStateStorageConfiguration().orElse(null);
+
+    validateSyncWorkflowConfigs();
   }
 
   private Optional<CloudStorageConfigs> getLogConfiguration() {
@@ -907,6 +915,42 @@ public class EnvConfigs implements Configs {
   @Override
   public boolean shouldRunConnectionManagerWorkflows() {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
+  }
+
+  @Override
+  public boolean shouldHandleSyncWorkflowTasks() {
+    final boolean result = getEnvOrDefault(SHOULD_HANDLE_SYNC_WORKFLOW_TASKS, true);
+    if (result && !shouldRunSyncWorkflows()) {
+      throw new IllegalArgumentException(
+          String.format("%s cannot be true when %s is false", SHOULD_HANDLE_SYNC_WORKFLOW_TASKS, SHOULD_RUN_SYNC_WORKFLOWS));
+    }
+    return result;
+  }
+
+  @Override
+  public Set<String> getSyncActivityTaskQueues() {
+    final var taskQueues = getEnvOrDefault(SYNC_ACTIVITY_TASK_QUEUES, DEFAULT_SYNC_ACTIVITY_TASK_QUEUE);
+    if (taskQueues.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(taskQueues.split(",")).collect(Collectors.toSet());
+  }
+
+  /**
+   * Ensures the user hasn't configured themselves into a corner by making sure that the worker is set
+   * up to properly process sync workflows. With sensible defaults, it should be hard to fail this
+   * validation, but this provides a safety net regardless.
+   */
+  private void validateSyncWorkflowConfigs() {
+    if (shouldRunSyncWorkflows()) {
+      if (!shouldHandleSyncWorkflowTasks() && getSyncActivityTaskQueues().isEmpty()) {
+        throw new IllegalArgumentException(String.format(
+            "When %s is true, either %s must also be true, or %s must be non-empty.",
+            SHOULD_RUN_SYNC_WORKFLOWS,
+            SHOULD_HANDLE_SYNC_WORKFLOW_TASKS,
+            SYNC_ACTIVITY_TASK_QUEUES));
+      }
+    }
   }
 
   @Override
