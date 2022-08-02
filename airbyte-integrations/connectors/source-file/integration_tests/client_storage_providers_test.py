@@ -174,10 +174,10 @@ def test__read_from_private_box(box_credentials, private_box_file):
         "dataset_name": "output",
         "format": "csv",
         "url": private_box_file,
-        "reader_options": json.dumps({"sep": ",", "nrows": 42}),
+        "reader_options": json.dumps({"sep": ",", "nrows": 2}),
         "provider": {
             "storage": "BOX",
             "box_developer_access_token": box_credentials["box_developer_access_token"],
         },
     }
-    check_read(config)
+    check_read(config, expected_columns=4, expected_rows=2)

@@ -1,9 +1,0 @@
-{
-  "dataset_name": "integrationTestFile",
-  "format": "csv",
-  "reader_options": "{\"sep\": \",\", \"nrows\": 20}",
-  "url": "https://app.box.com/file/988255065024?s=mtg6nwx23mfufmqaiuiec8hql9oyefik",
-  "provider": {
-    "storage": "BOX"
-  }
-}
