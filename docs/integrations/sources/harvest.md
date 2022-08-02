@@ -69,6 +69,7 @@ See [docs](https://help.getharvest.com/api-v2/authentication-api/authentication/
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.9 | 2022-08-02 | [15221](https://github.com/airbytehq/airbyte/pull/15221) | parent\_id added |
 | 0.1.8 | 2021-12-14 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
 | 0.1.6 | 2021-11-14 | [7952](https://github.com/airbytehq/airbyte/pull/7952) | Implement OAuth 2.0 support |
 | 0.1.5 | 2021-09-28 | [5747](https://github.com/airbytehq/airbyte/pull/5747) | Update schema date-time fields |
