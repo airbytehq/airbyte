@@ -41,7 +41,6 @@ const MainView: React.FC = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-  cloudWorkspace.creditStatus = CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD;
 
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
@@ -60,11 +59,7 @@ const MainView: React.FC = (props) => {
         <FormattedMessage
           id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`}
           values={{
-            lnk: (
-              <Link to={CloudRoutes.Credits}>
-                <FormattedMessage id="credits.creditProblems.lnkText" />
-              </Link>
-            ),
+            lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
           }}
         />
       );
