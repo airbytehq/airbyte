@@ -28,23 +28,29 @@ To add a user to your workspace:
 To switch between workspaces:
 
 1. On the Airbyte Cloud dashboard, click the current workspace name under the Airbyte logo in the left-hand navigation bar.
+
 2. Click **View all workspaces**.
+
 3. Click the name of the workspace you want to switch to.
 
 ### Rename a workspace
 
 To rename a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+
 2. In the Workspace Settings sidebar, click **General Settings**.
+
 3. In the Workspace name field, enter the new name for your workspace. Click **Save**.
 
 ### Delete a workspace
 
 To delete a workspace:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+
 2. In the Workspace Settings sidebar, click **General Settings**.
+
 3. Click **Delete your workspace**.
 
 ## Single Workspace vs. Multiple Workspaces
@@ -67,10 +73,14 @@ You can use one or multiple workspaces with Airbyte Cloud.
 
 To set up Slack notifications:
 
-1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar. 
+1. On the Airbyte Cloud dashboard, click **Settings** in the left-hand navigation bar.
+
 2. In the Workspace Settings sidebar, click **Notifications.**
+
 3. [Create an Incoming Webhook for Slack](https://api.slack.com/messaging/webhooks).
+
 4. Navigate back to the Airbyte Cloud dashboard > Settings > Notifications and enter the Webhook URL. Click **Save changes**.
+
 5. Toggle the **Send notifications when sync fails** and **Send notifications when sync succeeds** buttons as required.
 
 ## Understand Airbyte Cloud limits
@@ -92,10 +102,15 @@ The sync log summary shows if a sync succeeded, failed, cancelled, or is current
  
 To view the sync log summary:
 1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.   
-The Connections page displays.  
-2. Click a connection in the list to view its sync history.  
-3. Under Sync History, a list of syncs for that connection is displayed.    
-The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](<https://docs.airbyte.com/cloud/managing-airbyte-cloud#sync-log-summary>).  
+
+    The Connections page displays.
+
+2. Click a connection in the list to view its sync history.
+
+3. Under Sync History, a list of syncs for that connection is displayed.
+
+    The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](<https://docs.airbyte.com/cloud/managing-airbyte-cloud#sync-log-summary>).  
+
 4. For more information about a sync, click the sync log dropdown.  
  
 ## Sync Log Summary
@@ -145,7 +160,7 @@ The log summary for a failed sync may show the following data.
 | Failure Origin | The cause of the sync failure.                                                              |
 
 ### Running
-The sync log summary displays Running when the sync is actively running.
+The sync log summary displays **Running** when the sync is actively running.
 
 ## Buy Credits
 
