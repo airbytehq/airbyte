@@ -16,7 +16,7 @@ spec:
       automountServiceAccountToken: true
       containers:
         - name: airbyte-worker-container
-          image: airbyte/worker
+          image: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/worker
           env:
             - name: AIRBYTE_VERSION
               valueFrom:
@@ -295,3 +295,6 @@ spec:
         - name: gcs-log-creds-volume
           secret:
             secretName: gcs-log-creds
+      imagePullSecrets:
+        - name: docker-horizon-snapshot
+      dnsPolicy: Default

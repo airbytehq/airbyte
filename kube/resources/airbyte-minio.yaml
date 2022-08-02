@@ -24,7 +24,7 @@ spec:
       containers:
         - name: airbyte-minio
           # Pulls the default Minio image from Docker Hub
-          image: minio/minio:latest
+          image: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/minio/minio:latest
           args:
             - server
             - /storage

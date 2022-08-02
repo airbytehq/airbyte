@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: airbyte-server-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 8001
       protocol: TCP
@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: airbyte-server-container
-          image: airbyte/server
+          image: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/server
           env:
             - name: AIRBYTE_VERSION
               valueFrom:
@@ -161,6 +161,7 @@ spec:
             - name: gcs-log-creds-volume
               mountPath: /secrets/gcs-log-creds
               readOnly: true
+      dnsPolicy: Default
       volumes:
         - name: airbyte-volume-configs
           persistentVolumeClaim:

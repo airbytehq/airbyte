@@ -75,7 +75,7 @@ spec:
     spec:
       containers:
         - name: airbyte-temporal
-          image: temporalio/auto-setup:1.7.0
+          image: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/temporalio/auto-setup:1.7.0
           env:
             - name: POSTGRES_USER
               valueFrom:

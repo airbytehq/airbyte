@@ -1,23 +1,23 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: default
+namespace: ns-personal-azheng
 
 bases:
   - ../../resources
 
 images:
-  - name: airbyte/db
+  - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/db
     newTag: 0.39.41-alpha
-  - name: airbyte/bootloader
+  - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/bootloader
     newTag: 0.39.41-alpha
-  - name: airbyte/server
+  - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/server
     newTag: 0.39.41-alpha
-  - name: airbyte/webapp
+  - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/webapp
     newTag: 0.39.41-alpha
-  - name: airbyte/worker
+  - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/worker
     newTag: 0.39.41-alpha
-  - name: temporalio/auto-setup
+  - name: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/temporalio/auto-setup
     newTag: 1.7.0
 
 configMapGenerator:

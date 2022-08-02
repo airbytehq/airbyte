@@ -17,7 +17,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: airbyte-bootloader-container
-          image: airbyte/bootloader
+          image: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/bootloader
           env:
             - name: AIRBYTE_VERSION
               valueFrom:

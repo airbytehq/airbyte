@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: airbyte-webapp-svc
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
     - port: 80
       protocol: TCP
@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
         - name: airbyte-webapp-container
-          image: airbyte/webapp
+          image: docker-horizon-snapshot.dr-uw2.adobeitc.com/azheng/airbyte/webapp
           env:
             - name: AIRBYTE_VERSION
               valueFrom:
@@ -60,3 +60,4 @@ spec:
                   key: INTERNAL_API_HOST
           ports:
             - containerPort: 80
+      dnsPolicy: Default
