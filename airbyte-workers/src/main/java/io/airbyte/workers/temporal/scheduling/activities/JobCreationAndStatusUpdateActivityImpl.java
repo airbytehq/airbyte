@@ -22,6 +22,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricTags;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
@@ -115,13 +116,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitSrcIdDstIdToReleaseStagesMetric(final UUID srcId, final UUID dstId) throws IOException {
     final var releaseStages = configRepository.getSrcIdAndDestIdToReleaseStages(srcId, dstId);
-    if (releaseStages == null || releaseStages.size() == 0) {
+    if (releaseStages == null || releaseStages.isEmpty()) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.JOB_CREATED_BY_RELEASE_STAGE, 1,
+            new MetricAttribute(MetricTags.RELEASE_STAGE, MetricTags.getReleaseStage(stage)));
       }
     }
   }
@@ -234,7 +236,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
       for (final FailureReason reason : failureSummary.getFailures()) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            MetricTags.getFailureOrigin(reason.getFailureOrigin()));
+            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
       }
 
     } catch (final IOException e) {
@@ -327,13 +329,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
   private void emitJobIdToReleaseStagesMetric(final OssMetricsRegistry metric, final long jobId) throws IOException {
     final var releaseStages = configRepository.getJobIdToReleaseStages(jobId);
-    if (releaseStages == null || releaseStages.size() == 0) {
+    if (releaseStages == null || releaseStages.isEmpty()) {
       return;
     }
 
     for (final ReleaseStage stage : releaseStages) {
       if (stage != null) {
-        MetricClientFactory.getMetricClient().count(metric, 1, MetricTags.getReleaseStage(stage));
+        MetricClientFactory.getMetricClient().count(metric, 1,
+            new MetricAttribute(MetricTags.RELEASE_STAGE, MetricTags.getReleaseStage(stage)));
       }
     }
   }

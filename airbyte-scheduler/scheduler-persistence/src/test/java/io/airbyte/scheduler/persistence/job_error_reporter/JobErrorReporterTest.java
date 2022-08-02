@@ -28,7 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class JobErrorReporterTest {
+class JobErrorReporterTest {
 
   private static final UUID JOB_ID = UUID.randomUUID();
   private static final UUID WORKSPACE_ID = UUID.randomUUID();

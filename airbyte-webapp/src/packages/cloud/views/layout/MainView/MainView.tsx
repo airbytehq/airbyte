@@ -1,10 +1,12 @@
-import React from "react";
-import { Outlet } from "react-router-dom";
+import React, { useMemo } from "react";
+import { useIntl } from "react-intl";
+import { Link, Outlet } from "react-router-dom";
 import styled from "styled-components";
 
 import { LoadingPage } from "components";
 import { AlertBanner } from "components/base/Banner/AlertBanner";
 
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { CreditStatus } from "packages/cloud/lib/domain/cloudWorkspaces/types";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/WorkspacesService";
 import SideBar from "packages/cloud/views/layout/SideBar";
@@ -36,25 +38,51 @@ const DataBlock = styled.div<{ hasBanner?: boolean }>`
 `;
 
 const MainView: React.FC = (props) => {
+  const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
-  const showBanner =
+  const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
       CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD,
       CreditStatus.NEGATIVE_MAX_THRESHOLD,
       CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
-    ].includes(cloudWorkspace.creditStatus);
+    ].includes(cloudWorkspace.creditStatus) &&
+    !cloudWorkspace.trialExpiryTimestamp;
+
+  const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
+
+  const alertMessage = useMemo(() => {
+    if (alertToShow === "credits") {
+      return formatMessage(
+        { id: `credits.creditsProblem.${cloudWorkspace.creditStatus}` },
+        {
+          values: {
+            lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
+          },
+        }
+      );
+    } else if (alertToShow === "trial") {
+      const { trialExpiryTimestamp } = cloudWorkspace;
+
+      //calculate difference between timestamp (in epoch seconds) and now (in epoch seconds)
+      const trialRemainingSeconds = trialExpiryTimestamp ? trialExpiryTimestamp - Date.now() / 1000 : 0;
+
+      //calculate days (rounding up if decimal)
+      const trialRemainingDays = Math.ceil(trialRemainingSeconds / (24 * 60 * 60));
+
+      return formatMessage({ id: "trial.alertMessage" }, { value: trialRemainingDays });
+    }
+    return null;
+  }, [alertToShow, cloudWorkspace, formatMessage]);
 
   return (
     <MainContainer>
       <InsufficientPermissionsErrorBoundary errorComponent={<StartOverErrorView />}>
         <SideBar />
         <Content>
-          {cloudWorkspace.creditStatus && showBanner && (
-            <AlertBanner alertType="credits" id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`} />
-          )}
-          <DataBlock hasBanner={showBanner}>
+          {alertToShow && <AlertBanner message={alertMessage} />}
+          <DataBlock hasBanner={!!alertToShow}>
             <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
               <React.Suspense fallback={<LoadingPage />}>{props.children ?? <Outlet />}</React.Suspense>
             </ResourceNotFoundErrorBoundary>

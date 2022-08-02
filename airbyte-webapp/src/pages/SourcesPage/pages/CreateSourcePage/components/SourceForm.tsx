@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
-import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
@@ -40,7 +41,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const trackNewSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.NEW_SOURCE);
+  const analyticsService = useAnalyticsService();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
@@ -60,7 +61,9 @@ export const SourceForm: React.FC<SourceFormProps> = ({
     if (afterSelectConnector) {
       afterSelectConnector();
     }
-    trackNewSourceAction("Select a connector", TrackActionType.SELECT, {
+
+    analyticsService.track(Namespace.SOURCE, Action.SELECT, {
+      actionDescription: "Source connector type selected",
       connector_source: connector?.name,
       connector_source_definition_id: sourceDefinitionId,
     });

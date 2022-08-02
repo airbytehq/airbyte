@@ -46,9 +46,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class DefaultAirbyteDestinationTest {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestinationTest.class);
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final String JOB_ROOT_PREFIX = "workspace";
   private static final String STREAM_NAME = "user_preferences";
@@ -68,7 +72,7 @@ class DefaultAirbyteDestinationTest {
       logJobRoot = Files.createTempDirectory(Path.of("/tmp"), "mdc_test");
       LogClientSingleton.getInstance().setJobMdc(WorkerEnvironment.DOCKER, LogConfigs.EMPTY, logJobRoot);
     } catch (final IOException e) {
-      e.printStackTrace();
+      LOGGER.error(e.toString());
     }
   }
 
@@ -80,7 +84,7 @@ class DefaultAirbyteDestinationTest {
   private ByteArrayOutputStream outputStream;
 
   @BeforeEach
-  public void setup() throws IOException, WorkerException {
+  void setup() throws IOException, WorkerException {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
     jobRoot = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), JOB_ROOT_PREFIX);
 
@@ -107,7 +111,7 @@ class DefaultAirbyteDestinationTest {
   }
 
   @AfterEach
-  public void tearDown() throws IOException {
+  void tearDown() throws IOException {
     // The log file needs to be present and empty
     final Path logFile = logJobRoot.resolve(LogClientSingleton.LOG_FILENAME);
     if (Files.exists(logFile)) {
@@ -118,7 +122,7 @@ class DefaultAirbyteDestinationTest {
 
   @SuppressWarnings("BusyWait")
   @Test
-  public void testSuccessfulLifecycle() throws Exception {
+  void testSuccessfulLifecycle() throws Exception {
     final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
@@ -156,7 +160,7 @@ class DefaultAirbyteDestinationTest {
   }
 
   @Test
-  public void testTaggedLogs() throws Exception {
+  void testTaggedLogs() throws Exception {
 
     final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher, streamFactory);
     destination.start(DESTINATION_CONFIG, jobRoot);
@@ -185,7 +189,7 @@ class DefaultAirbyteDestinationTest {
   }
 
   @Test
-  public void testCloseNotifiesLifecycle() throws Exception {
+  void testCloseNotifiesLifecycle() throws Exception {
     final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
@@ -197,7 +201,7 @@ class DefaultAirbyteDestinationTest {
   }
 
   @Test
-  public void testNonzeroExitCodeThrowsException() throws Exception {
+  void testNonzeroExitCodeThrowsException() throws Exception {
     final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 
@@ -207,7 +211,7 @@ class DefaultAirbyteDestinationTest {
   }
 
   @Test
-  public void testGetExitValue() throws Exception {
+  void testGetExitValue() throws Exception {
     final AirbyteDestination destination = new DefaultAirbyteDestination(workerConfigs, integrationLauncher);
     destination.start(DESTINATION_CONFIG, jobRoot);
 

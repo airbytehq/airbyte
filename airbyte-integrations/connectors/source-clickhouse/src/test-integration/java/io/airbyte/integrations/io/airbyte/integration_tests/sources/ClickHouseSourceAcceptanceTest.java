@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -25,9 +27,11 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
+import java.time.Duration;
 import java.util.HashMap;
 import javax.sql.DataSource;
 import org.testcontainers.containers.ClickHouseContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -60,7 +64,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME),
+                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
@@ -69,7 +73,7 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                String.format("%s.%s", config.get("database").asText(), STREAM_NAME2),
+                String.format("%s.%s", config.get(JdbcUtils.DATABASE_KEY).asText(), STREAM_NAME2),
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
@@ -82,26 +86,29 @@ public class ClickHouseSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    db = new ClickHouseContainer("yandex/clickhouse-server:21.8.8.29-alpine");
+    db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
+        .waitingFor(Wait.forHttp("/ping").forPort(8123)
+            .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
     db.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
-        .put("database", SCHEMA_NAME)
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, SCHEMA_NAME)
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .build());
 
     final DataSource dataSource = DataSourceFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         ClickHouseSource.DRIVER_CLASS,
         String.format(DatabaseDriver.CLICKHOUSE.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()));
+            ClickHouseSource.HTTP_PROTOCOL,
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);

@@ -60,7 +60,7 @@ python main_dev.py spec
 
 You should see some output:
 ```
-{"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "additionalProperties": false, "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
+{"type": "SPEC", "spec": {"documentationUrl": "https://docsurl.com", "connectionSpecification": {"$schema": "http://json-schema.org/draft-07/schema#", "title": "Python Http Tutorial Spec", "type": "object", "required": ["TODO"], "properties": {"TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.": {"type": "string", "description": "describe me"}}}}}
 ```
 
 We just ran Airbyte Protocol's `spec` command! We'll talk more about this later, but this is a simple sanity check to make sure everything is wired up correctly.
@@ -133,7 +133,6 @@ Given that we'll pulling currency data for our example source, we'll define the 
     "title": "Python Http Tutorial Spec",
     "type": "object",
     "required": ["start_date", "currency_base"],
-    "additionalProperties": false,
     "properties": {
       "start_date": {
         "type": "string",
