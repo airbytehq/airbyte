@@ -28,7 +28,6 @@
 }
 
 .icon {
-  margin-top: -1px;
   &.plus {
     color: colors.$green;
   }
@@ -42,9 +41,10 @@
 
 .iconCell {
   background: white;
-  width: 20px;
-  text-align: center;
+  width: 10px;
   height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .cell {
