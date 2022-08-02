@@ -42,12 +42,8 @@ def create(func, /, *args, **keywords):
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
 
-        # This feels very weird to pull options from two different places
-        dynamic_options = options
-        if "options" in all_keywords_to_pass_down:
-            dynamic_options.update(**all_keywords_to_pass_down["options"])
         try:
-            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down, "options": dynamic_options})
+            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
         except TypeError as e:
             raise Exception(f"failed to create object of type {func} because {e}")
         return ret
