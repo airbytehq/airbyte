@@ -2595,7 +2595,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.42"
+- dockerImage: "airbyte/source-github:0.2.44"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -3705,7 +3705,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.78"
+- dockerImage: "airbyte/source-hubspot:0.1.80"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -6027,7 +6027,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.9"
+- dockerImage: "airbyte/source-okta:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
@@ -7892,7 +7892,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.17"
+- dockerImage: "airbyte/source-s3:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -8071,6 +8071,51 @@
                 title: "Filetype"
                 const: "avro"
                 type: "string"
+          - title: "Jsonl"
+            description: "This connector uses <a href=\"https://arrow.apache.org/docs/python/json.html\"\
+              \ target=\"_blank\">PyArrow</a> for JSON Lines (jsonl) file parsing."
+            type: "object"
+            properties:
+              filetype:
+                title: "Filetype"
+                const: "jsonl"
+                type: "string"
+              newlines_in_values:
+                title: "Allow newlines in values"
+                description: "Whether newline characters are allowed in JSON values.\
+                  \ Turning this on may affect performance. Leave blank to default\
+                  \ to False."
+                default: false
+                order: 0
+                type: "boolean"
+              unexpected_field_behavior:
+                title: "Unexpected field behavior"
+                description: "How JSON fields outside of explicit_schema (if given)\
+                  \ are treated. Check <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.json.ParseOptions.html\"\
+                  \ target=\"_blank\">PyArrow documentation</a> for details"
+                default: "infer"
+                examples:
+                - "ignore"
+                - "infer"
+                - "error"
+                order: 1
+                allOf:
+                - title: "UnexpectedFieldBehaviorEnum"
+                  description: "An enumeration."
+                  enum:
+                  - "ignore"
+                  - "infer"
+                  - "error"
+                  type: "string"
+              block_size:
+                title: "Block Size"
+                description: "The chunk size in bytes to process at a time in memory\
+                  \ from each file. If your data is particularly wide and failing\
+                  \ during schema detection, increasing this should solve it. Beware\
+                  \ of raising this too high as you could hit OOM errors."
+                default: 10000
+                order: 2
+                type: "integer"
         schema:
           title: "Manually enforced data schema (Optional)"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\
@@ -8547,7 +8592,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-shortio:0.1.2"
+- dockerImage: "airbyte/source-shortio:0.1.3"
   spec:
     documentationUrl: "https://developers.short.io/reference"
     connectionSpecification:
@@ -8558,7 +8603,6 @@
       - "domain_id"
       - "secret_key"
       - "start_date"
-      additionalProperties: false
       properties:
         domain_id:
           type: "string"
