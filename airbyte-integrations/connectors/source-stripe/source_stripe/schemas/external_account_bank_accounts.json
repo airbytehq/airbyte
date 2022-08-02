@@ -15,7 +15,7 @@
       "type": ["string", "null"]
     },
     "account_type": {
-        "type": ["string", "null"]
+      "type": ["string", "null"]
     },
     "bank_name": {
       "type": ["string", "null"]
