@@ -304,14 +304,15 @@ public class SourceHandler {
       if (!validationResult.isEmpty()) {
         LOGGER.warn(String.format("Verification error(s) occurred during source definition update for %s:%s. Errors: %s ", dockerRepository,
             dockerImageTag, validationResult));
-        try {
-          backwardCompatibilityHandler.updateSourceConnectionForBackwardCompatibility(dockerRepository, sourceConnection, configuration,
-              connectionSpecification, validationResult, configRepository);
-        } catch (JsonValidationException | IOException e) {
-          LOGGER.error(String.format("Failed to update source connection for %s. Errors: %s ", sourceConnection.getName(), e));
-          throw new RuntimeException(e);
-        }
       }
+      try {
+        backwardCompatibilityHandler.updateSourceConnectionForBackwardCompatibility(dockerRepository, sourceConnection, configuration,
+            connectionSpecification, validationResult, configRepository);
+      } catch (JsonValidationException | IOException e) {
+        LOGGER.error(String.format("Failed to update source connection for %s. Errors: %s ", sourceConnection.getName(), e));
+        throw new RuntimeException(e);
+      }
+
     }
   }
 

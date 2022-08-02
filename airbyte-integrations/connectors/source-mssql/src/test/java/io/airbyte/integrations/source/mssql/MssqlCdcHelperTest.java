@@ -46,9 +46,9 @@ class MssqlCdcHelperTest {
 
     final JsonNode mixCdc = Jsons.jsonNode(Map.of(
         "replication", Jsons.jsonNode(Map.of(
-                    "replication_type", "Standard",
-                    "data_to_sync", "Existing and New",
-                    "snapshot_isolation", "Snapshot")),
+            "replication_type", "Standard",
+            "data_to_sync", "Existing and New",
+            "snapshot_isolation", "Snapshot")),
         "replication_method", Jsons.jsonNode(Map.of(
             "replication_type", "CDC",
             "data_to_sync", "Existing and New",
