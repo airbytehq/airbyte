@@ -123,10 +123,11 @@ function main() {
     set +e # allow script to continue running even if next commands fail to run properly
     # We don't run dbt 1.0.x on all destinations (because their plugins don't support it yet)
     # So we need to only pass `--event-buffer-size` if it's supported by DBT.
+    # Same goes for JSON formatted logging.
     check_dbt_event_buffer_size
     if [ "$ret" -eq 0 ]; then
       echo -e "\nDBT >=1.0.0 detected; using 10K event buffer size\n"
-      dbt_additional_args="--event-buffer-size=10000"
+      dbt_additional_args="--event-buffer-size=10000 --log-format json"
     else
       dbt_additional_args=""
     fi

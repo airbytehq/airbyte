@@ -44,6 +44,7 @@ import io.airbyte.workers.temporal.scheduling.state.listener.WorkflowStateChange
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.DbtFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.EmptySyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.NormalizationFailureSyncWorkflow;
+import io.airbyte.workers.temporal.scheduling.testsyncworkflow.NormalizationTraceFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.PersistFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.ReplicateFailureSyncWorkflow;
 import io.airbyte.workers.temporal.scheduling.testsyncworkflow.SleepingSyncWorkflow;
@@ -1161,6 +1162,40 @@ class ConnectionManagerWorkflowTest {
     void testNormalizationFailure() throws InterruptedException {
       final Worker syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
       syncWorker.registerWorkflowImplementationTypes(NormalizationFailureSyncWorkflow.class);
+
+      testEnv.start();
+
+      final UUID testId = UUID.randomUUID();
+      final TestStateListener testStateListener = new TestStateListener();
+      final WorkflowState workflowState = new WorkflowState(testId, testStateListener);
+      final ConnectionUpdaterInput input = ConnectionUpdaterInput.builder()
+          .connectionId(UUID.randomUUID())
+          .jobId(JOB_ID)
+          .attemptId(ATTEMPT_ID)
+          .fromFailure(false)
+          .attemptNumber(1)
+          .workflowState(workflowState)
+          .build();
+
+      startWorkflowAndWaitUntilReady(workflow, input);
+
+      // wait for workflow to initialize
+      testEnv.sleep(Duration.ofMinutes(1));
+
+      workflow.submitManualSync();
+      Thread.sleep(500); // any time after no-waiting manual run
+
+      Mockito.verify(mJobCreationAndStatusUpdateActivity)
+          .attemptFailureWithAttemptNumber(Mockito.argThat(new HasFailureFromOrigin(FailureOrigin.NORMALIZATION)));
+    }
+
+    @Test
+    @Timeout(value = 10,
+             unit = TimeUnit.SECONDS)
+    @DisplayName("Test that normalization trace failure is recorded")
+    void testNormalizationTraceFailure() throws InterruptedException {
+      final Worker syncWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
+      syncWorker.registerWorkflowImplementationTypes(NormalizationTraceFailureSyncWorkflow.class);
 
       testEnv.start();
 

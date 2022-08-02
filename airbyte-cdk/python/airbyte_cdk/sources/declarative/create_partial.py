@@ -4,7 +4,7 @@
 
 import inspect
 
-from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
+OPTIONS_STR = "$options"
 
 
 def create(func, /, *args, **keywords):
@@ -15,6 +15,7 @@ def create(func, /, *args, **keywords):
     The interpolation will take in kwargs, and config as parameters that can be accessed through interpolating.
     If any of the parameters are also create functions, they will also be created.
     kwargs are propagated to the recursive method calls
+
     :param func: Function
     :param args:
     :param keywords:
@@ -28,20 +29,11 @@ def create(func, /, *args, **keywords):
         # config is a special keyword used for interpolation
         config = all_keywords.pop("config", None)
 
-        # options is a special keyword used for interpolation and propagation
-        if "options" in all_keywords:
-            options = all_keywords.pop("options")
+        # $options is a special keyword used for interpolation and propagation
+        if OPTIONS_STR in all_keywords:
+            options = all_keywords.get(OPTIONS_STR)
         else:
             options = dict()
-
-        # create object's partial parameters
-        fully_created = _create_inner_objects(all_keywords, options)
-
-        # interpolate the parameters
-        interpolated_keywords = InterpolatedMapping(fully_created).eval(config, **{"options": options})
-        interpolated_keywords = {k: v for k, v in interpolated_keywords.items() if v}
-
-        all_keywords.update(interpolated_keywords)
 
         # if config is not none, add it back to the keywords mapping
         if config is not None:

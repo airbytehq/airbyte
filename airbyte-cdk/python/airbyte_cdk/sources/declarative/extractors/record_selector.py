@@ -17,13 +17,15 @@ class RecordSelector(HttpSelector):
     records based on a heuristic.
     """
 
-    def __init__(self, extractor: JelloExtractor, record_filter: RecordFilter = None):
+    def __init__(self, extractor: JelloExtractor, record_filter: RecordFilter = None, **options: Optional[Mapping[str, Any]]):
         """
         :param extractor: The record extractor responsible for extracting records from a response
         :param record_filter: The record filter responsible for filtering extracted records
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._extractor = extractor
         self._record_filter = record_filter
+        self._options = options
 
     def select_records(
         self,
