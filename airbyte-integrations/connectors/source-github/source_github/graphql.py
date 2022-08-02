@@ -101,6 +101,10 @@ def get_query_reviews(owner, name, first, after, number=None):
 
 class QueryReactions:
 
+    # AVERAGE_REVIEWS - optimal number of reviews to fetch inside every pull request.
+    # If we try to fetch too many (up to 100) we will spend too many scores of query cost.
+    # https://docs.github.com/en/graphql/overview/resource-limitations#calculating-a-rate-limit-score-before-running-the-call
+    # If we query too low we would need to make additional sub-queries to fetch the rest of the reviews inside specific pull request.
     AVERAGE_REVIEWS = 5
     AVERAGE_COMMENTS = 2
     AVERAGE_REACTIONS = 2
