@@ -72,15 +72,6 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
-
-  public static final String CDC_LSN = "_ab_cdc_lsn";
-  public static final String DATABASE_KEY = "database";
-  public static final String HOST_KEY = "host";
-  public static final String JDBC_URL_KEY = "jdbc_url";
-  public static final String PASSWORD_KEY = "password";
-  public static final String PORT_KEY = "port";
-  public static final String SCHEMAS_KEY = "schemas";
-  public static final String USERNAME_KEY = "username";
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
