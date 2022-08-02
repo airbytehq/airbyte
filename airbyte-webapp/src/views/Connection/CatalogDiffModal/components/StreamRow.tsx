@@ -44,13 +44,9 @@ export const StreamRow: React.FC<StreamRowProps> = ({ streamTransform, syncMode,
           <ModificationIcon />
         )}
       </td>
-      <td className={styles.nameCell}>{namespace && namespace}</td>
-      <td className={styles.nameCell}>{itemName}</td>
-      {diffVerb === "removed" && syncMode && (
-        <td>
-          <SyncModeBox syncModeString={syncMode} />
-        </td>
-      )}
+      <td className={styles.nameCell}>{namespace}</td>
+      <td className={styles.nameCell}>{itemName}</td>{" "}
+      <td>{diffVerb === "removed" && syncMode && <SyncModeBox syncModeString={syncMode} />} </td>
     </tr>
   );
 };

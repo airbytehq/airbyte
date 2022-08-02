@@ -8,7 +8,7 @@ export const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffAr
     return sortedDiff;
   }
 
-  diffArray.reduce((sortedDiff, transform) => {
+  diffArray.forEach((transform) => {
     if (transform.transformType.includes("add")) {
       sortedDiff.newItems.push(transform);
     }
