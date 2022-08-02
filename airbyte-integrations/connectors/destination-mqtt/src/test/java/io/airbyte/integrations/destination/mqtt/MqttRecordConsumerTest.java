@@ -15,6 +15,7 @@ import com.google.common.collect.Sets;
 import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
+import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -33,21 +34,48 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.testcontainers.utility.DockerImageName;
 
 @DisplayName("MqttRecordConsumer")
-public class MqttRecordConsumerTest {
+@ExtendWith(MockitoExtension.class)
+public class MqttRecordConsumerTest extends PerStreamStateMessageTest {
 
   @RegisterExtension
   public final HiveMQTestContainerExtension extension = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq-ce:2021.2"));
+
+  @Mock
+  private Consumer<AirbyteMessage> outputRecordCollector;
+
+  private MqttRecordConsumer consumer;
+
+  private final static String streamName = "test-stream";
+  private final static String namespace = "test-schema";
+
+  @BeforeEach
+  public void init() {
+    final MqttDestinationConfig config = MqttDestinationConfig
+        .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort() + 10, "test-topic"));
+
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        CatalogHelpers.createConfiguredAirbyteStream(
+            streamName,
+            namespace,
+            Field.of("id", JsonSchemaType.NUMBER),
+            Field.of("name", JsonSchemaType.STRING))));
+    consumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
+  }
 
   @ParameterizedTest
   @ArgumentsSource(TopicMapArgumentsProvider.class)
@@ -71,18 +99,7 @@ public class MqttRecordConsumerTest {
   @Test
   @SuppressWarnings("unchecked")
   void testCannotConnectToBrokers() throws Exception {
-    final MqttDestinationConfig config = MqttDestinationConfig
-        .getMqttDestinationConfig(getConfig(extension.getHost(), extension.getMqttPort() + 10, "test-topic"));
 
-    final String streamName = "test-stream";
-    final String namespace = "test-schema";
-    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
-            streamName,
-            namespace,
-            Field.of("id", JsonSchemaType.NUMBER),
-            Field.of("name", JsonSchemaType.STRING))));
-    final MqttRecordConsumer consumer = new MqttRecordConsumer(config, catalog, mock(Consumer.class));
     final List<AirbyteMessage> expectedRecords = getNRecords(10, streamName, namespace);
 
     assertThrows(RuntimeException.class, consumer::start);
@@ -122,6 +139,14 @@ public class MqttRecordConsumerTest {
                 .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
         .collect(Collectors.toList());
 
+  }
+
+  @Override Consumer<AirbyteMessage> getMockedConsumer() {
+    return outputRecordCollector;
+  }
+
+  @Override FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
+    return consumer;
   }
 
   public static class TopicMapArgumentsProvider implements ArgumentsProvider {
@@ -171,5 +196,4 @@ public class MqttRecordConsumerTest {
     }
 
   }
-
 }
