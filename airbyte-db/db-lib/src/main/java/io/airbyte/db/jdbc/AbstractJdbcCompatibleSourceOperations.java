@@ -284,15 +284,16 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    * You most likely would prefer to call one of the overloaded methods, which accept temporal types.
    */
   public static String resolveEra(boolean isBce, String value) {
+    String mangledValue = value;
     if (isBce) {
-      if (value.startsWith("-")) {
-        value = value.substring(1);
+      if (mangledValue.startsWith("-")) {
+        mangledValue = mangledValue.substring(1);
       }
-      if (!value.endsWith(" BC")) {
-        value += " BC";
+      if (!mangledValue.endsWith(" BC")) {
+        mangledValue += " BC";
       }
     }
-    return value;
+    return mangledValue;
   }
 
   public static String resolveEra(LocalDate date, String value) {
