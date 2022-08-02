@@ -4,7 +4,7 @@
 
 import pytest
 from airbyte_cdk.models import ConnectorSpecification
-from source_acceptance_test.tests.test_backward_compatibility import TestSpecBackwardCompatibility as _TestSpecBackwardCompatibility
+from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
 from .conftest import does_not_raise
 
@@ -40,7 +40,7 @@ from .conftest import does_not_raise
     ],
 )
 def test_additional_properties_is_true(connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     with expectation:
         t.test_additional_properties_is_true(connector_spec)
 
@@ -110,7 +110,7 @@ def test_additional_properties_is_true(connector_spec, expectation):
     ],
 )
 def test_new_required_field_declaration(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_new_required_field_declaration(spec_diff)
@@ -167,7 +167,7 @@ def test_new_required_field_declaration(previous_connector_spec, actual_connecto
     ],
 )
 def test_new_required_property(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_new_required_property(spec_diff)
@@ -259,7 +259,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
     ],
 )
 def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_type_field_changed_from_list_to_string(spec_diff)
@@ -351,7 +351,7 @@ def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_
     ],
 )
 def test_type_field_has_narrowed(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_type_field_has_narrowed(spec_diff)
@@ -443,7 +443,7 @@ def test_type_field_has_narrowed(previous_connector_spec, actual_connector_spec,
     ],
 )
 def test_enum_field_has_narrowed(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_enum_field_has_narrowed(spec_diff)
@@ -535,7 +535,7 @@ def test_enum_field_has_narrowed(previous_connector_spec, actual_connector_spec,
     ],
 )
 def test_new_enum_field_declaration(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpecBackwardCompatibility()
+    t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_new_enum_field_declaration(spec_diff)
