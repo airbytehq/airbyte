@@ -43,15 +43,14 @@ const MainView: React.FC = (props) => {
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   cloudWorkspace.creditStatus = CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD;
 
-  console.log(cloudWorkspace);
-
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
       CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD,
       CreditStatus.NEGATIVE_MAX_THRESHOLD,
       CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
-    ].includes(cloudWorkspace.creditStatus);
+    ].includes(cloudWorkspace.creditStatus) &&
+    !cloudWorkspace.trialExpiryTimestamp;
 
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
