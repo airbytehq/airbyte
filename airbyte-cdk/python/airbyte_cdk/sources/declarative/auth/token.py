@@ -3,11 +3,11 @@
 #
 
 import base64
-from typing import Union
+from typing import Any, Mapping, Optional, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config
-from airbyte_cdk.sources.streams.http.requests_native_auth.abtract_token import AbstractHeaderAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 
 class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
@@ -24,14 +24,21 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator):
 
     """
 
-    def __init__(self, header: Union[InterpolatedString, str], token: Union[InterpolatedString, str], config: Config):
+    def __init__(
+        self,
+        header: Union[InterpolatedString, str],
+        token: Union[InterpolatedString, str],
+        config: Config,
+        **options: Optional[Mapping[str, Any]],
+    ):
         """
         :param header: Header key to set on the HTTP requests
         :param token: Header value to set on the HTTP requests
         :param config: The user-provided configuration as specified by the source's spec
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._header = InterpolatedString.create(header)
-        self._token = InterpolatedString.create(token)
+        self._header = InterpolatedString.create(header, options=options)
+        self._token = InterpolatedString.create(token, options=options)
         self._config = config
 
     @property
@@ -51,12 +58,13 @@ class BearerAuthenticator(AbstractHeaderAuthenticator):
     `"Authorization": "Bearer <token>"`
     """
 
-    def __init__(self, token: Union[InterpolatedString, str], config: Config):
+    def __init__(self, token: Union[InterpolatedString, str], config: Config, **options: Optional[Mapping[str, Any]]):
         """
         :param token: The bearer token
         :param config: The user-provided configuration as specified by the source's spec
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._token = InterpolatedString.create(token)
+        self._token = InterpolatedString.create(token, options=options)
         self._config = config
 
     @property
@@ -77,14 +85,21 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator):
     `"Authorization": "Basic <encoded_credentials>"`
     """
 
-    def __init__(self, username: Union[InterpolatedString, str], config: Config, password: Union[InterpolatedString, str] = ""):
+    def __init__(
+        self,
+        username: Union[InterpolatedString, str],
+        config: Config,
+        password: Union[InterpolatedString, str] = "",
+        **options: Optional[Mapping[str, Any]],
+    ):
         """
         :param username: The username
         :param config: The user-provided configuration as specified by the source's spec
         :param password: The password
+        :param options: Additional runtime parameters to be used for string interpolation
         """
-        self._username = InterpolatedString.create(username)
-        self._password = InterpolatedString.create(password)
+        self._username = InterpolatedString.create(username, options=options)
+        self._password = InterpolatedString.create(password, options=options)
         self._config = config
 
     @property
