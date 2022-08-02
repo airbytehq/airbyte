@@ -1,13 +1,13 @@
 import { faRedoAlt, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button, ContentCard } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ToolTip from "components/ToolTip";
 
-import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import { ConnectionStatus, JobWithAttemptsRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -17,31 +17,50 @@ import { useCancelJob, useListJobs } from "services/job/JobService";
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
 
+enum ActionType {
+  RESET = "reset_connection",
+  SYNC = "sync",
+}
+
+interface ActiveJob {
+  id: number;
+  action: ActionType;
+  isCanceling: boolean;
+}
+
 interface StatusViewProps {
   connection: WebBackendConnectionRead;
   isStatusUpdating?: boolean;
 }
 
-enum CurrentActionType {
-  RESET = "reset_connection",
-  SYNC = "sync",
-}
+const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
+  return jobs.find((jobWithAttempts) => {
+    const jobStatus = jobWithAttempts?.job?.status;
+    return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
+  });
+};
 
 const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
+  const [activeJob, setActiveJob] = useState<ActiveJob>();
+
   const jobs = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
   });
 
-  const jobRunningOrPending = jobs.find((jobWithAttempts) => {
-    const jobStatus = jobWithAttempts?.job?.status;
-    return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
-  });
+  useEffect(() => {
+    const jobRunningOrPending = getJobRunningOrPending(jobs);
 
-  const [jobCancelling, setJobCancelling] = useState<boolean>();
-  const [currentAction, setCurrentAction] = useState<CurrentActionType | null>(
-    (jobRunningOrPending?.job?.configType || null) as CurrentActionType
-  );
+    setActiveJob(
+      (state) =>
+        ({
+          id: jobRunningOrPending?.job?.id,
+          action: jobRunningOrPending?.job?.configType,
+          isCanceling: state?.isCanceling && !!jobRunningOrPending,
+          // We need to disable button when job is canceled but the job list still has a running job
+        } as ActiveJob)
+    );
+  }, [jobs]);
 
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
@@ -62,45 +81,31 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
       cancelButtonText: "form.noNeed",
       onSubmit: async () => {
         await onReset();
+        setActiveJob((state) => ({ ...state, action: ActionType.RESET } as ActiveJob));
         closeConfirmationModal();
-        setCurrentAction(CurrentActionType.RESET);
       },
       submitButtonDataId: "reset",
     });
   };
 
   const onSyncNowButtonClick = () => {
-    setCurrentAction(CurrentActionType.SYNC);
+    setActiveJob((state) => ({ ...state, action: ActionType.SYNC } as ActiveJob));
     return onSync();
   };
 
-  const onCancelJob = async () => {
-    if (!jobRunningOrPending?.job?.id) {
+  const onCancelJob = () => {
+    if (!activeJob?.id) {
       return;
     }
-    setJobCancelling(true);
-    await cancelJob(jobRunningOrPending?.job?.id);
-    setJobCancelling(false);
+    setActiveJob((state) => ({ ...state, isCanceling: true } as ActiveJob));
+    return cancelJob(activeJob.id);
   };
 
   const cancelJobBtn = (
-    <Button className={styles.cancelButton} disabled={jobCancelling} onClick={onCancelJob}>
+    <Button className={styles.cancelButton} disabled={!activeJob?.id || activeJob.isCanceling} onClick={onCancelJob}>
       <FontAwesomeIcon className={styles.iconXmark} icon={faXmark} />
-      {currentAction === CurrentActionType.RESET && <FormattedMessage id="connection.cancelReset" />}
-      {currentAction === CurrentActionType.SYNC && <FormattedMessage id="connection.cancelSync" />}
-    </Button>
-  );
-
-  const resetDataBtn = (
-    <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
-      <FormattedMessage id="connection.resetData" />
-    </Button>
-  );
-
-  const syncNowBtn = (
-    <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
-      <FontAwesomeIcon className={styles.iconRedoAlt} icon={faRedoAlt} />
-      <FormattedMessage id="sources.syncNow" />
+      {activeJob?.action === ActionType.RESET && <FormattedMessage id="connection.cancelReset" />}
+      {activeJob?.action === ActionType.SYNC && <FormattedMessage id="connection.cancelSync" />}
     </Button>
   );
 
@@ -113,18 +118,19 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
             <FormattedMessage id="sources.syncHistory" />
             {connection.status === ConnectionStatus.active && (
               <div>
-                {!jobRunningOrPending && (
+                {!activeJob?.action && (
                   <>
-                    <ToolTip control={resetDataBtn} cursor="not-allowed">
-                      <FormattedMessage id="connection.pendingSync" />
-                    </ToolTip>
-                    <ToolTip control={syncNowBtn} cursor="not-allowed">
-                      <FormattedMessage id="connection.pendingSync" />
-                    </ToolTip>
+                    <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
+                      <FormattedMessage id="connection.resetData" />
+                    </Button>
+                    <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
+                      <FontAwesomeIcon className={styles.iconRedoAlt} icon={faRedoAlt} />
+                      <FormattedMessage id="sources.syncNow" />
+                    </Button>
                   </>
                 )}
-                {jobRunningOrPending && !jobCancelling && cancelJobBtn}
-                {jobRunningOrPending && jobCancelling && (
+                {activeJob?.action && !activeJob.isCanceling && cancelJobBtn}
+                {activeJob?.action && activeJob.isCanceling && (
                   <ToolTip control={cancelJobBtn} cursor="not-allowed">
                     <FormattedMessage id="form.canceling" />
                   </ToolTip>
