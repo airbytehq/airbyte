@@ -175,3 +175,5 @@ extraVolumeMounts: []
 ##     emptyDir: {}
 ##
 extraVolumes: []
+
+extraContainers: []
