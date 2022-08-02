@@ -15,7 +15,7 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
-from source_hubspot.constants import API_KEY_CREDENTIALS, OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
+from source_hubspot.constants import API_KEY_CREDENTIALS
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -85,12 +85,7 @@ class SourceHubspot(AbstractSource):
         start_date = config["start_date"]
         credentials = config["credentials"]
         api = self.get_api(config=config)
-        common_params = dict(api=api, start_date=start_date, credentials=credentials)
-
-        credentials_title = credentials.get("credentials_title")
-        if credentials_title == OAUTH_CREDENTIALS or credentials_title == PRIVATE_APP_CREDENTIALS:
-            common_params["authenticator"] = api.get_authenticator()
-        return common_params
+        return dict(api=api, start_date=start_date, credentials=credentials)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = config.get("credentials", {})
