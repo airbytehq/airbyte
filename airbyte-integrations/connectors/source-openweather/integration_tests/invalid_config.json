@@ -1,5 +1,6 @@
 {
   "lat": "12.1",
   "lon": "-43.1",
-  "appid": "wrongkey"
+  "appid": "wrongkey",
+  "lang": "fr"
 }
