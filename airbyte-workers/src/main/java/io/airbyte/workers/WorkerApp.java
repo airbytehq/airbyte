@@ -221,24 +221,36 @@ public class WorkerApp {
   }
 
   private void registerSync(final WorkerFactory factory) {
-    final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
+    registerSyncActivityWorkers(factory);
+    registerSyncWorkflowWorkers(factory);
+  }
 
-    // Note that the configuration injected here is for the normalization orchestrator, and not the
-    // normalization pod itself.
-    // Configuration for the normalization pod is injected via the SyncWorkflowImpl.
-    final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
+  private void registerSyncActivityWorkers(final WorkerFactory factory) {
+    if (!configs.getSyncActivityTaskQueues().isEmpty()) {
+      final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
+      // Note that the configuration injected here is for the normalization orchestrator, and not the
+      // normalization pod itself.
+      // Configuration for the normalization pod is injected via the SyncWorkflowImpl.
+      final NormalizationActivityImpl normalizationActivity = getNormalizationActivityImpl(defaultWorkerConfigs, defaultProcessFactory);
+      final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
+          defaultWorkerConfigs,
+          defaultProcessFactory);
+      final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
-    final DbtTransformationActivityImpl dbtTransformationActivity = getDbtActivityImpl(
-        defaultWorkerConfigs,
-        defaultProcessFactory);
+      for (final String activityTaskQueue : configs.getSyncActivityTaskQueues()) {
+        // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
+        final Worker worker = factory.newWorker(activityTaskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+        worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+      }
+    }
+  }
 
-    final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
-
-    final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
-
-    syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
-    syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
-
+  private void registerSyncWorkflowWorkers(final WorkerFactory factory) {
+    if (configs.shouldHandleSyncWorkflowTasks()) {
+      // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
+      final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+      syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    }
   }
 
   private void registerDiscover(final WorkerFactory factory) {
