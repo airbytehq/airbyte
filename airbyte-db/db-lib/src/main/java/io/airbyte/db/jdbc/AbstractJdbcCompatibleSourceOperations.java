@@ -272,8 +272,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    * Modifies a string representation of a date/timestamp and normalizes its era indicator.
    * Specifically, if the LocalDate represents a BCE value:
    * <ul>
-   *   <li>The leading negative sign will be removed if present</li>
-   *   <li>The "BC" suffix will be appended, if not already present</li>
+   * <li>The leading negative sign will be removed if present</li>
+   * <li>The "BC" suffix will be appended, if not already present</li>
    * </ul>
    */
   public static String resolveEra(LocalDate date, String value) {
