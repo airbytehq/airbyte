@@ -358,7 +358,7 @@ spec:
         - containerPort: 9028
         - containerPort: 9029
         - containerPort: 9030 # end temporal worker port pool
-        {{- if .Values.resources   }}
+        {{- if .Values.resources }}
         resources: {{- toYaml .Values.resources | nindent 10 }}
         {{- end }}
         {{- if .Values.containerSecurityContext }}
