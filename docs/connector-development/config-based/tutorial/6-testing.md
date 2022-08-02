@@ -93,7 +93,7 @@ Here is the full connector definition for reference:
 
 ```
 schema_loader:
-  type: JsonSchema
+  class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
   file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
@@ -103,37 +103,59 @@ selector:
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
-  url_base: https://api.exchangeratesapi.io/v1/
+  url_base: "https://api.exchangeratesapi.io/v1/"
   http_method: "GET"
   request_options_provider:
     request_parameters:
       access_key: "{{ config.access_key }}"
       base: "{{ config.base }}"
+stream_slicer:
+  type: "DatetimeStreamSlicer"
+  start_datetime:
+    datetime: "{{ config.start_date }}"
+    datetime_format: "%Y-%m-%d"
+  end_datetime:
+    datetime: "{{ now_local() }}"
+    datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+  step: "1d"
+  datetime_format: "%Y-%m-%d"
+  cursor_field: "{{ options.cursor_field }}"
 retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
-    $ref: "*ref(selector)"
+    ref: "*ref(selector)"
   paginator:
     type: NoPagination
 rates_stream:
   type: DeclarativeStream
   $options:
     name: "rates"
-  primary_key: "id"
+    cursor_field: "date"
+  primary_key: "date"
   schema_loader:
-    $ref: "*ref(schema_loader)"
+    ref: "*ref(schema_loader)"
   retriever:
-    $ref: "*ref(retriever)"
+    ref: "*ref(retriever)"
+    stream_slicer:
+      ref: "*ref(stream_slicer)"
     requester:
-      $ref: "*ref(requester)"
-      path: /latest
+      ref: "*ref(requester)"
+      path:
+        type: "InterpolatedString"
+        string: "{{ stream_slice.start_date }}"
+        default: "/latest"
+      error_handler:
+        response_filters:
+          - predicate: "{{'error' in response}}"
+            action: FAIL
 streams:
   - "*ref(rates_stream)"
 check:
   type: CheckStream
-  stream_names: [ "rates" ]
+  stream_names: ["rates"]
+
 ```
 
 ## Next steps:
