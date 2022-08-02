@@ -4,6 +4,7 @@
 
 package io.airbyte.scheduler.persistence.job_error_reporter;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.Metadata;
 import io.airbyte.config.StandardWorkspace;
@@ -56,7 +57,7 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
    * @param metadata - Extra metadata to set as tags on the event
    */
   @Override
-  public void reportJobFailureReason(final StandardWorkspace workspace,
+  public void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
                                      final FailureReason failureReason,
                                      final String dockerImage,
                                      final Map<String, String> metadata) {
@@ -75,10 +76,12 @@ public class SentryJobErrorReportingClient implements JobErrorReportingClient {
     }
 
     // set workspace as the user in sentry to get impact and priority
-    final User sentryUser = new User();
-    sentryUser.setId(String.valueOf(workspace.getWorkspaceId()));
-    sentryUser.setUsername(workspace.getName());
-    event.setUser(sentryUser);
+    if (workspace != null) {
+      final User sentryUser = new User();
+      sentryUser.setId(String.valueOf(workspace.getWorkspaceId()));
+      sentryUser.setUsername(workspace.getName());
+      event.setUser(sentryUser);
+    }
 
     // set metadata as tags
     event.setTags(metadata);
