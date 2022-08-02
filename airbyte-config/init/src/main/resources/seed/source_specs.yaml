@@ -87,7 +87,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amazon-ads:0.1.9"
+- dockerImage: "airbyte/source-amazon-ads:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amazon-ads"
     connectionSpecification:
@@ -187,7 +187,7 @@
       oauth_config_specification:
         complete_oauth_output_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             refresh_token:
               type: "string"
@@ -195,7 +195,7 @@
               - "refresh_token"
         complete_oauth_server_input_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               type: "string"
@@ -203,7 +203,7 @@
               type: "string"
         complete_oauth_server_output_specification:
           type: "object"
-          additionalProperties: false
+          additionalProperties: true
           properties:
             client_id:
               type: "string"
@@ -829,7 +829,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigquery:0.1.9"
+- dockerImage: "airbyte/source-bigquery:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/bigquery"
     connectionSpecification:
@@ -1823,7 +1823,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.56"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.58"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/facebook-marketing"
@@ -2595,7 +2595,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.2.42"
+- dockerImage: "airbyte/source-github:0.2.43"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -2780,7 +2780,25 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-google-ads:0.1.43"
+- dockerImage: "airbyte/source-glassfrog:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/glassfrog"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Glassfrog Spec"
+      type: "object"
+      required:
+      - "api_key"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          description: "API key provided by Glassfrog"
+          airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-google-ads:0.1.44"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-ads"
     connectionSpecification:
@@ -2937,9 +2955,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-v4:0.1.23"
+- dockerImage: "airbyte/source-google-analytics-v4:0.1.25"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-analytics-v4"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-universal-analytics"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Analytics V4 Spec"
@@ -3067,9 +3085,9 @@
         oauthFlowOutputParameters:
         - - "access_token"
         - - "refresh_token"
-- dockerImage: "airbyte/source-google-analytics-data-api:0.0.1"
+- dockerImage: "airbyte/source-google-analytics-data-api:0.0.2"
   spec:
-    documentationUrl: "https://docsurl.com"
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/google-analytics-v4"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "Google Analytics Data API Spec"
@@ -3082,7 +3100,6 @@
       - "metrics"
       - "date_ranges_start_date"
       - "date_ranges_end_date"
-      additionalProperties: false
       properties:
         property_id:
           type: "string"
@@ -3688,7 +3705,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-hubspot:0.1.76"
+- dockerImage: "airbyte/source-hubspot:0.1.80"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/hubspot"
     connectionSpecification:
@@ -5755,7 +5772,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:0.5.17"
+- dockerImage: "airbyte/source-mysql:0.6.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/mysql"
     connectionSpecification:
@@ -5930,7 +5947,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-notion:0.1.6"
+- dockerImage: "airbyte/source-notion:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/notion"
     connectionSpecification:
@@ -6010,7 +6027,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.8"
+- dockerImage: "airbyte/source-okta:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
@@ -6690,7 +6707,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-paypal-transaction:0.1.7"
+- dockerImage: "airbyte/source-paypal-transaction:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paypal-transactions"
     connectionSpecification:
@@ -6698,21 +6715,58 @@
       title: "Paypal Transaction Search"
       type: "object"
       required:
-      - "client_id"
-      - "secret"
       - "start_date"
       - "is_sandbox"
       additionalProperties: true
       properties:
-        client_id:
-          title: "Client ID"
-          type: "string"
-          description: "The Client ID of your Paypal developer application."
-        secret:
-          title: "Client Secret"
-          type: "string"
-          description: "The Client Secret of your Paypal developer application."
-          airbyte_secret: true
+        credentials:
+          title: "Authenticate using"
+          type: "object"
+          oneOf:
+          - type: "object"
+            title: "OAuth2.0"
+            required:
+            - "auth_type"
+            - "refresh_token"
+            properties:
+              auth_type:
+                type: "string"
+                const: "oauth2.0"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Paypal developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client secret"
+                description: "The Client Secret of your Paypal developer application."
+                airbyte_secret: true
+              refresh_token:
+                type: "string"
+                title: "Refresh token"
+                description: "The key to refresh the expired access token."
+                airbyte_secret: true
+          - title: "Private OAuth Creds"
+            type: "object"
+            required:
+            - "auth_type"
+            - "client_id"
+            - "client_secret"
+            properties:
+              auth_type:
+                type: "string"
+                const: "private_oauth"
+              client_id:
+                type: "string"
+                title: "Client ID"
+                description: "The Client ID of your Paypal developer application."
+                airbyte_secret: true
+              client_secret:
+                type: "string"
+                title: "Client secret"
+                description: "The Client Secret of your Paypal developer application."
+                airbyte_secret: true
         start_date:
           type: "string"
           title: "Start Date"
@@ -6730,6 +6784,17 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+    authSpecification:
+      auth_type: "oauth2.0"
+      oauth2Specification:
+        rootObject:
+        - "credentials"
+        - "0"
+        oauthFlowInitParameters:
+        - - "client_id"
+        - - "client_secret"
+        oauthFlowOutputParameters:
+        - - "refresh_token"
 - dockerImage: "airbyte/source-paystack:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/paystack"
@@ -7005,7 +7070,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-posthog:0.1.6"
+- dockerImage: "airbyte/source-posthog:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/posthog"
     connectionSpecification:
@@ -7015,7 +7080,6 @@
       required:
       - "api_key"
       - "start_date"
-      additionalProperties: false
       properties:
         start_date:
           title: "Start Date"
@@ -7041,7 +7105,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:0.4.37"
+- dockerImage: "airbyte/source-postgres:0.4.38"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -7828,7 +7892,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.17"
+- dockerImage: "airbyte/source-s3:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.io/integrations/sources/s3"
@@ -8007,6 +8071,51 @@
                 title: "Filetype"
                 const: "avro"
                 type: "string"
+          - title: "Jsonl"
+            description: "This connector uses <a href=\"https://arrow.apache.org/docs/python/json.html\"\
+              \ target=\"_blank\">PyArrow</a> for JSON Lines (jsonl) file parsing."
+            type: "object"
+            properties:
+              filetype:
+                title: "Filetype"
+                const: "jsonl"
+                type: "string"
+              newlines_in_values:
+                title: "Allow newlines in values"
+                description: "Whether newline characters are allowed in JSON values.\
+                  \ Turning this on may affect performance. Leave blank to default\
+                  \ to False."
+                default: false
+                order: 0
+                type: "boolean"
+              unexpected_field_behavior:
+                title: "Unexpected field behavior"
+                description: "How JSON fields outside of explicit_schema (if given)\
+                  \ are treated. Check <a href=\"https://arrow.apache.org/docs/python/generated/pyarrow.json.ParseOptions.html\"\
+                  \ target=\"_blank\">PyArrow documentation</a> for details"
+                default: "infer"
+                examples:
+                - "ignore"
+                - "infer"
+                - "error"
+                order: 1
+                allOf:
+                - title: "UnexpectedFieldBehaviorEnum"
+                  description: "An enumeration."
+                  enum:
+                  - "ignore"
+                  - "infer"
+                  - "error"
+                  type: "string"
+              block_size:
+                title: "Block Size"
+                description: "The chunk size in bytes to process at a time in memory\
+                  \ from each file. If your data is particularly wide and failing\
+                  \ during schema detection, increasing this should solve it. Beware\
+                  \ of raising this too high as you could hit OOM errors."
+                default: 10000
+                order: 2
+                type: "integer"
         schema:
           title: "Manually enforced data schema (Optional)"
           description: "Optionally provide a schema to enforce, as a valid JSON string.\
@@ -8483,7 +8592,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-shortio:0.1.2"
+- dockerImage: "airbyte/source-shortio:0.1.3"
   spec:
     documentationUrl: "https://developers.short.io/reference"
     connectionSpecification:
@@ -8494,7 +8603,6 @@
       - "domain_id"
       - "secret_key"
       - "start_date"
-      additionalProperties: false
       properties:
         domain_id:
           type: "string"
@@ -9344,7 +9452,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tidb:0.1.5"
+- dockerImage: "airbyte/source-tidb:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/tidb"
     connectionSpecification:
@@ -10233,7 +10341,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.13"
+- dockerImage: "airbyte/source-zendesk-support:0.2.14"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/zendesk-support"
     connectionSpecification:

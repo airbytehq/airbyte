@@ -61,4 +61,5 @@ class HttpResponseFilter:
         if not self._error_message_contains:
             return False
         else:
-            return self._error_message_contains in HttpStream.parse_response_error_message(response)
+            error_message = HttpStream.parse_response_error_message(response)
+            return error_message and self._error_message_contains in error_message
