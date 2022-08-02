@@ -63,7 +63,7 @@ const MainView: React.FC = (props) => {
           values={{
             lnk: (
               <Link to={CloudRoutes.Credits}>
-                <FormattedMessage id="credits.addCredits" />
+                <FormattedMessage id="credits.creditProblems.lnkText" />
               </Link>
             ),
           }}
