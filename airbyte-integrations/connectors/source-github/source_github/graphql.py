@@ -108,11 +108,18 @@ class QueryReactions:
     def get_query_root_repository(self, owner: str, name: str, first: int, after: Optional[str] = None):
         """
         Get GraphQL query which allows fetching reactions starting from the repository:
-        repository
-          pull_requests
-            reviews
-              comments
-                reactions
+        query {
+          repository {
+            pull_requests(first: page_size) {
+              reviews(first: AVERAGE_REVIEWS) {
+                comments(first: AVERAGE_COMMENTS) {
+                  reactions(first: AVERAGE_REACTIONS) {
+                  }
+                }
+              }
+            }
+          }
+        }
         """
         op = self._get_operation()
         repository = op.repository(owner=owner, name=name)
@@ -135,10 +142,16 @@ class QueryReactions:
     def get_query_root_pull_request(self, node_id: str, first: int, after: str):
         """
         Get GraphQL query which allows fetching reactions starting from the pull_request:
-        pull_request
-          reviews
-            comments
-              reactions
+        query {
+          pull_request {
+            reviews(first: AVERAGE_REVIEWS) {
+              comments(first: AVERAGE_COMMENTS) {
+                reactions(first: AVERAGE_REACTIONS) {
+                }
+              }
+            }
+          }
+        }
         """
         op = self._get_operation()
         pull_request = op.node(id=node_id).__as__(_schema_root.PullRequest)
@@ -154,9 +167,14 @@ class QueryReactions:
     def get_query_root_review(self, node_id: str, first: int, after: str):
         """
         Get GraphQL query which allows fetching reactions starting from the review:
-        review
-          comments
-            reactions
+        query {
+          review {
+            comments(first: AVERAGE_COMMENTS) {
+              reactions(first: AVERAGE_REACTIONS) {
+              }
+            }
+          }
+        }
         """
         op = self._get_operation()
         review = op.node(id=node_id).__as__(_schema_root.PullRequestReview)
@@ -171,8 +189,12 @@ class QueryReactions:
     def get_query_root_comment(self, node_id: str, first: int, after: str):
         """
         Get GraphQL query which allows fetching reactions starting from the comment:
-        comment
-          reactions
+        query {
+          comment {
+            reactions(first: AVERAGE_REACTIONS) {
+            }
+          }
+        }
         """
         op = self._get_operation()
         comment = op.node(id=node_id).__as__(_schema_root.PullRequestReviewComment)
