@@ -113,7 +113,6 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       </ContentCard>
     );
   }
-  console.log(connection);
   return isLoading ? (
     <LoadingSchema />
   ) : (
