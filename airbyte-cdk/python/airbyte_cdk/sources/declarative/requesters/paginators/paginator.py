@@ -2,13 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, List, Mapping, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 
 
-class Paginator(ABC):
+class Paginator(RequestOptionsProvider):
     """
     Defines the token to use to fetch the next page of records from the API.
 

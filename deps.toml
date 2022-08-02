@@ -17,7 +17,7 @@ connectors-testcontainers-pulsar = "1.16.2"
 connectors-testcontainers-scylla = "1.16.2"
 connectors-testcontainers-tidb = "1.16.3"
 connectors-destination-testcontainers-clickhouse = "1.17.3"
-connectors-destination-testcontainers-oracle-xe = "1.16.0"
+connectors-destination-testcontainers-oracle-xe = "1.17.3"
 connectors-source-testcontainers-clickhouse = "1.17.3"
 platform-testcontainers = "1.17.1"
 
@@ -86,6 +86,8 @@ otel-bom = {module = "io.opentelemetry:opentelemetry-bom", version = "1.14.0"}
 otel-semconv = {module = "io.opentelemetry:opentelemetry-semconv", version = "1.14.0-alpha"}
 otel-sdk = {module = "io.opentelemetry:opentelemetry-sdk-metrics", version = "1.14.0"}
 otel-sdk-testing = {module = "io.opentelemetry:opentelemetry-sdk-metrics-testing", version = "1.13.0-alpha"}
+micrometer-statsd = {module = "io.micrometer:micrometer-registry-statsd", version = "1.9.2"}
+
 quartz-scheduler = {module="org.quartz-scheduler:quartz", version = "2.3.2"}
 
 [bundles]

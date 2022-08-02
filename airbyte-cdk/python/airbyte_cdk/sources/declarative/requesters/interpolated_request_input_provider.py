@@ -14,21 +14,30 @@ class InterpolatedRequestInputProvider:
     Helper class that generically performs string interpolation on the provided dictionary or string input
     """
 
-    def __init__(self, *, config: Config, request_inputs: Optional[Union[str, Mapping[str, str]]] = None):
+    def __init__(
+        self, *, config: Config, request_inputs: Optional[Union[str, Mapping[str, str]]] = None, **options: Optional[Mapping[str, Any]]
+    ):
+        """
+        :param config: The user-provided configuration as specified by the source's spec
+        :param request_inputs: The dictionary to interpolate
+        :param options: Additional runtime parameters to be used for string interpolation
+        """
+
         self._config = config
 
         if request_inputs is None:
             request_inputs = {}
         if isinstance(request_inputs, str):
-            self._interpolator = InterpolatedString(request_inputs, "")
+            self._interpolator = InterpolatedString(request_inputs, default="", options=options)
         else:
-            self._interpolator = InterpolatedMapping(request_inputs)
+            self._interpolator = InterpolatedMapping(request_inputs, options=options)
 
     def request_inputs(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Mapping[str, Any] = None
     ) -> Mapping[str, Any]:
         """
         Returns the request inputs to set on an outgoing HTTP request
+
         :param stream_state: The stream state
         :param stream_slice: The stream slice
         :param next_page_token: The pagination token
