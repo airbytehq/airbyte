@@ -37,6 +37,11 @@ import javax.xml.bind.DatatypeConverter;
  */
 public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implements JdbcCompatibleSourceOperations<Datatype> {
 
+  /**
+   * A Date representing the earliest date in CE. Any date before this is in BCE.
+   */
+  private static final Date ONE_CE = Date.valueOf("0001-01-01");
+
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
     // the first call communicates with the database. after that the result is cached.
@@ -270,14 +275,16 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   /**
    * Modifies a string representation of a date/timestamp and normalizes its era indicator.
-   * Specifically, if the LocalDate represents a BCE value:
+   * Specifically, if this is a BCE value:
    * <ul>
    *   <li>The leading negative sign will be removed if present</li>
    *   <li>The "BC" suffix will be appended, if not already present</li>
    * </ul>
+   *
+   * You most likely would prefer to call one of the overloaded methods, which accept temporal types.
    */
-  public static String resolveEra(LocalDate date, String value) {
-    if (isBCE(date)) {
+  public static String resolveEra(boolean isBce, String value) {
+    if (isBce) {
       if (value.startsWith("-")) {
         value = value.substring(1);
       }
@@ -288,8 +295,37 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return value;
   }
 
-  public static boolean isBCE(LocalDate date) {
+  public static String resolveEra(LocalDate date, String value) {
+    return resolveEra(isBce(date), value);
+  }
+
+  public static String resolveEra(Date date, String value) {
+    return resolveEra(isBce(date), value);
+  }
+
+  public static String resolveEra(Timestamp timestamp, String value) {
+    return resolveEra(isBce(timestamp), value);
+  }
+
+  public static boolean isBce(LocalDate date) {
     return date.getEra().equals(IsoEra.BCE);
   }
 
+  /**
+   * java.sql.Date objects don't properly represent their era (for example, using toLocalDate() always returns an object
+   * in CE). So to determine the era, we just check whether the date is before 1 AD.
+   *
+   * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but my understanding
+   * is that {@link #ONE_CE} has the same weirdness, so it cancels out.
+   */
+  public static boolean isBce(Date date) {
+    return date.before(ONE_CE);
+  }
+
+  /**
+   * See {@link #isBce(Date)} for explanation.
+   */
+  public static boolean isBce(Timestamp timestamp) {
+    return timestamp.before(ONE_CE);
+  }
 }

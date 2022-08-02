@@ -19,6 +19,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeConverter {
@@ -32,39 +33,52 @@ public class DateTimeConverter {
   }
 
   public static String convertToTimestampWithTimezone(Object timestamp) {
-    OffsetDateTime timestamptz = OffsetDateTime.ofInstant(toInstant(timestamp), ZoneOffset.UTC);
-    LocalDate localDate = timestamptz.toLocalDate();
-    return resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER));
+    if (timestamp instanceof Timestamp t) {
+      // Conceptually, a timestamp with timezone is an Instant. But t.toInstant() actually mangles the value for ancient dates,
+      // because leap years weren't applied consistently in ye olden days.
+      // Additionally, toInstant() (and toLocalDateTime()) actually lose the era indicator, so we can't rely on their getEra() methods.
+      // So we have special handling for this case, which sidesteps the toInstant conversion.
+      ZonedDateTime timestamptz = t.toLocalDateTime().atZone(ZoneOffset.UTC);
+      String value = timestamptz.format(TIMESTAMPTZ_FORMATTER);
+      return resolveEra(t, value);
+    } else {
+      Instant instant = Instant.parse(timestamp.toString());
+      OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
+      ZonedDateTime timestamptz = ZonedDateTime.from(offsetDateTime);
+      LocalDate localDate = timestamptz.toLocalDate();
+      String value = timestamptz.format(TIMESTAMPTZ_FORMATTER);
+      return resolveEra(localDate, value);
+    }
   }
 
+  /**
+   * See {@link #convertToTimestampWithTimezone(Object)} for explanation.
+   */
   public static String convertToTimestamp(Object timestamp) {
-    final LocalDateTime localDateTime = LocalDateTime.ofInstant(toInstant(timestamp),
-        ZoneOffset.UTC);
-    final LocalDate date = localDateTime.toLocalDate();
-    return resolveEra(date, localDateTime.format(TIMESTAMP_FORMATTER));
+    if (timestamp instanceof Timestamp t) {
+      LocalDateTime localDateTime = t.toLocalDateTime();
+      String value = localDateTime.format(TIMESTAMP_FORMATTER);
+      return resolveEra(t, value);
+    } else {
+      LocalDateTime localDateTime = LocalDateTime.parse(timestamp.toString());
+      final LocalDate date = localDateTime.toLocalDate();
+      String value = localDateTime.format(TIMESTAMP_FORMATTER);
+      return resolveEra(date, value);
+    }
   }
 
   public static Object convertToDate(Object date) {
-    LocalDate localDate;
-    if (date instanceof Date) {
-      localDate = ((Date) date).toLocalDate();
+    if (date instanceof Date d) {
+      LocalDate localDate = ((Date) date).toLocalDate();
+      return resolveEra(d, localDate.toString());
     } else {
-      localDate = LocalDate.parse(date.toString());
+      LocalDate localDate = LocalDate.parse(date.toString());
+      return resolveEra(localDate, localDate.toString());
     }
-    return resolveEra(localDate, localDate.toString());
   }
 
   public static String convertToTime(Object time) {
     LocalTime localTime = LocalTime.parse(time.toString());
     return localTime.format(TIME_FORMATTER);
   }
-
-  private static Instant toInstant(Object timestamp) {
-    if (timestamp instanceof Timestamp) {
-      return ((Timestamp) timestamp).toInstant();
-    } else {
-      return Instant.parse(timestamp.toString());
-    }
-  }
-
 }
