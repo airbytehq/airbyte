@@ -202,7 +202,7 @@ def test_display_report_stream_init_http_exception(mocker, config):
 
     with raises(ConnectionError):
         _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(responses.calls) == 5
+    assert len(responses.calls) == 10
 
 
 @responses.activate
@@ -215,7 +215,7 @@ def test_display_report_stream_init_too_many_requests(mocker, config):
 
     with raises(TooManyRequests):
         _ = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
-    assert len(responses.calls) == 5
+    assert len(responses.calls) == 10
 
 
 @pytest.mark.parametrize(
