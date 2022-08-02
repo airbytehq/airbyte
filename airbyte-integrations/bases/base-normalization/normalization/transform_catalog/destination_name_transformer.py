@@ -170,15 +170,13 @@ class DestinationNameTransformer:
                 result = result.replace('"', "_")
                 result = result.replace("`", "_")
                 result = result.replace("'", "_")
+            elif self.destination_type.value != DestinationType.MYSQL.value:
+                result = result.replace('"', '""')
             else:
-                if self.destination_type.value != DestinationType.MYSQL.value:
-                    result = result.replace('"', '""')
-                else:
-                    result = result.replace("`", "_")
-                result = result.replace("'", "\\'")
-                result = self.__normalize_identifier_case(result, is_quoted=True)
-                result = self.apply_quote(result)
-
+                result = result.replace("`", "_")
+            result = result.replace("'", "\\'")
+            result = self.__normalize_identifier_case(result, is_quoted=True)
+            result = self.apply_quote(result)
             if not in_jinja:
                 result = jinja_call(result)
             return result
@@ -190,12 +188,12 @@ class DestinationNameTransformer:
         return result
 
     def apply_quote(self, input: str, literal=True) -> str:
+        if self.destination_type == DestinationType.CLICKHOUSE:
+            return f"'{input}'"
         if literal:
             input = f"'{input}'"
         if self.destination_type == DestinationType.ORACLE:
             # Oracle dbt lib doesn't implemented adapter quote yet.
-            return f"quote({input})"
-        elif self.destination_type == DestinationType.CLICKHOUSE:
             return f"quote({input})"
         return f"adapter.quote({input})"
 
