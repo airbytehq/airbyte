@@ -40,9 +40,9 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongodbDestination.class);
 
-  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&tcl=%s";
+  private static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&tls=%s";
   private static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
-  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&tcl=true";
+  private static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&tls=true";
   private static final String INSTANCE_TYPE = "instance_type";
   private static final String INSTANCE = "instance";
   private static final String CLUSTER_URL = "cluster_url";
