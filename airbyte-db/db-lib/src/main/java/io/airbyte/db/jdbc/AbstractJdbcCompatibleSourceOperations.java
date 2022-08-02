@@ -277,15 +277,16 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    * </ul>
    */
   public static String resolveEra(LocalDate date, String value) {
+    String mangledValue = value;
     if (isBCE(date)) {
-      if (value.startsWith("-")) {
-        value = value.substring(1);
+      if (mangledValue.startsWith("-")) {
+        mangledValue = mangledValue.substring(1);
       }
-      if (!value.endsWith(" BC")) {
-        value += " BC";
+      if (!mangledValue.endsWith(" BC")) {
+        mangledValue += " BC";
       }
     }
-    return value;
+    return mangledValue;
   }
 
   public static boolean isBCE(LocalDate date) {
