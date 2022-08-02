@@ -1,27 +1,28 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Action, Namespace } from "core/analytics";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { DestinationDefinition } from "core/domain/connector";
+import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import useRouter from "hooks/useRouter";
-import { TrackActionType, useTrackAction } from "hooks/useTrackAction";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 
-type IProps = {
+interface DestinationFormProps {
   onSubmit: (values: {
     name: string;
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  destinationDefinitions: DestinationDefinition[];
+  afterSelectConnector?: () => void;
+  destinationDefinitions: DestinationDefinitionRead[];
   hasSuccess?: boolean;
   error?: { message?: string; status?: number } | null;
-  afterSelectConnector?: () => void;
-};
+}
 
 const hasDestinationDefinitionId = (state: unknown): state is { destinationDefinitionId: string } => {
   return (
@@ -31,7 +32,7 @@ const hasDestinationDefinitionId = (state: unknown): state is { destinationDefin
   );
 };
 
-const DestinationForm: React.FC<IProps> = ({
+export const DestinationForm: React.FC<DestinationFormProps> = ({
   onSubmit,
   destinationDefinitions,
   error,
@@ -39,26 +40,29 @@ const DestinationForm: React.FC<IProps> = ({
   afterSelectConnector,
 }) => {
   const { location } = useRouter();
-  const trackNewDestinationAction = useTrackAction(TrackActionType.NEW_DESTINATION);
+  const analyticsService = useAnalyticsService();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
     hasDestinationDefinitionId(location.state) ? location.state.destinationDefinitionId : null
   );
+
   const {
     data: destinationDefinitionSpecification,
-    isLoading,
     error: destinationDefinitionError,
+    isLoading,
   } = useGetDestinationDefinitionSpecificationAsync(destinationDefinitionId);
 
   const onDropDownSelect = (destinationDefinitionId: string) => {
     setDestinationDefinitionId(destinationDefinitionId);
+
     const connector = destinationDefinitions.find((item) => item.destinationDefinitionId === destinationDefinitionId);
 
     if (afterSelectConnector) {
       afterSelectConnector();
     }
 
-    trackNewDestinationAction("Select a connector", {
+    analyticsService.track(Namespace.DESTINATION, Action.SELECT, {
+      actionDescription: "Destination connector type selected",
       connector_destination: connector?.name,
       connector_destination_definition_id: destinationDefinitionId,
     });
@@ -76,7 +80,7 @@ const DestinationForm: React.FC<IProps> = ({
   return (
     <ConnectorCard
       onServiceSelect={onDropDownSelect}
-      fetchingConnectorError={destinationDefinitionError}
+      fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
       onSubmit={onSubmitForm}
       formType="destination"
       availableServices={destinationDefinitions}
@@ -90,5 +94,3 @@ const DestinationForm: React.FC<IProps> = ({
     />
   );
 };
-
-export default DestinationForm;

@@ -1,15 +1,22 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 
 import logging
 
+import pendulum
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth import MultipleTokenAuthenticator, Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import (
+    BasicHttpAuthenticator,
+    MultipleTokenAuthenticator,
+    Oauth2Authenticator,
+    TokenAuthenticator,
+)
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
+
+resp = Response()
 
 
 def test_token_authenticator():
@@ -27,6 +34,23 @@ def test_token_authenticator():
     assert {"Authorization": "Bearer test-token"} == prepared_request.headers
     assert {"Authorization": "Bearer test-token"} == header1
     assert {"Authorization": "Bearer test-token"} == header2
+
+
+def test_basic_http_authenticator():
+    """
+    Should match passed in token, no matter how many times token is retrieved.
+    """
+    token_auth = BasicHttpAuthenticator(username="user", password="password")
+    header1 = token_auth.get_auth_header()
+    header2 = token_auth.get_auth_header()
+
+    prepared_request = requests.PreparedRequest()
+    prepared_request.headers = {}
+    token_auth(prepared_request)
+
+    assert {"Authorization": "Basic dXNlcjpwYXNzd29yZA=="} == prepared_request.headers
+    assert {"Authorization": "Basic dXNlcjpwYXNzd29yZA=="} == header1
+    assert {"Authorization": "Basic dXNlcjpwYXNzd29yZA=="} == header2
 
 
 def test_multiple_token_authenticator():
@@ -96,34 +120,40 @@ class TestOauth2Authenticator:
         """
         scopes = ["scope1", "scope2"]
         oauth = Oauth2Authenticator(
-            token_refresh_endpoint=TestOauth2Authenticator.refresh_endpoint,
-            client_id=TestOauth2Authenticator.client_id,
-            client_secret=TestOauth2Authenticator.client_secret,
-            refresh_token=TestOauth2Authenticator.refresh_token,
-            scopes=scopes,
+            token_refresh_endpoint="refresh_end",
+            client_id="some_client_id",
+            client_secret="some_client_secret",
+            refresh_token="some_refresh_token",
+            scopes=["scope1", "scope2"],
+            token_expiry_date=pendulum.now().add(days=3),
+            refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
         )
         body = oauth.get_refresh_request_body()
         expected = {
             "grant_type": "refresh_token",
-            "client_id": "client_id",
-            "client_secret": "client_secret",
-            "refresh_token": "refresh_token",
+            "client_id": "some_client_id",
+            "client_secret": "some_client_secret",
+            "refresh_token": "some_refresh_token",
             "scopes": scopes,
+            "custom_field": "in_outbound_request",
+            "another_field": "exists_in_body",
         }
         assert body == expected
 
     def test_refresh_access_token(self, mocker):
         oauth = Oauth2Authenticator(
-            token_refresh_endpoint=TestOauth2Authenticator.refresh_endpoint,
-            client_id=TestOauth2Authenticator.client_id,
-            client_secret=TestOauth2Authenticator.client_secret,
-            refresh_token=TestOauth2Authenticator.refresh_token,
+            token_refresh_endpoint="refresh_end",
+            client_id="some_client_id",
+            client_secret="some_client_secret",
+            refresh_token="some_refresh_token",
+            scopes=["scope1", "scope2"],
+            token_expiry_date=pendulum.now().add(days=3),
+            refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
         )
-        resp = Response()
-        resp.status_code = 200
 
-        mocker.patch.object(requests, "request", return_value=resp)
+        resp.status_code = 200
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
+        mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
         token = oauth.refresh_access_token()
 
         assert ("access_token", 1000) == token
@@ -142,3 +172,9 @@ class TestOauth2Authenticator:
         oauth(prepared_request)
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
+
+
+def mock_request(method, url, data):
+    if url == "refresh_end":
+        return resp
+    raise Exception(f"Error while refreshing access token with request: {method}, {url}, {data}")

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.discover.catalog;
@@ -7,21 +7,21 @@ package io.airbyte.workers.temporal.discover.catalog;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.workers.DefaultDiscoverCatalogWorker;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
+import io.airbyte.workers.general.DefaultDiscoverCatalogWorker;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.protocols.airbyte.AirbyteStreamFactory;
-import io.airbyte.workers.protocols.airbyte.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.temporal.CancellationHandler;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
 import io.temporal.activity.Activity;
@@ -55,13 +55,12 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
     this.logConfigs = logConfigs;
     this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
-
   }
 
-  public AirbyteCatalog run(final JobRunConfig jobRunConfig,
-                            final IntegrationLauncherConfig launcherConfig,
-                            final StandardDiscoverCatalogInput config) {
-
+  @Override
+  public ConnectorJobOutput run(final JobRunConfig jobRunConfig,
+                                final IntegrationLauncherConfig launcherConfig,
+                                final StandardDiscoverCatalogInput config) {
     final JsonNode fullConfig = secretsHydrator.hydrate(config.getConnectionConfiguration());
 
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput()
@@ -69,22 +68,23 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    final TemporalAttemptExecution<StandardDiscoverCatalogInput, AirbyteCatalog> temporalAttemptExecution = new TemporalAttemptExecution<>(
-        workspaceRoot,
-        workerEnvironment,
-        logConfigs,
-        jobRunConfig,
-        getWorkerFactory(launcherConfig),
-        () -> input,
-        new CancellationHandler.TemporalCancellationHandler(context),
-        jobPersistence,
-        airbyteVersion,
-        () -> context);
+    final TemporalAttemptExecution<StandardDiscoverCatalogInput, ConnectorJobOutput> temporalAttemptExecution =
+        new TemporalAttemptExecution<>(
+            workspaceRoot,
+            workerEnvironment,
+            logConfigs,
+            jobRunConfig,
+            getWorkerFactory(launcherConfig),
+            () -> input,
+            new CancellationHandler.TemporalCancellationHandler(context),
+            jobPersistence,
+            airbyteVersion,
+            () -> context);
 
     return temporalAttemptExecution.get();
   }
 
-  private CheckedSupplier<Worker<StandardDiscoverCatalogInput, AirbyteCatalog>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
+  private CheckedSupplier<Worker<StandardDiscoverCatalogInput, ConnectorJobOutput>, Exception> getWorkerFactory(final IntegrationLauncherConfig launcherConfig) {
     return () -> {
       final IntegrationLauncher integrationLauncher =
           new AirbyteIntegrationLauncher(launcherConfig.getJobId(), launcherConfig.getAttemptId().intValue(), launcherConfig.getDockerImage(),

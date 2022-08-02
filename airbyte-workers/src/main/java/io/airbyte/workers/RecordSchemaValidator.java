@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -9,8 +9,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.exception.RecordSchemaValidationException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Set;
 
 /**
  * Validates that AirbyteRecordMessage data conforms to the JSON schema defined by the source's
@@ -34,9 +37,7 @@ public class RecordSchemaValidator {
    * @param message
    * @throws RecordSchemaValidationException
    */
-  public void validateSchema(final AirbyteRecordMessage message) throws RecordSchemaValidationException {
-    // the stream this message corresponds to, including the stream namespace
-    final String messageStream = String.format("%s" + message.getStream(), Objects.toString(message.getNamespace(), ""));
+  public void validateSchema(final AirbyteRecordMessage message, final String messageStream) throws RecordSchemaValidationException {
     final JsonNode messageData = message.getData();
     final JsonNode matchingSchema = streams.get(messageStream);
 
@@ -49,7 +50,26 @@ public class RecordSchemaValidator {
     try {
       validator.ensure(matchingSchema, messageData);
     } catch (final JsonValidationException e) {
-      throw new RecordSchemaValidationException(String.format("Record schema validation failed. Errors: %s", e.getMessage()), e);
+      final List<String[]> invalidRecordDataAndType = validator.getValidationMessageArgs(matchingSchema, messageData);
+      final List<String> invalidFields = validator.getValidationMessagePaths(matchingSchema, messageData);
+
+      final Set<String> validationMessagesToDisplay = new HashSet<>();
+      for (int i = 0; i < invalidFields.size(); i++) {
+        final StringBuilder expectedType = new StringBuilder();
+        if (invalidRecordDataAndType.size() > i && invalidRecordDataAndType.get(i).length > 1) {
+          expectedType.append(invalidRecordDataAndType.get(i)[1]);
+        }
+        final StringBuilder newMessage = new StringBuilder();
+        newMessage.append(invalidFields.get(i));
+        newMessage.append(" is of an incorrect type.");
+        if (expectedType.length() > 0) {
+          newMessage.append(" Expected it to be " + expectedType);
+        }
+        validationMessagesToDisplay.add(newMessage.toString());
+      }
+
+      throw new RecordSchemaValidationException(validationMessagesToDisplay,
+          String.format("Record schema validation failed for %s", messageStream), e);
     }
   }
 

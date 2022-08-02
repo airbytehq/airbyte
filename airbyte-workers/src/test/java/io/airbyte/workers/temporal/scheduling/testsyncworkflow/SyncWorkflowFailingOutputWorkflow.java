@@ -1,17 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.sync.SyncWorkflow;
-import java.util.ArrayList;
 import java.util.UUID;
 
 public class SyncWorkflowFailingOutputWorkflow implements SyncWorkflow {
@@ -26,14 +23,6 @@ public class SyncWorkflowFailingOutputWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
-    final StandardSyncSummary standardSyncSummary = new StandardSyncSummary()
-        .withStatus(ReplicationStatus.FAILED)
-        .withRecordsSynced(0L);
-
-    final StandardSyncOutput standardSyncOutput = new StandardSyncOutput()
-        .withStandardSyncSummary(standardSyncSummary)
-        .withFailures(new ArrayList<>());
-
     return null;
   }
 

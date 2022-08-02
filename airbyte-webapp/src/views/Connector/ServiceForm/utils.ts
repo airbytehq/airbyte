@@ -1,17 +1,33 @@
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 import { naturalComparator } from "utils/objects";
+
+import { ConnectorDefinitionSpecification } from "../../../core/domain/connector";
 
 export function makeConnectionConfigurationPath(path: string[]): string {
   return `connectionConfiguration.${path.join(".")}`;
 }
 
-export function serverProvidedOauthPaths(connector?: ConnectorDefinitionSpecification): {
-  [key: string]: { path_in_connector_config: string[] };
-} {
+export interface OauthOutputSpec {
+  client_id: {
+    type: string;
+    path_in_connector_config: ["credentials", "client_id"];
+  };
+  client_secret: {
+    type: string;
+    path_in_connector_config: ["credentials", "client_secret"];
+  };
+}
+
+type OAuthOutputSpec = { properties: Record<string, { type: string; path_in_connector_config: string[] }> } | undefined;
+
+export function serverProvidedOauthPaths(
+  connector?: ConnectorDefinitionSpecification
+): Record<string, { path_in_connector_config: string[] }> {
   return {
-    ...(connector?.advancedAuth?.oauthConfigSpecification.completeOAuthOutputSpecification?.properties ?? {}),
-    ...(connector?.advancedAuth?.oauthConfigSpecification.completeOAuthServerOutputSpecification?.properties ?? {}),
+    ...((connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthOutputSpecification as OAuthOutputSpec)
+      ?.properties ?? {}),
+    ...((connector?.advancedAuth?.oauthConfigSpecification?.completeOAuthServerOutputSpecification as OAuthOutputSpec)
+      ?.properties ?? {}),
   };
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -124,6 +124,30 @@ def connector_spec_fixture(connector_spec_path) -> ConnectorSpecification:
 @pytest.fixture(name="docker_runner")
 def docker_runner_fixture(image_tag, tmp_path) -> ConnectorRunner:
     return ConnectorRunner(image_tag, volume=tmp_path)
+
+
+@pytest.fixture(name="previous_connector_image_name")
+def previous_connector_image_name_fixture(image_tag, inputs) -> str:
+    """Fixture with previous connector image name to use for backward compatibility tests"""
+    return f"{image_tag.split(':')[0]}:{inputs.backward_compatibility_tests_config.previous_connector_version}"
+
+
+@pytest.fixture(name="previous_connector_docker_runner")
+def previous_connector_docker_runner_fixture(previous_connector_image_name, tmp_path) -> ConnectorRunner:
+    """Fixture to create a connector runner with the previous connector docker image.
+    Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
+    Raise not found error if the previous connector image is not latest and expected to be published.
+    """
+    try:
+        return ConnectorRunner(previous_connector_image_name, volume=tmp_path / "previous_connector")
+    except (errors.NotFound, errors.ImageNotFound) as e:
+        if previous_connector_image_name.endswith("latest"):
+            logging.warning(
+                f"\n We did not find the {previous_connector_image_name} image for this connector. This probably means this version has not yet been published to an accessible docker registry like DockerHub."
+            )
+            return None
+        else:
+            raise e
 
 
 @pytest.fixture(scope="session", autouse=True)

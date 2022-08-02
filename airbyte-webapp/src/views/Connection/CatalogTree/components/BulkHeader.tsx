@@ -3,16 +3,10 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Button, Cell, Header, Toggle } from "components";
+import { Button, Cell, Header, Switch } from "components";
 
-import {
-  DestinationSyncMode,
-  SyncMode,
-  SyncSchemaField,
-  SyncSchemaFieldObject,
-  SyncSchemaStream,
-  traverseSchemaToField,
-} from "core/domain/catalog";
+import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream, traverseSchemaToField } from "core/domain/catalog";
+import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEdit } from "hooks/services/BulkEdit/BulkEditService";
 
 import { SUPPORTED_MODES } from "../../ConnectionForm/formConfig";
@@ -38,13 +32,13 @@ const ActionButton = styled(Button).attrs({
   white-space: nowrap;
 `;
 
-type BulkHeaderProps = {
+interface BulkHeaderProps {
   destinationSupportedSyncModes: DestinationSyncMode[];
-};
+}
 
 function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
   const primitiveFieldsByStream = selectedBatchNodes.map(({ stream }) => {
-    const traversedFields = traverseSchemaToField(stream.jsonSchema, stream.name);
+    const traversedFields = traverseSchemaToField(stream?.jsonSchema, stream?.name);
     const flattenedFields = flatten(traversedFields);
 
     return flattenedFields.filter(SyncSchemaFieldObject.isPrimitive);
@@ -71,7 +65,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
   const availableSyncModes = useMemo(
     () =>
       SUPPORTED_MODES.filter(([syncMode, destinationSyncMode]) => {
-        const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream.supportedSyncModes));
+        const supportableModes = intersection(selectedBatchNodes.flatMap((n) => n.stream?.supportedSyncModes));
         return supportableModes.includes(syncMode) && destinationSupportedSyncModes.includes(destinationSyncMode);
       }).map(([syncMode, destinationSyncMode]) => ({
         value: { syncMode, destinationSyncMode },
@@ -88,10 +82,10 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
     return null;
   }
 
-  const pkRequired = options.destinationSyncMode === DestinationSyncMode.Dedupted;
-  const shouldDefinePk = selectedBatchNodes.every((n) => n.stream.sourceDefinedPrimaryKey.length === 0) && pkRequired;
-  const cursorRequired = options.syncMode === SyncMode.Incremental;
-  const shouldDefineCursor = selectedBatchNodes.every((n) => !n.stream.sourceDefinedCursor) && cursorRequired;
+  const pkRequired = options.destinationSyncMode === DestinationSyncMode.append_dedup;
+  const shouldDefinePk = selectedBatchNodes.every((n) => n.stream?.sourceDefinedPrimaryKey?.length === 0) && pkRequired;
+  const cursorRequired = options.syncMode === SyncMode.incremental;
+  const shouldDefineCursor = selectedBatchNodes.every((n) => !n.stream?.sourceDefinedCursor) && cursorRequired;
 
   const pkType = getPathType(pkRequired, shouldDefinePk);
   const cursorType = getPathType(cursorRequired, shouldDefineCursor);
@@ -103,7 +97,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <CheckboxCell />
       <ArrowCell />
       <HeaderCell flex={0.4}>
-        <Toggle small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
+        <Switch small checked={options.selected} onChange={() => onChangeOption({ selected: !options.selected })} />
       </HeaderCell>
       <HeaderCell />
       <HeaderCell />
@@ -131,7 +125,7 @@ export const BulkHeader: React.FC<BulkHeaderProps> = ({ destinationSupportedSync
       <HeaderCell>
         {pkType && (
           <PathPopout
-            isMulti={true}
+            isMulti
             onPathChange={(path) => onChangeOption({ primaryKey: path })}
             pathType={pkType}
             paths={paths}

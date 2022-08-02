@@ -2,7 +2,7 @@
   "documentationUrl": "https://docs.airbyte.io/integrations/destinations/oracle",
   "supportsIncremental": true,
   "supportsNormalization": false,
-  "supportsDBT": true,
+  "supportsDBT": false,
   "supported_destination_sync_modes": ["overwrite", "append"],
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -46,13 +46,19 @@
         "airbyte_secret": true,
         "order": 4
       },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
+      },
       "schema": {
         "title": "Default Schema",
         "description": "The default schema is used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. The usual value for this field is \"airbyte\".  In Oracle, schemas and users are the same thing, so the \"user\" parameter is used as the login credentials and this is used for the default Airbyte message schema.",
         "type": "string",
         "examples": ["airbyte"],
         "default": "airbyte",
-        "order": 5
+        "order": 6
       }
     }
   }

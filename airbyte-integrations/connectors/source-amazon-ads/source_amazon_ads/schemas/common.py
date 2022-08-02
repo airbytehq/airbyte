@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from decimal import Decimal
@@ -20,9 +20,14 @@ class CatalogModel(BaseModel):
             schema.pop("description", None)
             # Remove required section so any missing attribute from API wont break object validation.
             schema.pop("required", None)
+            # According to https://github.com/airbytehq/airbyte/issues/14196 set additionalProperties to True
+            if schema.pop("additionalProperties", None):
+                schema["additionalProperties"] = True
             for name, prop in schema.get("properties", {}).items():
                 prop.pop("title", None)
                 prop.pop("description", None)
+                if prop.pop("additionalProperties", None):
+                    prop["additionalProperties"] = True
                 allow_none = model.__fields__[name].allow_none
                 # Pydantic doesnt treat Union[None, Any] type correctly when
                 # generation jsonschema so we cant set field as nullable (i.e.

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -8,8 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.JsonSchemas.FieldNameOrList;
 import io.airbyte.commons.resources.MoreResources;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -17,6 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JsonSchemasTest {
 
   @Test
@@ -41,19 +45,24 @@ class JsonSchemasTest {
   @Test
   void testTraverse() throws IOException {
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_all_types.json"));
-    final BiConsumer<JsonNode, String> mock = mock(BiConsumer.class);
+    final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
 
     JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
     final InOrder inOrder = Mockito.inOrder(mock);
-    inOrder.verify(mock).accept(jsonWithAllTypes, JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name"), "$.name");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name").get("properties").get("first"), "$.name.first");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name").get("properties").get("last"), "$.name.last");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), "$.company");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets"), "$.pets");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items"), "$.pets[*]");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items").get("properties").get("type"), "$.pets[*].type");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items").get("properties").get("number"), "$.pets[*].number");
+    inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name"), List.of(FieldNameOrList.fieldName("name")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name").get("properties").get("first"),
+        List.of(FieldNameOrList.fieldName("name"), FieldNameOrList.fieldName("first")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("name").get("properties").get("last"),
+        List.of(FieldNameOrList.fieldName("name"), FieldNameOrList.fieldName("last")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), List.of(FieldNameOrList.fieldName("company")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets"), List.of(FieldNameOrList.fieldName("pets")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items"),
+        List.of(FieldNameOrList.fieldName("pets"), FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items").get("properties").get("type"),
+        List.of(FieldNameOrList.fieldName("pets"), FieldNameOrList.list(), FieldNameOrList.fieldName("type")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("pets").get("items").get("properties").get("number"),
+        List.of(FieldNameOrList.fieldName("pets"), FieldNameOrList.list(), FieldNameOrList.fieldName("number")));
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -68,20 +77,22 @@ class JsonSchemasTest {
     final String jsonSchemaString = MoreResources.readResource("json_schemas/composite_json_schema.json")
         .replaceAll("<composite-placeholder>", compositeKeyword);
     final JsonNode jsonWithAllTypes = Jsons.deserialize(jsonSchemaString);
-    final BiConsumer<JsonNode, String> mock = mock(BiConsumer.class);
+    final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
 
     JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
 
     final InOrder inOrder = Mockito.inOrder(mock);
-    inOrder.verify(mock).accept(jsonWithAllTypes, JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0), JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1), JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get("properties").get("prop1"), "$.prop1");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2), JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2).get("items"), "$[*]");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(0), JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1), JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1).get("items"), "$[*]");
+    inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0), Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1), Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get("properties").get("prop1"),
+        List.of(FieldNameOrList.fieldName("prop1")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2), Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(2).get("items"), List.of(FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(0), Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1), Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(3).get(compositeKeyword).get(1).get("items"),
+        List.of(FieldNameOrList.list()));
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -89,14 +100,15 @@ class JsonSchemasTest {
   @Test
   void testTraverseMultiType() throws IOException {
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields.json"));
-    final BiConsumer<JsonNode, String> mock = mock(BiConsumer.class);
+    final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
 
     JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
     final InOrder inOrder = Mockito.inOrder(mock);
-    inOrder.verify(mock).accept(jsonWithAllTypes, JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), "$.company");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items"), "$[*]");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items").get("properties").get("user"), "$[*].user");
+    inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("properties").get("company"), List.of(FieldNameOrList.fieldName("company")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("items"), List.of(FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("items").get("properties").get("user"),
+        List.of(FieldNameOrList.list(), FieldNameOrList.fieldName("user")));
     inOrder.verifyNoMoreInteractions();
   }
 
@@ -105,17 +117,29 @@ class JsonSchemasTest {
   void testTraverseMultiTypeComposite() throws IOException {
     final String compositeKeyword = "anyOf";
     final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields_with_composites.json"));
-    final BiConsumer<JsonNode, String> mock = mock(BiConsumer.class);
+    final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
 
     JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
 
     final InOrder inOrder = Mockito.inOrder(mock);
-    inOrder.verify(mock).accept(jsonWithAllTypes, JsonPaths.empty());
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0).get("properties").get("company"), "$.company");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get("properties").get("organization"), "$.organization");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items"), "$[*]");
-    inOrder.verify(mock).accept(jsonWithAllTypes.get("items").get("properties").get("user"), "$[*].user");
+    inOrder.verify(mock).accept(jsonWithAllTypes, Collections.emptyList());
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(0).get("properties").get("company"),
+        List.of(FieldNameOrList.fieldName("company")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get(compositeKeyword).get(1).get("properties").get("organization"),
+        List.of(FieldNameOrList.fieldName("organization")));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("items"), List.of(FieldNameOrList.list()));
+    inOrder.verify(mock).accept(jsonWithAllTypes.get("items").get("properties").get("user"),
+        List.of(FieldNameOrList.list(), FieldNameOrList.fieldName("user")));
     inOrder.verifyNoMoreInteractions();
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  void testTraverseArrayTypeWithNoItemsDoNotThrowsException() throws IOException {
+    final JsonNode jsonWithAllTypes = Jsons.deserialize(MoreResources.readResource("json_schemas/json_with_array_type_fields_no_items.json"));
+    final BiConsumer<JsonNode, List<FieldNameOrList>> mock = mock(BiConsumer.class);
+
+    JsonSchemas.traverseJsonSchema(jsonWithAllTypes, mock);
   }
 
 }

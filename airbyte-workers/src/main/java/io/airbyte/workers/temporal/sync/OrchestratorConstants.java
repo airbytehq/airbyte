@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.sync;
 
 import com.uber.m3.util.ImmutableSet;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
 import java.util.Set;
@@ -59,7 +60,8 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_BUCKET_NAME,
           EnvConfigs.STATE_STORAGE_S3_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
-          EnvConfigs.STATE_STORAGE_S3_REGION))
+          EnvConfigs.STATE_STORAGE_S3_REGION,
+          EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";

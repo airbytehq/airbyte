@@ -51,11 +51,13 @@ Please read [How to find your API key](https://support.freshdesk.com/support/sol
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.2.11  | 2021-12-14 | [8682](https://github.com/airbytehq/airbyte/pull/8682)   | Migrate to the CDK                                                             |
-| 0.2.10  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)   | Update connector fields title/description                                      |
-| 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)   | Bugfix an issue that caused the connector not to sync more than 50000 contacts |
-| 0.2.8   | 2021-10-28 | [7486](https://github.com/airbytehq/airbyte/pull/7486)   | Include "requester" and "stats" fields in "tickets" stream                     |
-| 0.2.7   | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442)   | Add start_date parameter to specification from which to start pulling data.    |
-
+| Version | Date       | Pull Request                                                | Subject                                                                        |
+|:--------|:-----------|:------------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.2   | 2022-06-23 | [14049](https://github.com/airbytehq/airbyte/pull/14049)    | Update parsing of start_date                                                   |
+| 0.3.1   | 2022-06-03 | [13332](https://github.com/airbytehq/airbyte/pull/13332)    | Add new streams                                                                |
+| 0.3.0   | 2022-05-30 | [12334](https://github.com/airbytehq/airbyte/pull/12334)    | Implement with latest CDK                                                      |      
+| 0.2.11  | 2021-12-14 | [8682](https://github.com/airbytehq/airbyte/pull/8682)      | Migrate to the CDK                                                             |
+| 0.2.10  | 2021-12-06 | [8524](https://github.com/airbytehq/airbyte/pull/8524)      | Update connector fields title/description                                      |
+| 0.2.9   | 2021-11-16 | [8017](https://github.com/airbytehq/airbyte/pull/8017)      | Bugfix an issue that caused the connector not to sync more than 50000 contacts |
+| 0.2.8   | 2021-10-28 | [7486](https://github.com/airbytehq/airbyte/pull/7486)      | Include "requester" and "stats" fields in "tickets" stream                     |
+| 0.2.7   | 2021-10-13 | [6442](https://github.com/airbytehq/airbyte/pull/6442)      | Add start_date parameter to specification from which to start pulling data.    |

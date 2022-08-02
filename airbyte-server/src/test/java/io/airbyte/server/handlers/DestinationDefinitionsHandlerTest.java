@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -15,19 +15,19 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.DestinationDefinitionCreate;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.DestinationDefinitionReadList;
-import io.airbyte.api.model.DestinationDefinitionUpdate;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.PrivateDestinationDefinitionRead;
-import io.airbyte.api.model.PrivateDestinationDefinitionReadList;
-import io.airbyte.api.model.ReleaseStage;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
+import io.airbyte.api.model.generated.DestinationDefinitionCreate;
+import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.DestinationDefinitionReadList;
+import io.airbyte.api.model.generated.DestinationDefinitionUpdate;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationReadList;
+import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
+import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
+import io.airbyte.api.model.generated.ReleaseStage;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
@@ -122,8 +122,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
@@ -135,8 +135,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destination2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler.listDestinationDefinitions();
@@ -163,8 +163,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
@@ -176,8 +176,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destination2.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destination2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionReadList actualDestinationDefinitionReadList = destinationDefinitionsHandler
@@ -207,8 +207,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionRead expectedDestinationDefinitionRead2 = new DestinationDefinitionRead()
@@ -220,8 +220,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition2.getResourceRequirements().getDefault().getCpuRequest())));
 
     final PrivateDestinationDefinitionRead expectedDestinationDefinitionOptInRead1 =
@@ -254,8 +254,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody = new DestinationDefinitionIdRequestBody()
@@ -298,8 +298,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId = new DestinationDefinitionIdWithWorkspaceId()
@@ -329,8 +329,8 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .icon(destination.getIcon())
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
@@ -341,8 +341,8 @@ class DestinationDefinitionsHandlerTest {
         .destinationDefinitionId(destination.getDestinationDefinitionId())
         .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
         .releaseStage(ReleaseStage.CUSTOM)
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createPrivateDestinationDefinition(create);
@@ -371,8 +371,8 @@ class DestinationDefinitionsHandlerTest {
         .dockerImageTag(destination.getDockerImageTag())
         .documentationUrl(new URI(destination.getDocumentationUrl()))
         .icon(destination.getIcon())
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
 
     final CustomDestinationDefinitionCreate customCreate = new CustomDestinationDefinitionCreate()
@@ -387,8 +387,8 @@ class DestinationDefinitionsHandlerTest {
         .destinationDefinitionId(destination.getDestinationDefinitionId())
         .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
         .releaseStage(ReleaseStage.CUSTOM)
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest())));
 
     final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createCustomDestinationDefinition(customCreate);
@@ -411,7 +411,6 @@ class DestinationDefinitionsHandlerTest {
         .getDestinationDefinition(
             new DestinationDefinitionIdRequestBody().destinationDefinitionId(destinationDefinition.getDestinationDefinitionId()));
     final String currentTag = currentDestination.getDockerImageTag();
-    final String dockerRepository = currentDestination.getDockerRepository();
     final String newDockerImageTag = "averydifferenttag";
     assertNotEquals(newDockerImageTag, currentTag);
 
@@ -470,8 +469,8 @@ class DestinationDefinitionsHandlerTest {
         .icon(DestinationDefinitionsHandler.loadIcon(destinationDefinition.getIcon()))
         .releaseStage(ReleaseStage.fromValue(destinationDefinition.getReleaseStage().value()))
         .releaseDate(LocalDate.parse(destinationDefinition.getReleaseDate()))
-        .resourceRequirements(new io.airbyte.api.model.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.ResourceRequirements()
+        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
+            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(destinationDefinition.getResourceRequirements().getDefault().getCpuRequest())));
 
     final PrivateDestinationDefinitionRead expectedPrivateDestinationDefinitionRead =

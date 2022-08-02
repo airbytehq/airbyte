@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 """
@@ -29,6 +29,7 @@ CONNECTOR_DEFINITIONS_DIR = "./airbyte-config/init/src/main/resources/seed"
 SOURCE_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/source_definitions.yaml"
 DESTINATION_DEFINITIONS_YAML = f"{CONNECTOR_DEFINITIONS_DIR}/destination_definitions.yaml"
 CONNECTORS_ROOT_PATH = "./airbyte-integrations/connectors"
+RELEVANT_BASE_MODULES = ["base-normalization", "source-acceptance-test"]
 
 # Global vars
 TESTED_SOURCE = []
@@ -62,7 +63,7 @@ def parse(page) -> list:
     return history
 
 
-def check_connector(connector):
+def check_module(connector):
     status_page = get_status_page(connector)
 
     # check if connector is tested
@@ -91,7 +92,7 @@ def check_connector(connector):
         elif connector.startswith("destination"):
             SUCCESS_DESTINATION.append(connector)
     else:
-        failed_today = [connector, short_status, last_build["link"]]
+        failed_today = [connector, short_status, last_build["link"], last_build["date"]]
 
         if len(history) > 1 and history[1]["status"] != "success":
             FAILED_2_LAST.append(failed_today)
@@ -169,7 +170,7 @@ def get_docker_label_to_connector_directory(base_directory: str, connector_modul
         # parse the dockerfile label if the dockerfile exists
         dockerfile_path = pathlib.Path(base_directory, connector, "Dockerfile")
         if os.path.isfile(dockerfile_path):
-            print(f"Reading f{dockerfile_path}")
+            print(f"Reading {dockerfile_path}")
             with open(dockerfile_path, "r") as file:
                 dockerfile_contents = file.read()
                 label = parse_dockerfile_repository_label(dockerfile_contents)
@@ -222,11 +223,12 @@ if __name__ == "__main__":
     print(f"Checking {len(relevant_connectors)} relevant connectors out of {len(connectors)} total connectors")
 
     # analyse build results for each connector
-    [check_connector(connector) for connector in relevant_connectors]
+    [check_module(connector) for connector in relevant_connectors]
+    [check_module(base) for base in RELEVANT_BASE_MODULES]
 
     report = create_report(relevant_connectors, relevant_stages)
     print(report)
-    # send_report(report)
+    send_report(report)
     print("Finish")
 elif "pytest" in sys.argv[0]:
     import unittest

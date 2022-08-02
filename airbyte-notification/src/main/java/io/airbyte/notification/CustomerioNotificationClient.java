@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.notification;
@@ -139,6 +139,7 @@ public class CustomerioNotificationClient extends NotificationClient {
     return httpStatusCode / 100 == 2;
   }
 
+  @Override
   public String renderTemplate(final String templateFile, final String... data) throws IOException {
     final String template = MoreResources.readResource(templateFile);
     return String.format(template, data);

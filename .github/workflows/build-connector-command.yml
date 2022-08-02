@@ -135,6 +135,12 @@ jobs:
         run: |
           source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }}
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
+            ci_credentials destination-bigquery
+            ci_credentials destination-postgres
+            ci_credentials destination-snowflake
+          fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       # TODO: seems like this should run in post-merge workflow
@@ -186,7 +192,8 @@ jobs:
         id: build
         env:
           PR_NUMBER: ${{ github.event.number }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
   #      - name: Test ${{ github.event.inputs.connector }}

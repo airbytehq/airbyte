@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -181,13 +181,15 @@ class DestinationNameTransformer:
             return f"'{result}'"
         return result
 
-    def apply_quote(self, input: str) -> str:
+    def apply_quote(self, input: str, literal=True) -> str:
+        if literal:
+            input = f"'{input}'"
         if self.destination_type == DestinationType.ORACLE:
             # Oracle dbt lib doesn't implemented adapter quote yet.
-            return f"quote('{input}')"
+            return f"quote({input})"
         elif self.destination_type == DestinationType.CLICKHOUSE:
-            return f"quote('{input}')"
-        return f"adapter.quote('{input}')"
+            return f"quote({input})"
+        return f"adapter.quote({input})"
 
     def __normalize_naming_conventions(self, input_name: str, is_column: bool = False) -> str:
         result = input_name

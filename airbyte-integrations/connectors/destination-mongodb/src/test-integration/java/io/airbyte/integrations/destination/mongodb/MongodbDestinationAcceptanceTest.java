@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mongodb;
@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCursor;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
@@ -22,9 +23,6 @@ import org.testcontainers.containers.MongoDBContainer;
 public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final String DOCKER_IMAGE_NAME = "mongo:4.0.10";
-  private static final String HOST = "host";
-  private static final String PORT = "port";
-  private static final String DATABASE = "database";
   private static final String DATABASE_NAME = "admin";
   private static final String DATABASE_FAIL_NAME = "fail_db";
   private static final String AUTH_TYPE = "auth_type";
@@ -41,9 +39,9 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(HOST, container.getHost())
-        .put(PORT, container.getFirstMappedPort())
-        .put(DATABASE, DATABASE_NAME)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, getAuthTypeConfig())
         .build());
   }
@@ -51,13 +49,13 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   @Override
   protected JsonNode getFailCheckConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(HOST, container.getHost())
-        .put(PORT, container.getFirstMappedPort())
-        .put(DATABASE, DATABASE_FAIL_NAME)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_FAIL_NAME)
         .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
             .put("authorization", "login/password")
-            .put("username", "user")
-            .put("password", "pass")
+            .put(JdbcUtils.USERNAME_KEY, "user")
+            .put(JdbcUtils.PASSWORD_KEY, "pass")
             .build()))
         .build());
   }
@@ -109,26 +107,6 @@ public class MongodbDestinationAcceptanceTest extends DestinationAcceptanceTest 
   protected void tearDown(final TestDestinationEnv testEnv) {
     container.stop();
     container.close();
-  }
-
-  @Override
-  protected TestDataComparator getTestDataComparator() {
-    return new AdvancedTestDataComparator();
-  }
-
-  @Override
-  protected boolean supportBasicDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportArrayDataTypeTest() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportObjectDataTypeTest() {
-    return true;
   }
 
   /* Helpers */

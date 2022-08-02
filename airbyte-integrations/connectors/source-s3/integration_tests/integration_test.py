@@ -1,9 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import json
+import logging
 import os
 import shutil
 import time
@@ -28,6 +29,8 @@ LOGGER = AirbyteLogger()
 
 
 class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
+    region = "eu-west-3"
+
     @property
     def stream_class(self) -> type:
         return IncrementalFileStreamS3
@@ -46,12 +49,11 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
         return {"storage": "S3", "bucket": bucket_name}
 
     def _s3_connect(self, credentials: Mapping) -> None:
-        region = "eu-west-3"
         self.s3_client = boto3.client(
             "s3",
             aws_access_key_id=credentials["aws_access_key_id"],
             aws_secret_access_key=credentials["aws_secret_access_key"],
-            region_name=region,
+            region_name=self.region,
         )
         self.s3_resource = boto3.resource(
             "s3", aws_access_key_id=credentials["aws_access_key_id"], aws_secret_access_key=credentials["aws_secret_access_key"]
@@ -59,8 +61,8 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
 
     def cloud_files(self, cloud_bucket_name: str, credentials: Mapping, files_to_upload: List, private: bool = True) -> Iterator[str]:
         self._s3_connect(credentials)
-        region = "eu-west-3"
-        location = {"LocationConstraint": region}
+
+        location = {"LocationConstraint": self.region}
         bucket_name = cloud_bucket_name
 
         print("\n")
@@ -104,7 +106,7 @@ class TestIncrementalFileStreamS3(AbstractTestIncrementalFileStream):
 
 
 class TestIntegrationCsvFiles:
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     @memory_limit(150)  # max used memory should be less than 150Mb
     def read_source(self, credentials: Dict[str, Any], catalog: Dict[str, Any]) -> int:
@@ -132,5 +134,5 @@ class TestIntegrationCsvFiles:
         minio_credentials["path_pattern"] = "big_files/file.csv"
         minio_credentials["format"]["block_size"] = 5 * 1024**2
         source = SourceS3()
-        catalog = source.read_catalog(HERE / "configured_catalog.json")
+        catalog = source.read_catalog(HERE / "configured_catalogs/csv.json")
         assert self.read_source(minio_credentials, catalog) == expected_count

@@ -36,6 +36,8 @@ For COPY strategy:
     * Corresponding key to the above key id.
 * **Part Size**
     * Affects the size limit of an individual Redshift table. Optional. Increase this if syncing tables larger than 100GB. Files are streamed to S3 in parts. This determines the size of each part, in MBs. As S3 has a limit of 10,000 parts per file, part size affects the table size. This is 10MB by default, resulting in a default table limit of 100GB. Note, a larger part size will result in larger memory requirements. A rule of thumb is to multiply the part size by 10 to get the memory requirement. Modify this with care.
+* **S3 Filename pattern**
+    * The pattern allows you to set the file-name format for the S3 staging file(s), next placeholders combinations are currently supported: {date}, {date:yyyy_MM}, {timestamp}, {timestamp:millis}, {timestamp:micros}, {part_number}, {sync_id}, {format_extension}. Please, don't use empty space and not supportable placeholders, as they won't recognized.
 
 Optional parameters:
 * **Bucket Path**
@@ -105,8 +107,8 @@ Therefore, Airbyte Redshift destination will create tables and schemas using the
 
 ### Data Size Limitations
 
-Redshift specifies a maximum limit of 65535 bytes to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
-See [docs](https://docs.aws.amazon.com/redshift/latest/dg/r_Character_types.html)
+Redshift specifies a maximum limit of 1MB (and 65535 bytes for any VARCHAR fields within the JSON record) to store the raw JSON record data. Thus, when a row is too big to fit, the Redshift destination fails to load such data and currently ignores that record.
+See docs for [SUPER](https://docs.aws.amazon.com/redshift/latest/dg/r_SUPER_type.html) and [SUPER limitations](https://docs.aws.amazon.com/redshift/latest/dg/limitations-super.html)
 
 ### Encryption
 
@@ -136,25 +138,38 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-|:--------|:-----------| :-----       | :------ |
-| 0.3.32  | 2022-04-20 | [12085](https://github.com/airbytehq/airbyte/pull/12085) | Fixed bug with switching between INSERT and COPY config |
-| 0.3.31  | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Added option to support SUPER datatype in _airbyte_raw_** table |
-| 0.3.29  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name |                                                                   |
-| 0.3.28  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging |
-| 0.3.27  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
-| 0.3.25  | 2022-02-14 | [#9920](https://github.com/airbytehq/airbyte/pull/9920) | Updated the size of staging files for S3 staging. Also, added closure of S3 writers to staging files when data has been written to an staging file. |
-| 0.3.24  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
-| 0.3.23  | 2021-12-16 | [\#8855](https://github.com/airbytehq/airbyte/pull/8855) | Add `purgeStagingData` option to enable/disable deleting the staging data |
-| 0.3.22  | 2021-12-15 | [#8607](https://github.com/airbytehq/airbyte/pull/8607) | Accept a path for the staging data |
-| 0.3.21  | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562) | Moving classes around for better dependency management |
-| 0.3.20  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
-| 0.3.19  | 2021-10-21 | [7234](https://github.com/airbytehq/airbyte/pull/7234) | Allow SSL traffic only |
-| 0.3.17  | 2021-10-12 | [6965](https://github.com/airbytehq/airbyte/pull/6965) | Added SSL Support |
-| 0.3.16  | 2021-10-11 | [6949](https://github.com/airbytehq/airbyte/pull/6949) | Each stream was split into files of 10,000 records each for copying using S3 or GCS  |
-| 0.3.14  | 2021-10-08 | [5924](https://github.com/airbytehq/airbyte/pull/5924) | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table  |
-| 0.3.13  | 2021-09-02 | [5745](https://github.com/airbytehq/airbyte/pull/5745) | Disable STATUPDATE flag when using S3 staging to speed up performance |
-| 0.3.12  | 2021-07-21 | [3555](https://github.com/airbytehq/airbyte/pull/3555) | Enable partial checkpointing for halfway syncs |
-| 0.3.11  | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874) | allow `additionalProperties` in connector spec |
+| Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.47  | 2022-07-15 | [\#14494](https://github.com/airbytehq/airbyte/pull/14494) | Make S3 output filename configurable.                                                                                                                                                                            |
+| 0.3.46  | 2022-06-27 | [\#14190](https://github.com/airbytehq/airbyte/pull/13916) | Correctly cleanup S3 bucket when using a configured bucket path for S3 staging operations.                                                                                                                       |
+| 0.3.45  | 2022-06-25 | [\#13916](https://github.com/airbytehq/airbyte/pull/13916) | Use the configured bucket path for S3 staging operations.                                                                                                                                                        |
+| 0.3.44  | 2022-06-24 | [\#14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging                                                                                                                                      |
+| 0.3.43  | 2022-06-24 | [\#13690](https://github.com/airbytehq/airbyte/pull/13690) | Improved discovery for NOT SUPER column                                                                                                                                                                          |
+| 0.3.42  | 2022-06-21 | [\#14013](https://github.com/airbytehq/airbyte/pull/14013) | Add an option to use encryption with staging in Redshift Destination                                                                                                                                             |
+| 0.3.40  | 2022-06-17 | [\#13753](https://github.com/airbytehq/airbyte/pull/13753) | Deprecate and remove PART_SIZE_MB fields from connectors based on StreamTransferManager                                                                                                                          |
+| 0.3.39  | 2022-06-02 | [13415](https://github.com/airbytehq/airbyte/pull/13415)   | Add dropdown to select Uploading Method. <br /> **PLEASE NOTICE**: After this update your **uploading method** will be set to **Standard**, you will need to reconfigure the method to use **S3 Staging** again. | 
+| 0.3.37  | 2022-05-23 | [13090](https://github.com/airbytehq/airbyte/pull/13090)   | Removed redshiftDataTmpTableMode. Some refactoring.                                                                                                                                                              | 
+| 0.3.36  | 2022-05-23 | [12820](https://github.com/airbytehq/airbyte/pull/12820)   | Improved 'check' operation performance                                                                                                                                                                           |
+| 0.3.35  | 2022-05-18 | [12940](https://github.com/airbytehq/airbyte/pull/12940)   | Fixed maximum record size for SUPER type                                                                                                                                                                         |
+| 0.3.34  | 2022-05-16 | [12869](https://github.com/airbytehq/airbyte/pull/12869)   | Fixed NPE in S3 staging check                                                                                                                                                                                    |
+| 0.3.33  | 2022-05-04 | [12601](https://github.com/airbytehq/airbyte/pull/12601)   | Apply buffering strategy for S3 staging                                                                                                                                                                          |
+| 0.3.32  | 2022-04-20 | [12085](https://github.com/airbytehq/airbyte/pull/12085)   | Fixed bug with switching between INSERT and COPY config                                                                                                                                                          |
+| 0.3.31  | 2022-04-19 | [\#12064](https://github.com/airbytehq/airbyte/pull/12064) | Added option to support SUPER datatype in _airbyte_raw_** table                                                                                                                                                  |
+| 0.3.29  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729)   | Fixed bug with dashes in schema name                                                                                                                                                                             |                                                                   |
+| 0.3.28  | 2022-03-18 | [\#11254](https://github.com/airbytehq/airbyte/pull/11254) | Fixed missing records during S3 staging                                                                                                                                                                          |
+| 0.3.27  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421)   | Refactor JDBC parameters handling                                                                                                                                                                                |
+| 0.3.25  | 2022-02-14 | [#9920](https://github.com/airbytehq/airbyte/pull/9920)    | Updated the size of staging files for S3 staging. Also, added closure of S3 writers to staging files when data has been written to an staging file.                                                              |
+| 0.3.24  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256)   | Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                                                                     |
+| 0.3.23  | 2021-12-16 | [\#8855](https://github.com/airbytehq/airbyte/pull/8855)   | Add `purgeStagingData` option to enable/disable deleting the staging data                                                                                                                                        |
+| 0.3.22  | 2021-12-15 | [#8607](https://github.com/airbytehq/airbyte/pull/8607)    | Accept a path for the staging data                                                                                                                                                                               |
+| 0.3.21  | 2021-12-10 | [#8562](https://github.com/airbytehq/airbyte/pull/8562)    | Moving classes around for better dependency management                                                                                                                                                           |
+| 0.3.20  | 2021-11-08 | [#7719](https://github.com/airbytehq/airbyte/pull/7719)    | Improve handling of wide rows by buffering records based on their byte size rather than their count                                                                                                              |
+| 0.3.19  | 2021-10-21 | [7234](https://github.com/airbytehq/airbyte/pull/7234)     | Allow SSL traffic only                                                                                                                                                                                           |
+| 0.3.17  | 2021-10-12 | [6965](https://github.com/airbytehq/airbyte/pull/6965)     | Added SSL Support                                                                                                                                                                                                |
+| 0.3.16  | 2021-10-11 | [6949](https://github.com/airbytehq/airbyte/pull/6949)     | Each stream was split into files of 10,000 records each for copying using S3 or GCS                                                                                                                              |
+| 0.3.14  | 2021-10-08 | [5924](https://github.com/airbytehq/airbyte/pull/5924)     | Fixed AWS S3 Staging COPY is writing records from different table in the same raw table                                                                                                                          |
+| 0.3.13  | 2021-09-02 | [5745](https://github.com/airbytehq/airbyte/pull/5745)     | Disable STATUPDATE flag when using S3 staging to speed up performance                                                                                                                                            |
+| 0.3.12  | 2021-07-21 | [3555](https://github.com/airbytehq/airbyte/pull/3555)     | Enable partial checkpointing for halfway syncs                                                                                                                                                                   |
+| 0.3.11  | 2021-07-20 | [4874](https://github.com/airbytehq/airbyte/pull/4874)     | allow `additionalProperties` in connector spec                                                                                                                                                                   |
 
 

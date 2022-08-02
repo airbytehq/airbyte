@@ -3,12 +3,12 @@ import React, { useContext, useMemo } from "react";
 
 import { Connector, ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
 import { WidgetConfigMap } from "core/form/types";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import { ServiceFormValues } from "./types";
 import { makeConnectionConfigurationPath, serverProvidedOauthPaths } from "./utils";
 
-type Context = {
+interface Context {
   formType: "source" | "destination";
   getValues: (values: ServiceFormValues) => ServiceFormValues;
   widgetsInfo: WidgetConfigMap;
@@ -23,7 +23,7 @@ type Context = {
   isEditMode?: boolean;
   isAuthFlowSelected?: boolean;
   authFieldsToHide: string[];
-};
+}
 
 const FormWidgetContext = React.createContext<Context | null>(null);
 
@@ -56,9 +56,9 @@ const ServiceFormContextProvider: React.FC<{
   isEditMode,
 }) => {
   const { values } = useFormikContext<ServiceFormValues>();
-  const { hasFeature } = useFeatureService();
+  const allowOAuthConnector = useFeature(FeatureItem.AllowOAuthConnector);
 
-  const serviceType = values.serviceType;
+  const { serviceType } = values;
   const selectedService = useMemo(
     () => availableServices.find((s) => Connector.id(s) === serviceType),
     [availableServices, serviceType]
@@ -66,11 +66,11 @@ const ServiceFormContextProvider: React.FC<{
 
   const isAuthFlowSelected = useMemo(
     () =>
-      hasFeature(FeatureItem.AllowOAuthConnector) &&
+      allowOAuthConnector &&
       selectedConnector?.advancedAuth &&
       selectedConnector?.advancedAuth.predicateValue ===
-        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey)),
-    [selectedConnector, hasFeature, values, getValues]
+        getIn(getValues(values), makeConnectionConfigurationPath(selectedConnector?.advancedAuth.predicateKey ?? [])),
+    [selectedConnector, allowOAuthConnector, values, getValues]
   );
 
   const authFieldsToHide = useMemo(

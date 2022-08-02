@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -15,20 +15,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.ConnectionReadList;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.DestinationReadList;
-import io.airbyte.api.model.SlugRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.SourceReadList;
-import io.airbyte.api.model.WorkspaceCreate;
-import io.airbyte.api.model.WorkspaceGiveFeedback;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceReadList;
-import io.airbyte.api.model.WorkspaceUpdate;
-import io.airbyte.api.model.WorkspaceUpdateName;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationReadList;
+import io.airbyte.api.model.generated.SlugRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceReadList;
+import io.airbyte.api.model.generated.WorkspaceCreate;
+import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.WorkspaceRead;
+import io.airbyte.api.model.generated.WorkspaceReadList;
+import io.airbyte.api.model.generated.WorkspaceUpdate;
+import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.Notification;
 import io.airbyte.config.Notification.NotificationType;
@@ -95,10 +95,10 @@ class WorkspacesHandlerTest {
             .withWebhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
-  private io.airbyte.api.model.Notification generateApiNotification() {
-    return new io.airbyte.api.model.Notification()
-        .notificationType(io.airbyte.api.model.NotificationType.SLACK)
-        .slackConfiguration(new io.airbyte.api.model.SlackNotificationConfiguration()
+  private io.airbyte.api.model.generated.Notification generateApiNotification() {
+    return new io.airbyte.api.model.generated.Notification()
+        .notificationType(io.airbyte.api.model.generated.NotificationType.SLACK)
+        .slackConfiguration(new io.airbyte.api.model.generated.SlackNotificationConfiguration()
             .webhook(FAILURE_NOTIFICATION_WEBHOOK));
   }
 
@@ -293,7 +293,7 @@ class WorkspacesHandlerTest {
 
   @Test
   void testUpdateWorkspace() throws JsonValidationException, ConfigNotFoundException, IOException {
-    final io.airbyte.api.model.Notification apiNotification = generateApiNotification();
+    final io.airbyte.api.model.generated.Notification apiNotification = generateApiNotification();
     apiNotification.getSlackConfiguration().webhook("updated");
     final WorkspaceUpdate workspaceUpdate = new WorkspaceUpdate()
         .workspaceId(workspace.getWorkspaceId())
@@ -326,7 +326,7 @@ class WorkspacesHandlerTest {
 
     final WorkspaceRead actualWorkspaceRead = workspacesHandler.updateWorkspace(workspaceUpdate);
 
-    final io.airbyte.api.model.Notification expectedNotificationRead = generateApiNotification();
+    final io.airbyte.api.model.generated.Notification expectedNotificationRead = generateApiNotification();
     expectedNotificationRead.getSlackConfiguration().webhook("updated");
     final WorkspaceRead expectedWorkspaceRead = new WorkspaceRead()
         .workspaceId(workspace.getWorkspaceId())
@@ -392,7 +392,7 @@ class WorkspacesHandlerTest {
   }
 
   @Test
-  public void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testSetFeedbackDone() throws JsonValidationException, ConfigNotFoundException, IOException {
     final WorkspaceGiveFeedback workspaceGiveFeedback = new WorkspaceGiveFeedback()
         .workspaceId(UUID.randomUUID());
 

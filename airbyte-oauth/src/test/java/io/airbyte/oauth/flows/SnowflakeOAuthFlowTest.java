@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -12,7 +12,8 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
@@ -45,6 +46,7 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
         "client_id", MoreOAuthParameters.SECRET_MASK);
   }
 
+  @Override
   protected JsonNode getOAuthParamConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("client_id", "test_client_id")
@@ -59,24 +61,25 @@ public class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
         .build());
   }
 
+  @Override
   protected JsonNode getUserInputFromConnectorConfigSpecification() {
     return getJsonSchema(Map.of("host", Map.of("type", "string")));
   }
 
   @Test
   @Override
-  public void testGetSourceConsentUrlEmptyOAuthSpec() {}
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testGetDestinationConsentUrlEmptyOAuthSpec() {}
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteDestinationOAuth() {}
+  void testDeprecatedCompleteDestinationOAuth() {}
 
   @Test
   @Override
-  public void testDeprecatedCompleteSourceOAuth() {}
+  void testDeprecatedCompleteSourceOAuth() {}
 
 }

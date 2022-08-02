@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.tidb;
@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.GenericContainer;
@@ -27,13 +28,13 @@ public class TiDBSourceTests {
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "127.0.0.1")
-        .put("port", container.getFirstMappedPort())
-        .put("username", "root")
-        .put("database", "test")
+        .put(JdbcUtils.HOST_KEY, "127.0.0.1")
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, "root")
+        .put(JdbcUtils.DATABASE_KEY, "test")
         .build());
 
-    AirbyteConnectionStatus check = new TiDBSource().check(config);
+    final AirbyteConnectionStatus check = new TiDBSource().check(config);
 
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
     container.close();

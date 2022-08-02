@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle;
@@ -31,12 +31,14 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private OracleContainer container;
   private JsonNode config;
+  private DSLContext dslContext;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OracleSourceDatatypeTest.class);
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g");
+    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+        .withEnv("RELAX_SECURITY", "1");
     container.start();
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -48,14 +50,15 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("schemas", List.of("TEST"))
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
+    dslContext = DSLContextFactory.create(
         config.get("username").asText(),
         config.get("password").asText(),
         DatabaseDriver.ORACLE.getDriverClassName(),
         String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
             config.get("host").asText(),
             config.get("port").asInt(),
-            config.get("sid").asText()), null);
+            config.get("sid").asText()),
+        null);
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 
@@ -81,6 +84,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -267,15 +271,6 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("RAW")
             .airbyteType(JsonSchemaType.STRING)
             .fullSourceDataType("RAW(200)")
-            .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
-            .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("LONG")
-            .airbyteType(JsonSchemaType.STRING)
-            .fullSourceDataType("LONG RAW")
             .addInsertValues("utl_raw.cast_to_raw('some content here')", "null")
             .addExpectedValues("c29tZSBjb250ZW50IGhlcmU=", null)
             .build());

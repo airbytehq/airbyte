@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.version;
@@ -11,10 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class AirbyteVersionTest {
+class AirbyteVersionTest {
 
   @Test
-  public void testParseVersion() {
+  void testParseVersion() {
     final AirbyteVersion version = new AirbyteVersion("6.7.8");
     assertEquals("6", version.getMajorVersion());
     assertEquals("7", version.getMinorVersion());
@@ -22,7 +22,7 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testParseVersionWithLabel() {
+  void testParseVersionWithLabel() {
     final AirbyteVersion version = new AirbyteVersion("6.7.8-omega");
     assertEquals("6", version.getMajorVersion());
     assertEquals("7", version.getMinorVersion());
@@ -30,7 +30,7 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testCompatibleVersionCompareTo() {
+  void testCompatibleVersionCompareTo() {
     assertEquals(0, new AirbyteVersion("6.7.8-omega").compatibleVersionCompareTo(new AirbyteVersion("6.7.8-gamma")));
     assertEquals(0, new AirbyteVersion("6.7.8-alpha").compatibleVersionCompareTo(new AirbyteVersion("6.7.9-alpha")));
     assertTrue(0 < new AirbyteVersion("6.8.0-alpha").compatibleVersionCompareTo(new AirbyteVersion("6.7.8-alpha")));
@@ -42,7 +42,7 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testPatchVersionCompareTo() {
+  void testPatchVersionCompareTo() {
     assertEquals(0, new AirbyteVersion("6.7.8-omega").patchVersionCompareTo(new AirbyteVersion("6.7.8-gamma")));
     assertTrue(0 > new AirbyteVersion("6.7.8-alpha").patchVersionCompareTo(new AirbyteVersion("6.7.9-alpha")));
     assertTrue(0 > new AirbyteVersion("6.7.8-alpha").patchVersionCompareTo(new AirbyteVersion("6.7.11-alpha")));
@@ -55,7 +55,7 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testGreaterThan() {
+  void testGreaterThan() {
     assertFalse(new AirbyteVersion("6.7.8-omega").greaterThan(new AirbyteVersion("6.7.8-gamma")));
     assertFalse(new AirbyteVersion("6.7.8-alpha").greaterThan(new AirbyteVersion("6.7.9-alpha")));
     assertFalse(new AirbyteVersion("6.7.8-alpha").greaterThan(new AirbyteVersion("6.7.11-alpha")));
@@ -68,7 +68,7 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testLessThan() {
+  void testLessThan() {
     assertFalse(new AirbyteVersion("6.7.8-omega").lessThan(new AirbyteVersion("6.7.8-gamma")));
     assertTrue(new AirbyteVersion("6.7.8-alpha").lessThan(new AirbyteVersion("6.7.9-alpha")));
     assertTrue(new AirbyteVersion("6.7.8-alpha").lessThan(new AirbyteVersion("6.7.11-alpha")));
@@ -81,13 +81,13 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testInvalidVersions() {
+  void testInvalidVersions() {
     assertThrows(NullPointerException.class, () -> new AirbyteVersion(null));
     assertThrows(IllegalArgumentException.class, () -> new AirbyteVersion("0.6"));
   }
 
   @Test
-  public void testSerialize() {
+  void testSerialize() {
     final var devVersion = "dev";
     assertEquals(devVersion, new AirbyteVersion(devVersion).serialize());
 
@@ -96,13 +96,13 @@ public class AirbyteVersionTest {
   }
 
   @Test
-  public void testCheckVersion() {
+  void testCheckVersion() {
     AirbyteVersion.assertIsCompatible(new AirbyteVersion("3.2.1"), new AirbyteVersion("3.2.1"));
     assertThrows(IllegalStateException.class, () -> AirbyteVersion.assertIsCompatible(new AirbyteVersion("1.2.3"), new AirbyteVersion("3.2.1")));
   }
 
   @Test
-  public void testCheckOnlyPatchVersion() {
+  void testCheckOnlyPatchVersion() {
     assertFalse(new AirbyteVersion("6.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.8")));
     assertFalse(new AirbyteVersion("6.9.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.8.9")));
     assertFalse(new AirbyteVersion("7.7.8").checkOnlyPatchVersionIsUpdatedComparedTo(new AirbyteVersion("6.7.11")));

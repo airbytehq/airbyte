@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -36,7 +36,8 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl, JsonNode inputOAuthConfiguration) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
         .setHost("dev.drift.com")
@@ -47,13 +48,13 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
         .addParameter("state", getState());
     try {
       return builder.build().toString();
-    } catch (URISyntaxException e) {
+    } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("code")) {
       return (String) queryParams.get("code");
     } else {
@@ -67,7 +68,10 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)
@@ -76,7 +80,8 @@ public class DriftOAuthFlow extends BaseOAuth2Flow {
         .build();
   }
 
-  protected Map<String, Object> extractOAuthOutput(final JsonNode data, String accessTokenUrl) throws IOException {
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
     final Map<String, Object> result = new HashMap<>();
     if (data.has("access_token")) {
       result.put("access_token", data.get("access_token").asText());

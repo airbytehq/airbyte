@@ -1,4 +1,3 @@
-import React from "react";
 import { FormattedMessage } from "react-intl";
 import { LazyLog } from "react-lazylog";
 import styled from "styled-components";
@@ -32,9 +31,9 @@ const LogsView = styled.div<{ isEmpty?: boolean }>`
   }
 `;
 
-type LogsProps = {
+interface LogsProps {
   logsArray?: string[];
-};
+}
 
 const Logs: React.FC<LogsProps> = ({ logsArray }) => {
   const logsJoin = logsArray?.length ? logsArray.join("\n") : "No logs available";
@@ -49,6 +48,8 @@ const Logs: React.FC<LogsProps> = ({ logsArray }) => {
           selectableLines
           follow
           style={{ background: "transparent" }}
+          scrollToLine={undefined}
+          highlight={[]}
         />
       ) : (
         <FormattedMessage id="sources.emptyLogs" />

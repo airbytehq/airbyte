@@ -5,12 +5,12 @@ import styled from "styled-components";
 
 import { ConnectorIcon } from "components/ConnectorIcon";
 
-type ConnectionCellProps = {
+interface ConnectionCellProps {
   sourceDefinitionName: string;
   destinationDefinitionName: string;
   sourceIcon?: string;
   destinationIcon?: string;
-};
+}
 
 const Icon = styled(ConnectorIcon)`
   margin-right: 12px;
@@ -40,12 +40,12 @@ const ConnectionCell: React.FC<ConnectionCellProps> = ({
   return (
     <>
       <Connector>
-        <Icon small icon={sourceIcon} />
+        <Icon icon={sourceIcon} />
         {sourceDefinitionName}
       </Connector>
       <Connector>
         <Arrow icon={faArrowRight} />
-        <Icon small icon={destinationIcon} />
+        <Icon icon={destinationIcon} />
         {destinationDefinitionName}
       </Connector>
     </>

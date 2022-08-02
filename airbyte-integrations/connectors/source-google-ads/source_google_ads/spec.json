@@ -22,30 +22,35 @@
           "developer_token": {
             "type": "string",
             "title": "Developer Token",
+            "order": 0,
             "description": "Developer token granted by Google to use their APIs. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "client_id": {
             "type": "string",
             "title": "Client ID",
+            "order": 1,
             "description": "The Client ID of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>"
           },
           "client_secret": {
             "type": "string",
             "title": "Client Secret",
+            "order": 2,
             "description": "The Client Secret of your Google Ads developer application. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
-            "airbyte_secret": true
-          },
-          "access_token": {
-            "type": "string",
-            "title": "Access Token",
-            "description": "Access Token for making authenticated requests. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           },
           "refresh_token": {
             "type": "string",
             "title": "Refresh Token",
+            "order": 3,
             "description": "The token for obtaining a new access token. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
+            "airbyte_secret": true
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token (Optional)",
+            "order": 4,
+            "description": "Access Token for making authenticated requests. More instruction on how to find this value in our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">docs</a>",
             "airbyte_secret": true
           }
         }
@@ -85,7 +90,7 @@
             "query": {
               "type": "string",
               "title": "Custom Query",
-              "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression because it is used by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v8/overview_query_builder\">query builder</a> for more information.",
+              "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression because it is used by incremental streams. See Google's <a href=\"https://developers.google.com/google-ads/api/fields/v11/overview_query_builder\">query builder</a> for more information.",
               "examples": [
                 "SELECT segments.ad_destination_type, campaign.advertising_channel_sub_type FROM campaign WHERE campaign.status = 'PAUSED'"
               ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.logging;
@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-public class Log4j2ConfigTest {
+class Log4j2ConfigTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private Path root;

@@ -150,6 +150,7 @@
     },
     "user_fields": {
       "type": ["null", "object"],
+      "properties": {},
       "additionalProperties": true
     },
     "last_login_at": {

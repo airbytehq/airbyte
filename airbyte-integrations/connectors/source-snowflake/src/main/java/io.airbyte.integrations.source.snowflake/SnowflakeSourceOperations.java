@@ -1,12 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.snowflake;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
+import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -38,4 +40,22 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     preparedStatement.setString(parameterIndex, value);
   }
 
+  @Override
+  public JsonSchemaType getJsonType(JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case TINYINT, SMALLINT, REAL, FLOAT, DOUBLE, INTEGER, BIGINT, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
+      // types to String
+      default -> JsonSchemaType.STRING;
+    };
+  }
 }

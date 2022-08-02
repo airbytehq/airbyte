@@ -5,26 +5,26 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
-import { configContext, defaultConfig } from "config";
+import { ConfigContext, defaultConfig } from "config";
 import { ServicesProvider } from "core/servicesProvider";
-import { FeatureService } from "hooks/services/Feature";
+import { defaultFeatures, FeatureService } from "hooks/services/Feature";
 import en from "locales/en.json";
 
-type WrapperProps = {
+interface WrapperProps {
   children?: React.ReactElement;
-};
+}
 
 export async function render<
   Q extends Queries = typeof queries,
   Container extends Element | DocumentFragment = HTMLElement
 >(ui: React.ReactNode, renderOptions?: RenderOptions<Q, Container>): Promise<RenderResult<Q, Container>> {
-  function Wrapper({ children }: WrapperProps) {
+  const Wrapper = ({ children }: WrapperProps) => {
     const queryClient = new QueryClient();
 
     return (
       <TestWrapper>
-        <configContext.Provider value={{ config: defaultConfig }}>
-          <FeatureService>
+        <ConfigContext.Provider value={{ config: defaultConfig }}>
+          <FeatureService features={defaultFeatures}>
             <ServicesProvider>
               <QueryClientProvider client={queryClient}>
                 <MemoryRouter>
@@ -33,10 +33,10 @@ export async function render<
               </QueryClientProvider>
             </ServicesProvider>
           </FeatureService>
-        </configContext.Provider>
+        </ConfigContext.Provider>
       </TestWrapper>
     );
-  }
+  };
 
   let renderResult: RenderResult<Q, Container>;
   await act(async () => {

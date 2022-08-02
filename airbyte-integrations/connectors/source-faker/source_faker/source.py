@@ -1,11 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
+import datetime
 import json
 import os
-from datetime import datetime
+import random
 from typing import Dict, Generator
 
 from airbyte_cdk.logger import AirbyteLogger
@@ -59,12 +60,23 @@ class SourceFaker(Source):
             by their names and types)
         """
         streams = []
+        dirname = os.path.dirname(os.path.realpath(__file__))
 
         # Fake Users
-        dirname = os.path.dirname(os.path.realpath(__file__))
-        spec_path = os.path.join(dirname, "catalog.json")
+        spec_path = os.path.join(dirname, "users_catalog.json")
         catalog = read_json(spec_path)
         streams.append(AirbyteStream(name="Users", json_schema=catalog, supported_sync_modes=["full_refresh", "incremental"]))
+
+        # Fake Products
+        spec_path = os.path.join(dirname, "products_catalog.json")
+        catalog = read_json(spec_path)
+        streams.append(AirbyteStream(name="Products", json_schema=catalog, supported_sync_modes=["full_refresh"]))
+
+        # Fake Purchases
+        spec_path = os.path.join(dirname, "purchases_catalog.json")
+        catalog = read_json(spec_path)
+        streams.append(AirbyteStream(name="Purchases", json_schema=catalog, supported_sync_modes=["full_refresh", "incremental"]))
+
         return AirbyteCatalog(streams=streams)
 
     def read(
@@ -91,25 +103,69 @@ class SourceFaker(Source):
         """
 
         count: int = config["count"] if "count" in config else 0
-        seed: int = config["seed"] if "seed" in config else state["seed"] if "seed" in state else None
+        seed: int = config["seed"] if "seed" in config else None
+        records_per_sync: int = config["records_per_sync"] if "records_per_sync" in config else 500
+        records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
+
         Faker.seed(seed)
         fake = Faker()
+
+        to_generate_users = False
+        to_generate_purchases = False
+        purchases_stream = None
+        purchases_count = state["Purchases"]["purchases_count"] if "Purchases" in state else 0
+        for stream in catalog.streams:
+            if stream.stream.name == "Users":
+                to_generate_users = True
+        for stream in catalog.streams:
+            if stream.stream.name == "Purchases":
+                purchases_stream = stream
+                to_generate_purchases = True
+
+        if to_generate_purchases and not to_generate_users:
+            raise ValueError("Purchases stream cannot be enabled without Users stream")
 
         for stream in catalog.streams:
             if stream.stream.name == "Users":
                 cursor = get_stream_cursor(state, stream.stream.name)
                 total_records = cursor
+                records_in_sync = 0
+                records_in_page = 0
 
                 for i in range(cursor, count):
-                    yield AirbyteMessage(
-                        type=Type.RECORD,
-                        record=AirbyteRecordMessage(
-                            stream=stream.stream.name, data=emit_user(fake, i), emitted_at=int(datetime.now().timestamp()) * 1000
-                        ),
-                    )
-                    total_records = total_records + 1
+                    user = generate_user(fake, i)
+                    yield generate_record(stream, user)
+                    total_records += 1
+                    records_in_sync += 1
+                    records_in_page += 1
 
-                yield emit_state(stream.stream.name, total_records, seed)
+                    if to_generate_purchases:
+                        purchases = generate_purchases(fake, user, purchases_count)
+                        for p in purchases:
+                            yield generate_record(purchases_stream, p)
+                            purchases_count += 1
+
+                    if records_in_page == records_per_slice:
+                        yield generate_state(state, stream, {"cursor": total_records, "seed": seed})
+                        records_in_page = 0
+
+                    if records_in_sync == records_per_sync:
+                        break
+
+                yield generate_state(state, stream, {"cursor": total_records, "seed": seed})
+                if purchases_stream is not None:
+                    yield generate_state(state, purchases_stream, {"purchases_count": purchases_count})
+
+            elif stream.stream.name == "Products":
+                products = generate_products()
+                for p in products:
+                    yield generate_record(stream, p)
+                yield generate_state(state, stream, {"product_count": len(products)})
+
+            elif stream.stream.name == "Purchases":
+                # Purchases are generated as part of Users stream
+                True
+
             else:
                 raise ValueError(stream.stream.name)
 
@@ -119,17 +175,35 @@ def get_stream_cursor(state: Dict[str, any], stream: str) -> int:
     return cursor
 
 
-def emit_state(stream: str, value: int, seed: int):
-    message = AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={stream: {"cursor": value, "seed": seed}}))
-    return message
+def generate_record(stream: any, data: any):
+    dict = data.copy()
+
+    # timestamps need to be emitted in ISO format
+    for key in dict:
+        if isinstance(dict[key], datetime.datetime):
+            dict[key] = dict[key].isoformat()
+
+    return AirbyteMessage(
+        type=Type.RECORD,
+        record=AirbyteRecordMessage(stream=stream.stream.name, data=dict, emitted_at=int(datetime.datetime.now().timestamp()) * 1000),
+    )
 
 
-def emit_user(fake: Faker, idx: int):
+def generate_state(state: Dict[str, any], stream: any, data: any):
+    state[
+        stream.stream.name
+    ] = data  # since we have multiple streams, we need to build up the "combined state" for all streams and emit that each time until the platform has support for per-stream state
+    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=state))
+
+
+def generate_user(fake: Faker, user_id: int):
     profile = fake.profile()
+    del profile["birthdate"]  # the birthdate field seems to not obey the seed at the moment, so we'll ignore it
+
     time_a = fake.date_time()
     time_b = fake.date_time()
     metadata = {
-        "id": idx,
+        "id": user_id + 1,
         "created_at": time_a if time_a <= time_b else time_b,
         "updated_at": time_a if time_a > time_b else time_b,
     }
@@ -137,6 +211,50 @@ def emit_user(fake: Faker, idx: int):
     return profile
 
 
+def generate_purchases(fake: Faker, user: any, purchases_count: int) -> list[Dict]:
+    purchases: list[Dict] = []
+    purchase_percent_remaining = 80  # ~ 20% of people will have no purchases
+    total_products = len(generate_products())
+    purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
+    i = 0
+    while purchase_percent_remaining > 0:
+        id = purchases_count + i + 1
+        product_id = random.randrange(1, total_products)
+        added_to_cart_at = random_date_in_range(user["created_at"])
+        purchased_at = (
+            random_date_in_range(added_to_cart_at) if added_to_cart_at is not None and random.randrange(1, 100) <= 70 else None
+        )  # 70% likely to purchase the item in the cart
+        returned_at = (
+            random_date_in_range(purchased_at) if purchased_at is not None and random.randrange(1, 100) <= 15 else None
+        )  # 15% likely to return the item
+        purchase = {
+            "id": id,
+            "product_id": product_id,
+            "user_id": user["id"],
+            "added_to_cart_at": added_to_cart_at,
+            "purchased_at": purchased_at,
+            "returned_at": returned_at,
+        }
+        purchases.append(purchase)
+
+        purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
+        i += 1
+    return purchases
+
+
+def generate_products() -> list[Dict]:
+    dirname = os.path.dirname(os.path.realpath(__file__))
+    return read_json(os.path.join(dirname, "products.json"))
+
+
 def read_json(filepath):
     with open(filepath, "r") as f:
         return json.loads(f.read())
+
+
+def random_date_in_range(start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now()) -> datetime.datetime:
+    time_between_dates = end_date - start_date
+    days_between_dates = time_between_dates.days
+    random_number_of_days = random.randrange(days_between_dates)
+    random_date = start_date + datetime.timedelta(days=random_number_of_days)
+    return random_date

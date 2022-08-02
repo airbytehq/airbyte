@@ -9,8 +9,9 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { useCreateSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout/ConnectorDocumentationWrapper";
 
-import SourceForm from "./components/SourceForm";
+import { SourceForm } from "./components/SourceForm";
 
 const CreateSourcePage: React.FC = () => {
   const { push } = useRouter();
@@ -25,6 +26,10 @@ const CreateSourcePage: React.FC = () => {
     connectionConfiguration?: ConnectionConfiguration;
   }) => {
     const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === values.serviceType);
+    if (!connector) {
+      // Unsure if this can happen, but the types want it defined
+      throw new Error("No Connector Found");
+    }
     const result = await createSource({ values, sourceConnector: connector });
     setSuccessRequest(true);
     setTimeout(() => {
@@ -35,11 +40,13 @@ const CreateSourcePage: React.FC = () => {
 
   return (
     <>
-      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
-      <PageTitle withLine title={<FormattedMessage id="sources.newSourceTitle" />} />
-      <FormPageContent>
-        <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
-      </FormPageContent>
+      <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />{" "}
+      <ConnectorDocumentationWrapper>
+        <PageTitle title={null} middleTitleBlock={<FormattedMessage id="sources.newSourceTitle" />} />
+        <FormPageContent>
+          <SourceForm onSubmit={onSubmitSourceStep} sourceDefinitions={sourceDefinitions} hasSuccess={successRequest} />
+        </FormPageContent>
+      </ConnectorDocumentationWrapper>
     </>
   );
 };

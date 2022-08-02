@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.queue;
@@ -19,12 +19,9 @@ import java.util.Objects;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class OnDiskQueueTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(OnDiskQueueTest.class);
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private CloseableQueue<byte[]> queue;
   private Path queueRoot;

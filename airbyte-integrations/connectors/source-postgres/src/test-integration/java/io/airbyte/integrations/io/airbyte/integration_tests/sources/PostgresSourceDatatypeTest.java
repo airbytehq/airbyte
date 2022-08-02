@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -10,9 +10,11 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Set;
@@ -24,6 +26,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   private PostgreSQLContainer<?> container;
   private JsonNode config;
+  private DSLContext dslContext;
   private static final String SCHEMA_NAME = "test";
 
   @Override
@@ -34,23 +37,24 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
         .put("method", "Standard")
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
-        .put("ssl", false)
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+        .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", replicationMethod)
         .build());
 
-    final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+    dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()), SQLDialect.POSTGRES);
+            container.getHost(),
+            container.getFirstMappedPort(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
+        SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
     database.query(ctx -> {
@@ -66,6 +70,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       // Set up a fixed timezone here so that timetz and timestamptz always have the same time zone
       // wherever the tests are running on.
       ctx.execute("SET TIMEZONE TO 'MST'");
+      ctx.execute("CREATE EXTENSION hstore;");
       return null;
     });
 
@@ -89,6 +94,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
     container.close();
   }
 
@@ -104,7 +110,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .build());
@@ -112,7 +118,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigserial")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .build());
@@ -232,14 +238,12 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .addExpectedValues("<(5,7),10>", "<(0,0),0>", "<(-10,-4),10>", null)
             .build());
 
-    // DataTypeUtils#DATE_FORMAT is set as "yyyy-MM-dd'T'HH:mm:ss'Z'", so currently the Postgres source
-    // returns a date value as a datetime. It cannot handle BC dates (e.g. 199-10-10 BC).
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'1999-01-08'", "null")
-            .addExpectedValues("1999-01-08T00:00:00Z", null)
+            .airbyteType(JsonSchemaType.STRING_DATE)
+            .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
+            .addExpectedValues("1999-01-08", "1990-02-10 BC", null)
             .build());
 
     for (final String type : Set.of("double precision", "float", "float8")) {
@@ -268,7 +272,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "1001", "-2147483648", "2147483647")
               .addExpectedValues(null, "1001", "-2147483648", "2147483647")
               .build());
@@ -413,7 +417,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "-32768", "32767")
               .addExpectedValues(null, "-32768", "32767")
               .build());
@@ -423,7 +427,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "32767", "0", "-32767")
               .addExpectedValues("1", "32767", "0", "-32767")
               .build());
@@ -433,7 +437,7 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .airbyteType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "2147483647", "0", "-2147483647")
               .addExpectedValues("1", "2147483647", "0", "-2147483647")
               .build());
@@ -445,10 +449,11 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
           TestDataHolder.builder()
               .sourceType("time")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
-              .addExpectedValues(null, "13:00:01", "13:00:02", "13:00:03", "13:00:04", "13:00:05", "13:00:06")
+              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'")
+              .addExpectedValues(null, "13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
+                  "13:00:00.000000")
               .build());
     }
 
@@ -458,11 +463,12 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
           TestDataHolder.builder()
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING)
-              .addInsertValues("null", "'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05Z+8'", "'13:00:06Z-8'")
+              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+              .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
-              .addExpectedValues(null, "13:00:01-07", "13:00:02+08", "13:00:03-08", "13:00:04+00", "13:00:05-08", "13:00:06+08")
+              .addExpectedValues(null, "13:00:01.000000-07:00", "13:00:00.000000+08:00", "13:00:03.000000-08:00", "13:00:04.000000Z",
+                  "13:00:05.012345-08:00", "13:00:06.000000+08:00")
               .build());
     }
 
@@ -472,9 +478,9 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
           TestDataHolder.builder()
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-              .addExpectedValues("2004-10-19T10:23:54.000000Z", "2004-10-19T10:23:54.123456Z", null)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
+              .addExpectedValues("2004-10-19T10:23:00.000000", "2004-10-19T10:23:54.123456", null)
               .build());
     }
 
@@ -484,10 +490,10 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
           TestDataHolder.builder()
               .sourceType("timestamptz")
               .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:54-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
               // 2004-10-19T10:23:54Z-8 = 2004-10-19T17:23:54Z
-              .addExpectedValues("2004-10-19T17:23:54.000000Z", "2004-10-19T17:23:54.123456Z", null)
+              .addExpectedValues("2004-10-19T17:23:00.000000Z", "2004-10-19T17:23:54.123456Z", null)
               .build());
     }
 
@@ -560,6 +566,21 @@ public class PostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("hstore")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("""
+                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                             "language"  => "English","ISBN-13" => "978-1449370000",
+                             "weight"    => "11.2 ounces"'
+                             """, null)
+            .addExpectedValues(
+                """
+                {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
+                null)
             .build());
   }
 

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -219,6 +219,12 @@ class TransformConfig:
             dbt_config["oauth_client_id"] = credentials["client_id"]
             dbt_config["oauth_client_secret"] = credentials["client_secret"]
             dbt_config["token"] = credentials["refresh_token"]
+        elif credentials.get("private_key"):
+            with open("private_key_path.txt", "w") as f:
+                f.write(credentials["private_key"])
+            dbt_config["private_key_path"] = "private_key_path.txt"
+            if credentials.get("private_key_password"):
+                dbt_config["private_key_passphrase"] = credentials["private_key_password"]
         elif credentials.get("password"):
             dbt_config["password"] = credentials["password"]
         else:
@@ -267,6 +273,11 @@ class TransformConfig:
     def transform_mssql(config: Dict[str, Any]):
         print("transform_mssql")
         # https://docs.getdbt.com/reference/warehouse-profiles/mssql-profile
+
+        if TransformConfig.is_ssh_tunnelling(config):
+            config = TransformConfig.get_ssh_altered_config(config, port_key="port", host_key="host")
+            config["host"] = "127.0.0.1"  # localhost is not supported by dbt-sqlserver.
+
         dbt_config = {
             "type": "sqlserver",
             "driver": "ODBC Driver 17 for SQL Server",

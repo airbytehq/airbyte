@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC
@@ -9,13 +9,17 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urljoin, urlparse
 
 import requests
+import vcr
+import vcr.cassette as Cassette
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from requests.auth import AuthBase
+
+from .utils import EagerlyCachedStreamState as stream_state_cache
+from .utils import IntercomRateLimiter as limiter
 
 
 class IntercomStream(HttpStream, ABC):
@@ -23,15 +27,11 @@ class IntercomStream(HttpStream, ABC):
 
     primary_key = "id"
     data_fields = ["data"]
+    # https://developers.intercom.com/intercom-api-reference/reference/pagination-cursor
+    page_size = 150  # max available
 
-    def __init__(
-        self,
-        authenticator: AuthBase,
-        start_date: str = None,
-        **kwargs,
-    ):
+    def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         self.start_date = start_date
-
         super().__init__(authenticator=authenticator)
 
     @property
@@ -44,19 +44,20 @@ class IntercomStream(HttpStream, ABC):
             return self._session.auth
         return super().authenticator
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
         """
         Abstract method of HttpStream - should be overwritten.
         Returning None means there are no more pages to read in response.
         """
 
         next_page = response.json().get("pages", {}).get("next")
-
         if next_page:
+            if isinstance(next_page, dict):
+                return next_page
             return dict(parse_qsl(urlparse(next_page).query))
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = {}
+        params = {"per_page": self.page_size}
         if next_page_token:
             params.update(**next_page_token)
         return params
@@ -73,8 +74,8 @@ class IntercomStream(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}: {e.response.status_code} " f"{e.response.reason} - {error_message}")
             raise e
 
+    @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-
         data = response.json()
 
         for data_field in self.data_fields:
@@ -93,6 +94,10 @@ class IntercomStream(HttpStream, ABC):
 class IncrementalIntercomStream(IntercomStream, ABC):
     cursor_field = "updated_at"
 
+    @property
+    def state_checkpoint_interval(self):
+        return self.page_size
+
     def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
         super().__init__(authenticator, start_date, **kwargs)
         self.has_old_records = False
@@ -103,16 +108,14 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         updated_at field in most cases, so we used that as incremental filtering
         during the slicing.
         """
-
-        if not stream_state or record[self.cursor_field] > stream_state.get(self.cursor_field):
+        if not stream_state or record[self.cursor_field] >= stream_state.get(self.cursor_field):
             yield record
         else:
             self.has_old_records = True
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        record = super().parse_response(response, stream_state, **kwargs)
-
-        for record in record:
+        records = super().parse_response(response, stream_state, **kwargs)
+        for record in records:
             yield from self.filter_by_state(stream_state=stream_state, record=record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, any]:
@@ -122,25 +125,111 @@ class IncrementalIntercomStream(IntercomStream, ABC):
         we then return an updated state object. If this is the first time we
         run a sync or no state was passed, current_stream_state will be None.
         """
-
         current_stream_state = current_stream_state or {}
-
         current_stream_state_date = current_stream_state.get(self.cursor_field, self.start_date)
         latest_record_date = latest_record.get(self.cursor_field, self.start_date)
-
         return {self.cursor_field: max(current_stream_state_date, latest_record_date)}
 
 
-class ChildStreamMixin:
-    parent_stream_class: Optional[IntercomStream] = None
+class IncrementalIntercomSearchStream(IncrementalIntercomStream):
+    http_method = "POST"
+    sort_order = "ascending"
+    use_cache = True
 
-    def stream_slices(self, sync_mode, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
-        parent_stream = self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date)
-        for slice in parent_stream.stream_slices(sync_mode=sync_mode):
-            for item in self.parent_stream_class(
-                authenticator=self.authenticator, start_date=self.start_date, stream_slice=slice
-            ).read_records(sync_mode=sync_mode):
-                yield {"id": item["id"]}
+    def request_cache(self) -> Cassette:
+        """
+        Override the default `request_cache` method, due to `match_on` is different for POST requests.
+        We should check additional criteria like ['query', 'body'] instead of default ['uri', 'method']
+        """
+        match_on = ["uri", "query", "method", "body"]
+        cassette = vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml", match_on=match_on)
+        return cassette
+
+    @stream_state_cache.cache_stream_state
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        """
+        Override to return None, since we don't need to pass any params along with query.
+        But we need to cache the state object to re-use the parrent state for certain streams.
+        """
+        return None
+
+    def request_body_json(self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping]:
+        """
+        https://developers.intercom.com/intercom-api-reference/reference/pagination-search
+        """
+
+        payload = {
+            "query": {
+                "operator": "OR",
+                "value": [
+                    {
+                        "field": self.cursor_field,
+                        "operator": ">",
+                        "value": stream_state.get(self.cursor_field, self.start_date),
+                    },
+                    {
+                        "field": self.cursor_field,
+                        "operator": "=",
+                        "value": stream_state.get(self.cursor_field, self.start_date),
+                    },
+                ],
+            },
+            "sort": {"field": self.cursor_field, "order": self.sort_order},
+            "pagination": {"per_page": self.page_size},
+        }
+        if next_page_token:
+            next_page_token.update(**{"per_page": self.page_size})
+            payload.update({"pagination": next_page_token})
+        return payload
+
+
+class ChildStreamMixin(IncrementalIntercomStream):
+
+    parent_stream_class: Optional[IntercomStream] = None
+    slice_key: str = "id"
+    record_key: str = "id"
+
+    @property
+    def parent_stream(self) -> object:
+        """
+        Returns the instance of parent stream, if the child stream has a `parent_stream_class` dependency.
+        """
+        return self.parent_stream_class(authenticator=self.authenticator, start_date=self.start_date) if self.parent_stream_class else None
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """UPDATING THE STATE OBJECT:
+        Returns:
+            {
+                {...},
+                "child_stream_name": {
+                    "cursor_field": 1632835061,
+                    "parent_stream_name": {
+                        "cursor_field": 1632835061
+                    }
+                },
+                {...},
+            }
+        """
+        updated_state = super().get_updated_state(current_stream_state, latest_record)
+        # add parent_stream_state to `updated_state`
+        updated_state[self.parent_stream.name] = stream_state_cache.cached_state.get(self.parent_stream.name)
+        return updated_state
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Returns the stream slices, which correspond to conversation IDs. Uses the `Conversations` stream
+        to get conversations by `sync_mode` and `state`. Unlike `ChildStreamMixin`, it gets slices based
+        on the `sync_mode`, so that it does not get all conversations at all times. Since we can't do
+        `filter_by_state` inside `parse_records`, we need to make sure we get the right conversations only.
+        Otherwise, this stream would always return all conversation_parts.
+        """
+        # reading parent nested stream_state from child stream state
+        parent_stream_state = stream_state.get(self.parent_stream.name) if stream_state else {}
+        for record in self.parent_stream.read_records(stream_state=parent_stream_state, **kwargs):
+            # updating the `stream_state` with the state of it's parent stream
+            # to have the child stream sync independently from the parent stream
+            stream_state_cache.cached_state[self.parent_stream.name] = self.parent_stream.get_updated_state({}, record)
+            yield {self.slice_key: record[self.record_key]}
 
 
 class Admins(IntercomStream):
@@ -170,6 +259,8 @@ class Companies(IncrementalIntercomStream):
        if a "stroll" is busy by another script
     3) Switch to using of the "standard" endpoint.
     """
+
+    page_size = 50  # default is 15
 
     class EndpointType(Enum):
         scroll = "companies/scroll"
@@ -267,7 +358,7 @@ class Companies(IncrementalIntercomStream):
         yield from super().parse_response(response, stream_state=stream_state, **kwargs)
 
 
-class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):
+class CompanySegments(ChildStreamMixin):
     """Return list of all company segments.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-attached-segments-1
     Endpoint: https://api.intercom.io/companies/<id>/segments
@@ -276,68 +367,37 @@ class CompanySegments(ChildStreamMixin, IncrementalIntercomStream):
     parent_stream_class = Companies
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"/companies/{stream_slice['id']}/segments"
+        return f"/companies/{stream_slice[self.slice_key]}/segments"
 
 
-class Conversations(IncrementalIntercomStream):
-    """Return list of all conversations.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-conversations
-    Endpoint: https://api.intercom.io/conversations
+class Conversations(IncrementalIntercomSearchStream):
+    """Return list of all conversations using search endpoint to provide incremental fetch.
+    API Docs:
+        https://developers.intercom.com/intercom-api-reference/reference#list-conversations
+        https://developers.intercom.com/intercom-api-reference/reference/pagination-search
+    Endpoint:
+        https://api.intercom.io/conversations
+    Search Endpoint:
+        https://api.intercom.io/conversations/search
     """
 
-    use_cache = True
     data_fields = ["conversations"]
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token, **kwargs)
-        params.update({"order": "desc", "sort": self.cursor_field})
-        return params
-
-    # We're sorting by desc. Once we hit the first page with an out-of-date result we can stop.
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        if self.has_old_records:
-            return None
-
-        return super().next_page_token(response)
-
     def path(self, **kwargs) -> str:
-        return "conversations"
+        return "conversations/search"
 
 
-class ConversationParts(IncrementalIntercomStream):
+class ConversationParts(ChildStreamMixin):
     """Return list of all conversation parts.
     API Docs: https://developers.intercom.com/intercom-api-reference/reference#retrieve-a-conversation
     Endpoint: https://api.intercom.io/conversations/<id>
     """
 
+    parent_stream_class = Conversations
     data_fields = ["conversation_parts", "conversation_parts"]
 
-    def __init__(self, authenticator: AuthBase, start_date: str = None, **kwargs):
-        super().__init__(authenticator, start_date, **kwargs)
-        self.conversations_stream = Conversations(authenticator, start_date, **kwargs)
-
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"/conversations/{stream_slice['id']}"
-
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        """
-        Returns the stream slices, which correspond to conversation IDs. Uses the `Conversations` stream
-        to get conversations by `sync_mode` and `state`. Unlike `ChildStreamMixin`, it gets slices based
-        on the `sync_mode`, so that it does not get all conversations at all times. Since we can't do
-        `filter_by_state` inside `parse_records`, we need to make sure we get the right conversations only.
-        Otherwise, this stream would always return all conversation_parts.
-        """
-        parent_stream_slices = self.conversations_stream.stream_slices(
-            sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state
-        )
-        for stream_slice in parent_stream_slices:
-            conversations = self.conversations_stream.read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            for conversation in conversations:
-                yield {"id": conversation["id"]}
+        return f"/conversations/{stream_slice[self.slice_key]}"
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         """
@@ -347,7 +407,7 @@ class ConversationParts(IncrementalIntercomStream):
         `filter_by_state` logic could potentially end up in data loss.
         """
         records = super().parse_response(response=response, stream_state={}, **kwargs)
-        conversation_id = response.json().get("id")
+        conversation_id = response.json().get(self.record_key)
         for conversation_part in records:
             conversation_part.setdefault("conversation_id", conversation_id)
             yield conversation_part
@@ -365,28 +425,17 @@ class Segments(IncrementalIntercomStream):
         return "segments"
 
 
-class Contacts(IncrementalIntercomStream):
+class Contacts(IncrementalIntercomSearchStream):
     """Return list of all contacts.
-    API Docs: https://developers.intercom.com/intercom-api-reference/reference#list-contacts
-    Endpoint: https://api.intercom.io/contacts
+    API Docs:
+        https://developers.intercom.com/intercom-api-reference/reference#list-contacts
+        https://developers.intercom.com/intercom-api-reference/reference/pagination-search
+    Endpoint:
+        https://api.intercom.io/contacts
     """
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        """
-        Abstract method of HttpStream - should be overwritten.
-        Returning None means there are no more pages to read in response.
-        """
-
-        next_page = response.json().get("pages", {}).get("next")
-
-        if isinstance(next_page, dict):
-            return {"starting_after": next_page["starting_after"]}
-
-        if isinstance(next_page, str):
-            return super().next_page_token(response)
-
     def path(self, **kwargs) -> str:
-        return "contacts"
+        return "contacts/search"
 
 
 class DataAttributes(IntercomStream):
@@ -444,7 +493,7 @@ class Teams(IntercomStream):
 class VersionApiAuthenticator(TokenAuthenticator):
     """Intercom API support its dynamic versions' switching.
     But this connector should support only one for any resource account and
-    it is realised by the additional request header 'Intercom-Version'
+    it is released by the additional request header 'Intercom-Version'
     Docs: https://developers.intercom.com/building-apps/docs/update-your-api-version#section-selecting-the-version-via-the-developer-hub
     """
 

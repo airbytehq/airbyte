@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -12,6 +12,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -29,6 +30,7 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+import javax.sql.DataSource;
 import org.testcontainers.containers.Db2Container;
 
 public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
@@ -42,7 +44,7 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
 
   private Db2Container db;
   private JsonNode config;
-  private JdbcDatabase database;
+  private DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -102,12 +104,12 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
     }
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getMappedPort(50000))
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
-        .put("username", db.getUsername())
-        .put("password", db.getPassword())
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "encrypted_verify_certificate")
             .put("ssl_certificate", certificate)
             .put("key_store_password", TEST_KEY_STORE_PASS)
@@ -115,39 +117,40 @@ public class Db2SourceCertificateAcceptanceTest extends SourceAcceptanceTest {
         .build());
 
     final String jdbcUrl = String.format("jdbc:db2://%s:%s/%s",
-        config.get("host").asText(),
+        config.get(JdbcUtils.HOST_KEY).asText(),
         db.getMappedPort(50000),
         config.get("db").asText()) + ":sslConnection=true;sslTrustStoreLocation=" + KEY_STORE_FILE_PATH +
         ";sslTrustStorePassword=" + TEST_KEY_STORE_PASS + ";";
 
-    database = new DefaultJdbcDatabase(
-        DataSourceFactory.create(
-            config.get("username").asText(),
-            config.get("password").asText(),
-            Db2Source.DRIVER_CLASS,
-            jdbcUrl
-        )
-    );
+    dataSource = DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        Db2Source.DRIVER_CLASS,
+        jdbcUrl);
 
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-    final String createTableQuery1 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
-    final String createTableQuery2 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
-    final String insertIntoTableQuery1 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME1);
-    final String insertIntoTableQuery2 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME2);
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(createSchemaQuery);
-    database.execute(createTableQuery1);
-    database.execute(createTableQuery2);
-    database.execute(insertIntoTableQuery1);
-    database.execute(insertIntoTableQuery2);
+      final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
+      final String createTableQuery1 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
+      final String createTableQuery2 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
+      final String insertIntoTableQuery1 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME1);
+      final String insertIntoTableQuery2 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME2);
 
-    database.close();
+      database.execute(createSchemaQuery);
+      database.execute(createTableQuery1);
+      database.execute(createTableQuery2);
+      database.execute(insertIntoTableQuery1);
+      database.execute(insertIntoTableQuery2);
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @Override

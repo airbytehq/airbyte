@@ -5,9 +5,11 @@ import DeleteBlock from "components/DeleteBlock";
 
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
-type IProps = {
+import { StateBlock } from "./StateBlock";
+
+interface IProps {
   connectionId: string;
-};
+}
 
 const Content = styled.div`
   max-width: 647px;
@@ -22,6 +24,7 @@ const SettingsView: React.FC<IProps> = ({ connectionId }) => {
 
   return (
     <Content>
+      <StateBlock connectionId={connectionId} />
       <DeleteBlock type="connection" onDelete={onDelete} />
     </Content>
   );

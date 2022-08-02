@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -9,12 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.workers.protocols.airbyte.AirbyteMessageUtils;
+import io.airbyte.workers.exception.RecordSchemaValidationException;
+import io.airbyte.workers.internal.AirbyteMessageUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RecordSchemaValidatorTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class RecordSchemaValidatorTest {
 
   private StandardSyncInput syncInput;
   private static final String STREAM_NAME = "user_preferences";
@@ -31,13 +33,13 @@ public class RecordSchemaValidatorTest {
   @Test
   void testValidateValidSchema() throws Exception {
     final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput));
-    recordSchemaValidator.validateSchema(VALID_RECORD.getRecord());
+    recordSchemaValidator.validateSchema(VALID_RECORD.getRecord(), STREAM_NAME);
   }
 
   @Test
   void testValidateInvalidSchema() throws Exception {
     final RecordSchemaValidator recordSchemaValidator = new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput));
-    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord()));
+    assertThrows(RecordSchemaValidationException.class, () -> recordSchemaValidator.validateSchema(INVALID_RECORD.getRecord(), STREAM_NAME));
   }
 
 }

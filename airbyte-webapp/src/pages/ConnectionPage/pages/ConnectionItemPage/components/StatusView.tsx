@@ -8,27 +8,20 @@ import { Button, ContentCard, LoadingButton } from "components";
 import EmptyResource from "components/EmptyResourceBlock";
 import ToolTip from "components/ToolTip";
 
-import { Connection, ConnectionStatus } from "core/domain/connection";
+import { ConnectionStatus, WebBackendConnectionRead } from "core/request/AirbyteClient";
 import Status from "core/statuses";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import useLoadingState from "hooks/useLoadingState";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { useListJobs } from "services/job/JobService";
 
 import JobsList from "./JobsList";
-import { StatusMainInfo } from "./StatusMainInfo";
 
 interface StatusViewProps {
-  connection: Connection;
-  frequencyText?: string;
+  connection: WebBackendConnectionRead;
+  isStatusUpdating?: boolean;
 }
-
-const Content = styled.div`
-  margin: 0 10px;
-`;
 
 const StyledContentCard = styled(ContentCard)`
   margin-bottom: 20px;
@@ -53,23 +46,19 @@ const SyncButton = styled(LoadingButton)`
   min-height: 28px;
 `;
 
-const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) => {
+const StatusView: React.FC<StatusViewProps> = ({ connection, isStatusUpdating }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { isLoading, showFeedback, startAction } = useLoadingState();
-  const { hasFeature } = useFeatureService();
-  const allowSync = hasFeature(FeatureItem.AllowSync);
-
-  const sourceDefinition = useSourceDefinition(connection?.source.sourceDefinitionId);
-
-  const destinationDefinition = useDestinationDefinition(connection.destination.destinationDefinitionId);
+  const allowSync = useFeature(FeatureItem.AllowSync);
 
   const jobs = useListJobs({
     configId: connection.connectionId,
     configTypes: ["sync", "reset_connection"],
   });
-  const isAtLeastOneJobRunningOrPending = jobs.some(
-    ({ job: { status } }) => status === Status.RUNNING || status === Status.PENDING
-  );
+  const isAtLeastOneJobRunningOrPending = jobs.some((jobWithAttempts) => {
+    const status = jobWithAttempts?.job?.status;
+    return status === Status.RUNNING || status === Status.PENDING;
+  });
 
   const { mutateAsync: resetConnection } = useResetConnection();
   const { mutateAsync: syncConnection } = useSyncConnection();
@@ -92,58 +81,49 @@ const StatusView: React.FC<StatusViewProps> = ({ connection, frequencyText }) =>
   };
 
   const resetDataBtn = (
-    <Button disabled={isAtLeastOneJobRunningOrPending} onClick={onResetDataButtonClick}>
-      <FormattedMessage id={"connection.resetData"} />
+    <Button disabled={isAtLeastOneJobRunningOrPending || isStatusUpdating} onClick={onResetDataButtonClick}>
+      <FormattedMessage id="connection.resetData" />
     </Button>
   );
 
   const syncNowBtn = (
     <SyncButton
-      disabled={!allowSync || isAtLeastOneJobRunningOrPending}
+      disabled={!allowSync || isAtLeastOneJobRunningOrPending || isStatusUpdating}
       isLoading={isLoading}
       wasActive={showFeedback}
       onClick={() => startAction({ action: onSync })}
     >
       {showFeedback ? (
-        <FormattedMessage id={"sources.syncingNow"} />
+        <FormattedMessage id="sources.syncingNow" />
       ) : (
         <>
           <TryArrow icon={faRedoAlt} />
-          <FormattedMessage id={"sources.syncNow"} />
+          <FormattedMessage id="sources.syncNow" />
         </>
       )}
     </SyncButton>
   );
 
   return (
-    <Content>
-      <StatusMainInfo
-        connection={connection}
-        frequencyText={frequencyText}
-        sourceDefinition={sourceDefinition}
-        destinationDefinition={destinationDefinition}
-        allowSync={allowSync}
-      />
-      <StyledContentCard
-        title={
-          <Title>
-            <FormattedMessage id={"sources.syncHistory"} />
-            {connection.status === ConnectionStatus.ACTIVE && (
-              <div>
-                <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id={"connection.pendingSync"} />
-                </ToolTip>
-                <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
-                  <FormattedMessage id={"connection.pendingSync"} />
-                </ToolTip>
-              </div>
-            )}
-          </Title>
-        }
-      >
-        {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
-      </StyledContentCard>
-    </Content>
+    <StyledContentCard
+      title={
+        <Title>
+          <FormattedMessage id="sources.syncHistory" />
+          {connection.status === ConnectionStatus.active && (
+            <div>
+              <ToolTip control={resetDataBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                <FormattedMessage id="connection.pendingSync" />
+              </ToolTip>
+              <ToolTip control={syncNowBtn} disabled={!isAtLeastOneJobRunningOrPending} cursor="not-allowed">
+                <FormattedMessage id="connection.pendingSync" />
+              </ToolTip>
+            </div>
+          )}
+        </Title>
+      }
+    >
+      {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
+    </StyledContentCard>
   );
 };
 

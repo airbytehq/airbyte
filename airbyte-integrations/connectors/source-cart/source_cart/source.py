@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from functools import wraps
@@ -14,7 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from pendulum.parsing.exceptions import ParserError
 
-from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, Products
+from .streams import Addresses, CustomersCart, OrderItems, OrderPayments, Orders, OrderStatuses, Products
 
 
 class CustomHeaderAuthenticator(HttpAuthenticator):
@@ -74,4 +74,12 @@ class SourceCart(AbstractSource):
             "store_name": config["store_name"],
             "end_date": config.get("end_date"),
         }
-        return [CustomersCart(**args), Orders(**args), OrderPayments(**args), OrderItems(**args), Products(**args), Addresses(**args)]
+        return [
+            CustomersCart(**args),
+            Orders(**args),
+            OrderPayments(**args),
+            OrderStatuses(**args),
+            OrderItems(**args),
+            Products(**args),
+            Addresses(**args),
+        ]

@@ -4,6 +4,7 @@ import { useEffectOnce } from "react-use";
 import styled from "styled-components";
 
 import { Button } from "components";
+import ApiErrorBoundary from "components/ApiErrorBoundary";
 import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 
@@ -11,14 +12,17 @@ import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsServic
 import useWorkspace from "hooks/services/useWorkspace";
 import useRouterHook from "hooks/useRouter";
 import { useCurrentWorkspaceState } from "services/workspaces/WorkspacesService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
 import { RoutePaths } from "../routePaths";
 import ConnectionStep from "./components/ConnectionStep";
 import DestinationStep from "./components/DestinationStep";
 import FinalStep from "./components/FinalStep";
+import HighlightedText from "./components/HighlightedText";
 import LetterLine from "./components/LetterLine";
 import SourceStep from "./components/SourceStep";
 import StepsCounter from "./components/StepsCounter";
+import TitlesBlock from "./components/TitlesBlock";
 import WelcomeStep from "./components/WelcomeStep";
 import { StepType } from "./types";
 import useGetStepsConfig from "./useStepsConfig";
@@ -51,6 +55,12 @@ const ScreenContent = styled.div`
   position: relative;
 `;
 
+const TITLE_BY_STEP: Partial<Record<StepType, string>> = {
+  [StepType.CREATE_SOURCE]: "FirstSource",
+  [StepType.CREATE_DESTINATION]: "FirstDestination",
+  [StepType.SET_UP_CONNECTION]: "Connection",
+};
+
 const OnboardingPage: React.FC = () => {
   const analyticsService = useAnalyticsService();
   const { push } = useRouterHook();
@@ -63,6 +73,7 @@ const OnboardingPage: React.FC = () => {
   const { hasConnections, hasDestinations, hasSources } = useCurrentWorkspaceState();
 
   const [animateExit, setAnimateExit] = useState(false);
+  const [hasApiError, setHasApiError] = useState(false);
 
   const afterUpdateStep = () => {
     setAnimateExit(false);
@@ -76,57 +87,81 @@ const OnboardingPage: React.FC = () => {
   );
 
   const handleFinishOnboarding = () => {
-    finishOnboarding();
+    finishOnboarding(currentStep);
     push(RoutePaths.Connections);
   };
 
   return (
-    <ScreenContent>
-      {currentStep === StepType.CREATE_SOURCE ? (
-        <LetterLine exit={animateExit} />
-      ) : currentStep === StepType.CREATE_DESTINATION ? (
-        <LetterLine onRight exit={animateExit} />
-      ) : null}
-      <Content
-        big={currentStep === StepType.SET_UP_CONNECTION}
-        medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAl}
-      >
-        <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
-        <StepsCounter steps={steps} currentStep={currentStep} />
-
-        <Suspense fallback={<LoadingPage />}>
-          {currentStep === StepType.INSTRUCTION && (
-            <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
-          )}
-          {currentStep === StepType.CREATE_SOURCE && (
-            <SourceStep
-              onSuccess={() => setAnimateExit(true)}
-              onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
-            />
-          )}
-          {currentStep === StepType.CREATE_DESTINATION && (
-            <DestinationStep
-              onSuccess={() => setAnimateExit(true)}
-              onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
-            />
-          )}
-          {currentStep === StepType.SET_UP_CONNECTION && (
-            <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAl)} />
-          )}
-          {currentStep === StepType.FINAl && <FinalStep />}
-        </Suspense>
-
-        <Footer>
-          <Button secondary onClick={() => handleFinishOnboarding()}>
-            {currentStep === StepType.FINAl ? (
-              <FormattedMessage id="onboarding.closeOnboarding" />
-            ) : (
-              <FormattedMessage id="onboarding.skipOnboarding" />
+    <ConnectorDocumentationWrapper>
+      <ScreenContent>
+        {!hasApiError && (
+          <>
+            {currentStep === StepType.CREATE_SOURCE ? (
+              <LetterLine exit={animateExit} />
+            ) : currentStep === StepType.CREATE_DESTINATION ? (
+              <LetterLine onRight exit={animateExit} />
+            ) : null}
+          </>
+        )}
+        <Content
+          big={currentStep === StepType.SET_UP_CONNECTION}
+          medium={currentStep === StepType.INSTRUCTION || currentStep === StepType.FINAL}
+        >
+          <HeadTitle titles={[{ id: "onboarding.headTitle" }]} />
+          <StepsCounter steps={steps} currentStep={currentStep} />
+          <Suspense fallback={<LoadingPage />}>
+            {TITLE_BY_STEP[currentStep] && (
+              <TitlesBlock
+                title={
+                  <FormattedMessage
+                    id={`onboarding.create${TITLE_BY_STEP[currentStep]}`}
+                    values={{
+                      name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
+                    }}
+                  />
+                }
+              >
+                <FormattedMessage id={`onboarding.create${TITLE_BY_STEP[currentStep]}.text`} />
+              </TitlesBlock>
             )}
-          </Button>
-        </Footer>
-      </Content>
-    </ScreenContent>
+            <ApiErrorBoundary
+              onError={(error) => {
+                setHasApiError(!!error);
+              }}
+            >
+              {currentStep === StepType.INSTRUCTION && (
+                <WelcomeStep onNextStep={() => setCurrentStep(StepType.CREATE_SOURCE)} />
+              )}
+              {currentStep === StepType.CREATE_SOURCE && (
+                <SourceStep
+                  onSuccess={() => setAnimateExit(true)}
+                  onNextStep={() => setCurrentStep(StepType.CREATE_DESTINATION)}
+                />
+              )}
+              {currentStep === StepType.CREATE_DESTINATION && (
+                <DestinationStep
+                  onSuccess={() => setAnimateExit(true)}
+                  onNextStep={() => setCurrentStep(StepType.SET_UP_CONNECTION)}
+                />
+              )}
+              {currentStep === StepType.SET_UP_CONNECTION && (
+                <ConnectionStep onNextStep={() => setCurrentStep(StepType.FINAL)} />
+              )}
+              {currentStep === StepType.FINAL && <FinalStep />}
+            </ApiErrorBoundary>
+          </Suspense>
+          <Footer>
+            <Button secondary onClick={() => handleFinishOnboarding()}>
+              {currentStep === StepType.FINAL ? (
+                <FormattedMessage id="onboarding.closeOnboarding" />
+              ) : (
+                <FormattedMessage id="onboarding.skipOnboarding" />
+              )}
+            </Button>
+          </Footer>
+        </Content>
+      </ScreenContent>
+    </ConnectorDocumentationWrapper>
   );
 };
 

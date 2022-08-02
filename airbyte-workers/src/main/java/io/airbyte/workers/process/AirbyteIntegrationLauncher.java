@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -7,9 +7,11 @@ package io.airbyte.workers.process;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.WorkerEnvConstants;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +46,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final String imageName;
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
+  private final FeatureFlags featureFlags;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
@@ -55,6 +58,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
+    this.featureFlags = new EnvVariableFeatureFlags();
   }
 
   @Override
@@ -188,7 +192,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     return Map.of(
         WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, imageName,
         WorkerEnvConstants.WORKER_JOB_ID, jobId,
-        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt));
+        WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(attempt),
+        EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(featureFlags.useStreamCapableState()));
   }
 
 }

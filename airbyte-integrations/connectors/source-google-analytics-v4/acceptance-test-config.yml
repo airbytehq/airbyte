@@ -20,12 +20,11 @@ tests:
       empty_streams: []
       expect_records:
         path: "integration_tests/expected_records.txt"
-# Since the connector makes 2 days look back window, it can not pass SAT where all records produce cursor value greater ao equal to a state value
-# see https://github.com/airbytehq/airbyte/issues/12013 for details
-#  incremental:
-#    - config_path: "secrets/service_config.json"
-#      configured_catalog_path: "integration_tests/configured_catalog.json"
-#      future_state_path: "integration_tests/abnormal_state.json"
+  incremental:
+   - config_path: "secrets/service_config.json"
+     configured_catalog_path: "integration_tests/configured_catalog.json"
+     future_state_path: "integration_tests/abnormal_state.json"
+     threshold_days: 2
   full_refresh:
     - config_path: "secrets/service_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

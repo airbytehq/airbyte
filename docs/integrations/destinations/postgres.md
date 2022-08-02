@@ -126,15 +126,17 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject                                                                                             |
-|:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request | Subject                                                                                             |
+|:--------|:-----------| :--- |:----------------------------------------------------------------------------------------------------|
+| 0.3.21  | 2022-07-06 | [14479](https://github.com/airbytehq/airbyte/pull/14479) | Publish amd64 and arm64 versions of the connector                                                   |
+| 0.3.20  | 2022-05-17 | [12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                              |
 | 0.3.19  | 2022-04-25 | [12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                    |
 | 0.3.18  | 2022-04-12 | [11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                  |
-| 0.3.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                   |
+| 0.3.17  | 2022-04-05 | [11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                |
 | 0.3.15  | 2022-02-25 | [10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                   |
 | 0.3.14  | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                          |
 | 0.3.13  | 2021-12-01 | [8371](https://github.com/airbytehq/airbyte/pull/8371) | Fixed incorrect handling "\n" in ssh key                                                            |
 | 0.3.12  | 2021-11-08 | [7719](https://github.com/airbytehq/airbyte/pull/7719) | Improve handling of wide rows by buffering records based on their byte size rather than their count |
 | 0.3.11  | 2021-09-07 | [5743](https://github.com/airbytehq/airbyte/pull/5743) | Add SSH Tunnel support                                                                              |
-| 0.3.10  | 2021-08-11 | [5336](https://github.com/airbytehq/airbyte/pull/5336) | Destination Postgres: fix \u0000\(NULL\) value processing                                        |
+| 0.3.10  | 2021-08-11 | [5336](https://github.com/airbytehq/airbyte/pull/5336) | Destination Postgres: fix \u0000\(NULL\) value processing                                           |
 

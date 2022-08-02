@@ -5,9 +5,8 @@ connectionSpecification:
   type: object
   required:
     - TODO
-  additionalProperties: false
   properties:
-   # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
+    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
     TODO:
       type: string
       description: describe me

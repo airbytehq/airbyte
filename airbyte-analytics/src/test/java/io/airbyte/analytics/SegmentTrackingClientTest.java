@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.analytics;
@@ -137,7 +137,7 @@ class SegmentTrackingClientTest {
     assertTrue(properties.containsKey("tracked_at"));
     final Builder<String, Object> builder = ImmutableMap.builder();
     properties.forEach((key, value) -> {
-      if (!key.equals("tracked_at")) {
+      if (!"tracked_at".equals(key)) {
         builder.put(key, value);
       }
     });

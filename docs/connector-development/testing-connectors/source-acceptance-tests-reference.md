@@ -1,6 +1,6 @@
 # Source Acceptance Tests Reference
 
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 _Note: If you are looking for reference documentation for the deprecated first version of test suites, see_ [_Standard Tests \(Legacy\)_](https://github.com/airbytehq/airbyte/tree/e378d40236b6a34e1c1cb481c8952735ec687d88/docs/contributing-to-airbyte/building-new-connector/legacy-standard-source-tests.md)_._
 
@@ -98,6 +98,8 @@ Verify that a spec operation issued to the connector returns a valid spec.
 | Input | Type | Default | Note                                                                                             |
 | :--- | :--- | :--- |:-------------------------------------------------------------------------------------------------|
 | `spec_path` | string | `secrets/spec.json` | Path to a YAML or JSON file representing the spec expected to be output by this connector |
+| `backward_compatibility_tests_config.previous_connector_version` | string | `latest` | Previous connector version to use for backward compatibility tests. |
+| `backward_compatibility_tests_config.run_backward_compatibility_tests` | boolean | True | Flag to run or skip backward compatibility tests. |
 | `timeout_seconds` | int | 10 | Test execution timeout in seconds                                                                |
 
 ## Test Connection
@@ -125,19 +127,20 @@ Verifies when a discover operation is run on the connector using the given confi
 Configuring all streams in the input catalog to full refresh mode verifies that a read operation produces some RECORD messages. Each stream should have some data, if you can't guarantee this for particular streams - add them to the `empty_streams` list.
 Set `validate_data_points=True` if possible. This validation is going to be enabled by default and won't be configurable in future releases.
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `empty_streams` | array | \[\] | List of streams that might be empty |
-| `validate_schema` | boolean | True | Verify that structure and types of records matches the schema from discovery command |
-| `validate_data_points` | boolean | False | Validate that all fields in all streams contained at least one data point |
-| `timeout_seconds` | int | 5\*60 | Test execution timeout in seconds |
-| `expect_records` | object | None | Compare produced records with expected records, see details below |
-| `expect_records.path` | string |  | File with expected records |
-| `expect_records.extra_fields` | boolean | False | Allow output records to have other fields i.e: expected records are a subset |
-| `expect_records.exact_order` | boolean | False | Ensure  that records produced in exact same order |
-| `expect_records.extra_records` | boolean | True | Allow connector to produce extra records, but still enforce all records from the expected file to be produced |
+| Input                             | Type | Default | Note |
+|:----------------------------------| :--- | :--- | :--- |
+| `config_path`                     | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
+| `configured_catalog_path`         | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
+| `empty_streams`                   | array | \[\] | List of streams that might be empty |
+| `validate_schema`                 | boolean | True | Verify that structure and types of records matches the schema from discovery command |
+| `validate_data_points`            | boolean | False | Validate that all fields in all streams contained at least one data point |
+| `timeout_seconds`                 | int | 5\*60 | Test execution timeout in seconds |
+| `expect_trace_message_on_failure` | boolean | True | Ensure that a trace message is emitted when the connector crashes |
+| `expect_records`                  | object | None | Compare produced records with expected records, see details below |
+| `expect_records.path`             | string |  | File with expected records |
+| `expect_records.extra_fields`     | boolean | False | Allow output records to have other fields i.e: expected records are a subset |
+| `expect_records.exact_order`      | boolean | False | Ensure  that records produced in exact same order |
+| `expect_records.extra_records`    | boolean | True | Allow connector to produce extra records, but still enforce all records from the expected file to be produced |
 
 `expect_records` is a nested configuration, if omitted - the part of the test responsible for record matching will be skipped. Due to the fact that we can't identify records without primary keys, only the following flag combinations are supported:
 
@@ -185,21 +188,36 @@ This test performs two read operations on all streams which support full refresh
 
 This test verifies that all streams in the input catalog which support incremental sync can do so correctly. It does this by running two read operations: the first takes the configured catalog and config provided to this test as input. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. The second read takes the same catalog and config used in the first test, plus the last `STATE` message output by the first read operation as the input state file. It verifies that either no records are produced \(since we read all records in the first sync\) or all records that produced have cursor value greater or equal to cursor value from `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `cursor_paths` | dict | {} | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
-| `timeout_seconds` | int | 20\*60 | Test execution timeout in seconds |
+| Input                     | Type   | Default                                     | Note                                                                                                                                                                 |
+|:--------------------------|:-------|:--------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                   |
+| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                           |
+| `cursor_paths`            | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
+| `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                    |
+| `threshold_days`          | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                  |
+
+### TestReadSequentialSlices
+
+This test offers more comprehensive verification that all streams in the input catalog which support incremental syncs perform the sync correctly. It does so in two phases. The first phase uses the configured catalog and config provided to this test as input to make a request to the partner API and assemble the complete set of messages to be synced. It then verifies that the sync produced a non-zero number of `RECORD` and `STATE` messages. This set of messages is partitioned into batches of a `STATE` message followed by zero or more `RECORD` messages. For each batch of messages, the initial `STATE` message is used as input for a read operation to get records with respect to the cursor. The test then verifies that all of the `RECORDS` retrieved have a cursor value greater or equal to the cursor from the current `STATE` message. This test is performed only for streams that support incremental. Streams that do not support incremental sync are ignored. If no streams in the input catalog support incremental sync, this test is skipped.
+
+| Input                     | Type   | Default                                     | Note                                                                                                                                                                 |
+|:--------------------------|:-------|:--------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `config_path`                          | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                   |
+| `configured_catalog_path`              | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                           |
+| `cursor_paths`                         | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor\_field. |
+| `timeout_seconds`                      | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                    |
+| `threshold_days`                       | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                  |
+| `skip_comprehensive_incremental_tests` | bool   | false                                       | For non-GA and in-development connectors, control whether the more comprehensive incremental tests will be skipped                                                 |
+
+**Note that this test samples a fraction of stream slices across an incremental sync in order to reduce test duration and avoid spamming partner APIs**
 
 ### TestStateWithAbnormallyLargeValues
 
 This test verifies that sync produces no records when run with the STATE with abnormally large values
 
-| Input | Type | Default | Note |
-| :--- | :--- | :--- | :--- |
-| `config_path` | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
-| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog |
-| `future_state_path` | string | None | Path to the state file with abnormally large cursor values |
-| `timeout_seconds` | int | 20\*60 | Test execution timeout in seconds |
-
+| Input                     | Type   | Default | Note |                                                                           |
+|:--------------------------|:-------|:--------|:-----|:--------------------------------------------------------------------------|
+| `config_path`             | string | `secrets/config.json` | Path to a JSON object representing a valid connector configuration |
+| `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                   |
+| `future_state_path`       | string | None | Path to the state file with abnormally large cursor values                          |
+| `timeout_seconds`         | int    | 20\*60 | Test execution timeout in seconds                                                 |

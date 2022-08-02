@@ -1,6 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
+from typing import List, Optional
 
 import click
 import pkg_resources
@@ -8,6 +10,7 @@ import pytest
 from airbyte_api_client.model.workspace_id_request_body import WorkspaceIdRequestBody
 from click.testing import CliRunner
 from octavia_cli import entrypoint
+from octavia_cli.api_http_headers import ApiHttpHeader
 
 
 @click.command()
@@ -16,16 +19,26 @@ def dumb(ctx):
     pass
 
 
-def test_set_context_object(mocker):
+@pytest.mark.parametrize(
+    "option_based_api_http_headers, api_http_headers_file_path",
+    [
+        ([("foo", "bar")], "api_http_headers_file_path"),
+        ([], None),
+        (None, None),
+    ],
+)
+def test_set_context_object(mocker, option_based_api_http_headers, api_http_headers_file_path):
     mocker.patch.object(entrypoint, "TelemetryClient")
     mocker.patch.object(entrypoint, "build_user_agent")
+    mocker.patch.object(entrypoint, "merge_api_headers")
     mocker.patch.object(entrypoint, "get_api_client")
     mocker.patch.object(entrypoint, "get_workspace_id")
-    mocker.patch.object(entrypoint, "build_user_agent")
     mocker.patch.object(entrypoint, "check_is_initialized")
     mocker.patch.object(entrypoint, "get_anonymous_data_collection")
     mock_ctx = mocker.Mock(obj={})
-    built_context = entrypoint.set_context_object(mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry")
+    built_context = entrypoint.set_context_object(
+        mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry", option_based_api_http_headers, api_http_headers_file_path
+    )
     entrypoint.TelemetryClient.assert_called_with("enable_telemetry")
     mock_ctx.ensure_object.assert_called_with(dict)
     assert built_context.obj == {
@@ -37,20 +50,68 @@ def test_set_context_object(mocker):
         "ANONYMOUS_DATA_COLLECTION": entrypoint.get_anonymous_data_collection.return_value,
     }
     entrypoint.build_user_agent.assert_called_with(built_context.obj["OCTAVIA_VERSION"])
+    entrypoint.merge_api_headers.assert_called_with(option_based_api_http_headers, api_http_headers_file_path)
+    entrypoint.get_api_client.assert_called_with(
+        "my_airbyte_url", entrypoint.build_user_agent.return_value, entrypoint.merge_api_headers.return_value
+    )
 
 
 def test_set_context_object_error(mocker):
     mocker.patch.object(entrypoint, "TelemetryClient")
     mock_ctx = mocker.Mock(obj={})
-    mock_ctx.ensure_object.side_effect = Exception()
-    with pytest.raises(Exception):
-        entrypoint.set_context_object(mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry")
+    mock_ctx.ensure_object.side_effect = NotImplementedError()
+    with pytest.raises(NotImplementedError):
+        entrypoint.set_context_object(
+            mock_ctx, "my_airbyte_url", "my_workspace_id", "enable_telemetry", [("foo", "bar")], "api_http_headers_file_path"
+        )
         entrypoint.TelemetryClient.return_value.send_command_telemetry.assert_called_with(
             mock_ctx, error=mock_ctx.ensure_object.side_effect
         )
 
 
-def test_octavia(mocker):
+@pytest.mark.parametrize(
+    "options, expected_exit_code",
+    [
+        (["--airbyte-url", "test-airbyte-url"], 0),
+        (["--airbyte-url", "test-airbyte-url", "--enable-telemetry"], 0),
+        (["--airbyte-url", "test-airbyte-url", "--enable-telemetry foo"], 2),
+        (["--airbyte-url", "test-airbyte-url", "--disable-telemetry"], 0),
+        (["--airbyte-url", "test-airbyte-url", "--api-http-headers-file-path", "path-does-not-exist"], 2),
+        (["--airbyte-url", "test-airbyte-url", "--api-http-headers-file-path", "path-exists"], 0),
+        (["--airbyte-url", "test-airbyte-url", "--api-http-header", "Content-Type", "application/json"], 0),
+        (
+            [
+                "--airbyte-url",
+                "test-airbyte-url",
+                "--api-http-header",
+                "Content-Type",
+                "application/json",
+                "--api-http-header",
+                "Authorization",
+                "'Bearer XXX'",
+            ],
+            0,
+        ),
+        (
+            [
+                "--airbyte-url",
+                "test-airbyte-url",
+                "--api-http-header",
+                "Content-Type",
+                "--api-http-header",
+                "Authorization",
+                "'Bearer XXX'",
+            ],
+            2,
+        ),
+    ],
+)
+def test_octavia(tmp_path, mocker, options, expected_exit_code):
+    if "path-exists" in options:
+        tmp_file = tmp_path / "path_exists.yaml"
+        tmp_file.write_text("foobar")
+        options[options.index("path-exists")] = tmp_file
+
     mocker.patch.object(entrypoint, "click")
     mocker.patch.object(
         entrypoint,
@@ -59,12 +120,12 @@ def test_octavia(mocker):
     )
     entrypoint.octavia.add_command(dumb)
     runner = CliRunner()
-    result = runner.invoke(entrypoint.octavia, ["--airbyte-url", "test-airbyte-url", "dumb"], obj={})
-    entrypoint.set_context_object.assert_called()
+    result = runner.invoke(entrypoint.octavia, options + ["dumb"], obj={})
     expected_message = "🐙 - Octavia is targetting your Airbyte instance running at test-airbyte-url on workspace api-defined-workspace-id."
-    entrypoint.click.style.assert_called_with(expected_message, fg="green")
-    entrypoint.click.echo.assert_called_with(entrypoint.click.style.return_value)
-    assert result.exit_code == 0
+    assert result.exit_code == expected_exit_code
+    if expected_exit_code == 0:
+        entrypoint.click.style.assert_called_with(expected_message, fg="green")
+        entrypoint.click.echo.assert_called_with(entrypoint.click.style.return_value)
 
 
 def test_octavia_not_initialized(mocker):
@@ -82,12 +143,25 @@ def test_octavia_not_initialized(mocker):
     assert result.exit_code == 0
 
 
-def test_get_api_client(mocker):
+@pytest.mark.parametrize(
+    "api_http_headers",
+    [
+        None,
+        [],
+        [ApiHttpHeader(name="Authorization", value="Basic dXNlcjE6cGFzc3dvcmQ=")],
+        [ApiHttpHeader(name="Authorization", value="Basic dXNlcjE6cGFzc3dvcmQ="), ApiHttpHeader(name="Header", value="header_value")],
+    ],
+)
+def test_get_api_client(mocker, api_http_headers: Optional[List[str]]):
     mocker.patch.object(entrypoint, "airbyte_api_client")
     mocker.patch.object(entrypoint, "check_api_health")
-    api_client = entrypoint.get_api_client("test-url")
+    mocker.patch.object(entrypoint, "set_api_headers_on_api_client")
+    api_client = entrypoint.get_api_client("test-url", "test-user-agent", api_http_headers)
     entrypoint.airbyte_api_client.Configuration.assert_called_with(host="test-url/api")
     entrypoint.airbyte_api_client.ApiClient.assert_called_with(entrypoint.airbyte_api_client.Configuration.return_value)
+    assert entrypoint.airbyte_api_client.ApiClient.return_value.user_agent == "test-user-agent"
+    if api_http_headers:
+        entrypoint.set_api_headers_on_api_client.assert_called_with(entrypoint.airbyte_api_client.ApiClient.return_value, api_http_headers)
     entrypoint.check_api_health.assert_called_with(entrypoint.airbyte_api_client.ApiClient.return_value)
     assert api_client == entrypoint.airbyte_api_client.ApiClient.return_value
 
@@ -116,7 +190,7 @@ def test_get_anonymous_data_collection(mocker, mock_api_client):
     mock_api_instance = entrypoint.workspace_api.WorkspaceApi.return_value
     assert (
         entrypoint.get_anonymous_data_collection(mock_api_client, "my_workspace_id")
-        == mock_api_instance.get_workspace.return_value.anonymous_data_collection
+        == mock_api_instance.get_workspace.return_value.get.return_value
     )
     entrypoint.workspace_api.WorkspaceApi.assert_called_with(mock_api_client)
     mock_api_instance.get_workspace.assert_called_with(WorkspaceIdRequestBody("my_workspace_id"), _check_return_type=False)
@@ -130,7 +204,7 @@ def test_commands_in_octavia_group():
 
 @pytest.mark.parametrize(
     "command",
-    [entrypoint.delete, entrypoint._import],
+    [entrypoint.delete],
 )
 def test_not_implemented_commands(command):
     runner = CliRunner()
@@ -142,6 +216,8 @@ def test_not_implemented_commands(command):
 def test_available_commands():
     assert entrypoint.AVAILABLE_COMMANDS == [
         entrypoint.list_commands._list,
+        entrypoint.get_commands.get,
+        entrypoint.import_commands._import,
         entrypoint.init_commands.init,
         entrypoint.generate_commands.generate,
         entrypoint.apply_commands.apply,

@@ -63,6 +63,7 @@ The OSS and Cloud variants have the same version number. The Cloud variant was i
 
 | Version | Date | Pull request | Notes |
 | --- | --- | --- | --- |
+| 2.1.1 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
 | 2.1.0 | 2021-02-12 | [\#10298](https://github.com/airbytehq/airbyte/pull/10298) | Support stream duplication to quickly create a multi-stream catalog. |
 | 2.0.0 | 2021-02-01 | [\#9954](https://github.com/airbytehq/airbyte/pull/9954) | Remove legacy modes. Use more efficient Json generator. |
 | 1.0.1 | 2021-01-29 | [\#9745](https://github.com/airbytehq/airbyte/pull/9745) | Integrate with Sentry. |

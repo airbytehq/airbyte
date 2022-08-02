@@ -28,12 +28,12 @@ const RequestButton = styled(Button)`
   min-width: 105px;
 `;
 
-type ConnectorFormProps = {
+interface ConnectorFormProps {
   onSubmit: (values: Values) => void;
   onCancel: () => void;
   currentValues?: Values;
   hasFeedback?: boolean;
-};
+}
 
 const requestConnectorValidationSchema = yup.object().shape({
   connectorType: yup.string().required("form.empty.error"),
@@ -43,7 +43,7 @@ const requestConnectorValidationSchema = yup.object().shape({
 });
 
 const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, currentValues, hasFeedback }) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const dropdownData = [
     { value: "source", label: <FormattedMessage id="connector.source" /> },
     {
@@ -60,8 +60,8 @@ const ConnectorForm: React.FC<ConnectorFormProps> = ({ onSubmit, onCancel, curre
         additionalInfo: currentValues?.additionalInfo || "",
         email: currentValues?.email || "",
       }}
-      validateOnBlur={true}
-      validateOnChange={true}
+      validateOnBlur
+      validateOnChange
       validationSchema={requestConnectorValidationSchema}
       onSubmit={onSubmit}
     >

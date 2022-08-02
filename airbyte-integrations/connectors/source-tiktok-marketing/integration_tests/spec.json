@@ -11,8 +11,8 @@
         "default": {},
         "order": 0,
         "type": "object",
-        "oneOf": [{
-
+        "oneOf": [
+          {
             "title": "OAuth2.0",
             "type": "object",
             "properties": {
@@ -42,8 +42,8 @@
               }
             },
             "required": ["app_id", "secret", "access_token"]
-          }, {
-
+          },
+          {
             "title": "Sandbox Access Token",
             "type": "object",
             "properties": {
@@ -77,12 +77,19 @@
         "order": 1,
         "type": "string"
       },
-      "report_granularity": {
-        "title": "Report Aggregation Granularity *",
-        "description": "The granularity used for aggregating performance data in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\">the docs</a>.",
-        "default": "DAY",
-        "enum": ["LIFETIME", "DAY", "HOUR"],
+      "end_date": {
+        "title": "End Date",
+        "description": "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DD. All data generated between start_date and this date will be replicated. Not setting this option will result in always syncing the data till the current date.",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 2,
+        "type": "string"
+      },
+      "report_granularity": {
+        "title": "Report Aggregation Granularity",
+        "description": "The granularity used for aggregating performance data in reports. See <a href=\"https://docs.airbyte.com/integrations/sources/tiktok-marketing/#report-aggregation\">the docs</a>.",
+        "enum": ["LIFETIME", "DAY", "HOUR"],
+        "order": 3,
+        "airbyte_hidden": true,
         "type": "string"
       }
     }

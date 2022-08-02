@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -19,7 +19,6 @@ import io.airbyte.oauth.BaseOAuthFlow;
 import io.airbyte.protocol.models.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.net.http.HttpClient;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -42,7 +41,7 @@ public class TrelloOAuthFlow extends BaseOAuthFlow {
   private static final OAuthHmacSigner signer = new OAuthHmacSigner();
   private final HttpTransport transport;
 
-  public TrelloOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+  public TrelloOAuthFlow(final ConfigRepository configRepository) {
     super(configRepository);
     transport = new NetHttpTransport();
   }

@@ -1,5 +1,6 @@
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classnames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { NavLink } from "react-router-dom";
@@ -10,6 +11,7 @@ import Version from "components/Version";
 
 import { useConfig } from "config";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../pages/routePaths";
 import ConnectionsIcon from "./components/ConnectionsIcon";
@@ -20,6 +22,7 @@ import SettingsIcon from "./components/SettingsIcon";
 import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
+import styles from "./SideBar.module.scss";
 
 const Bar = styled.nav`
   width: 100px;
@@ -41,45 +44,6 @@ const Menu = styled.ul`
   width: 100%;
 `;
 
-const MenuItem = styled(NavLink)`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  border-radius: 4px;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-  position: relative;
-
-  &.active {
-    color: ${({ theme }) => theme.whiteColor};
-    background: ${({ theme }) => theme.primaryColor};
-  }
-`;
-
-const MenuLinkItem = styled.a`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-`;
-
 const Text = styled.div`
   margin-top: 7px;
 `;
@@ -89,9 +53,26 @@ const HelpIcon = styled(FontAwesomeIcon)`
   line-height: 21px;
 `;
 
+export const useCalculateSidebarStyles = () => {
+  const { location } = useRouter();
+
+  const menuItemStyle = (isActive: boolean) => {
+    const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
+    return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
+  };
+
+  return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
+};
+
+export const getPopoutStyles = (isOpen?: boolean) => {
+  return classnames(styles.menuItem, { [styles.popoutOpen]: isOpen });
+};
+
 const SideBar: React.FC = () => {
   const config = useConfig();
   const workspace = useCurrentWorkspace();
+
+  const navLinkClassName = useCalculateSidebarStyles();
 
   return (
     <Bar>
@@ -102,69 +83,64 @@ const SideBar: React.FC = () => {
         <Menu>
           {workspace.displaySetupWizard ? (
             <li>
-              <MenuItem to={RoutePaths.Onboarding}>
+              <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
                 <OnboardingIcon />
                 <Text>
                   <FormattedMessage id="sidebar.onboarding" />
                 </Text>
-              </MenuItem>
+              </NavLink>
             </li>
           ) : null}
           <li>
-            <MenuItem to={RoutePaths.Connections}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
               <Text>
                 <FormattedMessage id="sidebar.connections" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
           <li>
-            <MenuItem to={RoutePaths.Source}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
               <Text>
                 <FormattedMessage id="sidebar.sources" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
           <li>
-            <MenuItem to={RoutePaths.Destination}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
               <Text>
                 <FormattedMessage id="sidebar.destinations" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
         </Menu>
       </div>
       <Menu>
         <li>
-          <MenuLinkItem href={config.ui.updateLink} target="_blank">
+          <a href={config.links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
             <HelpIcon icon={faRocket} />
             <Text>
               <FormattedMessage id="sidebar.update" />
             </Text>
-          </MenuLinkItem>
+          </a>
         </li>
         <li>
           <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-            {({ onOpen }) => (
-              <MenuItem onClick={onOpen} as="div">
+            {({ onOpen, isOpen }) => (
+              <div className={getPopoutStyles(isOpen)} onClick={onOpen}>
                 <DocsIcon />
                 <Text>
                   <FormattedMessage id="sidebar.resources" />
                 </Text>
-              </MenuItem>
+              </div>
             )}
           </SidebarPopout>
         </li>
 
         <li>
-          <MenuItem
-            to={RoutePaths.Settings}
-            // isActive={(_, location) =>
-            //   location.pathname.startsWith(RoutePaths.Settings)
-            // }
-          >
+          <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
             <React.Suspense fallback={null}>
               <NotificationIndicator />
             </React.Suspense>
@@ -172,7 +148,7 @@ const SideBar: React.FC = () => {
             <Text>
               <FormattedMessage id="sidebar.settings" />
             </Text>
-          </MenuItem>
+          </NavLink>
         </li>
         {config.version ? (
           <li>

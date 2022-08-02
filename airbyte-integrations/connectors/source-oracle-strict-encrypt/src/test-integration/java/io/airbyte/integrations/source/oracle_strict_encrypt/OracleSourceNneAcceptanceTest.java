@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
@@ -25,28 +25,26 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
   @Test
   public void testEncryption() throws SQLException {
     final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());
-    clone.set("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    clone.set(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "3DES168")
         .build()));
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            clone.get("username").asText(),
-            clone.get("password").asText(),
+            clone.get(JdbcUtils.USERNAME_KEY).asText(),
+            clone.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                clone.get("host").asText(),
-                clone.get("port").asInt(),
+                clone.get(JdbcUtils.HOST_KEY).asText(),
+                clone.get(JdbcUtils.PORT_KEY).asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED&" +
                 "oracle.net.encryption_types_client=( "
-                + algorithm + " )")
-        )
-    );
+                + algorithm + " )")));
 
     final String networkServiceBanner =
         "select network_service_banner from v$session_connect_info where sid in (select distinct sid from v$mystat)";
@@ -59,27 +57,25 @@ public class OracleSourceNneAcceptanceTest extends OracleStrictEncryptSourceAcce
   @Test
   public void testCheckProtocol() throws SQLException {
     final ObjectNode clone = (ObjectNode) Jsons.clone(getConfig());
-    clone.set("encryption", Jsons.jsonNode(ImmutableMap.builder()
+    clone.set(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
         .put("encryption_method", "client_nne")
         .put("encryption_algorithm", "AES256")
         .build()));
 
-    final String algorithm = clone.get("encryption")
+    final String algorithm = clone.get(JdbcUtils.ENCRYPTION_KEY)
         .get("encryption_algorithm").asText();
 
     final JdbcDatabase database = new DefaultJdbcDatabase(
         DataSourceFactory.create(
-            clone.get("username").asText(),
-            clone.get("password").asText(),
+            clone.get(JdbcUtils.USERNAME_KEY).asText(),
+            clone.get(JdbcUtils.PASSWORD_KEY).asText(),
             DatabaseDriver.ORACLE.getDriverClassName(),
             String.format(DatabaseDriver.ORACLE.getUrlFormatString(),
-                clone.get("host").asText(),
-                clone.get("port").asInt(),
+                clone.get(JdbcUtils.HOST_KEY).asText(),
+                clone.get(JdbcUtils.PORT_KEY).asInt(),
                 clone.get("sid").asText()),
             JdbcUtils.parseJdbcParameters("oracle.net.encryption_client=REQUIRED;" +
-                "oracle.net.encryption_types_client=( " + algorithm + " )", ";")
-        )
-    );
+                "oracle.net.encryption_types_client=( " + algorithm + " )", ";")));
 
     final String networkServiceBanner = "SELECT sys_context('USERENV', 'NETWORK_PROTOCOL') as network_protocol FROM dual";
     final List<JsonNode> collect = database.queryJsons(networkServiceBanner);

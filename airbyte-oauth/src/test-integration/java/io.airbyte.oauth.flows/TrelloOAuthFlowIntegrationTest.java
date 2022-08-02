@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -21,7 +21,6 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,7 +44,6 @@ public class TrelloOAuthFlowIntegrationTest {
   private TrelloOAuthFlow trelloOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
-  private HttpClient httpClient;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -54,8 +52,7 @@ public class TrelloOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
-    trelloOAuthFlow = new TrelloOAuthFlow(configRepository, httpClient);
+    trelloOAuthFlow = new TrelloOAuthFlow(configRepository);
 
     server = HttpServer.create(new InetSocketAddress(8000), 0);
     server.setExecutor(null); // creates a default executor

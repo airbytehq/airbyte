@@ -1,42 +1,39 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;
-import io.airbyte.api.model.AdvancedAuth;
-import io.airbyte.api.model.AuthSpecification;
-import io.airbyte.api.model.CheckConnectionRead;
-import io.airbyte.api.model.CheckConnectionRead.StatusEnum;
-import io.airbyte.api.model.ConnectionIdRequestBody;
-import io.airbyte.api.model.ConnectionState;
-import io.airbyte.api.model.DestinationCoreConfig;
-import io.airbyte.api.model.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationSyncMode;
-import io.airbyte.api.model.DestinationUpdate;
-import io.airbyte.api.model.JobConfigType;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.LogRead;
-import io.airbyte.api.model.SourceCoreConfig;
-import io.airbyte.api.model.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceUpdate;
-import io.airbyte.api.model.SynchronousJobRead;
+import io.airbyte.api.model.generated.AdvancedAuth;
+import io.airbyte.api.model.generated.AuthSpecification;
+import io.airbyte.api.model.generated.CheckConnectionRead;
+import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
+import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.DestinationCoreConfig;
+import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.DestinationUpdate;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.SourceCoreConfig;
+import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
+import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -46,9 +43,6 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSyncOperation;
-import io.airbyte.config.State;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -57,117 +51,76 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.client.EventRunner;
-import io.airbyte.scheduler.client.SchedulerJobClient;
 import io.airbyte.scheduler.client.SynchronousJobMetadata;
 import io.airbyte.scheduler.client.SynchronousResponse;
 import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobNotifier;
 import io.airbyte.scheduler.persistence.JobPersistence;
-import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.converters.OauthModelConverter;
+import io.airbyte.server.errors.ValueConflictKnownException;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
-import io.airbyte.workers.temporal.TemporalClient.ManualSyncSubmissionResult;
-import io.airbyte.workers.temporal.TemporalUtils;
-import io.temporal.api.common.v1.WorkflowExecution;
-import io.temporal.api.workflowservice.v1.RequestCancelWorkflowExecutionRequest;
-import io.temporal.serviceclient.WorkflowServiceStubs;
+import io.airbyte.workers.temporal.ErrorCode;
+import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SchedulerHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SchedulerHandler.class);
   private static final HashFunction HASH_FUNCTION = Hashing.md5();
+
+  private static final ImmutableSet<ErrorCode> VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET =
+      ImmutableSet.of(ErrorCode.WORKFLOW_DELETED, ErrorCode.WORKFLOW_RUNNING);
 
   private final ConfigRepository configRepository;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
-  private final SchedulerJobClient schedulerJobClient;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSchemaValidator jsonSchemaValidator;
   private final JobPersistence jobPersistence;
-  private final JobNotifier jobNotifier;
-  private final WorkflowServiceStubs temporalService;
-  private final OAuthConfigSupplier oAuthConfigSupplier;
   private final JobConverter jobConverter;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
   private final EventRunner eventRunner;
-  private final FeatureFlags featureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
-                          final SchedulerJobClient schedulerJobClient,
                           final SynchronousSchedulerClient synchronousSchedulerClient,
                           final JobPersistence jobPersistence,
-                          final JobNotifier jobNotifier,
-                          final WorkflowServiceStubs temporalService,
-                          final OAuthConfigSupplier oAuthConfigSupplier,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final EventRunner eventRunner,
-                          final FeatureFlags featureFlags) {
+                          final EventRunner eventRunner) {
     this(
         configRepository,
         secretsRepositoryWriter,
-        secretsRepositoryReader,
-        schedulerJobClient,
         synchronousSchedulerClient,
         new ConfigurationUpdate(configRepository, secretsRepositoryReader),
         new JsonSchemaValidator(),
         jobPersistence,
-        jobNotifier,
-        temporalService,
-        oAuthConfigSupplier,
-        workerEnvironment,
-        logConfigs,
         eventRunner,
-        featureFlags,
         new JobConverter(workerEnvironment, logConfigs));
   }
 
   @VisibleForTesting
   SchedulerHandler(final ConfigRepository configRepository,
                    final SecretsRepositoryWriter secretsRepositoryWriter,
-                   final SecretsRepositoryReader secretsRepositoryReader,
-                   final SchedulerJobClient schedulerJobClient,
                    final SynchronousSchedulerClient synchronousSchedulerClient,
                    final ConfigurationUpdate configurationUpdate,
                    final JsonSchemaValidator jsonSchemaValidator,
                    final JobPersistence jobPersistence,
-                   final JobNotifier jobNotifier,
-                   final WorkflowServiceStubs temporalService,
-                   final OAuthConfigSupplier oAuthConfigSupplier,
-                   final WorkerEnvironment workerEnvironment,
-                   final LogConfigs logConfigs,
                    final EventRunner eventRunner,
-                   final FeatureFlags featureFlags,
                    final JobConverter jobConverter) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
-    this.schedulerJobClient = schedulerJobClient;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.configurationUpdate = configurationUpdate;
     this.jsonSchemaValidator = jsonSchemaValidator;
     this.jobPersistence = jobPersistence;
-    this.jobNotifier = jobNotifier;
-    this.temporalService = temporalService;
-    this.oAuthConfigSupplier = oAuthConfigSupplier;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
     this.eventRunner = eventRunner;
-    this.featureFlags = featureFlags;
     this.jobConverter = jobConverter;
   }
 
@@ -268,7 +221,8 @@ public class SchedulerHandler {
       final SynchronousResponse<AirbyteCatalog> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName);
       final SourceDiscoverSchemaRead returnValue = discoverJobToOutput(response);
       if (response.isSuccess()) {
-        final UUID catalogId = configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
+        final UUID catalogId =
+            configRepository.writeActorCatalogFetchEvent(response.getOutput(), source.getSourceId(), connectorVersion, configHash);
         returnValue.catalogId(catalogId);
       }
       return returnValue;
@@ -361,123 +315,17 @@ public class SchedulerHandler {
     return specRead;
   }
 
-  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    if (featureFlags.usesNewScheduler()) {
-      return createManualRun(connectionIdRequestBody.getConnectionId());
-    }
-    final UUID connectionId = connectionIdRequestBody.getConnectionId();
-    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-    final SourceConnection sourceConnection = configRepository.getSourceConnection(standardSync.getSourceId());
-    final DestinationConnection destinationConnection = configRepository.getDestinationConnection(standardSync.getDestinationId());
-    final JsonNode sourceConfiguration = oAuthConfigSupplier.injectSourceOAuthParameters(
-        sourceConnection.getSourceDefinitionId(),
-        sourceConnection.getWorkspaceId(),
-        sourceConnection.getConfiguration());
-    sourceConnection.withConfiguration(sourceConfiguration);
-    final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
-        destinationConnection.getDestinationDefinitionId(),
-        destinationConnection.getWorkspaceId(),
-        destinationConnection.getConfiguration());
-    destinationConnection.withConfiguration(destinationConfiguration);
-
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
-    final String sourceImageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-
-    final StandardDestinationDefinition destinationDef =
-        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
-    final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-
-    final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
-    for (final var operationId : standardSync.getOperationIds()) {
-      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
-      standardSyncOperations.add(standardSyncOperation);
-    }
-
-    final Job job = schedulerJobClient.createOrGetActiveSyncJob(
-        sourceConnection,
-        destinationConnection,
-        standardSync,
-        sourceImageName,
-        destinationImageName,
-        standardSyncOperations,
-        sourceDef.getResourceRequirements(),
-        destinationDef.getResourceRequirements());
-
-    return jobConverter.getJobInfoRead(job);
+  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+    return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
-    if (featureFlags.usesNewScheduler()) {
-      return resetConnectionWithNewScheduler(connectionIdRequestBody.getConnectionId());
-    }
-    final UUID connectionId = connectionIdRequestBody.getConnectionId();
-    final StandardSync standardSync = configRepository.getStandardSync(connectionId);
-
-    final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
-
-    final StandardDestinationDefinition destinationDef = configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
-    final String destinationImageName = DockerUtils.getTaggedImageName(destinationDef.getDockerRepository(), destinationDef.getDockerImageTag());
-
-    final List<StandardSyncOperation> standardSyncOperations = Lists.newArrayList();
-    for (final var operationId : standardSync.getOperationIds()) {
-      final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationId);
-      standardSyncOperations.add(standardSyncOperation);
-    }
-
-    final Job job = schedulerJobClient.createOrGetActiveResetConnectionJob(destination, standardSync, destinationImageName, standardSyncOperations);
-
-    return jobConverter.getJobInfoRead(job);
+    return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
   }
 
-  public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
-    final Optional<State> currentState = configRepository.getConnectionState(connectionIdRequestBody.getConnectionId());
-    LOGGER.info("currentState server: {}", currentState);
-
-    final ConnectionState connectionState = new ConnectionState()
-        .connectionId(connectionIdRequestBody.getConnectionId());
-
-    currentState.ifPresent(state -> connectionState.state(state.getState()));
-
-    return connectionState;
-  }
-
-  // todo (cgardens) - this method needs a test.
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
-    if (featureFlags.usesNewScheduler()) {
-      return createNewSchedulerCancellation(jobIdRequestBody.getId());
-    }
-
-    final long jobId = jobIdRequestBody.getId();
-
-    // prevent this job from being scheduled again
-    jobPersistence.cancelJob(jobId);
-    cancelTemporalWorkflowIfPresent(jobId);
-
-    final Job job = jobPersistence.getJob(jobId);
-    jobNotifier.failJob("job was cancelled", job);
-    return jobConverter.getJobInfoRead(job);
-  }
-
-  private void cancelTemporalWorkflowIfPresent(final long jobId) throws IOException {
-    // attempts ids are monotonically increasing starting from 0 and specific to a job id, allowing us
-    // to do this.
-    final var latestAttemptId = jobPersistence.getJob(jobId).getAttempts().size() - 1;
-    final var workflowId = jobPersistence.getAttemptTemporalWorkflowId(jobId, latestAttemptId);
-
-    if (workflowId.isPresent()) {
-      LOGGER.info("Cancelling workflow: {}", workflowId);
-      final WorkflowExecution workflowExecution = WorkflowExecution.newBuilder()
-          .setWorkflowId(workflowId.get())
-          .build();
-      final RequestCancelWorkflowExecutionRequest cancelRequest = RequestCancelWorkflowExecutionRequest.newBuilder()
-          .setWorkflowExecution(workflowExecution)
-          .setNamespace(TemporalUtils.DEFAULT_NAMESPACE)
-          .build();
-      temporalService.blockingStub().requestCancelWorkflowExecution(cancelRequest);
-    }
+    return submitCancellationToWorker(jobIdRequestBody.getId());
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
@@ -509,39 +357,42 @@ public class SchedulerHandler {
     return destinationDef.getSpec();
   }
 
-  private JobInfoRead createNewSchedulerCancellation(final Long id) throws IOException {
-    final Job job = jobPersistence.getJob(id);
+  private JobInfoRead submitCancellationToWorker(final Long jobId) throws IOException {
+    final Job job = jobPersistence.getJob(jobId);
 
-    final ManualSyncSubmissionResult cancellationSubmissionResult = eventRunner.startNewCancelation(UUID.fromString(job.getScope()));
-
-    if (cancellationSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(cancellationSubmissionResult.getFailingReason().get());
+    final ManualOperationResult cancellationResult = eventRunner.startNewCancellation(UUID.fromString(job.getScope()));
+    if (cancellationResult.getFailingReason().isPresent()) {
+      throw new IllegalStateException(cancellationResult.getFailingReason().get());
     }
 
-    final Job cancelledJob = jobPersistence.getJob(id);
-    return jobConverter.getJobInfoRead(cancelledJob);
+    // query same job ID again to get updated job info after cancellation
+    return jobConverter.getJobInfoRead(jobPersistence.getJob(jobId));
   }
 
-  private JobInfoRead createManualRun(final UUID connectionId) throws IOException {
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = eventRunner.startNewManualSync(connectionId);
+  private JobInfoRead submitManualSyncToWorker(final UUID connectionId) throws IOException {
+    final ManualOperationResult manualSyncResult = eventRunner.startNewManualSync(connectionId);
 
-    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
-    }
-
-    final Job job = jobPersistence.getJob(manualSyncSubmissionResult.getJobId().get());
-
-    return jobConverter.getJobInfoRead(job);
+    return readJobFromResult(manualSyncResult);
   }
 
-  private JobInfoRead resetConnectionWithNewScheduler(final UUID connectionId) throws IOException {
-    final ManualSyncSubmissionResult manualSyncSubmissionResult = eventRunner.resetConnection(connectionId);
+  private JobInfoRead submitResetConnectionToWorker(final UUID connectionId) throws IOException, JsonValidationException, ConfigNotFoundException {
+    final ManualOperationResult resetConnectionResult = eventRunner.resetConnection(
+        connectionId,
+        configRepository.getAllStreamsForConnection(connectionId));
 
-    if (manualSyncSubmissionResult.getFailingReason().isPresent()) {
-      throw new IllegalStateException(manualSyncSubmissionResult.getFailingReason().get());
+    return readJobFromResult(resetConnectionResult);
+  }
+
+  private JobInfoRead readJobFromResult(final ManualOperationResult manualOperationResult) throws IOException, IllegalStateException {
+    if (manualOperationResult.getFailingReason().isPresent()) {
+      if (VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET.contains(manualOperationResult.getErrorCode().get())) {
+        throw new ValueConflictKnownException(manualOperationResult.getFailingReason().get());
+      } else {
+        throw new IllegalStateException(manualOperationResult.getFailingReason().get());
+      }
     }
 
-    final Job job = jobPersistence.getJob(manualSyncSubmissionResult.getJobId().get());
+    final Job job = jobPersistence.getJob(manualOperationResult.getJobId().get());
 
     return jobConverter.getJobInfoRead(job);
   }

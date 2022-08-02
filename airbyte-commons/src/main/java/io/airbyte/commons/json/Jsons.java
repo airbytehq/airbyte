@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.AvoidReassigningParameters")
 public class Jsons {
 
   // Object Mapper is thread-safe
@@ -129,6 +130,17 @@ public class Jsons {
     return serialize(jsonNode).getBytes(Charsets.UTF_8);
   }
 
+  /**
+   * Use string length as an estimation for byte size, because all ASCII characters are one byte long
+   * in UTF-8, and ASCII characters cover most of the use cases. To be more precise, we can convert
+   * the string to byte[] and use the length of the byte[]. However, this conversion is expensive in
+   * memory consumption. Given that the byte size of the serialized JSON is already an estimation of
+   * the actual size of the JSON object, using a cheap operation seems an acceptable compromise.
+   */
+  public static int getEstimatedByteSize(final JsonNode jsonNode) {
+    return serialize(jsonNode).length();
+  }
+
   public static Set<String> keys(final JsonNode jsonNode) {
     if (jsonNode.isObject()) {
       return Jsons.object(jsonNode, new TypeReference<Map<String, Object>>() {}).keySet();
@@ -169,7 +181,7 @@ public class Jsons {
   }
 
   private static void replaceNested(final JsonNode json, final List<String> keys, final BiConsumer<ObjectNode, String> typedReplacement) {
-    Preconditions.checkArgument(keys.size() > 0, "Must pass at least one key");
+    Preconditions.checkArgument(!keys.isEmpty(), "Must pass at least one key");
     final JsonNode nodeContainingFinalKey = navigateTo(json, keys.subList(0, keys.size() - 1));
     typedReplacement.accept((ObjectNode) nodeContainingFinalKey, keys.get(keys.size() - 1));
   }
@@ -211,6 +223,7 @@ public class Jsons {
   /**
    * Flattens an ObjectNode, or dumps it into a {null: value} map if it's not an object.
    */
+  @SuppressWarnings("PMD.ForLoopCanBeForeach")
   public static Map<String, Object> flatten(final JsonNode node) {
     if (node.isObject()) {
       final Map<String, Object> output = new HashMap<>();

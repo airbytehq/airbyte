@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import copy
@@ -66,6 +66,15 @@ def mock_unknown_metrics_or_dimensions_error(requests_mock):
         "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
         status_code=400,
         json={"error": {"message": "Unknown metrics or dimensions"}},
+    )
+
+
+@pytest.fixture
+def mock_daily_request_limit_error(requests_mock):
+    yield requests_mock.post(
+        "https://analyticsreporting.googleapis.com/v4/reports:batchGet",
+        status_code=429,
+        json={"error": {"code": 429, "message": "Quota Error: profileId 207066566 has exceeded the daily request limit."}},
     )
 
 
@@ -147,7 +156,7 @@ def test_metrics_dimensions_type_list(mock_metrics_dimensions_type_list_link):
 def get_metrics_dimensions_mapping():
     test_metrics_dimensions_map = {
         "metric": [("ga:users", "integer"), ("ga:newUsers", "integer")],
-        "dimension": [("ga:dimension", "string")],
+        "dimension": [("ga:dimension", "string"), ("ga:dateHourMinute", "integer")],
     }
     for field_type, attribute_expected_pairs in test_metrics_dimensions_map.items():
         for attribute_expected_pair in attribute_expected_pairs:
@@ -305,6 +314,11 @@ def test_check_connection_success_oauth(
 
 
 def test_unknown_metrics_or_dimensions_error_validation(mock_metrics_dimensions_type_list_link, mock_unknown_metrics_or_dimensions_error):
+    records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
+    assert records
+
+
+def test_daily_request_limit_error_validation(mock_metrics_dimensions_type_list_link, mock_daily_request_limit_error):
     records = GoogleAnalyticsV4Stream(MagicMock()).read_records(sync_mode=None)
     assert records
 

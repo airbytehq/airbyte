@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.concurrency;
@@ -18,7 +18,7 @@ public class GracefulShutdownHandler extends Thread {
 
   public GracefulShutdownHandler(final Duration terminateWaitDuration, final ExecutorService... threadPools) {
     this.terminateWaitDuration = terminateWaitDuration;
-    this.threadPools = threadPools;
+    this.threadPools = threadPools.clone();
   }
 
   @Override

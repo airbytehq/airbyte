@@ -1,0 +1,128 @@
+---
+documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
+connectionSpecification:
+  title: Amazon Ads Spec
+  type: object
+  properties:
+    auth_type:
+      title: Auth Type
+      const: oauth2.0
+      order: 0
+      type: string
+    client_id:
+      title: Client ID
+      description:
+        The client ID of your Amazon Ads developer application. See the
+        <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
+        for more information.
+      order: 1
+      type: string
+    client_secret:
+      title: Client Secret
+      description:
+        The client secret of your Amazon Ads developer application. See
+        the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
+        for more information.
+      airbyte_secret: true
+      order: 2
+      type: string
+    refresh_token:
+      title: Refresh Token
+      description:
+        Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a>
+        for more information on how to obtain this token.
+      airbyte_secret: true
+      order: 3
+      type: string
+    region:
+      title: Region *
+      description:
+        Region to pull data from (EU/NA/FE/SANDBOX). See <a href="https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints">docs</a>
+        for more details.
+      enum:
+        - NA
+        - EU
+        - FE
+        - SANDBOX
+      type: string
+      default: NA
+      order: 4
+    report_wait_timeout:
+      title: Report Wait Timeout *
+      description: Timeout duration in minutes for Reports. Default is 30 minutes.
+      default: 30
+      examples:
+        - 30
+        - 120
+      order: 5
+      type: integer
+    report_generation_max_retries:
+      title: Report Generation Maximum Retries *
+      description:
+        Maximum retries Airbyte will attempt for fetching report data.
+        Default is 5.
+      default: 5
+      examples:
+        - 5
+        - 10
+        - 15
+      order: 6
+      type: integer
+    start_date:
+      title: Start Date (Optional)
+      description:
+        The Start date for collecting reports, should not be more than
+        60 days in the past. In YYYY-MM-DD format
+      examples:
+        - "2022-10-10"
+        - "2022-10-22"
+      order: 7
+      type: string
+    profiles:
+      title: Profile IDs (Optional)
+      description:
+        Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
+        for more details.
+      order: 8
+      type: array
+      items:
+        type: integer
+  required:
+    - client_id
+    - client_secret
+    - refresh_token
+  additionalProperties: true
+advanced_auth:
+  auth_flow_type: oauth2.0
+  predicate_key:
+    - auth_type
+  predicate_value: oauth2.0
+  oauth_config_specification:
+    complete_oauth_output_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        refresh_token:
+          type: string
+          path_in_connector_config:
+            - refresh_token
+    complete_oauth_server_input_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+    complete_oauth_server_output_specification:
+      type: object
+      additionalProperties: true
+      properties:
+        client_id:
+          type: string
+          path_in_connector_config:
+            - client_id
+        client_secret:
+          type: string
+          path_in_connector_config:
+            - client_secret

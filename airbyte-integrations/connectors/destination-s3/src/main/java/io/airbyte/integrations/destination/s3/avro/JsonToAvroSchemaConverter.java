@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3.avro;
@@ -36,6 +36,8 @@ import tech.allegro.schema.json2avro.converter.AdditionalPropertyField;
  */
 public class JsonToAvroSchemaConverter {
 
+  private static final String TYPE = "type";
+  private static final String AIRBYTE_TYPE = "airbyte_type";
   private static final Schema UUID_SCHEMA = LogicalTypes.uuid()
       .addToSchema(Schema.create(Schema.Type.STRING));
   private static final Schema NULL_SCHEMA = Schema.create(Schema.Type.NULL);
@@ -60,7 +62,9 @@ public class JsonToAvroSchemaConverter {
       return Collections.singletonList(JsonSchemaType.COMBINED);
     }
 
-    final JsonNode typeProperty = fieldDefinition.get("type");
+    final JsonNode typeProperty = fieldDefinition.get(TYPE);
+    final JsonNode airbyteTypeProperty = fieldDefinition.get(AIRBYTE_TYPE);
+    final String airbyteType = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     if (typeProperty == null || typeProperty.isNull()) {
       LOGGER.warn("Field \"{}\" has no type specification. It will default to string", fieldName);
       return Collections.singletonList(JsonSchemaType.STRING);
@@ -73,7 +77,7 @@ public class JsonToAvroSchemaConverter {
     }
 
     if (typeProperty.isTextual()) {
-      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText()));
+      return Collections.singletonList(JsonSchemaType.fromJsonSchemaType(typeProperty.asText(), airbyteType));
     }
 
     LOGGER.warn("Field \"{}\" has unexpected type {}. It will default to string.", fieldName, typeProperty);
@@ -214,7 +218,7 @@ public class JsonToAvroSchemaConverter {
 
     final Schema fieldSchema;
     switch (fieldType) {
-      case NUMBER, INTEGER, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER, NUMBER, NUMBER_INT, NUMBER_BIGINT, NUMBER_FLOAT, BOOLEAN -> fieldSchema = Schema.create(fieldType.getAvroType());
       case STRING -> {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();

@@ -1,12 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
@@ -39,7 +37,6 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
   private final RecordSizeEstimator recordSizeEstimator;
   private final long maxQueueSizeInBytes;
   private long bufferSizeInBytes;
-  private VoidCallable onFlushAllEventHook;
 
   public InMemoryRecordBufferingStrategy(final RecordWriter<AirbyteRecordMessage> recordWriter,
                                          final long maxQueueSizeInBytes) {
@@ -55,20 +52,24 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
     this.maxQueueSizeInBytes = maxQueueSizeInBytes;
     this.bufferSizeInBytes = 0;
     this.recordSizeEstimator = new RecordSizeEstimator();
-    this.onFlushAllEventHook = null;
   }
 
   @Override
-  public void addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    boolean didFlush = false;
+
     final long messageSizeInBytes = recordSizeEstimator.getEstimatedByteSize(message.getRecord());
     if (bufferSizeInBytes + messageSizeInBytes > maxQueueSizeInBytes) {
       flushAll();
+      didFlush = true;
       bufferSizeInBytes = 0;
     }
 
     final List<AirbyteRecordMessage> bufferedRecords = streamBuffer.computeIfAbsent(stream, k -> new ArrayList<>());
     bufferedRecords.add(message.getRecord());
     bufferSizeInBytes += messageSizeInBytes;
+
+    return didFlush;
   }
 
   @Override
@@ -79,32 +80,21 @@ public class InMemoryRecordBufferingStrategy implements BufferingStrategy {
 
   @Override
   public void flushAll() throws Exception {
-    AirbyteSentry.executeWithTracing("FlushBuffer", () -> {
-      for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
-        LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
-            FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
-        recordWriter.accept(entry.getKey(), entry.getValue());
-        if (checkAndRemoveRecordWriter != null) {
-          fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
-        }
+    for (final Map.Entry<AirbyteStreamNameNamespacePair, List<AirbyteRecordMessage>> entry : streamBuffer.entrySet()) {
+      LOGGER.info("Flushing {}: {} records ({})", entry.getKey().getName(), entry.getValue().size(),
+          FileUtils.byteCountToDisplaySize(bufferSizeInBytes));
+      recordWriter.accept(entry.getKey(), entry.getValue());
+      if (checkAndRemoveRecordWriter != null) {
+        fileName = checkAndRemoveRecordWriter.apply(entry.getKey(), fileName);
       }
-    }, Map.of("bufferSizeInBytes", bufferSizeInBytes));
+    }
     close();
     clear();
-
-    if (onFlushAllEventHook != null) {
-      onFlushAllEventHook.call();
-    }
   }
 
   @Override
   public void clear() {
     streamBuffer = new HashMap<>();
-  }
-
-  @Override
-  public void registerFlushAllEventHook(final VoidCallable onFlushAllEventHook) {
-    this.onFlushAllEventHook = onFlushAllEventHook;
   }
 
   @Override

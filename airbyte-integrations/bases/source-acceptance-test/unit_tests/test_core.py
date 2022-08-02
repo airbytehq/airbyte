@@ -1,14 +1,28 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, Type
+from airbyte_cdk.models import (
+    AirbyteErrorTraceMessage,
+    AirbyteLogMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteStream,
+    AirbyteTraceMessage,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    Level,
+    TraceType,
+    Type,
+)
 from source_acceptance_test.config import BasicReadTestConfig
 from source_acceptance_test.tests.test_core import TestBasicRead as _TestBasicRead
 from source_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
+
+from .conftest import does_not_raise
 
 
 @pytest.mark.parametrize(
@@ -106,6 +120,84 @@ def test_keyword_in_discovery_schemas(schema, keyword, should_fail):
 
 
 @pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        ({"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}})}, pytest.raises(AssertionError)),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": []})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream": AirbyteStream.parse_obj(
+                    {"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh", "incremental"]}
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["full_refresh"]})},
+            does_not_raise(),
+        ),
+        (
+            {"test_stream": AirbyteStream.parse_obj({"name": "test_stream", "json_schema": {}, "supported_sync_modes": ["incremental"]})},
+            does_not_raise(),
+        ),
+    ],
+)
+def test_supported_sync_modes_in_stream(discovered_catalog, expectation):
+    t = _TestDiscovery()
+    with expectation:
+        t.test_streams_has_sync_modes(discovered_catalog)
+
+
+@pytest.mark.parametrize(
+    "discovered_catalog, expectation",
+    [
+        ({"test_stream_1": AirbyteStream.parse_obj({"name": "test_stream_1", "json_schema": {}})}, does_not_raise()),
+        (
+            {"test_stream_2": AirbyteStream.parse_obj({"name": "test_stream_2", "json_schema": {"additionalProperties": True}})},
+            does_not_raise(),
+        ),
+        (
+            {"test_stream_3": AirbyteStream.parse_obj({"name": "test_stream_3", "json_schema": {"additionalProperties": False}})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {"test_stream_4": AirbyteStream.parse_obj({"name": "test_stream_4", "json_schema": {"additionalProperties": "foo"}})},
+            pytest.raises(AssertionError),
+        ),
+        (
+            {
+                "test_stream_5": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_5",
+                        "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": True}}},
+                    }
+                )
+            },
+            does_not_raise(),
+        ),
+        (
+            {
+                "test_stream_6": AirbyteStream.parse_obj(
+                    {
+                        "name": "test_stream_6",
+                        "json_schema": {"additionalProperties": True, "properties": {"my_object": {"additionalProperties": False}}},
+                    }
+                )
+            },
+            pytest.raises(AssertionError),
+        ),
+    ],
+)
+def test_additional_properties_is_true(discovered_catalog, expectation):
+    t = _TestDiscovery()
+    with expectation:
+        t.test_additional_properties_is_true(discovered_catalog)
+
+
+@pytest.mark.parametrize(
     "schema, record, should_fail",
     [
         ({"type": "object"}, {"aa": 23}, False),
@@ -142,6 +234,95 @@ def test_read(schema, record, should_fail):
             t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
     else:
         t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
+
+
+@pytest.mark.parametrize(
+    "output, expect_trace_message_on_failure, should_fail",
+    [
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                )
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                ),
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                ),
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=112, error=AirbyteErrorTraceMessage(message="oh no!!")),
+                ),
+            ],
+            True,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                )
+            ],
+            True,
+            True,
+        ),
+        ([], True, True),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.TRACE,
+                    trace=AirbyteTraceMessage(type=TraceType.ERROR, emitted_at=111, error=AirbyteErrorTraceMessage(message="oh no")),
+                )
+            ],
+            False,
+            False,
+        ),
+        (
+            [
+                AirbyteMessage(
+                    type=Type.LOG,
+                    log=AirbyteLogMessage(level=Level.ERROR, message="oh no"),
+                )
+            ],
+            False,
+            False,
+        ),
+        ([], False, False),
+    ],
+)
+def test_airbyte_trace_message_on_failure(output, expect_trace_message_on_failure, should_fail):
+    t = _TestBasicRead()
+    input_config = BasicReadTestConfig(expect_trace_message_on_failure=expect_trace_message_on_failure)
+    docker_runner_mock = MagicMock()
+    docker_runner_mock.call_read.return_value = output
+
+    with patch.object(pytest, "skip", return_value=None):
+        if should_fail:
+            with pytest.raises(AssertionError, match="Connector should emit at least one error trace message"):
+                t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
+        else:
+            t.test_airbyte_trace_message_on_failure(None, input_config, docker_runner_mock)
 
 
 @pytest.mark.parametrize(

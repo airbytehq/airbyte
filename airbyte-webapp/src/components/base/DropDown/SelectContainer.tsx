@@ -8,5 +8,5 @@ export const SelectContainer: React.FC<ContainerProps<OptionType, false>> = (pro
     "data-testid": props.selectProps["data-testid"],
     role: props.selectProps["role"] || "combobox",
   };
-  return <components.SelectContainer {...props} innerProps={Object.assign({}, props.innerProps, wrapperProps)} />;
+  return <components.SelectContainer {...props} innerProps={{ ...props.innerProps, ...wrapperProps }} />;
 };

@@ -10,9 +10,9 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:lib')
+    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
 
@@ -21,7 +21,7 @@ dependencies {
 
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
-    testImplementation libs.testcontainers.cockroachdb
+    testImplementation libs.connectors.testcontainers.cockroachdb
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')

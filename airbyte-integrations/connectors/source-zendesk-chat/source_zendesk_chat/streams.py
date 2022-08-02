@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -20,6 +20,15 @@ class Stream(HttpStream, ABC):
     data_field = None
 
     limit = 100
+
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+
+        return {"timeout": 60}
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         delay_time = response.headers.get("Retry-After")
@@ -95,6 +104,8 @@ class BaseIncrementalStream(Stream, ABC):
 
 
 class TimeIncrementalStream(BaseIncrementalStream, ABC):
+    state_checkpoint_interval = 1000
+
     def __init__(self, start_date, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.parse(start_date)
@@ -177,6 +188,7 @@ class AgentTimelines(TimeIncrementalStream):
     cursor_field = "start_time"
     data_field = "agent_timeline"
     name = "agent_timeline"
+    limit = 1000
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(**kwargs)
@@ -217,6 +229,7 @@ class Chats(TimeIncrementalStream):
 
     cursor_field = "update_timestamp"
     data_field = "chats"
+    limit = 1000
 
 
 class Shortcuts(Stream):
@@ -238,7 +251,7 @@ class Bans(IdIncrementalStream):
 
     def get_stream_data(self, response_data) -> List[dict]:
         bans = response_data["ip_address"] + response_data["visitor"]
-        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.min)
+        bans = sorted(bans, key=lambda x: pendulum.parse(x["created_at"]) if x["created_at"] else pendulum.datetime(1970, 1, 1))
         return bans
 
 

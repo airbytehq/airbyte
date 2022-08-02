@@ -1,92 +1,92 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { CommonRequestError } from "core/request/CommonRequestError";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import Status from "core/statuses";
 
+import {
+  CheckConnectionRead,
+  CheckConnectionReadStatus,
+  checkConnectionToSource,
+  checkConnectionToSourceForUpdate,
+  createSource,
+  deleteSource,
+  discoverSchemaForSource,
+  executeSourceCheckConnection,
+  getSource,
+  listSourcesForWorkspace,
+  SourceCoreConfig,
+  SourceCreate,
+  SourceUpdate,
+  updateSource,
+} from "../../request/AirbyteClient";
 import { ConnectionConfiguration } from "../connection";
-import { Scheduler, Schema, Source } from "./types";
 
-class SourceService extends AirbyteRequestService {
-  get url(): string {
-    return "sources";
-  }
-
+export class SourceService extends AirbyteRequestService {
   public async check_connection(
     params: {
       sourceId?: string;
       connectionConfiguration?: ConnectionConfiguration;
     },
     requestParams?: RequestInit
-  ): Promise<Scheduler> {
-    const url = !params.sourceId
-      ? `scheduler/${this.url}/check_connection`
-      : params.connectionConfiguration
-      ? `${this.url}/check_connection_for_update`
-      : `${this.url}/check_connection`;
+  ) {
+    let result: CheckConnectionRead;
+    if (!params.sourceId) {
+      result = await executeSourceCheckConnection(params as SourceCoreConfig, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
+    } else if (params.connectionConfiguration) {
+      result = await checkConnectionToSourceForUpdate(params as SourceUpdate, {
+        ...this.requestOptions,
+        signal: requestParams?.signal,
+      });
+    } else {
+      result = await checkConnectionToSource(
+        { sourceId: params.sourceId },
+        { ...this.requestOptions, signal: requestParams?.signal }
+      );
+    }
 
-    // migrated from rest-hooks. Needs proper fix to `Scheduler` type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(url, params, requestParams);
-
-    // If check connection for source has status 'failed'
-    if (result.status === Status.FAILED) {
+    if (result.status === CheckConnectionReadStatus.failed) {
       const jobInfo = {
         ...result.jobInfo,
         status: result.status,
       };
 
-      throw new LogsRequestError(jobInfo, jobInfo, result.message);
+      throw new LogsRequestError(jobInfo, result.message);
     }
 
     return result;
   }
 
-  public get(sourceId: string): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/get`, {
-      sourceId,
-    });
+  public get(sourceId: string) {
+    return getSource({ sourceId }, this.requestOptions);
   }
 
-  public list(workspaceId: string): Promise<{ sources: Source[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public list(workspaceId: string) {
+    return listSourcesForWorkspace({ workspaceId }, this.requestOptions);
   }
 
-  public create(body: {
-    name: string;
-    sourceDefinitionId?: string;
-    workspaceId: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/create`, body);
+  public create(body: SourceCreate) {
+    return createSource(body, this.requestOptions);
   }
 
-  public update(body: {
-    sourceId: string;
-    name: string;
-    connectionConfiguration: ConnectionConfiguration;
-  }): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/update`, body);
+  public update(body: SourceUpdate) {
+    return updateSource(body, this.requestOptions);
   }
 
-  public delete(sourceId: string): Promise<Source> {
-    return this.fetch<Source>(`${this.url}/delete`, { sourceId });
+  public delete(sourceId: string) {
+    return deleteSource({ sourceId }, this.requestOptions);
   }
 
-  public async discoverSchema(sourceId: string): Promise<Schema> {
-    // needs proper type and refactor of CommonRequestError
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(`${this.url}/discover_schema`, {
-      sourceId,
-    });
+  public async discoverSchema(sourceId: string) {
+    const result = await discoverSchemaForSource({ sourceId }, this.requestOptions);
 
-    if (result.jobInfo?.status === Status.FAILED || !result.catalog) {
-      // @ts-ignore address this case
+    if (!result.jobInfo?.succeeded || !result.catalog) {
+      // @ts-expect-error TODO: address this case
       const e = new CommonRequestError(result);
       // Generate error with failed status and received logs
       e._status = 400;
-      // @ts-ignore address this case
+      // @ts-expect-error address this case
       e.response = result.jobInfo;
       throw e;
     }
@@ -99,5 +99,3 @@ class SourceService extends AirbyteRequestService {
     };
   }
 }
-
-export { SourceService };

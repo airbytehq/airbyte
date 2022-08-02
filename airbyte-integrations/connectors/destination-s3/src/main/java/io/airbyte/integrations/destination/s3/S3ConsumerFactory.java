@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
@@ -10,7 +10,6 @@ import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -24,7 +23,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -98,13 +96,7 @@ public class S3ConsumerFactory {
           final String pathFormat = writeConfig.getPathFormat();
           LOGGER.info("Clearing storage area in destination started for namespace {} stream {} bucketObject {} pathFormat {}",
               namespace, stream, outputBucketPath, pathFormat);
-          AirbyteSentry.executeWithTracing("PrepareStreamStorage",
-              () -> storageOperations.cleanUpBucketObject(namespace, stream, outputBucketPath, pathFormat),
-              Map.of(
-                  "namespace", Objects.requireNonNullElse(namespace, "null"),
-                  "stream", stream,
-                  "storage", outputBucketPath,
-                  "pathFormat", pathFormat));
+          storageOperations.cleanUpBucketObject(namespace, stream, outputBucketPath, pathFormat);
           LOGGER.info("Clearing storage area in destination completed for namespace {} stream {} bucketObject {}", namespace, stream,
               outputBucketPath);
         }

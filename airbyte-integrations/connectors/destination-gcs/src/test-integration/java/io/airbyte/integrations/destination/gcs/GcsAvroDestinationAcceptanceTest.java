@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.gcs;
@@ -14,15 +14,19 @@ import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.avro.Schema.Type;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.SeekableByteArrayInput;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.avro.generic.GenericDatumReader;
 
-public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
+public class GcsAvroDestinationAcceptanceTest extends GcsAvroParquetDestinationAcceptanceTest {
 
   protected GcsAvroDestinationAcceptanceTest() {
     super(S3Format.AVRO);
@@ -69,6 +73,27 @@ public class GcsAvroDestinationAcceptanceTest extends GcsDestinationAcceptanceTe
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected Map<String, Set<Type>> retrieveDataTypesFromPersistedFiles(final String streamName, final String namespace) throws Exception {
+
+    final List<S3ObjectSummary> objectSummaries = getAllSyncedObjects(streamName, namespace);
+    Map<String, Set<Type>> resultDataTypes = new HashMap<>();
+
+    for (final S3ObjectSummary objectSummary : objectSummaries) {
+      final S3Object object = s3Client.getObject(objectSummary.getBucketName(), objectSummary.getKey());
+      try (final DataFileReader<Record> dataFileReader = new DataFileReader<>(
+          new SeekableByteArrayInput(object.getObjectContent().readAllBytes()),
+          new GenericDatumReader<>())) {
+        while (dataFileReader.hasNext()) {
+          final GenericData.Record record = dataFileReader.next();
+          Map<String, Set<Type>> actualDataTypes = getTypes(record);
+          resultDataTypes.putAll(actualDataTypes);
+        }
+      }
+    }
+    return resultDataTypes;
   }
 
 }

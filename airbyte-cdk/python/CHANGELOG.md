@@ -1,5 +1,43 @@
 # Changelog
 
+## 0.1.68
+- Replace parse-time string interpolation with run-time interpolation in YAML-based sources
+
+## 0.1.67
+- Add support declarative token authenticator.
+
+## 0.1.66
+- Call init_uncaught_exception_handler from AirbyteEntrypoint.__init__ and Destination.run_cmd
+- Add the ability to remove & add records in YAML-based sources
+
+## 0.1.65
+- Allow for detailed debug messages to be enabled using the --debug command.
+
+## 0.1.64
+- Add support for configurable oauth request payload and declarative oauth authenticator.
+
+## 0.1.63
+- Define `namespace` property on the `Stream` class inside `core.py`.
+
+## 0.1.62
+Bugfix: Correctly obfuscate nested secrets and secrets specified inside oneOf blocks inside the connector's spec.
+ 
+## 0.1.61
+- Remove legacy sentry code
+
+## 0.1.60
+- Add `requests.exceptions.ChunkedEncodingError` to transient errors so it could be retried
+
+## 0.1.59
+- Add `Stream.get_error_display_message()` to retrieve user-friendly messages from exceptions encountered while reading streams.
+- Add default error error message retrieval logic for `HTTPStream`s following common API patterns.
+
+## 0.1.58
+`TypeTransformer.default_convert` catch `TypeError`
+
+## 0.1.57
+Update protocol models to support per-stream state: [#12829](https://github.com/airbytehq/airbyte/pull/12829).
+
 ## 0.1.56
 - Update protocol models to include `AirbyteTraceMessage`
 - Emit an `AirbyteTraceMessage` on uncaught exceptions

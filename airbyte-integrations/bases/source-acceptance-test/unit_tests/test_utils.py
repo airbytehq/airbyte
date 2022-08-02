@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -16,7 +16,7 @@ import docker
 import pytest
 import yaml
 from docker.errors import ContainerError, NotFound
-from source_acceptance_test.utils.common import load_yaml_or_json_path
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, load_yaml_or_json_path
 from source_acceptance_test.utils.compare import make_hashable
 from source_acceptance_test.utils.connector_runner import ConnectorRunner
 
@@ -346,3 +346,33 @@ class TestLoadYamlOrJsonPath:
         with tempfile.NamedTemporaryFile("w", suffix=".txt") as f:
             with pytest.raises(RuntimeError):
                 load_yaml_or_json_path(Path(f.name))
+
+
+@pytest.mark.parametrize(
+    "schema, searched_key, expected_values",
+    [
+        (
+            {
+                "looking_for_this_key": "first_match",
+                "foo": "bar",
+                "bar": {"looking_for_this_key": "second_match"},
+                "top_level_list": [
+                    {"looking_for_this_key": "third_match"},
+                    {"looking_for_this_key": "fourth_match"},
+                    "dump_value",
+                    {"nested_in_list": {"looking_for_this_key": "fifth_match"}},
+                ],
+            },
+            "looking_for_this_key",
+            ["first_match", "second_match", "third_match", "fourth_match", "fifth_match"],
+        ),
+        ({"foo": "bar", "bar": {"looking_for_this_key": "single_match"}}, "looking_for_this_key", ["single_match"]),
+        (
+            ["foo", "bar", {"looking_for_this_key": "first_match"}, [{"looking_for_this_key": "second_match"}]],
+            "looking_for_this_key",
+            ["first_match", "second_match"],
+        ),
+    ],
+)
+def test_find_all_values_for_key_in_schema(schema, searched_key, expected_values):
+    assert list(find_all_values_for_key_in_schema(schema, searched_key)) == expected_values

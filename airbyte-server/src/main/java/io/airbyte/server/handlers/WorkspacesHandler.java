@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
@@ -7,20 +7,20 @@ package io.airbyte.server.handlers;
 import com.github.slugify.Slugify;
 import com.google.common.base.Strings;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.Notification;
-import io.airbyte.api.model.NotificationRead;
-import io.airbyte.api.model.NotificationRead.StatusEnum;
-import io.airbyte.api.model.SlugRequestBody;
-import io.airbyte.api.model.SourceRead;
-import io.airbyte.api.model.WorkspaceCreate;
-import io.airbyte.api.model.WorkspaceGiveFeedback;
-import io.airbyte.api.model.WorkspaceIdRequestBody;
-import io.airbyte.api.model.WorkspaceRead;
-import io.airbyte.api.model.WorkspaceReadList;
-import io.airbyte.api.model.WorkspaceUpdate;
-import io.airbyte.api.model.WorkspaceUpdateName;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.Notification;
+import io.airbyte.api.model.generated.NotificationRead;
+import io.airbyte.api.model.generated.NotificationRead.StatusEnum;
+import io.airbyte.api.model.generated.SlugRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.WorkspaceCreate;
+import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
+import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.WorkspaceRead;
+import io.airbyte.api.model.generated.WorkspaceReadList;
+import io.airbyte.api.model.generated.WorkspaceUpdate;
+import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -193,7 +193,7 @@ public class WorkspacesHandler {
         return new NotificationRead().status(StatusEnum.SUCCEEDED);
       }
     } catch (final IllegalArgumentException e) {
-      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name());
+      throw new IdNotFoundKnownException(e.getMessage(), notification.getNotificationType().name(), e);
     } catch (final IOException | InterruptedException e) {
       return new NotificationRead().status(StatusEnum.FAILED).message(e.getMessage());
     }

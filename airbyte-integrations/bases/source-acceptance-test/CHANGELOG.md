@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.1.58
+Bootstrap spec backward compatibility tests. Add fixtures to retrieve a previous connector version spec [#14954](https://github.com/airbytehq/airbyte/pull/14954/).
+
+## 0.1.57
+Run connector from its image `working_dir` instead of from `/data`.
+
+## 0.1.56
+Add test case in `TestDiscovery` and `TestConnection` to assert `additionalProperties` fields are set to true if they are declared [#14878](https://github.com/airbytehq/airbyte/pull/14878/).
+
+## 0.1.55
+Add test case in `TestDiscovery` to assert `supported_sync_modes` stream field in catalog is set and not empty.
+
+## 0.1.54
+Fixed `AirbyteTraceMessage` test case to make connectors fail more reliably.
+
+## 0.1.53
+Add more granular incremental testing that walks through syncs and verifies records according to cursor value.
+
+## 0.1.52
+Add test case for `AirbyteTraceMessage` emission on connector failure: [#12796](https://github.com/airbytehq/airbyte/pull/12796/).
+
+## 0.1.51
+- Add `threshold_days` option for lookback window support in incremental tests.
+- Update CDK to prevent warnings when encountering new `AirbyteTraceMessage`s.
+
 ## 0.1.50
 Added support for passing a `.yaml` file as `spec_path`.
 

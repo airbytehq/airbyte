@@ -1,14 +1,19 @@
 import { waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import { Connection, ConnectionNamespaceDefinition, ConnectionStatus } from "core/domain/connection";
-import { Destination, Source } from "core/domain/connector";
-import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
+import {
+  ConnectionStatus,
+  DestinationRead,
+  NamespaceDefinitionType,
+  SourceRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal/ConfirmationModalService";
 import { render } from "utils/testutils";
 
 import ConnectionForm, { ConnectionFormProps } from "./ConnectionForm";
 
-const mockSource: Source = {
+const mockSource: SourceRead = {
   sourceId: "test-source",
   name: "test source",
   sourceName: "test-source-name",
@@ -17,7 +22,7 @@ const mockSource: Source = {
   connectionConfiguration: undefined,
 };
 
-const mockDestination: Destination = {
+const mockDestination: DestinationRead = {
   destinationId: "test-destination",
   name: "test destination",
   destinationName: "test destination name",
@@ -26,25 +31,25 @@ const mockDestination: Destination = {
   connectionConfiguration: undefined,
 };
 
-const mockConnection: Connection = {
+const mockConnection: WebBackendConnectionRead = {
   connectionId: "test-connection",
   name: "test connection",
   prefix: "test",
   sourceId: "test-source",
   destinationId: "test-destination",
-  status: ConnectionStatus.ACTIVE,
-  schedule: null,
+  status: ConnectionStatus.active,
+  schedule: undefined,
   syncCatalog: {
     streams: [],
   },
-  namespaceDefinition: ConnectionNamespaceDefinition.Source,
+  namespaceDefinition: NamespaceDefinitionType.source,
   namespaceFormat: "",
-  latestSyncJobStatus: null,
   operationIds: [],
   source: mockSource,
   destination: mockDestination,
   operations: [],
   catalogId: "",
+  isSyncing: false,
 };
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => {
@@ -83,7 +88,7 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders relevant items", async () => {
-      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
 
       userEvent.type(prefixInput!, "{selectall}{del}prefix");
@@ -104,7 +109,7 @@ describe("<ConnectionForm />", () => {
       container = renderResult.container;
     });
     test("it renders only relevant items for the mode", async () => {
-      const prefixInput = container.querySelector("div[data-testid='prefixInput']");
+      const prefixInput = container.querySelector("input[data-testid='prefixInput']");
       expect(prefixInput).toBeInTheDocument();
     });
     test("pointer events are turned off in the fieldset", async () => {

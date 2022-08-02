@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.integrations.destination.s3.constant.S3Constants;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
 /**
@@ -59,15 +60,18 @@ public class DatabricksDestinationConfig {
   }
 
   public static S3DestinationConfig getDataSource(final JsonNode dataSource) {
-    return S3DestinationConfig.create(
-        dataSource.get("s3_bucket_name").asText(),
-        dataSource.get("s3_bucket_path").asText(),
-        dataSource.get("s3_bucket_region").asText())
+    final S3DestinationConfig.Builder builder = S3DestinationConfig.create(
+        dataSource.get(S3Constants.S_3_BUCKET_NAME).asText(),
+        dataSource.get(S3Constants.S_3_BUCKET_PATH).asText(),
+        dataSource.get(S3Constants.S_3_BUCKET_REGION).asText())
         .withAccessKeyCredential(
-            dataSource.get("s3_access_key_id").asText(),
-            dataSource.get("s3_secret_access_key").asText())
-        .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()))
-        .get();
+            dataSource.get(S3Constants.S_3_ACCESS_KEY_ID).asText(),
+            dataSource.get(S3Constants.S_3_SECRET_ACCESS_KEY).asText())
+        .withFormatConfig(new S3ParquetFormatConfig(new ObjectMapper().createObjectNode()));
+    if (dataSource.has(S3Constants.FILE_NAME_PATTERN)) {
+      builder.withFileNamePattern(dataSource.get(S3Constants.FILE_NAME_PATTERN).asText());
+    }
+    return builder.get();
   }
 
   public String getDatabricksServerHostname() {

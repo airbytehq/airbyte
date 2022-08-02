@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers;
@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class WorkerConfigsTest {
+class WorkerConfigsTest {
 
   private static final Map<String, String> DEFAULT_NODE_SELECTORS = ImmutableMap.of("job", "default");
   private static final Map<String, String> SPEC_NODE_SELECTORS = ImmutableMap.of("job", "spec");
@@ -46,7 +46,7 @@ public class WorkerConfigsTest {
   private Configs configs;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     configs = mock(EnvConfigs.class);
     when(configs.getJobKubeNodeSelectors()).thenReturn(DEFAULT_NODE_SELECTORS);
     when(configs.getJobMainContainerCpuRequest()).thenReturn(DEFAULT_CPU_REQUEST);
@@ -57,7 +57,7 @@ public class WorkerConfigsTest {
 
   @Test
   @DisplayName("default workerConfigs use default node selectors")
-  public void testDefaultNodeSelectors() {
+  void testDefaultNodeSelectors() {
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
 
     Assertions.assertEquals(DEFAULT_NODE_SELECTORS, defaultWorkerConfigs.getworkerKubeNodeSelectors());
@@ -65,7 +65,7 @@ public class WorkerConfigsTest {
 
   @Test
   @DisplayName("spec, check, and discover workerConfigs use job-specific node selectors if set")
-  public void testCustomNodeSelectors() {
+  void testCustomNodeSelectors() {
     when(configs.getCheckJobKubeNodeSelectors()).thenReturn(CHECK_NODE_SELECTORS);
     when(configs.getSpecJobKubeNodeSelectors()).thenReturn(SPEC_NODE_SELECTORS);
     when(configs.getDiscoverJobKubeNodeSelectors()).thenReturn(DISCOVER_NODE_SELECTORS);
@@ -81,7 +81,7 @@ public class WorkerConfigsTest {
 
   @Test
   @DisplayName("spec, check, and discover workerConfigs use default node selectors when custom selectors are not set")
-  public void testNodeSelectorsFallbackToDefault() {
+  void testNodeSelectorsFallbackToDefault() {
     when(configs.getCheckJobKubeNodeSelectors()).thenReturn(null);
     when(configs.getSpecJobKubeNodeSelectors()).thenReturn(null);
     when(configs.getDiscoverJobKubeNodeSelectors()).thenReturn(null);
@@ -97,7 +97,7 @@ public class WorkerConfigsTest {
 
   @Test
   @DisplayName("default workerConfigs use default resourceRequirements")
-  public void testDefaultResourceRequirements() {
+  void testDefaultResourceRequirements() {
     final WorkerConfigs defaultWorkerConfigs = new WorkerConfigs(configs);
 
     Assertions.assertEquals(DEFAULT_RESOURCE_REQUIREMENTS, defaultWorkerConfigs.getResourceRequirements());
@@ -105,7 +105,7 @@ public class WorkerConfigsTest {
 
   @Test
   @DisplayName("replication workerConfigs use replication-specific resourceRequirements")
-  public void testCustomResourceRequirements() {
+  void testCustomResourceRequirements() {
     when(configs.getReplicationOrchestratorCpuRequest()).thenReturn(REPLICATION_CPU_REQUEST);
     when(configs.getReplicationOrchestratorCpuLimit()).thenReturn(REPLICATION_CPU_LIMIT);
     when(configs.getReplicationOrchestratorMemoryRequest()).thenReturn(REPLICATION_MEMORY_REQUEST);
