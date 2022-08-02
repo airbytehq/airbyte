@@ -27,7 +27,7 @@ A stream generally corresponds to a resource within the API. They are analogous 
 
 A stream is defined by:
 
-1. Its name
+1. A name
 2. A primary key: used to uniquely identify records, enabling deduplication
 3. A schema: describes the data to sync
 4. A data retriever: describes how to retrieve the data from the API
@@ -44,7 +44,7 @@ The data retriever defines how to read the data from an API source, and acts as 
 There is currently only one implementation, the `SimpleRetriever`, which is defined by
 
 1. Requester: describes how to submit requests to the API source
-2. Paginator[^1]: describes how to navigate through the API's pages
+2. Paginator <sup>1</sup>: describes how to navigate through the API's pages
 3. Record selector: describes how to select records from an HTTP response
 4. Stream Slicer: describes how to partition the stream, enabling incremental syncs and checkpointing
 
@@ -69,7 +69,7 @@ More details on the paginator can be found in the [pagination section](paginatio
 
 ## Requester
 
-The `Requester` defines how to prepare HTTP requests to send to the source API [^2].
+The `Requester` defines how to prepare HTTP requests to send to the source API <sup>2</2>.
 There currently is only one implementation, the `HttpRequester`, which is defined by
 
 1. A base url: the root of the API source
@@ -88,5 +88,8 @@ The `ConnectionChecker` defines how to test the connection to the integration.
 
 The only implementation as of now is `CheckStream`, which tries to read a record from a specified list of streams and fails if no records could be read.
 
-[^1] The paginator is conceptually more related to the requester than the data retriever, but is part of the `SimpleRetriever` because it inherits from `HttpStream` to increase code reusability.
-[^2] As of today, the requester acts as a config object and is not directly responsible for preparing the HTTP requests. This is done in the `SimpleRetriever`'s parent class `HttpStream`.
+# Footnotes
+
+1. The paginator is conceptually more related to the requester than the data retriever, but is part of the `SimpleRetriever` because it inherits from `HttpStream` to increase code reusability.
+
+2. As of today, the requester acts as a config object and is not directly responsible for preparing the HTTP requests. This is done in the `SimpleRetriever`'s parent class `HttpStream`.
