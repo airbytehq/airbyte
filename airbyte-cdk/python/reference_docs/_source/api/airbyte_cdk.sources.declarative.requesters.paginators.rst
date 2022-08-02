@@ -1,27 +1,19 @@
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   airbyte_cdk.sources.declarative.requesters.paginators.strategies
+
 Submodules
 ----------
 
-airbyte\_cdk.sources.declarative.requesters.paginators.conditional\_paginator module
-------------------------------------------------------------------------------------
+airbyte\_cdk.sources.declarative.requesters.paginators.limit\_paginator module
+------------------------------------------------------------------------------
 
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.conditional_paginator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-airbyte\_cdk.sources.declarative.requesters.paginators.interpolated\_paginator module
--------------------------------------------------------------------------------------
-
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.interpolated_paginator
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-airbyte\_cdk.sources.declarative.requesters.paginators.next\_page\_url\_paginator module
-----------------------------------------------------------------------------------------
-
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.next_page_url_paginator
+.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.limit_paginator
    :members:
    :undoc-members:
    :show-inheritance:
@@ -34,10 +26,10 @@ airbyte\_cdk.sources.declarative.requesters.paginators.no\_pagination module
    :undoc-members:
    :show-inheritance:
 
-airbyte\_cdk.sources.declarative.requesters.paginators.offset\_paginator module
--------------------------------------------------------------------------------
+airbyte\_cdk.sources.declarative.requesters.paginators.pagination\_strategy module
+----------------------------------------------------------------------------------
 
-.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.offset_paginator
+.. automodule:: airbyte_cdk.sources.declarative.requesters.paginators.pagination_strategy
    :members:
    :undoc-members:
    :show-inheritance:
