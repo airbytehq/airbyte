@@ -2,12 +2,14 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 
 
+@dataclass
 class NoPagination(Paginator):
     """
     Pagination implementation that never returns a next page.
@@ -16,16 +18,16 @@ class NoPagination(Paginator):
     def path(self) -> Optional[str]:
         return None
 
-    def request_params(self) -> Mapping[str, Any]:
+    def get_request_params(self) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, str]:
+    def get_request_headers(self) -> Mapping[str, str]:
         return {}
 
-    def request_body_data(self) -> Union[Mapping[str, Any], str]:
+    def get_request_body_data(self) -> Union[Mapping[str, Any], str]:
         return {}
 
-    def request_body_json(self) -> Mapping[str, Any]:
+    def get_request_body_json(self) -> Mapping[str, Any]:
         return {}
 
     def request_kwargs(self) -> Mapping[str, Any]:

@@ -16,13 +16,13 @@ def test_http_requester():
     request_params = {"param": "value"}
     request_body_data = "body_key_1=value_1&body_key_2=value2"
     request_body_json = {"body_field": "body_value"}
-    request_options_provider.request_params.return_value = request_params
-    request_options_provider.request_body_data.return_value = request_body_data
-    request_options_provider.request_body_json.return_value = request_body_json
+    request_options_provider.get_request_params.return_value = request_params
+    request_options_provider.get_request_body_data.return_value = request_body_data
+    request_options_provider.get_request_body_json.return_value = request_body_json
 
     request_headers_provider = MagicMock()
     request_headers = {"header": "value"}
-    request_headers_provider.request_headers.return_value = request_headers
+    request_headers_provider.get_request_headers.return_value = request_headers
 
     authenticator = MagicMock()
 

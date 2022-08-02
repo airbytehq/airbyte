@@ -107,4 +107,4 @@ def test_add_fields(
     input_record: Mapping[str, Any], field: List[Tuple[FieldPointer, str]], kwargs: Mapping[str, Any], expected: Mapping[str, Any]
 ):
     inputs = [AddedFieldDefinition(v[0], v[1]) for v in field]
-    assert AddFields(inputs).transform(input_record, **kwargs) == expected
+    assert AddFields(fields=inputs, options={"alas": "i live"}).transform(input_record, **kwargs) == expected

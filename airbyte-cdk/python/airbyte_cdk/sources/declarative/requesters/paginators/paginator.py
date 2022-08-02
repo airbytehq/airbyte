@@ -3,12 +3,14 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 
 
+@dataclass
 class Paginator(RequestOptionsProvider):
     """
     Defines the token to use to fetch the next page of records from the API.
@@ -40,7 +42,7 @@ class Paginator(RequestOptionsProvider):
         pass
 
     @abstractmethod
-    def request_params(self) -> Mapping[str, Any]:
+    def get_request_params(self) -> Mapping[str, Any]:
         """
         Specifies the query parameters that should be set on an outgoing HTTP request to fetch the next page of records.
 
@@ -49,7 +51,7 @@ class Paginator(RequestOptionsProvider):
         pass
 
     @abstractmethod
-    def request_headers(self) -> Mapping[str, str]:
+    def get_request_headers(self) -> Mapping[str, str]:
         """
         Specifies the request headers that should be set on an outgoing HTTP request to fetch the next page of records.
 
@@ -58,7 +60,7 @@ class Paginator(RequestOptionsProvider):
         pass
 
     @abstractmethod
-    def request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(self) -> Mapping[str, Any]:
         """
         Specifies the body data that should be set on an outgoing HTTP request to fetch the next page of records.
 
@@ -67,7 +69,7 @@ class Paginator(RequestOptionsProvider):
         pass
 
     @abstractmethod
-    def request_body_json(self) -> Mapping[str, Any]:
+    def get_request_body_json(self) -> Mapping[str, Any]:
         """
         Specifies the json content that should be set on an outgoing HTTP request to fetch the next page of records.
 

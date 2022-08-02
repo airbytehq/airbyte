@@ -3,11 +3,13 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
 
 
+@dataclass
 class PaginationStrategy:
     """
     Defines how to get the next page token

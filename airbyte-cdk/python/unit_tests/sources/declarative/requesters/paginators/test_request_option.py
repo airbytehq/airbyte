@@ -26,8 +26,8 @@ def test_request_option(test_name, option_type, field_name, should_raise):
         request_option = RequestOption(inject_into=option_type, field_name=field_name)
         if should_raise:
             assert False
-        assert request_option._field_name == field_name
-        assert request_option._option_type == option_type
+        assert request_option.field_name == field_name
+        assert request_option.inject_into == option_type
     except ValueError:
         if not should_raise:
             assert False

@@ -4,7 +4,7 @@
 
 import pytest as pytest
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
-from airbyte_cdk.sources.declarative.requesters.interpolated_request_input_provider import InterpolatedRequestInputProvider
+from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 
 
 @pytest.mark.parametrize(
@@ -25,3 +25,5 @@ def test_initialize_interpolated_mapping_request_input_provider(test_name, input
 
     assert isinstance(provider._interpolator, InterpolatedMapping)
     assert actual_request_data == expected_request_data
+
+    print(provider)

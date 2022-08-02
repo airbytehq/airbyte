@@ -42,7 +42,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         (
             "test_limit_paginator_no_token",
             RequestOption(inject_into=RequestOptionType.request_parameter, field_name="from"),
-            InterpolatedBoolean("{{True}}"),
+            InterpolatedBoolean(condition="{{True}}", options={}),
             None,
             {"limit": 2},
             {},
@@ -105,8 +105,19 @@ def test_limit_paginator(
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
     config = {}
-    strategy = CursorPaginationStrategy(cursor_value, stop_condition=stop_condition, decoder=JsonDecoder(), config=config)
-    paginator = LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
+    options = {}
+    strategy = CursorPaginationStrategy(
+        cursor_value=cursor_value, stop_condition=stop_condition, decoder=JsonDecoder(), config=config, options=options
+    )
+    paginator = LimitPaginator(
+        page_size=2,
+        limit_option=limit_request_option,
+        page_token_option=page_token_request_option,
+        pagination_strategy=strategy,
+        config=config,
+        url_base=url_base,
+        options={},
+    )
 
     response = requests.Response()
     response.headers = {"A_HEADER": "HEADER_VALUE"}
@@ -115,10 +126,10 @@ def test_limit_paginator(
 
     actual_next_page_token = paginator.next_page_token(response, last_records)
     actual_next_path = paginator.path()
-    actual_request_params = paginator.request_params()
-    actual_headers = paginator.request_headers()
-    actual_body_data = paginator.request_body_data()
-    actual_body_json = paginator.request_body_json()
+    actual_request_params = paginator.get_request_params()
+    actual_headers = paginator.get_request_headers()
+    actual_body_data = paginator.get_request_body_data()
+    actual_body_json = paginator.get_request_body_json()
     assert actual_next_page_token == expected_next_page_token
     assert actual_next_path == expected_updated_path
     assert actual_request_params == expected_request_params
@@ -133,9 +144,18 @@ def test_limit_cannot_be_set_in_path():
     cursor_value = "{{ response.next }}"
     url_base = "https://airbyte.io"
     config = {}
-    strategy = CursorPaginationStrategy(cursor_value, config)
+    options = {}
+    strategy = CursorPaginationStrategy(cursor_value=cursor_value, config=config, options=options)
     try:
-        LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base)
+        LimitPaginator(
+            page_size=2,
+            limit_option=limit_request_option,
+            page_token_option=page_token_request_option,
+            pagination_strategy=strategy,
+            config=config,
+            url_base=url_base,
+            options={},
+        )
         assert False
     except ValueError:
         pass

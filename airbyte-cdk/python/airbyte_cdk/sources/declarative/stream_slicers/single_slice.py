@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
@@ -9,6 +10,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamS
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 
 
+@dataclass
 class SingleSlice(StreamSlicer):
     """Stream slicer returning only a single stream slice"""
 
@@ -18,16 +20,16 @@ class SingleSlice(StreamSlicer):
     def get_stream_state(self) -> StreamState:
         return {}
 
-    def request_params(self) -> Mapping[str, Any]:
+    def get_request_params(self) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def get_request_headers(self) -> Mapping[str, Any]:
         return {}
 
-    def request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(self) -> Mapping[str, Any]:
         return {}
 
-    def request_body_json(self) -> Mapping[str, Any]:
+    def get_request_body_json(self) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:

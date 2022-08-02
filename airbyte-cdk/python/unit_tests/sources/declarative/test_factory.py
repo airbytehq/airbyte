@@ -53,9 +53,9 @@ def test_factory():
     request_options_provider = factory.create_component(config["request_options"], input_config)()
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
     assert request_options_provider._parameter_interpolator._config == input_config
-    assert request_options_provider._parameter_interpolator._interpolator._mapping["offset"] == "{{ next_page_token['offset'] }}"
+    assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
     assert request_options_provider._body_json_interpolator._config == input_config
-    assert request_options_provider._body_json_interpolator._interpolator._mapping["body_offset"] == "{{ next_page_token['offset'] }}"
+    assert request_options_provider._body_json_interpolator._interpolator.mapping["body_offset"] == "{{ next_page_token['offset'] }}"
 
 
 def test_interpolate_config():
@@ -73,11 +73,11 @@ def test_interpolate_config():
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
     assert authenticator._client_id.eval(input_config) == "some_client_id"
-    assert authenticator._client_secret._string == "some_client_secret"
+    assert authenticator._client_secret.string == "some_client_secret"
 
     assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
     assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
-    assert authenticator._refresh_request_body._mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
+    assert authenticator._refresh_request_body.mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
 
 
 def test_list_based_stream_slicer_with_values_refd():
@@ -90,7 +90,7 @@ def test_list_based_stream_slicer_with_values_refd():
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
-    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer.slice_values
 
 
 def test_list_based_stream_slicer_with_values_defined_in_config():
@@ -105,9 +105,9 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
-    assert ["airbyte", "airbyte-cloud"] == stream_slicer._slice_values
-    assert stream_slicer._request_option._option_type == RequestOptionType.header
-    assert stream_slicer._request_option._field_name == "repository"
+    assert ["airbyte", "airbyte-cloud"] == stream_slicer.slice_values
+    assert stream_slicer.request_option.inject_into == RequestOptionType.header
+    assert stream_slicer.request_option.field_name == "repository"
 
 
 def test_create_substream_slicer():
@@ -138,7 +138,7 @@ def test_create_substream_slicer():
         schema_loader: "*ref(schema_loader)"
     stream_slicer:
       type: SubstreamSlicer
-      parent_streams_configs:
+      parent_stream_configs:
         - stream: "*ref(stream_A)"
           parent_key: id
           stream_slice_field: repository_id
@@ -185,12 +185,12 @@ def test_create_cartesian_stream_slicer():
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
-    underlying_slicers = stream_slicer._stream_slicers
+    underlying_slicers = stream_slicer.stream_slicers
     assert len(underlying_slicers) == 2
     assert isinstance(underlying_slicers[0], ListStreamSlicer)
     assert isinstance(underlying_slicers[1], ListStreamSlicer)
-    assert ["airbyte", "airbyte-cloud"] == underlying_slicers[0]._slice_values
-    assert ["hello", "world"] == underlying_slicers[1]._slice_values
+    assert ["airbyte", "airbyte-cloud"] == underlying_slicers[0].slice_values
+    assert ["hello", "world"] == underlying_slicers[1].slice_values
 
 
 def test_datetime_stream_slicer():
@@ -216,18 +216,18 @@ def test_datetime_stream_slicer():
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
     assert type(stream_slicer) == DatetimeStreamSlicer
     assert stream_slicer._timezone == datetime.timezone.utc
-    assert type(stream_slicer._start_datetime) == MinMaxDatetime
-    assert type(stream_slicer._end_datetime) == MinMaxDatetime
-    assert stream_slicer._start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
-    assert stream_slicer._start_datetime._timezone == datetime.timezone.utc
-    assert stream_slicer._start_datetime._datetime_interpolator._string == "{{ config['start_time'] }}"
-    assert stream_slicer._start_datetime._min_datetime_interpolator._string == "{{ config['start_time'] + day_delta(2) }}"
-    assert stream_slicer._end_datetime._datetime_interpolator._string == "{{ config['end_time'] }}"
+    assert type(stream_slicer.start_datetime) == MinMaxDatetime
+    assert type(stream_slicer.end_datetime) == MinMaxDatetime
+    assert stream_slicer.start_datetime._datetime_format == "%Y-%m-%dT%H:%M:%S.%f%z"
+    assert stream_slicer.start_datetime._timezone == datetime.timezone.utc
+    assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
+    assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
+    assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
     assert stream_slicer._step == datetime.timedelta(days=10)
-    assert stream_slicer._cursor_field._string == "created"
-    assert stream_slicer._lookback_window._string == "5d"
-    assert stream_slicer._start_time_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer._start_time_option._field_name == "created[gte]"
+    assert stream_slicer.cursor_field.string == "created"
+    assert stream_slicer.lookback_window.string == "5d"
+    assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
+    assert stream_slicer.start_time_option.field_name == "created[gte]"
 
 
 def test_full_config():
@@ -356,9 +356,9 @@ def test_create_record_selector():
     config = parser.parse(content)
     selector = factory.create_component(config["selector"], input_config)()
     assert isinstance(selector, RecordSelector)
-    assert isinstance(selector._extractor, JelloExtractor)
-    assert selector._extractor._transform.eval(input_config) == "_.result"
-    assert isinstance(selector._record_filter, RecordFilter)
+    assert isinstance(selector.extractor, JelloExtractor)
+    assert selector.extractor.transform.eval(input_config) == "_.result"
+    assert isinstance(selector.record_filter, RecordFilter)
 
 
 def test_create_requester():
@@ -383,14 +383,14 @@ def test_create_requester():
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
     assert isinstance(component._error_handler, DefaultErrorHandler)
-    assert component._path._string == "/v3/marketing/lists"
-    assert component._url_base._string == "https://api.sendgrid.com"
+    assert component._path.string == "/v3/marketing/lists"
+    assert component._url_base.string == "https://api.sendgrid.com"
     assert isinstance(component._authenticator, BasicHttpAuthenticator)
     assert component._authenticator._username.eval(input_config) == "lists"
     assert component._authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
-    assert component._request_options_provider._parameter_interpolator._interpolator._mapping["page_size"] == 10
-    assert component._request_options_provider._headers_interpolator._interpolator._mapping["header"] == "header_value"
+    assert component._request_options_provider._parameter_interpolator._interpolator.mapping["page_size"] == 10
+    assert component._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
     assert component._name == "lists"
 
 
@@ -408,11 +408,11 @@ def test_create_composite_error_handler():
     """
     config = parser.parse(content)
     component = factory.create_component(config["error_handler"], input_config)()
-    assert len(component._error_handlers) == 2
-    assert isinstance(component._error_handlers[0], DefaultErrorHandler)
-    assert isinstance(component._error_handlers[0]._response_filters[0], HttpResponseFilter)
-    assert component._error_handlers[0]._response_filters[0]._predicate._condition == "{{ 'code' in response }}"
-    assert component._error_handlers[1]._response_filters[0]._http_codes == [403]
+    assert len(component.error_handlers) == 2
+    assert isinstance(component.error_handlers[0], DefaultErrorHandler)
+    assert isinstance(component.error_handlers[0].response_filters[0], HttpResponseFilter)
+    assert component.error_handlers[0].response_filters[0].predicate.condition == "{{ 'code' in response }}"
+    assert component.error_handlers[1].response_filters[0].http_codes == [403]
     assert isinstance(component, CompositeErrorHandler)
 
 
@@ -491,7 +491,7 @@ def test_create_limit_paginator():
     paginator_config = config["paginator"]
     paginator = factory.create_component(paginator_config, input_config)()
     assert isinstance(paginator, LimitPaginator)
-    page_token_option = paginator._page_token_option
+    page_token_option = paginator.page_token_option
     assert isinstance(page_token_option, RequestOption)
     assert page_token_option.inject_into == RequestOptionType.path
 
