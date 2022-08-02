@@ -99,6 +99,11 @@ public class MssqlCdcHelper {
     if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
       return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
     }
+    if (config.hasNonNull(REPLICATION_FIELD)) {
+      final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
+      return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
+    }
+
     return false;
   }
 
