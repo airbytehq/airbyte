@@ -135,7 +135,7 @@ class SurveyIds(IncrementalSurveymonkeyStream):
         return params
 
 
-class SliceMixin:
+class SurveyIDSliceMixin:
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"surveys/{stream_slice['survey_id']}/details"
 
@@ -148,7 +148,7 @@ class SliceMixin:
                 yield {"survey_id": survey["id"]}
 
 
-class Surveys(SliceMixin, IncrementalSurveymonkeyStream):
+class Surveys(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
     """
     Docs: https://developer.surveymonkey.com/api/v3/#surveys
     A source for stream slices. It does not contain useful info itself.
@@ -179,7 +179,7 @@ class Surveys(SliceMixin, IncrementalSurveymonkeyStream):
             yield record
 
 
-class SurveyPages(SliceMixin, SurveymonkeyStream):
+class SurveyPages(SurveyIDSliceMixin, SurveymonkeyStream):
     """should be filled from SurveyDetails"""
 
     data_field = "pages"
@@ -191,7 +191,7 @@ class SurveyPages(SliceMixin, SurveymonkeyStream):
             yield record
 
 
-class SurveyQuestions(SliceMixin, SurveymonkeyStream):
+class SurveyQuestions(SurveyIDSliceMixin, SurveymonkeyStream):
     """should be filled from SurveyDetails"""
 
     data_field = "pages"
@@ -206,7 +206,7 @@ class SurveyQuestions(SliceMixin, SurveymonkeyStream):
                 yield question
 
 
-class SurveyResponses(SliceMixin, IncrementalSurveymonkeyStream):
+class SurveyResponses(SurveyIDSliceMixin, IncrementalSurveymonkeyStream):
     """
     Docs: https://developer.surveymonkey.com/api/v3/#survey-responses
     """
