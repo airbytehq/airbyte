@@ -14,58 +14,75 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import org.bson.Document;
-import org.junit.jupiter.api.BeforeAll;
+import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAcceptanceTest {
-
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
 
   private static final String AUTH_TYPE = "auth_type";
   private static final String INSTANCE_TYPE = "instance_type";
   private static final String AIRBYTE_DATA = "_airbyte_data";
+  private static final String DATABASE_NAME = "test";
+  private static final String DATABASE_USER_NAME = "po";
+  private static final String DATABASE_PASSWORD = "password";
 
   private static JsonNode config;
-  private static JsonNode failCheckConfig;
-
-  private MongoDatabase mongoDatabase;
+  private static MongoDBContainer container;
   private final MongodbNameTransformer namingResolver = new MongodbNameTransformer();
 
-  @BeforeAll
-  static void setupConfig() throws IOException {
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a MongoDB credentials file. By default {module-root}/" + CREDENTIALS_PATH
-              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
-    }
-    final String credentialsJsonString = Files.readString(CREDENTIALS_PATH);
-    final JsonNode credentialsJson = Jsons.deserialize(credentialsJsonString);
+  @Override
+  protected String getImageName() {
+    return "airbyte/destination-mongodb-strict-encrypt:dev";
+  }
 
-    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("instance", MongoInstanceType.STANDALONE.getType())
-        .put(JdbcUtils.HOST_KEY, credentialsJson.get(JdbcUtils.HOST_KEY).asText())
-        .put(JdbcUtils.PORT_KEY, credentialsJson.get(JdbcUtils.PORT_KEY).asInt())
-        .build());
+  @Override
+  protected void setup(final TestDestinationEnv testEnv) {
+    List<String> list = new ArrayList<>();
+    list.add("MONGO_INITDB_ROOT_USERNAME=" + DATABASE_USER_NAME);
+    list.add("MONGO_INITDB_ROOT_PASSWORD=" + DATABASE_PASSWORD);
+    list.add("MONGO_INITDB_DATABASE=" + DATABASE_NAME);
+    container = new MongoDBContainer("mongo:4.0.10")
+        .withClasspathResourceMapping("mongod.conf", "/etc/mongod.conf", BindMode.READ_ONLY)
+        .withClasspathResourceMapping("mongodb.pem", "/etc/ssl/mongodb.pem", BindMode.READ_ONLY)
+        .withClasspathResourceMapping("mongodb-cert.crt", "/etc/ssl/mongodb-cert.crt", BindMode.READ_ONLY)
+        .withExposedPorts(27017)
+        .withCommand("mongod --auth --config /etc/mongod.conf")
+        .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofSeconds(120)));
+    container.setEnv(list);
+
+    container.start();
+  }
+
+  @Override
+  protected JsonNode getConfig() {
+    final JsonNode instanceConfig = getInstanceConfig();
 
     final JsonNode authConfig = Jsons.jsonNode(ImmutableMap.builder()
         .put("authorization", "login/password")
-        .put(JdbcUtils.USERNAME_KEY, credentialsJson.get("user").asText())
-        .put(JdbcUtils.PASSWORD_KEY, credentialsJson.get(JdbcUtils.PASSWORD_KEY).asText())
+        .put(JdbcUtils.USERNAME_KEY, DATABASE_USER_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, DATABASE_PASSWORD)
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.DATABASE_KEY, credentialsJson.get(JdbcUtils.DATABASE_KEY).asText())
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, authConfig)
         .put(INSTANCE_TYPE, instanceConfig)
         .build());
+    return Jsons.clone(config);
+  }
 
-    failCheckConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.DATABASE_KEY, credentialsJson.get(JdbcUtils.DATABASE_KEY).asText())
+  @Override
+  protected JsonNode getFailCheckConfig() {
+    final JsonNode instanceConfig = getInstanceConfig();
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.DATABASE_KEY, DATABASE_NAME)
         .put(AUTH_TYPE, Jsons.jsonNode(ImmutableMap.builder()
             .put("authorization", "none")
             .build()))
@@ -74,25 +91,31 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected String getImageName() {
-    return "airbyte/destination-mongodb-strict-encrypt:dev";
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
   }
 
   @Override
-  protected JsonNode getConfig() {
-    return Jsons.clone(config);
+  protected boolean supportBasicDataTypeTest() {
+    return true;
   }
 
   @Override
-  protected JsonNode getFailCheckConfig() {
-    return Jsons.clone(failCheckConfig);
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-                                           final String streamName,
-                                           final String namespace,
-                                           final JsonNode streamSchema) {
+      final String streamName,
+      final String namespace,
+      final JsonNode streamSchema) {
+    var mongoDatabase = getMongoDatabase();
     final var collection = mongoDatabase.getOrCreateNewCollection(namingResolver.getRawTableName(streamName));
     final List<JsonNode> result = new ArrayList<>();
     try (final MongoCursor<Document> cursor = collection.find().projection(excludeId()).iterator()) {
@@ -104,23 +127,27 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
-    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&ssl=true",
+  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
+    container.close();
+  }
+
+  private MongoDatabase getMongoDatabase() {
+    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&tcl=true",
         config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get(INSTANCE_TYPE).get(JdbcUtils.HOST_KEY).asText(),
         config.get(INSTANCE_TYPE).get(JdbcUtils.PORT_KEY).asText(),
         config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    mongoDatabase = new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
+    return new MongoDatabase(connectionString, config.get(JdbcUtils.DATABASE_KEY).asText());
   }
 
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
-    for (final String collectionName : mongoDatabase.getCollectionNames()) {
-      mongoDatabase.getDatabase().getCollection(collectionName).drop();
-    }
-    mongoDatabase.close();
+  private JsonNode getInstanceConfig() {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", MongoInstanceType.STANDALONE.getType())
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getMappedPort(27017))
+        .build());
   }
 
 }
