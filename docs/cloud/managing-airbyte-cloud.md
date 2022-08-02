@@ -101,48 +101,20 @@ The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along wi
 ## Sync Log Summary
 ### Succeeded
 The log summary for a successful sync shows the following data.
-<table>
- <tr>
-  <td><strong>Log</strong>
-  </td>
-  <td><strong>Description</strong>
-  </td>
- </tr>
- <tr>
-  <td>x GB (also measured in KB, MB)
-  </td>
-  <td>Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.
-  </td>
- </tr>
- <tr>
-  <td>x emitted records
-  </td>
-  <td>Number of records read from the source during the sync.
-  </td>
- </tr>
- <tr>
-  <td>x committed records
-  </td>
-  <td>Number of records the destination confirmed it received.
-  </td>
- </tr>
- <tr>
-  <td>xh xm xs
-  </td>
-  <td>Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.
-  </td>
- </tr>
- <tr>
-  <td>Sync or Reset
-  </td>
-  <td>The action that was performed (either a sync or a [reset](https://docs.airbyte.com/operator-guides/reset/)).
-  </td>
- </tr>
-</table>
+
+| Log                            | Description                                                                                                                                             |
+|--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| x GB (also measured in KB, MB) | Amount of data moved during the sync. If basic normalization is on, the amount of data would not change since normalization occurs in the destination.  |
+| x emitted records              | Number of records read from the source during the sync.                                                                                                 |
+| x committed records            | Number of records the destination confirmed it received.                                                                                                |
+| xh xm xs                       | Total time (hours, minutes, seconds) for the sync and basic normalization, if enabled, to complete.                                                     |
+| Sync or Reset                  | The action that was performed (either a sync or a [reset](https://docs.airbyte.com/operator-guides/reset/).                                                                                               |
  
  
- :::note
+:::note
+
 In a successful sync, the number of emitted records and committed records should be the same.
+
 :::  
 
  
