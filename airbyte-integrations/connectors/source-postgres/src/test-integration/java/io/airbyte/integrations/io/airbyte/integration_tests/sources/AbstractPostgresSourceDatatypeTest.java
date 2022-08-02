@@ -180,8 +180,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
      TestDataHolder.builder()
      .sourceType("date")
      .airbyteType(JsonSchemaType.STRING_DATE)
-     .addInsertValues("'1999-01-08'", /* "'1991-02-10 BC'",*/ "null")
-     .addExpectedValues("1999-01-08", /* "1990-02-10 BC", */ null)
+     .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
+     .addExpectedValues("1999-01-08", "1991-02-10 BC", null)
      .build());
 
     for (final String type : Set.of("double precision", "float", "float8")) {
