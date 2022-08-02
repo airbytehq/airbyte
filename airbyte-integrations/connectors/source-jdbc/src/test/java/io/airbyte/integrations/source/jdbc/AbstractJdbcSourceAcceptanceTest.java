@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.jdbc;
 
+import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.assertCustomParametersDontOverwriteDefaultParameters;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,6 +25,7 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.JDBCType;
 import java.util.List;
 import java.util.Map;
@@ -81,14 +83,6 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return true;
   }
 
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters, final Map<String, String> defaultParameters) {
-    for (final String key : defaultParameters.keySet()) {
-      if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
-        throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);
-      }
-    }
-  }
-
   @Override
   public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new PostgresTestSource();
@@ -101,8 +95,8 @@ class AbstractJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   public JsonNode getConfigWithConnectionProperties(final PostgreSQLContainer<?> psqlDb, final String dbName, final String additionalParameters) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
-        .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(psqlDb))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(psqlDb))
         .put(JdbcUtils.DATABASE_KEY, dbName)
         .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())

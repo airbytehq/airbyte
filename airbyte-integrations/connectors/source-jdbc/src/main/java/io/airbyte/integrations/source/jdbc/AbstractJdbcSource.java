@@ -339,7 +339,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param defaultParameters connection properties map as specified by each Jdbc source
    * @throws IllegalArgumentException
    */
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+  protected static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
                                                                     final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
