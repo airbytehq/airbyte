@@ -6,6 +6,7 @@ from airbyte_cdk.models import ConnectorSpecification
 from deepdiff import DeepDiff
 from source_acceptance_test.base import BaseTest
 from source_acceptance_test.config import SpecTestConfig
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema
 
 
 @pytest.mark.default_timeout(60)
@@ -25,6 +26,20 @@ class TestSpecBackwardCompatibility(BaseTest):
             pytest.skip("The previous connector spec could not be retrieved.")
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         return self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
+
+    def test_additional_properties_is_true(self, actual_connector_spec):
+        """Check that value of the "additionalProperties" field is always true.
+        A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        additional_properties_values = find_all_values_for_key_in_schema(
+            actual_connector_spec.connectionSpecification, "additionalProperties"
+        )
+        if additional_properties_values:
+            assert all(
+                [additional_properties_value is True for additional_properties_value in additional_properties_values]
+            ), "When set, additionalProperties field value must be true for backward compatibility."
 
     def test_new_required_field_declaration(self, spec_diff):
         added_required_fields = [

@@ -10,6 +10,42 @@ from .conftest import does_not_raise
 
 
 @pytest.mark.parametrize(
+    "connector_spec, expectation",
+    [
+        (ConnectorSpecification(connectionSpecification={}), does_not_raise()),
+        (ConnectorSpecification(connectionSpecification={"type": "object", "additionalProperties": True}), does_not_raise()),
+        (ConnectorSpecification(connectionSpecification={"type": "object", "additionalProperties": False}), pytest.raises(AssertionError)),
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "additionalProperties": True,
+                    "properties": {"my_object": {"type": "object", "additionalProperties": "foo"}},
+                }
+            ),
+            pytest.raises(AssertionError),
+        ),
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "additionalProperties": True,
+                    "properties": {
+                        "my_oneOf_object": {"type": "object", "oneOf": [{"additionalProperties": True}, {"additionalProperties": False}]}
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+        ),
+    ],
+)
+def test_additional_properties_is_true(connector_spec, expectation):
+    t = _TestSpecBackwardCompatibility()
+    with expectation:
+        t.test_additional_properties_is_true(connector_spec)
+
+
+@pytest.mark.parametrize(
     "previous_connector_spec, actual_connector_spec, expectation",
     [
         pytest.param(

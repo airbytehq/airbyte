@@ -153,20 +153,6 @@ class TestSpec(BaseTest):
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
-    def test_additional_properties_is_true(self, actual_connector_spec):
-        """Check that value of the "additionalProperties" field is always true.
-        A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
-        Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
-        False value introduces the risk of accidental breaking changes.
-        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
-        additional_properties_values = find_all_values_for_key_in_schema(
-            actual_connector_spec.connectionSpecification, "additionalProperties"
-        )
-        if additional_properties_values:
-            assert all(
-                [additional_properties_value is True for additional_properties_value in additional_properties_values]
-            ), "When set, additionalProperties field value must be true for backward compatibility."
-
 
 @pytest.mark.default_timeout(30)
 class TestConnection(BaseTest):
