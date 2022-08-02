@@ -560,7 +560,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
       log.info("Finished wait for connection {}, restarting connection manager workflow", connectionId);
 
-      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.buildStartWorkflowInput(connectionId);
+      final ConnectionUpdaterInput newWorkflowInput = ConnectionManagerUtils.getInstance().buildStartWorkflowInput(connectionId);
 
       Workflow.continueAsNew(newWorkflowInput);
 

@@ -15,7 +15,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -70,7 +69,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 class TemporalClientTest {
@@ -101,6 +99,7 @@ class TemporalClientTest {
   private WorkflowServiceStubs workflowServiceStubs;
   private WorkflowServiceBlockingStub workflowServiceBlockingStub;
   private StreamResetPersistence streamResetPersistence;
+  private ConnectionManagerUtils connectionManagerUtils;
 
   @BeforeEach
   void setup() throws IOException {
@@ -114,6 +113,7 @@ class TemporalClientTest {
     when(workflowServiceStubs.blockingStub()).thenReturn(workflowServiceBlockingStub);
     streamResetPersistence = mock(StreamResetPersistence.class);
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
+    connectionManagerUtils = spy(ConnectionManagerUtils.class);
     temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, streamResetPersistence));
   }
 
@@ -290,9 +290,9 @@ class TemporalClientTest {
       final UUID migratedId = UUID.randomUUID();
 
       doReturn(false)
-          .when(temporalClient).isInRunningWorkflowCache(ConnectionManagerUtils.getConnectionManagerName(nonMigratedId));
+          .when(temporalClient).isInRunningWorkflowCache(ConnectionManagerUtils.getInstance().getConnectionManagerName(nonMigratedId));
       doReturn(true)
-          .when(temporalClient).isInRunningWorkflowCache(ConnectionManagerUtils.getConnectionManagerName(migratedId));
+          .when(temporalClient).isInRunningWorkflowCache(ConnectionManagerUtils.getInstance().getConnectionManagerName(migratedId));
 
       doNothing()
           .when(temporalClient).refreshRunningWorkflow();
@@ -742,20 +742,17 @@ class TemporalClientTest {
 
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
       final UUID connectionId = UUID.fromString("ebbfdc4c-295b-48a0-844f-88551dfad3db");
-      final String connectionManagerWorkflowId = ConnectionManagerUtils.getConnectionManagerName(connectionId);
+      final String connectionManagerWorkflowId = connectionManagerUtils.getConnectionManagerName(connectionId);
       final Set<String> workflowIds = Set.of(connectionManagerWorkflowId);
       doReturn(workflowIds)
           .when(temporalClient).fetchWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
       doReturn(workflowIds)
           .when(temporalClient).filterOutRunningWorkspaceId(workflowIds);
       mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
-      try (final MockedStatic mConnectionManagerUtils = mockStatic(ConnectionManagerUtils.class)) {
-        temporalClient.restartWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
-
-        mConnectionManagerUtils.verify(() -> ConnectionManagerUtils.safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
-            anyString()));
-        mConnectionManagerUtils.verify(() -> ConnectionManagerUtils.startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId)));
-      }
+      temporalClient.restartWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
+      verify(connectionManagerUtils).safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
+          anyString());
+      verify(connectionManagerUtils).startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId));
     }
 
   }
