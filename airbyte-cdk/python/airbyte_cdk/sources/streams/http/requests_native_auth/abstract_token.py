@@ -9,9 +9,7 @@ from requests.auth import AuthBase
 
 
 class AbstractHeaderAuthenticator(AuthBase):
-    """
-    Abstract class for header-based authenticators that set a key-value pair in outgoing HTTP headers
-    """
+    """Abstract class for an header-based authenticators that add a header to outgoing HTTP requests."""
 
     def __call__(self, request):
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -19,7 +17,8 @@ class AbstractHeaderAuthenticator(AuthBase):
         return request
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        """HTTP header to set on the requests"""
+        """The header to set on outgoing HTTP requests"""
+
         return {self.auth_header: self.token}
 
     @property
@@ -30,4 +29,4 @@ class AbstractHeaderAuthenticator(AuthBase):
     @property
     @abstractmethod
     def token(self) -> str:
-        """Value of the HTTP header to set on the requests"""
+        """The header value to set on outgoing HTTP requests"""
