@@ -277,8 +277,8 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    * Modifies a string representation of a date/timestamp and normalizes its era indicator.
    * Specifically, if this is a BCE value:
    * <ul>
-   *   <li>The leading negative sign will be removed if present</li>
-   *   <li>The "BC" suffix will be appended, if not already present</li>
+   * <li>The leading negative sign will be removed if present</li>
+   * <li>The "BC" suffix will be appended, if not already present</li>
    * </ul>
    *
    * You most likely would prefer to call one of the overloaded methods, which accept temporal types.
@@ -300,11 +300,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   /**
-   * java.sql.Date objects don't properly represent their era (for example, using toLocalDate() always returns an object
-   * in CE). So to determine the era, we just check whether the date is before 1 AD.
+   * java.sql.Date objects don't properly represent their era (for example, using toLocalDate() always
+   * returns an object in CE). So to determine the era, we just check whether the date is before 1 AD.
    *
-   * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but my understanding
-   * is that {@link #ONE_CE} has the same weirdness, so it cancels out.
+   * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but
+   * my understanding is that {@link #ONE_CE} has the same weirdness, so it cancels out.
    */
   public static String resolveEra(Date date, String value) {
     return resolveEra(date.before(ONE_CE), value);
@@ -316,4 +316,5 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   public static String resolveEra(Timestamp timestamp, String value) {
     return resolveEra(timestamp.before(ONE_CE), value);
   }
+
 }

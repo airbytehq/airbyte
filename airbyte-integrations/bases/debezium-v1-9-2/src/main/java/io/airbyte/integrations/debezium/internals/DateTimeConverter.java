@@ -34,9 +34,11 @@ public class DateTimeConverter {
 
   public static String convertToTimestampWithTimezone(Object timestamp) {
     if (timestamp instanceof Timestamp t) {
-      // Conceptually, a timestamp with timezone is an Instant. But t.toInstant() actually mangles the value for ancient dates,
+      // Conceptually, a timestamp with timezone is an Instant. But t.toInstant() actually mangles the
+      // value for ancient dates,
       // because leap years weren't applied consistently in ye olden days.
-      // Additionally, toInstant() (and toLocalDateTime()) actually lose the era indicator, so we can't rely on their getEra() methods.
+      // Additionally, toInstant() (and toLocalDateTime()) actually lose the era indicator, so we can't
+      // rely on their getEra() methods.
       // So we have special handling for this case, which sidesteps the toInstant conversion.
       ZonedDateTime timestamptz = t.toLocalDateTime().atZone(ZoneOffset.UTC);
       String value = timestamptz.format(TIMESTAMPTZ_FORMATTER);
@@ -81,4 +83,5 @@ public class DateTimeConverter {
     LocalTime localTime = LocalTime.parse(time.toString());
     return localTime.format(TIME_FORMATTER);
   }
+
 }
