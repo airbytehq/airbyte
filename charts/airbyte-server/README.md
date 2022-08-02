@@ -19,13 +19,16 @@ Helm chart to deploy airbyte-server
 | enabled | bool | `true` |  |
 | extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
+| extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
 | global.configMapName | string | `"something"` |  |
+| global.credVolumeOverride | string | `""` |  |
 | global.database.host | string | `"something"` |  |
 | global.database.port | string | `"5432"` |  |
 | global.database.secretValue | string | `"postgresql-password"` |  |
 | global.deploymentMode | string | `"oss"` |  |
+| global.extraContainers | list | `[]` |  |
 | global.logs.accessKey.existingSecret | string | `""` |  |
 | global.logs.accessKey.existingSecretKey | string | `""` |  |
 | global.logs.accessKey.password | string | `"minio"` |  |

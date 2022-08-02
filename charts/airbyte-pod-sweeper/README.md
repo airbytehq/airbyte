@@ -21,7 +21,6 @@ Helm chart to deploy airbyte-pod-sweeper
 | extraVolumes | list | `[]` |  |
 | global.database.host | string | `"test"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
 | global.database.secretValue | string | `"postgresql-password"` |  |
 | global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |

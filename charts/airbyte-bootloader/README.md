@@ -16,7 +16,6 @@ Helm chart to deploy airbyte-bootloader
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | enabled | bool | `true` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
 | global.database.secretValue | string | `"postgresql-password"` |  |
 | global.deploymentMode | string | `"oss"` |  |
 | global.secretName | string | `"something"` |  |

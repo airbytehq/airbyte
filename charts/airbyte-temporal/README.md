@@ -27,6 +27,7 @@ Helm chart to deploy airbyte-temporal
 | global.database.port | string | `"5432"` |  |
 | global.database.secretValue | string | `"postgresql-password"` |  |
 | global.deploymentMode | string | `"oss"` |  |
+| global.extraContainers | list | `[]` |  |
 | global.secretName | string | `"something"` |  |
 | global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |

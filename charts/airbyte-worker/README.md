@@ -21,10 +21,11 @@ Helm chart to deploy airbyte-worker
 | extraEnv | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
+| global.credVolumeOverride | string | `""` |  |
 | global.database.host | string | `"test"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
 | global.database.secretValue | string | `"postgresql-password"` |  |
+| global.extraContainers | list | `[]` |  |
 | global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |
 | global.jobs.kube.main_container_image_pull_secret | string | `""` |  |
