@@ -253,8 +253,11 @@ class Stream(HttpStream, ABC):
         self._start_date = start_date
         if isinstance(self._start_date, str):
             self._start_date = pendulum.parse(self._start_date)
-        if self._credentials["credentials_title"] == API_KEY_CREDENTIALS:
+        creds_title = self._credentials["credentials_title"]
+        if creds_title == API_KEY_CREDENTIALS:
             self._session.params["hapikey"] = credentials.get("api_key")
+        elif creds_title in (OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS):
+            self._authenticator = api.get_authenticator()
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == codes.too_many_requests:
@@ -864,7 +867,7 @@ class CRMSearchStream(IncrementalStream, ABC):
         slices = associations_stream.stream_slices(sync_mode=SyncMode.full_refresh)
 
         for _slice in slices:
-            logger.debug(f"Reading {_slice} associations of {self.entity}")
+            logger.info(f"Reading {_slice} associations of {self.entity}")
             associations = associations_stream.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
             for group in associations:
                 current_record = records_by_pk[group["from"]["id"]]

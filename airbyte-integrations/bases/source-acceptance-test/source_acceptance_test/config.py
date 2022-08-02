@@ -23,10 +23,22 @@ class BaseConfig(BaseModel):
         extra = "forbid"
 
 
+class BackwardCompatibilityTestsConfig(BaseConfig):
+    previous_connector_version: str = Field(
+        default="latest", description="Previous connector version to use for backward compatibility tests."
+    )
+    disable_backward_compatibility_tests_for_version: Optional[str] = Field(
+        default=None, description="Disable backward compatibility tests for a specific connector version."
+    )
+
+
 class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
+        description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
+    )
 
 
 class ConnectionTestConfig(BaseConfig):
