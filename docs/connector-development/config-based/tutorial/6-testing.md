@@ -94,7 +94,6 @@ Here is the full connector definition for reference:
 ```
 schema_loader:
   class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-  name: "rates"
   file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
 selector:
   type: RecordSelector
@@ -126,7 +125,7 @@ retriever:
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
   record_selector:
-    ref: "*ref(selector)"
+    $ref: "*ref(selector)"
   paginator:
     type: NoPagination
 rates_stream:
@@ -136,13 +135,13 @@ rates_stream:
     cursor_field: "date"
   primary_key: "date"
   schema_loader:
-    ref: "*ref(schema_loader)"
+    $ref: "*ref(schema_loader)"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     stream_slicer:
-      ref: "*ref(stream_slicer)"
+      $ref: "*ref(stream_slicer)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path:
         type: "InterpolatedString"
         string: "{{ stream_slice.start_date }}"
@@ -155,7 +154,8 @@ streams:
   - "*ref(rates_stream)"
 check:
   type: CheckStream
-  stream_names: ["rates"]
+  stream_names: [ "rates" ]
+
 ```
 
 ## Next steps:
