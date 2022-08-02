@@ -45,7 +45,7 @@
   "clickhouse": [
     { "'\"HKD@spéçiäl & characters\"'": "HKD_special___characters" },
     {
-      "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "column___with___quotes is not null"
+      "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "column___with__quotes is not null"
     }
   ]
 }
