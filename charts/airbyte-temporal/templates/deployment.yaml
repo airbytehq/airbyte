@@ -9,6 +9,7 @@ metadata:
     helm.sh/chart: {{ include "airbyte.chart" . }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -65,7 +66,7 @@ spec:
             value: "config/dynamicconfig/development.yaml"
         {{- end }}
         {{- if .Values.extraEnv }}
-        {{ .Values.extraEnv | toYaml | nindent 8 }}
+        {{ .Values.extraEnv | toYaml | nindent 10 }}
         {{- end }}
         ports:
         - containerPort: 7233
@@ -107,6 +108,9 @@ spec:
           timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.extraContainers }}
+        {{ toyaml .Values.extraInitContainers | indent 8 }}
         {{- end }}
       volumes:
       - name: airbyte-temporal-dynamicconfig
