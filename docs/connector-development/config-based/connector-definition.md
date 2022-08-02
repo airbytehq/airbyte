@@ -236,7 +236,7 @@ This is the case for the [record selector](record-selector.md), which passes in 
 
 In additional to passing additional values through the kwargs argument, macros can be called from within the string interpolation.
 For example,
-"{{ max(2, 3) }}" will return 3
+`"{{ max(2, 3) }}" -> 3`
 
 The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
 
