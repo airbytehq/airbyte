@@ -1,6 +1,6 @@
 {
   "type": ["object", "null"],
-  "additiona;Properties": true,
+  "additionalProperties": true,
   "properties": {
     "_links": {
       "type": ["object", "null"]
@@ -15,14 +15,14 @@
     },
     "credentials": {
       "type": ["object", "null"],
-      "additiona;Properties": true,
+      "additionalProperties": true,
       "properties": {
         "password": {
           "type": ["object", "null"],
-          "additiona;Properties": true,
+          "additionalProperties": true,
           "properties": {
             "hash": {
-              "additiona;Properties": true,
+              "additionalProperties": true,
               "properties": {
                 "algorithm": {
                   "type": ["string", "null"]
@@ -43,7 +43,7 @@
               "type": ["object", "null"]
             },
             "hook": {
-              "additiona;Properties": true,
+              "additionalProperties": true,
               "properties": {
                 "type": {
                   "type": ["string", "null"]
@@ -57,7 +57,7 @@
           }
         },
         "provider": {
-          "additiona;Properties": true,
+          "additionalProperties": true,
           "properties": {
             "name": {
               "type": ["string", "null"]
@@ -69,7 +69,7 @@
           "type": ["object", "null"]
         },
         "recovery_question": {
-          "additiona;Properties": true,
+          "additionalProperties": true,
           "properties": {
             "answer": {
               "type": ["string", "null"]
@@ -98,7 +98,7 @@
       "type": ["string", "null"]
     },
     "profile": {
-      "additiona;Properties": true,
+      "additionalProperties": true,
       "properties": {
         "city": {
           "type": ["string", "null"]
@@ -204,7 +204,7 @@
       "type": ["string", "null"]
     },
     "type": {
-      "additiona;Properties": true,
+      "additionalProperties": true,
       "properties": {
         "id": {
           "type": ["string", "null"]
