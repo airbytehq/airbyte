@@ -4,6 +4,8 @@ global:
   deploymentMode: oss
   configMapName: something
   secretName: something
+  credVolumeOverride: ""
+  extraContainers: []
   database:
     # secretName: "test-postgresql"
     secretValue: "postgresql-password"
@@ -182,3 +184,5 @@ extraVolumeMounts: []
 extraVolumes: []
 
 extraContainers: []
+
+extraInitContainers: []

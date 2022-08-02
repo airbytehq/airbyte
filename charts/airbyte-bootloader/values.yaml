@@ -4,7 +4,6 @@ global:
   deploymentMode: oss
   secretName: something
   database:
-    secretName: "test-postgresql"
     secretValue: "postgresql-password"
 
 

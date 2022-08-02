@@ -4,6 +4,7 @@ global:
   deploymentMode: oss
   configMapName: something
   secretName: something
+  extraContainers: []
   database:
     # secretName: "test-postgresql"
     secretValue: "postgresql-password"
