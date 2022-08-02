@@ -6,9 +6,9 @@ package io.airbyte.workers.temporal.spec;
 
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.config.Configs.WorkerEnvironment;
+import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.scheduler.persistence.JobPersistence;
@@ -51,12 +51,13 @@ public class SpecActivityImpl implements SpecActivity {
     this.airbyteVersion = airbyteVersion;
   }
 
-  public ConnectorSpecification run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
+  @Override
+  public ConnectorJobOutput run(final JobRunConfig jobRunConfig, final IntegrationLauncherConfig launcherConfig) {
     final Supplier<JobGetSpecConfig> inputSupplier = () -> new JobGetSpecConfig().withDockerImage(launcherConfig.getDockerImage());
 
     final ActivityExecutionContext context = Activity.getExecutionContext();
 
-    final TemporalAttemptExecution<JobGetSpecConfig, ConnectorSpecification> temporalAttemptExecution = new TemporalAttemptExecution<>(
+    final TemporalAttemptExecution<JobGetSpecConfig, ConnectorJobOutput> temporalAttemptExecution = new TemporalAttemptExecution<>(
         workspaceRoot,
         workerEnvironment,
         logConfigs,
@@ -71,8 +72,8 @@ public class SpecActivityImpl implements SpecActivity {
     return temporalAttemptExecution.get();
   }
 
-  private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorSpecification>, Exception> getWorkerFactory(
-                                                                                                        final IntegrationLauncherConfig launcherConfig) {
+  private CheckedSupplier<Worker<JobGetSpecConfig, ConnectorJobOutput>, Exception> getWorkerFactory(
+                                                                                                    final IntegrationLauncherConfig launcherConfig) {
     return () -> {
       final IntegrationLauncher integrationLauncher = new AirbyteIntegrationLauncher(
           launcherConfig.getJobId(),

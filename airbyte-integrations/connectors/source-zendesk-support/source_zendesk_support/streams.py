@@ -474,6 +474,7 @@ class Tickets(SourceZendeskIncrementalExportStream):
     """Tickets stream: https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based"""
 
     response_list_name: str = "tickets"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
 
 class TicketComments(SourceZendeskSupportTicketEventsExportStream):
@@ -581,6 +582,8 @@ class TicketAudits(SourceZendeskSupportCursorPaginationStream):
 
     # Root of response is 'audits'. As rule as an endpoint name is equal a response list name
     response_list_name = "audits"
+
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     # This endpoint uses a variant of cursor pagination with some differences from cursor pagination used in other endpoints.
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:

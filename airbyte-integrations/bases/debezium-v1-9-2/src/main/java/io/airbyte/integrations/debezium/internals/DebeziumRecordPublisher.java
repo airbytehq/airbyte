@@ -6,6 +6,7 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
@@ -136,10 +137,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
       // https://debezium.io/documentation/reference/1.9/operations/debezium-server.html#debezium-source-database-history-class
       // https://debezium.io/documentation/reference/development/engine.html#_in_the_code
       // As mentioned in the documents above, debezium connector for MySQL needs to track the schema
-      // changes. If we don't do this, we can't fetch records for the table
-      // We have implemented our own implementation to filter out the schema information from other
-      // databases that the connector is not syncing
-      props.setProperty("database.history", "io.airbyte.integrations.debezium.internals.FilteredFileDatabaseHistory");
+      // changes. If we don't do this, we can't fetch records for the table.
+      props.setProperty("database.history", "io.debezium.relational.history.FileDatabaseHistory");
       props.setProperty("database.history.file.filename", schemaHistoryManager.get().getPath().toString());
     }
 
@@ -148,17 +147,17 @@ public class DebeziumRecordPublisher implements AutoCloseable {
     props.setProperty("value.converter.schemas.enable", "false");
 
     // debezium names
-    props.setProperty("name", config.get("database").asText());
-    props.setProperty("database.server.name", config.get("database").asText());
+    props.setProperty("name", config.get(JdbcUtils.DATABASE_KEY).asText());
+    props.setProperty("database.server.name", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     // db connection configuration
-    props.setProperty("database.hostname", config.get("host").asText());
-    props.setProperty("database.port", config.get("port").asText());
-    props.setProperty("database.user", config.get("username").asText());
-    props.setProperty("database.dbname", config.get("database").asText());
+    props.setProperty("database.hostname", config.get(JdbcUtils.HOST_KEY).asText());
+    props.setProperty("database.port", config.get(JdbcUtils.PORT_KEY).asText());
+    props.setProperty("database.user", config.get(JdbcUtils.USERNAME_KEY).asText());
+    props.setProperty("database.dbname", config.get(JdbcUtils.DATABASE_KEY).asText());
 
-    if (config.has("password")) {
-      props.setProperty("database.password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      props.setProperty("database.password", config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     // By default "decimal.handing.mode=precise" which's caused returning this value as a binary.

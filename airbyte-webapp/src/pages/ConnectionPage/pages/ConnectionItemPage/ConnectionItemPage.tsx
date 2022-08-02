@@ -2,13 +2,12 @@ import React, { Suspense, useState } from "react";
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
-import { AlertBanner } from "components/base/Banner/AlertBanner";
 import HeadTitle from "components/HeadTitle";
 
 import { getFrequencyConfig } from "config/utils";
 import { ConnectionStatus } from "core/request/AirbyteClient";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { useGetConnection } from "hooks/services/useConnectionHook";
+import { TrackActionLegacyType, TrackActionType, TrackActionNamespace, useTrackAction } from "hooks/useTrackAction";
 import TransformationView from "pages/ConnectionPage/pages/ConnectionItemPage/components/TransformationView";
 
 import ConnectionPageTitle from "./components/ConnectionPageTitle";
@@ -29,15 +28,14 @@ const ConnectionItemPage: React.FC = () => {
 
   const { source, destination } = connection;
 
-  const analyticsService = useAnalyticsService();
-
   const frequency = getFrequencyConfig(connection.schedule);
 
+  const trackSourceAction = useTrackAction(TrackActionNamespace.SOURCE, TrackActionLegacyType.SOURCE);
+
   const onAfterSaveSchema = () => {
-    analyticsService.track("Source - Action", {
-      action: "Edit schema",
+    trackSourceAction("Edit schema", TrackActionType.SCHEMA, {
       connector_source: source.sourceName,
-      connector_source_id: source.sourceDefinitionId,
+      connector_source_definition_id: source.sourceDefinitionId,
       connector_destination: destination.destinationName,
       connector_destination_definition_id: destination.destinationDefinitionId,
       frequency: frequency?.type,
@@ -70,9 +68,6 @@ const ConnectionItemPage: React.FC = () => {
           currentStep={currentStep}
           onStatusUpdating={setStatusUpdating}
         />
-      }
-      error={
-        isConnectionDeleted ? <AlertBanner alertType="connectionDeleted" id="connection.connectionDeletedView" /> : null
       }
     >
       <Suspense fallback={<LoadingPage />}>

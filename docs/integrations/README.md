@@ -49,6 +49,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Dockerhub](sources/dockerhub.md)                                                           | Alpha                | Yes                 |
 | [Drift](sources/drift.md)                                                                   | Alpha                | No                  |
 | [Drupal](sources/drupal.md)                                                                 | Alpha                | No                  |
+| [Elasticsearch](sources/elasticsearch.md)                                                   | Alpha                | No                  |
 | [End-to-End Testing](sources/e2e-test.md)                                                   | Alpha                | Yes                 |
 | [Exchange Rates API](sources/exchangeratesapi.md)                                           | Alpha                | Yes                 |
 | [Facebook Marketing](sources/facebook-marketing.md)                                         | Generally Available  | Yes                 |
@@ -62,6 +63,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
 | [GitHub](sources/github.md)                                                                 | Generally Available  | Yes                 |
 | [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
+| [Glassfrog](sources/glassfrog.md)                                                           | Alpha                | No                  |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
 | [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Alpha                | No                  |
 | [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
@@ -82,6 +84,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
 | [Klaviyo](sources/klaviyo.md)                                                               | Alpha                | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
+| [Kyriba](sources/kyriba.md)                                                             | Alpha                | Yes                 |
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
 | [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
