@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -41,26 +41,33 @@ const MainView: React.FC = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+  cloudWorkspace.creditStatus = CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD;
+
+  console.log(cloudWorkspace);
+
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
       CreditStatus.NEGATIVE_BEYOND_GRACE_PERIOD,
       CreditStatus.NEGATIVE_MAX_THRESHOLD,
       CreditStatus.NEGATIVE_WITHIN_GRACE_PERIOD,
-    ].includes(cloudWorkspace.creditStatus) &&
-    !cloudWorkspace.trialExpiryTimestamp;
+    ].includes(cloudWorkspace.creditStatus);
 
   const alertToShow = showCreditsBanner ? "credits" : cloudWorkspace.trialExpiryTimestamp ? "trial" : undefined;
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
-      return formatMessage(
-        { id: `credits.creditsProblem.${cloudWorkspace.creditStatus}` },
-        {
-          values: {
-            lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
-          },
-        }
+      return (
+        <FormattedMessage
+          id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`}
+          values={{
+            lnk: (
+              <Link to={CloudRoutes.Credits}>
+                <FormattedMessage id="credits.addCredits" />
+              </Link>
+            ),
+          }}
+        />
       );
     } else if (alertToShow === "trial") {
       const { trialExpiryTimestamp } = cloudWorkspace;
