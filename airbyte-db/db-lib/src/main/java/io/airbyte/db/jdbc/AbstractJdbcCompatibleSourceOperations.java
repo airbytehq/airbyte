@@ -296,19 +296,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   public static String resolveEra(LocalDate date, String value) {
-    return resolveEra(isBce(date), value);
-  }
-
-  public static String resolveEra(Date date, String value) {
-    return resolveEra(isBce(date), value);
-  }
-
-  public static String resolveEra(Timestamp timestamp, String value) {
-    return resolveEra(isBce(timestamp), value);
-  }
-
-  public static boolean isBce(LocalDate date) {
-    return date.getEra().equals(IsoEra.BCE);
+    return resolveEra(date.getEra().equals(IsoEra.BCE), value);
   }
 
   /**
@@ -318,14 +306,14 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
    * This is technically kind of sketchy due to ancient timestamps being weird (leap years, etc.), but my understanding
    * is that {@link #ONE_CE} has the same weirdness, so it cancels out.
    */
-  public static boolean isBce(Date date) {
-    return date.before(ONE_CE);
+  public static String resolveEra(Date date, String value) {
+    return resolveEra(date.before(ONE_CE), value);
   }
 
   /**
-   * See {@link #isBce(Date)} for explanation.
+   * See {@link #resolveEra(Date, String)} for explanation.
    */
-  public static boolean isBce(Timestamp timestamp) {
-    return timestamp.before(ONE_CE);
+  public static String resolveEra(Timestamp timestamp, String value) {
+    return resolveEra(timestamp.before(ONE_CE), value);
   }
 }
