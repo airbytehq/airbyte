@@ -15,7 +15,7 @@ class TestSpecBackwardCompatibility(BaseTest):
     def compute_spec_diff(actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
         return DeepDiff(previous_connector_spec.dict(), actual_connector_spec.dict(), view="tree")
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def spec_diff(
         self, inputs: SpecTestConfig, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification
     ) -> DeepDiff:
@@ -27,10 +27,10 @@ class TestSpecBackwardCompatibility(BaseTest):
         return self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
 
     def test_new_required_field_declaration(self, spec_diff):
-        added_required_field = [
+        added_required_fields = [
             addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "required"
         ]
-        assert len(added_required_field) == 0, f"The current spec has a new required field: {spec_diff.pretty()}"
+        assert len(added_required_fields) == 0, f"The current spec has a new required field: {spec_diff.pretty()}"
 
     def test_new_required_property(self, spec_diff):
         added_required_properties = [
@@ -51,3 +51,15 @@ class TestSpecBackwardCompatibility(BaseTest):
             removal for removal in spec_diff.get("iterable_item_removed", []) if removal.up.path(output_format="list")[-1] == "type"
         ]
         assert len(removals) == 0, f"The current spec narrowed a field type: {spec_diff.pretty()}"
+
+    def test_enum_field_has_narrowed(self, spec_diff):
+        removals = [
+            removal for removal in spec_diff.get("iterable_item_removed", []) if removal.up.path(output_format="list")[-1] == "enum"
+        ]
+        assert len(removals) == 0, f"The current spec narrowed a field enum: {spec_diff.pretty()}"
+
+    def test_new_enum_field_declaration(self, spec_diff):
+        added_enum_fields = [
+            addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "enum"
+        ]
+        assert len(added_enum_fields) == 0, f"The current spec has a new enum field: {spec_diff.pretty()}"

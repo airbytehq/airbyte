@@ -237,7 +237,7 @@ def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_required_string": {"type": [None, "string"]},
+                        "my_string": {"type": [None, "string"]},
                     },
                 }
             ),
@@ -245,7 +245,7 @@ def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_required_string": {"type": ["string"]},
+                        "my_string": {"type": ["string"]},
                     },
                 }
             ),
@@ -319,3 +319,187 @@ def test_type_field_has_narrowed(previous_connector_spec, actual_connector_spec,
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
         t.test_type_field_has_narrowed(spec_diff)
+
+
+@pytest.mark.parametrize(
+    "previous_connector_spec, actual_connector_spec, expectation",
+    [
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string", "enum": ["a", "b"]},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string", "enum": ["a"]},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Top level: Narrowing a field enum should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string", "enum": ["a"]},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string", "enum": ["a", "b"]},
+                    },
+                }
+            ),
+            does_not_raise(),
+            id="Top level: Expanding a field enum should not fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string", "enum": ["a", "b"]}}},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string", "enum": ["a"]}}},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Nested level: Narrowing a field enum should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string", "enum": ["a"]}}},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string", "enum": ["a", "b"]}}},
+                    },
+                }
+            ),
+            does_not_raise(),
+            id="Nested level: Expanding a field enum should not fail.",
+        ),
+    ],
+)
+def test_enum_field_has_narrowed(previous_connector_spec, actual_connector_spec, expectation):
+    t = _TestSpecBackwardCompatibility()
+    spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
+    with expectation:
+        t.test_enum_field_has_narrowed(spec_diff)
+
+
+@pytest.mark.parametrize(
+    "previous_connector_spec, actual_connector_spec, expectation",
+    [
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string"},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string", "enum": ["a", "b"]},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Top level: Declaring a field enum should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string", "enum": ["a", "b"]},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_string": {"type": "string"},
+                    },
+                }
+            ),
+            does_not_raise(),
+            id="Top level: Removing the field enum should not fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string"}}},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string", "enum": ["a", "b"]}}},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Nested level: Declaring a field enum should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string", "enum": ["a", "b"]}}},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string"}}},
+                    },
+                }
+            ),
+            does_not_raise(),
+            id="Nested level: Removing the enum field should not fail.",
+        ),
+    ],
+)
+def test_new_enum_field_declaration(previous_connector_spec, actual_connector_spec, expectation):
+    t = _TestSpecBackwardCompatibility()
+    spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
+    with expectation:
+        t.test_new_enum_field_declaration(spec_diff)
