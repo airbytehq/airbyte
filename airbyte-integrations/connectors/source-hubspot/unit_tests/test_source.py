@@ -50,7 +50,7 @@ def test_check_connection_empty_config(config):
 def test_check_connection_invalid_config(config):
     config.pop("start_date")
 
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         SourceHubspot().check_connection(logger, config=config)
 
 
@@ -406,6 +406,8 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(req
     requests_mock.register_uri("POST", test_stream.url, responses)
     test_stream._sync_mode = None
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
+    requests_mock.register_uri("POST", "/crm/v4/associations/company/contacts/batch/read", [{"status_code": 200, "json": {"results": []}}])
+
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
     # Instead, it should use the new state to start a new search query.
