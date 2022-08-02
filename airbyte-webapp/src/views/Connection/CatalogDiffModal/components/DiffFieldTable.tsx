@@ -21,7 +21,7 @@ export const DiffFieldTable: React.FC<DiffFieldTableProps> = ({ fieldTransforms,
             <DiffHeader diffCount={fieldTransforms.length} diffVerb={diffVerb} diffType="field" />
           </th>
           {diffVerb === "changed" && (
-            <th>
+            <th className={styles.padLeft}>
               <FormattedMessage id="connection.updateSchema.dataType" />
             </th>
           )}

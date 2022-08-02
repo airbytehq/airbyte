@@ -3,10 +3,15 @@
 
 .accordionSubHeader {
   @extend .sectionSubHeader;
+
+  & .padLeft {
+    padding-left: variables.$spacing-lg;
+  }
+
   & th {
     font-size: 10px;
     width: 228px;
-    padding-left: variables.$spacing-sm;
+    padding-left: variables.$spacing-md;
   }
 }
 

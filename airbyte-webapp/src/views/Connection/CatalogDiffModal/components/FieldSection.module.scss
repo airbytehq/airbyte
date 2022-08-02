@@ -12,9 +12,14 @@ li {
   font-weight: 400;
 }
 
+.fieldHeader {
+  @extend .sectionHeader;
+  padding: variables.$spacing-lg variables.$spacing-xl;
+}
+
 .fieldSubHeader {
   @extend .sectionSubHeader;
-  padding: 0px variables.$spacing-sm 0px variables.$spacing-lg;
+  padding: 0px variables.$spacing-sm 0px 35px;
 
   .padLeft {
     padding-left: variables.$spacing-xl;
@@ -29,4 +34,8 @@ li {
     line-height: 12px;
     padding-left: variables.$spacing-md;
   }
+}
+
+.fieldRowsContainer {
+  padding-left: variables.$spacing-lg;
 }

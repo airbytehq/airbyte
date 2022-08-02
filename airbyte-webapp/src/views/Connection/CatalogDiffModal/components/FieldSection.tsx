@@ -18,17 +18,19 @@ export const FieldSection: React.FC<FieldSectionProps> = ({ streams, diffVerb })
     // eslint-disable-next-line css-modules/no-undef-class
     <div className={styles.sectionContainer}>
       {/* eslint-disable-next-line css-modules/no-undef-class */}
-      <div className={styles.sectionHeader}>
-        <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType="field" />
-        <div className={styles.fieldSubHeader}>
-          <div id={formatMessage({ id: "connection.updateSchema.namespace" })}>
-            <FormattedMessage id="connection.updateSchema.namespace" />
-          </div>
-          <div className={styles.padLeft} id={formatMessage({ id: "connection.updateSchema.streamName" })}>
-            <FormattedMessage id="connection.updateSchema.streamName" />
-          </div>
-          <div />
+      <div className={styles.fieldHeader}>
+        <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType="stream" />
+      </div>
+      <div className={styles.fieldSubHeader}>
+        <div id={formatMessage({ id: "connection.updateSchema.namespace" })}>
+          <FormattedMessage id="connection.updateSchema.namespace" />
         </div>
+        <div className={styles.padLeft} id={formatMessage({ id: "connection.updateSchema.streamName" })}>
+          <FormattedMessage id="connection.updateSchema.streamName" />
+        </div>
+        <div />
+      </div>
+      <div className={styles.fieldRowsContainer}>
         {streams.length > 0 && (
           <ul>
             {streams.map((stream) => {
