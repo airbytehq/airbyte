@@ -52,10 +52,10 @@ public class JobErrorReporter {
   private final JobErrorReportingClient jobErrorReportingClient;
 
   public JobErrorReporter(final ConfigRepository configRepository,
-      final DeploymentMode deploymentMode,
-      final String airbyteVersion,
-      final WebUrlHelper webUrlHelper,
-      final JobErrorReportingClient jobErrorReportingClient) {
+                          final DeploymentMode deploymentMode,
+                          final String airbyteVersion,
+                          final WebUrlHelper webUrlHelper,
+                          final JobErrorReportingClient jobErrorReportingClient) {
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
@@ -110,9 +110,9 @@ public class JobErrorReporter {
    * @param jobContext - connector job reporting context
    */
   public void reportSourceCheckJobFailure(final UUID sourceDefinitionId,
-      final UUID workspaceId,
-      final FailureReason failureReason,
-      final ConnectorJobReportingContext jobContext)
+                                          final UUID workspaceId,
+                                          final FailureReason failureReason,
+                                          final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
@@ -133,9 +133,9 @@ public class JobErrorReporter {
    * @param jobContext - connector job reporting context
    */
   public void reportDestinationCheckJobFailure(final UUID destinationDefinitionId,
-      final UUID workspaceId,
-      final FailureReason failureReason,
-      final ConnectorJobReportingContext jobContext)
+                                               final UUID workspaceId,
+                                               final FailureReason failureReason,
+                                               final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
     final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(destinationDefinitionId);
@@ -155,9 +155,9 @@ public class JobErrorReporter {
    * @param jobContext - connector job reporting context
    */
   public void reportDiscoverJobFailure(final UUID sourceDefinitionId,
-      final UUID workspaceId,
-      final FailureReason failureReason,
-      final ConnectorJobReportingContext jobContext)
+                                       final UUID workspaceId,
+                                       final FailureReason failureReason,
+                                       final ConnectorJobReportingContext jobContext)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardWorkspace workspace = configRepository.getStandardWorkspace(workspaceId, true);
     final StandardSourceDefinition sourceDefinition = configRepository.getStandardSourceDefinition(sourceDefinitionId);
@@ -209,9 +209,9 @@ public class JobErrorReporter {
   }
 
   private void reportJobFailureReason(@Nullable final StandardWorkspace workspace,
-      final FailureReason failureReason,
-      final String dockerImage,
-      final Map<String, String> metadata) {
+                                      final FailureReason failureReason,
+                                      final String dockerImage,
+                                      final Map<String, String> metadata) {
     final Map<String, String> commonMetadata = new HashMap<>(Map.ofEntries(
         Map.entry(AIRBYTE_VERSION_META_KEY, airbyteVersion),
         Map.entry(DEPLOYMENT_MODE_META_KEY, deploymentMode.name())));
