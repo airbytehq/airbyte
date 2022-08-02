@@ -11,6 +11,8 @@ The configuration will be validated against this JSON Schema, which defines the 
 
 We recommend using the `Configuration Based Source` template from the template generator in `airbyte-integrations/connector-templates/generator` to generate the basic file structure.
 
+See the [tutorial for a complete connector definition](tutorial/6-testing.md)
+
 ## Object instantiation
 
 This section describes the object that are to be instantiated from the YAML definition.
