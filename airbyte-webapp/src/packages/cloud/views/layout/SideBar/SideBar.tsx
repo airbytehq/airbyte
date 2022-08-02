@@ -1,4 +1,3 @@
-import { faStar } from "@fortawesome/free-regular-svg-icons";
 import { faQuestionCircle } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
@@ -22,15 +21,11 @@ import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SidebarPopout, { Icon, Item } from "views/layout/SideBar/components/SidebarPopout";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
+import { CreditsIcon } from "../../../../../components/icons/CreditsIcon";
 import { NotificationIndicator } from "views/layout/SideBar/NotificationIndicator";
 import { useCalculateSidebarStyles, getPopoutStyles } from "views/layout/SideBar/SideBar";
 
 import { RoutePaths } from "../../../../../pages/routePaths";
-
-const CreditsIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
 
 const Bar = styled.nav`
   width: 100px;
@@ -131,7 +126,7 @@ const SideBar: React.FC = () => {
       <Menu>
         <li>
           <NavLink className={navLinkClassName} to={CloudRoutes.Credits}>
-            <CreditsIcon icon={faStar} />
+            <CreditsIcon />
             <Text>
               <FormattedNumber value={cloudWorkspace.remainingCredits} />
             </Text>
