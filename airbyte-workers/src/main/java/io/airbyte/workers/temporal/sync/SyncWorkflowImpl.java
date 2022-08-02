@@ -18,6 +18,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.scheduler.models.IntegrationLauncherConfig;
 import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.temporal.scheduling.shared.ActivityConfiguration;
+import io.temporal.activity.ActivityOptions;
 import io.temporal.workflow.Workflow;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -28,14 +29,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
   private static final int CURRENT_VERSION = 1;
-  private final ReplicationActivity replicationActivity =
-      Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
-  private final NormalizationActivity normalizationActivity =
-      Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
-  private final DbtTransformationActivity dbtTransformationActivity =
-      Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
-  private final PersistStateActivity persistActivity =
-      Workflow.newActivityStub(PersistStateActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -43,6 +36,12 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
+
+    // TODO (parker) add an activity that decides the task queue based on the connectionId
+    final String activityTaskQueue = EnvConfigs.DEFAULT_SYNC_ACTIVITY_TASK_QUEUE;
+
+    final ReplicationActivity replicationActivity =
+        Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
 
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
@@ -52,6 +51,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
       // state is a checkpoint of the raw data that has been copied to the destination;
       // normalization & dbt does not depend on it
       final ConfiguredAirbyteCatalog configuredCatalog = syncInput.getCatalog();
+
+      final PersistStateActivity persistActivity =
+          Workflow.newActivityStub(PersistStateActivity.class, setTaskQueue(ActivityConfiguration.SHORT_ACTIVITY_OPTIONS, activityTaskQueue));
+
       persistActivity.persist(connectionId, syncOutput, configuredCatalog);
     }
 
@@ -60,6 +63,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         if (standardSyncOperation.getOperatorType() == OperatorType.NORMALIZATION) {
           final Configs configs = new EnvConfigs();
           final NormalizationInput normalizationInput = generateNormalizationInput(syncInput, syncOutput, configs);
+
+          final NormalizationActivity normalizationActivity =
+              Workflow.newActivityStub(NormalizationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
+
           final NormalizationSummary normalizationSummary =
               normalizationActivity.normalize(jobRunConfig, destinationLauncherConfig, normalizationInput);
           syncOutput = syncOutput.withNormalizationSummary(normalizationSummary);
@@ -67,6 +74,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           final OperatorDbtInput operatorDbtInput = new OperatorDbtInput()
               .withDestinationConfiguration(syncInput.getDestinationConfiguration())
               .withOperatorDbt(standardSyncOperation.getOperatorDbt());
+
+          final DbtTransformationActivity dbtTransformationActivity =
+              Workflow.newActivityStub(DbtTransformationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
 
           dbtTransformationActivity.run(jobRunConfig, destinationLauncherConfig, syncInput.getResourceRequirements(), operatorDbtInput);
         } else {
@@ -93,6 +103,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withCatalog(syncOutput.getOutputCatalog())
         .withResourceRequirements(resourceReqs);
+  }
+
+  private ActivityOptions setTaskQueue(final ActivityOptions activityOptions, final String taskQueue) {
+    return ActivityOptions.newBuilder(activityOptions).setTaskQueue(taskQueue).build();
   }
 
 }
