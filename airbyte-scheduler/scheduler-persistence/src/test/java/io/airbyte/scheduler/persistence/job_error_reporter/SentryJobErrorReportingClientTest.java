@@ -105,6 +105,27 @@ class SentryJobErrorReportingClientTest {
   }
 
   @Test
+  void testReportJobFailureReasonWithNoWorkspace() {
+    final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
+
+    final FailureReason failureReason = new FailureReason()
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withFailureType(FailureType.SYSTEM_ERROR)
+        .withInternalMessage("RuntimeError: Something went wrong");
+
+    sentryErrorReportingClient.reportJobFailureReason(null, failureReason, DOCKER_IMAGE, Map.of());
+
+    verify(mockSentryHub).captureEvent(eventCaptor.capture());
+    final SentryEvent actualEvent = eventCaptor.getValue();
+    final User sentryUser = actualEvent.getUser();
+    assertNull(sentryUser);
+
+    final Message message = actualEvent.getMessage();
+    assertNotNull(message);
+    assertEquals("RuntimeError: Something went wrong", message.getFormatted());
+  }
+
+  @Test
   void testReportJobFailureReasonWithStacktrace() {
     final ArgumentCaptor<SentryEvent> eventCaptor = ArgumentCaptor.forClass(SentryEvent.class);
 
