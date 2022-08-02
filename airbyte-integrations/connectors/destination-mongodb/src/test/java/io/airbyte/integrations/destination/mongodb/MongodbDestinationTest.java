@@ -74,22 +74,22 @@ class MongodbDestinationTest {
             .put("instance_type", standaloneConfig)
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb://user:pass@localhost:27017/dbName?authSource=admin&tcl=false"),
+            "mongodb://user:pass@localhost:27017/dbName?authSource=admin&tls=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", standaloneTlsConfig)
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb://localhost:27017/dbName?authSource=admin&tcl=true"),
+            "mongodb://localhost:27017/dbName?authSource=admin&tls=true"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", replicaWithNameConfig)
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb://user:pass@localhost1:27017,localhost2:27017/dbName?authSource=admin&directConnection=false&tcl=true&replicaSet=replicaName"),
+            "mongodb://user:pass@localhost1:27017,localhost2:27017/dbName?authSource=admin&directConnection=false&tls=true&replicaSet=replicaName"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", replicaWithoutNameConfig)
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb://localhost1:27017,localhost2:27017/dbName?authSource=admin&directConnection=false&tcl=true"),
+            "mongodb://localhost1:27017,localhost2:27017/dbName?authSource=admin&directConnection=false&tls=true"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put("instance_type", atlasConfig)
             .put(JdbcUtils.DATABASE_KEY, "dbName")
@@ -106,13 +106,13 @@ class MongodbDestinationTest {
             .put(JdbcUtils.PORT_KEY, "27017")
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", authConfig).build()),
-            "mongodb://user:pass@localhost:27017/dbName?authSource=admin&tcl=false"),
+            "mongodb://user:pass@localhost:27017/dbName?authSource=admin&tls=false"),
         arguments(Jsons.jsonNode(ImmutableMap.builder()
             .put(JdbcUtils.HOST_KEY, "localhost")
             .put(JdbcUtils.PORT_KEY, "27017")
             .put(JdbcUtils.DATABASE_KEY, "dbName")
             .put("auth_type", noneAuthConfig).build()),
-            "mongodb://localhost:27017/dbName?authSource=admin&tcl=false"));
+            "mongodb://localhost:27017/dbName?authSource=admin&tls=false"));
   }
 
 }

@@ -132,7 +132,7 @@ public class MongodbDestinationStrictEncryptAcceptanceTest extends DestinationAc
   }
 
   private MongoDatabase getMongoDatabase() {
-    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&tcl=true",
+    final String connectionString = String.format("mongodb://%s:%s@%s:%s/%s?authSource=admin&tls=true",
         config.get(AUTH_TYPE).get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(AUTH_TYPE).get(JdbcUtils.PASSWORD_KEY).asText(),
         config.get(INSTANCE_TYPE).get(JdbcUtils.HOST_KEY).asText(),
