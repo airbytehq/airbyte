@@ -67,7 +67,7 @@ streams:
   - "*ref(rates_stream)"
 check:
   type: CheckStream
-  stream_names: ["rates_stream"]
+  stream_names: ["rates"]
 ```
 
 2. Next we'll set the base url.
