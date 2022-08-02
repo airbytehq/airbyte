@@ -1,8 +1,0 @@
-{
-  "type": ["object", "null"],
-  "properties": {
-    "herf": {
-      "type": ["null", "string"]
-    }
-  }
-}
