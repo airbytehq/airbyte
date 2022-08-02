@@ -8,7 +8,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Set
 
 import dpath.util
 import jsonschema
@@ -36,35 +36,6 @@ from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, ge
 @pytest.fixture(name="connector_spec_dict")
 def connector_spec_dict_fixture(actual_connector_spec):
     return json.loads(actual_connector_spec.json())
-
-
-@pytest.fixture(name="actual_connector_spec")
-def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRunner) -> ConnectorSpecification:
-    if not request.instance.spec_cache:
-        output = docker_runner.call_spec()
-        spec_messages = filter_output(output, Type.SPEC)
-        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
-        spec = spec_messages[0].spec
-        request.spec_cache = spec
-    return request.spec_cache
-
-
-@pytest.fixture(name="previous_connector_spec")
-def previous_connector_spec_fixture(
-    request: BaseTest, previous_connector_docker_runner: ConnectorRunner
-) -> Optional[ConnectorSpecification]:
-    if previous_connector_docker_runner is None:
-        logging.warning(
-            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
-        )
-        return None
-    if not request.instance.previous_spec_cache:
-        output = previous_connector_docker_runner.call_spec()
-        spec_messages = filter_output(output, Type.SPEC)
-        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
-        spec = spec_messages[0].spec
-        request.instance.previous_spec_cache = spec
-    return request.instance.previous_spec_cache
 
 
 @pytest.mark.default_timeout(10)
