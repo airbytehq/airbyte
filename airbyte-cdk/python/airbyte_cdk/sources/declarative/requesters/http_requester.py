@@ -35,6 +35,7 @@ class HttpRequester(Requester):
         authenticator: HttpAuthenticator = None,
         error_handler: Optional[ErrorHandler] = None,
         config: Config,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param name: Name of the stream. Only used for request/response caching
@@ -45,6 +46,7 @@ class HttpRequester(Requester):
         :param authenticator: Authenticator defining how to authenticate to the source
         :param error_handler: Error handler defining how to detect and handle errors
         :param config: The user-provided configuration as specified by the source's spec
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if request_options_provider is None:
             request_options_provider = InterpolatedRequestOptionsProvider(config=config)
@@ -60,6 +62,7 @@ class HttpRequester(Requester):
         self._request_options_provider = request_options_provider
         self._error_handler = error_handler or DefaultErrorHandler()
         self._config = config
+        self._options = options
 
     def get_authenticator(self):
         return self._authenticator

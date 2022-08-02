@@ -98,7 +98,7 @@ public class S3DestinationConfig {
 
   public static S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
     Builder builder = create(
-        config.get(S_3_BUCKET_NAME).asText(),
+            resolveBucketName(config.get(S_3_BUCKET_NAME).asText()),
         "",
         config.get(S_3_BUCKET_REGION).asText());
 
@@ -133,6 +133,10 @@ public class S3DestinationConfig {
     }
 
     return builder.get();
+  }
+
+  private static String resolveBucketName(String originalBucketName) {
+    return originalBucketName.contains("/") ? originalBucketName.replaceAll("/","-") : originalBucketName;
   }
 
   public String getEndpoint() {
@@ -251,13 +255,13 @@ public class S3DestinationConfig {
     private String fileNamePattern;
 
     private Builder(final String bucketName, final String bucketPath, final String bucketRegion) {
-      this.bucketName = bucketName;
+      this.bucketName = resolveBucketName(bucketName);
       this.bucketPath = bucketPath;
       this.bucketRegion = bucketRegion;
     }
 
     public Builder withBucketName(final String bucketName) {
-      this.bucketName = bucketName;
+      this.bucketName = resolveBucketName(bucketName);
       return this;
     }
 

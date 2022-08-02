@@ -13,13 +13,15 @@ class RecordFilter:
     Filter applied on a list of Records
     """
 
-    def __init__(self, config: Config, condition: str = ""):
+    def __init__(self, config: Config, condition: str = "", **options: Optional[Mapping[str, Any]]):
         """
         :param config: The user-provided configuration as specified by the source's spec
         :param condition: The string representing the predicate to filter a record. Records will be removed if evaluated to False
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         self._config = config
         self._filter_interpolator = InterpolatedBoolean(condition)
+        self._options = options
 
     def filter_records(
         self,
