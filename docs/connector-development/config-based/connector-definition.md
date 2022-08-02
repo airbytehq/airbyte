@@ -77,6 +77,10 @@ will result in
 TopLevel(param=ParamType(k="v"))
 ```
 
+More details on object instantiation can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory).
+
+### $options
+
 Parameters can be passed down from a parent component to its subcomponents using the $options key.
 This can be used to avoid repetitions.
 
@@ -101,8 +105,6 @@ outer:
 ```
 
 In this example, outer.inner.k2 will evaluate to "MyValue"
-
-More details on object instantiation can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory).
 
 ## References
 
@@ -206,3 +208,36 @@ to resolve the ambiguity, we try looking for the reference key at the top level,
 until we find a key with the given path, or until there is nothing to traverse.
 
 More details on referencing values can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=yamlparser#airbyte_cdk.sources.declarative.parsers.yaml_parser.YamlParser).
+
+## String interpolation
+
+String values can be evaluated as Jinja2 templates.
+
+Interpolation strategy using the Jinja2 template engine.
+
+If the input string is a raw string, the interpolated string will be the same.
+`"hello world" -> "hello world"`
+
+The engine will evaluate the content passed within {{}}, interpolating the keys from context-specific arguments.
+the "options" keyword [see ($options)](connector-definition.md#object-instantiation) can be referenced.
+
+For example, inner_object.key will evaluate to "Hello airbyte" at runtime.
+
+```
+some_object:
+  $options:
+    name: "airbyte"
+  inner_object:
+    key: "Hello {{ options.name }}"
+```
+
+Some components also pass in additional arguments to the context.
+This is the case for the [record selector](record-selector.md), which passes in an additional `response` argument.
+
+In additional to passing additional values through the kwargs argument, macros can be called from within the string interpolation.
+For example,
+"{{ max(2, 3) }}" will return 3
+
+The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
+
+Additional information on jinja templating can be found at https://jinja.palletsprojects.com/en/3.1.x/templates/#
