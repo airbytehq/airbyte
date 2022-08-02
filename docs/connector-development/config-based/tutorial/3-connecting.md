@@ -86,15 +86,15 @@ requester:
 ```
 rates_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "rates"
   primary_key: "id"
   schema_loader:
-    ref: "*ref(schema_loader)"
+    $ref: "*ref(schema_loader)"
   retriever:
-    ref: "*ref(retriever)"
+    $ref: "*ref(retriever)"
     requester:
-      ref: "*ref(requester)"
+      $ref: "*ref(requester)"
       path: "/latest"
 ```
 
@@ -120,6 +120,53 @@ request_options_provider:
   request_parameters:
     access_key: "{{ config.access_key }}"
     base: "{{ config.base }}"
+```
+
+The full connection definition should now look like
+
+```
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_exchange_rates_tutorial/schemas/{{ options.name }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.exchangeratesapi.io/v1/"
+  http_method: "GET"
+  request_options_provider:
+    request_parameters:
+      access_key: "{{ config.access_key }}"
+      base: "{{ config.base }}"
+retriever:
+  type: SimpleRetriever
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+  record_selector:
+    $ref: "*ref(selector)"
+  paginator:
+    type: NoPagination
+rates_stream:
+  type: DeclarativeStream
+  $options:
+    name: "rates"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/latest"
+streams:
+  - "*ref(rates_stream)"
+check:
+  type: CheckStream
+  stream_names: [ "rates" ]
 ```
 
 6. Let's populate the config so the connector can access the access key and base currency.
