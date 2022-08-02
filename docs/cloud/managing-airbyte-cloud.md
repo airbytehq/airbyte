@@ -91,10 +91,10 @@ Understanding the following limitations will help you better manage Airbyte Clou
 The sync log summary shows if a sync succeeded, failed, cancelled, or is currently running.
  
 To view the sync log summary:
-1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**. 
+1. On the [Airbyte Cloud](http://cloud.airbyte.io/) dashboard, click **Connections**.  
 The Connections page displays.
 2. Click a connection in the list to view its sync history.
-3. Under Sync History, a list of syncs for that connection is displayed.
+3. Under Sync History, a list of syncs for that connection is displayed.  
 The sync status is displayed (Succeeded, Cancelled, Failed, or Running) along with the [summary of the sync log](<https://docs.airbyte.com/cloud/managing-airbyte-cloud#sync-log-summary>).
 4. For more information about a sync, click the sync log dropdown.
  
