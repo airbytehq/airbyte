@@ -228,10 +228,6 @@ public class ConnectionHelpers {
         .selected(true);
   }
 
-  private static AirbyteStream generateBasicApiStream() {
-    return generateBasicApiStream(null);
-  }
-
   private static AirbyteStream generateBasicApiStream(final String nameSuffix) {
     return new AirbyteStream()
         .name(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix)

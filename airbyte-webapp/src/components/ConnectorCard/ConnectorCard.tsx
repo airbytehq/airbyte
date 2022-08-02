@@ -50,6 +50,7 @@ const ConnectorName = styled.div`
   margin-top: 1px;
   color: #afafc1;
   text-align: left;
+  word-wrap: break-word;
 `;
 
 const ConnectorCard = (props: Props) => {

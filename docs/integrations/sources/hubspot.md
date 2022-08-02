@@ -121,7 +121,7 @@ HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-de
 
 ## Tutorials
 
-Now that you have set up the Mailchimp source connector, check out the following Hubspot tutorial:
+Now that you have set up the HubSpot source connector, check out the following HubSpot tutorial:
 
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
@@ -129,6 +129,14 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.80  | 2022-08-01 | [15156](https://github.com/airbytehq/airbyte/pull/15156) | Fix 401 error while retrieving associations using OAuth                                                                                        |
+| 0.1.79  | 2022-07-28 | [15144](https://github.com/airbytehq/airbyte/pull/15144) | Revert v0.1.78 due to permission issues                                                                                                        | 
+| 0.1.78  | 2022-07-28 | [15099](https://github.com/airbytehq/airbyte/pull/15099) | Fix to fetch associations when using incremental mode                                                                                          |
+| 0.1.77  | 2022-07-26 | [15035](https://github.com/airbytehq/airbyte/pull/15035) | Make PropertyHistory stream read historic data not limited to 30 days                                                                          |
+| 0.1.76  | 2022-07-25 | [14999](https://github.com/airbytehq/airbyte/pull/14999) | Partially revert changes made in v0.1.75                                                                                                       |
+| 0.1.75  | 2022-07-18 | [14744](https://github.com/airbytehq/airbyte/pull/14744) | Remove override of private CDK method                                                                                                          |
+| 0.1.74  | 2022-07-25 | [14412](https://github.com/airbytehq/airbyte/pull/14412) | Add private app authentication                                                                                                                 |
+| 0.1.73  | 2022-07-13 | [14666](https://github.com/airbytehq/airbyte/pull/14666) | Decrease number of http requests made, disable Incremental mode for PropertyHistory stream                                                     |
 | 0.1.72  | 2022-06-24 | [14054](https://github.com/airbytehq/airbyte/pull/14054) | Extended error logging                                                                                                                         |
 | 0.1.71  | 2022-06-24 | [14102](https://github.com/airbytehq/airbyte/pull/14102) | Removed legacy `AirbyteSentry` dependency from the code                                                                                        | 
 | 0.1.70  | 2022-06-16 | [13837](https://github.com/airbytehq/airbyte/pull/13837) | Fix the missing data in CRM streams issue                                                                                                      |
