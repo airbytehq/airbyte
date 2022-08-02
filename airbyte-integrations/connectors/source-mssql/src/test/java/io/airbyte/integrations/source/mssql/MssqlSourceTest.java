@@ -37,7 +37,7 @@ class MssqlSourceTest {
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(Lists.newArrayList(CatalogHelpers.createAirbyteStream(
       STREAM_NAME,
       DB_NAME,
-      Field.of("id", JsonSchemaType.NUMBER),
+      Field.of("id", JsonSchemaType.INTEGER),
       Field.of("name", JsonSchemaType.STRING),
       Field.of("born", JsonSchemaType.STRING))
       .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))

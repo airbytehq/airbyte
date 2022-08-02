@@ -17,9 +17,10 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRe
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
+config = {}
 
 
-def test_simple_retriever():
+def test_simple_retriever_full():
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.request_params.return_value = request_params
@@ -38,9 +39,8 @@ def test_simple_retriever():
 
     response = requests.Response()
 
-    state = MagicMock()
     underlying_state = {"date": "2021-01-01"}
-    state.get_stream_state.return_value = underlying_state
+    iterator.get_stream_state.return_value = underlying_state
 
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
@@ -69,11 +69,7 @@ def test_simple_retriever():
         paginator=paginator,
         record_selector=record_selector,
         stream_slicer=iterator,
-        state=state,
     )
-
-    # hack because we clone the state...
-    retriever._state = state
 
     assert retriever.primary_key == primary_key
     assert retriever.url_base == url_base
