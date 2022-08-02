@@ -24,6 +24,10 @@ class HarvestStream(HttpStream, ABC):
         """
         return self.name
 
+    @property
+    def parent_stream(self):
+        return None
+
     def path(self, **kwargs) -> str:
         return self.name
 
@@ -46,7 +50,7 @@ class HarvestStream(HttpStream, ABC):
             params.update(**next_page_token)
         return params
 
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
         """
@@ -60,7 +64,10 @@ class HarvestStream(HttpStream, ABC):
             stream_data = response.json().get(self.data_field, [])
 
         if isinstance(stream_data, list):
-            yield from stream_data
+            for record in stream_data:
+                if self.parent_stream:
+                    record["parent_id"] = stream_slice["parent_id"]
+                yield record
         else:
             yield stream_data
 
@@ -94,19 +101,12 @@ class IncrementalHarvestStream(HarvestStream, ABC):
         return params
 
 
-class HarvestSubStream(HarvestStream):
+class HarvestSubStream(HarvestStream, ABC):
     @property
     @abstractmethod
     def path_template(self) -> str:
         """
         :return: sub stream path template
-        """
-
-    @property
-    @abstractmethod
-    def parent_stream(self) -> IncrementalHarvestStream:
-        """
-        :return: parent stream class
         """
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
