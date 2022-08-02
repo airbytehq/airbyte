@@ -4,8 +4,10 @@
 
 import heapq
 import itertools
+from typing import Optional
 
 import sgqlc.operation
+from sgqlc.operation import Selector
 
 from . import github_schema
 
@@ -103,7 +105,7 @@ class QueryReactions:
     AVERAGE_COMMENTS = 2
     AVERAGE_REACTIONS = 2
 
-    def get_query_root_repository(self, owner, name, first, after=None):
+    def get_query_root_repository(self, owner: str, name: str, first: int, after: Optional[str] = None):
         op = self._get_operation()
         repository = op.repository(owner=owner, name=name)
         repository.name()
@@ -122,7 +124,7 @@ class QueryReactions:
         self._select_reactions(comments.nodes, first=self.AVERAGE_REACTIONS)
         return str(op)
 
-    def get_query_root_pull_request(self, node_id, first, after):
+    def get_query_root_pull_request(self, node_id: str, first: int, after: str):
         op = self._get_operation()
         pull_request = op.node(id=node_id).__as__(_schema_root.PullRequest)
         pull_request.id(__alias__="node_id")
@@ -134,7 +136,7 @@ class QueryReactions:
         self._select_reactions(comments.nodes, first=self.AVERAGE_REACTIONS)
         return str(op)
 
-    def get_query_root_review(self, node_id, first, after):
+    def get_query_root_review(self, node_id: str, first: int, after: str):
         op = self._get_operation()
         review = op.node(id=node_id).__as__(_schema_root.PullRequestReview)
         review.id(__alias__="node_id")
@@ -145,7 +147,7 @@ class QueryReactions:
         self._select_reactions(comments.nodes, first=self.AVERAGE_REACTIONS)
         return str(op)
 
-    def get_query_root_comment(self, node_id, first, after):
+    def get_query_root_comment(self, node_id: str, first: int, after: str):
         op = self._get_operation()
         comment = op.node(id=node_id).__as__(_schema_root.PullRequestReviewComment)
         comment.id(__alias__="node_id")
@@ -155,7 +157,7 @@ class QueryReactions:
         self._select_reactions(comment, first, after)
         return str(op)
 
-    def _select_reactions(self, comment, first, after=None):
+    def _select_reactions(self, comment: Selector, first: int, after: Optional[str] = None):
         kwargs = {"first": first}
         if after:
             kwargs["after"] = after
@@ -166,7 +168,7 @@ class QueryReactions:
         select_user_fields(reactions.nodes.user())
         return reactions
 
-    def _select_comments(self, review, first, after=None):
+    def _select_comments(self, review: Selector, first: int, after: Optional[str] = None):
         kwargs = {"first": first}
         if after:
             kwargs["after"] = after
@@ -177,7 +179,7 @@ class QueryReactions:
         comments.nodes.database_id(__alias__="id")
         return comments
 
-    def _select_reviews(self, pull_request, first, after=None):
+    def _select_reviews(self, pull_request: Selector, first: int, after: Optional[str] = None):
         kwargs = {"first": first}
         if after:
             kwargs["after"] = after
