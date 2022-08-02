@@ -54,7 +54,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       namespaceFormat: connectionFormValues?.namespaceFormat,
       prefix: connectionFormValues?.prefix,
       schedule: connectionFormValues?.schedule ?? undefined,
-      syncCatalog: schema,
+      syncCatalog: connectionFormValues?.syncCatalog ?? schema,
       destination,
       source,
       catalogId,
@@ -113,7 +113,7 @@ const CreateConnectionContent: React.FC<CreateConnectionContentProps> = ({
       </ContentCard>
     );
   }
-
+  console.log(connection);
   return isLoading ? (
     <LoadingSchema />
   ) : (
