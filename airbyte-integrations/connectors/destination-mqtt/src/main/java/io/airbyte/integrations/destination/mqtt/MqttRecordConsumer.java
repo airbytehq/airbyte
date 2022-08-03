@@ -11,6 +11,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.destination.simple_state_manager.DefaultDestinationStateAggregator;
+import io.airbyte.integrations.destination.simple_state_manager.DestinationStateAggregator;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -39,6 +41,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final IMqttAsyncClient client;
+
+  DestinationStateAggregator destinationStateAggregator = new DefaultDestinationStateAggregator(true);
 
   public MqttRecordConsumer(final MqttDestinationConfig mqttDestinationConfig,
                             final ConfiguredAirbyteCatalog catalog,
@@ -71,7 +75,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      outputRecordCollector.accept(airbyteMessage);
+      destinationStateAggregator.ingest(airbyteMessage.getState());
     } else if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage recordMessage = airbyteMessage.getRecord();
       final String topic = topicMap.get(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
@@ -118,5 +122,8 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) {
     Exceptions.swallow(client::disconnectForcibly);
     Exceptions.swallow(client::close);
+    destinationStateAggregator.getStateMessages().forEach(stateToEmit -> {
+      outputRecordCollector.accept(stateToEmit);
+    });
   }
 }
