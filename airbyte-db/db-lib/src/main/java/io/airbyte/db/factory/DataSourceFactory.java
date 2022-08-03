@@ -55,14 +55,14 @@ public class DataSourceFactory {
                                   final String driverClassName,
                                   final String jdbcConnectionString,
                                   final Map<String, String> connectionProperties) {
-    final DataSourceBuilder builder = new DataSourceBuilder()
+    return new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDriverClassName(driverClassName)
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties));
-    return builder.build();
+        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties))
+        .build();
   }
 
   /**
@@ -181,6 +181,7 @@ public class DataSourceFactory {
     private String username;
     private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
     private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
+
     private DataSourceBuilder() {}
 
     /**
@@ -199,8 +200,11 @@ public class DataSourceFactory {
      */
     private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
       final Duration connectionTimeout;
-      // TODO: the usage of CONNECT_TIMEOUT_KEY is Postgres specific, may need to extend for other databases
-      connectionTimeout = connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY))) : CONNECT_TIMEOUT_DEFAULT;
+      // TODO: the usage of CONNECT_TIMEOUT_KEY is Postgres specific, may need to extend for other
+      // databases
+      connectionTimeout =
+          connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY)))
+              : CONNECT_TIMEOUT_DEFAULT;
       if (connectionTimeout.getSeconds() == 0) {
         return connectionTimeout.toMillis();
       } else {
