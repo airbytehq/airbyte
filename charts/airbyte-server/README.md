@@ -22,11 +22,12 @@ Helm chart to deploy airbyte-server
 | extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
-| global.configMapName | string | `"something"` |  |
+| global.configMapName | string | `""` |  |
 | global.credVolumeOverride | string | `""` |  |
-| global.database.host | string | `"something"` |  |
+| global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretName | string | `""` |  |
+| global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
 | global.extraContainers | list | `[]` |  |
 | global.logs.accessKey.existingSecret | string | `""` |  |
@@ -45,8 +46,8 @@ Helm chart to deploy airbyte-server
 | global.logs.secretKey.existingSecret | string | `""` |  |
 | global.logs.secretKey.existingSecretKey | string | `""` |  |
 | global.logs.secretKey.password | string | `"minio123"` |  |
-| global.secretName | string | `"something"` |  |
-| global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
+| global.secretName | string | `""` |  |
+| global.serviceAccountName | string | `"placeholderServiceAccount"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"airbyte/server"` |  |
 | livenessProbe.enabled | bool | `true` |  |
