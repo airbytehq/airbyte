@@ -86,6 +86,6 @@ CreateKey({
 
 ## Changelog
 
-| Version | Date       | Pull Request                                     | Subject          |
-| ------- | ---------- | ------------------------------------------------ | ---------------- |
-| 0.1.0   | 2022-08-03 | [0](https://github.com/airbytehq/airbyte/pull/0) | Add Fauna Source |
+| Version | Date       | Pull Request                                             | Subject          |
+| ------- | ---------- | -------------------------------------------------------- | ---------------- |
+| 0.1.0   | 2022-08-03 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |
