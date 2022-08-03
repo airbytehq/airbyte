@@ -275,6 +275,42 @@ bounces_stream:
       $ref: "*ref(offset_paginator)"
     stream_slicer:
       $ref: "*ref(stream_slicer)"
+invalid_emails_stream:
+  type: DeclarativeStream
+  $options:
+    name: "invalid_emails"
+    primary_key: "email"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/suppression/invalid_emails"
+    paginator:
+      $ref: "*ref(offset_paginator)"
+    stream_slicer:
+      $ref: "*ref(stream_slicer)"
+spam_reports_stream:
+  type: DeclarativeStream
+  $options:
+    name: "spam_reports"
+    primary_key: "email"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/suppression/spam_reports"
+    paginator:
+      $ref: "*ref(offset_paginator)"
+    stream_slicer:
+      $ref: "*ref(stream_slicer)"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
@@ -288,6 +324,8 @@ streams:
   - "*ref(suppression_group_members_stream)"
   - "*ref(blocks_stream)"
   - "*ref(bounces_stream)"
+  - "*ref(invalid_emails_stream)"
+  - "*ref(spam_reports_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
