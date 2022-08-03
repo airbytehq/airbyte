@@ -8,7 +8,7 @@ To use Airbyte Cloud:
 
 1. If you haven't already, [sign up for Airbyte Cloud](https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=SetupGuide). 
 
-    Start a free trial of Airbyte Cloud. For more information, see [Pricing](https://airbyte.com/pricing).
+    Try Airbyte Cloud for free. For more information, see [Pricing](https://airbyte.com/pricing).
 
 2. Airbyte will send you an email with a verification link. On clicking the link, you'll be taken to your new workspace.
 
