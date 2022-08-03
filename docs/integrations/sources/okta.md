@@ -77,7 +77,8 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.1.10  | 2022-07-29 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Added parameter 'start_date' for Logs stream                                   |
+| 0.1.11  | 2022-07-29 | [15050](https://github.com/airbytehq/airbyte/pull/15050) | Added parameter 'start_date' for Logs stream                                   |
+| 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fixed broken schemas for all streams                                           | 
 | 0.1.9   | 2022-07-25 | [15001](https://github.com/airbytehq/airbyte/pull/15001) | Return deprovisioned users                                                     |
 | 0.1.8   | 2022-07-19 | [14710](https://github.com/airbytehq/airbyte/pull/14710) | Implement OAuth2.0 authorization method                                        |
 | 0.1.7   | 2022-07-13 | [14556](https://github.com/airbytehq/airbyte/pull/14556) | add User_Role_Assignments and Group_Role_Assignments streams (full fetch only) |
