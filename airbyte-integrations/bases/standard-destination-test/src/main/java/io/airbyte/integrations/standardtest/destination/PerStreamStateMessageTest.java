@@ -1,6 +1,4 @@
-package io.airbyte.integrations.destination.mqtt;
-
-import static org.mockito.Mockito.inOrder;
+package io.airbyte.integrations.standardtest.destination;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -13,11 +11,12 @@ import io.airbyte.protocol.models.StreamDescriptor;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 public abstract class PerStreamStateMessageTest {
-  abstract Consumer<AirbyteMessage> getMockedConsumer();
+  protected abstract Consumer<AirbyteMessage> getMockedConsumer();
 
-  abstract FailureTrackingAirbyteMessageConsumer getMessageConsumer();
+  protected abstract FailureTrackingAirbyteMessageConsumer getMessageConsumer();
 
   @Test
   void runATest() throws Exception {
@@ -32,7 +31,7 @@ public abstract class PerStreamStateMessageTest {
 
 
     final Consumer<AirbyteMessage> mConsumer = getMockedConsumer();
-    final InOrder inOrder = inOrder(mConsumer);
+    final InOrder inOrder = Mockito.inOrder(mConsumer);
 
     inOrder.verify(mConsumer).accept(airbyteMessage1);
     inOrder.verify(mConsumer).accept(airbyteMessage2);

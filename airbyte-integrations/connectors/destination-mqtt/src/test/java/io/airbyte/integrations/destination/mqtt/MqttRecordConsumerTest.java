@@ -16,6 +16,7 @@ import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -141,11 +142,11 @@ public class MqttRecordConsumerTest extends PerStreamStateMessageTest {
 
   }
 
-  @Override Consumer<AirbyteMessage> getMockedConsumer() {
+  @Override protected Consumer<AirbyteMessage> getMockedConsumer() {
     return outputRecordCollector;
   }
 
-  @Override FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
+  @Override protected FailureTrackingAirbyteMessageConsumer getMessageConsumer() {
     return consumer;
   }
 
