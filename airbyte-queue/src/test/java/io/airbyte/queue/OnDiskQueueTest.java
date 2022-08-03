@@ -89,10 +89,10 @@ class OnDiskQueueTest {
     assertFalse(Files.exists(queueRoot));
   }
 
-  @Test
-  void testFail() throws Exception {
-    assertTrue(true);
-  }
+  // @Test
+  // void testFail() throws Exception {
+  // assertTrue(true);
+  // }
 
   @SuppressWarnings("SameParameterValue")
   private static byte[] toBytes(final String string) {
