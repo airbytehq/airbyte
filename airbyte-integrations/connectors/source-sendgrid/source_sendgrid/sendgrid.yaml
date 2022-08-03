@@ -14,22 +14,35 @@ requester:
   authenticator:
     type: "BearerAuthenticator"
     token: "{{ config.apikey }}"
+cursor_paginator:
+  type: LimitPaginator
+  url_base: "*ref(requester.url_base)"
+  page_size: 100
+  limit_option:
+    inject_into: "request_parameter"
+    field_name: "page_size"
+  page_token_option:
+    inject_into: "path"
+  pagination_strategy:
+    type: "CursorPagination"
+    cursor_value: "{{ response._metadata.next }}"
+offset_paginator:
+  type: LimitPaginator
+  $options:
+    url_base: "*ref(requester.url_base)"
+    page_size: 10
+  limit_option:
+    inject_into: "request_parameter"
+    field_name: "limit"
+  page_token_option:
+    inject_into: "request_parameter"
+    field_name: "offset"
+  pagination_strategy:
+    type: "OffsetIncrement"
 retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
-  paginator:
-    type: LimitPaginator
-    url_base: "*ref(requester.url_base)"
-    page_size: 100
-    limit_option:
-      inject_into: "request_parameter"
-      field_name: "page_size"
-    page_token_option:
-      inject_into: "path"
-    pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response._metadata.next }}"
 
 lists_stream:
   type: DeclarativeStream
@@ -45,6 +58,8 @@ lists_stream:
     requester:
       $ref: "*ref(requester)"
       path: "/v3/marketing/lists"
+    paginator:
+      $ref: "*ref(cursor_paginator)"
 campaigns_stream:
   type: DeclarativeStream
   $options:
@@ -59,9 +74,28 @@ campaigns_stream:
     requester:
       $ref: "*ref(requester)"
       path: "/v3/marketing/campaigns"
+    paginator:
+      $ref: "*ref(cursor_paginator)"
+contacts_stream:
+  type: DeclarativeStream
+  $options:
+    name: "contacts"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(result_selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/marketing/contacts"
+    paginator:
+      type: "NoPagination"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
+  - "*ref(contacts_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
