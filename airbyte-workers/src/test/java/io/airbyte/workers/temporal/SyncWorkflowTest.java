@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
@@ -27,6 +28,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivity;
@@ -47,23 +49,28 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class SyncWorkflowTest {
 
   // TEMPORAL
 
   private TestWorkflowEnvironment testEnv;
-  private Worker syncWorkflowWorker;
-  private Worker syncActivityWorker;
+  private Worker syncControlPlaneWorker;
+  private Worker syncDataPlaneWorker;
   private WorkflowClient client;
   private ReplicationActivityImpl replicationActivity;
   private NormalizationActivityImpl normalizationActivity;
   private DbtTransformationActivityImpl dbtTransformationActivity;
   private PersistStateActivityImpl persistStateActivity;
+  private DecideDataPlaneTaskQueueActivityImpl decideDataPlaneTaskQueueActivity;
+
+  private static final String DATA_PLANE_TASK_QUEUE = "SYNC_DATA_PLANE";
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
+  private static final Configs configs = new EnvConfigs();
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID);
@@ -89,10 +96,10 @@ class SyncWorkflowTest {
   @BeforeEach
   public void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    syncWorkflowWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
-    syncWorkflowWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+    syncControlPlaneWorker = testEnv.newWorker(TemporalJobType.SYNC.name());
+    syncControlPlaneWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
 
-    syncActivityWorker = testEnv.newWorker(EnvConfigs.DEFAULT_SYNC_ACTIVITY_TASK_QUEUE);
+    syncDataPlaneWorker = testEnv.newWorker(DATA_PLANE_TASK_QUEUE);
 
     client = testEnv.getWorkflowClient();
 
@@ -115,11 +122,15 @@ class SyncWorkflowTest {
     normalizationActivity = mock(NormalizationActivityImpl.class);
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
     persistStateActivity = mock(PersistStateActivityImpl.class);
+    decideDataPlaneTaskQueueActivity = mock(DecideDataPlaneTaskQueueActivityImpl.class);
+    doReturn(DATA_PLANE_TASK_QUEUE).when(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(Mockito.any());
   }
 
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
-    syncActivityWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+    syncControlPlaneWorker.registerActivitiesImplementations(decideDataPlaneTaskQueueActivity);
+    syncDataPlaneWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
+        persistStateActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(TemporalJobType.SYNC.name()).build());
