@@ -133,7 +133,9 @@ public class EnvConfigs implements Configs {
 
   // Control/Data plane configs
   private static final String SHOULD_HANDLE_SYNC_WORKFLOW_TASKS = "SHOULD_HANDLE_SYNC_WORKFLOW_TASKS";
+  private static final String PRIMARY_SYNC_ACTIVITY_TASK_QUEUE = "PRIMARY_SYNC_ACTIVITY_TASK_QUEUE";
   private static final String SYNC_ACTIVITY_TASK_QUEUES = "SYNC_ACTIVITY_TASK_QUEUES";
+  private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
   private static final String MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE = "MAX_DAYS_OF_ONLY_FAILED_JOBS_BEFORE_CONNECTION_DISABLE";
@@ -191,7 +193,7 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
-  public static final String DEFAULT_SYNC_ACTIVITY_TASK_QUEUE = "SYNC_ACTIVITIES";
+  public static final String DEFAULT_PRIMARY_SYNC_ACTIVITY_TASK_QUEUE = "SYNC_ACTIVITIES";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -918,7 +920,7 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public boolean shouldHandleSyncWorkflowTasks() {
+  public boolean shouldHandleSyncControlPlaneTasks() {
     final boolean result = getEnvOrDefault(SHOULD_HANDLE_SYNC_WORKFLOW_TASKS, true);
     if (result && !shouldRunSyncWorkflows()) {
       throw new IllegalArgumentException(
@@ -928,8 +930,22 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public Set<String> getSyncActivityTaskQueues() {
-    final var taskQueues = getEnvOrDefault(SYNC_ACTIVITY_TASK_QUEUES, DEFAULT_SYNC_ACTIVITY_TASK_QUEUE);
+  public String primarySyncDataPlaneTaskQueue() {
+    return getEnvOrDefault(PRIMARY_SYNC_ACTIVITY_TASK_QUEUE, DEFAULT_PRIMARY_SYNC_ACTIVITY_TASK_QUEUE);
+  }
+
+  @Override
+  public Set<String> connectionIdsForAwsDataPlane() {
+    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_AWS_DATA_PLANE, "");
+    if (connectionIds.isEmpty()) {
+      return new HashSet<>();
+    }
+    return Arrays.stream(connectionIds.split(",")).collect(Collectors.toSet());
+  }
+
+  @Override
+  public Set<String> getSyncDataPlaneTaskQueues() {
+    final var taskQueues = getEnvOrDefault(SYNC_ACTIVITY_TASK_QUEUES, primarySyncDataPlaneTaskQueue());
     if (taskQueues.isEmpty()) {
       return new HashSet<>();
     }
@@ -943,7 +959,7 @@ public class EnvConfigs implements Configs {
    */
   private void validateSyncWorkflowConfigs() {
     if (shouldRunSyncWorkflows()) {
-      if (!shouldHandleSyncWorkflowTasks() && getSyncActivityTaskQueues().isEmpty()) {
+      if (!shouldHandleSyncControlPlaneTasks() && getSyncDataPlaneTaskQueues().isEmpty()) {
         throw new IllegalArgumentException(String.format(
             "When %s is true, either %s must also be true, or %s must be non-empty.",
             SHOULD_RUN_SYNC_WORKFLOWS,
