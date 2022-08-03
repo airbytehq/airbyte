@@ -6044,7 +6044,7 @@
             >docs</a> for instructions on how to find it."
           airbyte_secret: false
         start_date:
-          type: "string",
+          type: "string"
           pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
           description: "UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Any data before this date will not be replicated."
           examples: [ "2022-07-22T00:00:00Z" ]
