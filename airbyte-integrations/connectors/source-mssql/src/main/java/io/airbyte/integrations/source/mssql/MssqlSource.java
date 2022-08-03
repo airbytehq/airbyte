@@ -95,7 +95,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String tableName,
                                                                final String cursorField,
                                                                final JDBCType cursorFieldType,
-                                                               final String cursor) {
+                                                               final String cursorValue) {
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -113,7 +113,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
               LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursor);
+              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
               LOGGER.info("Executing query for table: {}", tableName);
               return preparedStatement;
             },
