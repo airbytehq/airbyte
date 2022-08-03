@@ -55,7 +55,8 @@ public class DateTimeConverter {
       }
       return resolveEra(localDate, t.toString());
     } else {
-      // This case probably isn't strictly necessary, but I'm leaving it just in case there's some weird situation that I'm not aware of.
+      // This case probably isn't strictly necessary, but I'm leaving it just in case there's some weird
+      // situation that I'm not aware of.
       Instant instant = Instant.parse(timestamp.toString());
       OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
       ZonedDateTime timestamptz = ZonedDateTime.from(offsetDateTime);
@@ -66,7 +67,8 @@ public class DateTimeConverter {
   }
 
   /**
-   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening here.
+   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening
+   * here.
    */
   public static String convertToTimestamp(Object timestamp) {
     if (timestamp instanceof Timestamp t) {
@@ -78,7 +80,8 @@ public class DateTimeConverter {
       // Incremental mode
       LocalDate localDate = i.atZone(ZoneOffset.UTC).toLocalDate();
       if (isBce(localDate)) {
-        // i.minus(1, ChronoUnit.YEARS) would be nice, but it throws an exception because you can't subtract YEARS from an Instant
+        // i.minus(1, ChronoUnit.YEARS) would be nice, but it throws an exception because you can't subtract
+        // YEARS from an Instant
         i = i.atZone(ZoneOffset.UTC).minusYears(1).toInstant();
       }
       return resolveEra(localDate, i.toString());
@@ -91,7 +94,8 @@ public class DateTimeConverter {
   }
 
   /**
-   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening here.
+   * See {@link #convertToTimestampWithTimezone(Object)} for explanation of the weird things happening
+   * here.
    */
   public static Object convertToDate(Object date) {
     if (date instanceof Date d) {
