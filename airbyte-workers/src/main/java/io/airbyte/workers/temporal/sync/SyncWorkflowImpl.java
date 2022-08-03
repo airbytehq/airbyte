@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.sync;
 
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
@@ -35,8 +34,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    // TODO (parker) add an activity that decides the task queue based on the connectionId
-    final String activityTaskQueue = EnvConfigs.DEFAULT_SYNC_ACTIVITY_TASK_QUEUE;
+    final DecideDataPlaneTaskQueueActivity decideTaskQueueActivity =
+        Workflow.newActivityStub(DecideDataPlaneTaskQueueActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+
+    final String activityTaskQueue = decideTaskQueueActivity.decideDataPlaneTaskQueue(connectionId);
 
     final ReplicationActivity replicationActivity =
         Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
