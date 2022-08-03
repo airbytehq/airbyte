@@ -44,6 +44,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -116,6 +117,8 @@ class ConnectionsHandlerTest {
         .withOperationIds(List.of(operationId))
         .withManual(false)
         .withSchedule(ConnectionHelpers.generateBasicSchedule())
+        .withScheduleType(ScheduleType.BASIC_SCHEDULE)
+        .withScheduleData(ConnectionHelpers.generateBasicScheduleData())
         .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
         .withSourceCatalogId(UUID.randomUUID());
     standardSyncDeleted = new StandardSync()
@@ -328,6 +331,7 @@ class ConnectionsHandlerTest {
           .withStatus(StandardSync.Status.INACTIVE)
           .withCatalog(configuredCatalog)
           .withManual(true)
+          .withScheduleType(ScheduleType.MANUAL)
           .withResourceRequirements(ConnectionHelpers.TESTING_RESOURCE_REQUIREMENTS)
           .withSourceCatalogId(newSourceCatalogId);
 
