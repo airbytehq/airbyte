@@ -460,15 +460,16 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      - name: Format
-        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
-
-      - name: Ensure no file change
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+#      - name: Format
+#        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+#
+#      - name: Ensure no file change
+#        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
         run: |
-          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan | tee build.out
+#          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan | tee build.out
+          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
 #          echo '###Build Failed' >> $GITHUB_STEP_SUMMARY
 #          echo '```' >> $GITHUB_STEP_SUMMARY
 #          failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
