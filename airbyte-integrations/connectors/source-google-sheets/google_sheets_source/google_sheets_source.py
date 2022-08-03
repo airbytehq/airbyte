@@ -132,7 +132,7 @@ class GoogleSheetsSource(Source):
         sheet_to_column_name = Helpers.parse_sheet_and_column_names_from_catalog(catalog)
         spreadsheet_id = Helpers.get_spreadsheet_id(config["spreadsheet_id"])
 
-        row_batch_size = config.get('row_batch_size', ROW_BATCH_SIZE)
+        row_batch_size = config.get("row_batch_size", ROW_BATCH_SIZE)
         logger.info(f"Starting syncing spreadsheet {spreadsheet_id}")
         # For each sheet in the spreadsheet, get a batch of rows, and as long as there hasn't been
         # a blank row, emit the row batch
