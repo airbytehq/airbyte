@@ -286,7 +286,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `character varying`, `varchar`        | string         |                                                                                                                                                 |
 | `cidr`                                | string         |                                                                                                                                                 |
 | `circle`                              | string         |                                                                                                                                                 |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight                                                                                                         |
+| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590)                                             |
 | `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
 | `hstore`                              | string         |                                                                                                                                                 |
 | `inet`                                | string         |                                                                                                                                                 |
@@ -310,9 +310,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 | `serial`, `serial4`                   | number         |                                                                                                                                                 |
 | `text`                                | string         |                                                                                                                                                 |
 | `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                    |
-| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                       |
+| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                         |
 | `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                               |
-| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                  |
+| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                    |
 | `tsquery`                             | string         |                                                                                                                                                 |
 | `tsvector`                            | string         |                                                                                                                                                 |
 | `uuid`                                | string         |                                                                                                                                                 |
@@ -354,7 +354,10 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------|
-| 0.5.0   | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
+| 0.4.40 | 2022-08-03 | [15187](https://github.com/airbytehq/airbyte/pull/15187) | Add support for BCE dates/timestamps |
+| unpublished  | 2022-08-03 | [14534](https://github.com/airbytehq/airbyte/pull/14534) | Align regular and CDC integration tests and data mappers |
+| 0.4.39  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiply log bindings |
+| 0.4.38  | 2022-07-26 | [14362](https://github.com/airbytehq/airbyte/pull/14362) | Integral columns are now discovered as int64 fields. |
 | 0.4.37  | 2022-07-22 | [14714](https://github.com/airbytehq/airbyte/pull/14714) | Clarified error message when invalid cursor column selected |
 | 0.4.36  | 2022-07-21 | [14451](https://github.com/airbytehq/airbyte/pull/14451) | Make initial CDC waiting time configurable |
 | 0.4.35  | 2022-07-14 | [14574](https://github.com/airbytehq/airbyte/pull/14574) | Removed additionalProperties:false from JDBC source connectors |
