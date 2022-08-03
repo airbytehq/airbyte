@@ -27,23 +27,22 @@ connectionSpecification:
             examples:
                 - "2017-01-25T00:00:00Z"
         credentials:
-            title: API Key Authentication
-            description: Authenticate with an API Key.
+            title: Private Application
+            description: Authenticate with a private app access token
             type: object
             required:
-                - api_key
+                - access_token
                 - credentials_title
             properties:
                 credentials_title:
                     type: string
-                    title: Credentials title
+                    title: Credentials
                     description: Name of the credentials set
-                    const: API Key Credentials
-                    default: API Key Credentials
+                    const: Private App Credentials
+                    default: Private App Credentials
                     order: 0
-                api_key:
-                    title: API key
-                    description: >-
-                        HubSpot API Key. See our docs if you need help finding this key. https://go.estuary.dev/XSVhJy
+                access_token:
+                    title: Access Token
+                    description: HubSpot Access token. See https://developers.hubspot.com/docs/api/private-apps if you need help finding this token.
                     type: string
                     airbyte_secret: true

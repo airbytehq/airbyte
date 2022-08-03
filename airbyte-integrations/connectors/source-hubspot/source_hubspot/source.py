@@ -71,13 +71,12 @@ class SourceHubspot(AbstractSource):
         api = self.get_api(config=config)
         common_params = dict(api=api, start_date=start_date, credentials=credentials)
 
-        if credentials.get("credentials_title") == "OAuth Credentials":
-            common_params["authenticator"] = api.get_authenticator(credentials)
+        common_params["authenticator"] = api.get_authenticator(credentials)
         return common_params
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        credentials = config.get("credentials", {})
         common_params = self.get_common_params(config=config)
+        credentials = config["credentials"]
 
         streams = [
             Campaigns(**common_params),
@@ -105,6 +104,9 @@ class SourceHubspot(AbstractSource):
             TicketPipelines(**common_params),
         ]
 
+        if credentials.get("credentials_title") == "Private App Credentials":
+            streams.append(Quotes(**common_params))
+
         if config.get("subscription_type", "starter") == "pro":
             pro_streams = [
                 FeedbackSubmissions(**common_params),
@@ -112,10 +114,6 @@ class SourceHubspot(AbstractSource):
                 Workflows(**common_params),
             ]
             streams.extend(pro_streams)
-
-        credentials_title = credentials.get("credentials_title")
-        if credentials_title == "API Key Credentials":
-            streams.append(Quotes(**common_params))
 
         return streams
 

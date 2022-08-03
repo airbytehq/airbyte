@@ -426,7 +426,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     # Mocking Request
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/paged?hapikey=test_api_key&count=250",
+        "/engagements/v1/engagements/paged?count=250",
         [
             {
                 "json": {
@@ -456,7 +456,7 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
 
     requests_mock.register_uri(
         "GET",
-        "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100",
+        "/engagements/v1/engagements/recent/modified?count=100",
         [
             {
                 "json": {
@@ -521,7 +521,7 @@ def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, comm
     test_stream.state = {"lastUpdated": 1641234595251}
 
     # Mocking Request
-    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?hapikey=test_api_key&count=100", responses)
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?count=100", responses)
     records = list(test_stream.read_records(sync_mode=SyncMode.incremental))
     # The stream should not attempt to get more than 10K records.
     assert len(records) == 10000

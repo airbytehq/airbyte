@@ -18,7 +18,7 @@ import requests
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
 from requests import codes
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 
@@ -129,21 +129,33 @@ class API:
     USER_AGENT = "Airbyte"
 
     def get_authenticator(self, credentials):
-        return Oauth2Authenticator(
-            token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
-            client_id=credentials["client_id"],
-            client_secret=credentials["client_secret"],
-            refresh_token=credentials["refresh_token"],
-        )
+        if self.is_oauth2(credentials):
+            return Oauth2Authenticator(
+                token_refresh_endpoint=self.BASE_URL + "/oauth/v1/token",
+                client_id=credentials["client_id"],
+                client_secret=credentials["client_secret"],
+                refresh_token=credentials["refresh_token"],
+            )
+        elif self.is_private_app(credentials):
+            return TokenAuthenticator(token=credentials["access_token"])
+        else:
+            return None
+
+    def is_oauth2(self, credentials) -> bool:
+        credentials_title = credentials.get("credentials_title")
+
+        return credentials_title == "OAuth Credentials"
+
+    def is_private_app(self, credentials) -> bool:
+        credentials_title = credentials.get("credentials_title")
+
+        return credentials_title == "Private App Credentials"
 
     def __init__(self, credentials: Mapping[str, Any]):
         self._session = requests.Session()
-        credentials_title = credentials.get("credentials_title")
 
-        if credentials_title == "OAuth Credentials":
+        if self.is_oauth2(credentials) or self.is_private_app(credentials):
             self._session.auth = self.get_authenticator(credentials)
-        elif credentials_title == "API Key Credentials":
-            self._session.params["hapikey"] = credentials.get("api_key")
         else:
             raise Exception("No supported `credentials_title` specified. See spec.yaml for references")
 
