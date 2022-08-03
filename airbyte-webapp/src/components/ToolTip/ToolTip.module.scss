@@ -6,12 +6,11 @@
   position: relative;
 }
 
-.toolTip {
+.tooltip {
   font-size: 12px;
   line-height: initial;
 
   padding: variables.$spacing-md;
-  margin: variables.$spacing-sm;
   border-radius: 5px;
   max-width: 300px;
   z-index: variables.$z-tooltip;

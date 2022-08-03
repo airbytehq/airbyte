@@ -1,6 +1,7 @@
+import { Placement } from "@floating-ui/react-dom";
+
 export type ToolTipCursor = "pointer" | "help" | "not-allowed" | "initial";
 export type ToolTipTheme = "dark" | "light";
-export type ToolTipAlignment = "top" | "right" | "bottom" | "left";
 
 export interface ToolTipProps {
   control: React.ReactNode;
@@ -8,7 +9,7 @@ export interface ToolTipProps {
   disabled?: boolean;
   cursor?: ToolTipCursor;
   theme?: ToolTipTheme;
-  align?: ToolTipAlignment;
+  placement?: Placement;
 }
 
 export type TooltipContext = ToolTipProps;
