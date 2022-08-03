@@ -185,9 +185,7 @@ public class MetricQueries {
                       GROUP BY 1
                       HAVING count(*) < 60 / cast(c.schedule::jsonb->'units' as integer))) as abnormal_sync_jobs
                       	""";
-
     return ctx.fetch(query).getValues(countField, long.class).get(0).longValue();
-
   }
 
 }
