@@ -47,6 +47,7 @@ import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.handlers.helpers.ConnectionMatcher;
+import io.airbyte.server.handlers.helpers.ConnectionScheduleHelper;
 import io.airbyte.server.handlers.helpers.DestinationMatcher;
 import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.validation.json.JsonValidationException;
@@ -140,6 +141,34 @@ public class ConnectionsHandler {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }
 
+    if (connectionCreate.getSchedule() != null && connectionCreate.getScheduleType() != null) {
+      throw new JsonValidationException("supply old or new schedule schema but not both");
+    }
+
+    if (connectionCreate.getScheduleType() != null) {
+      ConnectionScheduleHelper.populateSyncFromScheduleTypeAndData(standardSync, connectionCreate.getScheduleType(),
+          connectionCreate.getScheduleData());
+    } else {
+      populateSyncFromLegacySchedule(standardSync, connectionCreate);
+    }
+
+    configRepository.writeStandardSync(standardSync);
+
+    trackNewConnection(standardSync);
+
+    try {
+      LOGGER.info("Starting a connection manager workflow");
+      eventRunner.createConnectionManagerWorkflow(connectionId);
+    } catch (final Exception e) {
+      LOGGER.error("Start of the connection manager workflow failed", e);
+      configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+      throw e;
+    }
+
+    return buildConnectionRead(connectionId);
+  }
+
+  private void populateSyncFromLegacySchedule(final StandardSync standardSync, final ConnectionCreate connectionCreate) {
     if (connectionCreate.getSchedule() != null) {
       final Schedule schedule = new Schedule()
           .withTimeUnit(ApiPojoConverters.toPersistenceTimeUnit(connectionCreate.getSchedule().getTimeUnit()))
@@ -159,21 +188,6 @@ public class ConnectionsHandler {
       standardSync.withManual(true);
       standardSync.withScheduleType(ScheduleType.MANUAL);
     }
-
-    configRepository.writeStandardSync(standardSync);
-
-    trackNewConnection(standardSync);
-
-    try {
-      LOGGER.info("Starting a connection manager workflow");
-      eventRunner.createConnectionManagerWorkflow(connectionId);
-    } catch (final Exception e) {
-      LOGGER.error("Start of the connection manager workflow failed", e);
-      configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
-      throw e;
-    }
-
-    return buildConnectionRead(connectionId);
   }
 
   private void trackNewConnection(final StandardSync standardSync) {

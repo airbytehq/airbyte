@@ -198,6 +198,8 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(connectionRead.getSyncCatalog())
         .status(connectionRead.getStatus())
         .schedule(connectionRead.getSchedule())
+        .scheduleType(connectionRead.getScheduleType())
+        .scheduleData(connectionRead.getScheduleData())
         .source(sourceRead)
         .destination(destinationRead)
         .operations(operationReadList.getOperations())
@@ -232,6 +234,8 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(modifiedCatalog)
         .status(expected.getStatus())
         .schedule(expected.getSchedule())
+        .scheduleType(expected.getScheduleType())
+        .scheduleData(expected.getScheduleData())
         .source(expected.getSource())
         .destination(expected.getDestination())
         .operations(expected.getOperations())
@@ -474,7 +478,7 @@ class WebBackendConnectionsHandlerTest {
   void testForConnectionCreateCompleteness() {
     final Set<String> handledMethods =
         Set.of("name", "namespaceDefinition", "namespaceFormat", "prefix", "sourceId", "destinationId", "operationIds", "syncCatalog", "schedule",
-            "status", "resourceRequirements", "sourceCatalogId");
+            "scheduleType", "scheduleData", "status", "resourceRequirements", "sourceCatalogId");
 
     final Set<String> methods = Arrays.stream(ConnectionCreate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionCreate.class)
@@ -495,7 +499,7 @@ class WebBackendConnectionsHandlerTest {
   void testForConnectionUpdateCompleteness() {
     final Set<String> handledMethods =
         Set.of("schedule", "connectionId", "syncCatalog", "namespaceDefinition", "namespaceFormat", "prefix", "status", "operationIds",
-            "resourceRequirements", "name", "sourceCatalogId");
+            "resourceRequirements", "name", "sourceCatalogId", "scheduleType", "scheduleData");
 
     final Set<String> methods = Arrays.stream(ConnectionUpdate.class.getMethods())
         .filter(method -> method.getReturnType() == ConnectionUpdate.class)
