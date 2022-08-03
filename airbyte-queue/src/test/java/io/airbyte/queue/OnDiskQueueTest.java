@@ -4,6 +4,7 @@
 
 package io.airbyte.queue;
 
+import static java.lang.System.exit;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -87,6 +88,11 @@ class OnDiskQueueTest {
     queue.close();
 
     assertFalse(Files.exists(queueRoot));
+  }
+
+  @Test
+  void testFail() throws Exception {
+    assertTrue(false);
   }
 
   @SuppressWarnings("SameParameterValue")

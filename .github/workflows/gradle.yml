@@ -468,7 +468,12 @@ jobs:
 
       - name: Build
         run: |
-          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan | tee build.out
+          echo '###Build Failed' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
+          echo $failed_details >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Integration test
         run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
