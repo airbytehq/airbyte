@@ -57,6 +57,7 @@ public class DateTimeConverter {
       }
       return resolveEra(localDate, t.toString());
     } else {
+      // This case probably isn't strictly necessary, but I'm leaving it just in case there's some weird situation that I'm not aware of.
       Instant instant = Instant.parse(timestamp.toString());
       OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(instant, ZoneOffset.UTC);
       ZonedDateTime timestamptz = ZonedDateTime.from(offsetDateTime);
@@ -71,10 +72,12 @@ public class DateTimeConverter {
    */
   public static String convertToTimestamp(Object timestamp) {
     if (timestamp instanceof Timestamp t) {
+      // Snapshot mode
       LocalDateTime localDateTime = t.toLocalDateTime();
       String value = localDateTime.format(TIMESTAMP_FORMATTER);
       return resolveEra(t, value);
     } else if (timestamp instanceof Instant i) {
+      // Incremental mode
       LocalDate localDate = i.atZone(ZoneOffset.UTC).toLocalDate();
       if (isBce(localDate)) {
         // i.minus(1, ChronoUnit.YEARS) would be nice, but it throws an exception because you can't subtract YEARS from an Instant
@@ -94,9 +97,11 @@ public class DateTimeConverter {
    */
   public static Object convertToDate(Object date) {
     if (date instanceof Date d) {
+      // Snapshot mode
       LocalDate localDate = ((Date) date).toLocalDate();
       return resolveEra(d, localDate.toString());
     } else if (date instanceof LocalDate d) {
+      // Incremental mode
       if (isBce(d)) {
         d = d.minusYears(1);
       }
