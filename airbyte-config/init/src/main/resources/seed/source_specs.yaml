@@ -6027,11 +6027,11 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-okta:0.1.10"
+- dockerImage: "airbyte/source-okta:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/okta"
     connectionSpecification:
-      $schema: "http://json-schema.org/draft-07/schema#"
+      $schema: "http://jsochangedn-schema.org/draft-07/schema#"
       title: "Okta Spec"
       type: "object"
       required: []
@@ -6043,6 +6043,12 @@
           description: "The Okta domain. See the <a href=\"https://docs.airbyte.io/integrations/sources/okta\"\
             >docs</a> for instructions on how to find it."
           airbyte_secret: false
+        start_date:
+          type: "string",
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+          description: "UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Any data before this date will not be replicated."
+          examples: [ "2022-07-22T00:00:00Z" ]
+          title: "Start Date"
         credentials:
           title: "Authorization Method *"
           type: "object"
