@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useIntl } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 import { Link, Outlet } from "react-router-dom";
 import styled from "styled-components";
 
@@ -41,6 +41,7 @@ const MainView: React.FC = (props) => {
   const { formatMessage } = useIntl();
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
+
   const showCreditsBanner =
     cloudWorkspace.creditStatus &&
     [
@@ -54,13 +55,13 @@ const MainView: React.FC = (props) => {
 
   const alertMessage = useMemo(() => {
     if (alertToShow === "credits") {
-      return formatMessage(
-        { id: `credits.creditsProblem.${cloudWorkspace.creditStatus}` },
-        {
-          values: {
+      return (
+        <FormattedMessage
+          id={`credits.creditsProblem.${cloudWorkspace.creditStatus}`}
+          values={{
             lnk: (content: React.ReactNode) => <Link to={CloudRoutes.Credits}>{content}</Link>,
-          },
-        }
+          }}
+        />
       );
     } else if (alertToShow === "trial") {
       const { trialExpiryTimestamp } = cloudWorkspace;
