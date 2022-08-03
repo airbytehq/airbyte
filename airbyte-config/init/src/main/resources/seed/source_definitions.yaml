@@ -564,7 +564,7 @@
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
-  dockerImageTag: 0.4.11
+  dockerImageTag: 0.4.12
   documentationUrl: https://docs.airbyte.io/integrations/sources/mssql
   icon: mssql.svg
   sourceType: database
@@ -612,7 +612,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.0
+  dockerImageTag: 0.6.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -651,7 +651,7 @@
 - name: Oracle DB
   sourceDefinitionId: b39a7370-74c3-45a6-ac3a-380d48520a83
   dockerRepository: airbyte/source-oracle
-  dockerImageTag: 0.3.18
+  dockerImageTag: 0.3.19
   documentationUrl: https://docs.airbyte.io/integrations/sources/oracle
   icon: oracle.svg
   sourceType: database
@@ -762,7 +762,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 0.4.38
+  dockerImageTag: 0.4.39
   documentationUrl: https://docs.airbyte.io/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -937,7 +937,7 @@
 - name: Stripe
   sourceDefinitionId: e094cb9a-26de-4645-8761-65c0c425d1de
   dockerRepository: airbyte/source-stripe
-  dockerImageTag: 0.1.34
+  dockerImageTag: 0.1.35
   documentationUrl: https://docs.airbyte.io/integrations/sources/stripe
   icon: stripe.svg
   sourceType: api

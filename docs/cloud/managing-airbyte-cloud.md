@@ -89,7 +89,7 @@ Understanding the following limitations will help you better manage Airbyte Clou
 
 ## Buy Credits
 
-This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://docs.airbyte.com/cloud/core-concepts/#credits) is a unit of measure used to pay for Airbyte resources when you run a sync. See [Pricing](https://airbyte.com/pricing) for more information.
+This section guides you through purchasing credits on Airbyte Cloud. An Airbyte [credit](https://airbyte.com/pricing) is a unit of measure used to pay for Airbyte resources when you run a sync. 
 
  To buy credits:
 
