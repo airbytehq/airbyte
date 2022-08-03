@@ -71,6 +71,8 @@ import org.slf4j.LoggerFactory;
 public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
   static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       "ssl", "true",
@@ -83,7 +85,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   PostgresSource() {
-
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new PostgresSourceOperations());
     this.featureFlags = new EnvVariableFeatureFlags();
   }
@@ -406,6 +407,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
       return AirbyteStateType.LEGACY;
     }
     return PostgresUtils.isCdc(config) ? AirbyteStateType.GLOBAL : AirbyteStateType.STREAM;
+  }
+
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
   public static void main(final String[] args) throws Exception {
