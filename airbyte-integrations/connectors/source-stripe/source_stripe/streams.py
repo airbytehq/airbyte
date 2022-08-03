@@ -563,3 +563,34 @@ class PromotionCodes(IncrementalStripeStream):
 
     def path(self, **kwargs):
         return "promotion_codes"
+
+
+class ExternalAccount(StripeStream, ABC):
+    """
+    Bank Accounts and Cards are separate streams because they have different schemas
+    """
+
+    object = ""
+
+    def path(self, **kwargs):
+        return f"accounts/{self.account_id}/external_accounts"
+
+    def request_params(self, **kwargs):
+        params = super().request_params(**kwargs)
+        return {**params, **{"object": self.object}}
+
+
+class ExternalAccountBankAccounts(ExternalAccount):
+    """
+    https://stripe.com/docs/api/external_account_bank_accounts/list
+    """
+
+    object = "bank_account"
+
+
+class ExternalAccountCards(ExternalAccount):
+    """
+    https://stripe.com/docs/api/external_account_cards/list
+    """
+
+    object = "card"
