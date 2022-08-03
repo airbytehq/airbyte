@@ -1,0 +1,56 @@
+{
+  "secret": "secret",
+  "domain": "localhost",
+  "port": 8443,
+  "scheme": "http",
+  "collection": {
+    "name": "foo",
+    "data_column": true,
+    "additional_columns": [
+      {
+        "name": "a",
+        "path": ["data", "a"],
+        "type": "integer",
+        "required": true
+      },
+      {
+        "name": "nested-value",
+        "path": ["data", "nested", "value"],
+        "type": "integer",
+        "required": false
+      },
+      {
+        "name": "my-ref",
+        "path": ["data", "my-ref"],
+        "type": "object",
+        "required": false
+      },
+      {
+        "name": "string",
+        "path": ["data", "string"],
+        "type": "string",
+        "required": false
+      },
+      {
+        "name": "timestamp",
+        "path": ["data", "timestamp"],
+        "airbyte_type": "timestamp_with_timezone",
+        "type": "string",
+        "format": "date-time",
+        "required": false
+      },
+      {
+        "name": "number",
+        "path": ["data", "number"],
+        "type": "number",
+        "required": false
+      }
+    ],
+    "page_size": 2,
+    "index": "ts",
+    "deletions": {
+      "deletion_mode": "deleted_field",
+      "column": "deleted_at"
+    }
+  }
+}
