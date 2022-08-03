@@ -49,19 +49,25 @@ class TestSpec(BaseTest):
     def compute_spec_diff(actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification):
         return DeepDiff(previous_connector_spec.dict(), actual_connector_spec.dict(), view="tree")
 
+    @pytest.fixture(name="skip_backward_compatibility_tests")
+    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+        if previous_connector_docker_runner is None:
+            pytest.skip("The previous connector image could not be retrieved.")
+
+        # Get the real connector version in case 'latest' is used in the config:
+        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
+
+        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
+            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
     @pytest.fixture(name="spec_diff")
     def spec_diff_fixture(
-        self, inputs: SpecTestConfig, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification
+        self,
+        skip_backward_compatibility_tests: bool,
+        actual_connector_spec: ConnectorSpecification,
+        previous_connector_spec: ConnectorSpecification,
     ) -> DeepDiff:
-        if (
-            inputs.backward_compatibility_tests_config.disable_backward_compatibility_tests_for_version
-            == inputs.backward_compatibility_tests_config.previous_connector_version
-        ):
-            pytest.skip(
-                f"Backward compatibility tests are disabled for version {inputs.backward_compatibility_tests_config.disable_backward_compatibility_tests_for_version}."
-            )
-        if previous_connector_spec is None:
-            pytest.skip("The previous connector spec could not be retrieved.")
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         return self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
 
@@ -224,8 +230,6 @@ class TestSpec(BaseTest):
         ]
         assert len(added_enum_fields) == 0, f"The current spec has a new enum field: {spec_diff.pretty()}"
 
-    @pytest.mark.default_timeout(60)
-    @pytest.mark.backward_compatibility
     def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
         """Check that value of the "additionalProperties" field is always true.
         A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
