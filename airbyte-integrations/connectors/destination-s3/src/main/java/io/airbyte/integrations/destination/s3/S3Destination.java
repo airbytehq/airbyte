@@ -59,7 +59,7 @@ public class S3Destination extends BaseConnector implements Destination {
       final S3StorageOperations storageOperations = new S3StorageOperations(nameTransformer, s3Client, destinationConfig);
 
       // Test for writing, list and delete
-      S3Destination.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketName());
+      S3Destination.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketPath());
 
       // Test single upload (for small files) permissions
       testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
