@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.1.56
+## 0.1.58
+Bootstrap spec backward compatibility tests. Add fixtures to retrieve a previous connector version spec [#14954](https://github.com/airbytehq/airbyte/pull/14954/).
+
+## 0.1.57
 Run connector from its image `working_dir` instead of from `/data`.
 
 ## 0.1.56

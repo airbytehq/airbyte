@@ -204,7 +204,11 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     [formType, props.onServiceSelect, props.availableServices, props.isEditMode, toggleOpenRequestModal]
   );
 
-  const { uiWidgetsInfo, setUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues, uiOverrides);
+  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
+    formFields,
+    initialValues,
+    uiOverrides
+  );
 
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
@@ -240,6 +244,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
           widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
           setUiWidgetsInfo={setUiWidgetsInfo}
+          resetUiWidgetsInfo={resetUiWidgetsInfo}
           formType={formType}
           selectedConnector={selectedConnectorDefinitionSpecification}
           availableServices={props.availableServices}

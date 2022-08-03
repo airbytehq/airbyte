@@ -24,15 +24,17 @@ class CursorPaginationStrategy(PaginationStrategy):
         config: Config,
         stop_condition: Optional[InterpolatedBoolean] = None,
         decoder: Optional[Decoder] = None,
+        **options: Optional[Mapping[str, Any]],
     ):
         """
         :param cursor_value: template string evaluating to the cursor value
         :param config: connection config
         :param stop_condition: template string evaluating when to stop paginating
         :param decoder: decoder to decode the response
+        :param options: Additional runtime parameters to be used for string interpolation
         """
         if isinstance(cursor_value, str):
-            cursor_value = InterpolatedString(cursor_value)
+            cursor_value = InterpolatedString.create(cursor_value, options=options)
         self._cursor_value = cursor_value
         self._config = config
         self._decoder = decoder or JsonDecoder()
