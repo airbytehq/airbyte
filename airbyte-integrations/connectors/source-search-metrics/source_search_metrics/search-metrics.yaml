@@ -1,0 +1,57 @@
+page_size: 50
+
+schema_loader:
+  type: JsonSchema
+  file_path: "./source_search_metrics/schemas/{{ options.name }}.json"
+selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_.response"
+authenticator:
+  type: "OAuthAuthenticator"
+  token_refresh_endpoint: "https://api.searchmetrics.com/v4/token"
+  client_id: "{{ config.api_key }}"
+  client_secret: "{{ config.client_secret }}"
+  refresh_token: ""
+  refresh_request_body:
+    grant_type: "client_credentials"
+  refresh_authenticator:
+    type: "BasicHttpAuthenticator"
+    username: "{{ config.api_key }}"
+    password: "{{ config.client_secret }}"
+  refresh_request_headers:
+    Accept: "application/json"
+requester:
+  type: HttpRequester
+  name: "{{ options['name'] }}"
+  url_base: "https://api.searchmetrics.com/v4/"
+  http_method: "GET"
+  authenticator:
+    $ref: "*ref(authenticator)"
+retriever:
+  type: SimpleRetriever
+  name: "{{ options['name'] }}"
+  primary_key: "{{ options['primary_key'] }}"
+projects_stream:
+  type: DeclarativeStream
+  $options:
+    name: "projects"
+  primary_key: "project_id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "AdminStatusGetListProjects.json"
+    paginator:
+      type: "NoPagination"
+
+streams:
+  - "*ref(projects_stream)"
+check:
+  type: CheckStream
+  stream_names: ["projects"]
