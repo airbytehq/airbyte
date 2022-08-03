@@ -6297,7 +6297,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-oracle:0.3.18"
+- dockerImage: "airbyte/source-oracle:0.3.19"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/sources/oracle"
     connectionSpecification:
@@ -6307,7 +6307,6 @@
       required:
       - "host"
       - "port"
-      - "sid"
       - "username"
       properties:
         host:
@@ -6326,10 +6325,40 @@
           maximum: 65536
           default: 1521
           order: 2
-        sid:
-          title: "SID (Oracle System Identifier)"
-          type: "string"
+        connection_data:
+          title: "Connect by"
+          type: "object"
+          description: "Connect data that will be used for DB connection"
           order: 3
+          oneOf:
+          - title: "Service name"
+            description: "Use service name"
+            required:
+            - "service_name"
+            properties:
+              connection_type:
+                type: "string"
+                const: "service_name"
+                default: "service_name"
+                order: 0
+              service_name:
+                title: "Service name"
+                type: "string"
+                order: 1
+          - title: "System ID (SID)"
+            description: "Use SID (Oracle System Identifier)"
+            required:
+            - "sid"
+            properties:
+              connection_type:
+                type: "string"
+                const: "sid"
+                default: "sid"
+                order: 0
+              sid:
+                title: "System ID (SID)"
+                type: "string"
+                order: 1
         username:
           title: "User"
           description: "The username which is used to access the database."

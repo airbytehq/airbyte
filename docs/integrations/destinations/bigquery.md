@@ -1,6 +1,6 @@
 # BigQuery
 
-Setting up the BigQuery destination connector involves setting up the data loading method (GigQuery Standard method and Google Cloud Storage bucket) and configuring the BigQuery destination connector using the Airbyte UI.
+Setting up the BigQuery destination connector involves setting up the data loading method (BigQuery Standard method and Google Cloud Storage bucket) and configuring the BigQuery destination connector using the Airbyte UI.
 
 This page guides you through setting up the BigQuery destination connector.
 
