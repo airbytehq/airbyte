@@ -12,7 +12,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.zaxxer.hikari.HikariDataSource;
-import java.io.IOException;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Assertions;
@@ -46,8 +45,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingDataSourceWithConnectionTimeoutSetAboveDefault() {
     final Map<String, String> connectionProperties = Map.of(
-        "connectTimeout", "61"
-    );
+        "connectTimeout", "61");
     final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
         username,
         password,
@@ -62,8 +60,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault() {
     final Map<String, String> connectionProperties = Map.of(
-        "connectTimeout", "30"
-    );
+        "connectTimeout", "30");
     final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
         username,
         password,
@@ -78,8 +75,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingDataSourceWithConnectionTimeoutSetWithZero() {
     final Map<String, String> connectionProperties = Map.of(
-        "connectTimeout", "0"
-    );
+        "connectTimeout", "0");
     final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
         username,
         password,

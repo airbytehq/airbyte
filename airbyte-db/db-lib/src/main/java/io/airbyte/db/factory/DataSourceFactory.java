@@ -7,7 +7,6 @@ package io.airbyte.db.factory;
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.Closeable;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -76,10 +75,10 @@ public class DataSourceFactory {
    * @return The configured {@link DataSource}.
    */
   public static DataSource createWithConnectionTimeout(final String username,
-      final String password,
-      final String driverClassName,
-      final String jdbcConnectionString,
-      final Map<String, String> connectionProperties) {
+                                                       final String password,
+                                                       final String driverClassName,
+                                                       final String jdbcConnectionString,
+                                                       final Map<String, String> connectionProperties) {
     return new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDriverClassName(driverClassName)
@@ -211,16 +210,17 @@ public class DataSourceFactory {
     private DataSourceBuilder() {}
 
     /**
-     * Retrieves connectionTimeout value from connection properties in seconds,
-     * default minimum timeout is 60 seconds since Hikari default of 30 seconds
-     * is not enough for acceptance tests. In the case the value is 0, pass the
-     * value along as Hikari and Postgres use default max value for 0 timeout value
+     * Retrieves connectionTimeout value from connection properties in seconds, default minimum timeout
+     * is 60 seconds since Hikari default of 30 seconds is not enough for acceptance tests. In the case
+     * the value is 0, pass the value along as Hikari and Postgres use default max value for 0 timeout
+     * value
      *
-     * NOTE: HikariCP uses milliseconds for all time values: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
-     * whereas Postgres is measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
+     * NOTE: HikariCP uses milliseconds for all time values:
+     * https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby whereas Postgres is
+     * measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
      *
-     * @param connectionProperties custom jdbc_url_parameters containing
-     *                             information on connection properties
+     * @param connectionProperties custom jdbc_url_parameters containing information on connection
+     *        properties
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
     public DataSourceBuilder getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
