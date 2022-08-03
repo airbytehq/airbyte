@@ -49,9 +49,37 @@ projects_stream:
       path: "AdminStatusGetListProjects.json"
     paginator:
       type: "NoPagination"
-
+tags_stream:
+  type: DeclarativeStream
+  $options:
+    name: "tags"
+  primary_key: ""
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "AdminStatusGetListProjectTags.json"
+      request_options_provider:
+        request_parameters:
+          project_id: "{{ stream_slice.project_id }}"
+          "url": "{{stream_slice.url}}"
+          countrycode: "{{ config.country_code }}"
+    paginator:
+      type: "NoPagination"
+    stream_slicer:
+      type: "SubstreamSlicer"
+      parent_streams_configs:
+        - stream: "*ref(projects_stream)"
+          parent_key_to_field:
+            project_id: "project_id"
+            project_url: "url"
 streams:
   - "*ref(projects_stream)"
+  - "*ref(tags_stream)"
 check:
   type: CheckStream
   stream_names: ["projects"]
