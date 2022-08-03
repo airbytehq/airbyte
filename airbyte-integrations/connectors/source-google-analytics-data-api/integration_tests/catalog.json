@@ -1,0 +1,567 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "daily_active_users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "active1DayUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "weekly_active_users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "active7DayUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "four_weekly_active_users",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "active28DayUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "devices",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "deviceCategory": {
+              "type": [
+                "str"
+              ]
+            },
+            "operatingSystem": {
+              "type": [
+                "str"
+              ]
+            },
+            "browser": {
+              "type": [
+                "str"
+              ]
+            },
+            "totalUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "newUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessions": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessionsPerUser": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "averageSessionDuration": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViews": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViewsPerSession": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "bounceRate": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "locations",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "region": {
+              "type": [
+                "str"
+              ]
+            },
+            "country": {
+              "type": [
+                "str"
+              ]
+            },
+            "city": {
+              "type": [
+                "str"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "totalUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "newUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessions": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessionsPerUser": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "averageSessionDuration": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViews": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViewsPerSession": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "bounceRate": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "pages",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "hostName": {
+              "type": [
+                "str"
+              ]
+            },
+            "pagePathPlusQueryString": {
+              "type": [
+                "str"
+              ]
+            },
+            "screenPageViews": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "bounceRate": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "traffic_sources",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "sessionSource": {
+              "type": [
+                "str"
+              ]
+            },
+            "sessionMedium": {
+              "type": [
+                "str"
+              ]
+            },
+            "totalUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "newUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessions": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessionsPerUser": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "averageSessionDuration": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViews": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViewsPerSession": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "bounceRate": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      },
+      {
+        "name": "website_overview",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "property_id": {
+              "type": [
+                "string"
+              ]
+            },
+            "uuid": {
+              "type": [
+                "string"
+              ]
+            },
+            "date": {
+              "type": [
+                "str"
+              ]
+            },
+            "totalUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "newUsers": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessions": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "sessionsPerUser": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "averageSessionDuration": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViews": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "screenPageViewsPerSession": {
+              "type": [
+                "null",
+                "int"
+              ]
+            },
+            "bounceRate": {
+              "type": [
+                "null",
+                "int"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_primary_key": [
+          [
+            "date"
+          ]
+        ]
+      }
+    ]
+  }
+}
