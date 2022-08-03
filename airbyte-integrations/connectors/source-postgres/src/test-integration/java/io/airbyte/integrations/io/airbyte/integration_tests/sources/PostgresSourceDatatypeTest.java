@@ -11,12 +11,9 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
-import java.util.Set;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -84,4 +81,5 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
   public boolean testCatalog() {
     return true;
   }
+
 }

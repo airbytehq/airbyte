@@ -23,8 +23,6 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
