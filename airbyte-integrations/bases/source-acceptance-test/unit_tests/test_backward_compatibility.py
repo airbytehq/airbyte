@@ -497,6 +497,24 @@ def test_enum_field_has_narrowed(previous_connector_spec, actual_connector_spec,
                 connectionSpecification={
                     "type": "object",
                     "properties": {
+                        "my_string": {"type": "string", "enum": ["a", "b"]},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {"my_string": {"type": "string", "enum": ["a", "b"]}, "my_enum": {"type": "string", "enum": ["c", "d"]}},
+                }
+            ),
+            does_not_raise(),
+            id="Top level: Adding a new optional field with enum should not fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
                         "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "string"}}},
                     },
                 }
