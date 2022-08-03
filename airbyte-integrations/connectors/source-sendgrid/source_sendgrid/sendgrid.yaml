@@ -1,3 +1,5 @@
+page_size: 50
+
 schema_loader:
   type: JsonSchema
   file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
@@ -17,7 +19,7 @@ requester:
 cursor_paginator:
   type: LimitPaginator
   url_base: "*ref(requester.url_base)"
-  page_size: 100
+  page_size: "*ref(page_size)"
   limit_option:
     inject_into: "request_parameter"
     field_name: "page_size"
@@ -30,7 +32,7 @@ offset_paginator:
   type: LimitPaginator
   $options:
     url_base: "*ref(requester.url_base)"
-    page_size: 10
+    page_size: "*ref(page_size)"
   limit_option:
     inject_into: "request_parameter"
     field_name: "limit"
@@ -92,10 +94,31 @@ contacts_stream:
       path: "/v3/marketing/contacts"
     paginator:
       type: "NoPagination"
+
+stats_automations_stream:
+  type: DeclarativeStream
+  $options:
+    name: "stats_automations"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(result_selector)"
+      extractor:
+        transform: "_.results"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/marketing/stats/automations"
+    paginator:
+      $ref: "*ref(cursor_paginator)"
+
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
   - "*ref(contacts_stream)"
+  - "*ref(stats_automations_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
