@@ -55,7 +55,23 @@ retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
   primary_key: "{{ options['primary_key'] }}"
-
+stream_slicer:
+  type: "DatetimeStreamSlicer"
+  start_datetime:
+    datetime: "2017-01-01T00:00:00.0Z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+  end_datetime:
+    datetime: "2022-08-01T00:00:00.0Z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+  step: "10000d"
+  cursor_field: "created"
+  start_time_option:
+    field_name: "start_time"
+    inject_into: "request_parameter"
+  end_time_option:
+    field_name: "end_time"
+    inject_into: "request_parameter"
+  datetime_format: "timestamp"
 lists_stream:
   type: DeclarativeStream
   $options:
@@ -189,22 +205,26 @@ global_suppressions_stream:
     paginator:
       $ref: "*ref(offset_paginator)"
     stream_slicer:
-      type: "DatetimeStreamSlicer"
-      start_datetime:
-        datetime: "2017-01-01T00:00:00.0Z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      end_datetime:
-        datetime: "2022-08-01T00:00:00.0Z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-      step: "10000d"
-      cursor_field: "created"
-      start_time_option:
-        field_name: "start_time"
-        inject_into: "request_parameter"
-      end_time_option:
-        field_name: "end_time"
-        inject_into: "request_parameter"
-      datetime_format: "timestamp"
+      $ref: "*ref(stream_slicer)"
+blocks_stream:
+  type: DeclarativeStream
+  $options:
+    name: "blocks"
+    primary_key: "email"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/suppression/blocks"
+    paginator:
+      $ref: "*ref(offset_paginator)"
+    stream_slicer:
+      $ref: "*ref(stream_slicer)"
+
 suppression_groups_stream:
   type: DeclarativeStream
   $options:
@@ -248,6 +268,7 @@ streams:
   - "*ref(global_suppressions_stream)"
   - "*ref(suppression_groups_stream)"
   - "*ref(suppression_group_members_stream)"
+  - "*ref(blocks_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
