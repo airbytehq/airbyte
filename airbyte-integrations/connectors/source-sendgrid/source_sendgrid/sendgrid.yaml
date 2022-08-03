@@ -13,7 +13,7 @@ results_selector:
   extractor:
     type: JelloExtractor
     transform: "_.results"
-data_selector:
+selector:
   type: RecordSelector
   extractor:
     type: JelloExtractor
@@ -176,13 +176,13 @@ global_suppressions_stream:
   type: DeclarativeStream
   $options:
     name: "global_suppressions"
-  primary_key: "email"
+    primary_key: "email"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:
     $ref: "*ref(retriever)"
     record_selector:
-      $ref: "*ref(data_selector)"
+      $ref: "*ref(selector)"
     requester:
       $ref: "*ref(requester)"
       path: "/v3/suppression/unsubscribes"
@@ -205,6 +205,22 @@ global_suppressions_stream:
         field_name: "end_time"
         inject_into: "request_parameter"
       datetime_format: "timestamp"
+suppression_groups_stream:
+  type: DeclarativeStream
+  $options:
+    name: "suppression_groups"
+    primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/asm/groups"
+    paginator:
+      type: "NoPagination"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
@@ -214,6 +230,7 @@ streams:
   - "*ref(single_sends_stream)"
   - "*ref(templates_stream)"
   - "*ref(global_suppressions_stream)"
+  - "*ref(suppression_groups_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
