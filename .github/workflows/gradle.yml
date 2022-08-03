@@ -468,14 +468,7 @@ jobs:
 
       - name: Build
         run: |
-#          SUB_BUILD=PLATFORM ./gradlew build javadoc --scan | tee build.out
           SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
-#          echo '###Build Failed' >> $GITHUB_STEP_SUMMARY
-#          echo '```' >> $GITHUB_STEP_SUMMARY
-#          failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
-#          echo $failed_details >> $GITHUB_STEP_SUMMARY
-#          echo '```' >> $GITHUB_STEP_SUMMARY
-#          exit 1
 
       - name: Integration test
         run: |
@@ -512,9 +505,10 @@ jobs:
         uses: dorny/test-reporter@v1
         if: always()    # run this step even if previous step failed
         with:
-          name: JUnit Test Report           # Name of the check run which will be created
-#          path: reports/jest-*.html    # Path to test results
-          path: /actions-runner/_work/airbyte/airbyte/airbyte-queue/build/test-results/test/*.xml
+          name: JUnit Test Report
+          path: >
+            /actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,
+            /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml
           reporter: java-junit        # Format of test results
 
   # In case of self-hosted EC2 errors, remove this block.

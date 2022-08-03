@@ -116,6 +116,7 @@ public class MetricsQueriesTest {
     void shouldReturnNothingIfNotApplicable() throws SQLException {
       final var res = configDb.query(ctx -> MetricQueries.srcIdAndDestIdToReleaseStages(ctx, UUID.randomUUID(), UUID.randomUUID()));
       assertEquals(0, res.size());
+      assertTrue(false);
     }
 
   }
