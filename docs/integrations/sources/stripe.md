@@ -61,6 +61,8 @@ The Stripe source connector supports the following streams:
 * [Subscription Items](https://stripe.com/docs/api/subscription_items/list)
 * [Subscriptions](https://stripe.com/docs/api/subscriptions/list) \(Incremental\)
 * [Transfers](https://stripe.com/docs/api/transfers/list) \(Incremental\)
+* [ExternalAccountBankAccounts](https://stripe.com/docs/api/external_account_bank_accounts/list)\(Full Refresh\)
+* [ExternalAccountCards](https://stripe.com/docs/api/external_account_cards/list)\(Full Refresh\)
 
 ### Data type mapping
 
@@ -74,7 +76,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                |
 |:--------|:-----------| :--- |:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.1.34  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec and schema |
+| 0.1.35  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec and schema |
+| 0.1.34  | 2022-07-01 | [14357](https://github.com/airbytehq/airbyte/pull/14357) | added external account streams |
 | 0.1.33  | 2022-06-06 | [13449](https://github.com/airbytehq/airbyte/pull/13449) | added semi-incremental support for CheckoutSessions and CheckoutSessionsLineItems streams, fixed big in StripeSubStream, added unittests, updated docs |
 | 0.1.32  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                                                                                       |
 | 0.1.31  | 2022-04-20 | [12230](https://github.com/airbytehq/airbyte/pull/12230) | Update connector to use a `spec.yaml`                                                                                                                  |
