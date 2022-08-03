@@ -55,7 +55,7 @@ jobs:
           docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
           docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
 
-      - name: Push ${{ matrix.connector }} image with 'dev' tag
+      - name: Push ${{ matrix.connector }} image with 'dev' and version tag
         if: ${{ github.event_name == 'push' }}
         id: push-dev
         run: |
@@ -69,6 +69,3 @@ jobs:
           echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:$IMAGE_VERSION"
           docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
           docker push ghcr.io/estuary/${{ matrix.connector }}:$IMAGE_VERSION
-          echo "Publishing image ghcr.io/estuary/${{ matrix.connector}}:v1"
-          docker tag ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }} ghcr.io/estuary/${{ matrix.connector }}:v1
-          docker push ghcr.io/estuary/${{ matrix.connector }}:v1
