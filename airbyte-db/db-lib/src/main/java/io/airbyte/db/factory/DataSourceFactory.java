@@ -10,6 +10,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.threeten.bp.Duration;
 
 /**
  * Temporary factory class that provides convenience methods for creating a {@link DataSource}
@@ -54,39 +55,14 @@ public class DataSourceFactory {
                                   final String driverClassName,
                                   final String jdbcConnectionString,
                                   final Map<String, String> connectionProperties) {
-    return new DataSourceBuilder()
+    final DataSourceBuilder builder = new DataSourceBuilder()
         .withConnectionProperties(connectionProperties)
         .withDriverClassName(driverClassName)
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
-        .build();
-  }
-
-  /**
-   * Constructs a new {@link DataSource} using the provided configuration and extracts
-   * connectionTimeout (as seconds) if it exists
-   *
-   * @param username The username of the database user.
-   * @param password The password of the database user.
-   * @param driverClassName The fully qualified name of the JDBC driver class.
-   * @param jdbcConnectionString The JDBC connection string.
-   * @param connectionProperties Additional configuration properties for the underlying driver.
-   * @return The configured {@link DataSource}.
-   */
-  public static DataSource createWithConnectionTimeout(final String username,
-                                                       final String password,
-                                                       final String driverClassName,
-                                                       final String jdbcConnectionString,
-                                                       final Map<String, String> connectionProperties) {
-    return new DataSourceBuilder()
-        .withConnectionProperties(connectionProperties)
-        .withDriverClassName(driverClassName)
-        .withJdbcUrl(jdbcConnectionString)
-        .withPassword(password)
-        .withUsername(username)
-        .getConnectionTimeoutMs(connectionProperties)
-        .build();
+        .withConnectionTimeoutMs(DataSourceBuilder.getConnectionTimeoutMs(connectionProperties));
+    return builder.build();
   }
 
   /**
@@ -203,10 +179,8 @@ public class DataSourceFactory {
     private String password;
     private int port = 5432;
     private String username;
-    private static final long MILLISECONDS = 1000;
     private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
-    private static final String CONNECT_TIMEOUT_DEFAULT = "60";
-
+    private static final Duration CONNECT_TIMEOUT_DEFAULT = Duration.ofSeconds(60);
     private DataSourceBuilder() {}
 
     /**
@@ -223,18 +197,15 @@ public class DataSourceFactory {
      *        properties
      * @return DataSourceBuilder class used to create dynamic fields for DataSource
      */
-    public DataSourceBuilder getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
-      final long connectionTimeoutSeconds;
-      if (connectionProperties != null) {
-        // TODO: extend this field to more than just Postgres specific connectTimeout syntax
-        connectionTimeoutSeconds = Long.parseLong(connectionProperties.getOrDefault(CONNECT_TIMEOUT_KEY, CONNECT_TIMEOUT_DEFAULT));
-        if (connectionTimeoutSeconds == 0) {
-          this.connectionTimeoutMs = connectionTimeoutSeconds;
-        } else {
-          this.connectionTimeoutMs = Math.max(connectionTimeoutSeconds, Long.parseLong(CONNECT_TIMEOUT_DEFAULT)) * MILLISECONDS;
-        }
+    private static long getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
+      final Duration connectionTimeout;
+      // TODO: the usage of CONNECT_TIMEOUT_KEY is Postgres specific, may need to extend for other databases
+      connectionTimeout = connectionProperties.containsKey(CONNECT_TIMEOUT_KEY) ? Duration.ofSeconds(Long.parseLong(connectionProperties.get(CONNECT_TIMEOUT_KEY))) : CONNECT_TIMEOUT_DEFAULT;
+      if (connectionTimeout.getSeconds() == 0) {
+        return connectionTimeout.toMillis();
+      } else {
+        return (connectionTimeout.compareTo(CONNECT_TIMEOUT_DEFAULT) > 0 ? connectionTimeout : CONNECT_TIMEOUT_DEFAULT).toMillis();
       }
-      return this;
     }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {

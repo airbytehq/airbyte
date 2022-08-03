@@ -46,7 +46,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   void testCreatingDataSourceWithConnectionTimeoutSetAboveDefault() {
     final Map<String, String> connectionProperties = Map.of(
         "connectTimeout", "61");
-    final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
+    final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
         driverClassName,
@@ -61,7 +61,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   void testCreatingDataSourceWithConnectionTimeoutSetBelowDefault() {
     final Map<String, String> connectionProperties = Map.of(
         "connectTimeout", "30");
-    final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
+    final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
         driverClassName,
@@ -76,7 +76,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   void testCreatingDataSourceWithConnectionTimeoutSetWithZero() {
     final Map<String, String> connectionProperties = Map.of(
         "connectTimeout", "0");
-    final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
+    final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
         driverClassName,
@@ -90,7 +90,7 @@ class DataSourceFactoryTest extends CommonFactoryTest {
   @Test
   void testCreatingDataSourceWithConnectionTimeoutNotSet() {
     final Map<String, String> connectionProperties = Map.of();
-    final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
+    final DataSource dataSource = DataSourceFactory.create(
         username,
         password,
         driverClassName,
