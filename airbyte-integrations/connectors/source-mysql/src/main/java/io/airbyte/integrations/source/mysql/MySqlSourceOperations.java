@@ -6,7 +6,6 @@ package io.airbyte.integrations.source.mysql;
 
 import static com.mysql.cj.MysqlType.BIGINT;
 import static com.mysql.cj.MysqlType.BIGINT_UNSIGNED;
-import static com.mysql.cj.MysqlType.CHAR;
 import static com.mysql.cj.MysqlType.DATE;
 import static com.mysql.cj.MysqlType.DATETIME;
 import static com.mysql.cj.MysqlType.DECIMAL;
@@ -61,7 +60,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
   private static Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
       SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
-      TIME, YEAR, CHAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
+      TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
   /**
    * @param colIndex 1-based column index.

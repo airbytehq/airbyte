@@ -5,14 +5,12 @@
 package io.airbyte.db.jdbc;
 
 import static java.sql.JDBCType.BIGINT;
-import static java.sql.JDBCType.CHAR;
 import static java.sql.JDBCType.DATE;
 import static java.sql.JDBCType.DECIMAL;
 import static java.sql.JDBCType.DOUBLE;
 import static java.sql.JDBCType.FLOAT;
 import static java.sql.JDBCType.INTEGER;
 import static java.sql.JDBCType.LONGVARCHAR;
-import static java.sql.JDBCType.NCHAR;
 import static java.sql.JDBCType.NUMERIC;
 import static java.sql.JDBCType.NVARCHAR;
 import static java.sql.JDBCType.REAL;
@@ -52,7 +50,7 @@ public class JdbcUtils {
   public static final String TLS_KEY = "tls";
   public static final String USERNAME_KEY = "username";
   public static final Set<JDBCType> ALLOWED_CURSOR_TYPES = Set.of(TIMESTAMP, TIME, DATE, TINYINT, SMALLINT, INTEGER,
-      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR);
+      BIGINT, FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL, NVARCHAR, VARCHAR, LONGVARCHAR);
 
   private static final JdbcSourceOperations defaultSourceOperations = new JdbcSourceOperations();
 
