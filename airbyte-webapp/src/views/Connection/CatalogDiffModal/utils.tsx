@@ -4,11 +4,7 @@ import { SortedDiff } from "./types";
 
 export const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffArray?: T[]): SortedDiff<T> => {
   const sortedDiff: SortedDiff<T> = { newItems: [], removedItems: [], changedItems: [] };
-  if (!diffArray) {
-    return sortedDiff;
-  }
-
-  diffArray.forEach((transform) => {
+  diffArray?.forEach((transform) => {
     if (transform.transformType.includes("add")) {
       sortedDiff.newItems.push(transform);
     }
