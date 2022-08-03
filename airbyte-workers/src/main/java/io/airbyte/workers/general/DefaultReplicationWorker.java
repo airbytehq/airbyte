@@ -178,6 +178,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       } catch (final Exception e) {
         hasFailed.set(true);
         LOGGER.error("Sync worker failed.", e);
+        throw new WorkerException("Sync worker failed.", e);
       } finally {
         executors.shutdownNow();
       }
@@ -438,9 +439,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
     cancelled.set(true);
 
-    LOGGER.info("Cancelling destination...");
     try {
-      destination.cancel();
+      LOGGER.info("Closeing destination...............");
+      destination.close();
     } catch (final Exception e) {
       LOGGER.info("Error cancelling destination: ", e);
     }
