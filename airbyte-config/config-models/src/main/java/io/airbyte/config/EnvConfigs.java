@@ -132,9 +132,9 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
 
   // Control/Data plane configs
-  private static final String SHOULD_HANDLE_SYNC_WORKFLOW_TASKS = "SHOULD_HANDLE_SYNC_WORKFLOW_TASKS";
-  private static final String PRIMARY_SYNC_ACTIVITY_TASK_QUEUE = "PRIMARY_SYNC_ACTIVITY_TASK_QUEUE";
-  private static final String SYNC_ACTIVITY_TASK_QUEUES = "SYNC_ACTIVITY_TASK_QUEUES";
+  private static final String SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS = "SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS";
+  private static final String PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE";
+  private static final String SYNC_DATA_PLANE_TASK_QUEUES = "SYNC_DATA_PLANE_TASK_QUEUES";
   private static final String CONNECTION_IDS_FOR_AWS_DATA_PLANE = "CONNECTION_IDS_FOR_AWS_DATA_PLANE";
 
   private static final String MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE = "MAX_FAILED_JOBS_IN_A_ROW_BEFORE_CONNECTION_DISABLE";
@@ -193,7 +193,7 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
-  public static final String DEFAULT_PRIMARY_SYNC_ACTIVITY_TASK_QUEUE = "SYNC_ACTIVITIES";
+  public static final String DEFAULT_PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "SYNC_DATA_PLANE";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -921,17 +921,17 @@ public class EnvConfigs implements Configs {
 
   @Override
   public boolean shouldHandleSyncControlPlaneTasks() {
-    final boolean result = getEnvOrDefault(SHOULD_HANDLE_SYNC_WORKFLOW_TASKS, true);
+    final boolean result = getEnvOrDefault(SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS, true);
     if (result && !shouldRunSyncWorkflows()) {
       throw new IllegalArgumentException(
-          String.format("%s cannot be true when %s is false", SHOULD_HANDLE_SYNC_WORKFLOW_TASKS, SHOULD_RUN_SYNC_WORKFLOWS));
+          String.format("%s cannot be true when %s is false", SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS, SHOULD_RUN_SYNC_WORKFLOWS));
     }
     return result;
   }
 
   @Override
   public String primarySyncDataPlaneTaskQueue() {
-    return getEnvOrDefault(PRIMARY_SYNC_ACTIVITY_TASK_QUEUE, DEFAULT_PRIMARY_SYNC_ACTIVITY_TASK_QUEUE);
+    return getEnvOrDefault(PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE, DEFAULT_PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE);
   }
 
   @Override
@@ -945,7 +945,7 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Set<String> getSyncDataPlaneTaskQueues() {
-    final var taskQueues = getEnvOrDefault(SYNC_ACTIVITY_TASK_QUEUES, primarySyncDataPlaneTaskQueue());
+    final var taskQueues = getEnvOrDefault(SYNC_DATA_PLANE_TASK_QUEUES, primarySyncDataPlaneTaskQueue());
     if (taskQueues.isEmpty()) {
       return new HashSet<>();
     }
@@ -963,8 +963,8 @@ public class EnvConfigs implements Configs {
         throw new IllegalArgumentException(String.format(
             "When %s is true, either %s must also be true, or %s must be non-empty.",
             SHOULD_RUN_SYNC_WORKFLOWS,
-            SHOULD_HANDLE_SYNC_WORKFLOW_TASKS,
-            SYNC_ACTIVITY_TASK_QUEUES));
+            SHOULD_HANDLE_SYNC_CONTROL_PLANE_TASKS,
+            SYNC_DATA_PLANE_TASK_QUEUES));
       }
     }
   }
