@@ -21,7 +21,6 @@ export const getSortedDiff = <T extends StreamTransform | FieldTransform>(diffAr
       sortedDiff.changedItems.push(transform);
     }
 
-    return sortedDiff;
-  }, sortedDiff);
+  });
   return sortedDiff;
 };
