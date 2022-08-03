@@ -23,7 +23,6 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -215,7 +214,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final LocalDate date = getObject(resultSet, index, LocalDate.class);
+    LocalDate date = getObject(resultSet, index, LocalDate.class);
+    if (isBce(date)) {
+      // java.time uses a year 0, but the standard AD/BC system does not. So we just subtract one to hack around this difference.
+      date = date.minusYears(1);
+    }
     node.put(columnName, resolveEra(date, date.toString()));
   }
 
@@ -290,6 +293,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     node.put(columnName, object.getValue());
   }
 
+  @Override
   protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
     if (bigDecimal != null) {

@@ -94,4 +94,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatyp
     container.close();
   }
 
+  public boolean testCatalog() {
+    return true;
+  }
 }

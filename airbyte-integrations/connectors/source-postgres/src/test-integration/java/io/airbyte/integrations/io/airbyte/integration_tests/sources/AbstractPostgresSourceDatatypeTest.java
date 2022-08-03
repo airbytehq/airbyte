@@ -180,8 +180,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
      TestDataHolder.builder()
      .sourceType("date")
      .airbyteType(JsonSchemaType.STRING_DATE)
-     .addInsertValues("'1999-01-08'", /* "'1991-02-10 BC'",*/ "null")
-     .addExpectedValues("1999-01-08", /* "1990-02-10 BC", */ null)
+     .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
+     .addExpectedValues("1999-01-08", "1991-02-10 BC", null)
      .build());
 
     for (final String type : Set.of("double precision", "float", "float8")) {
@@ -420,8 +420,23 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
-              .addExpectedValues("2004-10-19T10:23:00.000000", "2004-10-19T10:23:54.123456", null)
+              .addInsertValues(
+                  "TIMESTAMP '2004-10-19 10:23:00'",
+                  "TIMESTAMP '2004-10-19 10:23:54.123456'",
+                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from inconsistent leap year handling
+                  "TIMESTAMP '3004-10-19 10:23:54.123456 BC'",
+                  // The earliest possible timestamp in CE
+                  "TIMESTAMP '0001-01-01 00:00:00.000000'",
+                  // The last possible timestamp in BCE
+                  "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
+                  "null")
+              .addExpectedValues(
+                  "2004-10-19T10:23:00.000000",
+                  "2004-10-19T10:23:54.123456",
+                  "3004-10-19T10:23:54.123456 BC",
+                  "0001-01-01T00:00:00.000000",
+                  "0001-12-31T23:59:59.999999 BC",
+                  null)
               .build());
     }
 
@@ -432,9 +447,24 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("timestamptz")
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
-              .addInsertValues("TIMESTAMP '2004-10-19 10:23:00-08'", "TIMESTAMP '2004-10-19 10:23:54.123456-08'", "null")
-              // 2004-10-19T10:23:54Z-8 = 2004-10-19T17:23:54Z
-              .addExpectedValues("2004-10-19T17:23:00.000000Z", "2004-10-19T17:23:54.123456Z", null)
+              .addInsertValues(
+                  // 10:23-08 == 18:23Z
+                  "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:00-08'",
+                  "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54.123456-08'",
+                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from inconsistent leap year handling
+                  "TIMESTAMP WITH TIME ZONE '3004-10-19 10:23:54.123456-08 BC'",
+                  // The earliest possible timestamp in CE (16:00-08 == 00:00Z)
+                  "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'",
+                  // The last possible timestamp in BCE (15:59-08 == 23:59Z)
+                  "TIMESTAMP WITH TIME ZONE '0001-12-31 15:59:59.999999-08 BC'",
+                  "null")
+              .addExpectedValues(
+                  "2004-10-19T18:23:00.000000Z",
+                  "2004-10-19T18:23:54.123456Z",
+                  "3004-10-19T18:23:54.123456Z BC",
+                  "0001-01-01T00:00:00.000000Z",
+                  "0001-12-31T23:59:59.999999Z BC",
+                  null)
               .build());
     }
 

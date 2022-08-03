@@ -13,7 +13,6 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
-import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
