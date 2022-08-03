@@ -39,7 +39,7 @@ def test_record_filter(test_name, transform_template, filter_template, body, exp
 
     response = create_response(body)
     decoder = JsonDecoder()
-    extractor = JelloExtractor(transform=transform_template, decoder=decoder, config=config, kwargs={})
+    extractor = JelloExtractor(transform=transform_template, decoder=decoder, config=config)
     if filter_template is None:
         record_filter = None
     else:

@@ -17,7 +17,6 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -61,7 +60,7 @@ class CockroachDbSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER),
-          Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
+          Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
       CatalogHelpers.createAirbyteStream(
@@ -153,11 +152,11 @@ class CockroachDbSourceTest {
   private JsonNode getConfig(final CockroachContainer psqlDb, final String dbName, final String username) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(PSQL_DB.getContainerInfo()
-                .getNetworkSettings()
-                .getNetworks()
-                .entrySet().stream()
-                .findFirst()
-                .get().getValue().getIpAddress()))
+            .getNetworkSettings()
+            .getNetworks()
+            .entrySet().stream()
+            .findFirst()
+            .get().getValue().getIpAddress()))
         .put(JdbcUtils.PORT_KEY, psqlDb.getExposedPorts().get(1))
         .put(JdbcUtils.DATABASE_KEY, dbName == null ? psqlDb.getDatabaseName() : dbName)
         .put(JdbcUtils.USERNAME_KEY, username)

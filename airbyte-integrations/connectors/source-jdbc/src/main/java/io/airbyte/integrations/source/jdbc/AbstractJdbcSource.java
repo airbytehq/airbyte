@@ -304,7 +304,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
-        JdbcUtils.parseJdbcParameters(jdbcConfig, JdbcUtils.CONNECTION_PROPERTIES_KEY, getJdbcParameterDelimiter()));
+        getConnectionProperties(config));
     // Record the data source so that it can be closed.
     dataSources.add(dataSource);
     return dataSource;
@@ -344,8 +344,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
    * @param defaultParameters connection properties map as specified by each Jdbc source
    * @throws IllegalArgumentException
    */
-  private void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
-                                                                    final Map<String, String> defaultParameters) {
+  protected static void assertCustomParametersDontOverwriteDefaultParameters(final Map<String, String> customParameters,
+                                                                             final Map<String, String> defaultParameters) {
     for (final String key : defaultParameters.keySet()) {
       if (customParameters.containsKey(key) && !Objects.equals(customParameters.get(key), defaultParameters.get(key))) {
         throw new IllegalArgumentException("Cannot overwrite default JDBC parameter " + key);

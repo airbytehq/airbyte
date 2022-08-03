@@ -26,7 +26,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;

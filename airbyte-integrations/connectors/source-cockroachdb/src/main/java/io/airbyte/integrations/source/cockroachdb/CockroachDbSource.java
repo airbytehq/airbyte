@@ -41,6 +41,7 @@ public class CockroachDbSource extends AbstractJdbcSource<JDBCType> {
   private static final Logger LOGGER = LoggerFactory.getLogger(CockroachDbSource.class);
 
   static final String DRIVER_CLASS = DatabaseDriver.POSTGRESQL.getDriverClassName();
+
   public CockroachDbSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new CockroachJdbcSourceOperations());
   }

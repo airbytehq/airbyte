@@ -8,7 +8,7 @@ import re
 from collections import Counter, defaultdict
 from functools import reduce
 from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Set
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set
 
 import dpath.util
 import jsonschema
@@ -27,9 +27,9 @@ from airbyte_cdk.models import (
 from docker.errors import ContainerError
 from jsonschema._utils import flatten
 from source_acceptance_test.base import BaseTest
-from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig
+from source_acceptance_test.config import BasicReadTestConfig, ConnectionTestConfig, SpecTestConfig
 from source_acceptance_test.utils import ConnectorRunner, SecretDict, filter_output, make_hashable, verify_records_schema
-from source_acceptance_test.utils.common import find_key_inside_schema, find_keyword_schema
+from source_acceptance_test.utils.common import find_all_values_for_key_in_schema, find_keyword_schema
 from source_acceptance_test.utils.json_schema_helper import JsonSchemaHelper, get_expected_schema_structure, get_object_structure
 
 
@@ -39,7 +39,7 @@ def connector_spec_dict_fixture(actual_connector_spec):
 
 
 @pytest.fixture(name="actual_connector_spec")
-def actual_connector_spec_fixture(request: BaseTest, docker_runner):
+def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRunner) -> ConnectorSpecification:
     if not request.instance.spec_cache:
         output = docker_runner.call_spec()
         spec_messages = filter_output(output, Type.SPEC)
@@ -49,10 +49,29 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner):
     return request.spec_cache
 
 
+@pytest.fixture(name="previous_connector_spec")
+def previous_connector_spec_fixture(
+    request: BaseTest, previous_connector_docker_runner: ConnectorRunner
+) -> Optional[ConnectorSpecification]:
+    if previous_connector_docker_runner is None:
+        logging.warning(
+            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
+        )
+        return None
+    if not request.instance.previous_spec_cache:
+        output = previous_connector_docker_runner.call_spec()
+        spec_messages = filter_output(output, Type.SPEC)
+        assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
+        spec = spec_messages[0].spec
+        request.instance.previous_spec_cache = spec
+    return request.instance.previous_spec_cache
+
+
 @pytest.mark.default_timeout(10)
 class TestSpec(BaseTest):
 
     spec_cache: ConnectorSpecification = None
+    previous_spec_cache: ConnectorSpecification = None
 
     def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
         """Check that config matches the actual schema from the spec call"""
@@ -135,8 +154,7 @@ class TestSpec(BaseTest):
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
         """Checking for the presence of unresolved `$ref`s values within each json spec file"""
-        check_result = find_key_inside_schema(schema_item=connector_spec_dict)
-
+        check_result = list(find_all_values_for_key_in_schema(connector_spec_dict, "$ref"))
         assert not check_result, "Found unresolved `$refs` value in spec.json file"
 
     def test_oauth_flow_parameters(self, actual_connector_spec: ConnectorSpecification):
@@ -163,6 +181,38 @@ class TestSpec(BaseTest):
 
         diff = params - schema_path
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
+
+    def test_additional_properties_is_true(self, actual_connector_spec):
+        """Check that value of the "additionalProperties" field is always true.
+        A spec declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the spec, existing connector configs will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        additional_properties_values = find_all_values_for_key_in_schema(
+            actual_connector_spec.connectionSpecification, "additionalProperties"
+        )
+        if additional_properties_values:
+            assert all(
+                [additional_properties_value is True for additional_properties_value in additional_properties_values]
+            ), "When set, additionalProperties field value must be true for backward compatibility."
+
+    @pytest.mark.default_timeout(60)  # Pulling the previous connector image can take more than 10 sec.
+    @pytest.mark.spec_backward_compatibility
+    def test_backward_compatibility(
+        self, inputs: SpecTestConfig, actual_connector_spec: ConnectorSpecification, previous_connector_spec: ConnectorSpecification
+    ):
+        """Run multiple checks to make sure the actual_connector_spec is backward compatible with the previous_connector_spec"""
+        if (
+            inputs.backward_compatibility_tests_config.disable_backward_compatibility_tests_for_version
+            == inputs.backward_compatibility_tests_config.previous_connector_version
+        ):
+            pytest.skip(
+                f"Backward compatibility tests are disabled for version {inputs.backward_compatibility_tests_config.disable_backward_compatibility_tests_for_version}."
+            )
+        if previous_connector_spec is None:
+            pytest.skip("The previous connector spec could not be retrieved.")
+        assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
+        # TODO alafanechere: add the actual tests for backward compatibility below or in a dedicated module.
 
 
 @pytest.mark.default_timeout(30)
@@ -217,8 +267,8 @@ class TestDiscovery(BaseTest):
         """Check the presence of unresolved `$ref`s values within each json schema."""
         schemas_errors = []
         for stream_name, stream in discovered_catalog.items():
-            check_result = find_key_inside_schema(schema_item=stream.json_schema, key="$ref")
-            if check_result is not None:
+            check_result = list(find_all_values_for_key_in_schema(stream.json_schema, "$ref"))
+            if check_result:
                 schemas_errors.append({stream_name: check_result})
 
         assert not schemas_errors, f"Found unresolved `$refs` values for selected streams: {tuple(schemas_errors)}."
@@ -248,6 +298,19 @@ class TestDiscovery(BaseTest):
         for _, stream in discovered_catalog.items():
             assert stream.supported_sync_modes is not None, f"The stream {stream.name} is missing supported_sync_modes field declaration."
             assert len(stream.supported_sync_modes) > 0, f"supported_sync_modes list on stream {stream.name} should not be empty."
+
+    def test_additional_properties_is_true(self, discovered_catalog: Mapping[str, Any]):
+        """Check that value of the "additionalProperties" field is always true.
+        A stream schema declaring "additionalProperties": false introduces the risk of accidental breaking changes.
+        Specifically, when removing a property from the stream schema, existing connector catalog will no longer be valid.
+        False value introduces the risk of accidental breaking changes.
+        Read https://github.com/airbytehq/airbyte/issues/14196 for more details"""
+        for stream in discovered_catalog.values():
+            additional_properties_values = list(find_all_values_for_key_in_schema(stream.json_schema, "additionalProperties"))
+            if additional_properties_values:
+                assert all(
+                    [additional_properties_value is True for additional_properties_value in additional_properties_values]
+                ), "When set, additionalProperties field value must be true for backward compatibility."
 
 
 def primary_keys_for_records(streams, records):

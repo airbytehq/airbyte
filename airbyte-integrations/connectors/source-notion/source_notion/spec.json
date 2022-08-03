@@ -5,7 +5,6 @@
     "title": "Notion Source Spec",
     "type": "object",
     "required": ["start_date"],
-    "additionalProperties": true,
     "properties": {
       "start_date": {
         "title": "Start Date",
@@ -16,14 +15,19 @@
       },
       "credentials": {
         "title": "Authenticate using",
+        "description": "Pick an authentication method.",
         "type": "object",
         "order": 1,
         "oneOf": [
           {
             "type": "object",
             "title": "OAuth2.0",
-            "required": ["auth_type", "client_id", "client_secret", "access_token"],
-            "additionalProperties": false,
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "access_token"
+            ],
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -53,7 +57,6 @@
             "type": "object",
             "title": "Access Token",
             "required": ["auth_type", "token"],
-            "additionalProperties": false,
             "properties": {
               "auth_type": {
                 "type": "string",
