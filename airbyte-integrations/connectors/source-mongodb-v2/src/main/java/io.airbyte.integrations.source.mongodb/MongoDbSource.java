@@ -13,7 +13,6 @@ import static org.bson.BsonType.INT32;
 import static org.bson.BsonType.INT64;
 import static org.bson.BsonType.OBJECT_ID;
 import static org.bson.BsonType.STRING;
-import static org.bson.BsonType.SYMBOL;
 import static org.bson.BsonType.TIMESTAMP;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -64,7 +63,7 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
   private static final String AUTH_SOURCE = "auth_source";
   private static final String PRIMARY_KEY = "_id";
   private static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
-      SYMBOL, INT32, TIMESTAMP, INT64, DECIMAL128);
+      INT32, TIMESTAMP, INT64, DECIMAL128);
 
   public static void main(final String[] args) throws Exception {
     final Source source = new MongoDbSource();
