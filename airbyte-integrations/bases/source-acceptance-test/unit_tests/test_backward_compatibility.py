@@ -181,98 +181,6 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "int"]},
-                    },
-                }
-            ),
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_int": {"type": "int"},
-                    },
-                }
-            ),
-            pytest.raises(AssertionError),
-            id="Top level: Changing a field type from list to string should fail.",
-        ),
-        pytest.param(
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_int": {"type": "int"},
-                    },
-                }
-            ),
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_int": {"type": [None, "int"]},
-                    },
-                }
-            ),
-            does_not_raise(),
-            id="Top level: Changing a field type from string to list should not fail.",
-        ),
-        pytest.param(
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": [None, "int"]}}},
-                    },
-                }
-            ),
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "int"}}},
-                    },
-                }
-            ),
-            pytest.raises(AssertionError),
-            id="Nested level: Changing a field type from list to string should fail.",
-        ),
-        pytest.param(
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": "int"}}},
-                    },
-                }
-            ),
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": [None, "int"]}}},
-                    },
-                }
-            ),
-            does_not_raise(),
-            id="Nested level: Changing a field type from string to list should not fail.",
-        ),
-    ],
-)
-def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpec()
-    spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
-    with expectation:
-        t.test_type_field_changed_from_list_to_string(spec_diff)
-
-
-@pytest.mark.parametrize(
-    "previous_connector_spec, actual_connector_spec, expectation",
-    [
-        pytest.param(
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
                         "my_int": {"type": "str"},
                     },
                 }
@@ -333,6 +241,126 @@ def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_
                 connectionSpecification={
                     "type": "object",
                     "properties": {
+                        "my_int": {"type": "str"},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": ["int"]},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type from a string to a list with a different type value should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": "int"},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": ["int", "int"]},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type from a string to a list with duplicate same type should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": "int"},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": ["int", None, "str"]},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type from a string to a list with more than two values should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": "int"},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": []},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type from a string to an empty list should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": ["int"]},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": []},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type from a list to an empty list should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": ["str"]},
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "my_int": {"type": "int"},
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type should fail from a list to string with different value should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
                         "my_int": {"type": ["str"]},
                     },
                 }
@@ -346,7 +374,7 @@ def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_
                 }
             ),
             does_not_raise(),
-            id="Changing a field type from a list to a string should not fail.",
+            id="Changing a field type from a list to a string with same value should not fail.",
         ),
         pytest.param(
             ConnectorSpecification(
@@ -568,24 +596,12 @@ def test_type_field_changed_from_list_to_string(previous_connector_spec, actual_
             does_not_raise(),
             id="Nullable field: Changing order should not fail",
         ),
-    ],
-)
-def test_field_type_changed(previous_connector_spec, actual_connector_spec, expectation):
-    t = _TestSpec()
-    spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
-    with expectation:
-        t.test_field_type_changed(spec_diff)
-
-
-@pytest.mark.parametrize(
-    "previous_connector_spec, actual_connector_spec, expectation",
-    [
         pytest.param(
             ConnectorSpecification(
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_string": {"type": [None, "string"]},
+                        "my_int": {"type": [None, "str"]},
                     },
                 }
             ),
@@ -593,12 +609,12 @@ def test_field_type_changed(previous_connector_spec, actual_connector_spec, expe
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_string": {"type": ["string"]},
+                        "my_int": {"type": ["str"]},
                     },
                 }
             ),
             pytest.raises(AssertionError),
-            id="Top level: Making a field not nullable should fail.",
+            id="Nullable field: Making a field not nullable should fail",
         ),
         pytest.param(
             ConnectorSpecification(
@@ -618,47 +634,7 @@ def test_field_type_changed(previous_connector_spec, actual_connector_spec, expe
                 }
             ),
             pytest.raises(AssertionError),
-            id="Top level: Making a field not nullable should fail (not in a list).",
-        ),
-        pytest.param(
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_string": {"type": ["string"]},
-                    },
-                }
-            ),
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_string": {"type": "string"},
-                    },
-                }
-            ),
-            does_not_raise(),
-            id="Top level: Changing a field type from list to string should not fail.",
-        ),
-        pytest.param(
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_required_string": {"type": ["int"]},
-                    },
-                }
-            ),
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "my_required_string": {"type": [None, "int"]},
-                    },
-                }
-            ),
-            does_not_raise(),
-            id="Top level: Make a field nullable should not fail.",
+            id="Nullable: Making a field not nullable should fail (not in a list).",
         ),
         pytest.param(
             ConnectorSpecification(
@@ -702,11 +678,11 @@ def test_field_type_changed(previous_connector_spec, actual_connector_spec, expe
         ),
     ],
 )
-def test_type_field_has_narrowed(previous_connector_spec, actual_connector_spec, expectation):
+def test_field_type_changed(previous_connector_spec, actual_connector_spec, expectation):
     t = _TestSpec()
     spec_diff = t.compute_spec_diff(actual_connector_spec, previous_connector_spec)
     with expectation:
-        t.test_type_field_has_narrowed(spec_diff)
+        t.test_field_type_changed(spec_diff)
 
 
 @pytest.mark.parametrize(

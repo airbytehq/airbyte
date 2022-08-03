@@ -182,7 +182,8 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_new_required_field_declaration(self, spec_diff):
+    def test_new_required_field_declaration(self, spec_diff: DeepDiff):
+        """Check if a 'required' field was added to the spec."""
         added_required_fields = [
             addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "required"
         ]
@@ -190,7 +191,8 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_new_required_property(self, spec_diff):
+    def test_new_required_property(self, spec_diff: DeepDiff):
+        """Check if a a new property was added to the 'required' field."""
         added_required_properties = [
             addition for addition in spec_diff.get("iterable_item_added", []) if addition.up.path(output_format="list")[-1] == "required"
         ]
@@ -198,76 +200,74 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_type_field_changed_from_list_to_string(self, spec_diff):
-        type_changes = [
-            type_change for type_change in spec_diff.get("type_changes", []) if type_change.path(output_format="list")[-1] == "type"
-        ]
-        for type_change in type_changes:
-            if isinstance(type_change.t1, list) and isinstance(type_change.t2, str):
-                raise AssertionError(f"The current spec narrowed a field type: {spec_diff.pretty()}")
-
-    @pytest.mark.default_timeout(60)
-    @pytest.mark.backward_compatibility
-    def test_field_type_changed(self, spec_diff):
+    def test_field_type_changed(self, spec_diff: DeepDiff):
+        """Check if the current spec is changing the types of properties."""
         # TODO alafanechere: Do we have allowed non-breaking type transitions?
         # e.g. Does changing a field type from int to string is breaking the spec?
         # I assumed it does
 
-        # Detect value change in case type field is declared as a string (e.g "str" -> "int"):
+        common_error_message = f"The current spec changed the value of a 'type' field:  {spec_diff.pretty()}"
+        # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
         type_values_changed = [change for change in spec_diff.get("values_changed", []) if change.path(output_format="list")[-1] == "type"]
-        # Detect value change in case type field is declared as a single item list (e.g ["str"] -> ["int"]):
+
+        # Detect type value change in case type field is declared as a single item list (e.g ["str"] -> ["int"]):
         type_values_changed_in_list = [
             change for change in spec_diff.get("values_changed", []) if change.path(output_format="list")[-2] == "type"
         ]
 
-        # Detect type added to type list if new type is not None (e.g ["str"] -> ["str", "int"]):
+        assert len(type_values_changed_in_list) == 0 and len(type_values_changed) == 0, common_error_message
+
+        # Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"]):
         new_values_in_type_list = [
             change
             for change in spec_diff.get("iterable_item_added", [])
             if change.path(output_format="list")[-2] == "type"
             if change.t2 is not None
-        ]  # This work because we compute the diff with 'ignore_order=True'
+        ]  # It works because we compute the diff with 'ignore_order=True'
+        assert len(new_values_in_type_list) == 0, common_error_message
 
-        all_invalid_type_value_changes = type_values_changed + type_values_changed_in_list + new_values_in_type_list
+        # Detect the change of type of a type field
+        # e.g:
+        # - "str" -> ["str"] VALID
+        # - "str" -> ["str", None] VALID
+        # - "str" -> ["str", "int"] INVALID
+        # - "str" -> 1 INVALID
+        # - ["str"] -> "str" VALID
+        # - ["str"] -> "int" INVALID
+        # - ["str"] -> 1 INVALID
+        type_changes = [change for change in spec_diff.get("type_changes", []) if change.path(output_format="list")[-1] == "type"]
+        for change in type_changes:
+            # We only accept change on the type field if the new type for this field is list or string
+            # This might be something already guaranteed by JSON schema validation.
+            if isinstance(change.t1, str):
+                assert isinstance(
+                    change.t2, list
+                ), f"The current spec change a type field from string to an invalid value: {spec_diff.pretty()}"
+                assert (
+                    0 < len(change.t2) <= 2
+                ), f"The current spec change a type field from string to an invalid value. The type list length should not be empty and have a maximum of two items {spec_diff.pretty()}."
+                # If the new type field is a list we want to make sure it only has the original type (t1) and None: e.g. "str" -> ["str", None]
+                # We want to raise an error otherwise.
+                t2_not_null_types = [_type for _type in change.t2 if _type is not None]
+                assert (
+                    len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1
+                ), "The current spec change a type field to a list with multiple invalid values."
+            if isinstance(change.t1, list):
+                assert isinstance(
+                    change.t2, str
+                ), f"The current spec change a type field from list to an invalid value:  {spec_diff.pretty()}"
+                assert len(change.t1) == 1 and change.t2 == change.t1[0], f"The current spec narrowed a field type: {spec_diff.pretty()}"
 
-        # Detect type changed in a list of types
-        for change in spec_diff.get("type_changes", []):
-            if change.path(output_format="list")[-1] == "type":
-                # If the new type field is a list we want to make sure it only has the original type (t1) and None
-                # We want to raise an error if the change does not lead to the declaration of a nullable field whose type when set is the original one
-                if isinstance(change.t2, list):
-                    t2_not_null_types = [_type for _type in change.t2 if _type is not None]
-                    if len(t2_not_null_types) > 1:
-                        raise AssertionError(
-                            f"The current spec changed a field type to an invalid value. A field can only have a single nullable type. {spec_diff.pretty()}"
-                        )
-                    if t2_not_null_types[0] != change.t1:
-                        all_invalid_type_value_changes.append(change)
-                elif not isinstance(change.t2, str):
-                    # We raise the error below when the value of the type field is something else than a string or a list.
-                    # This might be something already guaranteed by JSON schema validation.
-                    raise AssertionError(
-                        f"The current spec changed a field type to a value that is not a string or a list: {spec_diff.pretty()}"
-                    )
-
-        assert not all_invalid_type_value_changes, f"The current spec changed a field type: {spec_diff.pretty()}"
+        # Detect when field was made not nullable but is still a list: e.g ["string", None] -> ["string"]
+        removed_nullable = [
+            change for change in spec_diff.get("iterable_item_removed", []) if change.path(output_format="list")[-2] == "type"
+        ]
+        assert len(removed_nullable) == 0, f"The current spec narrowed a field type: {spec_diff.pretty()}"
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_type_field_has_narrowed(self, spec_diff):
-        removals = [
-            removal for removal in spec_diff.get("iterable_item_removed", []) if removal.up.path(output_format="list")[-1] == "type"
-        ]
-        type_changes = [
-            type_change
-            for type_change in spec_diff.get("type_changes", [])
-            if type_change.path(output_format="list")[-1] == "type" and len(type_change.t1) > 1
-        ]
-        assert len(removals) == 0 and len(type_changes) == 0, f"The current spec narrowed a field type: {spec_diff.pretty()}"
-
-    @pytest.mark.default_timeout(60)
-    @pytest.mark.backward_compatibility
-    def test_enum_field_has_narrowed(self, spec_diff):
+    def test_enum_field_has_narrowed(self, spec_diff: DeepDiff):
+        """Check if the list of values in a enum was shortened in a spec."""
         removals = [
             removal for removal in spec_diff.get("iterable_item_removed", []) if removal.up.path(output_format="list")[-1] == "enum"
         ]
@@ -275,7 +275,8 @@ class TestSpec(BaseTest):
 
     @pytest.mark.default_timeout(60)
     @pytest.mark.backward_compatibility
-    def test_new_enum_field_declaration(self, spec_diff):
+    def test_new_enum_field_declaration(self, spec_diff: DeepDiff):
+        """Check if an 'enum' field was added to the spec."""
         added_enum_fields = [
             addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "enum"
         ]
