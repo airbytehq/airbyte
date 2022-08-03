@@ -556,21 +556,35 @@ public interface Configs {
   boolean shouldRunConnectionManagerWorkflows();
 
   // Worker - Control/Data Plane configs
+
   /**
    * Define if the worker should register a workflow handler for the SYNC Task Queue. - Requires
    * `shouldRunSyncWorkflows` to be `true`. - Should be `true` only for Control-plane workers.
    * Internal-use only.
    */
-  boolean shouldHandleSyncWorkflowTasks();
+  boolean shouldHandleSyncControlPlaneTasks();
+
+  /**
+   * Define the default task queue for sync activities that are not routed to a separate data plane.
+   * Internal-use only.
+   */
+  String primarySyncDataPlaneTaskQueue();
+
+  /**
+   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's AWS Data Plane. Will be
+   * removed in favor of the Routing Service in the future. Internal-use only.
+   */
+  Set<String> connectionIdsForAwsDataPlane();
 
   /**
    * Define a set of Temporal Task Queue names for which the worker should register sync activity
    * handlers for. - Requires `shouldRunSyncWorkflows` to be `true`. - Entries should correspond with
    * the Data Plane where the worker is deployed. Internal-use only.
    */
-  Set<String> getSyncActivityTaskQueues();
+  Set<String> getSyncDataPlaneTaskQueues();
 
   // Worker - Kube only
+
   /**
    * Define the local ports the Airbyte Worker pod uses to connect to the various Job pods.
    */

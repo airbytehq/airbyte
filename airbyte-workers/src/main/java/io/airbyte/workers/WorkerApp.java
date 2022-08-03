@@ -77,6 +77,7 @@ import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivityImpl
 import io.airbyte.workers.temporal.spec.SpecActivityImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
 import io.airbyte.workers.temporal.sync.PersistStateActivityImpl;
 import io.airbyte.workers.temporal.sync.ReplicationActivityImpl;
@@ -222,12 +223,16 @@ public class WorkerApp {
   }
 
   private void registerSync(final WorkerFactory factory) {
-    registerSyncActivityWorkers(factory);
-    registerSyncWorkflowWorkers(factory);
+    registerSyncDataPlaneWorkers(factory);
+    registerSyncControlPlaneWorkers(factory);
   }
 
-  private void registerSyncActivityWorkers(final WorkerFactory factory) {
-    if (!configs.getSyncActivityTaskQueues().isEmpty()) {
+  /**
+   * Data Plane workers handle the subset of SyncWorkflow activity tasks that should run within a Data
+   * Plane.
+   */
+  private void registerSyncDataPlaneWorkers(final WorkerFactory factory) {
+    if (!configs.getSyncDataPlaneTaskQueues().isEmpty()) {
       final ReplicationActivityImpl replicationActivity = getReplicationActivityImpl(replicationWorkerConfigs, replicationProcessFactory);
       // Note that the configuration injected here is for the normalization orchestrator, and not the
       // normalization pod itself.
@@ -238,19 +243,26 @@ public class WorkerApp {
           defaultProcessFactory);
       final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(airbyteApiClient, featureFlags);
 
-      for (final String activityTaskQueue : configs.getSyncActivityTaskQueues()) {
+      for (final String taskQueue : configs.getSyncDataPlaneTaskQueues()) {
         // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
-        final Worker worker = factory.newWorker(activityTaskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+        final Worker worker = factory.newWorker(taskQueue, getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
         worker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
       }
     }
   }
 
-  private void registerSyncWorkflowWorkers(final WorkerFactory factory) {
-    if (configs.shouldHandleSyncWorkflowTasks()) {
+  /**
+   * Control Plane workers handle all workflow tasks for the SyncWorkflow, as well as the activity
+   * task to decide which task queue to use for Data Plane tasks.
+   */
+  private void registerSyncControlPlaneWorkers(final WorkerFactory factory) {
+    if (configs.shouldHandleSyncControlPlaneTasks()) {
       // TODO (parker) consider separating out maxSyncActivityWorkers and maxSyncWorkflowWorkers
       final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
       syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
+
+      final DecideDataPlaneTaskQueueActivityImpl decideTaskQueueActivity = getDecideTaskQueueActivityImpl();
+      syncWorker.registerActivitiesImplementations(decideTaskQueueActivity);
     }
   }
 
@@ -329,6 +341,10 @@ public class WorkerApp {
         jobPersistence,
         airbyteApiClient,
         airbyteVersion);
+  }
+
+  private DecideDataPlaneTaskQueueActivityImpl getDecideTaskQueueActivityImpl() {
+    return new DecideDataPlaneTaskQueueActivityImpl(configs);
   }
 
   /**
