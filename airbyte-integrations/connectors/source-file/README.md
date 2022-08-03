@@ -85,6 +85,14 @@ In order to run integrations tests in this connector, you need:
         }
        ```
 
+1. Testing BOX Cloud Storage
+   1. Create a file at `secrets/box_config.json`
+        ```
+        {
+            "box_developer_access_token": "XXXXXXX"
+        }
+       ```
+
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source file test creds`
 and place them into `secrets/config.json`.
 
