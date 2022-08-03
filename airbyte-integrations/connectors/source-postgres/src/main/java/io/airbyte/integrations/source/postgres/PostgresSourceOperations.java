@@ -280,17 +280,6 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     node.put(columnName, resultSet.getString(index).equalsIgnoreCase("t"));
   }
 
-  @Override
-  protected void putFloat8(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
-      throws SQLException {
-    final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
-    if (bigDecimal != null) {
-      node.put(columnName, bigDecimal.setScale(resultSet.getMetaData().getScale(index), RoundingMode.HALF_EVEN).doubleValue());
-    } else {
-      node.put(columnName, (BigDecimal) null);
-    }
-  }
-
   protected <T extends PGobject> void putObject(final ObjectNode node,
                                                 final String columnName,
                                                 final ResultSet resultSet,
