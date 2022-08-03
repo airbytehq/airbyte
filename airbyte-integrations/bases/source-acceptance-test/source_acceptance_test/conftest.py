@@ -218,8 +218,8 @@ def actual_connector_spec_fixture(request: BaseTest, docker_runner: ConnectorRun
         spec_messages = filter_output(output, Type.SPEC)
         assert len(spec_messages) == 1, "Spec message should be emitted exactly once"
         spec = spec_messages[0].spec
-        request.spec_cache = spec
-    return request.spec_cache
+        request.instance.spec_cache = spec
+    return request.instance.spec_cache
 
 
 @pytest.fixture(name="previous_connector_spec")
