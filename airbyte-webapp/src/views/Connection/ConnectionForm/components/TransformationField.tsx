@@ -45,8 +45,7 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
       }}
       mode={mode}
       editModalSize="xl"
-    >
-      {(editableItem) => (
+      renderItemEditorForm={(editableItem) => (
         <TransformationForm
           transformation={editableItem ?? defaultTransformation}
           isNewTransformation={!editableItem}
@@ -65,7 +64,7 @@ const TransformationField: React.FC<TransformationFieldProps> = ({
           }}
         />
       )}
-    </ArrayOfObjectsEditor>
+    />
   );
 };
 

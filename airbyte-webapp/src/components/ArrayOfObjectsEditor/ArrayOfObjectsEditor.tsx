@@ -17,11 +17,11 @@ interface ItemBase {
 export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
   items: T[];
   editableItemIndex?: number | string | null;
-  children: (item?: T) => React.ReactNode;
   mainTitle?: React.ReactNode;
   addButtonText?: React.ReactNode;
   renderItemName?: (item: T, index: number) => React.ReactNode | undefined;
   renderItemDescription?: (item: T, index: number) => React.ReactNode | undefined;
+  renderItemEditorForm: (item?: T) => React.ReactNode;
   onStartEdit: (n: number) => void;
   onRemove: (index: number) => void;
   mode?: ConnectionFormMode;
@@ -34,9 +34,9 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   onRemove,
   renderItemName = (item) => item.name,
   renderItemDescription = (item) => item.description,
+  renderItemEditorForm,
   items,
   editableItemIndex,
-  children,
   mainTitle,
   addButtonText,
   mode,
@@ -55,7 +55,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
         size={editModalSize}
         testId="arrayOfObjects-editModal"
       >
-        {children(item)}
+        {renderItemEditorForm(item)}
       </Modal>
     );
   };

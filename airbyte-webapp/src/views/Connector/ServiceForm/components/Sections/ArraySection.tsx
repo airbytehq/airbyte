@@ -95,8 +95,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
               renderItemDescription={renderItemDescription}
               disabled={disabled}
               editModalSize="sm"
-            >
-              {(item) => (
+              renderItemEditorForm={(item) => (
                 <VariableInputFieldForm
                   formField={formField}
                   path={`${path}[${editIndex ?? 0}]`}
@@ -116,7 +115,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
                   }}
                 />
               )}
-            </ArrayOfObjectsEditor>
+            />
           )}
         />
       </SectionContainer>
