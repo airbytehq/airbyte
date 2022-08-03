@@ -8,6 +8,11 @@ result_selector:
   extractor:
     type: JelloExtractor
     transform: "_.result"
+results_selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_.results"
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
@@ -105,20 +110,35 @@ stats_automations_stream:
   retriever:
     $ref: "*ref(retriever)"
     record_selector:
-      $ref: "*ref(result_selector)"
-      extractor:
-        transform: "_.results"
+      $ref: "*ref(results_selector)"
     requester:
       $ref: "*ref(requester)"
       path: "/v3/marketing/stats/automations"
     paginator:
       $ref: "*ref(cursor_paginator)"
+segments_stream:
+  type: DeclarativeStream
+  $options:
+    name: "segments"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(results_selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/marketing/segments"
+    paginator:
+      type: "NoPagination"
 
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
   - "*ref(contacts_stream)"
   - "*ref(stats_automations_stream)"
+  - "*ref(segments_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
