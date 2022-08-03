@@ -1,0 +1,195 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Fauna Spec
+  type: object
+  required:
+    - domain
+    - port
+    - scheme
+    - secret
+  additionalProperties: false
+  properties:
+    domain:
+      order: 0
+      type: string
+      title: Domain
+      description: >-
+        Domain of Fauna to query. Defaults fauna.db.com.
+        See <a href=https://docs.fauna.com/fauna/current/learn/understanding/region_groups#how-to-use-region-groups>the docs</a>.
+      default: "db.fauna.com"
+    port:
+      order: 1
+      type: integer
+      title: Port
+      description: Endpoint port.
+      default: 443
+    scheme:
+      order: 2
+      type: string
+      title: Scheme
+      description: URL scheme.
+      default: "https"
+    secret:
+      order: 3
+      type: string
+      title: Fauna Secret
+      description: Fauna secret, used when authenticating with the database.
+      airbyte_secret: true
+    collection:
+      order: 5
+      type: object
+      title: Collection
+      description: Settings for the Fauna Collection.
+      required:
+        - name
+        - data_column
+        - page_size
+        - deletions
+      properties:
+        name:
+          order: 0
+          type: string
+          title: Collection Name
+          description: The name of the collection this connector will read from.
+        index:
+          title: Incremental Sync Index
+          type: string
+          order: 1
+          description: >-
+            This is required for incremental syncs. Leave blank for full syncs.
+        data_column:
+          order: 2
+          type: boolean
+          title: Data Column
+          default: true
+          description: >-
+            If enabled, then a column named "data" will be added to the destination
+            database. This column will be an object which includes the entire "data"
+            section of each Fauna document.<br>
+        additional_columns:
+          order: 3
+          type: array
+          title: Additional Columns
+          description: >-
+            These fields will be added as columns in the destination database.<br>
+
+            This can be used in addition to or in place of the data column if you
+            would like to map certain document fields into columns, e.g.
+            ["data", "customer", "address"] or ["ttl"].<br>
+          items:
+            type: object
+            required:
+              - name
+              - path
+              - type
+              - required
+            properties:
+              name:
+                order: 0
+                type: string
+                title: Column Name
+                description: The name of this column in the destination.
+              path:
+                order: 1
+                type: array
+                title: Path
+                description: >-
+                  The path of this value within each Fauna document. This starts at the top
+                  of each document, so if you wish to pluck a field from your data start the
+                  path with "data". If you wish to grab a different top-level fields, such as "ttl", enter
+                  that as the path (e.g. ["ttl"]).<br>
+
+                  Numerical values cannot be entered. It is not possible to index into an
+                  array using this path.<br>
+
+                  This path is the same as a <a href="https://docs.fauna.com/fauna/current/api/fql/functions/select?lang=javascript">select call</a>.
+                items:
+                  type: string
+              type:
+                order: 2
+                type: string
+                title: Type
+                description: >-
+                  The type of this column. Used in Airbyte when transferring documents
+                  to the destination database. This is an Airbyte record type.
+                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the docs</a>.
+              format:
+                order: 3
+                type: string
+                title: Format
+                description: >-
+                  The format of this column. Used to specify what format a column is in.
+                  This can be used to specify date-times and other more obscure types.<br>
+
+                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the docs</a>.
+              airbyte_type:
+                order: 4
+                type: string
+                title: Airbyte Type
+                description: >-
+                  See <a href=https://docs.airbyte.com/understanding-airbyte/supported-data-types/#specific-types>the docs</a>.
+              required:
+                order: 5
+                type: boolean
+                title: Required
+                default: true
+                description: >-
+                  If true, then this value is required to exist within each Fauna document. If the path
+                  doesn't exist in a document the sync will fail.
+                  If false, then non-existent documents will place null in that column.
+        page_size:
+          order: 4
+          type: integer
+          title: Page Size
+          default: 64
+          description: >-
+            The page size used when reading documents from the database. The larger the
+            page size, the faster the connector will run. However, if a page is too large,
+            the connector may fail.
+            <br>
+
+            Choose your page size based on how large the documents are.
+            <br>
+
+            See <a href="https://docs.fauna.com/fauna/current/learn/understanding/types#page">the docs</a>.
+        deletions:
+          order: 5
+          type: object
+          title: Deletion Mode
+          description: >-
+            <b>This only applies to incremental syncs.</b>
+            <br>
+
+            Enabling deletion mode will inform your destination of deleted documents.<br>
+
+            Disabled - Leave this feature disabled, and ignore deleted documents.<br>
+
+            Enabled - Enables this feature. When a document is deleted, the connector
+            will export a record with a "deleted at" column containing the time the
+            document was deleted.
+          oneOf:
+            - title: Disabled
+              type: object
+              order: 0
+              required:
+                - deletion_mode
+              properties:
+                deletion_mode:
+                  type: string
+                  const: ignore
+            - title: Enabled
+              type: object
+              order: 1
+              required:
+                - deletion_mode
+                - column
+              properties:
+                deletion_mode:
+                  type: string
+                  const: deleted_field
+                column:
+                  type: string
+                  title: Deleted At Column
+                  description: Name of the "deleted at" column.
+                  default: "deleted_at"

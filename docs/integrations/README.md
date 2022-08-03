@@ -56,6 +56,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Facebook Marketing](sources/facebook-marketing.md)                                         | Generally Available  | Yes                 |
 | [Facebook Pages](sources/facebook-pages.md)                                                 | Alpha                | No                  |
 | [Faker](sources/faker.md)                                                                   | Alpha                | Yes                 |
+| [Fauna](sources/fauna.md)                                                                   | Beta                 | No                  |
 | [File](sources/file.md)                                                                     | Beta                 | Yes                 |
 | [Firebolt](sources/firebolt.md)                                                             | Alpha                | Yes                 |
 | [Flexport](sources/flexport.md)                                                             | Alpha                | No                  |
