@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.standardtest.destination;
 
 import io.airbyte.commons.json.Jsons;
@@ -14,6 +18,7 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 public abstract class PerStreamStateMessageTest {
+
   protected abstract Consumer<AirbyteMessage> getMockedConsumer();
 
   protected abstract FailureTrackingAirbyteMessageConsumer getMessageConsumer();
@@ -29,7 +34,6 @@ public abstract class PerStreamStateMessageTest {
     messageConsumer.accept(airbyteMessage2);
     messageConsumer.accept(airbyteMessage3);
 
-
     final Consumer<AirbyteMessage> mConsumer = getMockedConsumer();
     final InOrder inOrder = Mockito.inOrder(mConsumer);
 
@@ -39,6 +43,7 @@ public abstract class PerStreamStateMessageTest {
   }
 
   class AirbyteMessageCreator {
+
     public static AirbyteMessage createStreamStateMessage(final String name, final String value) {
       return new AirbyteMessage()
           .withType(Type.STATE)
@@ -49,11 +54,8 @@ public abstract class PerStreamStateMessageTest {
                       new AirbyteStreamState()
                           .withStreamDescriptor(
                               new StreamDescriptor()
-                                  .withName(name)
-                          )
-                          .withStreamState(Jsons.jsonNode(value))
-                  )
-          );
+                                  .withName(name))
+                          .withStreamState(Jsons.jsonNode(value))));
     }
 
   }
