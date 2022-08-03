@@ -24,6 +24,7 @@ import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Date;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -215,19 +216,11 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
 
   @Override
   protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    // Theoretically, we could use LocalDate date = getObject(resultSet, index, LocalDate.class)
-    // However, this (for some reason) actually shifts the date 1 year later for BCE dates.
-    // For example, "1991-02-10 BC" would become a LocalDate representing 1990-02-10 BC.
-    // So instead, we manually recognize BC dates, do some string-mangling to reformat them,
-    // and use LocalDate.parse().
-    String mangledStringDate = resultSet.getString(index);
-    if (mangledStringDate.endsWith(" BC")) {
-      mangledStringDate = mangledStringDate.substring(0, mangledStringDate.length() - " BC".length());
-      if (!mangledStringDate.startsWith("-")) {
-        mangledStringDate = "-" + mangledStringDate;
-      }
+    LocalDate date = getObject(resultSet, index, LocalDate.class);
+    if (isBce(date)) {
+      // java.time uses a year 0, but the standard AD/BC system does not. So we just subtract one to hack around this difference.
+      date = date.minusYears(1);
     }
-    LocalDate date = LocalDate.parse(mangledStringDate);
     node.put(columnName, resolveEra(date, date.toString()));
   }
 

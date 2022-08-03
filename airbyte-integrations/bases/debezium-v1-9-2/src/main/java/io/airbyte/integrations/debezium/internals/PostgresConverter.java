@@ -112,8 +112,6 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
         case "TIMETZ" -> DateTimeConverter.convertToTimeWithTimezone(x);
         case "TIMESTAMPTZ" -> DateTimeConverter.convertToTimestampWithTimezone(x);
         case "TIMESTAMP" -> DateTimeConverter.convertToTimestamp(x);
-        // Debezium doesn't handle era indicators
-        // https://github.com/airbytehq/airbyte/issues/14590
         case "DATE" -> DateTimeConverter.convertToDate(x);
         case "TIME" -> DateTimeConverter.convertToTime(x);
         case "INTERVAL" -> convertInterval((PGInterval) x);

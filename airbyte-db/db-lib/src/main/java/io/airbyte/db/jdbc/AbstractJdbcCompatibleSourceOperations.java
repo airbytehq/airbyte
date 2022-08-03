@@ -297,7 +297,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   public static String resolveEra(LocalDate date, String value) {
-    return resolveEra(date.getEra().equals(IsoEra.BCE), value);
+    return resolveEra(isBce(date), value);
+  }
+
+  public static boolean isBce(LocalDate date) {
+    return date.getEra().equals(IsoEra.BCE);
   }
 
   /**
