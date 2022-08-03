@@ -374,7 +374,7 @@ spec:
       {{- if .Values.extraContainers }}
       {{ toYaml .Values.extraContainers | indent 8 }}
       {{- end }}
-      {{- if .Values.global.extraConrainers }}
+      {{- if .Values.global.extraContainers }}
       {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
       volumes:
