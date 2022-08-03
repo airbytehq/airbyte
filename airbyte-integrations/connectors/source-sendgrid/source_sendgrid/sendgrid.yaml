@@ -45,8 +45,23 @@ lists_stream:
     requester:
       $ref: "*ref(requester)"
       path: "/v3/marketing/lists"
+campaigns_stream:
+  type: DeclarativeStream
+  $options:
+    name: "campaigns"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(result_selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/marketing/campaigns"
 streams:
   - "*ref(lists_stream)"
+  - "*ref(campaigns_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
