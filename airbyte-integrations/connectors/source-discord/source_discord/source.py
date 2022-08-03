@@ -4,7 +4,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
 from .stream_serverPreview import ServerPreview
-from .stream_channelMessages import ChannelMessages
+from .stream_messages import Messages
 from .stream_channels import Channels
 
 class SourceDiscord(AbstractSource):
@@ -25,6 +25,6 @@ class SourceDiscord(AbstractSource):
         initial_timestamp = config["initial_timestamp"]
         return [
             ServerPreview(config),
-            ChannelMessages(config, initial_timestamp=initial_timestamp),
-            Channels(config)
+            Channels(config),
+            Messages(config, initial_timestamp=initial_timestamp)
         ]

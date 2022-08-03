@@ -7,13 +7,13 @@ import mock
 import pytest
 from datetime import datetime
 
-from source_discord.stream_channelMessages import DiscordMessagesStream
-from source_discord.stream_channelMessages import string_to_timestamp
+from source_discord.stream_messages import DiscordMessagesStream
+from source_discord.stream_messages import string_to_timestamp
 
 CONFIG = {
     "server_token": "test_token",
     "guild_id": "test_guild_id",
-    "channel_id": "test_channel_id"
+    "channel_ids": ["test_channel_id", "test_channel_2"]
 }
 INITIAL_TIMESTAMP = "2022-01-01T00:00:000"
 

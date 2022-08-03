@@ -8,6 +8,7 @@ connectionSpecification:
     - guild_id
     - bot_id
     - channel_id
+    - channel_ids
     - initial_timestamp
   additionalProperties: false
   properties:
@@ -19,5 +20,7 @@ connectionSpecification:
       type: string
     channel_id:
       type: string
+    channel_ids:
+      type: array
     initial_timestamp:
       type: string
