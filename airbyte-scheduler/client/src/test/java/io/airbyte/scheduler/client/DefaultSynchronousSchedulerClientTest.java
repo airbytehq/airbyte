@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,6 +30,8 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.scheduler.persistence.job_error_reporter.ConnectorJobReportingContext;
+import io.airbyte.scheduler.persistence.job_error_reporter.JobErrorReporter;
 import io.airbyte.scheduler.persistence.job_factory.OAuthConfigSupplier;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
@@ -39,6 +42,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -69,6 +73,7 @@ class DefaultSynchronousSchedulerClientTest {
 
   private TemporalClient temporalClient;
   private JobTracker jobTracker;
+  private JobErrorReporter jobErrorReporter;
   private OAuthConfigSupplier oAuthConfigSupplier;
   private DefaultSynchronousSchedulerClient schedulerClient;
 
@@ -76,8 +81,9 @@ class DefaultSynchronousSchedulerClientTest {
   void setup() throws IOException {
     temporalClient = mock(TemporalClient.class);
     jobTracker = mock(JobTracker.class);
+    jobErrorReporter = mock(JobErrorReporter.class);
     oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
-    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, oAuthConfigSupplier);
+    schedulerClient = new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
 
     when(oAuthConfigSupplier.injectSourceOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
     when(oAuthConfigSupplier.injectDestinationOAuthParameters(any(), any(), eq(CONFIGURATION))).thenReturn(CONFIGURATION);
@@ -97,12 +103,13 @@ class DefaultSynchronousSchedulerClientTest {
     @Test
     void testExecuteJobSuccess() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
+      final Supplier<TemporalResponse<String>> function = mock(Supplier.class);
       final Function<String, String> mapperFunction = output -> output;
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
+      when(function.get()).thenReturn(new TemporalResponse<>("hello", createMetadata(true)));
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("hello", response.getOutput());
@@ -114,18 +121,20 @@ class DefaultSynchronousSchedulerClientTest {
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.SUCCEEDED));
+      verifyNoInteractions(jobErrorReporter);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void testExecuteMappedOutput() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<Integer>> function = mock(Function.class);
+      final Supplier<TemporalResponse<Integer>> function = mock(Supplier.class);
       final Function<Integer, String> mapperFunction = Object::toString;
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
+      when(function.get()).thenReturn(new TemporalResponse<>(42, createMetadata(true)));
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertEquals("42", response.getOutput());
@@ -140,12 +149,13 @@ class DefaultSynchronousSchedulerClientTest {
     @Test
     void testExecuteJobFailure() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
+      final Supplier<TemporalResponse<String>> function = mock(Supplier.class);
       final Function<String, String> mapperFunction = output -> output;
-      when(function.apply(any(UUID.class))).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
+      when(function.get()).thenReturn(new TemporalResponse<>(null, createMetadata(false)));
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       final SynchronousResponse<String> response = schedulerClient
-          .execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
+          .execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID);
 
       assertNotNull(response);
       assertNull(response.getOutput());
@@ -157,22 +167,26 @@ class DefaultSynchronousSchedulerClientTest {
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verifyNoInteractions(jobErrorReporter);
     }
 
     @SuppressWarnings("unchecked")
     @Test
     void testExecuteRuntimeException() {
       final UUID sourceDefinitionId = UUID.randomUUID();
-      final Function<UUID, TemporalResponse<String>> function = mock(Function.class);
+      final Supplier<TemporalResponse<String>> function = mock(Supplier.class);
       final Function<String, String> mapperFunction = output -> output;
-      when(function.apply(any(UUID.class))).thenThrow(new RuntimeException());
+      when(function.get()).thenThrow(new RuntimeException());
 
+      final ConnectorJobReportingContext jobContext = new ConnectorJobReportingContext(UUID.randomUUID(), "source-airbyte:1.2.3");
       assertThrows(
           RuntimeException.class,
-          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, sourceDefinitionId, function, mapperFunction, WORKSPACE_ID));
+          () -> schedulerClient.execute(ConfigType.DISCOVER_SCHEMA, jobContext, sourceDefinitionId, function,
+              mapperFunction, WORKSPACE_ID));
 
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.STARTED));
       verify(jobTracker).trackDiscover(any(UUID.class), eq(sourceDefinitionId), eq(WORKSPACE_ID), eq(JobState.FAILED));
+      verifyNoInteractions(jobErrorReporter);
     }
 
   }
