@@ -13,8 +13,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
@@ -70,7 +68,6 @@ class SyncWorkflowTest {
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
-  private static final Configs configs = new EnvConfigs();
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID);
