@@ -571,9 +571,10 @@ public interface Configs {
   String primarySyncDataPlaneTaskQueue();
 
   /**
-   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's AWS Data Plane.
-   * - This should only be set on Control-plane workers, since those workers decide which Data Plane task queue to use based on connectionId.
-   * - Will be removed in favor of the Routing Service in the future. Internal-use only.
+   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's AWS Data Plane. - This
+   * should only be set on Control-plane workers, since those workers decide which Data Plane task
+   * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
+   * future. Internal-use only.
    */
   Set<String> connectionIdsForAwsDataPlane();
 
