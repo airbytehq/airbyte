@@ -476,7 +476,13 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Integration test
-        run: SUB_BUILD=PLATFORM ./gradlew newIntegrationTest
+        run: |
+          SUB_BUILD=PLATFORM ./gradlew newIntegrationTest | tee build.out
+          echo '###Build Failed' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
+          echo $failed_details >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Slow integration test
         if: contains(github.ref, 'bump-version') || contains(github.ref, 'master')
