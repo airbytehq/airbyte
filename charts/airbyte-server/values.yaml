@@ -1,13 +1,15 @@
 
 global:
-  serviceAccountName: placeholderServiceAccounr
+  serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
-  configMapName: something
-  secretName: something
+  configMapName: ""
+  secretName: ""
+  credVolumeOverride: ""
+  extraContainers: []
   database:
-    # secretName: "test-postgresql"
-    secretValue: "postgresql-password"
-    host: "something"
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
     port: "5432"
   logs:
     ## @param logs.accessKey.password Logs Access Key
@@ -182,3 +184,5 @@ extraVolumeMounts: []
 extraVolumes: []
 
 extraContainers: []
+
+extraInitContainers: []

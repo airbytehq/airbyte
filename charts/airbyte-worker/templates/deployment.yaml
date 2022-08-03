@@ -71,7 +71,7 @@ spec:
           valueFrom:
             secretKeyRef:
                 name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-                key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
+                key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
@@ -372,12 +372,15 @@ spec:
 {{ toYaml .Values.extraVolumeMounts | nindent 8 }}
         {{- end }}
       {{- if .Values.extraContainers }}
-      {{ toyaml .Values.extraInitContainers | indent 8 }}
+      {{ toYaml .Values.extraContainers | indent 8 }}
+      {{- end }}
+      {{- if .Values.global.extraContainers }}
+      {{ toYaml .Values.global.extraContainers | indent 8 }}
       {{- end }}
       volumes:
       - name: gcs-log-creds-volume
         secret:
-          secretName: {{ .Release.Name }}-airbyte-gcs-log-creds
+          secretName: {{ ternary (printf "%s-gcs-log-creds" ( .Release.Name )) (.Values.global.credVolumeOverride) (eq .Values.global.deploymentMode "oss") }}
       {{- if .Values.extraVolumes }}
 {{ toYaml .Values.extraVolumes | nindent 6 }}
       {{- end }}
