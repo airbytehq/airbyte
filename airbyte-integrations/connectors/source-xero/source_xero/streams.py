@@ -143,17 +143,16 @@ class Journals(XeroHttpStream):
 
     def request_body_json(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> Dict:
         if next_page_token:
-            return {"tenant_id": self.dolead_id, "since": next_page_token}
+            return {"tenant_id": self.dolead_id, "offset": next_page_token}
         else:
-            return {"tenant_id": self.dolead_id, "since": self.date_range}
+            return {"tenant_id": self.dolead_id, "offset": "0"}
 
     def next_page_token(self, response: requests.Response, **kwargs) -> int:
         decoded_response = response.json()
         if decoded_response.get("data"):
             # Get the last "CreatedDateUTC" from the batch
-            last_object_date = decoded_response.get("data")[len(decoded_response.get("data")) - 1].get("CreatedDateUTC")
-            next_page_token = datetime.datetime.fromisoformat(last_object_date) + datetime.timedelta(seconds=1)
-            return datetime.datetime.isoformat(next_page_token)
+            last_object_number = decoded_response.get("data")[len(decoded_response.get("data")) - 1].get("JournalNumber")
+            return str(last_object_number)
         else:
             return None
 
