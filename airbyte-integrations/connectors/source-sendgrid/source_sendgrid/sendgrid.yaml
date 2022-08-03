@@ -132,6 +132,22 @@ segments_stream:
       path: "/v3/marketing/segments"
     paginator:
       type: "NoPagination"
+single_sends_stream:
+  type: DeclarativeStream
+  $options:
+    name: "single_sends"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(results_selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/marketing/stats/singlesends"
+    paginator:
+      $ref: "*ref(cursor_paginator)"
 
 streams:
   - "*ref(lists_stream)"
@@ -139,6 +155,7 @@ streams:
   - "*ref(contacts_stream)"
   - "*ref(stats_automations_stream)"
   - "*ref(segments_stream)"
+  - "*ref(single_sends_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
