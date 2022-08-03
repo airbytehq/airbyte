@@ -296,12 +296,12 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
     return mangledValue;
   }
 
-  public static String resolveEra(LocalDate date, String value) {
-    return resolveEra(isBce(date), value);
-  }
-
   public static boolean isBce(LocalDate date) {
     return date.getEra().equals(IsoEra.BCE);
+  }
+
+  public static String resolveEra(LocalDate date, String value) {
+    return resolveEra(isBce(date), value);
   }
 
   /**
