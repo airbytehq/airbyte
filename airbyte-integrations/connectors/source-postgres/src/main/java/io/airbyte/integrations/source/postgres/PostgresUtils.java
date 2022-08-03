@@ -31,18 +31,21 @@ public class PostgresUtils {
   }
 
   public static Duration getFirstRecordWaitTime(final JsonNode config) {
-    if (config.has("initial_waiting_seconds")) {
-      final int seconds = config.get("initial_waiting_seconds").asInt();
+    final JsonNode replicationMethod = config.get("replication_method");
+    Duration firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME;
+    if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
+      final int seconds = config.get("replication_method").get("initial_waiting_seconds").asInt();
       if (seconds > MAX_FIRST_RECORD_WAIT_TIME.getSeconds()) {
         LOGGER.warn("First record waiting time is overridden to {} minutes, which is the max time allowed for safety.",
             MAX_FIRST_RECORD_WAIT_TIME.toMinutes());
-        return MAX_FIRST_RECORD_WAIT_TIME;
+        firstRecordWaitTime = MAX_FIRST_RECORD_WAIT_TIME;
+      } else {
+        firstRecordWaitTime = Duration.ofSeconds(seconds);
       }
-
-      return Duration.ofSeconds(seconds);
     }
 
-    return DEFAULT_FIRST_RECORD_WAIT_TIME;
+    LOGGER.info("First record waiting time: {} seconds", firstRecordWaitTime.getSeconds());
+    return firstRecordWaitTime;
   }
 
 }

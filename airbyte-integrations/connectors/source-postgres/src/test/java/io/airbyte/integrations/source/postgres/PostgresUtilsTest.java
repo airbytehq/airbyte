@@ -36,10 +36,12 @@ class PostgresUtilsTest {
     final JsonNode emptyConfig = Jsons.jsonNode(Collections.emptyMap());
     assertEquals(PostgresUtils.DEFAULT_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(emptyConfig));
 
-    final JsonNode normalConfig = Jsons.jsonNode(Map.of("initial_waiting_seconds", 500));
+    final JsonNode normalConfig = Jsons.jsonNode(Map.of("replication_method",
+        Map.of("method", "CDC", "initial_waiting_seconds", 500)));
     assertEquals(Duration.ofSeconds(500), PostgresUtils.getFirstRecordWaitTime(normalConfig));
 
-    final JsonNode tooLongConfig = Jsons.jsonNode(Map.of("initial_waiting_seconds", MAX_FIRST_RECORD_WAIT_TIME.getSeconds() + 100));
+    final JsonNode tooLongConfig = Jsons.jsonNode(Map.of("replication_method",
+        Map.of("method", "CDC", "initial_waiting_seconds", MAX_FIRST_RECORD_WAIT_TIME.getSeconds() + 100)));
     assertEquals(MAX_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(tooLongConfig));
   }
 
