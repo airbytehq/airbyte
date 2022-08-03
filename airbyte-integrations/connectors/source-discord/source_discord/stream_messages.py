@@ -81,7 +81,7 @@ class Messages(DiscordMessagesStream):
     def stream_slices(self, **kwargs):
         channels_stream = Channels(self.config)
         for channel in channels_stream.read_records(sync_mode=SyncMode.full_refresh):
-            if channel["id"] in self.channel_ids:
+            if channel["id"] in self.channel_ids.split(","):
                 yield {"channel_id": channel["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:

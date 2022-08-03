@@ -7,7 +7,6 @@ connectionSpecification:
     - server_token
     - guild_id
     - bot_id
-    - channel_id
     - channel_ids
     - initial_timestamp
   additionalProperties: false
@@ -18,9 +17,7 @@ connectionSpecification:
       type: string
     bot_id:
       type: string
-    channel_id:
-      type: string
     channel_ids:
-      type: array
+      type: string
     initial_timestamp:
       type: string
