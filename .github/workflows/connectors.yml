@@ -55,7 +55,7 @@ jobs:
           docker tag docker.io/airbyte/${{ matrix.connector }}:dev ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
           docker push ghcr.io/estuary/${{ matrix.connector }}:${{ steps.prep.outputs.tag }}
 
-      - name: Push ${{ matrix.connector }} image with 'dev' and version tag
+      - name: Push ${{ matrix.connector }} image with 'dev' and version tags
         if: ${{ github.event_name == 'push' }}
         id: push-dev
         run: |
