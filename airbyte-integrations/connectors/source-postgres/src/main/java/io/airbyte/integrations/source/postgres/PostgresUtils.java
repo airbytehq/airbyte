@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Duration;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,17 +31,35 @@ public class PostgresUtils {
     return isCdc;
   }
 
-  public static Duration getFirstRecordWaitTime(final JsonNode config) {
+  public static Optional<Integer> getFirstRecordWaitSeconds(final JsonNode config) {
     final JsonNode replicationMethod = config.get("replication_method");
-    Duration firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME;
     if (replicationMethod != null && replicationMethod.has("initial_waiting_seconds")) {
       final int seconds = config.get("replication_method").get("initial_waiting_seconds").asInt();
-      if (seconds > MAX_FIRST_RECORD_WAIT_TIME.getSeconds()) {
+      return Optional.of(seconds);
+    }
+    return Optional.empty();
+  }
+
+  public static void checkFirstRecordWaitTime(final JsonNode config) {
+    final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
+    if (firstRecordWaitSeconds.isPresent() && firstRecordWaitSeconds.get() > MAX_FIRST_RECORD_WAIT_TIME.getSeconds()) {
+      throw new IllegalArgumentException(String.format(
+          "Initial waiting seconds cannot be larger than %d seconds for safety.",
+          MAX_FIRST_RECORD_WAIT_TIME.getSeconds()));
+    }
+  }
+
+  public static Duration getFirstRecordWaitTime(final JsonNode config) {
+    Duration firstRecordWaitTime = DEFAULT_FIRST_RECORD_WAIT_TIME;
+
+    final Optional<Integer> firstRecordWaitSeconds = getFirstRecordWaitSeconds(config);
+    if (firstRecordWaitSeconds.isPresent()) {
+      if (firstRecordWaitSeconds.get() > MAX_FIRST_RECORD_WAIT_TIME.getSeconds()) {
         LOGGER.warn("First record waiting time is overridden to {} minutes, which is the max time allowed for safety.",
             MAX_FIRST_RECORD_WAIT_TIME.toMinutes());
         firstRecordWaitTime = MAX_FIRST_RECORD_WAIT_TIME;
       } else {
-        firstRecordWaitTime = Duration.ofSeconds(seconds);
+        firstRecordWaitTime = Duration.ofSeconds(firstRecordWaitSeconds.get());
       }
     }
 
