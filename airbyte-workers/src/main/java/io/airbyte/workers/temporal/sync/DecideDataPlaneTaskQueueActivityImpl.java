@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class DecideDataPlaneTaskQueueActivityImpl implements DecideDataPlaneTaskQueueActivity {
 
-  private static final String AWS_DATA_PLANE_TASK_QUEUE = "AWS_DEV_SYNC_ACTIVITIES";
+  private static final String AWS_DATA_PLANE_TASK_QUEUE = "AWS_DEV_SYNC_DATA_PLANE";
 
   private final Configs configs;
 
