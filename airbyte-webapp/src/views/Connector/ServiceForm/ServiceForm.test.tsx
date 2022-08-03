@@ -41,8 +41,8 @@ const useAddPriceListItem = (container: HTMLElement) => {
     await waitFor(() => userEvent.click(addButton));
 
     const arrayOfObjectsEditModal = getByTestId(document.body, "arrayOfObjects-editModal");
-    const getPriceListInput = (_: number, key: string) =>
-      arrayOfObjectsEditModal.querySelector(`input[__variableInputField.${key}']`);
+    const getPriceListInput = (index: number, key: string) =>
+      arrayOfObjectsEditModal.querySelector(`input[name='__temp__connectionConfiguration_priceList${index}.${key}']`);
 
     // Type items into input
     const nameInput = getPriceListInput(index, "name");
