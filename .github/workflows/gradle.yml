@@ -509,9 +509,10 @@ jobs:
           path: >
             /actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,
             /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml
-          reporter: java-junit        # Format of test results
+          reporter: java-junit
           list-suites: 'failed'
           list-tests: 'failed'
+          fail-on-error: 'false'
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
