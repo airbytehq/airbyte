@@ -506,9 +506,7 @@ jobs:
         if: always()    # run this step even if previous step failed
         with:
           name: JUnit Test Report
-          path: >
-            /actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,
-            /actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
           reporter: java-junit
           list-suites: 'failed'
           list-tests: 'failed'
