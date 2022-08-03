@@ -148,7 +148,25 @@ single_sends_stream:
       path: "/v3/marketing/stats/singlesends"
     paginator:
       $ref: "*ref(cursor_paginator)"
-
+templates_stream:
+  type: DeclarativeStream
+  $options:
+    name: "templates"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(result_selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/templates"
+      request_options_provider:
+        request_parameters:
+          generations: "legacy,dynamic"
+    paginator:
+      $ref: "*ref(cursor_paginator)"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
@@ -156,6 +174,7 @@ streams:
   - "*ref(stats_automations_stream)"
   - "*ref(segments_stream)"
   - "*ref(single_sends_stream)"
+  - "*ref(templates_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
