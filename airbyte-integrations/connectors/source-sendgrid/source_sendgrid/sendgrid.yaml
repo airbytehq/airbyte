@@ -257,6 +257,24 @@ suppression_group_members_stream:
       path: "/v3/asm/suppressions"
     paginator:
       $ref: "*ref(offset_paginator)"
+bounces_stream:
+  type: DeclarativeStream
+  $options:
+    name: "bounces"
+    primary_key: "email"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/suppression/bounces"
+    paginator:
+      $ref: "*ref(offset_paginator)"
+    stream_slicer:
+      $ref: "*ref(stream_slicer)"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
@@ -269,6 +287,7 @@ streams:
   - "*ref(suppression_groups_stream)"
   - "*ref(suppression_group_members_stream)"
   - "*ref(blocks_stream)"
+  - "*ref(bounces_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
