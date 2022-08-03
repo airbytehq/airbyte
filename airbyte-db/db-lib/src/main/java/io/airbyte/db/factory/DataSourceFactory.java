@@ -7,6 +7,7 @@ package io.airbyte.db.factory;
 import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.Closeable;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -60,6 +61,32 @@ public class DataSourceFactory {
         .withJdbcUrl(jdbcConnectionString)
         .withPassword(password)
         .withUsername(username)
+        .build();
+  }
+
+  /**
+   * Constructs a new {@link DataSource} using the provided configuration and extracts
+   * connectionTimeout (as seconds) if it exists
+   *
+   * @param username The username of the database user.
+   * @param password The password of the database user.
+   * @param driverClassName The fully qualified name of the JDBC driver class.
+   * @param jdbcConnectionString The JDBC connection string.
+   * @param connectionProperties Additional configuration properties for the underlying driver.
+   * @return The configured {@link DataSource}.
+   */
+  public static DataSource createWithConnectionTimeout(final String username,
+      final String password,
+      final String driverClassName,
+      final String jdbcConnectionString,
+      final Map<String, String> connectionProperties) {
+    return new DataSourceBuilder()
+        .withConnectionProperties(connectionProperties)
+        .withDriverClassName(driverClassName)
+        .withJdbcUrl(jdbcConnectionString)
+        .withPassword(password)
+        .withUsername(username)
+        .getConnectionTimeoutMs(connectionProperties)
         .build();
   }
 
@@ -173,13 +200,42 @@ public class DataSourceFactory {
     private String jdbcUrl;
     private int maximumPoolSize = 10;
     private int minimumPoolSize = 0;
-    // the default 30000 millisecond is sometimes not enough for the acceptance test
-    private long connectionTimeoutMs = 60000;
+    private long connectionTimeoutMs;
     private String password;
     private int port = 5432;
     private String username;
+    private static final long MILLISECONDS = 1000;
+    private static final String CONNECT_TIMEOUT_KEY = "connectTimeout";
+    private static final String CONNECT_TIMEOUT_DEFAULT = "60";
 
     private DataSourceBuilder() {}
+
+    /**
+     * Retrieves connectionTimeout value from connection properties in seconds,
+     * default minimum timeout is 60 seconds since Hikari default of 30 seconds
+     * is not enough for acceptance tests. In the case the value is 0, pass the
+     * value along as Hikari and Postgres use default max value for 0 timeout value
+     *
+     * NOTE: HikariCP uses milliseconds for all time values: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
+     * whereas Postgres is measured in seconds: https://jdbc.postgresql.org/documentation/head/connect.html
+     *
+     * @param connectionProperties custom jdbc_url_parameters containing
+     *                             information on connection properties
+     * @return DataSourceBuilder class used to create dynamic fields for DataSource
+     */
+    public DataSourceBuilder getConnectionTimeoutMs(final Map<String, String> connectionProperties) {
+      final long connectionTimeoutSeconds;
+      if (connectionProperties != null) {
+        // TODO: extend this field to more than just Postgres specific connectTimeout syntax
+        connectionTimeoutSeconds = Long.parseLong(connectionProperties.getOrDefault(CONNECT_TIMEOUT_KEY, CONNECT_TIMEOUT_DEFAULT));
+        if (connectionTimeoutSeconds == 0) {
+          this.connectionTimeoutMs = connectionTimeoutSeconds;
+        } else {
+          this.connectionTimeoutMs = Math.max(connectionTimeoutSeconds, Long.parseLong(CONNECT_TIMEOUT_DEFAULT)) * MILLISECONDS;
+        }
+      }
+      return this;
+    }
 
     public DataSourceBuilder withConnectionProperties(final Map<String, String> connectionProperties) {
       if (connectionProperties != null) {

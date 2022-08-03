@@ -299,7 +299,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
 
   protected DataSource createDataSource(final JsonNode config) {
     final JsonNode jdbcConfig = toDatabaseConfig(config);
-    final DataSource dataSource = DataSourceFactory.create(
+    final DataSource dataSource = DataSourceFactory.createWithConnectionTimeout(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
         jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
         driverClass,
