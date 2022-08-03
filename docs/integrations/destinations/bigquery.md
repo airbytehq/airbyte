@@ -133,7 +133,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 1.1.13  | 2022-00-02 | [15180](https://github.com/airbytehq/airbyte/pull/15180) | Fix standard loading mode  |
+| 1.1.14  | 2022-08-03 | [14784](https://github.com/airbytehq/airbyte/pull/14784) | Enabling Application Default Credentials  |
+| 1.1.13  | 2022-08-02 | [15180](https://github.com/airbytehq/airbyte/pull/15180) | Fix standard loading mode  |
 | 1.1.12  | 2022-08-02 | [14801](https://github.com/airbytehq/airbyte/pull/14801) | Fix multiply log bindings |
 | 1.1.11  | 2022-06-24 | [14114](https://github.com/airbytehq/airbyte/pull/14114) | Remove "additionalProperties": false from specs for connectors with staging  |
 | 1.1.10  | 2022-06-16 | [13852](https://github.com/airbytehq/airbyte/pull/13852) | Updated stacktrace format for any trace message errors |
