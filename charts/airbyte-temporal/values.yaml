@@ -1,13 +1,14 @@
 
 global:
-  serviceAccountName: placeholderServiceAccounr
+  serviceAccountName: placeholderServiceAccount
   deploymentMode: oss
-  configMapName: something
-  secretName: something
+  configMapName: ""
+  secretName: ""
+  extraContainers: []
   database:
-    # secretName: "test-postgresql"
-    secretValue: "postgresql-password"
-    host: "something"
+    secretName: ""
+    secretValue: ""
+    host: "example.com"
     port: "5432"
 
 

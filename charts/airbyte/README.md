@@ -42,8 +42,7 @@ Helm chart to deploy airbyte
 | fullnameOverride | string | `""` |  |
 | global.database.host | string | `"test"` |  |
 | global.database.port | string | `"5432"` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
 | global.imageRegistry | string | `""` |  |
 | global.jobs.kube.annotations | object | `{}` |  |

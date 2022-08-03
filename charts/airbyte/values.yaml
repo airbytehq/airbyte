@@ -9,8 +9,7 @@ global:
 
   secretName: "airbyte-secrets"
   database:
-    secretName: "test-postgresql"
-    secretValue: "postgresql-password"
+    secretValue: ""
     host: "test"
     port: "5432"
   logs:
