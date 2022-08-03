@@ -53,7 +53,10 @@ class BalanceStream(PlaidStream):
     ) -> Iterable[Mapping[str, Any]]:
         options = AccountsBalanceGetRequestOptions()
         options.min_last_updated_datetime = datetime.datetime.strptime(
-            datetime.datetime.strftime(self.start_date, "%y-%m-%dT%H:%M:%SZ"),
+            datetime.datetime.strftime(
+                self.start_date,
+                "%y-%m-%dT%H:%M:%SZ"
+            ),
             "%y-%m-%dT%H:%M:%S%z",
         )
         balance_response = self.client.accounts_balance_get(AccountsBalanceGetRequest(access_token=self.access_token, options=options))
