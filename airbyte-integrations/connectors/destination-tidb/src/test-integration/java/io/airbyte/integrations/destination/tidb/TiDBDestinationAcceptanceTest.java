@@ -5,36 +5,99 @@
 package io.airbyte.integrations.destination.tidb;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.io.IOException;
+import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.Database;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import java.sql.SQLException;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.util.HostPortResolver;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
-public class TiDBDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TiDBDestinationAcceptanceTest.class);
-
-  private JsonNode configJson;
+  private final ExtendedNameTransformer namingResolver = new TiDBSQLNameTransformer();
+  private GenericContainer container;
+  private final String usernameKey = "root";
+  private final String passwordKey = "";
+  private final String databaseKey = "test";
+  private final Boolean sslKey = false;
 
   @Override
   protected String getImageName() {
     return "airbyte/destination-tidb:dev";
   }
 
+  // TODO: support dbt
+  @Override
+  protected boolean supportsDBT() {
+    return false;
+  }
+
+  @Override
+  protected boolean implementsNamespaces() {
+    return true;
+  }
+
+  // TODO
+  @Override
+  protected boolean supportsNormalization() {
+    return false;
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
+
   @Override
   protected JsonNode getConfig() {
-    // TODO: Generate the configuration JSON file to be used for running the destination during the test
-    // configJson can either be static and read from secrets/config.json directly
-    // or created in the setup method
-    return configJson;
+    return Jsons.jsonNode(ImmutableMap.builder()
+            .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+            .put(JdbcUtils.USERNAME_KEY, usernameKey)
+            .put(JdbcUtils.DATABASE_KEY, databaseKey)
+            .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+            .put(JdbcUtils.SSL_KEY, sslKey)
+            .build());
   }
 
   @Override
   protected JsonNode getFailCheckConfig() {
-    // TODO return an invalid config which, when used to run the connector's check connection operation,
-    // should result in a failed connection check
-    return null;
+    return Jsons.jsonNode(ImmutableMap.builder()
+            .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+            .put(JdbcUtils.USERNAME_KEY, usernameKey)
+            .put(JdbcUtils.PASSWORD_KEY, "wrong password")
+            .put(JdbcUtils.DATABASE_KEY, databaseKey)
+            .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+            .put(JdbcUtils.SSL_KEY, sslKey)
+            .build());
+  }
+
+  @Override
+  protected String getDefaultSchema(final JsonNode config) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
+      return null;
+    }
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -42,21 +105,52 @@ public class TiDBDestinationAcceptanceTest extends DestinationAcceptanceTest {
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema)
-      throws IOException {
-    // TODO Implement this method to retrieve records which written to the destination by the connector.
-    // Records returned from this method will be compared against records provided to the connector
-    // to verify they were written correctly
-    return null;
+      throws Exception {
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+            .stream()
+            .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
+            .collect(Collectors.toList());
+  }
+
+  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
+    try (final DSLContext dslContext = DSLContextFactory.create(
+            usernameKey,
+            passwordKey,
+            DatabaseDriver.MYSQL.getDriverClassName(),
+            String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+                    container.getHost(),
+                    container.getFirstMappedPort(),
+                    databaseKey),
+            SQLDialect.MYSQL)) {
+      return new Database(dslContext).query(
+              ctx -> ctx
+                      .fetch(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schemaName, tableName,
+                              JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
+                      .stream()
+                      .map(this::getJsonFromRecord)
+                      .collect(Collectors.toList()));
+    }
+  }
+
+  @Override
+  protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
+          throws Exception {
+    final String tableName = namingResolver.getIdentifier(streamName);
+    final String schema = namingResolver.getIdentifier(namespace);
+    return retrieveRecordsFromTable(tableName, schema);
   }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any setup actions needed before every test case
+    container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
+            .withExposedPorts(4000);
+    container.start();
   }
 
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any cleanup actions needed after every test case
+    container.stop();
+    container.close();
   }
 
 }
