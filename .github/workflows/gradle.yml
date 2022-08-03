@@ -469,12 +469,12 @@ jobs:
       - name: Build
         run: |
           SUB_BUILD=PLATFORM ./gradlew build javadoc --scan | tee build.out
-          echo '###Build Failed' >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
-          echo $failed_details >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          exit 1
+#          echo '###Build Failed' >> $GITHUB_STEP_SUMMARY
+#          echo '```' >> $GITHUB_STEP_SUMMARY
+#          failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
+#          echo $failed_details >> $GITHUB_STEP_SUMMARY
+#          echo '```' >> $GITHUB_STEP_SUMMARY
+#          exit 1
 
       - name: Integration test
         run: |
@@ -506,6 +506,15 @@ jobs:
 
       - name: Automatic Migration Acceptance Test
         run: SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:automaticMigrationAcceptanceTest --scan -i
+
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()    # run this step even if previous step failed
+        with:
+          name: JUnit Test Report           # Name of the check run which will be created
+#          path: reports/jest-*.html    # Path to test results
+          path: /actions-runner/_work/airbyte/airbyte/airbyte-queue/*/*/*/*/index.html
+          reporter: java-junit        # Format of test results
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
