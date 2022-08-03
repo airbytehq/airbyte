@@ -13,6 +13,11 @@ results_selector:
   extractor:
     type: JelloExtractor
     transform: "_.results"
+data_selector:
+  type: RecordSelector
+  extractor:
+    type: JelloExtractor
+    transform: "_"
 requester:
   type: HttpRequester
   name: "{{ options['name'] }}"
@@ -167,6 +172,39 @@ templates_stream:
           generations: "legacy,dynamic"
     paginator:
       $ref: "*ref(cursor_paginator)"
+global_suppressions_stream:
+  type: DeclarativeStream
+  $options:
+    name: "global_suppressions"
+  primary_key: "email"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(data_selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/suppression/unsubscribes"
+    paginator:
+      $ref: "*ref(offset_paginator)"
+    stream_slicer:
+      type: "DatetimeStreamSlicer"
+      start_datetime:
+        datetime: "2017-01-01T00:00:00.0Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      end_datetime:
+        datetime: "2022-08-01T00:00:00.0Z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      step: "10000d"
+      cursor_field: "created"
+      start_time_option:
+        field_name: "start_time"
+        inject_into: "request_parameter"
+      end_time_option:
+        field_name: "end_time"
+        inject_into: "request_parameter"
+      datetime_format: "timestamp"
 streams:
   - "*ref(lists_stream)"
   - "*ref(campaigns_stream)"
@@ -175,6 +213,7 @@ streams:
   - "*ref(segments_stream)"
   - "*ref(single_sends_stream)"
   - "*ref(templates_stream)"
+  - "*ref(global_suppressions_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
