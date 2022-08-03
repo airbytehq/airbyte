@@ -307,8 +307,30 @@ spam_reports_stream:
     requester:
       $ref: "*ref(requester)"
       path: "/v3/suppression/spam_reports"
+
     paginator:
       $ref: "*ref(offset_paginator)"
+    stream_slicer:
+      $ref: "*ref(stream_slicer)"
+messages_stream:
+  type: DeclarativeStream
+  $options:
+    name: "messages"
+    primary_key: "msg_id"
+    cursor_field: "last_event_time"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/v3/messages"
+      request_options_provider:
+        request_parameters:
+          limit: 1000
+          query: "last_event_time BETWEEN TIMESTAMP {{stream_slice.start_date}} AND TIMESTAMP {{stream_slice.end_date}}"
     stream_slicer:
       $ref: "*ref(stream_slicer)"
 streams:
@@ -326,6 +348,7 @@ streams:
   - "*ref(bounces_stream)"
   - "*ref(invalid_emails_stream)"
   - "*ref(spam_reports_stream)"
+  - "*ref(messages_stream)"
 check:
   type: CheckStream
   stream_names: ["lists"]
