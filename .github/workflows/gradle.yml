@@ -474,6 +474,7 @@ jobs:
           failed_details=$(awk '/FAILED/, /^[\>]/' build.out)
           echo $failed_details >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
+          exit 1
 
       - name: Integration test
         run: |
