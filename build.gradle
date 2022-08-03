@@ -257,7 +257,7 @@ subprojects {
     jacocoTestReport {
         dependsOn test
         reports {
-            html.required = true
+            html.required = false
             xml.required = true
             csv.required = false
         }

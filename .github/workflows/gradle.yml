@@ -513,7 +513,7 @@ jobs:
         with:
           name: JUnit Test Report           # Name of the check run which will be created
 #          path: reports/jest-*.html    # Path to test results
-          path: /actions-runner/_work/airbyte/airbyte/airbyte-queue/*/*/*/*/index.html
+          path: /actions-runner/_work/airbyte/airbyte/airbyte-queue/build/test-results/test/*.xml
           reporter: java-junit        # Format of test results
 
   # In case of self-hosted EC2 errors, remove this block.
