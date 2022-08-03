@@ -526,8 +526,6 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
-    final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
-        dataFromFirstBatch);
 
     // second batch of records again 20 being created
     for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
@@ -544,10 +542,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
-
-    final Set<AirbyteRecordMessage> recordsFromSecondBatch = extractRecordMessages(
-        dataFromSecondBatch);
-    final JsonNode stateAfterSecond = Jsons.jsonNode(stateAfterSecondBatch);
+    assertExpectedStateMessages(stateAfterSecondBatch);
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
       final JsonNode record =
@@ -565,6 +560,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .toListAndClose(thirdBatchIterator);
 
     final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
+    assertExpectedStateMessages(stateAfterThirdBatch);
     final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
         dataFromThirdBatch);
 

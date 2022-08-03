@@ -64,6 +64,8 @@ public class PostgresDebeziumStateUtil {
       }
     }
 
+    // We return true when saved offset is not present cause using an empty offset would result in sync
+    // from scratch anyway
     return true;
   }
 
