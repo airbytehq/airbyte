@@ -31,10 +31,11 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
   private final Set<String> BINARY = Set.of("VARBINARY", "BINARY");
   private static final String DATETIMEOFFSET = "DATETIMEOFFSET";
   private static final String TIME_TYPE = "TIME";
-  private static final String SMALLMONEY_TYPE = "SMALLMONEY";
+  private final Set<String> SMALLMONEY_TYPES = Set.of("SMALLMONEY", "MONEY");
   private static final String GEOMETRY = "GEOMETRY";
   private static final String GEOGRAPHY = "GEOGRAPHY";
   private static final String DEBEZIUM_DATETIMEOFFSET_FORMAT = "yyyy-MM-dd HH:mm:ss XXX";
+  private final Set<String> DECIMAL_TYPES = Set.of("NUMERIC", "DECIMAL");
 
   @Override
   public void configure(Properties props) {}
@@ -44,7 +45,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
                            final ConverterRegistration<SchemaBuilder> registration) {
     if (DATE_TYPES.contains(field.typeName().toUpperCase())) {
       registerDate(field, registration);
-    } else if (SMALLMONEY_TYPE.equalsIgnoreCase(field.typeName())) {
+    } else if (SMALLMONEY_TYPES.contains(field.typeName().toUpperCase())) {
       registerMoney(field, registration);
     } else if (BINARY.contains(field.typeName().toUpperCase())) {
       registerBinary(field, registration);
@@ -56,6 +57,8 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
       registerTime(field, registration);
     } else if (DATETIMEOFFSET.equalsIgnoreCase(field.typeName())) {
       registerDateTimeOffSet(field, registration);
+    } else if (DECIMAL_TYPES.contains(field.typeName().toUpperCase())) {
+      registerDecimal(field, registration);
     }
   }
 
@@ -160,6 +163,23 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
       }
 
       LOGGER.warn("Uncovered money class type '{}'. Use default converter",
+          input.getClass().getName());
+      return input.toString();
+    });
+  }
+
+  private void registerDecimal(final RelationalColumn field,
+                             final ConverterRegistration<SchemaBuilder> registration) {
+    registration.register(SchemaBuilder.float64(), input -> {
+      if (Objects.isNull(input)) {
+        return DebeziumConverterUtils.convertDefaultValue(field);
+      }
+
+      if (input instanceof BigDecimal) {
+        return ((BigDecimal) input).doubleValue();
+      }
+
+      LOGGER.warn("Uncovered decimal class type '{}'. Use default converter",
           input.getClass().getName());
       return input.toString();
     });
