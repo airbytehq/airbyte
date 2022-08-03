@@ -800,9 +800,9 @@ public class EnvConfigs implements Configs {
   public List<String> getDDConstantTags() {
     String tagsString = getEnvOrDefault(DD_CONSTANT_TAGS, "");
     return Splitter.on(",")
-            .splitToStream(tagsString)
-            .filter(s -> !s.trim().isBlank())
-            .collect(Collectors.toList());
+        .splitToStream(tagsString)
+        .filter(s -> !s.trim().isBlank())
+        .collect(Collectors.toList());
   }
 
   @Override

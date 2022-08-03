@@ -5,9 +5,8 @@
 package io.airbyte.metrics.lib;
 
 import io.airbyte.config.Configs;
-import lombok.AllArgsConstructor;
-
 import java.util.List;
+import lombok.AllArgsConstructor;
 
 /**
  * POJO of configuration required for publishing metrics.
@@ -20,6 +19,7 @@ public class DatadogClientConfiguration {
   public final boolean publish;
 
   public final List<String> constantTags;
+
   public DatadogClientConfiguration(final Configs configs) {
     this.ddAgentHost = configs.getDDAgentHost();
     this.ddPort = configs.getDDDogStatsDPort();
