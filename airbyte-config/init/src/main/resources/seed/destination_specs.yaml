@@ -758,7 +758,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-keen:0.2.3"
+- dockerImage: "airbyte/destination-keen:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/keen"
     connectionSpecification:
