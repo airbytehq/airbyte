@@ -15,15 +15,15 @@ from bingads.v13.reporting.reporting_service_manager import ReportingServiceMana
 from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from source_bing_ads.reports import (
-    ReportsMixin, 
-    ALL_CONVERSION_FIELDS, 
+    ALL_CONVERSION_FIELDS,
     ALL_REVENUE_FIELDS,
-    AVERAGE_FIELDS, 
-    CONVERSION_FIELDS, 
-    LOW_QUALITY_FIELDS, 
+    AVERAGE_FIELDS,
+    BUDGET_FIELDS,
+    CONVERSION_FIELDS,
     HISTORICAL_FIELDS,
+    LOW_QUALITY_FIELDS,
     REVENUE_FIELDS,
-    BUDGET_FIELDS
+    ReportsMixin,
 )
 from suds import sudsobject
 
@@ -345,17 +345,17 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
     primary_key = [
         "AccountId",
         "CampaignId",
-        "TimePeriod", 
+        "TimePeriod",
         "CurrencyCode",
         "AdDistribution",
         "DeviceType",
-        "Network", 
+        "Network",
         "DeliveredMatchType",
         "DeviceOS",
         "TopVsOther",
-        "BidMatchType"
+        "BidMatchType",
     ]
-    
+
     report_columns = [
         *primary_key,
         "CampaignStatus",
@@ -379,13 +379,14 @@ class CampaignPerformanceReport(ReportsMixin, BingAdsStream):
         "AllReturnOnAdSpend",
         *ALL_CONVERSION_FIELDS,
         *ALL_REVENUE_FIELDS,
-        *AVERAGE_FIELDS, 
-        *CONVERSION_FIELDS, 
-        *LOW_QUALITY_FIELDS, 
+        *AVERAGE_FIELDS,
+        *CONVERSION_FIELDS,
+        *LOW_QUALITY_FIELDS,
         *HISTORICAL_FIELDS,
         *REVENUE_FIELDS,
         *BUDGET_FIELDS,
     ]
+
 
 class CampaignPerformanceReportHourly(CampaignPerformanceReport):
     report_aggregation = "Hourly"
@@ -421,11 +422,11 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
         "AdDistribution",
         "DeviceType",
         "Language",
-        "Network", 
+        "Network",
         "DeviceOS",
         "TopVsOther",
         "BidMatchType",
-        "DeliveredMatchType"
+        "DeliveredMatchType",
     ]
 
     report_columns = [
@@ -451,7 +452,7 @@ class AdPerformanceReport(ReportsMixin, BingAdsStream):
         *AVERAGE_FIELDS,
         *ALL_CONVERSION_FIELDS,
         *ALL_REVENUE_FIELDS,
-        *REVENUE_FIELDS
+        *REVENUE_FIELDS,
     ]
 
 
@@ -493,7 +494,7 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
         "DeviceOS",
         "TopVsOther",
         "BidMatchType",
-        "Language"
+        "Language",
     ]
 
     report_columns = [
@@ -522,7 +523,7 @@ class AdGroupPerformanceReport(ReportsMixin, BingAdsStream):
         *AVERAGE_FIELDS,
         *CONVERSION_FIELDS,
         *HISTORICAL_FIELDS,
-        *REVENUE_FIELDS
+        *REVENUE_FIELDS,
     ]
 
 
@@ -660,7 +661,7 @@ class AccountPerformanceReport(ReportsMixin, BingAdsStream):
         *AVERAGE_FIELDS,
         *CONVERSION_FIELDS,
         *LOW_QUALITY_FIELDS,
-        *REVENUE_FIELDS
+        *REVENUE_FIELDS,
     ]
 
 
