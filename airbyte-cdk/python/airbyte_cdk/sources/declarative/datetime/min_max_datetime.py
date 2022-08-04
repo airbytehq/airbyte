@@ -25,11 +25,11 @@ class MinMaxDatetime(JsonSchemaMixin):
     """
 
     datetime: Union[InterpolatedString, str]
+    options: InitVar[Mapping[str, Any]]
     datetime_format: str = ""
     _datetime_format: str = field(init=False, repr=False, default="")
     min_datetime: Union[InterpolatedString, str] = ""
     max_datetime: Union[InterpolatedString, str] = ""
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.datetime = InterpolatedString.create(self.datetime, options=options or {})

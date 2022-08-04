@@ -27,6 +27,7 @@ class ParentStreamConfig:
     stream: Stream
     parent_key: str
     stream_slice_field: str
+    options: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
 
@@ -37,17 +38,17 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
     Will populate the state with `parent_stream_slice` and `parent_record` so they can be accessed by other components
 
     Attributes:
-        parent_streams_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
+        parent_stream_configs (List[ParentStreamConfig]): parent streams to iterate over and their config
     """
 
     parent_stream_configs: List[ParentStreamConfig]
-    options: InitVar[Mapping[str, Any]] = None
+    options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamSlicer needs at least 1 parent stream")
         self._cursor = None
-        self._options = options or {}
+        self._options = options
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         cursor = {}

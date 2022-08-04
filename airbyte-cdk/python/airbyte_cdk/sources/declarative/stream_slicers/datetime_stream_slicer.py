@@ -55,6 +55,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     cursor_field: InterpolatedString
     datetime_format: str
     config: Config
+    options: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
     _cursor_end: dict = field(repr=False, default=None)  # tracks end of current stream slice
     start_time_option: Optional[RequestOption] = None
@@ -62,7 +63,6 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     stream_state_field_start: Optional[str] = None
     stream_state_field_end: Optional[str] = None
     lookback_window: Optional[InterpolatedString] = None
-    options: InitVar[Mapping[str, Any]] = None
 
     timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")
 
@@ -70,7 +70,6 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._timezone = datetime.timezone.utc
         self._interpolation = JinjaInterpolation()
 
-        options = options or {}
         self._step = self._parse_timedelta(self.step)
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_date", options=options)
@@ -86,63 +85,6 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
             raise ValueError("Start time cannot be passed by path")
         if self.end_time_option and self.end_time_option.inject_into == RequestOptionType.path:
             raise ValueError("End time cannot be passed by path")
-
-    # def __init__(
-    #     self,
-    #     start_datetime: MinMaxDatetime,
-    #     end_datetime: MinMaxDatetime,
-    #     step: str,
-    #     cursor_field: InterpolatedString,
-    #     datetime_format: str,
-    #     config: Config,
-    #     start_time_option: Optional[RequestOption] = None,
-    #     end_time_option: Optional[RequestOption] = None,
-    #     stream_state_field_start: Optional[str] = None,
-    #     stream_state_field_end: Optional[str] = None,
-    #     lookback_window: Optional[InterpolatedString] = None,
-    #     **options: Optional[Mapping[str, Any]],
-    # ):
-    #     """
-    #     :param start_datetime:
-    #     :param end_datetime:
-    #     :param step: size of the timewindow
-    #     :param cursor_field: record's cursor field
-    #     :param datetime_format: format of the datetime
-    #     :param config: connection config
-    #     :param start_time_option: request option for start time
-    #     :param end_time_option: request option for end time
-    #     :param stream_state_field_start: stream slice start time field
-    #     :param stream_state_field_end: stream slice end time field
-    #     :param lookback_window: how many days before start_datetime to read data for
-    #     :param options: Additional runtime parameters to be used for string interpolation
-    #     """
-    #     self._timezone = datetime.timezone.utc
-    #     self._interpolation = JinjaInterpolation()
-    #
-    #     self.datetime_format = datetime_format
-    #     self.start_datetime = start_datetime
-    #     self.end_datetime = end_datetime
-    #     self._step = self._parse_timedelta(step)
-    #     self._config = config
-    #     self._cursor_field = InterpolatedString.create(cursor_field, options=options)
-    #     self.start_time_option = start_time_option
-    #     self.end_time_option = end_time_option
-    #     self._stream_slice_field_start = InterpolatedString.create(stream_state_field_start or "start_date", options=options)
-    #     self._stream_slice_field_end = InterpolatedString.create(stream_state_field_end or "end_date", options=options)
-    #     self._cursor = None  # tracks current datetime
-    #     self._cursor_end = None  # tracks end of current stream slice
-    #     self._lookback_window = lookback_window
-    #
-    #     # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
-    #     if not self.start_datetime.datetime_format:
-    #         self.start_datetime.datetime_format = self.datetime_format
-    #     if not self.end_datetime.datetime_format:
-    #         self.end_datetime.datetime_format = self.datetime_format
-    #
-    #     if self.start_time_option and self.start_time_option.inject_into == RequestOptionType.path:
-    #         raise ValueError("Start time cannot be passed by path")
-    #     if self.end_time_option and self.end_time_option.inject_into == RequestOptionType.path:
-    #         raise ValueError("End time cannot be passed by path")
 
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}

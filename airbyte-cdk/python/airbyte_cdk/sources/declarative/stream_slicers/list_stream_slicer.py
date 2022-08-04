@@ -29,11 +29,10 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
     slice_values: Union[str, List[str]]
     cursor_field: Union[InterpolatedString, str]
     config: Config
+    options: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
-        options = options or {}
         if isinstance(self.slice_values, str):
             self.slice_values = InterpolatedString.create(self.slice_values, options=options).eval(self.config)
         if isinstance(self.cursor_field, str):

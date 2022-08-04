@@ -9,12 +9,17 @@ from typing import Optional
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.header_helper import get_numeric_value_from_header
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy):
+class WaitTimeFromHeaderBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
     Extract wait time from http header
+
+    Attributes:
+        header (str): header to read wait time from
+        regex (Optional[str]): optional regex to apply on the header to extract its value
     """
 
     header: str

@@ -25,7 +25,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
     ],
 )
 def test_cursor_pagination_strategy(test_name, template_string, stop_condition, expected_token):
-    decoder = JsonDecoder()
+    decoder = JsonDecoder(options={})
     config = {"config_key": "config_value"}
     options = {"key": "value"}
     strategy = CursorPaginationStrategy(

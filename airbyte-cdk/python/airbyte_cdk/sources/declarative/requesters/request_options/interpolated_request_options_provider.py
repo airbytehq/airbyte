@@ -2,19 +2,19 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Mapping, MutableMapping, Optional, Union
 
-from airbyte_cdk.sources.declarative.dataclass_options import DataclassOptionsMixin
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_input_provider import InterpolatedRequestInputProvider
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 RequestInput = Union[str, Mapping[str, str]]
 
 
 @dataclass
-class InterpolatedRequestOptionsProvider(RequestOptionsProvider, DataclassOptionsMixin):
+class InterpolatedRequestOptionsProvider(RequestOptionsProvider, JsonSchemaMixin):
     """
     Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
 
@@ -26,6 +26,7 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider, DataclassOption
         request_body_json (Union[str, Mapping[str, str]]): The json content to set on an outgoing HTTP request
     """
 
+    options: InitVar[Mapping[str, Any]]
     config: Config = field(default_factory=dict)
     request_parameters: Optional[RequestInput] = None
     request_headers: Optional[RequestInput] = None

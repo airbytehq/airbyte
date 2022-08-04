@@ -64,7 +64,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
     ],
 )
 def test_substream_slicer(test_name, stream_slicers, expected_slices):
-    slicer = CartesianProductStreamSlicer(stream_slicers)
+    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
     slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
     assert slices == expected_slices
 
@@ -94,7 +94,7 @@ def test_update_cursor(test_name, stream_slice, expected_state):
             options={},
         ),
     ]
-    slicer = CartesianProductStreamSlicer(stream_slicers)
+    slicer = CartesianProductStreamSlicer(stream_slicers=stream_slicers, options={})
     slicer.update_cursor(stream_slice, None)
     updated_state = slicer.get_stream_state()
     assert expected_state == updated_state
@@ -105,8 +105,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
     [
         (
             "test_param_header",
-            RequestOption(RequestOptionType.request_parameter, "owner"),
-            RequestOption(RequestOptionType.header, "repo"),
+            RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo"),
             {"owner": "customer"},
             {"repo": "airbyte"},
             {},
@@ -114,8 +114,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_header_header",
-            RequestOption(RequestOptionType.header, "owner"),
-            RequestOption(RequestOptionType.header, "repo"),
+            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="repo"),
             {},
             {"owner": "customer", "repo": "airbyte"},
             {},
@@ -123,8 +123,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_body_data",
-            RequestOption(RequestOptionType.body_data, "owner"),
-            RequestOption(RequestOptionType.body_data, "repo"),
+            RequestOption(inject_into=RequestOptionType.body_data, options={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.body_data, options={}, field_name="repo"),
             {},
             {},
             {},
@@ -132,8 +132,8 @@ def test_update_cursor(test_name, stream_slice, expected_state):
         ),
         (
             "test_body_json",
-            RequestOption(RequestOptionType.body_json, "owner"),
-            RequestOption(RequestOptionType.body_json, "repo"),
+            RequestOption(inject_into=RequestOptionType.body_json, options={}, field_name="owner"),
+            RequestOption(inject_into=RequestOptionType.body_json, options={}, field_name="repo"),
             {},
             {},
             {"owner": "customer", "repo": "airbyte"},
@@ -151,7 +151,7 @@ def test_request_option(
     expected_body_data,
 ):
     slicer = CartesianProductStreamSlicer(
-        [
+        stream_slicers=[
             ListStreamSlicer(
                 slice_values=["customer", "store", "subscription"],
                 cursor_field="owner_resource",
@@ -166,7 +166,8 @@ def test_request_option(
                 request_option=stream_2_request_option,
                 options={},
             ),
-        ]
+        ],
+        options={},
     )
     slicer.update_cursor({"owner_resource": "customer", "repository": "airbyte"}, None)
 

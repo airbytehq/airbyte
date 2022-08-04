@@ -127,7 +127,7 @@ def test_default_error_handler(
     response_mock = create_response(http_code, headers=response_headers, json_body={"code": "1000", "error": "found"})
     response_mock.ok = http_code < 400
     response_filters = [f for f in [retry_response_filter, ignore_response_filter] if f]
-    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy)
+    error_handler = DefaultErrorHandler(response_filters=response_filters, backoff_strategies=backoff_strategy, options={})
     actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == should_retry
     if should_retry.action == ResponseAction.RETRY:
@@ -137,7 +137,7 @@ def test_default_error_handler(
 def test_default_error_handler_attempt_count_increases():
     status_code = 500
     response_mock = create_response(status_code)
-    error_handler = DefaultErrorHandler()
+    error_handler = DefaultErrorHandler(options={})
     actual_should_retry = error_handler.should_retry(response_mock)
     assert actual_should_retry == ResponseStatus.retry(10)
     assert actual_should_retry.retry_in == 10

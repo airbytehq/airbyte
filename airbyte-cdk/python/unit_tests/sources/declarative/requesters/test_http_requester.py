@@ -48,6 +48,7 @@ def test_http_requester():
         authenticator=authenticator,
         error_handler=error_handler,
         config=config,
+        options={},
     )
 
     assert requester.get_url_base() == "https://airbyte.io"

@@ -41,15 +41,15 @@ class HttpRequester(Requester, JsonSchemaMixin):
     url_base: InterpolatedString
     path: InterpolatedString
     config: Config
+    options: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[RequestOptionsProvider] = None
     authenticator: HttpAuthenticator = None
     error_handler: Optional[ErrorHandler] = None
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if self.request_options_provider is None:
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config)
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, options=options)
         elif isinstance(self.request_options_provider, dict):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
@@ -58,48 +58,14 @@ class HttpRequester(Requester, JsonSchemaMixin):
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler()
-        self._options = options or {}
+        self.error_handler = self.error_handler or DefaultErrorHandler(options=options)
+        self._options = options
 
-    # def __init__(
-    #     self,
-    #     *,
-    #     name: str,
-    #     url_base: InterpolatedString,
-    #     path: InterpolatedString,
-    #     http_method: Union[str, HttpMethod] = HttpMethod.GET,
-    #     request_options_provider: Optional[RequestOptionsProvider] = None,
-    #     authenticator: HttpAuthenticator = None,
-    #     error_handler: Optional[ErrorHandler] = None,
-    #     config: Config,
-    #     **options: Optional[Mapping[str, Any]],
-    # ):
-    #     """
-    #     :param name: Name of the stream. Only used for request/response caching
-    #     :param url_base: Base url to send requests to
-    #     :param path: Path to send requests to
-    #     :param http_method: HTTP method to use when sending requests
-    #     :param request_options_provider: request option provider defining the options to set on outgoing requests
-    #     :param authenticator: Authenticator defining how to authenticate to the source
-    #     :param error_handler: Error handler defining how to detect and handle errors
-    #     :param config: The user-provided configuration as specified by the source's spec
-    #     :param options: Additional runtime parameters to be used for string interpolation
-    #     """
-    #     if request_options_provider is None:
-    #         request_options_provider = InterpolatedRequestOptionsProvider(config=config)
-    #     elif isinstance(request_options_provider, dict):
-    #         request_options_provider = InterpolatedRequestOptionsProvider(config=config, **request_options_provider)
-    #     self._name = name
-    #     self._authenticator = authenticator or NoAuth()
-    #     self._url_base = url_base
-    #     self._path: InterpolatedString = path
-    #     if type(http_method) == str:
-    #         http_method = HttpMethod[http_method]
-    #     self._method = http_method
-    #     self._request_options_provider = request_options_provider
-    #     self._error_handler = error_handler or DefaultErrorHandler()
-    #     self._config = config
-    #     self._options = options
+    # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
+    # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
+    # but this has a cascading effect where all dataclass fields must also be set to frozen.
+    def __hash__(self):
+        return hash(tuple(self.__dict__))
 
     def get_authenticator(self):
         return self.authenticator

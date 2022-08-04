@@ -1,8 +1,8 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from dataclasses import dataclass, field
-from typing import List, MutableMapping, Optional, Union
+from dataclasses import InitVar, dataclass, field
+from typing import Any, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
@@ -89,17 +89,20 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
     DEFAULT_BACKOFF_STRATEGY = ExponentialBackoffStrategy
 
+    options: InitVar[Mapping[str, Any]]
     response_filters: Optional[List[HttpResponseFilter]] = None
     max_retries: Optional[int] = 5
     _max_retries: int = field(init=False, repr=False, default=5)
     backoff_strategies: Optional[List[BackoffStrategy]] = None
 
-    def __post_init__(self):
+    def __post_init__(self, options: Mapping[str, Any]):
         self.response_filters = self.response_filters or []
 
         if not self.response_filters:
-            self.response_filters.append(HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS))
-            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE))
+            self.response_filters.append(
+                HttpResponseFilter(ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, options={})
+            )
+            self.response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, options={}))
 
         if not self.backoff_strategies:
             self.backoff_strategies = [DefaultErrorHandler.DEFAULT_BACKOFF_STRATEGY()]

@@ -21,11 +21,11 @@ class InterpolatedMapping(JsonSchemaMixin):
     """
 
     mapping: Mapping[str, str]
-    options: InitVar[Mapping[str, Any]] = None
+    options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Optional[Mapping[str, Any]]):
         self._interpolation = JinjaInterpolation()
-        self._options = options or {}
+        self._options = options
 
     def eval(self, config: Config, **additional_options):
         """

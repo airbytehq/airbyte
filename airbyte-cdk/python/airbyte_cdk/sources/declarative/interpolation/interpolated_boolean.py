@@ -22,12 +22,12 @@ class InterpolatedBoolean(JsonSchemaMixin):
         condition (str): The string representing the condition to evaluate to a boolean
     """
     condition: str
-    options: InitVar[Mapping[str, Any]] = None
+    options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._default = "False"
         self._interpolation = JinjaInterpolation()
-        self._options = options or {}
+        self._options = options
 
     def eval(self, config: Config, **additional_options):
         """

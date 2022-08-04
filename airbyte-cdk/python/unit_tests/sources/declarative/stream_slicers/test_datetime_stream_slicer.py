@@ -402,8 +402,8 @@ def test_update_cursor(test_name, previous_cursor, stream_slice, last_record, ex
 )
 def test_request_option(test_name, inject_into, field_name, expected_req_params, expected_headers, expected_body_json, expected_body_data):
     if inject_into == RequestOptionType.path:
-        start_request_option = RequestOption(inject_into)
-        end_request_option = RequestOption(inject_into)
+        start_request_option = RequestOption(inject_into=inject_into, options={})
+        end_request_option = RequestOption(inject_into=inject_into, options={})
         try:
             DatetimeStreamSlicer(
                 start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
@@ -421,8 +421,8 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
         except ValueError:
             return
     else:
-        start_request_option = RequestOption(inject_into, field_name) if inject_into else None
-        end_request_option = RequestOption(inject_into, "endtime") if inject_into else None
+        start_request_option = RequestOption(inject_into=inject_into, options={}, field_name=field_name) if inject_into else None
+        end_request_option = RequestOption(inject_into=inject_into, options={}, field_name="endtime") if inject_into else None
         slicer = DatetimeStreamSlicer(
             start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
             end_datetime=MinMaxDatetime(datetime="2021-01-10T00:00:00.000000+0000", options={}),

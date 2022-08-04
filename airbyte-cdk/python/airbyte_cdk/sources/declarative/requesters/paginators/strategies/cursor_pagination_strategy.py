@@ -24,40 +24,17 @@ class CursorPaginationStrategy(PaginationStrategy, JsonSchemaMixin):
         config (Config): connection config
         stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating
         decoder (Decoder): decoder to decode the response
-        options (Optional[Mapping[str, Any]]): Additional runtime parameters to be used for string interpolation
     """
 
     cursor_value: Union[InterpolatedString, str]
     config: Config
+    options: InitVar[Mapping[str, Any]]
     stop_condition: Optional[InterpolatedBoolean] = None
-    decoder: Decoder = JsonDecoder()
-    options: InitVar[Mapping[str, Any]] = None
+    decoder: Decoder = JsonDecoder(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.cursor_value, str):
-            self.cursor_value = InterpolatedString.create(self.cursor_value, options=options or {})
-
-    # def __init__(
-    #     self,
-    #     cursor_value: Union[InterpolatedString, str],
-    #     config: Config,
-    #     stop_condition: Optional[InterpolatedBoolean] = None,
-    #     decoder: Optional[Decoder] = None,
-    #     **options: Optional[Mapping[str, Any]],
-    # ):
-    #     """
-    #     :param cursor_value: template string evaluating to the cursor value
-    #     :param config: connection config
-    #     :param stop_condition: template string evaluating when to stop paginating
-    #     :param decoder: decoder to decode the response
-    #     :param options: Additional runtime parameters to be used for string interpolation
-    #     """
-    #     if isinstance(cursor_value, str):
-    #         cursor_value = InterpolatedString.create(cursor_value, options=options)
-    #     self._cursor_value = cursor_value
-    #     self._config = config
-    #     self._decoder = decoder or JsonDecoder()
-    #     self._stop_condition = stop_condition
+            self.cursor_value = InterpolatedString.create(self.cursor_value, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)

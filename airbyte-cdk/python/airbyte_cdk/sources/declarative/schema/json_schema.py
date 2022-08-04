@@ -4,7 +4,7 @@
 
 import json
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
@@ -18,19 +18,19 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
     Loads the schema from a json file
 
     Attributes:
-        file_path (InterpolatedString): The path to the json file describing the schema
+        file_path (Union[InterpolatedString, str]): The path to the json file describing the schema
         name (str): The stream's name
         config (Config): The user-provided configuration as specified by the source's spec
         options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed
     """
 
-    file_path: InterpolatedString
+    file_path: Union[InterpolatedString, str]
     name: str
     config: Config
-    options: InitVar[Mapping[str, Any]] = None
+    options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options or {}
+        self.file_path = InterpolatedString.create(self.file_path, options=options)
 
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema_path = self._get_json_filepath()
@@ -38,4 +38,4 @@ class JsonSchema(SchemaLoader, JsonSchemaMixin):
             return json.loads(f.read())
 
     def _get_json_filepath(self):
-        return self.file_path.eval(self.config, **self._options)
+        return self.file_path.eval(self.config)

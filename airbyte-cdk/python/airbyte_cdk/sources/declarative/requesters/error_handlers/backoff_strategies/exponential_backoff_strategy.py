@@ -7,12 +7,16 @@ from typing import Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ExponentialBackoffStrategy(BackoffStrategy):
+class ExponentialBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
     Backoff strategy with an exponential backoff interval
+
+    Attributes:
+        factor (float): multiplicative factor
     """
 
     factor: float = 5

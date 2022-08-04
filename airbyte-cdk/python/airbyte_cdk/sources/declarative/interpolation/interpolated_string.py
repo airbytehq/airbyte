@@ -21,13 +21,13 @@ class InterpolatedString(JsonSchemaMixin):
     """
 
     string: str
+    options: InitVar[Mapping[str, Any]]
     default: Optional[str] = None
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.default = self.default or self.string
         self._interpolation = JinjaInterpolation()
-        self._options = options or {}
+        self._options = options
 
     def eval(self, config: Config, **kwargs):
         """

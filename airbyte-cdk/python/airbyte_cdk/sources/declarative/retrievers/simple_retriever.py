@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -18,10 +18,11 @@ from airbyte_cdk.sources.declarative.stream_slicers.single_slice import SingleSl
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
 from airbyte_cdk.sources.streams.http import HttpStream
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class SimpleRetriever(Retriever, HttpStream):
+class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     """
     Retrieves records by synchronously sending requests to fetch records.
 
@@ -35,7 +36,7 @@ class SimpleRetriever(Retriever, HttpStream):
 
     Attributes:
         stream_name (str): The stream's name
-        stream_primary_key (str): The stream's primary key
+        stream_primary_key (Optional[Union[str, List[str], List[List[str]]]]): The stream's primary key
         requester (Requester): The HTTP requester
         record_selector (HttpSelector): The record selector
         paginator (Optional[Paginator]): The paginator
@@ -46,18 +47,14 @@ class SimpleRetriever(Retriever, HttpStream):
     requester: Requester
     record_selector: HttpSelector
     stream_name: str
-    _name: str = field(init=False, repr=False, default="")
-    stream_primary_key: str
-    _primary_key: str = field(init=False, repr=False, default="")
+    stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    options: InitVar[Mapping[str, Any]]
     paginator: Optional[Paginator] = None
-    stream_slicer: Optional[StreamSlicer] = SingleSlice()
-    options: InitVar[Mapping[str, Any]] = None
+    stream_slicer: Optional[StreamSlicer] = SingleSlice(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self._name = self.stream_name
-        self._primary_key = self.stream_primary_key
         self.paginator = self.paginator or NoPagination()
-        # super().__init__(self.requester.get_authenticator())  # I have no idea why this fails tests or how two positional args are coming in
+        HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._last_records = None
 
@@ -66,7 +63,7 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         :return: Stream name
         """
-        return self._name
+        return self.stream_name
 
     @property
     def url_base(self) -> str:
@@ -277,7 +274,7 @@ class SimpleRetriever(Retriever, HttpStream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """The stream's primary key"""
-        return self._primary_key
+        return self.stream_primary_key
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """

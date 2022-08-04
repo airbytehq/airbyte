@@ -41,7 +41,7 @@ class TestOauth2Authenticator:
             refresh_token="{{ config['refresh_token'] }}",
             config=config,
             scopes=["scope1", "scope2"],
-            refresh_token_expiry_date="{{ config['token_expiry_date'] }}",
+            token_expiry_date="{{ config['token_expiry_date'] }}",
             refresh_request_body={
                 "custom_field": "{{ config['custom_field'] }}",
                 "another_field": "{{ config['another_field'] }}",
@@ -80,6 +80,9 @@ class TestOauth2Authenticator:
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": 1000})
         mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
         token = oauth.refresh_access_token()
+
+        schem = DeclarativeOauth2Authenticator.json_schema()
+        print(schem)
 
         assert ("access_token", 1000) == token
 

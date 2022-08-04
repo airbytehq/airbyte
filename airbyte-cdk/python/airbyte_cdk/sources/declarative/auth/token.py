@@ -27,19 +27,19 @@ class ApiKeyAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
 
     Attributes:
         header (Union[InterpolatedString, str]): Header key to set on the HTTP requests
-        refresh_token (Union[InterpolatedString, str]): Header value to set on the HTTP requests
+        api_token (Union[InterpolatedString, str]): Header value to set on the HTTP requests
         config (Config): The user-provided configuration as specified by the source's spec
         options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
     header: Union[InterpolatedString, str]
-    refresh_token: Union[InterpolatedString, str]
+    api_token: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._header = InterpolatedString.create(self.header, options=options)
-        self._token = InterpolatedString.create(self.refresh_token, options=options)
+        self._token = InterpolatedString.create(self.api_token, options=options)
 
     @property
     def auth_header(self) -> str:
@@ -59,17 +59,17 @@ class BearerAuthenticator(AbstractHeaderAuthenticator, JsonSchemaMixin):
     `"Authorization": "Bearer <token>"`
 
     Attributes:
-        token (Union[InterpolatedString, str]): The bearer token
+        api_token (Union[InterpolatedString, str]): The bearer token
         config (Config): The user-provided configuration as specified by the source's spec
         options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
-    refresh_token: Union[InterpolatedString, str]
+    api_token: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self._token = InterpolatedString.create(self.refresh_token, options=options)
+        self._token = InterpolatedString.create(self.api_token, options=options)
 
     @property
     def auth_header(self) -> str:

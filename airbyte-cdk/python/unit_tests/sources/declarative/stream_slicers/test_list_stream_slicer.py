@@ -61,16 +61,23 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
     [
         (
             "test_inject_into_req_param",
-            RequestOption(RequestOptionType.request_parameter, "owner_resource"),
+            RequestOption(inject_into=RequestOptionType.request_parameter, options={}, field_name="owner_resource"),
             {"owner_resource": "customer"},
             {},
             {},
             {},
         ),
-        ("test_pass_by_header", RequestOption(RequestOptionType.header, "owner_resource"), {}, {"owner_resource": "customer"}, {}, {}),
+        (
+            "test_pass_by_header",
+            RequestOption(inject_into=RequestOptionType.header, options={}, field_name="owner_resource"),
+            {},
+            {"owner_resource": "customer"},
+            {},
+            {},
+        ),
         (
             "test_inject_into_body_json",
-            RequestOption(RequestOptionType.body_json, "owner_resource"),
+            RequestOption(inject_into=RequestOptionType.body_json, options={}, field_name="owner_resource"),
             {},
             {},
             {"owner_resource": "customer"},
@@ -78,7 +85,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
         ),
         (
             "test_inject_into_body_data",
-            RequestOption(RequestOptionType.body_data, "owner_resource"),
+            RequestOption(inject_into=RequestOptionType.body_data, options={}, field_name="owner_resource"),
             {},
             {},
             {},
@@ -86,7 +93,7 @@ def test_update_cursor(test_name, stream_slice, last_record, expected_state):
         ),
         (
             "test_inject_into_path",
-            RequestOption(RequestOptionType.path),
+            RequestOption(RequestOptionType.path, {}),
             {},
             {},
             {},

@@ -78,7 +78,7 @@ def test_api_key_authenticator(test_name, header, token, expected_header, expect
     """
     Should match passed in token, no matter how many times token is retrieved.
     """
-    token_auth = ApiKeyAuthenticator(header=header, refresh_token=token, config=config, options=options)
+    token_auth = ApiKeyAuthenticator(header=header, api_token=token, config=config, options=options)
     header1 = token_auth.get_auth_header()
     header2 = token_auth.get_auth_header()
 

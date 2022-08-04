@@ -2,17 +2,20 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamState
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class SingleSlice(StreamSlicer):
+class SingleSlice(StreamSlicer, JsonSchemaMixin):
     """Stream slicer returning only a single stream slice"""
+
+    options: InitVar[Mapping[str, Any]]
 
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         pass

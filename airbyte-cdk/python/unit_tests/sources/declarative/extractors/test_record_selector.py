@@ -46,7 +46,7 @@ def test_record_filter(test_name, transform_template, filter_template, body, exp
     next_page_token = {"last_seen_id": 14}
 
     response = create_response(body)
-    decoder = JsonDecoder()
+    decoder = JsonDecoder(options={})
     extractor = JelloExtractor(transform=transform_template, decoder=decoder, config=config, options=options)
     if filter_template is None:
         record_filter = None

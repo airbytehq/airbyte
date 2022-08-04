@@ -3,6 +3,7 @@
 #
 
 import inspect
+from typing import Any, Mapping
 
 OPTIONS_STR = "$options"
 
@@ -42,8 +43,14 @@ def create(func, /, *args, **keywords):
         kwargs_to_pass_down = _get_kwargs_to_pass_to_func(func, options)
         all_keywords_to_pass_down = _get_kwargs_to_pass_to_func(func, all_keywords)
 
+        # options is a required input for all declarative components
+        dynamic_args = {**all_keywords_to_pass_down, **kwargs_to_pass_down}
+        if "options" not in dynamic_args:
+            dynamic_args["options"] = {}
+        else:
+            dynamic_args["options"] = _merge_options(all_keywords_to_pass_down["options"], kwargs_to_pass_down["options"])
         try:
-            ret = func(*args, *fargs, **{**all_keywords_to_pass_down, **kwargs_to_pass_down})
+            ret = func(*args, *fargs, **dynamic_args)
         except TypeError as e:
             raise Exception(f"failed to create object of type {func} because {e}")
         return ret
@@ -74,3 +81,8 @@ def _create_inner_objects(keywords, kwargs):
         else:
             fully_created[k] = v
     return fully_created
+
+
+# To handle the case where kwarg options and keyword $options both exist, we should merge both sets of options before creating a component
+def _merge_options(m1: Mapping[str, Any], m2: Mapping[str, Any]) -> Mapping[str, Any]:
+    return {**m1, **m2}

@@ -71,6 +71,7 @@ def test_simple_retriever_full():
         paginator=paginator,
         record_selector=record_selector,
         stream_slicer=iterator,
+        options={},
     )
 
     assert retriever.primary_key == primary_key
@@ -108,7 +109,9 @@ def test_simple_retriever_full():
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
     requester = MagicMock()
-    retriever = SimpleRetriever(stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=MagicMock())
+    retriever = SimpleRetriever(
+        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=MagicMock(), options={}
+    )
     requester.should_retry.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
     if requester_response.action == ResponseAction.RETRY:
@@ -128,7 +131,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
     retriever = SimpleRetriever(
-        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector
+        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
     )
     response = requests.Response()
     response.status_code = status_code
@@ -159,7 +162,7 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
     record_selector.select_records.return_value = [{"id": 100}]
     response = requests.Response()
     retriever = SimpleRetriever(
-        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector
+        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
     )
     if expected_backoff_time:
         requester.should_retry.return_value = ResponseStatus(response_action, retry_in)
@@ -197,7 +200,12 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, expec
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
-        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector, paginator=paginator
+        stream_name="stream_name",
+        stream_primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        options={},
     )
 
     request_option_type_to_method = {
@@ -238,7 +246,12 @@ def test_request_body_data(test_name, requester_body_data, paginator_body_data, 
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
-        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector, paginator=paginator
+        stream_name="stream_name",
+        stream_primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        options={},
     )
 
     if expected_body_data:
@@ -268,7 +281,12 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
-        stream_name="stream_name", stream_primary_key=primary_key, requester=requester, record_selector=record_selector, paginator=paginator
+        stream_name="stream_name",
+        stream_primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        options={},
     )
 
     actual_path = retriever.path(stream_state=None, stream_slice=None, next_page_token=None)

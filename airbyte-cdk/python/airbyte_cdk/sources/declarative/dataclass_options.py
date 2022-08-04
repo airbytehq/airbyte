@@ -20,5 +20,3 @@ class DataclassOptionsMixin:
     """
 
     options: InitVar[Mapping[str, Any]]  # This field cannot have a default value since it comes before required child fields
-
-    InitVar.__call__ = lambda *args: None

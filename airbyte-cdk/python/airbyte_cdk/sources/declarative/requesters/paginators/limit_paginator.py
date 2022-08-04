@@ -87,15 +87,15 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
     pagination_strategy: PaginationStrategy
     config: Config
     url_base: Union[InterpolatedString, str]
-    decoder: Decoder = JsonDecoder()
+    options: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(options={})
     _token: Optional[Any] = field(init=False, repr=False, default=None)
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if self.limit_option.inject_into == RequestOptionType.path:
             raise ValueError("Limit parameter cannot be a path")
         if isinstance(self.url_base, str):
-            self.url_base = InterpolatedString(string=self.url_base, options=options or {})
+            self.url_base = InterpolatedString(string=self.url_base, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         self._token = self.pagination_strategy.next_page_token(response, last_records)

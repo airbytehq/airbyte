@@ -120,8 +120,8 @@ class AbstractOauth2Authenticator(AuthBase):
 
     @property
     @abstractmethod
-    def expires_in_name(self):
-        """Setter for field to extract access token expiration date from in the response"""
+    def expires_in_name(self) -> str:
+        """Returns the expires_in field name"""
 
     @property
     @abstractmethod

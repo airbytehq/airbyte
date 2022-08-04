@@ -11,6 +11,7 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.extractors.record_selector import RecordSelector
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
 from airbyte_cdk.sources.declarative.parsers.yaml_parser import YamlParser
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
@@ -44,6 +45,8 @@ def test_factory():
       offset: "{{ next_page_token['offset'] }}"
       limit: "*ref(limit)"
     request_options:
+      $options:
+        here: "iam"
       class_name: airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider.InterpolatedRequestOptionsProvider
       request_parameters: "*ref(offset_request_parameters)"
       request_body_json:
@@ -51,6 +54,9 @@ def test_factory():
     """
     config = parser.parse(content)
     request_options_provider = factory.create_component(config["request_options"], input_config)()
+
+    schem = InterpolatedRequestOptionsProvider.json_schema()
+    print(schem)
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
     assert request_options_provider._parameter_interpolator._config == input_config
     assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
@@ -113,9 +119,11 @@ def test_list_based_stream_slicer_with_values_defined_in_config():
 def test_create_substream_slicer():
     content = """
     schema_loader:
-      file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+      file_path: "./source_sendgrid/schemas/{{ options['stream_name'] }}.yaml"
+      name: "{{ options['stream_name'] }}"
     retriever:
       requester:
+        name: "{{ options['stream_name'] }}"
         path: "/v3"
       record_selector:
         extractor:
@@ -123,16 +131,16 @@ def test_create_substream_slicer():
     stream_A:
       type: DeclarativeStream
       $options:
-        name: "A"
-        primary_key: "id"
+        stream_name: "A"
+        stream_primary_key: "id"
         retriever: "*ref(retriever)"
         url_base: "https://airbyte.io"
         schema_loader: "*ref(schema_loader)"
     stream_B:
       type: DeclarativeStream
       $options:
-        name: "B"
-        primary_key: "id"
+        stream_name: "B"
+        stream_primary_key: "id"
         retriever: "*ref(retriever)"
         url_base: "https://airbyte.io"
         schema_loader: "*ref(schema_loader)"
@@ -151,18 +159,18 @@ def test_create_substream_slicer():
     """
     config = parser.parse(content)
     stream_slicer = factory.create_component(config["stream_slicer"], input_config)()
-    parent_stream_configs = stream_slicer._parent_stream_configs
+    parent_stream_configs = stream_slicer.parent_stream_configs
     assert len(parent_stream_configs) == 2
     assert isinstance(parent_stream_configs[0].stream, DeclarativeStream)
     assert isinstance(parent_stream_configs[1].stream, DeclarativeStream)
-    assert stream_slicer._parent_stream_configs[0].parent_key == "id"
-    assert stream_slicer._parent_stream_configs[0].stream_slice_field == "repository_id"
-    assert stream_slicer._parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
-    assert stream_slicer._parent_stream_configs[0].request_option._field_name == "repository_id"
+    assert stream_slicer.parent_stream_configs[0].parent_key == "id"
+    assert stream_slicer.parent_stream_configs[0].stream_slice_field == "repository_id"
+    assert stream_slicer.parent_stream_configs[0].request_option.inject_into == RequestOptionType.request_parameter
+    assert stream_slicer.parent_stream_configs[0].request_option.field_name == "repository_id"
 
-    assert stream_slicer._parent_stream_configs[1].parent_key == "someid"
-    assert stream_slicer._parent_stream_configs[1].stream_slice_field == "word_id"
-    assert stream_slicer._parent_stream_configs[1].request_option is None
+    assert stream_slicer.parent_stream_configs[1].parent_key == "someid"
+    assert stream_slicer.parent_stream_configs[1].stream_slice_field == "word_id"
+    assert stream_slicer.parent_stream_configs[1].request_option is None
 
 
 def test_create_cartesian_stream_slicer():
@@ -266,29 +274,30 @@ requester:
   http_method: "GET"
   authenticator:
     type: BearerAuthenticator
-    token: "{{ config['apikey'] }}"
+    api_token: "{{ config['apikey'] }}"
   request_parameters_provider: "*ref(request_options_provider)"
   error_handler:
     type: DefaultErrorHandler
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
-  name: "{{ options['name'] }}"
+  stream_name: "{{ options['stream_name'] }}"
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
     class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
-  primary_key: "{{ options['primary_key'] }}"
+  stream_primary_key: "{{ options['primary_key'] }}"
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
+    name: "{{ options['stream_name'] }}"
+    file_path: "./source_sendgrid/schemas/{{ options.stream_name }}.json"
   cursor_field: [ ]
 list_stream:
   $ref: "*ref(partial_stream)"
   $options:
-    name: "lists"
-    primary_key: "id"
+    stream_name: "lists"
+    stream_primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
       transform: "_.result"
@@ -314,29 +323,29 @@ check:
     assert stream_config["cursor_field"] == []
     stream = factory.create_component(stream_config, input_config)()
 
-    assert isinstance(stream._retriever._record_selector._extractor, JelloExtractor)
+    assert isinstance(stream.retriever.record_selector.extractor, JelloExtractor)
 
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream._schema_loader) == JsonSchema
-    assert type(stream._retriever) == SimpleRetriever
-    assert stream._retriever._requester._method == HttpMethod.GET
-    assert stream._retriever._requester._authenticator._token.eval(input_config) == "verysecrettoken"
-    assert type(stream._retriever._record_selector) == RecordSelector
-    assert type(stream._retriever._record_selector._extractor._decoder) == JsonDecoder
+    assert type(stream.schema_loader) == JsonSchema
+    assert type(stream.retriever) == SimpleRetriever
+    assert stream.retriever.requester.http_method == HttpMethod.GET
+    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert type(stream.retriever.record_selector) == RecordSelector
+    assert type(stream.retriever.record_selector.extractor.decoder) == JsonDecoder
 
-    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
-    assert type(stream._retriever._record_selector._record_filter) == RecordFilter
-    assert stream._retriever._record_selector._record_filter._filter_interpolator._condition == "{{ record['id'] > stream_state['id'] }}"
-    assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
+    assert stream.retriever.record_selector.extractor.transform.eval(input_config) == "_.result"
+    assert type(stream.retriever.record_selector.record_filter) == RecordFilter
+    assert stream.retriever.record_selector.record_filter._filter_interpolator.condition == "{{ record['id'] > stream_state['id'] }}"
+    assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.json"
 
     checker = factory.create_component(config["check"], input_config)()
-    streams_to_check = checker._stream_names
+    streams_to_check = checker.stream_names
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
 
-    assert stream._retriever._requester._path._default == "marketing/lists"
+    assert stream.retriever.requester.path.default == "marketing/lists"
 
 
 def test_create_record_selector():
@@ -382,16 +391,16 @@ def test_create_requester():
     config = parser.parse(content)
     component = factory.create_component(config["requester"], input_config)()
     assert isinstance(component, HttpRequester)
-    assert isinstance(component._error_handler, DefaultErrorHandler)
-    assert component._path.string == "/v3/marketing/lists"
-    assert component._url_base.string == "https://api.sendgrid.com"
-    assert isinstance(component._authenticator, BasicHttpAuthenticator)
-    assert component._authenticator._username.eval(input_config) == "lists"
-    assert component._authenticator._password.eval(input_config) == "verysecrettoken"
+    assert isinstance(component.error_handler, DefaultErrorHandler)
+    assert component.path.string == "/v3/marketing/lists"
+    assert component.url_base.string == "https://api.sendgrid.com"
+    assert isinstance(component.authenticator, BasicHttpAuthenticator)
+    assert component.authenticator._username.eval(input_config) == "lists"
+    assert component.authenticator._password.eval(input_config) == "verysecrettoken"
     assert component._method == HttpMethod.GET
     assert component._request_options_provider._parameter_interpolator._interpolator.mapping["page_size"] == 10
     assert component._request_options_provider._headers_interpolator._interpolator.mapping["header"] == "header_value"
-    assert component._name == "lists"
+    assert component.name == "lists"
 
 
 def test_create_composite_error_handler():
@@ -421,11 +430,12 @@ def test_config_with_defaults():
     lists_stream:
       type: "DeclarativeStream"
       $options:
-        name: "lists"
-        primary_key: id
+        stream_name: "lists"
+        stream_primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
-          file_path: "./source_sendgrid/schemas/{{options.name}}.yaml"
+          name: "{{ options.stream_name }}"
+          file_path: "./source_sendgrid/schemas/{{ options.stream_name }}.yaml"
         retriever:
           paginator:
             type: "LimitPaginator"
@@ -439,10 +449,11 @@ def test_config_with_defaults():
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
           requester:
+            name: "{{ options.stream_name }}"
             path: "/v3/marketing/lists"
             authenticator:
               type: "BearerAuthenticator"
-              token: "{{ config.apikey }}"
+              api_token: "{{ config.apikey }}"
             request_parameters:
               page_size: 10
           record_selector:
@@ -458,17 +469,17 @@ def test_config_with_defaults():
     assert type(stream) == DeclarativeStream
     assert stream.primary_key == "id"
     assert stream.name == "lists"
-    assert type(stream._schema_loader) == JsonSchema
-    assert type(stream._retriever) == SimpleRetriever
-    assert stream._retriever._requester._method == HttpMethod.GET
+    assert type(stream.schema_loader) == JsonSchema
+    assert type(stream.retriever) == SimpleRetriever
+    assert stream.retriever.requester.http_method == HttpMethod.GET
 
-    assert stream._retriever._requester._authenticator._token.eval(input_config) == "verysecrettoken"
-    assert stream._retriever._record_selector._extractor._transform.eval(input_config) == "_.result"
-    assert stream._schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
-    assert isinstance(stream._retriever._paginator, LimitPaginator)
+    assert stream.retriever.requester.authenticator._token.eval(input_config) == "verysecrettoken"
+    assert stream.retriever.record_selector.extractor.transform.eval(input_config) == "_.result"
+    assert stream.schema_loader._get_json_filepath() == "./source_sendgrid/schemas/lists.yaml"
+    assert isinstance(stream.retriever.paginator, LimitPaginator)
 
-    assert stream._retriever._paginator._url_base._string == "https://api.sendgrid.com"
-    assert stream._retriever._paginator._page_size == 10
+    assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com"
+    assert stream.retriever.paginator.page_size == 10
 
 
 def test_create_limit_paginator():
@@ -499,13 +510,15 @@ def test_create_limit_paginator():
 class TestCreateTransformations:
     # the tabbing matters
     base_options = """
-                name: "lists"
-                primary_key: id
+                stream_name: "lists"
+                stream_primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
+                  name: "{{ options.stream_name }}"
                   file_path: "./source_sendgrid/schemas/{{name}}.yaml"
                 retriever:
                   requester:
+                    name: "{{ options.stream_name }}"
                     path: "/v3/marketing/lists"
                     request_parameters:
                       page_size: 10
@@ -524,7 +537,7 @@ class TestCreateTransformations:
         config = parser.parse(content)
         component = factory.create_component(config["the_stream"], input_config)()
         assert isinstance(component, DeclarativeStream)
-        assert [] == component._transformations
+        assert [] == component.transformations
 
     def test_remove_fields(self):
         content = f"""
@@ -541,8 +554,8 @@ class TestCreateTransformations:
         config = parser.parse(content)
         component = factory.create_component(config["the_stream"], input_config)()
         assert isinstance(component, DeclarativeStream)
-        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]])]
-        assert expected == component._transformations
+        expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], options={})]
+        assert expected == component.transformations
 
     def test_add_fields(self):
         content = f"""
@@ -559,5 +572,14 @@ class TestCreateTransformations:
         config = parser.parse(content)
         component = factory.create_component(config["the_stream"], input_config)()
         assert isinstance(component, DeclarativeStream)
-        expected = [AddFields([AddedFieldDefinition(["field1"], "static_value")])]
-        assert expected == component._transformations
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"], value=InterpolatedString(string="static_value", default="static_value", options={}), options={}
+                    )
+                ],
+                options={},
+            )
+        ]
+        assert expected == component.transformations

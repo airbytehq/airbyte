@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 config = {"field": "record_array"}
 options = {"options_field": "record_array"}
 
-decoder = JsonDecoder()
+decoder = JsonDecoder(options={})
 
 
 @pytest.mark.parametrize(

@@ -30,8 +30,8 @@ class JelloExtractor(JsonSchemaMixin):
     default_transform = "_"
     transform: Union[InterpolatedString, str]
     config: Config
-    decoder: Decoder = JsonDecoder()
-    options: InitVar[Mapping[str, Any]] = None
+    options: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.transform, str):

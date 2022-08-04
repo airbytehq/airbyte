@@ -17,15 +17,14 @@ class RecordFilter(JsonSchemaMixin):
 
     config (Config): The user-provided configuration as specified by the source's spec
     condition (str): The string representing the predicate to filter a record. Records will be removed if evaluated to False
-    options (Optional[Mapping[str, Any]]): Additional runtime parameters to be used for string interpolation
     """
 
+    options: InitVar[Mapping[str, Any]]
     config: Config = field(default=dict)
     condition: str = ""
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, options=options or {})
+        self._filter_interpolator = InterpolatedBoolean(condition=self.condition, options=options)
 
     def filter_records(
         self,

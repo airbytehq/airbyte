@@ -28,17 +28,17 @@ class HttpResponseFilter(JsonSchemaMixin):
     DEFAULT_RETRIABLE_ERRORS = set([x for x in range(500, 600)]).union(TOO_MANY_REQUESTS_ERRORS)
 
     action: Union[ResponseAction, str]
+    options: InitVar[Mapping[str, Any]]
     http_codes: Set[int] = None
     error_message_contains: str = None
     predicate: Union[InterpolatedBoolean, str] = ""
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         if isinstance(self.action, str):
             self.action = ResponseAction[self.action]
         self.http_codes = self.http_codes or set()
         if isinstance(self.predicate, str):
-            self.predicate = InterpolatedBoolean(condition=self.predicate, options=options or {})
+            self.predicate = InterpolatedBoolean(condition=self.predicate, options=options)
 
     def matches(self, response: requests.Response) -> Optional[ResponseAction]:
         """

@@ -22,15 +22,14 @@ class RecordSelector(HttpSelector, JsonSchemaMixin):
     Attributes:
         extractor (JelloExtractor): The record extractor responsible for extracting records from a response
         record_filter (RecordFilter): The record filter responsible for filtering extracted records
-        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation
     """
 
     extractor: JelloExtractor
+    options: InitVar[Mapping[str, Any]]
     record_filter: RecordFilter = None
-    options: InitVar[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options or {}
+        self._options = options
 
     def select_records(
         self,
