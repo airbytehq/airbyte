@@ -12,27 +12,26 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice, StreamSta
 class SingleSlice(StreamSlicer):
     """Stream slicer returning only a single stream slice"""
 
+    def __init__(self, **options):
+        pass
+
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         pass
 
     def get_stream_state(self) -> StreamState:
         return {}
 
-    def request_params(self) -> Mapping[str, Any]:
+    def request_params(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
         return {}
 
-    def request_body_data(self) -> Mapping[str, Any]:
+    def request_body_data(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
         return {}
 
-    def request_body_json(self) -> Mapping[str, Any]:
+    def request_body_json(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:
         return [dict()]
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}

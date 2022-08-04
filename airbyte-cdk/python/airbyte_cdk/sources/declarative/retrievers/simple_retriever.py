@@ -109,18 +109,13 @@ class SimpleRetriever(Retriever, HttpStream):
         assert should_retry.action == ResponseAction.RETRY
         return should_retry.retry_in
 
-    def request_headers(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
-    ) -> Mapping[str, Any]:
-        """
-        Specifies request headers.
-        Authentication headers will overwrite any overlapping headers returned from this method.
-        """
-        # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers)
-
     def _get_request_options(
-        self, stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]], requester_method, paginator_method
+        self,
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+        requester_method,
+        paginator_method,
+        stream_slicer_method,
     ):
         """
         Get the request_option from the requester and from the paginator
@@ -133,11 +128,53 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         requester_mapping = requester_method(self.state, stream_slice, next_page_token)
-        paginator_mapping = paginator_method()
-        keys_intersection = set(requester_mapping.keys()) & set(paginator_mapping.keys())
-        if keys_intersection:
-            raise ValueError(f"Duplicate keys found: {keys_intersection}")
+        paginator_mapping = paginator_method(self.state, stream_slice, next_page_token)
+        stream_slicer_mapping = stream_slicer_method(stream_slice)
+        print(f"requester: {requester_mapping}")
+        print(f"paginator_mapping: {paginator_mapping}")
+        print(f"stream_slicer_mapping: {stream_slicer_mapping}")
+        requester_paginator_intersection = set(requester_mapping.keys()) & set(paginator_mapping.keys())
+        requester_stream_slicer_intersection = set(requester_mapping.keys()) & set(stream_slicer_mapping.keys())
+        paginator_stream_slicer_intersection = set(paginator_mapping.keys()) & set(stream_slicer_mapping.keys())
+
+        for intersection in [requester_paginator_intersection, requester_stream_slicer_intersection, paginator_stream_slicer_intersection]:
+            if intersection:
+                raise ValueError(f"Duplicate keys found: {intersection}")
         return {**requester_mapping, **paginator_mapping}
+
+    def request_headers(
+        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+    ) -> Mapping[str, Any]:
+        """
+        Specifies request headers.
+        Authentication headers will overwrite any overlapping headers returned from this method.
+        """
+        return self._get_request_options(
+            stream_slice,
+            next_page_token,
+            self._requester.request_headers,
+            self._paginator.request_headers,
+            self._stream_slicer.request_headers,
+        )
+
+    def request_params(
+        self,
+        stream_state: StreamSlice,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        """
+        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
+
+        E.g: you might want to define query parameters for paging if next_page_token is not None.
+        """
+        return self._get_request_options(
+            stream_slice,
+            next_page_token,
+            self._requester.request_params,
+            self._paginator.request_params,
+            self._stream_slicer.request_params,
+        )
 
     def request_body_data(
         self,
@@ -165,7 +202,11 @@ class SimpleRetriever(Retriever, HttpStream):
             else:
                 return base_body_data
         return self._get_request_options(
-            stream_slice, next_page_token, self._requester.request_body_data, self._paginator.request_body_data
+            stream_slice,
+            next_page_token,
+            self._requester.request_body_data,
+            self._paginator.request_body_data,
+            self._stream_slicer.request_body_data,
         )
 
     def request_body_json(
@@ -181,7 +222,11 @@ class SimpleRetriever(Retriever, HttpStream):
         """
         # Warning: use self.state instead of the stream_state passed as argument!
         return self._get_request_options(
-            stream_slice, next_page_token, self._requester.request_body_json, self._paginator.request_body_json
+            stream_slice,
+            next_page_token,
+            self._requester.request_body_json,
+            self._paginator.request_body_json,
+            self._stream_slicer.request_body_json,
         )
 
     def request_kwargs(
@@ -219,20 +264,6 @@ class SimpleRetriever(Retriever, HttpStream):
             return paginator_path
         else:
             return self._requester.get_path(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-    def request_params(
-        self,
-        stream_state: StreamSlice,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        """
-        Specifies the query parameters that should be set on an outgoing HTTP request given the inputs.
-
-        E.g: you might want to define query parameters for paging if next_page_token is not None.
-        """
-        # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(stream_slice, next_page_token, self._requester.request_params, self._paginator.request_params)
 
     @property
     def cache_filename(self) -> str:
