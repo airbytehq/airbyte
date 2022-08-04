@@ -3544,7 +3544,7 @@ components:
             units:
               type: integer
               format: int64
-          # This should be populated when schedule type is cron.
+        # This should be populated when schedule type is cron.
         cron:
           type: object
           required:
