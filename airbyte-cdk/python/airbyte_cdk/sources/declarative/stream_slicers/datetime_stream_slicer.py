@@ -4,7 +4,7 @@
 
 import datetime
 import re
-from typing import Any, Final, Iterable, Mapping, Optional, Union
+from typing import Any, Iterable, Mapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -13,8 +13,6 @@ from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolati
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-
-TIMESTAMP_FORMAT: Final[str] = "timestamp"
 
 
 class DatetimeStreamSlicer(StreamSlicer):
@@ -155,10 +153,7 @@ class DatetimeStreamSlicer(StreamSlicer):
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):
-        if self._datetime_format == TIMESTAMP_FORMAT:
-            return int(dt.timestamp())
-        else:
-            return dt.strftime(self._datetime_format)
+        return dt.strftime(self._datetime_format)
 
     def _partition_daterange(self, start, end, step: datetime.timedelta):
         start_field = self._stream_slice_field_start.eval(self._config)
@@ -175,19 +170,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
-        if self._datetime_format == TIMESTAMP_FORMAT:
-            return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-        elif isinstance(date, str):
+        if isinstance(date, str):
             return datetime.datetime.strptime(str(date), self._datetime_format).replace(tzinfo=self._timezone)
         else:
             return date
-
-    def is_int(self, s) -> bool:
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
 
     @classmethod
     def _parse_timedelta(cls, time_str):
