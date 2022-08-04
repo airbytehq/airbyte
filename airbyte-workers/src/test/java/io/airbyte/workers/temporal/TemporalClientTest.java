@@ -746,13 +746,12 @@ class TemporalClientTest {
     }
 
     @Test
-    public void testRestartFailed() {
+    private void testRestartFailed() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
 
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
       final UUID connectionId = UUID.fromString("ebbfdc4c-295b-48a0-844f-88551dfad3db");
-      final String connectionManagerWorkflowId = connectionManagerUtils.getConnectionManagerName(connectionId);
-      final Set<String> workflowIds = Set.of(connectionManagerWorkflowId);
+      final Set<UUID> workflowIds = Set.of(connectionId);
 
       doReturn(workflowIds)
           .when(temporalClient).fetchWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);

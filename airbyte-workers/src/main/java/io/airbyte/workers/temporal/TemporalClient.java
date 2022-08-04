@@ -464,20 +464,14 @@ public class TemporalClient {
   }
 
   public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
-    final Set<String> workflowExecutionInfos = fetchWorkflowByStatus(executionStatus);
+    final Set<UUID> workflowExecutionInfos = fetchWorkflowByStatus(executionStatus);
 
-    final Set<String> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
+    final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
 
-    nonRunningWorkflow.forEach(workflowId -> {
-      final Optional<UUID> maybeConnectionId = extractConnectionIdFromWorkflowId(workflowId);
-      log.error(workflowId);
-      if (maybeConnectionId.isPresent()) {
-        connectionManagerUtils.safeTerminateWorkflow(client, maybeConnectionId.get(), "Terminating workflow in "
-            + "unreachable state before starting a new workflow for this connection");
-        connectionManagerUtils.startConnectionManagerNoSignal(client, maybeConnectionId.get());
-      } else {
-        log.error("Malformated workflow id, won't terminate of restart");
-      }
+    nonRunningWorkflow.forEach(connectionId -> {
+      connectionManagerUtils.safeTerminateWorkflow(client, connectionId, "Terminating workflow in "
+          + "unreachable state before starting a new workflow for this connection");
+      connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
     });
   }
 
@@ -491,22 +485,19 @@ public class TemporalClient {
     if (!workflowId.startsWith("connection_manager_")) {
       return Optional.empty();
     }
-    System.err.println(workflowId);
-    System.err.println(StringUtils.removeStart(workflowId, "connection_manager_"));
-    System.err.flush();
     return Optional.ofNullable(StringUtils.removeStart(workflowId, "connection_manager_"))
         .map(
             stringUUID -> UUID.fromString(stringUUID));
   }
 
-  Set<String> fetchWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+  Set<UUID> fetchWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
     ByteString token;
     ListWorkflowExecutionsRequest workflowExecutionsRequest =
         ListWorkflowExecutionsRequest.newBuilder()
             .setNamespace(client.getOptions().getNamespace())
             .build();
 
-    final Set<String> workflowExecutionInfos = new HashSet<>();
+    final Set<UUID> workflowExecutionInfos = new HashSet<>();
     do {
       final ListWorkflowExecutionsResponse listOpenWorkflowExecutionsRequest =
           service.blockingStub().listWorkflowExecutions(workflowExecutionsRequest);
@@ -514,7 +505,7 @@ public class TemporalClient {
       workflowExecutionInfos.addAll(listOpenWorkflowExecutionsRequest.getExecutionsList().stream()
           .filter(workflowExecutionInfo -> workflowExecutionInfo.getType() == connectionManagerWorkflowType ||
               workflowExecutionInfo.getStatus() == executionStatus)
-          .map((workflowExecutionInfo -> workflowExecutionInfo.getExecution().getWorkflowId()))
+          .flatMap((workflowExecutionInfo -> extractConnectionIdFromWorkflowId(workflowExecutionInfo.getExecution().getWorkflowId()).stream()))
           .collect(Collectors.toSet()));
       token = listOpenWorkflowExecutionsRequest.getNextPageToken();
 
@@ -530,10 +521,13 @@ public class TemporalClient {
   }
 
   @VisibleForTesting
-  Set<String> filterOutRunningWorkspaceId(final Set<String> workflowIds) {
+  Set<UUID> filterOutRunningWorkspaceId(final Set<UUID> workflowIds) {
     refreshRunningWorkflow();
 
-    return workflowIds.stream().filter(workflowId -> !workflowNames.contains(workflowId)).collect(Collectors.toSet());
+    final Set<UUID> runningWorkflowByUUID =
+        workflowNames.stream().flatMap(name -> extractConnectionIdFromWorkflowId(name).stream()).collect(Collectors.toSet());
+
+    return workflowIds.stream().filter(workflowId -> !runningWorkflowByUUID.contains(workflowId)).collect(Collectors.toSet());
   }
 
   private <T> T getWorkflowStub(final Class<T> workflowClass, final TemporalJobType jobType) {
