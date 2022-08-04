@@ -238,7 +238,6 @@ def test_parse_response(requests_mock):
 
 
 class TestAllStreams:
-
     @pytest.mark.parametrize(
         "expected_stream_cls",
         [
