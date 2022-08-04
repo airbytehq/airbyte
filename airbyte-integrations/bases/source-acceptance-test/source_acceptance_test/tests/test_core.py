@@ -68,7 +68,6 @@ class TestSpec(BaseTest):
         actual_connector_spec: ConnectorSpecification,
         previous_connector_spec: ConnectorSpecification,
     ) -> DeepDiff:
-        breakpoint()
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         return self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
 
