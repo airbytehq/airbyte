@@ -15,7 +15,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.CopyConsumerFactory;
 import io.airbyte.integrations.destination.jdbc.copy.CopyDestination;
-import io.airbyte.integrations.destination.s3.S3Destination;
+import io.airbyte.integrations.destination.s3.S3BaseChecks;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.integrations.destination.s3.S3StorageOperations;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -55,7 +55,7 @@ public class DatabricksDestination extends CopyDestination {
   public void checkPersistence(final JsonNode config) {
     final DatabricksDestinationConfig databricksConfig = DatabricksDestinationConfig.get(config);
     final S3DestinationConfig s3Config = databricksConfig.getS3DestinationConfig();
-    S3Destination.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
+    S3BaseChecks.attemptS3WriteAndDelete(new S3StorageOperations(getNameTransformer(), s3Config.getS3Client(), s3Config), s3Config, "");
   }
 
   @Override

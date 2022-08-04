@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.parquet.GcsParquetWriter;
-import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.parquet.S3ParquetWriter;

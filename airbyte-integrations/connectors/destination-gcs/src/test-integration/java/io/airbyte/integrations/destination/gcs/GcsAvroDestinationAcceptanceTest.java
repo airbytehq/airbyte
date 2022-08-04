@@ -9,7 +9,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.S3Format;
 import io.airbyte.integrations.destination.s3.avro.AvroConstants;
 import io.airbyte.integrations.destination.s3.avro.JsonFieldNameUpdater;
 import io.airbyte.integrations.destination.s3.util.AvroRecordHelper;

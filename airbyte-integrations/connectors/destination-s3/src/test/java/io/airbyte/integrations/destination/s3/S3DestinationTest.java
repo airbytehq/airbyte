@@ -57,7 +57,7 @@ public class S3DestinationTest {
   public void checksS3WithoutListObjectPermission() {
     final S3Destination destinationFail = new S3Destination(new S3DestinationConfigFactory() {
 
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("fake-endpoint")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
@@ -79,7 +79,7 @@ public class S3DestinationTest {
   public void checksS3WithListObjectPermission() {
     final S3Destination destinationSuccess = new S3Destination(new S3DestinationConfigFactory() {
 
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
         return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
             .withEndpoint("fake-endpoint")
             .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
@@ -94,7 +94,7 @@ public class S3DestinationTest {
 
   @Test
   public void createsThenDeletesTestFile() {
-    S3Destination.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
+    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
 
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);
