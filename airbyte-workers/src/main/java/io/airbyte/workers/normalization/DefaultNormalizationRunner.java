@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
@@ -15,6 +16,11 @@ import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
@@ -22,10 +28,14 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +50,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private final DestinationType destinationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
+  private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
+  private Map<Type, List<AirbyteMessage>> airbyteMessagesByType;
 
   private Process process = null;
 
@@ -135,7 +147,30 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           Collections.emptyMap(),
           args);
 
-      LineGobbler.gobble(process.getInputStream(), LOGGER::info, CONTAINER_LOG_MDC_BUILDER);
+      try (final InputStream stdout = process.getInputStream()) {
+        // finds and collects any AirbyteMessages from stdout
+        // also builds a list of raw dbt errors and stores in streamFactory
+        airbyteMessagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+            .collect(Collectors.groupingBy(AirbyteMessage::getType));
+
+        // picks up error logs from dbt
+        String dbtErrorStack = String.join("\n\t", streamFactory.getDbtErrors());
+
+        if (!"".equals(dbtErrorStack)) {
+          AirbyteMessage dbtTraceMessage = new AirbyteMessage()
+              .withType(Type.TRACE)
+              .withTrace(new AirbyteTraceMessage()
+                  .withType(AirbyteTraceMessage.Type.ERROR)
+                  .withEmittedAt((double) System.currentTimeMillis())
+                  .withError(new AirbyteErrorTraceMessage()
+                      .withFailureType(FailureType.SYSTEM_ERROR) // TODO: decide on best FailureType for this
+                      .withMessage("Normalization failed during the dbt run. This may indicate a problem with the data itself.")
+                      .withInternalMessage(dbtErrorStack)
+                      .withStackTrace(dbtErrorStack)));
+
+          airbyteMessagesByType.putIfAbsent(Type.TRACE, List.of(dbtTraceMessage));
+        }
+      }
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error, CONTAINER_LOG_MDC_BUILDER);
 
       WorkerUtils.wait(process);
@@ -161,6 +196,14 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     if (process.isAlive() || process.exitValue() != 0) {
       throw new WorkerException("Normalization process wasn't successful");
     }
+  }
+
+  @Override
+  public Stream<AirbyteTraceMessage> getTraceMessages() {
+    if (airbyteMessagesByType != null && airbyteMessagesByType.get(Type.TRACE) != null) {
+      return airbyteMessagesByType.get(Type.TRACE).stream().map(AirbyteMessage::getTrace);
+    }
+    return Stream.empty();
   }
 
   @VisibleForTesting
