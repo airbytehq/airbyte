@@ -38,39 +38,30 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
         self._access_token = None
 
-    @property
     def get_token_refresh_endpoint(self) -> str:
         return self._token_refresh_endpoint
 
-    @property
     def get_client_id(self) -> str:
         return self._client_id
 
-    @property
     def get_client_secret(self) -> str:
         return self._client_secret
 
-    @property
     def get_refresh_token(self) -> str:
         return self._refresh_token
 
-    @property
     def get_access_token_name(self) -> str:
         return self._access_token_name
 
-    @property
     def get_scopes(self) -> [str]:
         return self._scopes
 
-    @property
     def get_expires_in_name(self) -> str:
         return self._expires_in_name
 
-    @property
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body
 
-    @property
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 

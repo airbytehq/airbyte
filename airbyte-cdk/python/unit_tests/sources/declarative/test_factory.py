@@ -78,12 +78,13 @@ def test_interpolate_config():
     """
     config = parser.parse(content)
     authenticator = factory.create_component(config["authenticator"], input_config)()
-    assert authenticator._client_id.eval(input_config) == "some_client_id"
-    assert authenticator._client_secret.string == "some_client_secret"
+    assert authenticator.client_id.eval(input_config) == "some_client_id"
+    assert authenticator.client_secret.string == "some_client_secret"
 
-    assert authenticator._token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
-    assert authenticator._refresh_token.eval(input_config) == "verysecrettoken"
+    assert authenticator.token_refresh_endpoint.eval(input_config) == "https://api.sendgrid.com/v3/auth"
+    assert authenticator.refresh_token.eval(input_config) == "verysecrettoken"
     assert authenticator._refresh_request_body.mapping == {"body_field": "yoyoyo", "interpolated_body_field": "{{ config['apikey'] }}"}
+    assert authenticator.get_refresh_request_body() == {"body_field": "yoyoyo", "interpolated_body_field": "verysecrettoken"}
 
 
 def test_list_based_stream_slicer_with_values_refd():

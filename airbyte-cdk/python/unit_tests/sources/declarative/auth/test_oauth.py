@@ -17,11 +17,11 @@ config = {
     "refresh_endpoint": "refresh_end",
     "client_id": "some_client_id",
     "client_secret": "some_client_secret",
-    "refresh_token": "some_refresh_token",
     "token_expiry_date": pendulum.now().subtract(days=2).to_rfc3339_string(),
     "custom_field": "in_outbound_request",
     "another_field": "exists_in_body",
 }
+options = {"refresh_token": "some_refresh_token"}
 
 
 class TestOauth2Authenticator:
@@ -38,7 +38,7 @@ class TestOauth2Authenticator:
             token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
             client_id="{{ config['client_id'] }}",
             client_secret="{{ config['client_secret'] }}",
-            refresh_token="{{ config['refresh_token'] }}",
+            refresh_token="{{ options['refresh_token'] }}",
             config=config,
             scopes=["scope1", "scope2"],
             token_expiry_date="{{ config['token_expiry_date'] }}",
@@ -47,6 +47,7 @@ class TestOauth2Authenticator:
                 "another_field": "{{ config['another_field'] }}",
                 "scopes": ["no_override"],
             },
+            options=options,
         )
         body = oauth.build_refresh_request_body()
         expected = {
@@ -74,6 +75,7 @@ class TestOauth2Authenticator:
                 "another_field": "{{ config['another_field'] }}",
                 "scopes": ["no_override"],
             },
+            options={},
         )
 
         resp.status_code = 200

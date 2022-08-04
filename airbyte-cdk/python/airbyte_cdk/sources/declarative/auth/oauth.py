@@ -36,13 +36,13 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, JsonSchemaMixi
     client_id: Union[InterpolatedString, str]
     client_secret: Union[InterpolatedString, str]
     refresh_token: Union[InterpolatedString, str]
-    access_token_name: Union[InterpolatedString, str]
-    expires_in_name: Union[InterpolatedString, str]
     config: Mapping[str, Any]
     options: InitVar[Mapping[str, Any]]
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False)
+    access_token_name: Union[InterpolatedString, str] = "access_token"
+    expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
@@ -50,93 +50,40 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, JsonSchemaMixi
         self.client_id = InterpolatedString.create(self.client_id, options=options)
         self.client_secret = InterpolatedString.create(self.client_secret, options=options)
         self.refresh_token = InterpolatedString.create(self.refresh_token, options=options)
-        self.access_token_name = InterpolatedString.create(self.access_token_name or "access_token", options=options)
-        self.expires_in_name = InterpolatedString.create(self.expires_in_name or "expires_in", options=options)
+        self.access_token_name = InterpolatedString.create(self.access_token_name, options=options)
+        self.expires_in_name = InterpolatedString.create(self.expires_in_name, options=options)
         self._refresh_request_body = InterpolatedMapping(self.refresh_request_body or {}, options=options)
         self._token_expiry_date = (
             pendulum.parse(InterpolatedString.create(self.token_expiry_date, options=options).eval(self.config))
             if self.token_expiry_date
             else pendulum.now().subtract(days=1)
         )
-        self.access_token = None
-
-    def __init__(
-        self,
-        token_refresh_endpoint: Union[InterpolatedString, str],
-        client_id: Union[InterpolatedString, str],
-        client_secret: Union[InterpolatedString, str],
-        refresh_token: Union[InterpolatedString, str],
-        config: Mapping[str, Any],
-        scopes: Optional[List[str]] = None,
-        token_expiry_date: Optional[Union[InterpolatedString, str]] = None,
-        access_token_name: Union[InterpolatedString, str] = "access_token",
-        expires_in_name: Union[InterpolatedString, str] = "expires_in",
-        refresh_request_body: Optional[Mapping[str, Any]] = None,
-        **options: Optional[Mapping[str, Any]],
-    ):
-        """
-        :param token_refresh_endpoint: The endpoint to refresh the access token
-        :param client_id: The client id
-        :param client_secret: Client secret
-        :param refresh_token: The token used to refresh the access token
-        :param config: The user-provided configuration as specified by the source's spec
-        :param scopes: The scopes to request
-        :param token_expiry_date: The access token expiration date
-        :param access_token_name: THe field to extract access token from in the response
-        :param expires_in_name:The field to extract expires_in from in the response
-        :param refresh_request_body: The request body to send in the refresh request
-        :param options: Additional runtime parameters to be used for string interpolation
-        """
-        self.config = config
-        self._token_refresh_endpoint = InterpolatedString.create(token_refresh_endpoint, options=options)
-        self._client_secret = InterpolatedString.create(client_secret, options=options)
-        self._client_id = InterpolatedString.create(client_id, options=options)
-        self._refresh_token = InterpolatedString.create(refresh_token, options=options)
-        self.scopes = scopes
-        self._access_token_name = InterpolatedString.create(access_token_name, options=options)
-        self._expires_in_name = InterpolatedString.create(expires_in_name, options=options)
-        self._refresh_request_body = InterpolatedMapping(refresh_request_body or {}, options=options)
-
-        self._token_expiry_date = (
-            pendulum.parse(InterpolatedString.create(token_expiry_date, options=options).eval(self.config))
-            if token_expiry_date
-            else pendulum.now().subtract(days=1)
-        )
         self._access_token = None
 
-    @property
     def get_token_refresh_endpoint(self) -> str:
-        return self._token_refresh_endpoint.eval(self.config)
+        return self.token_refresh_endpoint.eval(self.config)
 
-    @property
     def get_client_id(self) -> str:
-        return self._client_id.eval(self.config)
+        return self.client_id.eval(self.config)
 
-    @property
     def get_client_secret(self) -> str:
-        return self._client_secret.eval(self.config)
+        return self.client_secret.eval(self.config)
 
-    @property
     def get_refresh_token(self) -> str:
-        return self._refresh_token.eval(self.config)
+        return self.refresh_token.eval(self.config)
 
-    @property
     def get_scopes(self) -> [str]:
         return self.scopes
 
-    @property
     def get_access_token_name(self) -> InterpolatedString:
-        return self._access_token_name.eval(self.config)
+        return self.access_token_name.eval(self.config)
 
-    @property
     def get_expires_in_name(self) -> InterpolatedString:
-        return self._expires_in_name.eval(self.config)
+        return self.expires_in_name.eval(self.config)
 
-    @property
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
 
-    @property
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
