@@ -226,6 +226,10 @@ class AbstractSource(Source, ABC):
         )
         logger.debug(f"Processing stream slices for {stream_name}", extra={"stream_slices": slices})
         total_records_counter = 0
+        if not slices:
+            # Safety net to ensure we always emit at least one state message even if there are no slices
+            checkpoint = self._checkpoint_state(stream_instance, stream_instance.state, connector_state)
+            yield checkpoint
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
             records = stream_instance.read_records(

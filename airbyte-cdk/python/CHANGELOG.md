@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.69
+- AbstractSource emits a state message when reading incremental even if there were no stream slices to process.
+
 ## 0.1.68
 - Replace parse-time string interpolation with run-time interpolation in YAML-based sources
 
