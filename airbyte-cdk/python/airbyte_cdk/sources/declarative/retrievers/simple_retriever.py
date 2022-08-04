@@ -137,7 +137,7 @@ class SimpleRetriever(Retriever, HttpStream):
         for intersection in [requester_paginator_intersection, requester_stream_slicer_intersection, paginator_stream_slicer_intersection]:
             if intersection:
                 raise ValueError(f"Duplicate keys found: {intersection}")
-        return {**requester_mapping, **paginator_mapping}
+        return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping}
 
     def request_headers(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
