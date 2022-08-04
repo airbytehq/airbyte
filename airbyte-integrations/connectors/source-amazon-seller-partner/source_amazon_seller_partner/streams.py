@@ -387,6 +387,14 @@ class FbaInventoryReports(ReportsAmazonSPStream):
     name = "GET_FBA_INVENTORY_AGED_DATA"
 
 
+class FbaStorageFeesReports(ReportsAmazonSPStream):
+    """
+    Field definitions: https://sellercentral.amazon.com/help/hub/reference/G202086720
+    """
+
+    name = "GET_FBA_STORAGE_FEE_CHARGES_DATA"
+
+
 class FulfilledShipmentsReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120

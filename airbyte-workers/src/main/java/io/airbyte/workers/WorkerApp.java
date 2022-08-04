@@ -237,8 +237,10 @@ public class WorkerApp {
     final PersistStateActivityImpl persistStateActivity = new PersistStateActivityImpl(statePersistence, featureFlags);
 
     final Worker syncWorker = factory.newWorker(TemporalJobType.SYNC.name(), getWorkerOptions(maxWorkers.getMaxSyncWorkers()));
+
     syncWorker.registerWorkflowImplementationTypes(SyncWorkflowImpl.class);
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity);
+
   }
 
   private void registerDiscover(final WorkerFactory factory) {
@@ -431,6 +433,7 @@ public class WorkerApp {
         new OAuthConfigSupplier(configRepository, trackingClient));
 
     final WorkflowServiceStubs temporalService = TemporalUtils.createTemporalService();
+
     final WorkflowClient workflowClient = TemporalUtils.createWorkflowClient(temporalService, TemporalUtils.getNamespace());
     final StreamResetPersistence streamResetPersistence = new StreamResetPersistence(configDatabase);
 
