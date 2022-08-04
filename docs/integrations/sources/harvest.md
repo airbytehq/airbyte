@@ -37,7 +37,7 @@ This connector supports only authentication with API Key. To obtain API key foll
 
 ## Supported sync modes
 
-The Harvest source connector supports the following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature | Supported? |
 | :--- | :--- |
