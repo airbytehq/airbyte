@@ -13,7 +13,6 @@ from urllib.parse import urljoin
 
 import backoff
 import pendulum
-import pytz
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -91,14 +90,12 @@ class ReportStream(BasicAmazonAdsStream, ABC):
     """
 
     primary_key = None
-    CHECK_INTERVAL_SECONDS = 30
     # Amazon ads updates the data for the next 3 days
     LOOK_BACK_WINDOW = 3
     # (Service limits section)
     # Format used to specify metric generation date over Amazon Ads API.
     REPORT_DATE_FORMAT = "YYYYMMDD"
     CONFIG_DATE_FORMAT = "YYYY-MM-DD"
-    STATE_START_DATE_KEY = "start_date"
     cursor_field = "reportDate"
 
     def __init__(self, config: Mapping[str, Any], profiles: List[Profile], authenticator: Oauth2Authenticator):
@@ -268,35 +265,19 @@ class ReportStream(BasicAmazonAdsStream, ABC):
             raise TooManyRequests()
         return response
 
-    def get_report_date_ranges(self, start_report_date: Date, end_report_date: Date) -> Iterable[str]:
-        for days in range((end_report_date - start_report_date).days + 1):
-            yield start_report_date.add(days=days).format(ReportStream.REPORT_DATE_FORMAT)
+    def get_date_range(self, start_date: Date, end_date: Date) -> Iterable[str]:
+        for days in range((end_date - start_date).days + 1):
+            yield start_date.add(days=days).format(ReportStream.REPORT_DATE_FORMAT)
 
     def get_start_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Date:
         today = pendulum.today(tz=profile.timezone).date()
+        start_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
+        if start_date:
+            start_date = pendulum.from_format(start_date, self.REPORT_DATE_FORMAT).date()
+            return max(start_date, today.subtract(days=60))
         if self._start_date:
             return max(self._start_date, today.subtract(days=60))
-        start_date = stream_state.get(self.STATE_START_DATE_KEY)
-        if start_date:
-            start_date = pendulum.parse(start_date).astimezone(pytz.timezone(profile.timezone)).date()
-            return max(start_date, today.subtract(days=60))
         return today
-
-    def get_saved_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Optional[Date]:
-        saved_date = stream_state.get(str(profile.profileId), {}).get(self.cursor_field)
-        if saved_date:
-            saved_date = pendulum.from_format(saved_date, self.REPORT_DATE_FORMAT).date()
-            today = pendulum.today(tz=profile.timezone).date()
-            if today.subtract(days=self.LOOK_BACK_WINDOW) < saved_date <= today:
-                return today.subtract(days=self.LOOK_BACK_WINDOW)
-            return saved_date
-
-    def get_start_report_date(self, profile: Profile, stream_state: Mapping[str, Any]) -> Date:
-        start_date = self.get_start_date(profile, stream_state)
-        saved_date = self.get_saved_date(profile, stream_state)
-        if saved_date:
-            return max(start_date, saved_date)
-        return start_date
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -307,8 +288,8 @@ class ReportStream(BasicAmazonAdsStream, ABC):
         slices = []
         for profile in self._profiles:
             today = pendulum.today(tz=profile.timezone).date()
-            start_report_date = self.get_start_report_date(profile, stream_state)
-            for report_date in self.get_report_date_ranges(start_report_date, today):
+            start_date = self.get_start_date(profile, stream_state)
+            for report_date in self.get_date_range(start_date, today):
                 slices.append({"profile": profile, self.cursor_field: report_date})
         if not slices:
             return [None]
@@ -316,15 +297,17 @@ class ReportStream(BasicAmazonAdsStream, ABC):
 
     def get_updated_state(self, current_stream_state: Dict[str, Any], latest_data: Mapping[str, Any]) -> Mapping[str, Any]:
         profileId = str(latest_data["profileId"])
-        updated_state = latest_data[self.cursor_field]
+        profile = {str(p.profileId): p for p in self._profiles}[profileId]
+        record_date = latest_data[self.cursor_field]
+        record_date = pendulum.from_format(record_date, self.REPORT_DATE_FORMAT).date()
+        look_back_date = pendulum.today(tz=profile.timezone).date().subtract(days=self.LOOK_BACK_WINDOW)
+        start_date = self.get_start_date(profile, current_stream_state)
+        updated_state = max(min(record_date, look_back_date), start_date).format(self.REPORT_DATE_FORMAT)
+
         stream_state_value = current_stream_state.get(profileId, {}).get(self.cursor_field)
         if stream_state_value:
             updated_state = max(updated_state, stream_state_value)
         current_stream_state.setdefault(profileId, {})[self.cursor_field] = updated_state
-
-        # store "start_date" in state
-        if not self._start_date and not current_stream_state.get(self.STATE_START_DATE_KEY):
-            current_stream_state[self.STATE_START_DATE_KEY] = pendulum.now("UTC").replace(microsecond=0).to_iso8601_string()
 
         return current_stream_state
 

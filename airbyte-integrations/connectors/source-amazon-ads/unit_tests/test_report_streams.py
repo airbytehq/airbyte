@@ -310,7 +310,7 @@ def test_display_report_stream_slices_full_refresh(config):
 def test_display_report_stream_slices_incremental(config):
     profiles = make_profiles()
     stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
-    stream_state = {stream.STATE_START_DATE_KEY: "2021-07-20", str(profiles[0].profileId): {"reportDate": "20210725"}}
+    stream_state = {str(profiles[0].profileId): {"reportDate": "20210725"}}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
     assert slices == [
         {"profile": profiles[0], "reportDate": "20210725"},
@@ -319,16 +319,8 @@ def test_display_report_stream_slices_incremental(config):
         {"profile": profiles[0], "reportDate": "20210728"},
         {"profile": profiles[0], "reportDate": "20210729"},
     ]
-    stream_state = {stream.STATE_START_DATE_KEY: "2021-07-20", str(profiles[0].profileId): {"reportDate": "20210729"}}
-    slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
-    assert slices == [
-        {"profile": profiles[0], "reportDate": "20210726"},
-        {"profile": profiles[0], "reportDate": "20210727"},
-        {"profile": profiles[0], "reportDate": "20210728"},
-        {"profile": profiles[0], "reportDate": "20210729"},
-    ]
 
-    stream_state = {stream.STATE_START_DATE_KEY: "2021-07-20", str(profiles[0].profileId): {"reportDate": "20210730"}}
+    stream_state = {str(profiles[0].profileId): {"reportDate": "20210730"}}
     slices = stream.stream_slices(SyncMode.incremental, cursor_field=stream.cursor_field, stream_state=stream_state)
     assert slices == [None]
 
@@ -340,36 +332,25 @@ def test_display_report_stream_slices_incremental(config):
 
 
 @freeze_time("2021-08-01 04:00:00")
-def test_get_start_report_date(config):
+def test_get_start_date(config):
     profiles = make_profiles()
 
     config["start_date"] = "2021-07-10"
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {}) == Date(2021, 7, 10)
+    assert stream.get_start_date(profiles[0], {}) == Date(2021, 7, 10)
     config["start_date"] = "2021-05-10"
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {}) == Date(2021, 6, 1)
+    assert stream.get_start_date(profiles[0], {}) == Date(2021, 6, 1)
+
+    profile_id = str(profiles[0].profileId)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210810"}}) == Date(2021, 8, 10)
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    assert stream.get_start_date(profiles[0], {profile_id: {"reportDate": "20210510"}}) == Date(2021, 6, 1)
 
     config.pop("start_date")
     stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {}) == Date(2021, 7, 31)
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-06-02T08:00:00Z"}) == Date(2021, 6, 2)
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-06-02T06:00:00Z"}) == Date(2021, 6, 1)
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {stream.STATE_START_DATE_KEY: "2021-05-02T06:00:00Z"}) == Date(2021, 6, 1)
-
-    profile_id = str(profiles[0].profileId)
-    config["start_date"] = "2021-04-10"
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210810"}}) == Date(2021, 8, 10)
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210730"}}) == Date(2021, 7, 28)
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210725"}}) == Date(2021, 7, 25)
-    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
-    assert stream.get_start_report_date(profiles[0], {profile_id: {"reportDate": "20210515"}}) == Date(2021, 6, 1)
+    assert stream.get_start_date(profiles[0], {}) == Date(2021, 7, 31)
 
 
 @freeze_time("2021-08-01 04:00:00")
