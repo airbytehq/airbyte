@@ -1,6 +1,6 @@
 schema_loader:
   type: JsonSchema
-  file_path: "./source_{{snakeCase name}}/schemas/\{{ name }}.json"
+  file_path: "./source_{{snakeCase name}}/schemas/\{{ options.name }}.json"
 selector:
   type: RecordSelector
   extractor:
@@ -22,11 +22,9 @@ retriever:
     $ref: "*ref(selector)"
   paginator:
     type: NoPagination
-  state:
-    class_name: airbyte_cdk.sources.declarative.states.dict_state.DictState
 customers_stream:
   type: DeclarativeStream
-  options:
+  $options:
     name: "customers"
   primary_key: "id"
   schema_loader:
