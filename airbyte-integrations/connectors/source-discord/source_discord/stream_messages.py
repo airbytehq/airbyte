@@ -22,7 +22,7 @@ class DiscordMessagesStream(HttpStream, IncrementalMixin):
         self.config = config
         self.server_token = config["server_token"]
         self.channel_ids = config["channel_ids"]
-        self._cursor_value = None
+        self._cursor_value = datetime.utcnow()
         self.latest_stream_timestamp = string_to_timestamp(initial_timestamp)
 
     def request_headers(self, **_) -> Mapping[str, Any]:
@@ -70,10 +70,6 @@ class DiscordMessagesStream(HttpStream, IncrementalMixin):
     @property
     def state(self) -> Mapping[str, Any]:
         return {self.cursor_field: self._cursor_value}
-    
-    @state.setter
-    def state(self, **_):
-        self._cursor_value = datetime.utcnow()
 
 
 class Messages(DiscordMessagesStream):
