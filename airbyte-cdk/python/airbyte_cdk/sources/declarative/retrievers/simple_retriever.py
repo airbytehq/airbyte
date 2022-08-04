@@ -189,7 +189,9 @@ class SimpleRetriever(Retriever, HttpStream):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        base_body_data = self._requester.request_body_data(self.state, stream_slice, next_page_token)
+        base_body_data = self._requester.request_body_data(
+            stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
         if isinstance(base_body_data, str):
             paginator_body_data = self._paginator.request_body_data()
             if paginator_body_data:
@@ -238,7 +240,7 @@ class SimpleRetriever(Retriever, HttpStream):
         this method. Note that these options do not conflict with request-level options such as headers, request params, etc..
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._requester.request_kwargs(self.state, stream_slice, next_page_token)
+        return self._requester.request_kwargs(stream_state=self.state, stream_slice=stream_slice, next_page_token=next_page_token)
 
     def path(
         self,
