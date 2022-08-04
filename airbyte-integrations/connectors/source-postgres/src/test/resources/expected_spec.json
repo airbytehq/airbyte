@@ -248,10 +248,10 @@
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
-                "description": "The amount of time the connector will wait when it launches to figure out whether there is new data to sync or not. Default to 5 minutes. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\">initial waiting time</a>.",
+                "description": "The amount of time the connector will wait when it launches to figure out whether there is new data to sync or not. Default to 300 seconds. Valid range: 120 seconds to 1200 seconds. For more information read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#initial-waiting-time\">initial waiting time</a>.",
                 "default": 300,
                 "order": 4,
-                "min": 30,
+                "min": 120,
                 "max": 1200
               }
             }
