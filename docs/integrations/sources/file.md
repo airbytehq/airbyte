@@ -1,7 +1,5 @@
 # Files
 
-## Features
-
 | Feature                                  | Supported? |
 | ---------------------------------------- | ---------- |
 | Full Refresh Sync                        | Yes        |
@@ -12,60 +10,8 @@
 
 This source produces a single table for the target file as it replicates only one file at a time for the moment. Note that you should provide the `dataset_name` which dictates how the table will be identified in the destination (since `URL` can be made of complex characters).
 
-### Storage Providers
 
-| Storage Providers      | Supported?                                      |
-| ---------------------- | ----------------------------------------------- |
-| HTTPS                  | Yes                                             |
-| Google Cloud Storage   | Yes                                             |
-| Amazon Web Services S3 | Yes                                             |
-| SFTP                   | Yes                                             |
-| SSH / SCP              | Yes                                             |
-| local filesystem       | Local use only (inaccessible for Airbyte Cloud) |
-
-### File / Stream Compression
-
-| Compression | Supported? |
-| ----------- | ---------- |
-| Gzip        | Yes        |
-| Zip         | No         |
-| Bzip2       | No         |
-| Lzma        | No         |
-| Xz          | No         |
-| Snappy      | No         |
-
-### File Formats
-
-| Format                | Supported? |
-| --------------------- | ---------- |
-| CSV                   | Yes        |
-| JSON                  | Yes        |
-| HTML                  | No         |
-| XML                   | No         |
-| Excel                 | Yes        |
-| Excel Binary Workbook | Yes        |
-| Feather               | Yes        |
-| Parquet               | Yes        |
-| Pickle                | No         |
-| YAML                  | Yes        |
-
-**This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
-
-## Getting Started (Airbyte Cloud)
-
-Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
-
-## Getting Started (Airbyte Open-Source)
-
-1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
-2. Depending on the provider choice and privacy of the data, you will have to configure more options.
-
-#### Provider Specific Information
-
-* In case of GCS, it is necessary to provide the content of the service account keyfile to access private buckets. See settings of [BigQuery Destination](../destinations/bigquery.md)
-* In case of AWS S3, the pair of `aws_access_key_id` and `aws_secret_access_key` is necessary to access private S3 buckets.
-* In case of AzBlob, it is necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [(info)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [(info)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.
-
+## Prerequisites
 ### Reader Options
 
 The Reader in charge of loading the file format is currently based on [Pandas IO Tools](https://pandas.pydata.org/pandas-docs/stable/user\_guide/io.html). It is possible to customize how to load the file into a Pandas DataFrame as part of this Source Connector. This is doable in the `reader_options` that should be in JSON format and depends on the chosen file format. See pandas' documentation, depending on the format:
@@ -86,12 +32,83 @@ In case you select `JSON` format, then options from the [read\_json](https://pan
 
 For example, you can use the `{"orient" : "records"}` to change how orientation of data is loaded (if data is `[{column -> value}, … , {column -> value}]`)
 
+
+## Getting Started (Airbyte Cloud)
+
+Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
+
+## Getting Started (Airbyte Open-Source)
+
+1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
+2. Depending on the provider choice and privacy of the data, you will have to configure more options.
+
+
+## Supported sync modes
+
+### Storage Providers
+| Storage Providers      | Supported?                                      |
+|------------------------| ----------------------------------------------- |
+| HTTPS                  | Yes                                             |
+| Google Cloud Storage   | Yes                                             |
+| Amazon Web Services S3 | Yes                                             |
+| BOX Cloud              | Yes                                             |
+| SFTP                   | Yes                                             |
+| SSH / SCP              | Yes                                             |
+| local filesystem       | Local use only (inaccessible for Airbyte Cloud) |
+
+
+## Supported Streams
+
+### File / Stream Compression
+
+| Compression | Supported? |
+| ----------- | ---------- |
+| Gzip        | Yes        |
+| Zip         | No         |
+| Bzip2       | No         |
+| Lzma        | No         |
+| Xz          | No         |
+| Snappy      | No         |
+
+
+## Connector-specific features & highlights
+* In case of GCS, it is necessary to provide the content of the service account keyfile to access private buckets. See settings of [BigQuery Destination](../destinations/bigquery.md)
+* In case of AWS S3, the pair of `aws_access_key_id` and `aws_secret_access_key` is necessary to access private S3 buckets.
+* In case of AzBlob, it is necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [(info)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [(info)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.
+* In case of Box Cloud, it is necessary to provide the `box_developer_access_token` [(info)](https://app.box.com/developers/console), select your application. In the selected Application, go to the 'configuration' tab and in it there is an item for obtaining a Developer Token, where it must be generated. Warning! This source works with the Box Developer Token, since in order to receive a client access token, you need to go through `OAuth 2.0 Web Flow authorization`[(info)](https://contentanalytics.digital.accenture.com/display/aspire33/Box+Access+and+Refresh+Tokens), which is currently not supported by any provider. Developer Token is valid for 1 hour
+
+
+## Performance Considerations and Notes
+
+In order to read large files from a remote location, this connector uses the [smart\_open](https://pypi.org/project/smart-open/) library. However, it is possible to switch to either [GCSFS](https://gcsfs.readthedocs.io/en/latest/) or [S3FS](https://s3fs.readthedocs.io/en/latest/) implementations as it is natively supported by the `pandas` library. This choice is made possible through the optional `reader_impl` parameter.
+
+* Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/local-csv.md) so the `URL` should also starts with `/local/`.
+* The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
+
+
+## Data type map
+
+| Format                | Supported? |
+| --------------------- | ---------- |
+| CSV                   | Yes        |
+| JSON                  | Yes        |
+| HTML                  | No         |
+| XML                   | No         |
+| Excel                 | Yes        |
+| Excel Binary Workbook | Yes        |
+| Feather               | Yes        |
+| Parquet               | Yes        |
+| Pickle                | No         |
+| YAML                  | Yes        |
+
+**This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
+
 #### Changing data types of source columns
 
 Normally, Airbyte tries to infer the data type from the source, but you can use `reader_options` to force specific data types. If you input `{"dtype":"string"}`, all columns will be forced to be parsed as strings. If you only want a specific column to be parsed as a string, simply use `{"dtype" : {"column name": "string"}}`.
 
-### Examples
 
+## Tutorials
 Here are a list of examples of possible file inputs:
 
 | Dataset Name        | Storage | URL                                                                                                                                                        | Reader Impl         | Service Account                                                   | Description                                                                                                                                                                                                            |
@@ -116,17 +133,12 @@ Example for SFTP:
 
 Please see (or add) more at `airbyte-integrations/connectors/source-file/integration_tests/integration_source_test.py` for further usages examples.
 
-## Performance Considerations and Notes
-
-In order to read large files from a remote location, this connector uses the [smart\_open](https://pypi.org/project/smart-open/) library. However, it is possible to switch to either [GCSFS](https://gcsfs.readthedocs.io/en/latest/) or [S3FS](https://s3fs.readthedocs.io/en/latest/) implementations as it is natively supported by the `pandas` library. This choice is made possible through the optional `reader_impl` parameter.
-
-* Note that for local filesystem, the file probably have to be stored somewhere in the `/tmp/airbyte_local` folder with the same limitations as the [CSV Destination](../destinations/local-csv.md) so the `URL` should also starts with `/local/`.
-* The JSON implementation needs to be tweaked in order to produce more complex catalog and is still in an experimental state: Simple JSON schemas should work at this point but may not be well handled when there are multiple layers of nesting.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                           |
-|---------|------------|----------------------------------------------------------| ------------------------------------------------- |
+|---------|------------|----------------------------------------------------------|---------------------------------------------------|
+| 0.2.15  | 2022-08-03 | [15196](https://github.com/airbytehq/airbyte/pull/15196) | Added BOX provider                                |
 | 0.2.12  | 2022-07-12 | [14535](https://github.com/airbytehq/airbyte/pull/14535) | Fix invalid schema generation for JSON files      |
 | 0.2.11  | 2022-07-12 | [9974](https://github.com/airbytehq/airbyte/pull/14588)  | Add support to YAML format                        |
 | 0.2.9   | 2022-02-01 | [9974](https://github.com/airbytehq/airbyte/pull/9974)   | Update airbyte-cdk 0.1.47                         |
