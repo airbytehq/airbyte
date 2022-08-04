@@ -73,5 +73,26 @@
       "units": 24,
       "timeUnit": "hours"
     }
+  },
+  {
+    "text": "7 days",
+    "config": {
+      "units": 7,
+      "timeUnit": "days"
+    }
+  },
+  {
+    "text": "15 days",
+    "config": {
+      "units": 15,
+      "timeUnit": "days"
+    }
+  },
+  {
+    "text": "1 months",
+    "config": {
+      "units": 1,
+      "timeUnit": "months"
+    }
   }
 ]
