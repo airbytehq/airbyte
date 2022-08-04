@@ -48,6 +48,9 @@ jobs:
           echo "${{ secrets.GITHUB_TOKEN }}" | \
             docker login --username ${{ github.actor }} --password-stdin ghcr.io
 
+      - name: Install virtualenv
+        run: python3 -m pip install virtualenv==20.4.2 --user
+
       - name: Build ${{ matrix.connector }}
         id: build
         run: |

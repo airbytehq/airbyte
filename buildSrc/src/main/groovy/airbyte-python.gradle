@@ -82,7 +82,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             minPythonVersion = '3.9'
             scope = 'VIRTUALENV'
             installVirtualenv = true
-            pip 'pip:21.3.1'
+            pip 'pip:22.2.2'
             pip 'mccabe:0.6.1'
             // https://github.com/csachs/pyproject-flake8/issues/13
             pip 'flake8:4.0.1'
