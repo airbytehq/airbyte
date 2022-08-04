@@ -193,7 +193,7 @@ public class EnvConfigs implements Configs {
 
   public static final String DEFAULT_NETWORK = "host";
 
-  public static final String DEFAULT_PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "SYNC_DATA_PLANE";
+  public static final String DEFAULT_PRIMARY_SYNC_DATA_PLANE_TASK_QUEUE = "SYNC";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
