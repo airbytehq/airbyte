@@ -33,9 +33,9 @@ class OpenTelemetryMetricClientTest {
   void setUp() {
     openTelemetryMetricClient = new OpenTelemetryMetricClient();
 
-    Resource resource = Resource.getDefault().toBuilder().put(SERVICE_NAME, METRIC_EMITTING_APP.getApplicationName()).build();
+    final Resource resource = Resource.getDefault().toBuilder().put(SERVICE_NAME, METRIC_EMITTING_APP.getApplicationName()).build();
     metricExporter = InMemoryMetricExporter.create();
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+    final SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
         .setResource(resource)
         .build();
     openTelemetryMetricClient.initialize(METRIC_EMITTING_APP, metricExporter, sdkTracerProvider, resource);
@@ -50,12 +50,12 @@ class OpenTelemetryMetricClientTest {
 
   @Test
   @DisplayName("Should send out count metric with correct metric name, description and value")
-  public void testCountSuccess() {
+  void testCountSuccess() {
     openTelemetryMetricClient.count(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
 
     metricProvider.forceFlush();
-    List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
-    MetricData data = Iterables.getOnlyElement(metricDataList);
+    final List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
+    final MetricData data = Iterables.getOnlyElement(metricDataList);
 
     assertThat(data.getName()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricName());
     assertThat(data.getDescription()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricDescription());
@@ -64,28 +64,28 @@ class OpenTelemetryMetricClientTest {
 
   @Test
   @DisplayName("Tags should be passed into metrics")
-  public void testCountWithTagSuccess() {
-    openTelemetryMetricClient.count(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1, TAG);
+  void testCountWithTagSuccess() {
+    openTelemetryMetricClient.count(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1, new MetricAttribute(TAG, TAG));
 
     metricProvider.forceFlush();
-    List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
-    MetricData data = Iterables.getOnlyElement(metricDataList);
+    final List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
+    final MetricData data = Iterables.getOnlyElement(metricDataList);
 
     assertThat(data.getName()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricName());
     assertThat(data.getDescription()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricDescription());
     assertThat(data.getLongSumData().getPoints().stream()
         .anyMatch(
-            longPointData -> longPointData.getValue() == 1L && longPointData.getAttributes().get(AttributeKey.stringKey(TAG)).equals(TAG)));
+            longPointData -> longPointData.getValue() == 1L && TAG.equals(longPointData.getAttributes().get(AttributeKey.stringKey(TAG)))));
   }
 
   @Test
   @DisplayName("Should send out gauge metric with correct metric name, description and value")
-  public void testGaugeSuccess() throws Exception {
+  void testGaugeSuccess() throws Exception {
     openTelemetryMetricClient.gauge(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 1);
 
     metricProvider.forceFlush();
-    List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
-    MetricData data = Iterables.getOnlyElement(metricDataList);
+    final List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
+    final MetricData data = Iterables.getOnlyElement(metricDataList);
 
     assertThat(data.getName()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricName());
     assertThat(data.getDescription()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricDescription());
@@ -94,13 +94,13 @@ class OpenTelemetryMetricClientTest {
 
   @Test
   @DisplayName("Should send out histogram metric with correct metric name, description and value")
-  public void testHistogramSuccess() {
+  void testHistogramSuccess() {
     openTelemetryMetricClient.distribution(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 10);
     openTelemetryMetricClient.distribution(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS, 30);
 
     metricProvider.forceFlush();
-    List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
-    MetricData data = Iterables.getOnlyElement(metricDataList);
+    final List<MetricData> metricDataList = metricExporter.getFinishedMetricItems();
+    final MetricData data = Iterables.getOnlyElement(metricDataList);
 
     assertThat(data.getName()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricName());
     assertThat(data.getDescription()).isEqualTo(OssMetricsRegistry.KUBE_POD_PROCESS_CREATE_TIME_MILLISECS.getMetricDescription());

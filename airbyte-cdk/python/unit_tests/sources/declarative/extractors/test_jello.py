@@ -10,7 +10,6 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.jello import JelloExtractor
 
 config = {"field": "record_array"}
-kwargs = {"data_field": "records"}
 
 decoder = JsonDecoder()
 
@@ -20,7 +19,6 @@ decoder = JsonDecoder()
     [
         ("test_extract_from_array", "_.data", {"data": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_field_in_config", "_.{{ config['field'] }}", {"record_array": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
-        ("test_field_in_kwargs", "_.{{ kwargs['data_field'] }}", {"records": [{"id": 1}, {"id": 2}]}, [{"id": 1}, {"id": 2}]),
         ("test_default", "_{{kwargs['field']}}", [{"id": 1}, {"id": 2}], [{"id": 1}, {"id": 2}]),
         (
             "test_remove_fields_from_records",
@@ -40,7 +38,7 @@ decoder = JsonDecoder()
     ],
 )
 def test(test_name, transform, body, expected_records):
-    extractor = JelloExtractor(transform, decoder, config, kwargs=kwargs)
+    extractor = JelloExtractor(transform, config, decoder)
 
     response = create_response(body)
     actual_records = extractor.extract_records(response)

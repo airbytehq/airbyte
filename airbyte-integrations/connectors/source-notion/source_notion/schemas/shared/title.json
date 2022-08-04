@@ -1,81 +1,69 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "type": "object",
-  "additionalProperties": false,
   "properties": {
     "type": {
-      "enum": ["text", "mention", "equation"]
+      "type": ["null", "string"]
     },
     "text": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "content": {
-          "type": "string"
-        },
-        "link": {
-          "type": ["null", "object"],
-          "additionalProperties": false,
-          "properties": {
-            "type": {
-              "enum": ["url"]
-            },
-            "url": {
-              "type": "string"
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "type": {
+            "type": ["null", "string"]
+          },
+          "text": {
+            "type": ["null", "object"],
+            "properties": {
+              "content": {
+                "type": ["null", "string"]
+              },
+              "link": {
+                "type": ["null", "object"],
+                "additionalProperties": true,
+                "properties": {
+                  "type": {
+                    "enum": ["url"]
+                  },
+                  "url": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
             }
+          },
+          "annotations": {
+            "type": ["null", "object"],
+            "additionalProperties": true,
+            "properties": {
+              "bold": {
+                "type": ["null", "boolean"]
+              },
+              "italic": {
+                "type": ["null", "boolean"]
+              },
+              "strikethrough": {
+                "type": ["null", "boolean"]
+              },
+              "underline": {
+                "type": ["null", "boolean"]
+              },
+              "code": {
+                "type": ["null", "boolean"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "plain_text": {
+            "type": ["null", "string"]
+          },
+          "href": {
+            "type": ["null", "string"]
           }
         }
       }
-    },
-    "annotations": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "bold": {
-          "type": "boolean"
-        },
-        "italic": {
-          "type": "boolean"
-        },
-        "strikethrough": {
-          "type": "boolean"
-        },
-        "underline": {
-          "type": "boolean"
-        },
-        "code": {
-          "type": "boolean"
-        },
-        "color": {
-          "enum": [
-            "default",
-            "gray",
-            "brown",
-            "orange",
-            "yellow",
-            "green",
-            "blue",
-            "purple",
-            "pink",
-            "red",
-            "gray_background",
-            "brown_background",
-            "orange_background",
-            "yellow_background",
-            "green_background",
-            "blue_background",
-            "purple_background",
-            "pink_background",
-            "red_background"
-          ]
-        }
-      }
-    },
-    "plain_text": {
-      "type": "string"
-    },
-    "href": {
-      "type": ["null", "string"]
     }
   }
 }
