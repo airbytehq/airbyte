@@ -4,6 +4,7 @@
 
 package io.airbyte.workers;
 
+import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import org.slf4j.Logger;
@@ -24,15 +25,11 @@ public class WorkerMetricReporter {
   }
 
   public void trackSchemaValidationError(final String stream) {
-    final String[] validationErrorMetadata = {
-      "docker_repo:" + dockerRepo,
-      "docker_version:" + dockerVersion,
-      "stream:" + stream
-    };
     LOGGER.info("tracking record schema validation error");
     LOGGER.info("metric client here");
     LOGGER.info(String.valueOf(metricClient));
-    metricClient.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, validationErrorMetadata);
+    metricClient.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, new MetricAttribute("docker_repo", dockerRepo),
+        new MetricAttribute("docker_version", dockerVersion), new MetricAttribute("stream", stream));
   }
 
 }
