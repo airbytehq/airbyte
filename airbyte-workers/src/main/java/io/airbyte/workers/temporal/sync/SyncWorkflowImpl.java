@@ -54,16 +54,16 @@ public class SyncWorkflowImpl implements SyncWorkflow {
       final DecideDataPlaneTaskQueueActivity decideTaskQueueActivity =
           Workflow.newActivityStub(DecideDataPlaneTaskQueueActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
-      final String activityTaskQueue = decideTaskQueueActivity.decideDataPlaneTaskQueue(connectionId);
+      final String dataPlaneTaskQueue = decideTaskQueueActivity.decideDataPlaneTaskQueue(connectionId);
 
       replicationActivity =
-          Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
+          Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));
       persistActivity =
-          Workflow.newActivityStub(PersistStateActivity.class, setTaskQueue(ActivityConfiguration.SHORT_ACTIVITY_OPTIONS, activityTaskQueue));
+          Workflow.newActivityStub(PersistStateActivity.class, setTaskQueue(ActivityConfiguration.SHORT_ACTIVITY_OPTIONS, dataPlaneTaskQueue));
       normalizationActivity =
-          Workflow.newActivityStub(NormalizationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
+          Workflow.newActivityStub(NormalizationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));
       dbtTransformationActivity =
-          Workflow.newActivityStub(DbtTransformationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
+          Workflow.newActivityStub(DbtTransformationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));
     } else {
       replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
       normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);

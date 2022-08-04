@@ -26,6 +26,7 @@ import io.airbyte.scheduler.models.JobRunConfig;
 import io.airbyte.workers.TestConfigHelpers;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.DbtTransformationActivityImpl;
+import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivity;
 import io.airbyte.workers.temporal.sync.DecideDataPlaneTaskQueueActivityImpl;
 import io.airbyte.workers.temporal.sync.NormalizationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationActivityImpl;
@@ -43,11 +44,11 @@ import io.temporal.client.WorkflowFailedException;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
+import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class SyncWorkflowTest {
 
@@ -120,7 +121,7 @@ class SyncWorkflowTest {
     dbtTransformationActivity = mock(DbtTransformationActivityImpl.class);
     persistStateActivity = mock(PersistStateActivityImpl.class);
     decideDataPlaneTaskQueueActivity = mock(DecideDataPlaneTaskQueueActivityImpl.class);
-    doReturn(DATA_PLANE_TASK_QUEUE).when(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(Mockito.any());
+    doReturn(DATA_PLANE_TASK_QUEUE).when(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(sync.getConnectionId());
   }
 
   // bundle up all the temporal worker setup / execution into one method.
@@ -150,6 +151,7 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
+    verifyDecideDataPlaneTaskQueue(decideDataPlaneTaskQueueActivity, sync.getConnectionId());
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -252,6 +254,11 @@ class SyncWorkflowTest {
         .build();
 
     testEnv.getWorkflowService().blockingStub().requestCancelWorkflowExecution(cancelRequest);
+  }
+
+  private static void verifyDecideDataPlaneTaskQueue(final DecideDataPlaneTaskQueueActivity decideDataPlaneTaskQueueActivity,
+                                                     final UUID connectionId) {
+    final String taskQueue = verify(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(connectionId);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
