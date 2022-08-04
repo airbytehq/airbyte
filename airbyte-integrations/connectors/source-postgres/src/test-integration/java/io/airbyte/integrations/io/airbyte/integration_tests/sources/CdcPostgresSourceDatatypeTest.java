@@ -45,6 +45,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatyp
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("is_test", true)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
