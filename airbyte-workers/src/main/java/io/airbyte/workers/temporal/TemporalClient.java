@@ -490,7 +490,7 @@ public class TemporalClient {
             stringUUID -> UUID.fromString(stringUUID));
   }
 
-  Set<UUID> fetchWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
+  Set<UUID> fetchWorkflowsByStatus(final WorkflowExecutionStatus executionStatus) {
     ByteString token;
     ListWorkflowExecutionsRequest workflowExecutionsRequest =
         ListWorkflowExecutionsRequest.newBuilder()
