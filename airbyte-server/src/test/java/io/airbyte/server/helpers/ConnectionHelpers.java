@@ -110,7 +110,7 @@ public class ConnectionHelpers {
 
   public static ConnectionScheduleData generateBasicConnectionScheduleData() {
     return new ConnectionScheduleData().basicSchedule(
-        new ConnectionScheduleDataBasicSchedule().timeUnit(ConnectionScheduleDataBasicSchedule.TimeUnitEnum.DAYS).units(1L));
+        new ConnectionScheduleDataBasicSchedule().timeUnit(ConnectionScheduleDataBasicSchedule.TimeUnitEnum.DAYS).units(BASIC_SCHEDULE_UNITS));
   }
 
   public static ScheduleData generateBasicScheduleData() {
