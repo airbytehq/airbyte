@@ -6,9 +6,9 @@ package io.airbyte.integrations.base.errors.messages;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_HOST;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.SNOWFLAKE;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.SNOWFLAKE;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class SnowflakeErrorMessage extends ErrorMessage {
 
@@ -18,7 +18,7 @@ public class SnowflakeErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return SNOWFLAKE;
   }
 

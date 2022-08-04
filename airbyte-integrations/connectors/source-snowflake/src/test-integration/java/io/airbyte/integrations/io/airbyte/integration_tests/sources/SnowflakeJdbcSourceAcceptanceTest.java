@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
@@ -95,8 +96,15 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Test
+  void testCheckFailure() throws Exception {
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
+    final AirbyteConnectionStatus actual = source.check(config);
+    assertEquals(Status.FAILED, actual.getStatus());
+  }
+
+  @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
-    ((ObjectNode) config).with("credentials").put("password", "fake");
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
@@ -104,7 +112,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
-    ((ObjectNode) config).with("credentials").put("username", "fake");
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
@@ -112,7 +120,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckEmptyUsernameFailure() throws Exception {
-    ((ObjectNode) config).with("credentials").put("username", "");
+    ((ObjectNode) config).with("credentials").put(JdbcUtils.USERNAME_KEY, "");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());
@@ -120,7 +128,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
-    ((ObjectNode) config).put("host", "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_HOST.getValue(), actual.getMessage());

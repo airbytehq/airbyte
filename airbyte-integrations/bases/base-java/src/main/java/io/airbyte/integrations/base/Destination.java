@@ -6,7 +6,7 @@ package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
@@ -34,8 +34,14 @@ public interface Destination extends Integration {
     System.out.println(Jsons.serialize(message));
   }
 
-  default ConnectorType getConnectorType() {
-    return ConnectorType.DEFAULT;
+  /***
+   * This method returns connector name which user for error messages mapping
+   *
+   * @return ConnectorName for example MYSQL or POSTGRES, will return DEFAULT if error message mapping
+   *         is not specified
+   */
+  default ConnectorName getConnectorName() {
+    return ConnectorName.DEFAULT;
   }
 
 }

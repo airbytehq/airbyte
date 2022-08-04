@@ -13,7 +13,7 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.S3ConsumerFactory;
@@ -60,7 +60,7 @@ public class GcsDestination extends BaseConnector implements Destination {
       LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
       LOGGER.error("Please make sure you account has all of these roles: " + EXPECTED_ROLES);
 
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
+      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
           .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
@@ -93,8 +93,8 @@ public class GcsDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.GCS;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.GCS;
   }
 
 }

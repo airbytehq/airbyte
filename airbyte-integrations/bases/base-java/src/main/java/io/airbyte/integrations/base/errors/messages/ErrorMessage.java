@@ -5,7 +5,7 @@
 package io.airbyte.integrations.base.errors.messages;
 
 import io.airbyte.integrations.base.errors.utils.ConnectionErrorType;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +14,7 @@ public abstract class ErrorMessage {
   private static final String DEFAULT_ERROR_MESSAGE = "Standard error code: %s. \n Error Message: %s.";
   protected final Map<String, ConnectionErrorType> CONSTANTS = new HashMap<>();
 
-  public abstract ConnectorType getConnectorType();
+  public abstract ConnectorName getConnectorName();
 
   public String getDefaultErrorMessage(String errorCode, Exception exception) {
     return String.format(DEFAULT_ERROR_MESSAGE, errorCode, exception.getMessage());

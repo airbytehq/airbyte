@@ -10,7 +10,7 @@ import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.fin
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -67,8 +67,8 @@ public class RedshiftDestination extends SwitchingDestination<RedshiftDestinatio
   }
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.REDSHIFT;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.REDSHIFT;
   }
 
 }

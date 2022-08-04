@@ -13,7 +13,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -48,8 +48,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   private static final String CONNECTION_DATA = "connection_data";
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.ORACLE;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.ORACLE;
   }
 
   enum Protocol {

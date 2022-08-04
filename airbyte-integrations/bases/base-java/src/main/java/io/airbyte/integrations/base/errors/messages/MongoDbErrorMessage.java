@@ -9,9 +9,9 @@ import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCO
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT_OR_DATABASE;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MONGO;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.MONGO;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class MongoDbErrorMessage extends ErrorMessage {
 
@@ -24,7 +24,7 @@ public class MongoDbErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return MONGO;
   }
 

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base.errors.messages;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class DefaultErrorMessage extends ErrorMessage {
 
@@ -14,8 +14,8 @@ public class DefaultErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.DEFAULT;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.DEFAULT;
   }
 
 }

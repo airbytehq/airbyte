@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.mysql;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.MYSQL;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -19,7 +19,7 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
@@ -76,7 +76,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
+      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
           .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
@@ -138,7 +138,7 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return MYSQL;
   }
 

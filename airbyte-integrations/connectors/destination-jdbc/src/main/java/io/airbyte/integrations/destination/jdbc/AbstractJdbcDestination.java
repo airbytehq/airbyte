@@ -64,7 +64,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
+      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
           .getErrorMessage(ex.getErrorCode(), ex);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(ex, messages);
       return new AirbyteConnectionStatus()

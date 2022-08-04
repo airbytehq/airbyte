@@ -18,7 +18,7 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.io.IOException;
 import java.sql.JDBCType;
@@ -115,8 +115,8 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   }
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.SNOWFLAKE;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.SNOWFLAKE;
   }
 
 }

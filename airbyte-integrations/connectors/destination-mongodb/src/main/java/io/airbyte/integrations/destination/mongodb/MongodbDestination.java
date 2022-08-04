@@ -25,7 +25,7 @@ import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.errors.ErrorMessageFactory;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -84,7 +84,7 @@ public class MongodbDestination extends BaseConnector implements Destination {
       }
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
-      var messages = ErrorMessageFactory.getErrorMessage(getConnectorType())
+      var messages = ErrorMessageFactory.getErrorMessage(getConnectorName())
           .getErrorMessage(e.getErrorCode(), e);
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, messages);
       return new AirbyteConnectionStatus()
@@ -196,8 +196,8 @@ public class MongodbDestination extends BaseConnector implements Destination {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.MONGO;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.MONGO;
   }
 
 }

@@ -12,7 +12,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
@@ -70,8 +70,8 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
-    return ConnectorType.REDSHIFT;
+  public ConnectorName getConnectorName() {
+    return ConnectorName.REDSHIFT;
   }
 
 }

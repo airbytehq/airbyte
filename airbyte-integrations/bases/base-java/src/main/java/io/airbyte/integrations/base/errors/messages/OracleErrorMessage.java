@@ -7,9 +7,9 @@ package io.airbyte.integrations.base.errors.messages;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_ACCOUNT_IS_LOCKED;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.ORACLE;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.ORACLE;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class OracleErrorMessage extends ErrorMessage {
 
@@ -20,7 +20,7 @@ public class OracleErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return ORACLE;
   }
 

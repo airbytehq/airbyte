@@ -6,9 +6,9 @@ package io.airbyte.integrations.base.errors.messages;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_BUCKET_NAME;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CREDENTIALS;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.GCS;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.GCS;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class GcsErrorMessage extends ErrorMessage {
 
@@ -19,7 +19,7 @@ public class GcsErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return GCS;
   }
 

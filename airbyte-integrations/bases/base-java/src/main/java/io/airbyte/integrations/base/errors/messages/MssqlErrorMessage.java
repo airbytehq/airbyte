@@ -6,9 +6,9 @@ package io.airbyte.integrations.base.errors.messages;
 
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MSSQL;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.MSSQL;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class MssqlErrorMessage extends ErrorMessage {
 
@@ -18,7 +18,7 @@ public class MssqlErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return MSSQL;
   }
 

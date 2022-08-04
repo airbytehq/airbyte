@@ -7,9 +7,9 @@ package io.airbyte.integrations.base.errors.messages;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_DB_NAME_OR_USER_ACCESS_DENIED;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_HOST_OR_PORT;
 import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_USERNAME_OR_PASSWORD;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.MYSQL;
+import static io.airbyte.integrations.base.errors.utils.ConnectorName.MYSQL;
 
-import io.airbyte.integrations.base.errors.utils.ConnectorType;
+import io.airbyte.integrations.base.errors.utils.ConnectorName;
 
 public class MysqlErrorMessage extends ErrorMessage {
 
@@ -20,7 +20,7 @@ public class MysqlErrorMessage extends ErrorMessage {
   }
 
   @Override
-  public ConnectorType getConnectorType() {
+  public ConnectorName getConnectorName() {
     return MYSQL;
   }
 
