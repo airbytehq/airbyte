@@ -238,7 +238,22 @@ Also, the publication should include all the tables and only the tables that nee
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
-#### Step 5: Set up the Postgres source connector
+#### Step 5: [Optional] Set up initial waiting time
+
+::warning::
+This is an advanced feature. Use it if absolutely necessary.
+:::
+
+The Postgres connector may need some time to start processing the data in the CDC mode in the following scenarios:
+
+- When the connection is set up for the first time and a snapshot is needed
+- When the connector has a lot of change logs to process
+
+The connector waits for the default initial wait time of 5 minutes (300 seconds). Setting the parameter to a longer duration will result in slower syncs, while setting it to a shorter duration may cause the connector to not have enough time to create the initial snapshot or read through the change logs.
+
+If you know there are database changes to be synced, but the connector cannot read those changes, the root cause may be insufficient waiting time. In that case, you can increase the waiting time (example: set to 600 seconds) to test if it is indeed the root cause. On the other hand, if you know there are no database changes, you can decrease the wait time to speed up the zero record syncs.
+
+#### Step 6: Set up the Postgres source connector
 
 In [Step 2](#step-2-set-up-the-postgres-connector-in-airbyte) of the connector setup guide, enter the replication slot and publication you just created.
 
