@@ -57,7 +57,7 @@ public class MetricClientFactory {
    */
   public static synchronized void initialize(final MetricEmittingApp metricEmittingApp) {
     if (metricClient != null) {
-      LOGGER.warn("MetricClientFactory configuration has already been initialized using " + configs.getMetricClient());
+      throw new RuntimeException("You cannot initialize configuration more than once.");
     }
 
     LOGGER.info("getting metric client in initialize; metric client is:");
@@ -96,7 +96,7 @@ public class MetricClientFactory {
        * Returning null for default get function because the host has been overridden above.
        */
       @Override
-      public String get(String key) {
+      public String get(final String key) {
         return null;
       }
 
@@ -111,7 +111,7 @@ public class MetricClientFactory {
   public static MeterRegistry getMeterRegistry() {
 
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
-      StatsdConfig config = getDatadogStatsDConfig();
+      final StatsdConfig config = getDatadogStatsDConfig();
       return new StatsdMeterRegistry(config, Clock.SYSTEM);
     }
 
