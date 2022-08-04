@@ -37,7 +37,7 @@ datetime_stream_slicer:
   end_datetime:
     datetime: "2022-08-01T00:00:00.0Z"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-  step: "3000d"
+  step: "30d"
   cursor_field: "date"
   start_time_option:
     field_name: "date_from"
@@ -117,6 +117,17 @@ list_market_share_s7_stream:
           countrycode: "{{ config.country_code }}"
           se_id: "{{ stream_slice.engine }}"
           domain: "{{ stream_slice.project_url }}"
+      error_handler:
+        response_filters:
+          - http_codes: [500]
+            error_message_contain: "An unexpected error has happened"
+            action: IGNORE
+          - http_codes: [400]
+            error_message_contain: "Rankings not yet calculated"
+            action: IGNORE
+          - http_codes: [403]
+            error_message_contain: "Insufficient credits to make this service request"
+            action: IGNORE
     paginator:
       type: "NoPagination"
     stream_slicer:
