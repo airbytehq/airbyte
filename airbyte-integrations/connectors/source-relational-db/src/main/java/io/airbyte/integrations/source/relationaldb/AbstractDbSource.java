@@ -23,7 +23,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.source.relationaldb.InvalidCursor.Info;
+import io.airbyte.integrations.source.relationaldb.InvalidCursorException.InvalidCursorInfo;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
@@ -146,7 +146,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
   }
 
   private void validateCursorFieldForIncrementalTables(final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable, final ConfiguredAirbyteCatalog catalog) {
-    final List<Info> tablesWithInvalidCursor = new ArrayList<>();
+    final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -169,11 +169,11 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         continue;
       }
 
-      tablesWithInvalidCursor.add(new Info(fullyQualifiedTableName, cursorField, cursorType.toString()));
+      tablesWithInvalidCursor.add(new InvalidCursorInfo(fullyQualifiedTableName, cursorField, cursorType.toString()));
     }
 
     if (tablesWithInvalidCursor.isEmpty()) {
-      throw new InvalidCursor(tablesWithInvalidCursor);
+      throw new InvalidCursorException(tablesWithInvalidCursor);
     }
   }
 
