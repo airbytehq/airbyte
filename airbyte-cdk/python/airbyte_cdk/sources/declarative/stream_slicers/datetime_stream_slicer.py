@@ -30,6 +30,10 @@ class DatetimeStreamSlicer(StreamSlicer):
     - days, d
 
     For example, "1d" will produce windows of 1 day, and 2weeks windows of 2 weeks.
+
+    The timestamp format accepts the same format codes as datetime.strfptime, which are
+    all the format codes required by the 1989 C standard.
+    Full list of accepted format codes: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
     """
 
     timedelta_regex = re.compile(r"((?P<weeks>[\.\d]+?)w)?" r"((?P<days>[\.\d]+?)d)?$")

@@ -13,6 +13,10 @@ class MinMaxDatetime:
     Compares the provided date against optional minimum or maximum times. If date is earlier than
     min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.
     If neither, the input date is returned.
+
+    The timestamp format accepts the same format codes as datetime.strfptime, which are
+    all the format codes required by the 1989 C standard.
+    Full list of accepted format codes: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
     """
 
     def __init__(
