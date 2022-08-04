@@ -229,7 +229,7 @@ class TestSpec(BaseTest):
         # e.g:
         # - "str" -> ["str"] VALID
         # - "str" -> ["str", "null"] VALID
-        # - "str" -> ["str", "int"] INVALID
+        # - "str" -> ["str", "int"] VALID
         # - "str" -> 1 INVALID
         # - ["str"] -> "str" VALID
         # - ["str"] -> "int" INVALID
