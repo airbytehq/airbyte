@@ -54,6 +54,7 @@ public class CdcPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatyp
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
+        .put("is_test", true)
         .put(JdbcUtils.SSL_KEY, false)
         .build());
 
