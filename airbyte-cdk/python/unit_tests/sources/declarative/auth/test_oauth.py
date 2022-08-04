@@ -48,7 +48,7 @@ class TestOauth2Authenticator:
                 "scopes": ["no_override"],
             },
         )
-        body = oauth.get_refresh_request_body()
+        body = oauth.build_refresh_request_body()
         expected = {
             "grant_type": "refresh_token",
             "client_id": "some_client_id",
