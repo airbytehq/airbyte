@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
 import mock
 import pytest
 from datetime import datetime

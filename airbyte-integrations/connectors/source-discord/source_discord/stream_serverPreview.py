@@ -27,4 +27,4 @@ class DiscordServerPreviewStream(HttpStream):
 
 class ServerPreview(DiscordServerPreviewStream):
     def path(self, **_) -> str:
-        return "api/guilds/{}/preview".format(self.guild_id)
+        return f"api/guilds/{self.guild_id}/preview"

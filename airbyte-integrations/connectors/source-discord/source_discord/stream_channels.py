@@ -27,4 +27,4 @@ class DiscordChannelsStream(HttpStream):
 
 class Channels(DiscordChannelsStream):
     def path(self, **_) -> str:
-        return "api/guilds/{}/channels".format(self.guild_id)
+        return f"api/guilds/{self.guild_id}/channels"

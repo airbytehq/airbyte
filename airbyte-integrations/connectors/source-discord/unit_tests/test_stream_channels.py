@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
 import mock
 import pytest
 
@@ -28,7 +27,7 @@ def test_request_headers(patch_base_class):
 
 def test_next_page_token(patch_base_class):
     stream = DiscordChannelsStream(CONFIG)
-    inputs = {"response": MagicMock()}
+    inputs = {"response": mock.MagicMock()}
     assert stream.next_page_token(inputs) == None
 
 
