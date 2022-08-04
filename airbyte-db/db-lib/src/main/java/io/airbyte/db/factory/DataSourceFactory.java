@@ -10,7 +10,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.threeten.bp.Duration;
+import java.time.Duration;
 
 /**
  * Temporary factory class that provides convenience methods for creating a {@link DataSource}
