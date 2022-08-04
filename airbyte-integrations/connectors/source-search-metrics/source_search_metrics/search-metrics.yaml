@@ -71,6 +71,7 @@ tags_stream:
   type: DeclarativeStream
   $options:
     name: "tags"
+    cursor_field: "date"
   primary_key: ""
   schema_loader:
     $ref: "*ref(schema_loader)"
@@ -99,6 +100,7 @@ list_market_share_s7_stream:
   type: DeclarativeStream
   $options:
     name: "list_market_share_s7"
+    cursor_field: "date"
   primary_key: ""
   schema_loader:
     $ref: "*ref(schema_loader)"
