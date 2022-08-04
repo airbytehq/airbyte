@@ -234,6 +234,14 @@ jobs:
       - name: Ensure no file change
         run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Connectors Base Test Report
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
+          reporter: java-junit
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-connectors-base-build-runner:
     name: "Connectors Base: Stop Build EC2 Runner"
@@ -460,11 +468,11 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-#      - name: Format
-#        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
-#
-#      - name: Ensure no file change
-#        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+      - name: Format
+        run: SUB_BUILD=PLATFORM ./gradlew format --scan --info --stacktrace
+
+      - name: Ensure no file change
+        run: git --no-pager diff && test -z "$(git --no-pager diff)"
 
       - name: Build
         run: |
@@ -505,12 +513,9 @@ jobs:
         uses: dorny/test-reporter@v1
         if: always()    # run this step even if previous step failed
         with:
-          name: JUnit Test Report
+          name: Platform Test Report with Docker E2E Test
           path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
           reporter: java-junit
-          list-suites: 'failed'
-          list-tests: 'failed'
-          fail-on-error: 'false'
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-platform-build-runner:
@@ -642,6 +647,14 @@ jobs:
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         run: |
           CI=true IS_MINIKUBE=true ./tools/bin/acceptance_test_kube.sh
+
+      - name: Generate Test Report
+        uses: dorny/test-reporter@v1
+        if: always()    # run this step even if previous step failed
+        with:
+          name: Platform Kubernetes E2E Test Report
+          path: '/actions-runner/_work/airbyte/airbyte/*/build/test-results/test/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/test/*.xml'
+          reporter: java-junit
 
       - uses: actions/upload-artifact@v2
         if: failure()

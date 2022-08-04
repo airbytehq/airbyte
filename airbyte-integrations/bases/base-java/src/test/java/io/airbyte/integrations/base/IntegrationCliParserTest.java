@@ -6,6 +6,7 @@ package io.airbyte.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ class IntegrationCliParserTest {
     final String[] args = new String[] {"--spec"};
     final IntegrationConfig actual = new IntegrationCliParser().parse(args);
     assertEquals(IntegrationConfig.spec(), actual);
+    assertTrue(false);
   }
 
   @Test
