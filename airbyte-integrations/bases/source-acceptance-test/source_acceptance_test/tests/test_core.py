@@ -215,13 +215,15 @@ class TestSpec(BaseTest):
         assert len(type_values_changed_in_list) == 0 and len(type_values_changed) == 0, common_error_message
 
         # Detect type value added to type list if new type value is not None (e.g ["str"] -> ["str", "int"]):
-        new_values_in_type_list = [
+        # It works because we compute the diff with 'ignore_order=True'
+        new_values_in_type_list = [  # noqa: F841
             change
             for change in spec_diff.get("iterable_item_added", [])
             if change.path(output_format="list")[-2] == "type"
             if change.t2 is not None
-        ]  # It works because we compute the diff with 'ignore_order=True'
-        assert len(new_values_in_type_list) == 0, common_error_message
+        ]
+        # enable the assertion below if we want to disallow type expansion:
+        # assert len(new_values_in_type_list) == 0, common_error_message
 
         # Detect the change of type of a type field
         # e.g:

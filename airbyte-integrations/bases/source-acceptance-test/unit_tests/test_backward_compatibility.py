@@ -413,8 +413,8 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                     },
                 }
             ),
-            pytest.raises(AssertionError),
-            id="Adding a field type in list should fail.",
+            does_not_raise(),
+            id="Adding a field type in list should not fail.",
         ),
         pytest.param(
             ConnectorSpecification(
