@@ -277,7 +277,7 @@ class TestSpec(BaseTest):
         added_enum_fields = [
             addition for addition in spec_diff.get("dictionary_item_added", []) if addition.path(output_format="list")[-1] == "enum"
         ]
-        assert len(added_enum_fields) == 0, f"The current spec has a new enum field: {spec_diff.pretty()}"
+        assert len(added_enum_fields) == 0, f"An 'enum' field was declared on an existing property of the spec: {spec_diff.pretty()}"
 
     def test_additional_properties_is_true(self, actual_connector_spec: ConnectorSpecification):
         """Check that value of the "additionalProperties" field is always true.
