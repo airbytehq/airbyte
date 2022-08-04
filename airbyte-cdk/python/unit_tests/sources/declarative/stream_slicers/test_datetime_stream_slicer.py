@@ -437,12 +437,10 @@ def test_request_option(test_name, inject_into, field_name, expected_req_params,
 
     slicer.update_cursor(stream_slice)
 
-    print(f"expected: {expected_req_params}")
-    print(f"actual: {slicer.request_params(stream_slice)}")
-    assert expected_req_params == slicer.request_params(stream_slice)
-    assert expected_headers == slicer.request_headers(stream_slice)
-    assert expected_body_json == slicer.request_body_json(stream_slice)
-    assert expected_body_data == slicer.request_body_data(stream_slice)
+    assert expected_req_params == slicer.request_params(stream_slice=stream_slice)
+    assert expected_headers == slicer.request_headers(stream_slice=stream_slice)
+    assert expected_body_json == slicer.request_body_json(stream_slice=stream_slice)
+    assert expected_body_data == slicer.request_body_data(stream_slice=stream_slice)
 
 
 if __name__ == "__main__":

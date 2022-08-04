@@ -21,16 +21,36 @@ class SingleSlice(StreamSlicer):
     def get_stream_state(self) -> StreamState:
         return {}
 
-    def request_params(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_headers(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def request_body_data(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_body_data(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def request_body_json(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_body_json(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:

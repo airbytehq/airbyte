@@ -206,16 +206,40 @@ class DatetimeStreamSlicer(StreamSlicer):
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
         return datetime.timedelta(**time_params)
 
-    def request_params(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.request_parameter, stream_slice)
 
-    def request_headers(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.header, stream_slice)
 
-    def request_body_data(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_data, stream_slice)
 
-    def request_body_json(self, stream_slice: StreamSlice) -> Mapping[str, Any]:
+    def request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json, stream_slice)
 
     def request_kwargs(self) -> Mapping[str, Any]:
@@ -228,8 +252,6 @@ class DatetimeStreamSlicer(StreamSlicer):
             options[self._start_time_option.field_name] = stream_slice.get(
                 self._stream_slice_field_start.eval(self._config, **self._options)
             )
-            print(f"set start: {self._stream_slice_field_start._string}")
         if self._end_time_option and self._end_time_option.inject_into == option_type:
-            print(f"set end: {self._stream_slice_field_end._string}")
             options[self._end_time_option.field_name] = stream_slice.get(self._stream_slice_field_end.eval(self._config, **self._options))
         return options
