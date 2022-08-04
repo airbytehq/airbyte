@@ -117,7 +117,12 @@ class SimpleRetriever(Retriever, HttpStream):
         Authentication headers will overwrite any overlapping headers returned from this method.
         """
         # Warning: use self.state instead of the stream_state passed as argument!
-        return self._get_request_options(stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers)
+        return {
+            k: str(v)
+            for k, v in self._get_request_options(
+                stream_slice, next_page_token, self._requester.request_headers, self._paginator.request_headers
+            ).items()
+        }
 
     def _get_request_options(
         self, stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]], requester_method, paginator_method
