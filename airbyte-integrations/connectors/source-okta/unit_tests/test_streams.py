@@ -19,6 +19,7 @@ from source_okta.source import (
     IncrementalOktaStream,
     Logs,
     OktaStream,
+    Permissions,
     UserRoleAssignments,
     Users,
 )
@@ -210,6 +211,22 @@ class TestStreamCustomRoles:
         record = {"roles": [custom_role_instance]}
         requests_mock.get(f"{api_url}", json=record)
         assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [custom_role_instance]
+
+
+class TestStreamPermissions:
+    def test_permissions(self, requests_mock, patch_base_class, permission_instance, url_base, api_url):
+        stream = Permissions(url_base=url_base)
+        record = {"permissions": [permission_instance]}
+        role_id = "test_role_id"
+        requests_mock.get(f"{api_url}/iam/roles/{role_id}/permissions", json=record)
+        inputs = {"sync_mode": SyncMode.full_refresh, "stream_state": {}, "stream_slice": {"role_id": role_id}}
+        assert list(stream.read_records(**inputs)) == record["permissions"]
+
+    def test_permissions_parse_response(self, requests_mock, patch_base_class, permission_instance, url_base, api_url):
+        stream = Permissions(url_base=url_base)
+        record = {"permissions": [permission_instance]}
+        requests_mock.get(f"{api_url}", json=record)
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [permission_instance]
 
 
 class TestStreamGroups:
