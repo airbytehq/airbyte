@@ -258,7 +258,7 @@ class SyncWorkflowTest {
 
   private static void verifyDecideDataPlaneTaskQueue(final DecideDataPlaneTaskQueueActivity decideDataPlaneTaskQueueActivity,
                                                      final UUID connectionId) {
-    final String taskQueue = verify(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(connectionId);
+    verify(decideDataPlaneTaskQueueActivity).decideDataPlaneTaskQueue(connectionId);
   }
 
   private static void verifyReplication(final ReplicationActivity replicationActivity, final StandardSyncInput syncInput) {
