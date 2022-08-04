@@ -68,6 +68,7 @@ class TestSpec(BaseTest):
         actual_connector_spec: ConnectorSpecification,
         previous_connector_spec: ConnectorSpecification,
     ) -> DeepDiff:
+        breakpoint()
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         return self.compute_spec_diff(actual_connector_spec, previous_connector_spec)
 
@@ -220,7 +221,7 @@ class TestSpec(BaseTest):
             change
             for change in spec_diff.get("iterable_item_added", [])
             if change.path(output_format="list")[-2] == "type"
-            if change.t2 is not None
+            if change.t2 != "null"
         ]
         # enable the assertion below if we want to disallow type expansion:
         # assert len(new_values_in_type_list) == 0, common_error_message
@@ -228,7 +229,7 @@ class TestSpec(BaseTest):
         # Detect the change of type of a type field
         # e.g:
         # - "str" -> ["str"] VALID
-        # - "str" -> ["str", None] VALID
+        # - "str" -> ["str", "null"] VALID
         # - "str" -> ["str", "int"] INVALID
         # - "str" -> 1 INVALID
         # - ["str"] -> "str" VALID
@@ -245,9 +246,9 @@ class TestSpec(BaseTest):
                 assert (
                     0 < len(change.t2) <= 2
                 ), f"The current spec change a type field from string to an invalid value. The type list length should not be empty and have a maximum of two items {spec_diff.pretty()}."
-                # If the new type field is a list we want to make sure it only has the original type (t1) and None: e.g. "str" -> ["str", None]
+                # If the new type field is a list we want to make sure it only has the original type (t1) and null: e.g. "str" -> ["str", "null"]
                 # We want to raise an error otherwise.
-                t2_not_null_types = [_type for _type in change.t2 if _type is not None]
+                t2_not_null_types = [_type for _type in change.t2 if _type != "null"]
                 assert (
                     len(t2_not_null_types) == 1 and t2_not_null_types[0] == change.t1
                 ), "The current spec change a type field to a list with multiple invalid values."
@@ -257,7 +258,7 @@ class TestSpec(BaseTest):
                 ), f"The current spec change a type field from list to an invalid value:  {spec_diff.pretty()}"
                 assert len(change.t1) == 1 and change.t2 == change.t1[0], f"The current spec narrowed a field type: {spec_diff.pretty()}"
 
-        # Detect when field was made not nullable but is still a list: e.g ["string", None] -> ["string"]
+        # Detect when field was made not nullable but is still a list: e.g ["string", "null"] -> ["string"]
         removed_nullable = [
             change for change in spec_diff.get("iterable_item_removed", []) if change.path(output_format="list")[-2] == "type"
         ]

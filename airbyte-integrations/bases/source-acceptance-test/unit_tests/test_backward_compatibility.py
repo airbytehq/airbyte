@@ -289,7 +289,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": ["int", None, "str"]},
+                        "my_int": {"type": ["int", "null", "str"]},
                     },
                 }
             ),
@@ -429,7 +429,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "str"]},
+                        "my_int": {"type": ["null", "str"]},
                     },
                 }
             ),
@@ -449,7 +449,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": ["str", None]},
+                        "my_int": {"type": ["str", "null"]},
                     },
                 }
             ),
@@ -469,7 +469,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "str"]},
+                        "my_int": {"type": ["null", "str"]},
                     },
                 }
             ),
@@ -489,7 +489,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": ["str", None]},
+                        "my_int": {"type": ["str", "null"]},
                     },
                 }
             ),
@@ -509,7 +509,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": ["int", None]},
+                        "my_int": {"type": ["int", "null"]},
                     },
                 }
             ),
@@ -529,7 +529,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "int"]},
+                        "my_int": {"type": ["null", "int"]},
                     },
                 }
             ),
@@ -561,7 +561,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "str"]},
+                        "my_int": {"type": ["null", "str"]},
                     },
                 }
             ),
@@ -569,7 +569,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "int"]},
+                        "my_int": {"type": ["null", "int"]},
                     },
                 }
             ),
@@ -581,7 +581,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "str"]},
+                        "my_int": {"type": ["null", "str"]},
                     },
                 }
             ),
@@ -589,7 +589,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": ["str", None]},
+                        "my_int": {"type": ["str", "null"]},
                     },
                 }
             ),
@@ -601,7 +601,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_int": {"type": [None, "str"]},
+                        "my_int": {"type": ["null", "str"]},
                     },
                 }
             ),
@@ -621,7 +621,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_string": {"type": [None, "string"]},
+                        "my_string": {"type": ["null", "string"]},
                     },
                 }
             ),
@@ -641,7 +641,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": [None, "int"]}}},
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": ["null", "int"]}}},
                     },
                 }
             ),
@@ -669,7 +669,7 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": [None, "int"]}}},
+                        "my_nested_object": {"type": "object", "properties": {"my_property": {"type": ["null", "int"]}}},
                     },
                 }
             ),
