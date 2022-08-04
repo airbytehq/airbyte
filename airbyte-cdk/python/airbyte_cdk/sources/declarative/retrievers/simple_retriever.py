@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -46,9 +46,11 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
     requester: Requester
     record_selector: HttpSelector
-    stream_name: str
-    stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]
     options: InitVar[Mapping[str, Any]]
+    name: str
+    _name: str = field(init=False, repr=False)
+    primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    _primary_key: str = field(init=False, repr=False)
     paginator: Optional[Paginator] = None
     stream_slicer: Optional[StreamSlicer] = SingleSlice(options={})
 
@@ -63,7 +65,12 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """
         :return: Stream name
         """
-        return self.stream_name
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._name = value
 
     @property
     def url_base(self) -> str:
@@ -274,7 +281,12 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         """The stream's primary key"""
-        return self.stream_primary_key
+        return self._primary_key
+
+    @primary_key.setter
+    def primary_key(self, value: str) -> None:
+        if not isinstance(value, property):
+            self._primary_key = value
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """

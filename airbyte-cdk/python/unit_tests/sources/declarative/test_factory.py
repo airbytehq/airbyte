@@ -55,8 +55,6 @@ def test_factory():
     config = parser.parse(content)
     request_options_provider = factory.create_component(config["request_options"], input_config)()
 
-    schem = InterpolatedRequestOptionsProvider.json_schema()
-    print(schem)
     assert type(request_options_provider) == InterpolatedRequestOptionsProvider
     assert request_options_provider._parameter_interpolator._config == input_config
     assert request_options_provider._parameter_interpolator._interpolator.mapping["offset"] == "{{ next_page_token['offset'] }}"
@@ -281,24 +279,23 @@ requester:
     type: DefaultErrorHandler
 retriever:
   class_name: "airbyte_cdk.sources.declarative.retrievers.simple_retriever.SimpleRetriever"
-  stream_name: "{{ options['stream_name'] }}"
+  name: "{{ options['name'] }}"
   stream_slicer:
     class_name: airbyte_cdk.sources.declarative.stream_slicers.single_slice.SingleSlice
   paginator:
     class_name: airbyte_cdk.sources.declarative.requesters.paginators.no_pagination.NoPagination
-  stream_primary_key: "{{ options['primary_key'] }}"
+  primary_key: "{{ options['primary_key'] }}"
 partial_stream:
   class_name: "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
   schema_loader:
     class_name: airbyte_cdk.sources.declarative.schema.json_schema.JsonSchema
-    name: "{{ options['stream_name'] }}"
-    file_path: "./source_sendgrid/schemas/{{ options.stream_name }}.json"
+    file_path: "./source_sendgrid/schemas/{{ options.name }}.json"
   cursor_field: [ ]
 list_stream:
   $ref: "*ref(partial_stream)"
   $options:
-    stream_name: "lists"
-    stream_primary_key: "id"
+    name: "lists"
+    primary_key: "id"
     extractor:
       $ref: "*ref(extractor)"
       transform: "_.result"
@@ -377,7 +374,7 @@ def test_create_requester():
     type: HttpRequester
     path: "/v3/marketing/lists"
     $options:
-        name: lists
+        name: 'lists'
     url_base: "https://api.sendgrid.com"
     authenticator:
       type: "BasicHttpAuthenticator"
@@ -431,12 +428,12 @@ def test_config_with_defaults():
     lists_stream:
       type: "DeclarativeStream"
       $options:
-        stream_name: "lists"
-        stream_primary_key: id
+        name: "lists"
+        primary_key: id
         url_base: "https://api.sendgrid.com"
         schema_loader:
           name: "{{ options.stream_name }}"
-          file_path: "./source_sendgrid/schemas/{{ options.stream_name }}.yaml"
+          file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
         retriever:
           paginator:
             type: "LimitPaginator"
@@ -450,7 +447,6 @@ def test_config_with_defaults():
               type: "CursorPagination"
               cursor_value: "{{ response._metadata.next }}"
           requester:
-            name: "{{ options.stream_name }}"
             path: "/v3/marketing/lists"
             authenticator:
               type: "BearerAuthenticator"
@@ -511,15 +507,15 @@ def test_create_limit_paginator():
 class TestCreateTransformations:
     # the tabbing matters
     base_options = """
-                stream_name: "lists"
-                stream_primary_key: id
+                name: "lists"
+                primary_key: id
                 url_base: "https://api.sendgrid.com"
                 schema_loader:
-                  name: "{{ options.stream_name }}"
-                  file_path: "./source_sendgrid/schemas/{{name}}.yaml"
+                  name: "{{ options.name }}"
+                  file_path: "./source_sendgrid/schemas/{{ options.name }}.yaml"
                 retriever:
                   requester:
-                    name: "{{ options.stream_name }}"
+                    name: "{{ options.name }}"
                     path: "/v3/marketing/lists"
                     request_parameters:
                       page_size: 10

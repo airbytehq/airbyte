@@ -40,6 +40,3 @@ def test_cursor_pagination_strategy(test_name, template_string, stop_condition, 
 
     token = strategy.next_page_token(response, last_records)
     assert expected_token == token
-
-    print("\n")
-    print(strategy)

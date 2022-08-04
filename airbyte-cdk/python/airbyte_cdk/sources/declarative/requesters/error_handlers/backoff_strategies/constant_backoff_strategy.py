@@ -7,10 +7,11 @@ from typing import Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategy import BackoffStrategy
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class ConstantBackoffStrategy(BackoffStrategy):
+class ConstantBackoffStrategy(BackoffStrategy, JsonSchemaMixin):
     """
     Backoff strategy with a constant backoff interval
 

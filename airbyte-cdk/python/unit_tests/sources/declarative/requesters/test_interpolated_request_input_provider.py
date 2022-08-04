@@ -25,5 +25,3 @@ def test_initialize_interpolated_mapping_request_input_provider(test_name, input
 
     assert isinstance(provider._interpolator, InterpolatedMapping)
     assert actual_request_data == expected_request_data
-
-    print(provider)

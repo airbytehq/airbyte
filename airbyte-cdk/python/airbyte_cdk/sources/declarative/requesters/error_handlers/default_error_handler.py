@@ -116,6 +116,8 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
 
     @max_retries.setter
     def max_retries(self, value: Union[int, None]):
+        # Covers the case where max_retries is not provided in the constructor, which causes the property object
+        # to be set which we need to avoid doing
         if not isinstance(value, property):
             self._max_retries = value
 

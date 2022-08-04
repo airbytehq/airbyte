@@ -26,6 +26,8 @@ class MinMaxDatetime(JsonSchemaMixin):
 
     datetime: Union[InterpolatedString, str]
     options: InitVar[Mapping[str, Any]]
+    # datetime_format is a unique case where we inherit it from the parent if it is not specified before using the default value
+    # which is why we need dedicated getter/setter methods and private dataclass field
     datetime_format: str = ""
     _datetime_format: str = field(init=False, repr=False, default="")
     min_datetime: Union[InterpolatedString, str] = ""

@@ -36,8 +36,8 @@ def test_declarative_stream():
     config = {"api_key": "open_sesame"}
 
     stream = DeclarativeStream(
-        stream_name=name,
-        stream_primary_key=primary_key,
+        name=name,
+        primary_key=primary_key,
         stream_cursor_field=cursor_field,
         schema_loader=schema_loader,
         retriever=retriever,
