@@ -460,7 +460,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
-    ((ObjectNode) config).put("password", "fake");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
@@ -468,7 +468,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
-    ((ObjectNode) config).put("username", "fake");
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_USERNAME_OR_PASSWORD.getValue(), actual.getMessage());
@@ -476,7 +476,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
-    ((ObjectNode) config).put("host", "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
@@ -484,7 +484,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
-    ((ObjectNode) config).put("port", "30000");
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
@@ -492,7 +492,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectDataBaseFailure() throws Exception {
-    ((ObjectNode) config).put("database", "wrongdatabase");
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertEquals(INCORRECT_DB_NAME.getValue(), actual.getMessage());

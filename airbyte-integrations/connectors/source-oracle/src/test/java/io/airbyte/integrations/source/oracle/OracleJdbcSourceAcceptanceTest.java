@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -393,8 +394,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // by using a fake password oracle can block user account so we will create separate account for
     // this test
     executeOracleStatement(String.format("CREATE USER locked_user IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
-    ((ObjectNode) config).put("username", "locked_user");
-    ((ObjectNode) config).put("password", "fake");
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "locked_user");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_USERNAME_ACCOUNT_IS_LOCKED.getValue(), actual.getMessage());
@@ -402,7 +403,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectUsernameFailure() throws Exception {
-    ((ObjectNode) config).put("username", "fake");
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "fake");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
@@ -410,7 +411,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectHostFailure() throws Exception {
-    ((ObjectNode) config).put("host", "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
@@ -418,7 +419,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   public void testCheckIncorrectPortFailure() throws Exception {
-    ((ObjectNode) config).put("port", "0000");
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "0000");
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_HOST_OR_PORT.getValue(), actual.getMessage());
@@ -427,8 +428,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   @Test
   public void testUserHasNoPermissionToDataBase() throws Exception {
     executeOracleStatement(String.format("CREATE USER %s IDENTIFIED BY %s", USERNAME_WITHOUT_PERMISSION, PASSWORD_WITHOUT_PERMISSION));
-    ((ObjectNode) config).put("username", USERNAME_WITHOUT_PERMISSION);
-    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     final AirbyteConnectionStatus actual = source.check(config);
     Assertions.assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     Assertions.assertEquals(INCORRECT_USERNAME_OR_PASSWORD_OR_DATABASE_OR_USER_ACCESS_DENIED.getValue(), actual.getMessage());
