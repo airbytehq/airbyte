@@ -139,6 +139,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .put("replication_method", replicationMethod)
         .build());
   }
