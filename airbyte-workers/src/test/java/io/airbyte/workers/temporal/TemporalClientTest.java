@@ -114,7 +114,7 @@ class TemporalClientTest {
     streamResetPersistence = mock(StreamResetPersistence.class);
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
     connectionManagerUtils = spy(ConnectionManagerUtils.class);
-    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, streamResetPersistence));
+    temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, streamResetPersistence, connectionManagerUtils));
   }
 
   @Nested
@@ -735,24 +735,34 @@ class TemporalClientTest {
   @Nested
   class RestartPerStatus {
 
+    private ConnectionManagerUtils mConnectionManagerUtils;
+
+    @BeforeEach
+    public void init() throws IOException {
+      mConnectionManagerUtils = mock(ConnectionManagerUtils.class);
+
+      final Path workspaceRoot = Files.createTempDirectory(Path.of("/tmp"), "temporal_client_test");
+      temporalClient = spy(new TemporalClient(workflowClient, workspaceRoot, workflowServiceStubs, streamResetPersistence, mConnectionManagerUtils));
+    }
+
     @Test
     public void testRestartFailed() {
       final ConnectionManagerWorkflow mConnectionManagerWorkflow = mock(ConnectionManagerWorkflow.class);
-      final WorkflowState mWorkflowState = mock(WorkflowState.class);
 
       when(workflowClient.newWorkflowStub(any(), anyString())).thenReturn(mConnectionManagerWorkflow);
       final UUID connectionId = UUID.fromString("ebbfdc4c-295b-48a0-844f-88551dfad3db");
       final String connectionManagerWorkflowId = connectionManagerUtils.getConnectionManagerName(connectionId);
       final Set<String> workflowIds = Set.of(connectionManagerWorkflowId);
+
       doReturn(workflowIds)
           .when(temporalClient).fetchWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
       doReturn(workflowIds)
           .when(temporalClient).filterOutRunningWorkspaceId(workflowIds);
       mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
       temporalClient.restartWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
-      verify(connectionManagerUtils).safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
+      verify(mConnectionManagerUtils).safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
           anyString());
-      verify(connectionManagerUtils).startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId));
+      verify(mConnectionManagerUtils).startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId));
     }
 
   }
