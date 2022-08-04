@@ -56,4 +56,6 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
    */
   String getFullyQualifiedTableNameWithQuoting(final Connection connection, final String schemaName, final String tableName) throws SQLException;
 
+  boolean isValidCursorType(final SourceType cursorType);
+
 }

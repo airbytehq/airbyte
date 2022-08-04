@@ -311,6 +311,11 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbS
   }
 
   @Override
+  protected boolean isValidCursorType(final Datatype cursorType) {
+    return sourceOperations.isValidCursorType(cursorType);
+  }
+
+  @Override
   public JdbcDatabase createDatabase(final JsonNode config) throws SQLException {
     final DataSource dataSource = createDataSource(config);
     final JdbcDatabase database = new StreamingJdbcDatabase(
