@@ -181,6 +181,7 @@ public class WorkerApp {
     }
 
     factory.start();
+    factory.shutdown();
   }
 
   private void registerConnectionManager(final WorkerFactory factory) {
