@@ -30,10 +30,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
-      final IntegrationLauncherConfig sourceLauncherConfig,
-      final IntegrationLauncherConfig destinationLauncherConfig,
-      final StandardSyncInput syncInput,
-      final UUID connectionId) {
+                                final IntegrationLauncherConfig sourceLauncherConfig,
+                                final IntegrationLauncherConfig destinationLauncherConfig,
+                                final StandardSyncInput syncInput,
+                                final UUID connectionId) {
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 
@@ -43,8 +43,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final PersistStateActivity persistActivity;
 
     /**
-     * The current version calls a new activity to determine which Task Queue to use for other activities.
-     * The previous version doesn't call this new activity, and instead lets each activity inherit the workflow's Task Queue.
+     * The current version calls a new activity to determine which Task Queue to use for other
+     * activities. The previous version doesn't call this new activity, and instead lets each activity
+     * inherit the workflow's Task Queue.
      */
     if (version > PREV_VERSION) {
       final DecideDataPlaneTaskQueueActivity decideTaskQueueActivity =
