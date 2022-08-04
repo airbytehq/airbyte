@@ -4,9 +4,8 @@
 
 import datetime
 import re
-from typing import Any, Iterable, Mapping, Optional
+from typing import Any, Iterable, Mapping, Optional, Union
 
-import dateutil
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -155,7 +154,7 @@ class DatetimeStreamSlicer(StreamSlicer):
 
     def _format_datetime(self, dt: datetime.datetime):
         if self._datetime_format == "timestamp":
-            return dt.timestamp()
+            return int(dt.timestamp())
         else:
             return dt.strftime(self._datetime_format)
 
@@ -173,15 +172,13 @@ class DatetimeStreamSlicer(StreamSlicer):
         cursor_date = self.parse_date(cursor_value or default_date)
         return comparator(cursor_date, default_date)
 
-    def parse_date(self, date: Any) -> datetime:
-        if date and isinstance(date, str):
-            if self.is_int(date):
-                return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-            else:
-                return dateutil.parser.parse(date).replace(tzinfo=self._timezone)
-        elif isinstance(date, int):
+    def parse_date(self, date: Union[str, datetime.datetime]) -> datetime.datetime:
+        if self._datetime_format == "timestamp":
             return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-        return date
+        elif isinstance(date, str):
+            return datetime.datetime.strptime(str(date), self._datetime_format).replace(tzinfo=self._timezone)
+        else:
+            return date
 
     def is_int(self, s) -> bool:
         try:
