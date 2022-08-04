@@ -9,27 +9,38 @@
     flex-direction: row;
     align-items: center;
 
-    .resetButton {
-      margin-right: 10px;
-    }
+    .actions {
+      display: flex;
 
-    .cancelButton {
-      padding: 5px 8px;
-      border-color: transparent;
-      background-color: colors.$red;
-
-      .iconXmark {
-        margin: 0 10px -1px 0;
-        font-size: 14px;
+      .resetButton,
+      .cancelButton,
+      .syncButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        padding: 0 16px;
       }
-    }
 
-    .syncButton {
-      padding: 5px 8px;
+      .resetButton {
+        margin-right: 10px;
+      }
 
-      .iconRedoAlt {
-        margin: 0 10px -1px 0;
-        font-size: 14px;
+      .cancelButton {
+        border-color: transparent;
+        background-color: colors.$red;
+
+        .iconXmark {
+          margin-right: 12px;
+          font-size: 18px;
+        }
+      }
+
+      .syncButton {
+        .iconRotate {
+          display: flex;
+          margin-right: 12px;
+        }
       }
     }
   }

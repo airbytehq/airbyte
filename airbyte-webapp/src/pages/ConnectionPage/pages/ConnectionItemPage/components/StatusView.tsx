@@ -1,4 +1,4 @@
-import { faRedoAlt, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
@@ -14,6 +14,7 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useResetConnection, useSyncConnection } from "hooks/services/useConnectionHook";
 import { useCancelJob, useListJobs } from "services/job/JobService";
 
+import { RotateIcon } from "../../../../../components/icons/RotateIcon";
 import JobsList from "./JobsList";
 import styles from "./StatusView.module.scss";
 
@@ -117,14 +118,16 @@ const StatusView: React.FC<StatusViewProps> = ({ connection }) => {
           <div className={styles.title}>
             <FormattedMessage id="sources.syncHistory" />
             {connection.status === ConnectionStatus.active && (
-              <div>
+              <div className={styles.actions}>
                 {!activeJob?.action && (
                   <>
                     <Button className={styles.resetButton} secondary onClick={onResetDataButtonClick}>
                       <FormattedMessage id="connection.resetData" />
                     </Button>
                     <Button className={styles.syncButton} disabled={!allowSync} onClick={onSyncNowButtonClick}>
-                      <FontAwesomeIcon className={styles.iconRedoAlt} icon={faRedoAlt} />
+                      <div className={styles.iconRotate}>
+                        <RotateIcon />
+                      </div>
                       <FormattedMessage id="sources.syncNow" />
                     </Button>
                   </>
