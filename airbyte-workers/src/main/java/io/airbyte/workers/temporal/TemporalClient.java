@@ -464,7 +464,7 @@ public class TemporalClient {
   }
 
   public void restartWorkflowByStatus(final WorkflowExecutionStatus executionStatus) {
-    final Set<UUID> workflowExecutionInfos = fetchWorkflowByStatus(executionStatus);
+    final Set<UUID> workflowExecutionInfos = fetchWorkflowsByStatus(executionStatus);
 
     final Set<UUID> nonRunningWorkflow = filterOutRunningWorkspaceId(workflowExecutionInfos);
 
