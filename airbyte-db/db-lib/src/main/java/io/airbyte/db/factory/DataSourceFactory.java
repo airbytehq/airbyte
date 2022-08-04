@@ -8,9 +8,9 @@ import com.google.common.base.Preconditions;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.io.Closeable;
+import java.time.Duration;
 import java.util.Map;
 import javax.sql.DataSource;
-import java.time.Duration;
 
 /**
  * Temporary factory class that provides convenience methods for creating a {@link DataSource}
