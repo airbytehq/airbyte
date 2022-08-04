@@ -239,8 +239,6 @@ def test_parse_response(requests_mock):
 
 class TestAllStreams:
 
-    patch = patch.object(UserSubscriptionStream, "get_subscription_plan", return_value="Enterprise")
-
     @pytest.mark.parametrize(
         "expected_stream_cls",
         [
@@ -285,7 +283,7 @@ class TestAllStreams:
         ],
     )
     def test_streams(self, expected_stream_cls):
-        with self.patch as mock_method:
+        with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value="Enterprise") as mock_method:
             streams = SourceZendeskSupport().streams(TEST_CONFIG)
             mock_method.assert_called()
             for stream in streams:
