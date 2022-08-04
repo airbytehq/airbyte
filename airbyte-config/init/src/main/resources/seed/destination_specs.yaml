@@ -693,7 +693,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-cassandra:0.1.2"
+- dockerImage: "airbyte/destination-cassandra:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/cassandra"
     connectionSpecification:
@@ -758,7 +758,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-keen:0.2.3"
+- dockerImage: "airbyte/destination-keen:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/keen"
     connectionSpecification:
@@ -2005,7 +2005,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kafka:0.1.9"
+- dockerImage: "airbyte/destination-kafka:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kafka"
     connectionSpecification:
@@ -2763,7 +2763,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mongodb:0.1.5"
+- dockerImage: "airbyte/destination-mongodb:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/mongodb"
     connectionSpecification:

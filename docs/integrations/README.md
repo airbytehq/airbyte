@@ -151,7 +151,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
 | [Stripe](sources/stripe.md)                                                                 | Generally Available  | Yes                 |
 | [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                | No                  |
-| [SurveyMonkey](sources/surveymonkey.md)                                                     | Alpha                | Yes                 |
+| [SurveyMonkey](sources/surveymonkey.md)                                                     | Beta                 | Yes                 |
 | [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
