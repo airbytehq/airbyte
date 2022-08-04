@@ -15,6 +15,7 @@ This Source is capable of syncing the following core Streams:
 - [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group)
 - [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
 - [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
+- [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions)
 
 ### Data type mapping
 
@@ -61,6 +62,8 @@ Different Okta APIs require different admin privilege levels. API tokens inherit
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.11  | 2022-08-03 | [14739](https://github.com/airbytehq/airbyte/pull/14739) | add permissions for custom roles |
+| 0.1.10  | 2022-08-01 | [15179](https://github.com/airbytehq/airbyte/pull/15179) | Fixed broken schemas for all streams
 | 0.1.9   | 2022-07-25 | [15001](https://github.com/airbytehq/airbyte/pull/15001) | Return deprovisioned users                                                     |
 | 0.1.8   | 2022-07-19 | [14710](https://github.com/airbytehq/airbyte/pull/14710) | Implement OAuth2.0 authorization method                                        |
 | 0.1.7   | 2022-07-13 | [14556](https://github.com/airbytehq/airbyte/pull/14556) | add User_Role_Assignments and Group_Role_Assignments streams (full fetch only) |
