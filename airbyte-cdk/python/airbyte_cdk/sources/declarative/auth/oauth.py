@@ -38,8 +38,8 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, JsonSchemaMixi
     refresh_token: Union[InterpolatedString, str]
     access_token_name: Union[InterpolatedString, str]
     expires_in_name: Union[InterpolatedString, str]
-    config: Mapping[str, Any] = field(default_factory=dict)
-    refresh_request_body: Optional[Mapping[str, Any]] = (None,)
+    config: Mapping[str, Any]
+    refresh_request_body: Optional[Mapping[str, Any]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None  # this is a hack and point it out in the review
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False)
