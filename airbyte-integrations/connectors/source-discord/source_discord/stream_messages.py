@@ -71,6 +71,10 @@ class DiscordMessagesStream(HttpStream, IncrementalMixin):
     def state(self) -> Mapping[str, Any]:
         return {self.cursor_field: self._cursor_value}
 
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._cursor_value = datetime.utcnow()
+
 
 class Messages(DiscordMessagesStream):
 
