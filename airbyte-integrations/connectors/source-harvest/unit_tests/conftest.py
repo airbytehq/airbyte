@@ -11,13 +11,7 @@ def config_fixture(requests_mock):
     url = "https://id.getharvest.com/api/v2/oauth2/token"
     requests_mock.get(url, json={})
 
-    config = {
-        "account_id": "ID",
-        "replication_start_date": "2021-01-01T21:20:07Z",
-        "credentials": {
-            "api_token": "TOKEN"
-        }
-    }
+    config = {"account_id": "ID", "replication_start_date": "2021-01-01T21:20:07Z", "credentials": {"api_token": "TOKEN"}}
 
     return config
 
@@ -37,5 +31,5 @@ def mock_stream_fixture(requests_mock):
     def _mock_stream(path, response={}):
         url = f"https://api.harvestapp.com/v2/{path}"
         requests_mock.get(url, json=response)
-    return _mock_stream
 
+    return _mock_stream
