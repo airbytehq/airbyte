@@ -54,5 +54,5 @@ def test_streams():
     }
     source = SourceDiscord()
     streams = source.streams(config)
-    expected_streams_number = 4
+    expected_streams_number = 5
     assert len(streams) == expected_streams_number

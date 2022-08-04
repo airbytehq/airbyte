@@ -7,6 +7,7 @@ from .stream_serverPreview import ServerPreview
 from .stream_messages import Messages
 from .stream_members import Members
 from .stream_channels import Channels
+from .stream_roles import Roles
 
 class SourceDiscord(AbstractSource):
 
@@ -28,5 +29,6 @@ class SourceDiscord(AbstractSource):
             ServerPreview(config),
             Channels(config),
             Messages(config, initial_timestamp=initial_timestamp),
-            Members(config)
+            Members(config),
+            Roles(config)
         ]

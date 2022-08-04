@@ -4,7 +4,7 @@ from typing import Any, Mapping, Iterable, Optional, MutableMapping
 from airbyte_cdk.sources.streams.http import HttpStream
 
 
-class DiscordMembersStream(HttpStream):
+class DiscordRolesStream(HttpStream):
     url_base = "https://discord.com"
     primary_key = "id"
 
@@ -27,18 +27,9 @@ class DiscordMembersStream(HttpStream):
         yield from response.json()
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        decoded_response = response.json()
-
-        # End execution in case the response is empty
-        if not decoded_response:
-            return None
-
-        # FIND HIGHEST ID
-        max_id = max([i["user"]["id"] for i in decoded_response])
-
-        return {"after": max_id}
+        return None
 
 
-class Members(DiscordMembersStream):
+class Roles(DiscordRolesStream):
     def path(self, **_) -> str:
-        return f"api/guilds/{self.guild_id}/members?limit=1000"
+        return f"api/guilds/{self.guild_id}/roles"
