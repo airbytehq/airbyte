@@ -128,15 +128,19 @@ class SimpleRetriever(Retriever, HttpStream):
         :return:
         """
         requester_mapping = requester_method(self.state, stream_slice, next_page_token)
+        requester_mapping_keys = set(requester_mapping.keys())
         paginator_mapping = paginator_method(self.state, stream_slice, next_page_token)
+        paginator_mapping_keys = set(paginator_mapping.keys())
         stream_slicer_mapping = stream_slicer_method(stream_slice)
-        requester_paginator_intersection = set(requester_mapping.keys()) & set(paginator_mapping.keys())
-        requester_stream_slicer_intersection = set(requester_mapping.keys()) & set(stream_slicer_mapping.keys())
-        paginator_stream_slicer_intersection = set(paginator_mapping.keys()) & set(stream_slicer_mapping.keys())
+        stream_slicer_mapping_keys = set(stream_slicer_mapping.keys())
 
-        for intersection in [requester_paginator_intersection, requester_stream_slicer_intersection, paginator_stream_slicer_intersection]:
-            if intersection:
-                raise ValueError(f"Duplicate keys found: {intersection}")
+        intersection = (
+            (requester_mapping_keys & paginator_mapping_keys)
+            | (requester_mapping_keys & stream_slicer_mapping_keys)
+            | (paginator_mapping_keys & stream_slicer_mapping_keys)
+        )
+        if intersection:
+            raise ValueError(f"Duplicate keys found: {intersection}")
         return {**requester_mapping, **paginator_mapping, **stream_slicer_mapping}
 
     def request_headers(
