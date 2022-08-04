@@ -240,7 +240,7 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 
 #### Step 5: [Optional] Set up initial waiting time
 
-::warning::
+:::warning
 This is an advanced feature. Use it if absolutely necessary.
 :::
 
