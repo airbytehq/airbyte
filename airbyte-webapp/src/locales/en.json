@@ -103,7 +103,7 @@
   "form.sourceConnector": "Source connector",
   "form.destinationConnector": "Destination connector",
   "form.addItems": "Add",
-  "form.items": "Items",
+  "form.items": "{count, plural, =0 {No items} one {# item} other {# items}}",
   "form.pkSelected": "{count, plural, =0 { } one {{items}} other {# keys selected}}",
   "form.url.error": "field must be a valid URL",
   "form.setupGuide": "Setup Guide",
