@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.70
+- Bugfix: DatetimeStreamSlicer cast interpolated result to string before converting to datetime
+- Bugfix: Set stream slicer's request options in SimpleRetriever
+
 ## 0.1.69
 - AbstractSource emits a state message when reading incremental even if there were no stream slices to process.
 
