@@ -210,8 +210,8 @@ def test_path(
             {"stream_state": None, "stream_slice": {}},
             {"limit": 100, "expand[]": ["data.discounts", "data.taxes"]},
         ),
-        (ExternalAccountBankAccounts, {"stream_state": None}, {"limit": 100, "object": "bank_account"}),
-        (ExternalAccountCards, {"stream_state": None}, {"limit": 100, "object": "card"}),
+        (ExternalAccountBankAccounts, {"stream_state": None, "stream_slice": {}}, {"limit": 100, "object": "bank_account"}),
+        (ExternalAccountCards, {"stream_state": None, "stream_slice": {}}, {"limit": 100, "object": "card"}),
     ],
 )
 def test_request_params(
