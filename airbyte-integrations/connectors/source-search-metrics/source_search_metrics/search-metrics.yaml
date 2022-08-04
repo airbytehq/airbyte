@@ -29,6 +29,24 @@ requester:
   http_method: "GET"
   authenticator:
     $ref: "*ref(authenticator)"
+datetime_stream_slicer:
+  type: "DatetimeStreamSlicer"
+  start_datetime:
+    datetime: "{{ config.start_date }}"
+    datetime_format: "%Y%m%d"
+  end_datetime:
+    datetime: "2022-08-01T00:00:00.0Z"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+  step: "3000d"
+  cursor_field: "date"
+  start_time_option:
+    field_name: "date_from"
+    inject_into: "request_parameter"
+  end_time_option:
+    field_name: "date_to"
+    inject_into: "request_parameter"
+  datetime_format: "%Y%m%d"
+
 retriever:
   type: SimpleRetriever
   name: "{{ options['name'] }}"
@@ -37,7 +55,7 @@ projects_stream:
   type: DeclarativeStream
   $options:
     name: "projects"
-  primary_key: "project_id"
+    primary_key: "project_id"
   schema_loader:
     $ref: "*ref(schema_loader)"
   retriever:
@@ -77,9 +95,45 @@ tags_stream:
           parent_key_to_field:
             project_id: "project_id"
             project_url: "url"
+list_market_share_s7_stream:
+  type: DeclarativeStream
+  $options:
+    name: "list_market_share_s7"
+  primary_key: ""
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "ProjectOrganicGetListMarketShareS7.json"
+      request_options_provider:
+        request_parameters:
+          project_id: "{{ stream_slice.project_id }}"
+          "url": "{{stream_slice.project_url}}"
+          "urls": "{{stream_slice.project_url}}"
+          countrycode: "{{ config.country_code }}"
+          se_id: "{{ stream_slice.engine }}"
+          domain: "{{ stream_slice.project_url }}"
+    paginator:
+      type: "NoPagination"
+    stream_slicer:
+      type: "CartesianProductStreamSlicer"
+      stream_slicers:
+        - type: "SubstreamSlicer"
+          parent_streams_configs:
+            - stream: "*ref(projects_stream)"
+              parent_key_to_field:
+                project_id: "project_id"
+                project_url: "project_url"
+                engines: "engine"
+        - $ref: "*ref(datetime_stream_slicer)"
 streams:
   - "*ref(projects_stream)"
   - "*ref(tags_stream)"
+  - "*ref(list_market_share_s7_stream)"
 check:
   type: CheckStream
   stream_names: ["projects"]
