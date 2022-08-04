@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.integrations.source.postgres.PostgresUtils.MAX_FIRST_RECORD_WAIT_TIME;
+import static io.airbyte.integrations.source.postgres.PostgresUtils.MIN_FIRST_RECORD_WAIT_TIME;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -47,11 +48,18 @@ class PostgresUtilsTest {
     assertEquals(Optional.of(500), PostgresUtils.getFirstRecordWaitSeconds(normalConfig));
     assertEquals(Duration.ofSeconds(500), PostgresUtils.getFirstRecordWaitTime(normalConfig));
 
-    final int tooLongTimout = (int) MAX_FIRST_RECORD_WAIT_TIME.getSeconds() + 100;
+    final int tooShortTimeout = (int) MIN_FIRST_RECORD_WAIT_TIME.getSeconds() - 1;
+    final JsonNode tooShortConfig = Jsons.jsonNode(Map.of("replication_method",
+        Map.of("method", "CDC", "initial_waiting_seconds", tooShortTimeout)));
+    assertThrows(IllegalArgumentException.class, () -> PostgresUtils.checkFirstRecordWaitTime(tooShortConfig));
+    assertEquals(Optional.of(tooShortTimeout), PostgresUtils.getFirstRecordWaitSeconds(tooShortConfig));
+    assertEquals(MIN_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(tooShortConfig));
+
+    final int tooLongTimeout = (int) MAX_FIRST_RECORD_WAIT_TIME.getSeconds() + 1;
     final JsonNode tooLongConfig = Jsons.jsonNode(Map.of("replication_method",
-        Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimout)));
+        Map.of("method", "CDC", "initial_waiting_seconds", tooLongTimeout)));
     assertThrows(IllegalArgumentException.class, () -> PostgresUtils.checkFirstRecordWaitTime(tooLongConfig));
-    assertEquals(Optional.of(tooLongTimout), PostgresUtils.getFirstRecordWaitSeconds(tooLongConfig));
+    assertEquals(Optional.of(tooLongTimeout), PostgresUtils.getFirstRecordWaitSeconds(tooLongConfig));
     assertEquals(MAX_FIRST_RECORD_WAIT_TIME, PostgresUtils.getFirstRecordWaitTime(tooLongConfig));
   }
 
