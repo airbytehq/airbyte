@@ -84,6 +84,45 @@ CreateKey({
 ```
 4. Copy the `secret` output by the `CreateKey` command and enter that as the "Fauna Secret" on the left.
 
+## Export Formats
+
+This section captures export formats for all special case data stored in Fauna. This list is exhaustive.
+
+Note that the `ref` column in the exported database will just contain the ref id of every document.
+Because we can only export one collection, it is inferred that this ref is a document which is part
+of the collection being exported.
+
+|                                  Fauna Type                                         |                             Format                                  |                        Note                        |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
+| [Document Ref](https://docs.fauna.com/fauna/current/learn/understanding/types#ref)  | `{ id: "id", "collection": "collection-name", "type": "document" }` |                                                    |
+| [Other Ref](https://docs.fauna.com/fauna/current/learn/understanding/types#ref)     | `{ id: "id", "type": "ref-type" }`                                  | This includes collection refs, database refs, etc. |
+| [Byte Array](https://docs.fauna.com/fauna/current/learn/understanding/types#byte)   | base64 url formatting                                               |                                                    |
+| [Timestamp](https://docs.fauna.com/fauna/current/learn/understanding/types#date)    | date-time, or an iso-format timestamp                               |                                                    |
+| [Query, SetRef](https://docs.fauna.com/fauna/current/learn/understanding/types#set) | a string containing the wire protocol of this value                 | The wire protocol is not documented.               |
+
+### Ref Types
+
+Every ref is serialized as a json object with 2 or 3 fields, as listed above. The `type` field will be
+one of these strings:
+|                                    Reference Type                                       |    `type` string    |
+| --------------------------------------------------------------------------------------- | ------------------- |
+| Document                                                                                | `"document"`        |
+| [Collection](https://docs.fauna.com/fauna/current/api/fql/functions/collection)         | `"collection"`      |
+| [Database](https://docs.fauna.com/fauna/current/api/fql/functions/database)             | `"database"`        |
+| [Index](https://docs.fauna.com/fauna/current/api/fql/functions/iindex)                  | `"index"`           |
+| [Function](https://docs.fauna.com/fauna/current/api/fql/functions/function)             | `"function"`        |
+| [Role](https://docs.fauna.com/fauna/current/api/fql/functions/role)                     | `"role"`            |
+| [AccessProvider](https://docs.fauna.com/fauna/current/api/fql/functions/accessprovider) | `"access_provider"` |
+| [Key](https://docs.fauna.com/fauna/current/api/fql/functions/keys)                      | `"key"`             |
+| [Token](https://docs.fauna.com/fauna/current/api/fql/functions/tokens)                  | `"token"`           |
+| [Credential](https://docs.fauna.com/fauna/current/api/fql/functions/credentials)        | `"credential"`      |
+
+For all other refs (for example if you stored the result of `Collections()`), the `type` will be `"unknown"`.
+
+If you wish to select the id of a ref, simply add `"id"` to the "Path" of the additional column. If
+you wish to select the collection id, add `["collection", "id"]` to the additional column path. This
+is because we pass the path to the [Select function](https://docs.fauna.com/fauna/current/api/fql/functions/select).
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject          |

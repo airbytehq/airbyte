@@ -1,3 +1,9 @@
+# New Readers
+
+If you know how Airbyte works, read [bootstrap.md](bootstrap.md) for a quick introduction to this source. If you haven't
+used airbyte before, read [overview.md](overview.md) for a longer overview about what this connector is and how to use
+it.
+
 # For Fauna Developers
 
 ## Running locally
