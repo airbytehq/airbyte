@@ -173,7 +173,9 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
         ("test_only_base_headers", {}, {}, {"key": "value"}),
         ("test_header_from_pagination", {"offset": 1000}, {}, {"key": "value", "offset": 1000}),
         ("test_header_from_stream_slicer", {}, {"slice": "slice_value"}, {"key": "value", "slice": "slice_value"}),
-        ("test_duplicate_header", {"key": 1000}, {}, None),
+        ("test_duplicate_header_slicer", {}, {"key": "slice_value"}, None),
+        ("test_duplicate_header_slicer_paginator", {"k": "v"}, {"k": "slice_value"}, None),
+        ("test_duplicate_header_paginator", {"key": 1000}, {}, None),
     ],
 )
 def test_get_request_options_from_pagination(test_name, paginator_mapping, stream_slicer_mapping, expected_mapping):
