@@ -676,6 +676,96 @@ def test_new_required_property(previous_connector_spec, actual_connector_spec, e
             does_not_raise(),
             id="Nested level: Expanding a field type should not fail.",
         ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "oneOf": [
+                                {"title": "a", "type": "str"},
+                                {"title": "b", "type": "int"},
+                            ]
+                        },
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "oneOf": [
+                                {"title": "a", "type": "int"},
+                                {"title": "b", "type": "int"},
+                            ]
+                        },
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Changing a field type in oneOf should fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "oneOf": [
+                                {"title": "a", "type": "str"},
+                                {"title": "b", "type": "int"},
+                            ]
+                        },
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "oneOf": [
+                                {"title": "b", "type": "str"},
+                                {"title": "a", "type": "int"},
+                            ]
+                        },
+                    },
+                }
+            ),
+            does_not_raise(),
+            id="Changing a order in oneOf should not fail.",
+        ),
+        pytest.param(
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "oneOf": [
+                                {"title": "a", "type": ["str", "int"]},
+                                {"title": "b", "type": "int"},
+                            ]
+                        },
+                    },
+                }
+            ),
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {
+                        "credentials": {
+                            "oneOf": [
+                                {"title": "a", "type": ["str"]},
+                                {"title": "b", "type": "int"},
+                            ]
+                        },
+                    },
+                }
+            ),
+            pytest.raises(AssertionError),
+            id="Narrowing a field type in oneOf should fail.",
+        ),
     ],
 )
 def test_field_type_changed(previous_connector_spec, actual_connector_spec, expectation):
