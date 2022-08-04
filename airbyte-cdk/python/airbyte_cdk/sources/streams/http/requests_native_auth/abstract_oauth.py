@@ -59,10 +59,13 @@ class AbstractOauth2Authenticator(AuthBase):
         if self.refresh_request_body:
             for key, val in self.refresh_request_body.items():
                 # We defer to existing oauth constructs over custom configured fields
-                if key not in payload:
-                    payload[key] = val
-
+                # if key not in payload:
+                payload[key] = val
+        print(f"payload: {payload}")
         return payload
+
+    def get_refresh_headers(self):
+        return {}
 
     def refresh_access_token(self) -> Tuple[str, int]:
         """
@@ -71,9 +74,12 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
+            response = requests.request(
+                method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body(), headers=self.get_refresh_headers()
+            )
             response.raise_for_status()
             response_json = response.json()
+            print(f"response: {response_json}")
             return response_json[self.access_token_name], response_json[self.expires_in_name]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e

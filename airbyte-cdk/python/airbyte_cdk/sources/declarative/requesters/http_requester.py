@@ -90,7 +90,9 @@ class HttpRequester(Requester):
     def request_params(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
     ) -> MutableMapping[str, Any]:
-        return self._request_options_provider.request_params(stream_state, stream_slice, next_page_token)
+        request_params = self._request_options_provider.request_params(stream_state, stream_slice, next_page_token)
+        print(f"request_params: {request_params}")
+        return request_params
 
     def request_headers(
         self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None

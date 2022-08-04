@@ -24,8 +24,7 @@ class ParentStreamConfig:
     """
 
     stream: Stream
-    parent_key: str
-    stream_slice_field: str
+    parent_key_to_field: Mapping[str, str]
     request_option: Optional[RequestOption] = None
 
 
@@ -49,24 +48,25 @@ class SubstreamSlicer(StreamSlicer):
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         cursor = {}
         for parent_stream_config in self._parent_stream_configs:
-            slice_value = stream_slice.get(parent_stream_config.stream_slice_field)
-            if slice_value:
-                cursor.update({parent_stream_config.stream_slice_field: slice_value})
+            for parent_key, field in parent_stream_config.parent_key_to_field.items():
+                slice_value = stream_slice.get(field)
+                if slice_value:
+                    cursor.update({field: slice_value})
         self._cursor = cursor
 
-    def request_params(self) -> Mapping[str, Any]:
+    def request_params(self, **kwargs) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.request_parameter)
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.header)
 
-    def request_body_data(self) -> Mapping[str, Any]:
+    def request_body_data(self, **kwargs) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_data)
 
-    def request_body_json(self) -> Optional[Mapping]:
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
         return self._get_request_option(RequestOptionType.body_json)
 
-    def request_kwargs(self) -> Mapping[str, Any]:
+    def request_kwargs(self, **kwargs) -> Mapping[str, Any]:
         # Never update kwargs
         return {}
 
@@ -103,8 +103,6 @@ class SubstreamSlicer(StreamSlicer):
         else:
             for parent_stream_config in self._parent_stream_configs:
                 parent_stream = parent_stream_config.stream
-                parent_field = parent_stream_config.parent_key
-                stream_state_field = parent_stream_config.stream_slice_field
                 for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice.get("slice")
@@ -112,10 +110,19 @@ class SubstreamSlicer(StreamSlicer):
                     for parent_record in parent_stream.read_records(
                         sync_mode=SyncMode.full_refresh, cursor_field=None, stream_slice=parent_stream_slice, stream_state=None
                     ):
-                        empty_parent_slice = False
-                        stream_state_value = parent_record.get(parent_field)
-                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                        slice = {"parent_slice": parent_slice}
+                        for parent_field, stream_state_field in parent_stream_config.parent_key_to_field.items():
+                            empty_parent_slice = False
+                            stream_state_value = parent_record.get(parent_field)
+                            if isinstance(stream_state_value, list):
+                                for elem in stream_state_value:
+                                    slice.update({stream_state_field: elem})
+                                    yield slice
+                            elif isinstance(stream_state_value, dict):
+                                raise Exception()
+                            else:
+                                slice.update({stream_state_field: stream_state_value})
+                                yield slice
                     # If the parent slice contains no records,
                     if empty_parent_slice:
-                        stream_state_value = parent_stream_slice.get(parent_field)
-                        yield {stream_state_field: stream_state_value, "parent_slice": parent_slice}
+                        yield {"parent_slice": parent_slice}

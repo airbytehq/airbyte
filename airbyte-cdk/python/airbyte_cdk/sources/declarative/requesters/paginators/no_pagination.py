@@ -13,22 +13,25 @@ class NoPagination(Paginator):
     Pagination implementation that never returns a next page.
     """
 
+    def reset(self):
+        pass
+
     def path(self) -> Optional[str]:
         return None
 
-    def request_params(self) -> Mapping[str, Any]:
+    def request_params(self, **kwargs) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, str]:
+    def request_headers(self, **kwargs) -> Mapping[str, str]:
         return {}
 
-    def request_body_data(self) -> Union[Mapping[str, Any], str]:
+    def request_body_data(self, **kwargs) -> Union[Mapping[str, Any], str]:
         return {}
 
-    def request_body_json(self) -> Mapping[str, Any]:
+    def request_body_json(self, **kwargs) -> Mapping[str, Any]:
         return {}
 
-    def request_kwargs(self) -> Mapping[str, Any]:
+    def request_kwargs(self, **kwargs) -> Mapping[str, Any]:
         # Never update kwargs
         return {}
 

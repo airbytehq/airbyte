@@ -6,7 +6,6 @@ import datetime
 import re
 from typing import Any, Iterable, Mapping, Optional
 
-import dateutil
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -39,10 +38,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         self,
         start_datetime: MinMaxDatetime,
         end_datetime: MinMaxDatetime,
-        step: str,
         cursor_field: InterpolatedString,
         datetime_format: str,
         config: Config,
+        step: Optional[str] = None,
         start_time_option: Optional[RequestOption] = None,
         end_time_option: Optional[RequestOption] = None,
         stream_state_field_start: Optional[str] = None,
@@ -70,7 +69,10 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._datetime_format = datetime_format
         self._start_datetime = start_datetime
         self._end_datetime = end_datetime
-        self._step = self._parse_timedelta(step)
+        if step:
+            self._step = self._parse_timedelta(step)
+        else:
+            self._step = None
         self._config = config
         self._cursor_field = InterpolatedString.create(cursor_field, options=options)
         self._start_time_option = start_time_option
@@ -136,12 +138,20 @@ class DatetimeStreamSlicer(StreamSlicer):
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self._end_datetime.get_datetime(self._config, **kwargs), datetime.datetime.now(tz=datetime.timezone.utc))
         lookback_delta = self._parse_timedelta(self._lookback_window.eval(self._config, **kwargs) if self._lookback_window else "0d")
+        print(f"before: {self._start_datetime}")
         start_datetime = self._start_datetime.get_datetime(self._config, **kwargs) - lookback_delta
+        print(f"start_datetime: {start_datetime}")
         start_datetime = min(start_datetime, end_datetime)
-        if self._cursor_field.eval(self._config, stream_state=stream_state) in stream_state:
-            cursor_datetime = self.parse_date(stream_state[self._cursor_field.eval(self._config)])
+        cursor_field = self._cursor_field.eval(self._config, stream_state=stream_state)
+        print(f"cursor_field: {cursor_field}")
+        print(f"stream_state: {stream_state}")
+        if cursor_field in stream_state:
+            print("found cursor_field")
+            cursor_datetime = self.parse_date(stream_state[cursor_field])
         else:
+            print("did not findcursor field")
             cursor_datetime = start_datetime
+        print(f"cursor_datetime: {cursor_datetime}")
 
         start_datetime = max(cursor_datetime, start_datetime)
 
@@ -151,11 +161,12 @@ class DatetimeStreamSlicer(StreamSlicer):
             next_date = state_date + datetime.timedelta(days=1)
             start_datetime = max(start_datetime, next_date)
         dates = self._partition_daterange(start_datetime, end_datetime, self._step)
+        print(f"dates: {dates}")
         return dates
 
     def _format_datetime(self, dt: datetime.datetime):
         if self._datetime_format == "timestamp":
-            return dt.timestamp()
+            return int(dt.timestamp())
         else:
             return dt.strftime(self._datetime_format)
 
@@ -163,10 +174,14 @@ class DatetimeStreamSlicer(StreamSlicer):
         start_field = self._stream_slice_field_start.eval(self._config)
         end_field = self._stream_slice_field_end.eval(self._config)
         dates = []
-        while start <= end:
-            end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
-            dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
-            start += step
+        if self._step:
+            while start <= end:
+                end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
+                dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
+                start += step
+        else:
+            dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end)})
+        print(f"date: {dates}")
         return dates
 
     def _get_date(self, cursor_value, default_date: datetime.datetime, comparator) -> datetime.datetime:
@@ -174,14 +189,14 @@ class DatetimeStreamSlicer(StreamSlicer):
         return comparator(cursor_date, default_date)
 
     def parse_date(self, date: Any) -> datetime:
-        if date and isinstance(date, str):
-            if self.is_int(date):
-                return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-            else:
-                return dateutil.parser.parse(date).replace(tzinfo=self._timezone)
-        elif isinstance(date, int):
+        print(f"parse date: {date}. format: {self._datetime_format}. type: {type(date)}")
+        if self._datetime_format == "timestamp":
             return datetime.datetime.fromtimestamp(int(date)).replace(tzinfo=self._timezone)
-        return date
+        elif isinstance(date, datetime.datetime):
+            return date
+        else:
+            d = datetime.datetime.strptime(str(date), self._datetime_format).replace(tzinfo=self._timezone)
+            return d
 
     def is_int(self, s) -> bool:
         try:
@@ -205,27 +220,35 @@ class DatetimeStreamSlicer(StreamSlicer):
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
         return datetime.timedelta(**time_params)
 
-    def request_params(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.request_parameter)
+    def request_params(self, stream_slice) -> Mapping[str, Any]:
+        params = self._get_request_options(RequestOptionType.request_parameter, stream_slice)
+        return params
 
-    def request_headers(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.header)
+    def request_headers(self, stream_slice) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.header, stream_slice)
 
-    def request_body_data(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_data)
+    def request_body_data(self, stream_slice) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_data, stream_slice)
 
-    def request_body_json(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_json)
+    def request_body_json(self, stream_slice) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_json, stream_slice)
 
     def request_kwargs(self) -> Mapping[str, Any]:
         # Never update kwargs
         return {}
 
-    def _get_request_options(self, option_type):
+    def _get_request_options(self, option_type, stream_slice):
         options = {}
         if self._start_time_option and self._start_time_option.inject_into == option_type:
-            if self._cursor:
+            if self._cursor and False:
                 options[self._start_time_option.field_name] = self._cursor
+            else:
+                options[self._start_time_option.field_name] = stream_slice[self._stream_slice_field_start.eval(self._config)]
         if self._end_time_option and self._end_time_option.inject_into == option_type:
-            options[self._end_time_option.field_name] = self._cursor_end
+            if self._cursor_end and False:
+                options[self._end_time_option.field_name] = self._cursor_end
+            else:
+                options[self._end_time_option.field_name] = stream_slice[self._stream_slice_field_end.eval(self._config)]
+        else:
+            print(f"ELSE!!!: {self._end_time_option.inject_into}")
         return options

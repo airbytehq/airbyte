@@ -4,6 +4,7 @@
 
 from typing import Mapping, Type
 
+from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -61,4 +62,5 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "RemoveFields": RemoveFields,
     "SimpleRetriever": SimpleRetriever,
     "SubstreamSlicer": SubstreamSlicer,
+    "OAuthAuthenticator": DeclarativeOauth2Authenticator,
 }

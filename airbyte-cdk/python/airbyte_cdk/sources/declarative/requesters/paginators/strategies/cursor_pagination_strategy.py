@@ -49,3 +49,6 @@ class CursorPaginationStrategy(PaginationStrategy):
                 return None
         token = self._cursor_value.eval(config=self._config, last_records=last_records, response=decoded_response)
         return token if token else None
+
+    def reset(self):
+        pass

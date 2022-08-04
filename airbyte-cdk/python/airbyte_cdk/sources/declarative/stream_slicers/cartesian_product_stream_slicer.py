@@ -37,19 +37,19 @@ class CartesianProductStreamSlicer(StreamSlicer):
         for slicer in self._stream_slicers:
             slicer.update_cursor(stream_slice, last_record)
 
-    def request_params(self) -> Mapping[str, Any]:
-        return dict(ChainMap(*[s.request_params() for s in self._stream_slicers]))
+    def request_params(self, **kwargs) -> Mapping[str, Any]:
+        return dict(ChainMap(*[s.request_params(**kwargs) for s in self._stream_slicers]))
 
-    def request_headers(self) -> Mapping[str, Any]:
-        return dict(ChainMap(*[s.request_headers() for s in self._stream_slicers]))
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        return dict(ChainMap(*[s.request_headers(**kwargs) for s in self._stream_slicers]))
 
-    def request_body_data(self) -> Mapping[str, Any]:
-        return dict(ChainMap(*[s.request_body_data() for s in self._stream_slicers]))
+    def request_body_data(self, **kwargs) -> Mapping[str, Any]:
+        return dict(ChainMap(*[s.request_body_data(**kwargs) for s in self._stream_slicers]))
 
-    def request_body_json(self) -> Optional[Mapping]:
-        return dict(ChainMap(*[s.request_body_json() for s in self._stream_slicers]))
+    def request_body_json(self, **kwargs) -> Optional[Mapping]:
+        return dict(ChainMap(*[s.request_body_json(**kwargs) for s in self._stream_slicers]))
 
-    def request_kwargs(self) -> Mapping[str, Any]:
+    def request_kwargs(self, **kwargs) -> Mapping[str, Any]:
         # Never update kwargs
         return {}
 

@@ -15,24 +15,24 @@ class SingleSlice(StreamSlicer):
     def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
         pass
 
-    def get_stream_state(self) -> StreamState:
+    def get_stream_state(self, **kwargs) -> StreamState:
         return {}
 
-    def request_params(self) -> Mapping[str, Any]:
+    def request_params(self, **kwargs) -> Mapping[str, Any]:
         return {}
 
-    def request_headers(self) -> Mapping[str, Any]:
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
         return {}
 
-    def request_body_data(self) -> Mapping[str, Any]:
+    def request_body_data(self, **kwargs) -> Mapping[str, Any]:
         return {}
 
-    def request_body_json(self) -> Mapping[str, Any]:
+    def request_body_json(self, **kwargs) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:
         return [dict()]
 
-    def request_kwargs(self) -> Mapping[str, Any]:
+    def request_kwargs(self, **kwargs) -> Mapping[str, Any]:
         # Never update kwargs
         return {}

@@ -103,8 +103,12 @@ class LimitPaginator(Paginator):
         self._url_base = url_base
         self._decoder = decoder or JsonDecoder()
 
+    def reset(self):
+        self._pagination_strategy.reset()
+
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
         self._token = self._pagination_strategy.next_page_token(response, last_records)
+        print(f"token: {self._token}")
         if self._token:
             return {"next_page_token": self._token}
         else:

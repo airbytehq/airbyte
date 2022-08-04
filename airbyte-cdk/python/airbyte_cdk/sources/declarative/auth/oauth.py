@@ -8,6 +8,7 @@ import pendulum
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 
 
 class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
@@ -29,6 +30,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         access_token_name: Union[InterpolatedString, str] = "access_token",
         expires_in_name: Union[InterpolatedString, str] = "expires_in",
         refresh_request_body: Optional[Mapping[str, Any]] = None,
+        refresh_authenticator: Optional[AbstractHeaderAuthenticator] = None,
         **options: Optional[Mapping[str, Any]],
     ):
         """
@@ -53,6 +55,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
         self.access_token_name = InterpolatedString.create(access_token_name, options=options)
         self.expires_in_name = InterpolatedString.create(expires_in_name, options=options)
         self.refresh_request_body = InterpolatedMapping(refresh_request_body or {}, options=options)
+        self._refresh_authenticator = refresh_authenticator
 
         self.token_expiry_date = (
             pendulum.parse(InterpolatedString.create(token_expiry_date, options=options).eval(self.config))
@@ -60,6 +63,14 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
             else pendulum.now().subtract(days=1)
         )
         self.access_token = None
+
+        self._refresh_authenticator = refresh_authenticator
+
+    def get_refresh_headers(self):
+        if self._refresh_authenticator:
+            return self._refresh_authenticator.get_auth_header()
+        else:
+            return {}
 
     @property
     def config(self) -> Mapping[str, Any]:
@@ -136,7 +147,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator):
 
     @property
     def refresh_request_body(self) -> InterpolatedMapping:
-        return self._refresh_request_body.eval(self.config)
+        body = self._refresh_request_body.eval(self.config)
+        print(f"refresh body: {body}")
+        return body
 
     @refresh_request_body.setter
     def refresh_request_body(self, value: InterpolatedMapping):
