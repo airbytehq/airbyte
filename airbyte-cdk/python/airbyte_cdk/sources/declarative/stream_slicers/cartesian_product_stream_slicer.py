@@ -40,6 +40,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def request_params(
         self,
+        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
@@ -48,6 +49,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def request_headers(
         self,
+        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
@@ -56,6 +58,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def request_body_data(
         self,
+        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
@@ -64,6 +67,7 @@ class CartesianProductStreamSlicer(StreamSlicer):
 
     def request_body_json(
         self,
+        *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
