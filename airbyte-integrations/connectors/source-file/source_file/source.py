@@ -83,7 +83,7 @@ class SourceFile(Source):
         client = self._get_client(config)
         logger.info(f"Checking access to {client.reader.full_url}...")
         try:
-            with client.reader.open(binary=client.binary_source):
+            with client.reader.open():
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as err:
             reason = f"Failed to load {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
