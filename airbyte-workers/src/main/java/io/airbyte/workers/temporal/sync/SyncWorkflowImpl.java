@@ -28,8 +28,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SyncWorkflowImpl.class);
   private static final String VERSION_LABEL = "sync-workflow";
-  private static final int CURRENT_VERSION = 2;
-  private static final int PREV_VERSION = 1;
+  private static final int CURRENT_VERSION = 1;
 
   @Override
   public StandardSyncOutput run(final JobRunConfig jobRunConfig,
@@ -38,40 +37,25 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final StandardSyncInput syncInput,
                                 final UUID connectionId) {
 
-    final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
+    final DecideDataPlaneTaskQueueActivity decideDataPlaneTaskQueueActivity =
+        Workflow.newActivityStub(DecideDataPlaneTaskQueueActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
 
-    final ReplicationActivity replicationActivity;
-    final NormalizationActivity normalizationActivity;
-    final DbtTransformationActivity dbtTransformationActivity;
-    final PersistStateActivity persistActivity;
+    final String dataPlaneTaskQueue = decideDataPlaneTaskQueueActivity.decideDataPlaneTaskQueue(connectionId);
 
-    /**
-     * The current version calls a new activity to determine which Task Queue to use for other
-     * activities. The previous version doesn't call this new activity, and instead lets each activity
-     * inherit the workflow's Task Queue.
-     */
-    if (version > PREV_VERSION) {
-      final DecideDataPlaneTaskQueueActivity decideTaskQueueActivity =
-          Workflow.newActivityStub(DecideDataPlaneTaskQueueActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
+    final ReplicationActivity replicationActivity =
+        Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));
 
-      final String activityTaskQueue = decideTaskQueueActivity.decideDataPlaneTaskQueue(connectionId);
+    final PersistStateActivity persistActivity =
+        Workflow.newActivityStub(PersistStateActivity.class, setTaskQueue(ActivityConfiguration.SHORT_ACTIVITY_OPTIONS, dataPlaneTaskQueue));
 
-      replicationActivity =
-          Workflow.newActivityStub(ReplicationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
-      persistActivity =
-          Workflow.newActivityStub(PersistStateActivity.class, setTaskQueue(ActivityConfiguration.SHORT_ACTIVITY_OPTIONS, activityTaskQueue));
-      normalizationActivity =
-          Workflow.newActivityStub(NormalizationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
-      dbtTransformationActivity =
-          Workflow.newActivityStub(DbtTransformationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, activityTaskQueue));
-    } else {
-      replicationActivity = Workflow.newActivityStub(ReplicationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
-      normalizationActivity = Workflow.newActivityStub(NormalizationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
-      dbtTransformationActivity = Workflow.newActivityStub(DbtTransformationActivity.class, ActivityConfiguration.LONG_RUN_OPTIONS);
-      persistActivity = Workflow.newActivityStub(PersistStateActivity.class, ActivityConfiguration.SHORT_ACTIVITY_OPTIONS);
-    }
+    final NormalizationActivity normalizationActivity =
+        Workflow.newActivityStub(NormalizationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));
+
+    final DbtTransformationActivity dbtTransformationActivity =
+        Workflow.newActivityStub(DbtTransformationActivity.class, setTaskQueue(ActivityConfiguration.LONG_RUN_OPTIONS, dataPlaneTaskQueue));
 
     StandardSyncOutput syncOutput = replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput);
+    final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
 
     if (version > Workflow.DEFAULT_VERSION) {
       // the state is persisted immediately after the replication succeeded, because the
