@@ -75,9 +75,26 @@ projects_stream:
       path: "/api/Projects/getAll"
     paginator:
       type: "NoPagination"
+tags_stream:
+  type: DeclarativeStream
+  $options:
+    name: "tags"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    record_selector:
+      $ref: "*ref(selector)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "/api/Tags"
+    paginator:
+      type: "NoPagination"
 streams:
   - "*ref(clients_stream)"
   - "*ref(projects_stream)"
+  - "*ref(tags_stream)"
 check:
   type: CheckStream
   stream_names: ["clients"]
