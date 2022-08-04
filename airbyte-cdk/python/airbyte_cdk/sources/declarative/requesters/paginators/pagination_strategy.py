@@ -21,3 +21,9 @@ class PaginationStrategy:
         :return: next page token. Returns None if there are no more pages to fetch
         """
         pass
+
+    @abstractmethod
+    def reset(self):
+        """
+        Reset the pagination's inner state
+        """

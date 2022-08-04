@@ -26,3 +26,6 @@ class OffsetIncrement(PaginationStrategy):
         else:
             self._offset += len(last_records)
             return self._offset
+
+    def reset(self):
+        self._offset = 0

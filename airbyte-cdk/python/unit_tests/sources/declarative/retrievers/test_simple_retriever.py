@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
@@ -51,11 +52,9 @@ def test_simple_retriever_full():
     backoff_time = 60
     should_retry = ResponseStatus.retry(backoff_time)
     requester.should_retry.return_value = should_retry
-    request_body_data = {"body": "data"}
-    requester.request_body_data.return_value = request_body_data
     request_body_json = {"body": "json"}
     requester.request_body_json.return_value = request_body_json
-    request_kwargs = {"kwarg": "value"}
+    request_kwargs = {"allow_redirects": "true"}
     requester.request_kwargs.return_value = request_kwargs
     cache_filename = "cache"
     requester.cache_filename = cache_filename
@@ -70,6 +69,9 @@ def test_simple_retriever_full():
         record_selector=record_selector,
         stream_slicer=iterator,
     )
+
+    # Mock actual read method
+    HttpStream.read_records = lambda self, sync_mode, cursor_field, stream_slice, stream_state: []
 
     assert retriever.primary_key == primary_key
     assert retriever.url_base == url_base
@@ -89,11 +91,13 @@ def test_simple_retriever_full():
     assert not retriever.raise_on_http_errors
     assert retriever.should_retry(requests.Response())
     assert retriever.backoff_time(requests.Response()) == backoff_time
-    assert retriever.request_body_data(None, None, None) == request_body_data
     assert retriever.request_body_json(None, None, None) == request_body_json
     assert retriever.request_kwargs(None, None, None) == request_kwargs
     assert retriever.cache_filename == cache_filename
     assert retriever.use_cache == use_cache
+
+    [r for r in retriever.read_records(SyncMode.full_refresh)]
+    paginator.reset.assert_called()
 
 
 @pytest.mark.parametrize(

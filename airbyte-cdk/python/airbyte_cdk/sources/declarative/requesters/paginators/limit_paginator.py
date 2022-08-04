@@ -133,6 +133,9 @@ class LimitPaginator(Paginator):
         # Never update kwargs
         return {}
 
+    def reset(self):
+        self._pagination_strategy.reset()
+
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
         if self._page_token_option.inject_into == option_type:
