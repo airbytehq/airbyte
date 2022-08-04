@@ -202,9 +202,6 @@ class TestSpec(BaseTest):
     @pytest.mark.backward_compatibility
     def test_field_type_changed(self, spec_diff: DeepDiff):
         """Check if the current spec is changing the types of properties."""
-        # TODO alafanechere: Do we have allowed non-breaking type transitions?
-        # e.g. Does changing a field type from int to string is breaking the spec?
-        # I assumed it does
 
         common_error_message = f"The current spec changed the value of a 'type' field:  {spec_diff.pretty()}"
         # Detect type value change in case type field is declared as a string (e.g "str" -> "int"):
