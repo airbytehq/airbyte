@@ -2,28 +2,43 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "AccountName": {
-      "type": ["null", "string"]
-    },
-    "AccountNumber": {
-      "type": ["null", "string"]
-    },
     "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupId": {
       "type": ["null", "integer"]
     },
     "TimePeriod": {
       "type": ["null", "string"]
     },
-    "CampaignId": {
-      "type": ["null", "integer"]
+    "CurrencyCode": {
+      "type": ["null", "string"]
     },
-    "CampaignName": {
+    "AdDistribution": {
       "type": ["null", "string"]
     },
     "DeviceType": {
       "type": ["null", "string"]
     },
     "Network": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
+      "type": ["null", "string"]
+    },
+    "DeviceOS": {
+      "type": ["null", "string"]
+    },
+    "TopVsOther": {
+      "type": ["null", "string"]
+    },
+    "BidMatchType": {
+      "type": ["null", "string"]
+    },
+    "Language": {
       "type": ["null", "string"]
     },
     "Impressions": {
@@ -35,26 +50,104 @@
     "Ctr": {
       "type": ["null", "number"]
     },
-    "AverageCpc": {
-      "type": ["null", "number"]
-    },
     "Spend": {
       "type": ["null", "number"]
     },
-    "ReturnOnAdSpend": {
+    "CostPerConversion": {
       "type": ["null", "number"]
     },
-    "RevenuePerConversion": {
+    "QualityScore": {
+      "type": ["null", "number"]
+    },
+    "ExpectedCtr": {
+      "type": ["null", "string"]
+    },
+    "AdRelevance": {
+      "type": ["null", "number"]
+    },
+    "LandingPageExperience": {
+      "type": ["null", "number"]
+    },
+    "PhoneImpressions": {
+      "type": ["null", "integer"]
+    },
+    "PhoneCalls": {
+      "type": ["null", "integer"]
+    },
+    "Ptr": {
+      "type": ["null", "number"]
+    },
+    "Assists": {
+      "type": ["null", "integer"]
+    },
+    "CostPerAssist": {
+      "type": ["null", "number"]
+    },
+    "CustomParameters": {
+      "type": ["null", "string"]
+    },
+    "FinalUrlSuffix": {
+      "type": ["null", "string"]
+    },
+    "ViewThroughConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllCostPerConversion": {
+      "type": ["null", "number"]
+    },
+    "AllReturnOnAdSpend": {
+      "type": ["null", "number"]
+    },
+    "AllConversions": {
+      "type": ["null", "integer"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "AverageCpc": {
+      "type": ["null", "number"]
+    },
+    "AveragePosition": {
+      "type": ["null", "number"]
+    },
+    "AverageCpm": {
+      "type": ["null", "number"]
+    },
+    "Conversions": {
       "type": ["null", "number"]
     },
     "ConversionRate": {
       "type": ["null", "number"]
     },
-    "AdGroupName": {
-      "type": ["null", "string"]
+    "ConversionsQualified": {
+      "type": ["null", "number"]
     },
-    "AdGroupId": {
-      "type": ["null", "integer"]
+    "HistoricalQualityScore": {
+      "type": ["null", "number"]
+    },
+    "HistoricalExpectedCtr": {
+      "type": ["null", "number"]
+    },
+    "HistoricalAdRelevance": {
+      "type": ["null", "number"]
+    },
+    "HistoricalLandingPageExperience": {
+      "type": ["null", "number"]
+    },
+    "Revenue": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerConversion": {
+      "type": ["null", "number"]
+    },
+    "RevenuePerAssist": {
+      "type": ["null", "number"]
     }
   }
 }

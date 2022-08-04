@@ -59,7 +59,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: {{ .Values.global.database.secretName | default (printf "%s-postgresql" .Release.Name ) }}
-              key: {{ .Values.global.database.secretValue | default "DATABASE_PASSWORD" }}
+              key: {{ .Values.global.database.secretValue | default "postgresql-password" }}
         - name: DATABASE_URL
           valueFrom:
             configMapKeyRef:
