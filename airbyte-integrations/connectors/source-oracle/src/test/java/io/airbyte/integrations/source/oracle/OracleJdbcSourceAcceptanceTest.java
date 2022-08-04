@@ -390,7 +390,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testCheckIncorrectPasswordFailure() throws Exception {
-    // by using a fake password oracle can block user account so we will create separate account for this test
+    // by using a fake password oracle can block user account so we will create separate account for
+    // this test
     executeOracleStatement(String.format("CREATE USER locked_user IDENTIFIED BY password DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
     ((ObjectNode) config).put("username", "locked_user");
     ((ObjectNode) config).put("password", "fake");

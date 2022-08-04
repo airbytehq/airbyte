@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.gcs;
 
-import static io.airbyte.integrations.base.errors.utils.ConnectionErrorType.INCORRECT_CREDENTIALS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,7 +14,6 @@ import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.S3FormatConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
@@ -43,4 +41,5 @@ class GcsDestinationConfigTest {
     final S3AvroFormatConfig avroFormatConfig = (S3AvroFormatConfig) formatConfig;
     assertEquals("deflate-5", avroFormatConfig.getCodecFactory().toString());
   }
+
 }

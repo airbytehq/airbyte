@@ -4,15 +4,13 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
-import static io.airbyte.integrations.base.errors.utils.ConnectorType.POSTGRES;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -310,8 +308,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
           Jsons.clone(PostgresCdcProperties.getDebeziumDefaultProperties(sourceConfig)),
           catalog,
           state,
-          // We can assume that there will be only 1 replication slot cause before the sync starts for Postgres CDC,
-          // we run all the check operations and one of the check validates that the replication slot exists and has only 1 entry
+          // We can assume that there will be only 1 replication slot cause before the sync starts for
+          // Postgres CDC,
+          // we run all the check operations and one of the check validates that the replication slot exists
+          // and has only 1 entry
           getReplicationSlot(database, sourceConfig).get(0),
           sourceConfig);
 
