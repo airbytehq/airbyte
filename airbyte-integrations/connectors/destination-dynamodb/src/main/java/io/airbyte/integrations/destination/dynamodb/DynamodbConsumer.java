@@ -80,7 +80,7 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage airbyteMessage) throws Exception {
     if (airbyteMessage.getType() == AirbyteMessage.Type.STATE) {
-      this.lastStateMessage = airbyteMessage;
+      outputRecordCollector.accept(airbyteMessage);
       return;
     } else if (airbyteMessage.getType() != AirbyteMessage.Type.RECORD) {
       return;
@@ -104,10 +104,6 @@ public class DynamodbConsumer extends FailureTrackingAirbyteMessageConsumer {
   protected void close(final boolean hasFailed) throws Exception {
     for (final DynamodbWriter handler : streamNameAndNamespaceToWriters.values()) {
       handler.close(hasFailed);
-    }
-    // DynamoDB stream uploader is all or nothing if a failure happens in the destination.
-    if (!hasFailed) {
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 
