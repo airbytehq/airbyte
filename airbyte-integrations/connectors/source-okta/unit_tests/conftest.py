@@ -87,6 +87,12 @@ def auth_token_config():
 
 
 @pytest.fixture()
+def user_status_filter():
+    statuses = ["ACTIVE", "DEPROVISIONED", "LOCKED_OUT", "PASSWORD_EXPIRED", "PROVISIONED", "RECOVERY", "STAGED", "SUSPENDED"]
+    return " or ".join([f'status eq "{status}"' for status in statuses])
+
+
+@pytest.fixture()
 def users_instance(api_url):
     """
     Users instance object response
@@ -133,6 +139,24 @@ def custom_role_instance(api_url):
         "_links": {
             "permissions": {"href": f"{api_url}/iam/roles/{_id}/permissions"},
             "self": {"href": f"{api_url}/iam/roles/{_id}"},
+        },
+    }
+
+
+@pytest.fixture()
+def permission_instance(api_url):
+    """
+    Custom Role instance object response
+    """
+    _role_id = "test_role_id"
+    _id = "okta.users.read"
+    return {
+        "label": _id,
+        "created": "2022-07-09T20:54:54.000Z",
+        "lastUpdated": "2022-07-09T20:54:54.000Z",
+        "_links": {
+            "role": {"href": f"{api_url}/api/v1/iam/roles/{_role_id}"},
+            "self": {"href": f"{api_url}/api/v1/iam/roles/{_role_id}/permissions/{_id}"},
         },
     }
 

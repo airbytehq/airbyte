@@ -19,6 +19,7 @@ from source_okta.source import (
     IncrementalOktaStream,
     Logs,
     OktaStream,
+    Permissions,
     UserRoleAssignments,
     Users,
 )
@@ -55,7 +56,6 @@ class TestStatusCodes:
 
 
 class TestOktaStream:
-
     def test_okta_stream_request_params(self, patch_base_class, url_base):
         stream = OktaStream(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
@@ -139,7 +139,6 @@ class TestOktaStream:
 
 
 class TestNextPageToken:
-
     def test_next_page_token(self, patch_base_class, users_instance, url_base, api_url):
         stream = OktaStream(url_base=url_base)
         response = MagicMock(requests.Response)
@@ -169,29 +168,28 @@ class TestNextPageToken:
 
 
 class TestStreamUsers:
-
     def test_stream_users(self, requests_mock, patch_base_class, users_instance, url_base, api_url):
         stream = Users(url_base=url_base)
         requests_mock.get(f"{api_url}/users", json=[users_instance])
         inputs = {"sync_mode": SyncMode.incremental}
         assert list(stream.read_records(**inputs)) == [users_instance]
 
-    def test_users_request_params_out_of_next_page_token(self, patch_base_class, url_base):
+    def test_users_request_params_out_of_next_page_token(self, patch_base_class, url_base, user_status_filter):
         stream = Users(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-        expected_params = {"limit": 200}
+        expected_params = {"limit": 200, "filter": user_status_filter}
         assert stream.request_params(**inputs) == expected_params
 
-    def test_users_source_request_params_have_next_cursor(self, patch_base_class, url_base):
+    def test_users_source_request_params_have_next_cursor(self, patch_base_class, url_base, user_status_filter):
         stream = Users(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": None, "next_page_token": {"next_cursor": "123"}}
-        expected_params = {"limit": 200, "next_cursor": "123"}
+        expected_params = {"limit": 200, "next_cursor": "123", "filter": user_status_filter}
         assert stream.request_params(**inputs) == expected_params
 
-    def test_users_source_request_params_have_latest_entry(self, patch_base_class, url_base):
+    def test_users_source_request_params_have_latest_entry(self, patch_base_class, url_base, user_status_filter):
         stream = Users(url_base=url_base)
         inputs = {"stream_slice": None, "stream_state": {"lastUpdated": "some_date"}, "next_page_token": {"next_cursor": "123"}}
-        expected_params = {"limit": 200, "next_cursor": "123", "filter": 'lastUpdated gt "some_date"'}
+        expected_params = {"limit": 200, "next_cursor": "123", "filter": f'lastUpdated gt "some_date" and ({user_status_filter})'}
         assert stream.request_params(**inputs) == expected_params
 
     def test_users_source_parse_response(self, requests_mock, patch_base_class, users_instance, url_base, api_url):
@@ -201,7 +199,6 @@ class TestStreamUsers:
 
 
 class TestStreamCustomRoles:
-
     def test_custom_roles(self, requests_mock, patch_base_class, custom_role_instance, url_base, api_url):
         stream = CustomRoles(url_base=url_base)
         record = {"roles": [custom_role_instance]}
@@ -216,8 +213,23 @@ class TestStreamCustomRoles:
         assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [custom_role_instance]
 
 
-class TestStreamGroups:
+class TestStreamPermissions:
+    def test_permissions(self, requests_mock, patch_base_class, permission_instance, url_base, api_url):
+        stream = Permissions(url_base=url_base)
+        record = {"permissions": [permission_instance]}
+        role_id = "test_role_id"
+        requests_mock.get(f"{api_url}/iam/roles/{role_id}/permissions", json=record)
+        inputs = {"sync_mode": SyncMode.full_refresh, "stream_state": {}, "stream_slice": {"role_id": role_id}}
+        assert list(stream.read_records(**inputs)) == record["permissions"]
 
+    def test_permissions_parse_response(self, requests_mock, patch_base_class, permission_instance, url_base, api_url):
+        stream = Permissions(url_base=url_base)
+        record = {"permissions": [permission_instance]}
+        requests_mock.get(f"{api_url}", json=record)
+        assert list(stream.parse_response(response=requests.get(f"{api_url}"))) == [permission_instance]
+
+
+class TestStreamGroups:
     def test_groups(self, requests_mock, patch_base_class, groups_instance, url_base, api_url):
         stream = Groups(url_base=url_base)
         requests_mock.get(f"{api_url}/groups?limit=200", json=[groups_instance])
@@ -231,7 +243,6 @@ class TestStreamGroups:
 
 
 class TestStreamGroupMembers:
-
     def test_group_members(self, requests_mock, patch_base_class, group_members_instance, url_base, api_url):
         stream = GroupMembers(url_base=url_base)
         group_id = "test_group_id"
@@ -267,7 +278,6 @@ class TestStreamGroupMembers:
 
 
 class TestStreamGroupRoleAssignment:
-
     def test_group_role_assignments(self, requests_mock, patch_base_class, group_role_assignments_instance, url_base, api_url):
         stream = GroupRoleAssignments(url_base=url_base)
         group_id = "test_group_id"
@@ -292,7 +302,6 @@ class TestStreamGroupRoleAssignment:
 
 
 class TestStreamLogs:
-
     def test_logs(self, requests_mock, patch_base_class, logs_instance, url_base, api_url):
         stream = Logs(url_base=url_base)
         requests_mock.get(f"{api_url}/logs?limit=200", json=[logs_instance])
@@ -317,7 +326,6 @@ class TestStreamLogs:
 
 
 class TestStreamUserRoleAssignment:
-
     def test_user_role_assignments(self, requests_mock, patch_base_class, user_role_assignments_instance, url_base, api_url):
         stream = UserRoleAssignments(url_base=url_base)
         user_id = "test_user_id"

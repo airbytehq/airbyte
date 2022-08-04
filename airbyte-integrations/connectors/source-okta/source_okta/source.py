@@ -199,12 +199,31 @@ class Logs(IncrementalOktaStream):
 class Users(IncrementalOktaStream):
     cursor_field = "lastUpdated"
     primary_key = "id"
+    # Should add all statuses to filter. Considering Okta documentation https://developer.okta.com/docs/reference/api/users/#list-all-users,
+    # users with "DEPROVISIONED" status are not returned by default.
+    statuses = ["ACTIVE", "DEPROVISIONED", "LOCKED_OUT", "PASSWORD_EXPIRED", "PROVISIONED", "RECOVERY", "STAGED", "SUSPENDED"]
 
     def path(self, **kwargs) -> str:
         return "users"
 
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, next_page_token)
+        status_filters = " or ".join([f'status eq "{status}"' for status in self.statuses])
+        if "filter" in params:
+            # add status_filters to existing filters
+            params["filter"] = f'{params["filter"]} and ({status_filters})'
+        else:
+            params["filter"] = status_filters
+        return params
+
 
 class CustomRoles(OktaStream):
+    # https://developer.okta.com/docs/reference/api/roles/#list-roles
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -230,6 +249,28 @@ class UserRoleAssignments(OktaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         user_id = stream_slice["user_id"]
         return f"users/{user_id}/roles"
+
+
+class Permissions(OktaStream):
+    # https://developer.okta.com/docs/reference/api/roles/#list-permissions
+    primary_key = "label"
+    use_cache = True
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["permissions"]
+
+    def stream_slices(self, **kwargs):
+        custom_roles = CustomRoles(authenticator=self.authenticator, url_base=self.url_base)
+        for role in custom_roles.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"role_id": role["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        role_id = stream_slice["role_id"]
+        return f"iam/roles/{role_id}/permissions"
 
 
 class OktaOauth2Authenticator(Oauth2Authenticator):
@@ -324,4 +365,5 @@ class SourceOkta(AbstractSource):
             CustomRoles(**initialization_params),
             UserRoleAssignments(**initialization_params),
             GroupRoleAssignments(**initialization_params),
+            Permissions(**initialization_params),
         ]

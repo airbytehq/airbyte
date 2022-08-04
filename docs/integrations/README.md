@@ -63,6 +63,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Freshservice](sources/freshservice.md)                                                     | Alpha                | No                  |
 | [GitHub](sources/github.md)                                                                 | Generally Available  | Yes                 |
 | [GitLab](sources/gitlab.md)                                                                 | Alpha                | Yes                 |
+| [Glassfrog](sources/glassfrog.md)                                                           | Alpha                | No                  |
 | [Google Ads](sources/google-ads.md)                                                         | Generally Available  | Yes                 |
 | [Google Analytics (v4)](sources/google-analytics-v4.md)                                     | Alpha                | No                  |
 | [Google Analytics (Universal Analytics)](sources/google-analytics-universal-analytics.md)   | Generally Available  | Yes                 |
@@ -81,9 +82,9 @@ For more information about the grading system, see [Product Release Stages](http
 | [Jenkins](sources/jenkins.md)                                                               | Alpha                | No                  |
 | [Jira](sources/jira.md)                                                                     | Alpha                | No                  |
 | [Kafka](sources/kafka.md)                                                                   | Alpha                | No                  |
-| [Klaviyo](sources/klaviyo.md)                                                               | Alpha                | Yes                 |
+| [Klaviyo](sources/klaviyo.md)                                                               | Beta                 | Yes                 |
 | [Kustomer](sources/kustomer.md)                                                             | Alpha                | Yes                 |
-| [Kyriba](sources/kyriba.md)                                                             | Alpha                | Yes                 |
+| [Kyriba](sources/kyriba.md)                                                                 | Alpha                | No                  |
 | [Lemlist](sources/lemlist.md)                                                               | Alpha                | Yes                 |
 | [Lever](sources/lever-hiring.md)                                                            | Alpha                | No                  |
 | [LinkedIn Ads](sources/linkedin-ads.md)                                                     | Generally Available  | Yes                 |
@@ -104,7 +105,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Mongo DB](sources/mongodb-v2.md)                                                           | Alpha                | Yes                 |
 | [My Hours](sources/my-hours.md)                                                             | Alpha                | Yes                 |
 | [MySQL](sources/mysql.md)                                                                   | Alpha                | Yes                 |
-| [Notion](sources/notion.md)                                                                 | Alpha                | No                  |
+| [Notion](sources/notion.md)                                                                 | Beta                 | No                  |
 | [Okta](sources/okta.md)                                                                     | Alpha                | Yes                 |
 | [OneSignal](sources/onesignal.md)                                                           | Alpha                | No                  |
 | [OpenWeather](sources/openweather.md)                                                       | Alpha                | No                  |
@@ -114,7 +115,7 @@ For more information about the grading system, see [Product Release Stages](http
 | [Orb](sources/orb.md)                                                                       | Alpha                | Yes                 |
 | [Outreach](./sources/outreach.md)                                                           | Alpha                | No                  |
 | [PagerDuty](sources/pagerduty.md)                                                           | Alpha                | No                  |
-| [PayPal Transaction](sources/paypal-transaction.md)                                         | Alpha                | No                  |
+| [PayPal Transaction](sources/paypal-transaction.md)                                         | Alpha                | Yes                 |
 | [Paystack](sources/paystack.md)                                                             | Alpha                | No                  |
 | [PersistIq](sources/persistiq.md)                                                           | Alpha                | Yes                 |
 | [Pinterest](sources/pinterest.md)                                                           | Alpha                | No                  |
@@ -127,11 +128,11 @@ For more information about the grading system, see [Product Release Stages](http
 | [PrestaShop](sources/presta-shop.md)                                                        | Alpha                | Yes                 |
 | [Qualaroo](sources/qualaroo.md)                                                             | Alpha                | Yes                 |
 | [QuickBooks](sources/quickbooks.md)                                                         | Alpha                | No                  |
-| [Recharge](sources/recharge.md)                                                             | Alpha                | Yes                 |
+| [Recharge](sources/recharge.md)                                                             | Beta                 | Yes                 |
 | [Recurly](sources/recurly.md)                                                               | Alpha                | Yes                 |
 | [Redshift](sources/redshift.md)                                                             | Alpha                | Yes                 |
 | [Retently](sources/retently.md)                                                             | Alpha                | Yes                 |
-| [S3](sources/s3.md)                                                                         | Beta                 | Yes                 |
+| [S3](sources/s3.md)                                                                         | Generally Available  | Yes                 |
 | [Salesforce](sources/salesforce.md)                                                         | Generally Available  | Yes                 |
 | [Salesloft](sources/salesloft.md)                                                           | Alpha                | No                  |
 | [SAP Business One](sources/sap-business-one.md)                                             | Alpha                | No                  |
@@ -143,14 +144,14 @@ For more information about the grading system, see [Product Release Stages](http
 | [Short.io](sources/shortio.md)                                                              | Alpha                | Yes                 |
 | [Slack](sources/slack.md)                                                                   | Alpha                | No                  |
 | [Smartsheets](sources/smartsheets.md)                                                       | Beta                 | Yes                 |
-| [Snapchat Marketing](sources/snapchat-marketing.md)                                         | Alpha                | Yes                 |
+| [Snapchat Marketing](sources/snapchat-marketing.md)                                         | Beta                 | Yes                 |
 | [Snowflake](sources/snowflake.md)                                                           | Alpha                | Yes                 |
 | [Spree Commerce](sources/spree-commerce.md)                                                 | Alpha                | No                  |
 | [Square](sources/square.md)                                                                 | Alpha                | Yes                 |
 | [Strava](sources/strava.md)                                                                 | Alpha                | No                  |
 | [Stripe](sources/stripe.md)                                                                 | Generally Available  | Yes                 |
 | [Sugar CRM](sources/sugar-crm.md)                                                           | Alpha                | No                  |
-| [SurveyMonkey](sources/surveymonkey.md)                                                     | Alpha                | No                  |
+| [SurveyMonkey](sources/surveymonkey.md)                                                     | Beta                 | Yes                 |
 | [Tempo](sources/tempo.md)                                                                   | Alpha                | Yes                 |
 | [TiDB](sources/tidb.md)                                                                     | Alpha                | No                  |
 | [TikTok Marketing](./sources/tiktok-marketing.md)                                           | Generally Available  | Yes                 |
