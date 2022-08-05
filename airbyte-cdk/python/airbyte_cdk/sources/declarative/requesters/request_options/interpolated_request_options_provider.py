@@ -48,7 +48,11 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         self._body_json_interpolator = InterpolatedRequestInputProvider(config=config, request_inputs=request_body_json)
 
     def request_params(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         interpolated_value = self._parameter_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
         if isinstance(interpolated_value, dict):
@@ -56,18 +60,27 @@ class InterpolatedRequestOptionsProvider(RequestOptionsProvider):
         return {}
 
     def request_headers(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
         return self._headers_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
 
     def request_body_data(
-        self, stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, next_page_token: Optional[Mapping[str, Any]] = None
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Union[Mapping, str]]:
         return self._body_data_interpolator.request_inputs(stream_state, stream_slice, next_page_token)
 
     def request_body_json(
         self,
-        stream_state: StreamState,
+        *,
+        stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
