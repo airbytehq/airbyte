@@ -140,7 +140,7 @@ public class PostgresDestinationTest {
   @Test
   void testCheckIncorrectPasswordFailure() {
     var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put("password", "fake");
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, "fake");
     var destination = new PostgresDestination();
     var actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
@@ -149,7 +149,7 @@ public class PostgresDestinationTest {
   @Test
   public void testCheckIncorrectUsernameFailure() {
     var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put("username", "");
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, "");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_USERNAME_OR_PASSWORD.getValue());
@@ -158,7 +158,7 @@ public class PostgresDestinationTest {
   @Test
   public void testCheckIncorrectHostFailure() {
     var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put("host", "localhost2");
+    ((ObjectNode) config).put(JdbcUtils.HOST_KEY, "localhost2");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
@@ -167,7 +167,7 @@ public class PostgresDestinationTest {
   @Test
   public void testCheckIncorrectPortFailure() {
     var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put("port", "30000");
+    ((ObjectNode) config).put(JdbcUtils.PORT_KEY, "30000");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_HOST_OR_PORT.getValue());
@@ -176,7 +176,7 @@ public class PostgresDestinationTest {
   @Test
   public void testCheckIncorrectDataBaseFailure() {
     var config = buildConfigNoJdbcParameters();
-    ((ObjectNode) config).put("database", "wrongdatabase");
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus(), INCORRECT_DB_NAME.getValue());
@@ -194,9 +194,9 @@ public class PostgresDestinationTest {
     database.execute(connection -> connection.createStatement()
         .execute(String.format("revoke all on database %s from public;", DATABASE)));
 
-    ((ObjectNode) config).put("username", USERNAME);
-    ((ObjectNode) config).put("password", PASSWORD);
-    ((ObjectNode) config).put("database", DATABASE);
+    ((ObjectNode) config).put(JdbcUtils.USERNAME_KEY, USERNAME);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD);
+    ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE);
 
     var destination = new PostgresDestination();
     final AirbyteConnectionStatus actual = destination.check(config);

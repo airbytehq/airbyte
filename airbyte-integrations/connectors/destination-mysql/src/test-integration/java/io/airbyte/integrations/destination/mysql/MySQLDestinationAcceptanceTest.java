@@ -271,7 +271,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   void testCheckIncorrectPasswordFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put("password", "fake");
+    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PASSWORD_KEY, "fake");
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -280,7 +280,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectUsernameFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put("username", "fake");
+    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, "fake");
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -289,7 +289,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectHostFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put("host", "localhost2");
+    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.HOST_KEY, "localhost2");
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -298,7 +298,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectPortFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put("port", "0000");
+    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PORT_KEY, "0000");
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -307,7 +307,7 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
 
   @Test
   public void testCheckIncorrectDataBaseFailure() {
-    JsonNode config = ((ObjectNode) getConfig()).put("database", "wrongdatabase");
+    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -317,8 +317,8 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
   @Test
   public void testUserHasNoPermissionToDataBase() {
     executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
-    JsonNode config = ((ObjectNode) getConfig()).put("username", USERNAME_WITHOUT_PERMISSION);
-    ((ObjectNode) config).put("password", PASSWORD_WITHOUT_PERMISSION);
+    JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
     MySQLDestination destination = new MySQLDestination();
     final AirbyteConnectionStatus actual = destination.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
