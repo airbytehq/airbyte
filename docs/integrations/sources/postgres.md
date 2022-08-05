@@ -102,13 +102,15 @@ This issue is tracked in [#9771](https://github.com/airbytehq/airbyte/issues/977
 
     These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Postgres database.
 
+    The connector now supports `connectTimeout` and defaults to 60 seconds. Setting connectTimeout to 0 seconds will set the timeout to the longest time available.
+
     **Note:** Do not use the following keys in JDBC URL Params field as they will be overwritten by Airbyte:
     `currentSchema`, `user`, `password`, `ssl`, and `sslmode`.
 
     :::warning
     This is an advanced configuration option. Users are advised to use it with caution.
     :::
-
+    
 9. For Airbyte OSS, toggle the switch to connect using SSL. Airbyte Cloud uses SSL by default.
 10. For Replication Method, select Standard or [Logical CDC](https://www.postgresql.org/docs/10/logical-replication.html) from the dropdown. Refer to [Configuring Postgres connector with Change Data Capture (CDC)](#configuring-postgres-connector-with-change-data-capture-cdc) for more information.
 11. For SSH Tunnel Method, select:
