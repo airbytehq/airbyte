@@ -299,7 +299,6 @@ class SimpleRetriever(Retriever, HttpStream):
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
         self._paginator.reset()
-        print("after")
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
         for r in records_generator:
             self._stream_slicer.update_cursor(stream_slice, last_record=r)
