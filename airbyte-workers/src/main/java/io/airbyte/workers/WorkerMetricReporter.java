@@ -7,8 +7,6 @@ package io.airbyte.workers;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class WorkerMetricReporter {
 
@@ -27,4 +25,5 @@ public class WorkerMetricReporter {
     metricClient.count(OssMetricsRegistry.NUM_SOURCE_STREAMS_WITH_RECORD_SCHEMA_VALIDATION_ERRORS, 1, new MetricAttribute("docker_repo", dockerRepo),
         new MetricAttribute("docker_version", dockerVersion), new MetricAttribute("stream", stream));
   }
+
 }

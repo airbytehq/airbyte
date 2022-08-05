@@ -57,7 +57,8 @@ public class MetricClientFactory {
    */
   public static synchronized void initialize(final MetricEmittingApp metricEmittingApp) {
     if (metricClient != null) {
-      throw new RuntimeException("You cannot initialize configuration more than once.");
+      LOGGER.warn("Metric client is already initialized to " + configs.getMetricClient());
+      return;
     }
 
     if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
