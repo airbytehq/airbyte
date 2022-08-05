@@ -118,18 +118,18 @@ public abstract class AbstractSshPostgresSourceAcceptanceTest extends SourceAcce
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME2,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
