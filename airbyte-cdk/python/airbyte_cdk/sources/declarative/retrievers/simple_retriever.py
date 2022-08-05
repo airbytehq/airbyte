@@ -55,7 +55,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
     stream_slicer: Optional[StreamSlicer] = SingleSlice(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
-        self.paginator = self.paginator or NoPagination()
+        self.paginator = self.paginator or NoPagination(options=options)
         HttpStream.__init__(self, self.requester.get_authenticator())
         self._last_response = None
         self._last_records = None
