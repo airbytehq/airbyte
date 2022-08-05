@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status i
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.streams.http.auth import NoAuth
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
@@ -23,7 +24,7 @@ config = {}
 def test_simple_retriever_full():
     requester = MagicMock()
     request_params = {"param": "value"}
-    requester.request_params.return_value = request_params
+    requester.get_request_params.return_value = request_params
 
     paginator = MagicMock()
     next_page_token = {"cursor": "cursor_value"}
@@ -42,6 +43,7 @@ def test_simple_retriever_full():
     underlying_state = {"date": "2021-01-01"}
     iterator.get_stream_state.return_value = underlying_state
 
+    requester.get_authenticator.return_value = NoAuth
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
     path = "/v1"
@@ -52,9 +54,9 @@ def test_simple_retriever_full():
     should_retry = ResponseStatus.retry(backoff_time)
     requester.should_retry.return_value = should_retry
     request_body_data = {"body": "data"}
-    requester.request_body_data.return_value = request_body_data
+    requester.get_request_body_data.return_value = request_body_data
     request_body_json = {"body": "json"}
-    requester.request_body_json.return_value = request_body_json
+    requester.get_request_body_json.return_value = request_body_json
     request_kwargs = {"kwarg": "value"}
     requester.request_kwargs.return_value = request_kwargs
     cache_filename = "cache"
@@ -63,12 +65,13 @@ def test_simple_retriever_full():
     requester.use_cache = use_cache
 
     retriever = SimpleRetriever(
-        "stream_name",
-        primary_key,
+        name="stream_name",
+        primary_key=primary_key,
         requester=requester,
         paginator=paginator,
         record_selector=record_selector,
         stream_slicer=iterator,
+        options={},
     )
 
     assert retriever.primary_key == primary_key
@@ -106,7 +109,7 @@ def test_simple_retriever_full():
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
     requester = MagicMock()
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=MagicMock())
+    retriever = SimpleRetriever(name="stream_name", primary_key=primary_key, requester=requester, record_selector=MagicMock(), options={})
     requester.should_retry.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
     if requester_response.action == ResponseAction.RETRY:
@@ -125,7 +128,9 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     requester = MagicMock()
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    retriever = SimpleRetriever(
+        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
+    )
     response = requests.Response()
     response.status_code = status_code
     requester.should_retry.return_value = response_status
@@ -154,7 +159,9 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
     response = requests.Response()
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector)
+    retriever = SimpleRetriever(
+        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
+    )
     if expected_backoff_time:
         requester.should_retry.return_value = ResponseStatus(response_action, retry_in)
         actual_backoff_time = retriever.backoff_time(response)
@@ -180,27 +187,33 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
 )
 def test_get_request_options_from_pagination(test_name, paginator_mapping, stream_slicer_mapping, expected_mapping):
     paginator = MagicMock()
-    paginator.request_headers.return_value = paginator_mapping
-    paginator.request_params.return_value = paginator_mapping
-    paginator.request_body_data.return_value = paginator_mapping
-    paginator.request_body_json.return_value = paginator_mapping
+    paginator.get_request_headers.return_value = paginator_mapping
+    paginator.get_request_params.return_value = paginator_mapping
+    paginator.get_request_body_data.return_value = paginator_mapping
+    paginator.get_request_body_json.return_value = paginator_mapping
 
     stream_slicer = MagicMock()
-    stream_slicer.request_headers.return_value = stream_slicer_mapping
-    stream_slicer.request_params.return_value = stream_slicer_mapping
-    stream_slicer.request_body_data.return_value = stream_slicer_mapping
-    stream_slicer.request_body_json.return_value = stream_slicer_mapping
+    stream_slicer.get_request_headers.return_value = stream_slicer_mapping
+    stream_slicer.get_request_params.return_value = stream_slicer_mapping
+    stream_slicer.get_request_body_data.return_value = stream_slicer_mapping
+    stream_slicer.get_request_body_json.return_value = stream_slicer_mapping
 
     base_mapping = {"key": "value"}
     requester = MagicMock()
-    requester.request_headers.return_value = base_mapping
-    requester.request_params.return_value = base_mapping
-    requester.request_body_data.return_value = base_mapping
-    requester.request_body_json.return_value = base_mapping
+    requester.get_request_headers.return_value = base_mapping
+    requester.get_request_params.return_value = base_mapping
+    requester.get_request_body_data.return_value = base_mapping
+    requester.get_request_body_json.return_value = base_mapping
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
-        "stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator, stream_slicer=stream_slicer
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        stream_slicer=stream_slicer,
+        options={},
     )
 
     request_option_type_to_method = {
@@ -234,13 +247,20 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
 )
 def test_request_body_data(test_name, requester_body_data, paginator_body_data, expected_body_data):
     paginator = MagicMock()
-    paginator.request_body_data.return_value = paginator_body_data
+    paginator.get_request_body_data.return_value = paginator_body_data
     requester = MagicMock()
 
-    requester.request_body_data.return_value = requester_body_data
+    requester.get_request_body_data.return_value = requester_body_data
 
     record_selector = MagicMock()
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        options={},
+    )
 
     if expected_body_data:
         actual_body_data = retriever.request_body_data(None, None, None)
@@ -268,7 +288,14 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
     requester.get_path.return_value = requester_path
 
     record_selector = MagicMock()
-    retriever = SimpleRetriever("stream_name", primary_key, requester=requester, record_selector=record_selector, paginator=paginator)
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        options={},
+    )
 
     actual_path = retriever.path(stream_state=None, stream_slice=None, next_page_token=None)
     assert expected_path == actual_path
