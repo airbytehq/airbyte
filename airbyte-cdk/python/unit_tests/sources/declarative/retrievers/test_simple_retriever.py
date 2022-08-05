@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
@@ -22,7 +22,8 @@ records = [{"id": 1}, {"id": 2}]
 config = {}
 
 
-def test_simple_retriever_full():
+@patch.object(HttpStream, "read_records", return_value=[])
+def test_simple_retriever_full(mock_http_stream):
     requester = MagicMock()
     request_params = {"param": "value"}
     requester.get_request_params.return_value = request_params
@@ -77,9 +78,6 @@ def test_simple_retriever_full():
         stream_slicer=iterator,
         options={},
     )
-
-    # Mock actual read method
-    HttpStream.read_records = lambda self, sync_mode, cursor_field, stream_slice, stream_state: []
 
     assert retriever.primary_key == primary_key
     assert retriever.url_base == url_base
