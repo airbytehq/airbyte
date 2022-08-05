@@ -196,7 +196,7 @@
       "replication_method": {
         "type": "object",
         "title": "Replication Method",
-        "description": "Replication method to use for extracting data from the database.",
+        "description": "Replication method for extracting data from the database.",
         "order": 8,
         "oneOf": [
           {
