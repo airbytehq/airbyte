@@ -108,7 +108,7 @@ spec:
           successThreshold: {{ .Values.readinessProbe.successThreshold }}
           failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
         {{- end }}
- Remove unconditional resource assignment in chart for temporal       {{- if .Values.extraContainers }}
+        {{- if .Values.extraContainers }}
         {{ toYaml .Values.extraContainers | indent 8 }}
         {{- end }}
         {{- if .Values.global.extraConrainers }}
