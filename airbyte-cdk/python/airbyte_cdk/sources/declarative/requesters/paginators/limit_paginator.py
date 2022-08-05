@@ -147,6 +147,9 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
     ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
 
+    def reset(self):
+        self.pagination_strategy.reset()
+
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}
         if self.page_token_option.inject_into == option_type:

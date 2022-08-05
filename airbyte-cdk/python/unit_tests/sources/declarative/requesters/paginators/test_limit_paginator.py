@@ -3,6 +3,7 @@
 #
 
 import json
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -159,3 +160,13 @@ def test_limit_cannot_be_set_in_path():
         assert False
     except ValueError:
         pass
+
+
+def test_reset():
+    limit_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", options={})
+    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", options={})
+    url_base = "https://airbyte.io"
+    config = {}
+    strategy = MagicMock()
+    LimitPaginator(2, limit_request_option, page_token_request_option, strategy, config, url_base, options={}).reset()
+    assert strategy.reset.called
