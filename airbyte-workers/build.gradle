@@ -34,6 +34,7 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-scheduler:scheduler-persistence')
     implementation project(':airbyte-scheduler:scheduler-models')
+    implementation project(':airbyte-api')
 
     testImplementation 'io.temporal:temporal-testing:1.8.1'
     testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
