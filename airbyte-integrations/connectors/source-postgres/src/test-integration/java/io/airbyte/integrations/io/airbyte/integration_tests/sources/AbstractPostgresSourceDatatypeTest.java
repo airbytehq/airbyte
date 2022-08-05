@@ -176,13 +176,13 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     // Debezium does not handle era indicators (AD nd BC)
     // https://github.com/airbytehq/airbyte/issues/14590
-     addDataTypeTestData(
-     TestDataHolder.builder()
-     .sourceType("date")
-     .airbyteType(JsonSchemaType.STRING_DATE)
-     .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
-     .addExpectedValues("1999-01-08", "1991-02-10 BC", null)
-     .build());
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("date")
+            .airbyteType(JsonSchemaType.STRING_DATE)
+            .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "null")
+            .addExpectedValues("1999-01-08", "1991-02-10 BC", null)
+            .build());
 
     for (final String type : Set.of("double precision", "float", "float8")) {
       addDataTypeTestData(
@@ -283,17 +283,17 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 "null",
                 "'999.99'", "'1,001.01'", "'-1,000'",
                 "'$999.99'", "'$1001.01'", "'-$1,000'"
-                // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
-                // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
-                // https://github.com/airbytehq/airbyte/issues/7338
-                /*"'-92233720368547758.08'", "'92233720368547758.07'"*/)
+            // max values for Money type: "-92233720368547758.08", "92233720368547758.07"
+            // Debezium has wrong parsing for values more than 999999999999999 and less than -999999999999999
+            // https://github.com/airbytehq/airbyte/issues/7338
+            /* "'-92233720368547758.08'", "'92233720368547758.07'" */)
             .addExpectedValues(
                 null,
                 // Double#toString method is necessary here because sometimes the output
                 // has unexpected decimals, e.g. Double.toString(-1000) is -1000.0
                 "999.99", "1001.01", Double.toString(-1000),
                 "999.99", "1001.01", Double.toString(-1000)
-                /*"-92233720368547758.08", "92233720368547758.07"*/)
+            /* "-92233720368547758.08", "92233720368547758.07" */)
             .build());
 
     // Blocked by https://github.com/airbytehq/airbyte/issues/8902
@@ -423,7 +423,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .addInsertValues(
                   "TIMESTAMP '2004-10-19 10:23:00'",
                   "TIMESTAMP '2004-10-19 10:23:54.123456'",
-                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from inconsistent leap year handling
+                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from
+                  // inconsistent leap year handling
                   "TIMESTAMP '3004-10-19 10:23:54.123456 BC'",
                   // The earliest possible timestamp in CE
                   "TIMESTAMP '0001-01-01 00:00:00.000000'",
@@ -451,7 +452,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   // 10:23-08 == 18:23Z
                   "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:00-08'",
                   "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:54.123456-08'",
-                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from inconsistent leap year handling
+                  // A random BCE date. Old enough that converting it to/from an Instant results in discrepancies from
+                  // inconsistent leap year handling
                   "TIMESTAMP WITH TIME ZONE '3004-10-19 10:23:54.123456-08 BC'",
                   // The earliest possible timestamp in CE (16:00-08 == 00:00Z)
                   "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'",
