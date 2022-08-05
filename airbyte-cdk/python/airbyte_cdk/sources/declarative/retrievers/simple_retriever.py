@@ -298,7 +298,6 @@ class SimpleRetriever(Retriever, HttpStream):
     ) -> Iterable[Mapping[str, Any]]:
         # Warning: use self.state instead of the stream_state passed as argument!
         stream_slice = stream_slice or {}  # None-check
-        print("before")
         self._paginator.reset()
         print("after")
         records_generator = HttpStream.read_records(self, sync_mode, cursor_field, stream_slice, self.state)
