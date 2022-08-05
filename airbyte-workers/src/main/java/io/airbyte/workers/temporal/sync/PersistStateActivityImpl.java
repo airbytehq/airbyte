@@ -5,17 +5,22 @@
 package io.airbyte.workers.temporal.sync;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionState;
+import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
+import io.airbyte.api.client.model.generated.ConnectionStateType;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
+import io.airbyte.config.helpers.StateConverter;
 import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +29,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PersistStateActivityImpl implements PersistStateActivity {
 
-  private final StatePersistence statePersistence;
+  private final AirbyteApiClient airbyteApiClient;
   private final FeatureFlags featureFlags;
 
   @Override
@@ -34,15 +39,20 @@ public class PersistStateActivityImpl implements PersistStateActivity {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final Optional<StateWrapper> previousState = statePersistence.getCurrentState(connectionId);
+          final ConnectionState previousState = airbyteApiClient.getConnectionApi()
+              .getState(new ConnectionIdRequestBody().connectionId(connectionId));
+
           final StateType newStateType = maybeStateWrapper.get().getStateType();
-          if (statePersistence.isMigration(connectionId, newStateType, previousState) && newStateType == StateType.STREAM) {
+          if (isMigration(newStateType, previousState) && newStateType == StateType.STREAM) {
             validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
           }
 
-          statePersistence.updateOrCreateState(connectionId, maybeStateWrapper.get());
+          airbyteApiClient.getConnectionApi().createOrUpdateState(
+              new ConnectionStateCreateOrUpdate()
+                  .connectionId(connectionId)
+                  .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
         }
-      } catch (final IOException e) {
+      } catch (final ApiException e) {
         throw new RuntimeException(e);
       }
       return true;
@@ -63,6 +73,10 @@ public class PersistStateActivityImpl implements PersistStateActivity {
                 + ". Job must be retried in order to properly store state.");
       }
     });
+  }
+
+  private Boolean isMigration(final StateType currentStateType, final ConnectionState previousState) {
+    return previousState.getStateType() != null && previousState.getStateType() == ConnectionStateType.LEGACY && currentStateType != StateType.LEGACY;
   }
 
 }
