@@ -6,6 +6,7 @@ package io.airbyte.server.handlers;
 
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionState;
+import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.server.converters.StateConverter;
@@ -25,6 +26,16 @@ public class StateHandler {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final Optional<StateWrapper> currentState = statePersistence.getCurrentState(connectionId);
     return StateConverter.toApi(connectionId, currentState.orElse(null));
+  }
+
+  public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) throws IOException {
+    final UUID connectionId = connectionStateCreateOrUpdate.getConnectionId();
+
+    final StateWrapper convertedCreateOrUpdate = StateConverter.toInternal(connectionStateCreateOrUpdate.getConnectionState());
+    statePersistence.updateOrCreateState(connectionId, convertedCreateOrUpdate);
+    final Optional<StateWrapper> newInternalState = statePersistence.getCurrentState(connectionId);
+
+    return StateConverter.toApi(connectionId, newInternalState.orElse(null));
   }
 
 }

@@ -11,6 +11,7 @@ import io.airbyte.api.model.generated.StreamState;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
+import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import java.util.List;
@@ -30,24 +31,53 @@ public class StateConverter {
   public static ConnectionState toApi(final UUID connectionId, final @Nullable StateWrapper stateWrapper) {
     return new ConnectionState()
         .connectionId(connectionId)
-        .stateType(convertStateType(stateWrapper))
+        .stateType(convertStateTypeToApi(stateWrapper))
         .state(stateWrapper != null ? stateWrapper.getLegacyState() : null)
         .globalState(globalStateToApi(stateWrapper).orElse(null))
         .streamState(streamStateToApi(stateWrapper).orElse(null));
   }
 
   /**
-   * Convert to API representation of state type. API has an additional type (NOT_SET). This
-   * represents the case where no state is saved so we do not know the state type.
+   * Converts API representation of state to internal representation
+   *
+   * @param apiConnectionState api representation of state
+   * @return internal representation of state
+   */
+  public static StateWrapper toInternal(final @Nullable ConnectionState apiConnectionState) {
+    return new StateWrapper()
+        .withStateType(convertStateTypeToInternal(apiConnectionState).orElse(null))
+        .withGlobal(globalStateToInternal(apiConnectionState).orElse(null))
+        .withLegacyState(apiConnectionState != null ? apiConnectionState.getState() : null)
+        .withStateMessages(streamStateToInternal(apiConnectionState).orElse(null));
+
+  }
+
+  /**
+   * Convert to API representation of state type. API has an additional type (NOT_SET). This represents the case where no state is saved so we do not
+   * know the state type.
    *
    * @param stateWrapper state to convert
    * @return api representation of state type
    */
-  private static ConnectionStateType convertStateType(final @Nullable StateWrapper stateWrapper) {
+  private static ConnectionStateType convertStateTypeToApi(final @Nullable StateWrapper stateWrapper) {
     if (stateWrapper == null || stateWrapper.getStateType() == null) {
       return ConnectionStateType.NOT_SET;
     } else {
       return Enums.convertTo(stateWrapper.getStateType(), ConnectionStateType.class);
+    }
+  }
+
+  /**
+   * Convert to internal representation of state type, if set. Otherise, empty optional
+   *
+   * @param connectionState API state to convert.
+   * @return internal state type, if set. Otherwise, empty optional.
+   */
+  private static Optional<StateType> convertStateTypeToInternal(final @Nullable ConnectionState connectionState) {
+    if (connectionState == null || connectionState.getStateType().equals(ConnectionStateType.NOT_SET)) {
+      return Optional.empty();
+    } else {
+      return Optional.of(Enums.convertTo(connectionState.getStateType(), StateType.class));
     }
   }
 
@@ -74,6 +104,28 @@ public class StateConverter {
   }
 
   /**
+   * If API state is of type global, returns internal representation of global state. Otherwise, empty optional.
+   *
+   * @param connectionState API state representation to extract from
+   * @return global state message if API state is of type global. Otherwise, empty optional.
+   */
+  private static Optional<AirbyteStateMessage> globalStateToInternal(final @Nullable ConnectionState connectionState) {
+    if (connectionState != null
+        && connectionState.getStateType() == ConnectionStateType.GLOBAL
+        && connectionState.getGlobalState() != null) {
+      return Optional.of(new AirbyteStateMessage()
+          .withGlobal(new AirbyteGlobalState()
+              .withSharedState(connectionState.getGlobalState().getSharedState())
+              .withStreamStates(connectionState.getGlobalState().getStreamStates()
+                  .stream()
+                  .map(StateConverter::streamStateStructToInternal)
+                  .toList())));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  /**
    * If wrapper is of type stream state, returns stream state. Otherwise, empty optional.
    *
    * @param stateWrapper state wrapper to extract from
@@ -91,10 +143,34 @@ public class StateConverter {
     }
   }
 
+  /**
+   * If API state is of type stream, returns internal representation of stream state. Otherwise, empty optional.
+   *
+   * @param connectionState API representation of state to extract from
+   * @return internal representation of stream state if API state representation is of type stream. Otherwise, empty optional.
+   */
+  private static Optional<List<AirbyteStateMessage>> streamStateToInternal(final @Nullable ConnectionState connectionState) {
+    if (connectionState != null && connectionState.getStateType() == ConnectionStateType.STREAM && connectionState.getStreamState() != null) {
+      return Optional.ofNullable(connectionState.getStreamState()
+          .stream()
+          .map(StateConverter::streamStateStructToInternal)
+          .map(s -> new AirbyteStateMessage().withStream(s))
+          .toList());
+    } else {
+      return Optional.empty();
+    }
+  }
+
   private static StreamState streamStateStructToApi(final AirbyteStreamState streamState) {
     return new StreamState()
         .streamDescriptor(ProtocolConverters.streamDescriptorToApi(streamState.getStreamDescriptor()))
         .streamState(streamState.getStreamState());
+  }
+
+  private static AirbyteStreamState streamStateStructToInternal(final StreamState streamState) {
+    return new AirbyteStreamState()
+        .withStreamDescriptor(ProtocolConverters.streamDescriptorToProtocol(streamState.getStreamDescriptor()))
+        .withStreamState(streamState.getStreamState());
   }
 
 }

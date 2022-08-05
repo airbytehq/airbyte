@@ -1402,6 +1402,30 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/state/create_or_update:
+    post:
+      tags:
+        - connection
+        - internal
+      summary: Create or update the state for a connection. INTERNAL-ONLY.
+      operationId: createOrUpdateState
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionStateCreateOrUpdate"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionState"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/search:
     post:
       tags:
@@ -3295,6 +3319,16 @@ components:
         sourceCatalogId:
           type: string
           format: uuid
+    ConnectionStateCreateOrUpdate:
+      type: object
+      required:
+        - connectionId
+        - connectionState
+      properties:
+        connectionId:
+          $ref: "#/components/schemas/ConnectionId"
+        connectionState:
+          $ref: "#/components/schemas/ConnectionState"
     ConnectionUpdate:
       type: object
       required:
