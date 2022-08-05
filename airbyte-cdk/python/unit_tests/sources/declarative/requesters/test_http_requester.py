@@ -55,8 +55,8 @@ def test_http_requester():
     assert requester.get_path(stream_state={}, stream_slice=stream_slice, next_page_token={}) == "v1/1234"
     assert requester.get_authenticator() == authenticator
     assert requester.get_method() == HttpMethod.GET
-    assert requester.request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
-    assert requester.request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
-    assert requester.request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
+    assert requester.get_request_params(stream_state={}, stream_slice=None, next_page_token=None) == request_params
+    assert requester.get_request_body_data(stream_state={}, stream_slice=None, next_page_token=None) == request_body_data
+    assert requester.get_request_body_json(stream_state={}, stream_slice=None, next_page_token=None) == request_body_json
     assert requester.should_retry(requests.Response()) == should_retry
     assert {} == requester.request_kwargs(stream_state={}, stream_slice=None, next_page_token=None)

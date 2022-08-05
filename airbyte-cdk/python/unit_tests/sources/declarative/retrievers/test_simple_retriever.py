@@ -24,7 +24,7 @@ config = {}
 def test_simple_retriever_full():
     requester = MagicMock()
     request_params = {"param": "value"}
-    requester.request_params.return_value = request_params
+    requester.get_request_params.return_value = request_params
 
     paginator = MagicMock()
     next_page_token = {"cursor": "cursor_value"}
@@ -54,9 +54,9 @@ def test_simple_retriever_full():
     should_retry = ResponseStatus.retry(backoff_time)
     requester.should_retry.return_value = should_retry
     request_body_data = {"body": "data"}
-    requester.request_body_data.return_value = request_body_data
+    requester.get_request_body_data.return_value = request_body_data
     request_body_json = {"body": "json"}
-    requester.request_body_json.return_value = request_body_json
+    requester.get_request_body_json.return_value = request_body_json
     request_kwargs = {"kwarg": "value"}
     requester.request_kwargs.return_value = request_kwargs
     cache_filename = "cache"
@@ -250,7 +250,7 @@ def test_request_body_data(test_name, requester_body_data, paginator_body_data, 
     paginator.get_request_body_data.return_value = paginator_body_data
     requester = MagicMock()
 
-    requester.request_body_data.return_value = requester_body_data
+    requester.get_request_body_data.return_value = requester_body_data
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(

@@ -72,8 +72,8 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
 
         self._step = self._parse_timedelta(self.step)
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
-        self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_date", options=options)
-        self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_date", options=options)
+        self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
+        self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
         if not self.start_datetime.datetime_format:

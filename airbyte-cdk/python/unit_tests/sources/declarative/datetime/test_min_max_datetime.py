@@ -71,6 +71,7 @@ def test_format_is_a_number():
         datetime_format="%Y%m%d",
         min_datetime="{{ config['older'] }}",
         max_datetime="{{ stream_state['newer'] }}",
+        options={},
     )
     actual_date = min_max_date.get_datetime(config, **{"stream_state": stream_state})
 

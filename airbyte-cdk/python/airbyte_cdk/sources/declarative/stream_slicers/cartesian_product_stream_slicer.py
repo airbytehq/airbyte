@@ -41,23 +41,6 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
         for slicer in self.stream_slicers:
             slicer.update_cursor(stream_slice, last_record)
 
-    # <<<<<<< HEAD
-    #     def get_request_params(self) -> Mapping[str, Any]:
-    #         return dict(ChainMap(*[s.get_request_params() for s in self.stream_slicers]))
-    #
-    #     def get_request_headers(self) -> Mapping[str, Any]:
-    #         return dict(ChainMap(*[s.get_request_headers() for s in self.stream_slicers]))
-    #
-    #     def get_request_body_data(self) -> Mapping[str, Any]:
-    #         return dict(ChainMap(*[s.get_request_body_data() for s in self.stream_slicers]))
-    #
-    #     def get_request_body_json(self) -> Optional[Mapping]:
-    #         return dict(ChainMap(*[s.get_request_body_json() for s in self.stream_slicers]))
-    #
-    #     def request_kwargs(self) -> Mapping[str, Any]:
-    #         # Never update kwargs
-    #         return {}
-    # =======
     def get_request_params(
         self,
         *,
@@ -83,7 +66,7 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
             )
         )
 
-    def request_body_data(
+    def get_request_body_data(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -99,7 +82,7 @@ class CartesianProductStreamSlicer(StreamSlicer, JsonSchemaMixin):
             )
         )
 
-    def request_body_json(
+    def get_request_body_json(
         self,
         *,
         stream_state: Optional[StreamState] = None,
