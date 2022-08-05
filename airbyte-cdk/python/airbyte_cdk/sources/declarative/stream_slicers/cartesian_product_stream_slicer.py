@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 class CartesianProductStreamSlicer(StreamSlicer):
@@ -37,21 +38,41 @@ class CartesianProductStreamSlicer(StreamSlicer):
         for slicer in self._stream_slicers:
             slicer.update_cursor(stream_slice, last_record)
 
-    def request_params(self) -> Mapping[str, Any]:
+    def request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return dict(ChainMap(*[s.request_params() for s in self._stream_slicers]))
 
-    def request_headers(self) -> Mapping[str, Any]:
-        return dict(ChainMap(*[s.request_headers() for s in self._stream_slicers]))
+    def request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return dict(ChainMap(*[s.request_headers(stream_state, stream_slice, next_page_token) for s in self._stream_slicers]))
 
-    def request_body_data(self) -> Mapping[str, Any]:
-        return dict(ChainMap(*[s.request_body_data() for s in self._stream_slicers]))
+    def request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return dict(ChainMap(*[s.request_body_data(stream_state, stream_slice, next_page_token) for s in self._stream_slicers]))
 
-    def request_body_json(self) -> Optional[Mapping]:
-        return dict(ChainMap(*[s.request_body_json() for s in self._stream_slicers]))
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}
+    def request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping]:
+        return dict(ChainMap(*[s.request_body_json(stream_state, stream_slice, next_page_token) for s in self._stream_slicers]))
 
     def get_stream_state(self) -> Mapping[str, Any]:
         return dict(ChainMap(*[slicer.get_stream_state() for slicer in self._stream_slicers]))
