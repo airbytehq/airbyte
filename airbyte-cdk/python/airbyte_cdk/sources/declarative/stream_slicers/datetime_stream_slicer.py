@@ -75,11 +75,12 @@ class DatetimeStreamSlicer(StreamSlicer):
         self._cursor_field = InterpolatedString.create(cursor_field, options=options)
         self._start_time_option = start_time_option
         self._end_time_option = end_time_option
-        self._stream_slice_field_start = InterpolatedString.create(stream_state_field_start or "start_date", options=options)
-        self._stream_slice_field_end = InterpolatedString.create(stream_state_field_end or "end_date", options=options)
+        self._stream_slice_field_start = InterpolatedString.create(stream_state_field_start or "start_time", options=options)
+        self._stream_slice_field_end = InterpolatedString.create(stream_state_field_end or "end_time", options=options)
         self._cursor = None  # tracks current datetime
         self._cursor_end = None  # tracks end of current stream slice
         self._lookback_window = lookback_window
+        self._options = options
 
         # If datetime format is not specified then start/end datetime should inherit it from the stream slicer
         if not self._start_datetime.datetime_format:
@@ -205,27 +206,52 @@ class DatetimeStreamSlicer(StreamSlicer):
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
         return datetime.timedelta(**time_params)
 
-    def request_params(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.request_parameter)
+    def request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.request_parameter, stream_slice)
 
-    def request_headers(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.header)
+    def request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.header, stream_slice)
 
-    def request_body_data(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_data)
+    def request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_data, stream_slice)
 
-    def request_body_json(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_json)
+    def request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_json, stream_slice)
 
     def request_kwargs(self) -> Mapping[str, Any]:
         # Never update kwargs
         return {}
 
-    def _get_request_options(self, option_type):
+    def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         options = {}
         if self._start_time_option and self._start_time_option.inject_into == option_type:
-            if self._cursor:
-                options[self._start_time_option.field_name] = self._cursor
+            options[self._start_time_option.field_name] = stream_slice.get(
+                self._stream_slice_field_start.eval(self._config, **self._options)
+            )
         if self._end_time_option and self._end_time_option.inject_into == option_type:
-            options[self._end_time_option.field_name] = self._cursor_end
+            options[self._end_time_option.field_name] = stream_slice.get(self._stream_slice_field_end.eval(self._config, **self._options))
         return options

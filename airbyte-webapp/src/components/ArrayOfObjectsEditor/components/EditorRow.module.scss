@@ -1,0 +1,32 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.container + .container {
+  border-top: 1px solid colors.$white;
+}
+
+.body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+  color: colors.$dark-blue;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17px;
+  padding: variables.$spacing-md 8px;
+  gap: variables.$spacing-md;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: variables.$spacing-md;
+}
