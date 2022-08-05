@@ -33,6 +33,7 @@ class YamlDeclarativeSource(DeclarativeSource):
         return self._factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        print(f"keys: {self._source_config.keys()}")
         stream_configs = self._source_config["streams"]
         for s in stream_configs:
             if "class_name" not in s:
