@@ -144,7 +144,7 @@ class SlackNotificationClientTest {
             .withNotificationType(NotificationType.SLACK)
             .withSendOnSuccess(true)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
-    assertTrue(client.notifyConnectionDisabled("", SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, WORKSPACE_ID, CONNECTION_ID));
+    assertTrue(client.notifyConnectionDisabled("", SOURCE_TEST, DESTINATION_TEST, "job description.", WORKSPACE_ID, CONNECTION_ID));
   }
 
   @Test
@@ -166,7 +166,7 @@ class SlackNotificationClientTest {
             .withNotificationType(NotificationType.SLACK)
             .withSendOnSuccess(true)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
-    assertTrue(client.notifyConnectionDisableWarning("", SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, WORKSPACE_ID, CONNECTION_ID));
+    assertTrue(client.notifyConnectionDisableWarning("", SOURCE_TEST, DESTINATION_TEST, "job description.", WORKSPACE_ID, CONNECTION_ID));
   }
 
   static class ServerHandler implements HttpHandler {
