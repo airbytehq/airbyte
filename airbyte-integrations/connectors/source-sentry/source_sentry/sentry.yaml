@@ -43,6 +43,25 @@ streams:
         type: NoPagination
   - type: DeclarativeStream
     $options:
+      name: "issues"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{config.organization}}/{{config.project}}/issues/"
+        request_options_provider:
+          request_parameters:
+            statsPeriod: ""
+            query: ""
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    $options:
       name: "projects"
     primary_key: "id"
     schema_loader:
@@ -56,7 +75,21 @@ streams:
         path: "projects/"
       paginator:
         type: NoPagination
-
+  - type: DeclarativeStream
+    $options:
+      name: "project_detail"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{config.organization}}/{{config.project}}/"
+      paginator:
+        type: NoPagination
 check:
   type: CheckStream
   stream_names: ["events"]
