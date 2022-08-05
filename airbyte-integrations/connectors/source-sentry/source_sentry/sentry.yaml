@@ -1,0 +1,62 @@
+definitions:
+  page_size: 50
+
+  schema_loader:
+    type: JsonSchema
+    file_path: "./source_sentry/schemas/{{ options.name }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: JelloExtractor
+      transform: "_"
+  requester:
+    type: HttpRequester
+    name: "{{ options['name'] }}"
+    url_base: "https://{{ config.hostname }}/api/0/"
+    http_method: "GET"
+    authenticator:
+      type: "BearerAuthenticator"
+      token: "{{ config.auth_token }}"
+  retriever:
+    type: SimpleRetriever
+    name: "{{ options['name'] }}"
+    primary_key: "{{ options['primary_key'] }}"
+
+streams:
+  - type: DeclarativeStream
+    $options:
+      name: "events"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/{{config.organization}}/{{config.project}}/events/"
+        request_options_provider:
+          request_parameters:
+            full: "true"
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    $options:
+      name: "projects"
+    primary_key: "id"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "projects/"
+      paginator:
+        type: NoPagination
+
+check:
+  type: CheckStream
+  stream_names: ["events"]
