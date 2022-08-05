@@ -1,26 +1,18 @@
+import classNames from "classnames";
 import dayjs from "dayjs";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
 
 import Status from "core/statuses";
 
 import { AttemptRead, JobConfigType } from "../../../core/request/AirbyteClient";
+import styles from "./AttemptDetails.module.scss";
 
 interface IProps {
   className?: string;
   attempt: AttemptRead;
   configType?: JobConfigType;
 }
-
-const Details = styled.div`
-  font-size: 12px;
-  line-height: 15px;
-  color: ${({ theme }) => theme.greyColor40};
-`;
-const FailureReasonDetails = styled.div`
-  padding-bottom: 10px;
-`;
 
 const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
@@ -31,9 +23,9 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
 
   if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
     return (
-      <Details className={className}>
+      <div className={classNames(styles.details, className)}>
         <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-      </Details>
+      </div>
     );
   }
 
@@ -77,7 +69,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
   const isFailed = attempt.status === Status.FAILED;
 
   return (
-    <Details className={className}>
+    <div className={classNames(styles.details, className)}>
       <div>
         <span>{formatBytes(attempt?.bytesSynced)} | </span>
         <span>
@@ -107,7 +99,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
         ) : null}
       </div>
       {isFailed && (
-        <FailureReasonDetails>
+        <div>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",
@@ -117,9 +109,9 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
               value: getExternalFailureMessage(attempt),
             }
           )}
-        </FailureReasonDetails>
+        </div>
       )}
-    </Details>
+    </div>
   );
 };
 

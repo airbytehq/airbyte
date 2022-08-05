@@ -73,7 +73,7 @@
 - name: Databricks Lakehouse
   destinationDefinitionId: 072d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-databricks
-  dockerImageTag: 0.2.5
+  dockerImageTag: 0.2.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/databricks
   icon: databricks.svg
   releaseStage: alpha
@@ -126,7 +126,7 @@
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.5
+  dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.io/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
