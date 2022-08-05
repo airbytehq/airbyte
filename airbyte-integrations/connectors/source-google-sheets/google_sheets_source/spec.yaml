@@ -71,7 +71,7 @@ connectionSpecification:
                   - "{ \"type\": \"service_account\" \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
 authSpecification:
   provider: "google"
-  authUrlTemplate: "https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly&state={{ state }}",
-  accessTokenUrlTemplate: "https://oauth2.googleapis.com/token",
-  accessTokenBody: "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}",
+  authUrlTemplate: "https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent&client_id={{ client_id }}&redirect_uri={{ redirect_uri }}&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly https://www.googleapis.com/auth/drive.readonly&state={{ state }}"
+  accessTokenUrlTemplate: "https://oauth2.googleapis.com/token"
+  accessTokenBody: "{\"grant_type\": \"authorization_code\", \"client_id\": \"{{ client_id }}\", \"client_secret\": \"{{ client_secret }}\", \"redirect_uri\": \"{{ redirect_uri }}\", \"code\": \"{{ code }}\"}"
   accessTokenResponseMap: "{\"refresh_token\": \"/refresh_token\"}"

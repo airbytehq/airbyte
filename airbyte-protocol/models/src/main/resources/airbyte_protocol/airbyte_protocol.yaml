@@ -297,15 +297,8 @@ definitions:
         items:
           "$ref": "#/definitions/DestinationSyncMode"
       authSpecification:
-        description: deprecated, switching to advanced_auth instead
+        description: auth specification
         type: object
-        properties:
-          auth_type:
-            type: string
-            enum: ["oauth2.0"] # Future auth types should be added here
-          oauth2Specification:
-            description: If the connector supports OAuth, this field should be non-null.
-            "$ref": "#/definitions/OAuth2Specification"
       advanced_auth:
         description: |-
           Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.
