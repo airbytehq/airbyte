@@ -1,8 +1,7 @@
-import { Field, FieldProps, Form, Formik, FormikHelpers, useFormikContext } from "formik";
-import React, { useCallback, useState } from "react";
+import { Field, FieldProps, Form, Formik, FormikHelpers } from "formik";
+import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useToggle } from "react-use";
-import { useDebounce } from "react-use";
 import styled from "styled-components";
 
 import { Card, ControlLabels, DropDown, DropDownRow, H5, Input } from "components";
@@ -102,19 +101,17 @@ export interface ConnectionFormSubmitResult {
 
 export type ConnectionFormMode = "create" | "edit" | "readonly";
 
-// eslint-disable-next-line react/function-component-definition
-function FormValuesChangeTracker<T>({ onChangeValues }: { onChangeValues?: (values: T) => void }) {
-  // Grab values from context
-  const { values } = useFormikContext<T>();
-  useDebounce(
-    () => {
-      onChangeValues?.(values);
-    },
-    200,
-    [values, onChangeValues]
-  );
-  return null;
+interface DirtyChangeTrackerProps {
+  dirty: boolean;
+  onChanges: (dirty: boolean) => void;
 }
+
+const DirtyChangeTracker: React.FC<DirtyChangeTrackerProps> = ({ dirty, onChanges }) => {
+  useEffect(() => {
+    onChanges(dirty);
+  }, [dirty, onChanges]);
+  return null;
+};
 
 interface ConnectionFormProps {
   onSubmit: (values: ConnectionFormValues) => Promise<ConnectionFormSubmitResult | void>;
@@ -123,7 +120,7 @@ interface ConnectionFormProps {
   successMessage?: React.ReactNode;
   onDropDownSelect?: (item: DropDownRow.IDataItem) => void;
   onCancel?: () => void;
-  onChangeValues?: (values: FormikConnectionFormValues) => void;
+  onFormDirtyChanges?: (dirty: boolean) => void;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
@@ -146,7 +143,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
   canSubmitUntouchedForm,
   additionalSchemaControl,
   connection,
-  onChangeValues,
+  onFormDirtyChanges,
 }) => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const { clearFormChange } = useFormChangeTrackerService();
@@ -200,7 +197,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({
       {({ isSubmitting, setFieldValue, isValid, dirty, resetForm, values }) => (
         <FormContainer className={className}>
           <FormChangeTracker changed={dirty} formId={formId} />
-          <FormValuesChangeTracker onChangeValues={onChangeValues} />
+          {onFormDirtyChanges && <DirtyChangeTracker dirty={dirty} onChanges={onFormDirtyChanges} />}
           {!isEditMode && (
             <Section>
               <Field name="name">
