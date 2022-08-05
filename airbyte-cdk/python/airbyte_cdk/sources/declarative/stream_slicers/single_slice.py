@@ -23,21 +23,37 @@ class SingleSlice(StreamSlicer, JsonSchemaMixin):
     def get_stream_state(self) -> StreamState:
         return {}
 
-    def get_request_params(self) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_headers(self) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
-    def get_request_body_json(self) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[StreamSlice]:
         return [dict()]
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}

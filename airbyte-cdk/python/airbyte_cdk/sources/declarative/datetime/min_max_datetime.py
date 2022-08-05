@@ -53,15 +53,15 @@ class MinMaxDatetime(JsonSchemaMixin):
         if not datetime_format:
             datetime_format = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-        time = dt.datetime.strptime(self.datetime.eval(config, **additional_options), datetime_format).replace(tzinfo=self._timezone)
+        time = dt.datetime.strptime(str(self.datetime.eval(config, **additional_options)), datetime_format).replace(tzinfo=self._timezone)
 
         if self.min_datetime:
-            min_time = dt.datetime.strptime(self.min_datetime.eval(config, **additional_options), datetime_format).replace(
+            min_time = dt.datetime.strptime(str(self.min_datetime.eval(config, **additional_options)), datetime_format).replace(
                 tzinfo=self._timezone
             )
             time = max(time, min_time)
         if self.max_datetime:
-            max_time = dt.datetime.strptime(self.max_datetime.eval(config, **additional_options), datetime_format).replace(
+            max_time = dt.datetime.strptime(str(self.max_datetime.eval(config, **additional_options)), datetime_format).replace(
                 tzinfo=self._timezone
             )
             time = min(time, max_time)

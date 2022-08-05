@@ -112,7 +112,7 @@ def test_request_option(test_name, request_option, expected_req_params, expected
     stream_slice = {cursor_field: "customer"}
 
     slicer.update_cursor(stream_slice)
-    assert expected_req_params == slicer.get_request_params()
+    assert expected_req_params == slicer.get_request_params(stream_slice)
     assert expected_headers == slicer.get_request_headers()
     assert expected_body_json == slicer.get_request_body_json()
     assert expected_body_data == slicer.get_request_body_data()

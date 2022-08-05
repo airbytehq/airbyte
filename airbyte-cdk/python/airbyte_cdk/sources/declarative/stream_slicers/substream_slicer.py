@@ -58,21 +58,37 @@ class SubstreamSlicer(StreamSlicer, JsonSchemaMixin):
                 cursor.update({parent_stream_config.stream_slice_field: slice_value})
         self._cursor = cursor
 
-    def get_request_params(self) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.request_parameter)
 
-    def get_request_headers(self) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.header)
 
-    def get_request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_data)
 
-    def get_request_body_json(self) -> Optional[Mapping]:
+    def get_request_body_json(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping]:
         return self._get_request_option(RequestOptionType.body_json)
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}
 
     def _get_request_option(self, option_type: RequestOptionType):
         params = {}

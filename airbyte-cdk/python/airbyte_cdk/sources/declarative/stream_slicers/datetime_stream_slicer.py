@@ -199,27 +199,50 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         time_params = {name: float(param) for name, param in parts.groupdict().items() if param}
         return datetime.timedelta(**time_params)
 
-    def get_request_params(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.request_parameter)
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.request_parameter, stream_slice)
 
-    def get_request_headers(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.header)
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.header, stream_slice)
 
-    def get_request_body_data(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_data)
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_data, stream_slice)
 
-    def get_request_body_json(self) -> Mapping[str, Any]:
-        return self._get_request_options(RequestOptionType.body_json)
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._get_request_options(RequestOptionType.body_json, stream_slice)
 
     def request_kwargs(self) -> Mapping[str, Any]:
         # Never update kwargs
         return {}
 
-    def _get_request_options(self, option_type):
+    def _get_request_options(self, option_type: RequestOptionType, stream_slice: StreamSlice):
         options = {}
         if self.start_time_option and self.start_time_option.inject_into == option_type:
-            if self._cursor:
-                options[self.start_time_option.field_name] = self._cursor
+            options[self.start_time_option.field_name] = stream_slice.get(self.stream_slice_field_start.eval(self.config))
         if self.end_time_option and self.end_time_option.inject_into == option_type:
-            options[self.end_time_option.field_name] = self._cursor_end
+            options[self.end_time_option.field_name] = stream_slice.get(self.stream_slice_field_end.eval(self.config))
         return options

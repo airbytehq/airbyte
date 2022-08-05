@@ -12,7 +12,7 @@ from airbyte_cdk.sources.declarative.interpolation.interpolated_string import In
 from airbyte_cdk.sources.declarative.requesters.paginators.paginator import Paginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -111,21 +111,41 @@ class LimitPaginator(Paginator, JsonSchemaMixin):
         else:
             return None
 
-    def get_request_params(self) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.request_parameter)
 
-    def get_request_headers(self) -> Mapping[str, str]:
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, str]:
         return self._get_request_options(RequestOptionType.header)
 
-    def get_request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_data)
 
-    def get_request_body_json(self) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_options(RequestOptionType.body_json)
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}
 
     def _get_request_options(self, option_type: RequestOptionType) -> Mapping[str, Any]:
         options = {}

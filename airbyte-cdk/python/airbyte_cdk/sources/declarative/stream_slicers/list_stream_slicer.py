@@ -50,21 +50,37 @@ class ListStreamSlicer(StreamSlicer, JsonSchemaMixin):
     def get_stream_state(self) -> StreamState:
         return {self.cursor_field.eval(self.config): self._cursor} if self._cursor else {}
 
-    def get_request_params(self) -> Mapping[str, Any]:
+    def get_request_params(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.request_parameter)
 
-    def get_request_headers(self) -> Mapping[str, Any]:
+    def get_request_headers(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.header)
 
-    def get_request_body_data(self) -> Mapping[str, Any]:
+    def get_request_body_data(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_data)
 
-    def get_request_body_json(self) -> Mapping[str, Any]:
+    def get_request_body_json(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
         return self._get_request_option(RequestOptionType.body_json)
-
-    def request_kwargs(self) -> Mapping[str, Any]:
-        # Never update kwargs
-        return {}
 
     def stream_slices(self, sync_mode: SyncMode, stream_state: Mapping[str, Any]) -> Iterable[Mapping[str, Any]]:
         return [{self.cursor_field.eval(self.config): slice_value} for slice_value in self.slice_values]
