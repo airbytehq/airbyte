@@ -242,6 +242,18 @@ public interface Configs {
   int getAirbyteApiPort();
 
   /**
+   * Define the header name used to authenticate with the Airbyte API
+   * @return
+   */
+  String getAirbyteApiAuthHeaderName();
+
+  /**
+   * Define the header value used to authenticate with the Airbyte API
+   * @return
+   */
+  String getAirbyteApiAuthHeaderValue();
+
+  /**
    * Define the url the Airbyte Webapp is hosted at. Airbyte services use this information.
    */
   String getWebappUrl();
