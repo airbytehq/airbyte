@@ -1972,7 +1972,7 @@
     supported_destination_sync_modes:
     - "append"
     - "overwrite"
-- dockerImage: "airbyte/destination-pubsub:0.1.5"
+- dockerImage: "airbyte/destination-pubsub:0.1.6"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/pubsub"
     connectionSpecification:
