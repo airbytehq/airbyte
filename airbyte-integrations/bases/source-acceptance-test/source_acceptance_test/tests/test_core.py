@@ -196,8 +196,8 @@ class TestSpec(BaseTest):
         previous_connector_spec: ConnectorSpecification,
     ):
         """Check if the current spec is backward_compatible:
-        1. Perform multiple hardcoded syntactic checks with SpecDiffChecker
-        2. validate fake generated previous configs against the actual connector specification with validate_previous_configs
+        1. Perform multiple hardcoded syntactic checks with SpecDiffChecker.
+        2. Validate fake generated previous configs against the actual connector specification with validate_previous_configs.
         """
         assert isinstance(actual_connector_spec, ConnectorSpecification) and isinstance(previous_connector_spec, ConnectorSpecification)
         spec_diff = self.compute_spec_diff(actual_connector_spec, previous_connector_spec)

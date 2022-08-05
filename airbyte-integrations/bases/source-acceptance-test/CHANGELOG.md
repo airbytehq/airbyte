@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.1.60
-Backward compatibility tests: validate fake previous config against current connector specification.
+Backward compatibility tests: validate fake previous config against current connector specification. [#15367](https://github.com/airbytehq/airbyte/pull/15367)
 
 ## 0.1.59
 Backward compatibility tests: add syntactic validation of specs [#15194](https://github.com/airbytehq/airbyte/pull/15194/).
