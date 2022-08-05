@@ -262,6 +262,10 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         }
 
       });
+
+      checkOperations.add(database -> {
+        PostgresUtils.checkFirstRecordWaitTime(config);
+      });
     }
 
     return checkOperations;
