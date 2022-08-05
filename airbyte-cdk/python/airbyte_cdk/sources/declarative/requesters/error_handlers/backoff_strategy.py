@@ -3,11 +3,13 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Optional
 
 import requests
 
 
+@dataclass
 class BackoffStrategy:
     """
     Backoff strategy defining how long to wait before retrying a request that resulted in an error.
