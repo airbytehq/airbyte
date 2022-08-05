@@ -82,12 +82,25 @@ departments_stream:
     requester:
       $ref: "*ref(requester)"
       path: "departments"
+jobs_stream:
+  type: DeclarativeStream
+  $options:
+    name: "jobs"
+  primary_key: "id"
+  schema_loader:
+    $ref: "*ref(schema_loader)"
+  retriever:
+    $ref: "*ref(retriever)"
+    requester:
+      $ref: "*ref(requester)"
+      path: "jobs"
 streams:
   - "*ref(applications_stream)"
   - "*ref(candidates_stream)"
   - "*ref(close_reasons_stream)"
   - "*ref(degrees_stream)"
   - "*ref(departments_stream)"
+  - "*ref(jobs_stream)"
 check:
   type: CheckStream
   stream_names: ["applications_stream"]
