@@ -21,6 +21,13 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
         ("test_token_not_found", "{{ response.invalid_key }}", None, None),
         ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}"), "token"),
         ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}"), None),
+        ("test_token_from_header", "{{ headers.next }}", InterpolatedBoolean("{{ not headers.has_more }}"), "ready_to_go"),
+        (
+            "test_token_from_response_header_links",
+            "{{ headers.link.next.url }}",
+            InterpolatedBoolean("{{ not headers.link.next.url }}"),
+            "https://adventure.io/api/v1/records?page=2&per_page=100",
+        ),
     ],
 )
 def test_cursor_pagination_strategy(test_name, template_string, stop_condition, expected_token):
@@ -29,7 +36,8 @@ def test_cursor_pagination_strategy(test_name, template_string, stop_condition, 
     strategy = CursorPaginationStrategy(template_string, config, stop_condition, decoder)
 
     response = requests.Response()
-    response.headers = {"has_more": True}
+    link_str = '<https://adventure.io/api/v1/records?page=2&per_page=100>; rel="next"'
+    response.headers = {"has_more": True, "next": "ready_to_go", "link": link_str}
     response_body = {"_metadata": {"content": "content_value"}, "accounts": [], "end": 99, "total": 200, "characters": {}}
     response._content = json.dumps(response_body).encode("utf-8")
     last_records = [{"id": 0, "more_records": True}, {"id": 1, "more_records": True}]
