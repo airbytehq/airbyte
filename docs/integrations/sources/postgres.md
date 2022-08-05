@@ -371,7 +371,7 @@ Possible solutions include:
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 |:--------| :--- | :--- |:----------------------------------------------------------------------------------------------------------------|
-| 1.0.0   | 2022-08-05 | [15342](https://github.com/airbytehq/airbyte/pull/15342) | Change connector label to generally_available                                                                   |
+| 1.0.0   | 2022-08-05 | [15380](https://github.com/airbytehq/airbyte/pull/15380) | Change connector label to generally_available                                                                   |
 | 0.4.44  | 2022-08-05 | [15342](https://github.com/airbytehq/airbyte/pull/15342) | Adjust titles and descriptions in spec.json                                                                     |
 | 0.4.43  | 2022-08-03 | [15226](https://github.com/airbytehq/airbyte/pull/15226) | Make connectionTimeoutMs configurable through JDBC url parameters                                               |
 | 0.4.42  | 2022-08-03 | [15273](https://github.com/airbytehq/airbyte/pull/15273) | Fix a bug in `0.4.36` and correctly parse the CDC initial record waiting time                                   |
