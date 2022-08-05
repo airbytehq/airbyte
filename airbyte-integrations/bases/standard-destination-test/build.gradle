@@ -11,4 +11,5 @@ dependencies {
     implementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
     implementation 'org.junit.jupiter:junit-jupiter-api'
     implementation 'org.junit.jupiter:junit-jupiter-params'
+    implementation 'org.mockito:mockito-core:4.6.1'
 }

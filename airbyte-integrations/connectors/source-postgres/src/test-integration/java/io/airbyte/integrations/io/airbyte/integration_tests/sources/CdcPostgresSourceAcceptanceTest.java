@@ -77,6 +77,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
         .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
