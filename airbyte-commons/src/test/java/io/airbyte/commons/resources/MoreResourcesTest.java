@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class MoreResourcesTest {
+
   private static final String CONTENT_1 = "content1\n";
   private static final String CONTENT_2 = "content2\n";
   private static final String RESOURCE_TEST = "resource_test";

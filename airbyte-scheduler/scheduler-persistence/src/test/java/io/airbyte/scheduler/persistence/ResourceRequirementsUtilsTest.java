@@ -93,7 +93,8 @@ class ResourceRequirementsUtilsTest {
     final ActorDefinitionResourceRequirements definitionReqs = new ActorDefinitionResourceRequirements()
         .withDefault(definitionDefaultReqs)
         .withJobSpecific(List.of(jobTypeResourceLimit));
-    final ResourceRequirements connectionResourceRequirements = new ResourceRequirements().withMemoryRequest("400Mi").withMemoryLimit(FIVE_HUNDRED_MEM);
+    final ResourceRequirements connectionResourceRequirements =
+        new ResourceRequirements().withMemoryRequest("400Mi").withMemoryLimit(FIVE_HUNDRED_MEM);
 
     final ResourceRequirements result = ResourceRequirementsUtils.getResourceRequirements(
         connectionResourceRequirements,

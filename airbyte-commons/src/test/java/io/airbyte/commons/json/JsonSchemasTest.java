@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class JsonSchemasTest {
+
   private static final String UNCHECKED = "unchecked";
   private static final String NAME = "name";
   private static final String PROPERTIES = "properties";

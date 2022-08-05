@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 class AirbyteVersionTest {
+
   private static final String VERSION_678 = "6.7.8";
   private static final String VERSION_678_OMEGA = "6.7.8-omega";
   private static final String VERSION_678_ALPHA = "6.7.8-alpha";

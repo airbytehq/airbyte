@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 
 class YamlsTest {
+
   private static final String LINE_BREAK = "---\n";
   private static final String STR_ABC = "str: \"abc\"\n";
   private static final String ABC = "abc";
@@ -104,14 +105,14 @@ class YamlsTest {
     assertEquals(
         "{\"str\":\"abc\"}",
         Yamls.deserialize(
-                LINE_BREAK
+            LINE_BREAK
                 + STR_ABC)
             .toString());
 
     assertEquals(
         "[{\"str\":\"abc\"},{\"str\":\"abc\"}]",
         Yamls.deserialize(
-                LINE_BREAK
+            LINE_BREAK
                 + "- str: \"abc\"\n"
                 + "- str: \"abc\"\n")
             .toString());

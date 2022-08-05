@@ -26,6 +26,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class JsonsTest {
+
   private static final String SERIALIZED_JSON = "{\"str\":\"abc\",\"num\":999,\"numLong\":888}";
   private static final String SERIALIZED_JSON2 = "{\"str\":\"abc\"}";
   private static final String ABC = "abc";
