@@ -1,0 +1,60 @@
+@use "../../../../scss/variables";
+@use "../../../../scss/colors";
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: variables.$spacing-sm variables.$spacing-xl;
+  gap: variables.$spacing-md;
+  height: 35px;
+  font-size: 12px;
+}
+
+.content {
+  padding-left: 10px;
+  display: flex;
+  width: 100%;
+  height: 35px;
+  border-bottom: 1px solid colors.$white;
+  align-items: center;
+
+  &.add {
+    background-color: colors.$green-50;
+  }
+  &.remove {
+    background-color: colors.$red-50;
+  }
+}
+
+.icon {
+  &.plus {
+    color: colors.$green;
+  }
+  &.minus {
+    color: colors.$red;
+  }
+  &.mod {
+    color: colors.$blue-100;
+  }
+}
+
+.iconCell {
+  background: white;
+  width: 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.cell {
+  width: 228px;
+  &.update {
+    border-radius: variables.$border-radius-sm;
+    & span {
+      background-color: rgba(98, 94, 255, 0.1);
+      padding: variables.$spacing-sm;
+      border-radius: variables.$border-radius-sm;
+    }
+  }
+}

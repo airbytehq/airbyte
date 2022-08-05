@@ -16,11 +16,11 @@ Helm chart to deploy airbyte-bootloader
 |-----|------|---------|-------------|
 | affinity | object | `{}` |  |
 | enabled | bool | `true` |  |
-| global.database.secretName | string | `"test-postgresql"` |  |
-| global.database.secretValue | string | `"postgresql-password"` |  |
+| global.database.secretName | string | `""` |  |
+| global.database.secretValue | string | `""` |  |
 | global.deploymentMode | string | `"oss"` |  |
-| global.secretName | string | `"something"` |  |
-| global.serviceAccountName | string | `"placeholderServiceAccounr"` |  |
+| global.secretName | string | `""` |  |
+| global.serviceAccountName | string | `"placeholderServiceAccount"` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"airbyte/bootloader"` |  |
 | nodeSelector | object | `{}` |  |

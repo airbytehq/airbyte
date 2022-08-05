@@ -353,6 +353,8 @@ Therefore, in order to "upgrade" to the desired normalization version, you need 
 
 | Airbyte Version | Normalization Version | Date       | Pull Request | Subject                                                                    |
 |:----------------|:----------------------|:-----------| :--- |:---------------------------------------------------------------------------|
+|                 | 0.2.16                | 2022-08-04 | [\#14295](https://github.com/airbytehq/airbyte/pull/14295) | Fixed SSH tunnel port usage |
+|                 | 0.2.14                | 2022-08-01 | [\#14790](https://github.com/airbytehq/airbyte/pull/14790) | Add and persist job failures for Normalization                               |
 |                 | 0.2.13                | 2022-07-27 | [\#14683](https://github.com/airbytehq/airbyte/pull/14683) | Quote schema name to allow reserved keywords                               |
 |                 | 0.2.12                | 2022-07-26 | [\#14362](https://github.com/airbytehq/airbyte/pull/14362) | Handle timezone in date-time format. Parse date correct in clickhouse.     |
 |                 | 0.2.11                | 2022-07-26 | [\#13591](https://github.com/airbytehq/airbyte/pull/13591) | Updated support for integer columns.                                       |

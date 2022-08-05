@@ -223,6 +223,7 @@ class Users(IncrementalOktaStream):
 
 
 class CustomRoles(OktaStream):
+    # https://developer.okta.com/docs/reference/api/roles/#list-roles
     primary_key = "id"
 
     def path(self, **kwargs) -> str:
@@ -248,6 +249,28 @@ class UserRoleAssignments(OktaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         user_id = stream_slice["user_id"]
         return f"users/{user_id}/roles"
+
+
+class Permissions(OktaStream):
+    # https://developer.okta.com/docs/reference/api/roles/#list-permissions
+    primary_key = "label"
+    use_cache = True
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs,
+    ) -> Iterable[Mapping]:
+        yield from response.json()["permissions"]
+
+    def stream_slices(self, **kwargs):
+        custom_roles = CustomRoles(authenticator=self.authenticator, url_base=self.url_base)
+        for role in custom_roles.read_records(sync_mode=SyncMode.full_refresh):
+            yield {"role_id": role["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        role_id = stream_slice["role_id"]
+        return f"iam/roles/{role_id}/permissions"
 
 
 class OktaOauth2Authenticator(Oauth2Authenticator):
@@ -342,4 +365,5 @@ class SourceOkta(AbstractSource):
             CustomRoles(**initialization_params),
             UserRoleAssignments(**initialization_params),
             GroupRoleAssignments(**initialization_params),
+            Permissions(**initialization_params),
         ]

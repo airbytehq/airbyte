@@ -32,8 +32,8 @@
       },
       "region": {
         "title": "Region *",
-        "description": "Region to pull data from (EU/NA/FE/SANDBOX). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
-        "enum": ["NA", "EU", "FE", "SANDBOX"],
+        "description": "Region to pull data from (EU/NA/FE). See <a href=\"https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints\">docs</a> for more details.",
+        "enum": ["NA", "EU", "FE"],
         "type": "string",
         "default": "NA",
         "order": 4

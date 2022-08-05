@@ -55,3 +55,18 @@ def test_custom_datetime_format():
     actual_date = min_max_date.get_datetime(config, **{"stream_state": stream_state})
 
     assert actual_date == datetime.datetime.strptime("2022-01-01T20:12:19", "%Y-%m-%dT%H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+
+
+def test_format_is_a_number():
+    config = {"older": "20210101", "middle": "20220101"}
+    stream_state = {"newer": "20220624"}
+
+    min_max_date = MinMaxDatetime(
+        datetime="{{ config['middle'] }}",
+        datetime_format="%Y%m%d",
+        min_datetime="{{ config['older'] }}",
+        max_datetime="{{ stream_state['newer'] }}",
+    )
+    actual_date = min_max_date.get_datetime(config, **{"stream_state": stream_state})
+
+    assert actual_date == datetime.datetime.strptime("20220101", "%Y%m%d").replace(tzinfo=datetime.timezone.utc)
