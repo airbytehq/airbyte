@@ -693,7 +693,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-cassandra:0.1.2"
+- dockerImage: "airbyte/destination-cassandra:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/cassandra"
     connectionSpecification:
@@ -758,7 +758,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-keen:0.2.3"
+- dockerImage: "airbyte/destination-keen:0.2.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/keen"
     connectionSpecification:
@@ -1141,7 +1141,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-dynamodb:0.1.4"
+- dockerImage: "airbyte/destination-dynamodb:0.1.5"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/dynamodb"
     connectionSpecification:
@@ -2296,7 +2296,7 @@
     supportsDBT: false
     supported_destination_sync_modes:
     - "append"
-- dockerImage: "airbyte/destination-kinesis:0.1.3"
+- dockerImage: "airbyte/destination-kinesis:0.1.4"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/kinesis"
     connectionSpecification:
@@ -3479,7 +3479,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/destination-pulsar:0.1.2"
+- dockerImage: "airbyte/destination-pulsar:0.1.3"
   spec:
     documentationUrl: "https://docs.airbyte.io/integrations/destinations/pulsar"
     connectionSpecification:

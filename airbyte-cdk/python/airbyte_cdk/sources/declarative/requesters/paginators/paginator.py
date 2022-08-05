@@ -38,39 +38,3 @@ class Paginator(RequestOptionsProvider):
         :return: path to hit to fetch the next request. Returning None means the path is not defined by the next_page_token
         """
         pass
-
-    @abstractmethod
-    def request_params(self) -> Mapping[str, Any]:
-        """
-        Specifies the query parameters that should be set on an outgoing HTTP request to fetch the next page of records.
-
-        :return: the request parameters to set to fetch the next page
-        """
-        pass
-
-    @abstractmethod
-    def request_headers(self) -> Mapping[str, str]:
-        """
-        Specifies the request headers that should be set on an outgoing HTTP request to fetch the next page of records.
-
-        :return: the request headers to set to fetch the next page
-        """
-        pass
-
-    @abstractmethod
-    def request_body_data(self) -> Mapping[str, Any]:
-        """
-        Specifies the body data that should be set on an outgoing HTTP request to fetch the next page of records.
-
-        :return: the request body data to set to fetch the next page
-        """
-        pass
-
-    @abstractmethod
-    def request_body_json(self) -> Mapping[str, Any]:
-        """
-        Specifies the json content that should be set on an outgoing HTTP request to fetch the next page of records.
-
-        :return: the request body to set (as a json object) to fetch the next page
-        """
-        pass
